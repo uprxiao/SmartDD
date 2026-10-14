@@ -13,12 +13,15 @@ import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
 import { buildAppMenu } from './app/menu';
 import { applyNativeTheme, createMainWindow, getMainWindow, markAppQuitting } from './app/window';
+import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
 import { openDbClient, type DbClient } from './db/client';
 import { runBundledMigrations } from './db/migrations';
 import { runProbes } from './probes';
 import { PtyManager } from './pty-manager';
 import { createRpcRouter } from './rpc';
+import { safeStorageCipher } from './safe-storage-cipher';
+import { SecretsStore } from './secrets';
 import { SessionService } from './sessions';
 
 app.setName('SmartDD');
@@ -82,6 +85,7 @@ async function main(): Promise<void> {
   }
 
   const settings = new SettingsStore(client.db);
+  const projects = new ProjectService(client.db, new SecretsStore(client.db, safeStorageCipher));
   const ptys = new PtyManager();
   const sessions = new SessionService(client.db, ptys, (s) => events.emit(sessionUpdatedEvent, s));
 
@@ -107,6 +111,7 @@ async function main(): Promise<void> {
       dbFile,
       settings,
       sessions,
+      projects,
       ptys,
       baseEnv,
       onSettingChanged: (key) => {

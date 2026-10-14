@@ -5,6 +5,7 @@ import { safeStorage } from 'electron';
 import type { ProbeResult } from '@shared/types';
 import type { DbClient } from './db/client';
 import { PtyManager } from './pty-manager';
+import { safeStorageCipher } from './safe-storage-cipher';
 import { SecretsStore } from './secrets';
 
 const execFileP = promisify(execFile);
@@ -63,7 +64,7 @@ export async function runProbes(client: DbClient, dbFile: string, baseEnv: Recor
   results.push(
     await probe('P5 safeStorage', () => {
       if (!safeStorage.isEncryptionAvailable()) throw new Error('isEncryptionAvailable() = false');
-      const store = new SecretsStore(client.db);
+      const store = new SecretsStore(client.db, safeStorageCipher);
       const plain = `probe-secret-${Date.now()}`;
       store.set('probe', plain);
       const back = store.get('probe');

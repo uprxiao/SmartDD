@@ -24,15 +24,25 @@ const recorded = (db: Database.Database) =>
 describe('bundled migrations', () => {
   it('loads every journal entry with its SQL and hash', () => {
     const migrations = bundledMigrations();
-    expect(migrations.map((m) => m.tag)).toEqual(['0000_init']);
+    expect(migrations.map((m) => m.tag)).toEqual(['0000_init', '0001_projects']);
     expect(migrations[0].sql).toContain('app_settings');
-    expect(migrations[0].hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(migrations[1].sql).toContain('project_databases');
+    for (const m of migrations) expect(m.hash).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it('creates the schema on an empty database and records the hash', () => {
     const db = memoryDb();
-    expect(runBundledMigrations(db)).toEqual(['0000_init']);
-    expect(tables(db)).toEqual(['__drizzle_migrations', 'app_secrets', 'app_settings', 'sessions']);
+    expect(runBundledMigrations(db)).toEqual(['0000_init', '0001_projects']);
+    expect(tables(db)).toEqual([
+      '__drizzle_migrations',
+      'app_secrets',
+      'app_settings',
+      'project_databases',
+      'project_dirs',
+      'project_servers',
+      'projects',
+      'sessions',
+    ]);
     expect(columns(db, 'app_settings')).toEqual(['key', 'value', 'updated_at']);
     expect(recorded(db)).toEqual(bundledMigrations().map((m) => m.hash));
   });
@@ -41,7 +51,16 @@ describe('bundled migrations', () => {
     const db = memoryDb();
     runBundledMigrations(db);
     expect(runBundledMigrations(db)).toEqual([]);
-    expect(recorded(db)).toHaveLength(1);
+    expect(recorded(db)).toHaveLength(2);
+  });
+
+  it('re-runs 0001 safely when its tables exist but the record is missing', () => {
+    const db = memoryDb();
+    runBundledMigrations(db);
+    db.exec("INSERT INTO projects (id, name, created_at, updated_at) VALUES ('p1', 'kept', 1, 1)");
+    db.exec('DELETE FROM __drizzle_migrations WHERE id = (SELECT MAX(id) FROM __drizzle_migrations)');
+    expect(runBundledMigrations(db)).toEqual(['0001_projects']);
+    expect(db.prepare('SELECT name FROM projects').all()).toEqual([{ name: 'kept' }]);
   });
 
   it('adopts an M0 database without touching existing rows', () => {
@@ -54,7 +73,7 @@ describe('bundled migrations', () => {
       CREATE TABLE probe_kv (k TEXT PRIMARY KEY, v TEXT);
       INSERT INTO sessions VALUES ('s1', 'claude', '/tmp', NULL, 'old', 1);
     `);
-    expect(runBundledMigrations(db)).toEqual(['0000_init']);
+    expect(runBundledMigrations(db)).toEqual(['0000_init', '0001_projects']);
     expect(tables(db)).toContain('app_settings');
     expect(tables(db)).toContain('probe_kv');
     expect(db.prepare('SELECT title FROM sessions').all()).toEqual([{ title: 'old' }]);
