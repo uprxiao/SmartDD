@@ -7,14 +7,16 @@ import {
   ptyExitEvent,
   ptyInputEvent,
   ptyResizeEvent,
-  sessionUpdatedEvent,
+  tasksChangedEvent,
 } from '@shared/events';
 import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
 import { buildAppMenu } from './app/menu';
 import { applyNativeTheme, createMainWindow, getMainWindow, markAppQuitting } from './app/window';
+import { AiProfileService } from './core/ai/ai-profile-service';
 import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
+import { TaskService } from './core/tasks/task-service';
 import { openDbClient, type DbClient } from './db/client';
 import { runBundledMigrations } from './db/migrations';
 import { runProbes } from './probes';
@@ -22,16 +24,17 @@ import { PtyManager } from './pty-manager';
 import { createRpcRouter } from './rpc';
 import { safeStorageCipher } from './safe-storage-cipher';
 import { SecretsStore } from './secrets';
-import { SessionService } from './sessions';
 
 app.setName('SmartDD');
+// Tests and trial runs point this at a scratch directory so they never touch the real database.
+if (process.env.SMARTDD_USER_DATA) app.setPath('userData', process.env.SMARTDD_USER_DATA);
 
 const isProbeMode = process.env.SMARTDD_PROBE === '1';
 
 function baseEnv(): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(process.env)) {
-    if (v !== undefined && !k.startsWith('ELECTRON_') && k !== 'SMARTDD_PROBE') env[k] = v;
+    if (v !== undefined && !k.startsWith('ELECTRON_') && k !== 'SMARTDD_PROBE' && k !== 'SMARTDD_USER_DATA') env[k] = v;
   }
   env.TERM = 'xterm-256color';
   env.COLORTERM = 'truecolor';
@@ -85,9 +88,18 @@ async function main(): Promise<void> {
   }
 
   const settings = new SettingsStore(client.db);
-  const projects = new ProjectService(client.db, new SecretsStore(client.db, safeStorageCipher));
+  const secrets = new SecretsStore(client.db, safeStorageCipher);
+  const projects = new ProjectService(client.db, secrets);
+  const aiProfiles = new AiProfileService(client.db, secrets);
   const ptys = new PtyManager();
-  const sessions = new SessionService(client.db, ptys, (s) => events.emit(sessionUpdatedEvent, s));
+  const tasks = new TaskService({
+    db: client.db,
+    ptys,
+    profiles: aiProfiles,
+    projects,
+    baseEnv,
+    onChanged: () => events.emit(tasksChangedEvent, undefined),
+  });
 
   ptys.on('data', (ptyId: string, data: string) => events.emit(ptyDataEvent, { ptyId, data }));
   ptys.on('exit', (ptyId: string, code: number) => events.emit(ptyExitEvent, { ptyId, code }));
@@ -110,8 +122,9 @@ async function main(): Promise<void> {
       client,
       dbFile,
       settings,
-      sessions,
       projects,
+      aiProfiles,
+      tasks,
       ptys,
       baseEnv,
       onSettingChanged: (key) => {
@@ -136,8 +149,8 @@ async function main(): Promise<void> {
         buttons: ['退出', '取消'],
         defaultId: 1,
         cancelId: 1,
-        message: `有 ${ptys.count} 个终端会话正在运行`,
-        detail: '退出 SmartDD 会结束这些终端进程。之后可在会话列表中恢复（resume）。',
+        message: `有 ${ptys.count} 个任务正在运行`,
+        detail: '退出 SmartDD 会结束这些终端进程。重新打开后可在侧栏中点任务恢复（resume）。',
       });
       if (choice !== 0) {
         event.preventDefault();
@@ -151,7 +164,7 @@ async function main(): Promise<void> {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
-    sessions.dispose();
+    tasks.dispose();
     ptys.killAll();
     client.close();
   });

@@ -1,22 +1,31 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import * as pty from 'node-pty';
+import { LAUNCH_SCRIPT } from './launch-env';
 
 export interface SpawnOptions {
   command: string;
   args: string[];
   cwd: string;
   env: Record<string, string>;
+  /** From planLaunchEnv; applied after the rc files. */
+  scriptArgs?: string[];
   cols?: number;
   rows?: number;
 }
 
-const loginShell = () => process.env.SHELL || '/bin/zsh';
+export const loginShell = () => process.env.SHELL || '/bin/zsh';
 
 // Run through a login+interactive shell so PATH matches the user's terminal even when the
-// app is launched from Finder. "$0" bypasses shell aliases/functions such as `claude`.
-export function shellWrapped(command: string, args: string[]): { file: string; args: string[] } {
-  return { file: loginShell(), args: ['-l', '-i', '-c', 'exec "$0" "$@"', command, ...args] };
+// app is launched from Finder. LAUNCH_SCRIPT re-exports the profile's variables after the rc
+// files and execs the command, which bypasses shell aliases/functions such as `claude`.
+export function shellWrapped(
+  command: string,
+  args: string[],
+  scriptArgs: string[] = ['--'],
+  shell = loginShell()
+): { file: string; args: string[] } {
+  return { file: shell, args: ['-l', '-i', '-c', LAUNCH_SCRIPT, 'smartdd', ...scriptArgs, command, ...args] };
 }
 
 export class PtyManager extends EventEmitter {
@@ -24,7 +33,7 @@ export class PtyManager extends EventEmitter {
 
   spawn(opts: SpawnOptions): string {
     const id = randomUUID();
-    const { file, args } = shellWrapped(opts.command, opts.args);
+    const { file, args } = shellWrapped(opts.command, opts.args, opts.scriptArgs);
     const p = pty.spawn(file, args, {
       name: 'xterm-256color',
       cols: opts.cols ?? 120,

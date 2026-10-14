@@ -144,9 +144,9 @@ export interface InputIssue {
 }
 
 /** One zod issue as a Chinese sentence naming the form field, e.g. "端口必须是 1–65535 的整数". */
-export function describeIssue(issue: InputIssue): string {
+export function describeIssue(issue: InputIssue, labels: Record<string, string> = FIELD_LABELS): string {
   const key = issue.path.find((p) => typeof p === 'string');
-  const field = (key && FIELD_LABELS[key]) ?? (issue.path.join('.') || '输入');
+  const field = (key && (labels[key] ?? FIELD_LABELS[key])) ?? (issue.path.join('.') || '输入');
   if (key === 'port') return `${field}必须是 1–65535 的整数`;
   switch (issue.code) {
     case 'too_small':

@@ -46,13 +46,28 @@ describe('pickCodexSession', () => {
 });
 
 describe('buildRunnerArgs', () => {
-  it('claude 新建用 --session-id，恢复用 --resume', () => {
-    expect(buildRunnerArgs('claude', { newSessionId: 'u1' })).toEqual(['--session-id', 'u1']);
-    expect(buildRunnerArgs('claude', { resumeSessionId: 'u1' })).toEqual(['--resume', 'u1']);
+  it('claude 新建和重开用 --session-id，恢复用 --resume；配置参数在前', () => {
+    expect(buildRunnerArgs('claude', { mode: 'new', sessionId: 'u1', cwd: '/p', profileArgs: ['--model', 'm'] })).toEqual([
+      '--model',
+      'm',
+      '--session-id',
+      'u1',
+    ]);
+    expect(buildRunnerArgs('claude', { mode: 'reopen', sessionId: 'u1', cwd: '/p', firstMessage: 'x' })).toEqual(['--session-id', 'u1']);
+    expect(buildRunnerArgs('claude', { mode: 'resume', sessionId: 'u1', cwd: '/p' })).toEqual(['--resume', 'u1']);
+    expect(() => buildRunnerArgs('claude', { mode: 'new', cwd: '/p' })).toThrow('缺少 session ID');
   });
 
-  it('codex 新建无参数，恢复用 resume 子命令', () => {
-    expect(buildRunnerArgs('codex', { newSessionId: 'ignored' })).toEqual([]);
-    expect(buildRunnerArgs('codex', { resumeSessionId: 't1' })).toEqual(['resume', 't1']);
+  it('codex 新建无参数，恢复用 resume --cd', () => {
+    expect(buildRunnerArgs('codex', { mode: 'new', sessionId: null, cwd: '/p' })).toEqual([]);
+    expect(buildRunnerArgs('codex', { mode: 'resume', sessionId: 't1', cwd: '/a b' })).toEqual(['resume', '--cd', '/a b', 't1']);
+    expect(() => buildRunnerArgs('codex', { mode: 'resume', cwd: '/p' })).toThrow('无法恢复');
+  });
+
+  it('首条消息只在新建时作为单个参数传入，以 - 开头时前置 --', () => {
+    const msg = '修复 $(rm -rf ~) "引号" 和\n换行';
+    expect(buildRunnerArgs('codex', { mode: 'new', cwd: '/p', firstMessage: msg })).toEqual([msg]);
+    expect(buildRunnerArgs('claude', { mode: 'new', sessionId: 'u', cwd: '/p', firstMessage: '-h' })).toEqual(['--session-id', 'u', '--', '-h']);
+    expect(buildRunnerArgs('codex', { mode: 'resume', sessionId: 't', cwd: '/p', firstMessage: 'x' })).toEqual(['resume', '--cd', '/p', 't']);
   });
 });

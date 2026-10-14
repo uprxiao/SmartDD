@@ -22,6 +22,12 @@ export const APP_SETTINGS_STRICT_SCHEMA_MAP = {
     fontFamily: z.string().trim().min(1),
     fontSize: z.number().int().min(TERMINAL_FONT_SIZE.min).max(TERMINAL_FONT_SIZE.max),
   }),
+  /** The home page's last project / directory / AI profile, as in Yoda. Stale ids are ignored on read. */
+  homeDraft: z.object({
+    projectId: z.string().nullable(),
+    dirId: z.string().nullable(),
+    aiProfileId: z.string().nullable(),
+  }),
 };
 
 export type AppSettings = {
@@ -34,6 +40,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettings = {
   general: { language: 'zh-CN' },
   theme: null,
   terminal: { fontFamily: 'Menlo, Monaco, monospace', fontSize: 13 },
+  homeDraft: { projectId: null, dirId: null, aiProfileId: null },
 };
 
 // Reads are lenient, as in Yoda: every field `.catch(default)` so one corrupt stored field
@@ -49,6 +56,7 @@ export const APP_SETTINGS_SCHEMA_MAP: { [K in AppSettingsKey]: z.ZodType<AppSett
   general: lenientObject(strict.general, APP_SETTINGS_DEFAULTS.general),
   theme: strict.theme.catch(APP_SETTINGS_DEFAULTS.theme),
   terminal: lenientObject(strict.terminal, APP_SETTINGS_DEFAULTS.terminal),
+  homeDraft: lenientObject(strict.homeDraft, APP_SETTINGS_DEFAULTS.homeDraft),
 };
 
 export interface AppSettingWithMeta<K extends AppSettingsKey> {

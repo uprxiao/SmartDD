@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { DB_VENDORS, isProdEnv, type DatabaseView, type ProjectDetail, type ProjectDirView, type ServerView } from '@shared/projects';
 import { navigation } from '@renderer/core/navigation';
+import { tasksStore } from '@renderer/core/tasks-store';
 import { useProject, useRefreshProjects } from '@renderer/lib/hooks/useProjects';
 import { rpc } from '@renderer/lib/ipc';
 import { Badge } from '@renderer/lib/ui/badge';
@@ -71,7 +72,7 @@ export const ProjectView = observer(function ProjectView() {
       {section === 'dirs' && <Dirs project={project} />}
       {section === 'databases' && <Databases project={project} />}
       {section === 'servers' && <Servers project={project} />}
-      {section === 'tasks' && <p className="text-sm text-foreground-muted">{t('projects.tasksPlaceholder')}</p>}
+      {section === 'tasks' && <Tasks project={project} />}
     </SectionPage>
   );
 });
@@ -201,6 +202,43 @@ function Card({ prod, children, testId }: { prod?: boolean; children: ReactNode;
     </div>
   );
 }
+
+const Tasks = observer(function Tasks({ project }: { project: ProjectDetail }) {
+  const { t } = useTranslation();
+  const tasks = tasksStore.tasks.filter((x) => x.projectId === project.id);
+  return (
+    <div className="flex flex-col gap-3">
+      {project.archivedAt === null && (
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" data-testid="project-new-task" onClick={() => navigation.newTask(project.id)}>
+            <Plus />
+            {t('tasks.newInProject')}
+          </Button>
+        </div>
+      )}
+      {tasks.length === 0 && <p className="text-sm text-foreground-passive">{t('tasks.noneInProject')}</p>}
+      {tasks.map((task) => (
+        <button
+          key={task.id}
+          type="button"
+          data-testid="project-task"
+          onClick={() => tasksStore.show(task.id)}
+          className={cn(
+            'flex items-center gap-3 rounded-lg border border-border px-4 py-2.5 text-left hover:bg-background-1',
+            task.archivedAt !== null && 'opacity-60'
+          )}
+        >
+          <span className="h-4 w-[3px] shrink-0 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-border)' }} />
+          <span className="min-w-0 flex-1 truncate text-sm">{task.title}</span>
+          <span className="shrink-0 text-xs text-foreground-passive">{task.aiProfileName ?? '—'}</span>
+          <span className="shrink-0 text-xs text-foreground-passive">
+            {task.ptyId ? t('task.running') : task.archivedAt !== null ? t('search.archived') : t(`task.recovery.${task.recovery}`)}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+});
 
 function Dirs({ project }: { project: ProjectDetail }) {
   const { t } = useTranslation();

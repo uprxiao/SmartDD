@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TERMINAL_FONT_SIZE, type Language, type Theme } from '@shared/app-settings';
+import type { ProbeResult } from '@shared/types';
+import { navigation, type SettingsSectionId } from '@renderer/core/navigation';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { rpc } from '@renderer/lib/ipc';
 import { useTheme } from '@renderer/lib/theme';
@@ -10,13 +13,14 @@ import { Input } from '@renderer/lib/ui/input';
 import { SectionPage, SettingRow } from '@renderer/lib/ui/section-page';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@renderer/lib/ui/toggle-group';
+import { AiProfilesSection } from './settings/ai-profiles';
 
-type SectionId = 'general' | 'appearance' | 'terminal';
+const SECTIONS: SettingsSectionId[] = ['general', 'aiProfiles', 'appearance', 'terminal'];
 
-export function SettingsView() {
+export const SettingsView = observer(function SettingsView() {
   const { t } = useTranslation();
-  const [section, setSection] = useState<SectionId>('general');
-  const items = (['general', 'appearance', 'terminal'] as const).map((id) => ({
+  const section = navigation.settingsSection;
+  const items = SECTIONS.map((id) => ({
     id,
     label: t(`settings.sections.${id}`),
   }));
@@ -25,21 +29,24 @@ export function SettingsView() {
     <SectionPage
       items={items}
       activeId={section}
-      onSelect={setSection}
+      onSelect={(id) => navigation.openSettings(id)}
       title={t(`settings.sections.${section}`)}
       description={t(`settings.descriptions.${section}`)}
     >
       {section === 'general' && <GeneralSection />}
+      {section === 'aiProfiles' && <AiProfilesSection />}
       {section === 'appearance' && <AppearanceSection />}
       {section === 'terminal' && <TerminalSection />}
     </SectionPage>
   );
-}
+});
 
 function GeneralSection() {
   const { t } = useTranslation();
   const general = useAppSettingsKey('general');
   const info = useQuery({ queryKey: ['app', 'info'], queryFn: () => rpc.app.getInfo(), staleTime: Infinity });
+  const [probes, setProbes] = useState<ProbeResult[] | null>(null);
+  const [probing, setProbing] = useState(false);
 
   return (
     <>
@@ -65,6 +72,31 @@ function GeneralSection() {
           {t('settings.reveal')}
         </Button>
       </SettingRow>
+      <SettingRow label={t('settings.probes')} hint={t('settings.probesHint')}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={probing}
+          onClick={() => {
+            setProbing(true);
+            void rpc.probes
+              .run()
+              .then(setProbes)
+              .finally(() => setProbing(false));
+          }}
+        >
+          {t('settings.runProbes')}
+        </Button>
+      </SettingRow>
+      {probes && (
+        <div data-testid="probe-results" className="flex flex-col gap-1 font-mono text-xs">
+          {probes.map((p) => (
+            <div key={p.name} className={p.ok ? 'text-foreground-muted' : 'text-foreground-destructive'}>
+              {p.ok ? '✔' : '✘'} {p.name}：{p.detail}
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

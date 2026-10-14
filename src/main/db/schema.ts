@@ -129,3 +129,50 @@ export const projectServers = sqliteTable(
   },
   (t) => ({ byProject: index('project_servers_project_idx').on(t.projectId) })
 );
+
+// ---- M3: AI profiles and tasks ----
+
+/** Runner + environment (PRD F04). Secret variable values live in `app_secrets` (`ai:<id>:env:<NAME>`). */
+export const aiProfiles = sqliteTable('ai_profiles', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  runner: text('runner', { enum: ['claude', 'codex'] }).notNull(),
+  /** null: the runner's own command on the login shell's PATH. */
+  executable: text('executable'),
+  /** JSON [{ name, secret, value }]; value is null for secret variables. */
+  env: text('env').notNull().default('[]'),
+  /** JSON string[] passed before SmartDD's own arguments. */
+  args: text('args').notNull().default('[]'),
+  color: text('color'),
+  isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+  ...timestamps,
+});
+
+/**
+ * A task is one CLI conversation (PRD F05; called "session" in the PRD). Only metadata is kept,
+ * never terminal output. Profile and project fields are snapshots taken at launch.
+ */
+export const tasks = sqliteTable(
+  'tasks',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+    dirId: text('dir_id').references(() => projectDirs.id, { onDelete: 'set null' }),
+    cwd: text('cwd').notNull(),
+    aiProfileId: text('ai_profile_id').references(() => aiProfiles.id, { onDelete: 'set null' }),
+    aiProfileName: text('ai_profile_name'),
+    runner: text('runner', { enum: ['claude', 'codex'] }).notNull(),
+    nativeSessionId: text('native_session_id'),
+    title: text('title').notNull(),
+    firstMessage: text('first_message').notNull().default(''),
+    /** JSON string[] of variable names given to the CLI on the last launch (no values). */
+    injectedEnvNames: text('injected_env_names').notNull().default('[]'),
+    configVersion: integer('config_version'),
+    /** CLAUDE_CONFIG_DIR / CODEX_HOME in effect, so resume looks for the session file in the right place. */
+    stateRoot: text('state_root'),
+    archivedAt: integer('archived_at'),
+    lastLaunchedAt: integer('last_launched_at'),
+    ...timestamps,
+  },
+  (t) => ({ byProject: index('tasks_project_idx').on(t.projectId) })
+);

@@ -1,23 +1,25 @@
 import { app, BrowserWindow, dialog, shell } from 'electron';
 import type { AppSettingsKey } from '@shared/app-settings';
 import { createRPCController, createRPCRouter } from '@shared/ipc/rpc';
-import type { LaunchRequest } from '@shared/types';
+import { createAiProfileController } from './core/ai/controller';
+import type { AiProfileService } from './core/ai/ai-profile-service';
 import { createProjectControllers } from './core/projects/controller';
 import type { ProjectService } from './core/projects/project-service';
 import { createAppSettingsController } from './core/settings/controller';
 import type { SettingsStore } from './core/settings/settings-service';
+import { createTaskController } from './core/tasks/controller';
+import type { TaskService } from './core/tasks/task-service';
 import type { DbClient } from './db/client';
-import { listSessions } from './db/sessions-repo';
 import { runProbes } from './probes';
 import type { PtyManager } from './pty-manager';
-import type { SessionService } from './sessions';
 
 export interface RpcDeps {
   client: DbClient;
   dbFile: string;
   settings: SettingsStore;
-  sessions: SessionService;
   projects: ProjectService;
+  aiProfiles: AiProfileService;
+  tasks: TaskService;
   ptys: PtyManager;
   baseEnv: () => Record<string, string>;
   onSettingChanged: (key: AppSettingsKey) => void;
@@ -36,6 +38,8 @@ export function createRpcRouter(d: RpcDeps) {
     }),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged),
     ...createProjectControllers(d.projects),
+    ...createAiProfileController(d.aiProfiles, d.baseEnv),
+    ...createTaskController(d.tasks),
     dialog: createRPCController({
       /** Native folder picker; null when cancelled. */
       pickDirectory: async (defaultPath?: string) => {
@@ -50,10 +54,6 @@ export function createRpcRouter(d: RpcDeps) {
         const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
         return r.canceled ? null : (r.filePaths[0] ?? null);
       },
-    }),
-    sessions: createRPCController({
-      list: () => listSessions(d.client.db),
-      launch: (req: LaunchRequest) => d.sessions.launch(req, d.baseEnv()),
     }),
     pty: createRPCController({
       kill: (ptyId: string) => d.ptys.kill(ptyId),

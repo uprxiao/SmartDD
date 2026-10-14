@@ -1,10 +1,10 @@
 import { defineEvent } from './ipc/events';
-import type { SessionRecord } from './types';
 
 // main → renderer
 export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:data');
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
-export const sessionUpdatedEvent = defineEvent<SessionRecord>('session:updated');
+/** The task list or a task's running state changed; the renderer re-reads tasks.list. */
+export const tasksChangedEvent = defineEvent<void>('tasks:changed');
 export const menuOpenSettingsEvent = defineEvent<void>('menu:openSettings');
 export const menuToggleLeftSidebarEvent = defineEvent<void>('menu:toggleLeftSidebar');
 

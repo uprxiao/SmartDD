@@ -6,6 +6,7 @@ import { useDefaultLayout, usePanelRef } from 'react-resizable-panels';
 import { useTranslation } from 'react-i18next';
 import { menuToggleLeftSidebarEvent } from '@shared/events';
 import { navigation, type ViewId } from '@renderer/core/navigation';
+import { tasksStore } from '@renderer/core/tasks-store';
 import { events } from '@renderer/lib/ipc';
 import { LeftSidebar } from '@renderer/lib/layout/left-sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@renderer/lib/ui/resizable';
@@ -14,7 +15,7 @@ import { useProject } from '@renderer/lib/hooks/useProjects';
 import { HomeView } from '@renderer/views/home-view';
 import { ProjectView } from '@renderer/views/project-view';
 import { SettingsView } from '@renderer/views/settings-view';
-import { TerminalView } from '@renderer/views/terminal-view';
+import { TaskView } from '@renderer/views/task-view';
 
 const LEFT_PANEL_DEFAULT_SIZE = '20%';
 const LEFT_SIDEBAR_MIN_SIZE = '200px';
@@ -74,8 +75,8 @@ export function Workspace() {
 }
 
 const VIEW_TITLE_KEYS: Record<ViewId, string> = {
-  home: 'nav.newSession',
-  terminal: 'nav.terminal',
+  home: 'nav.newTask',
+  task: 'nav.task',
   settings: 'nav.settings',
   project: 'projects.sidebar',
 };
@@ -108,15 +109,19 @@ const MainContent = observer(function MainContent({
         >
           <PanelLeft className="size-4" />
         </button>
-        <span className="truncate text-sm text-foreground-muted">{view === 'project' && project ? project.name : t(VIEW_TITLE_KEYS[view])}</span>
+        <span className="truncate text-sm text-foreground-muted">{view === 'project' && project
+            ? project.name
+            : view === 'task' && tasksStore.current
+              ? tasksStore.current.title
+              : t(VIEW_TITLE_KEYS[view])}</span>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden">
         <ViewSlot active={view === 'home'}>
           <HomeView />
         </ViewSlot>
-        {/* Always mounted so the terminal keeps its scrollback across navigation. */}
-        <ViewSlot active={view === 'terminal'} keepMounted>
-          <TerminalView />
+        {/* Always mounted so every task terminal keeps its scrollback across navigation. */}
+        <ViewSlot active={view === 'task'} keepMounted>
+          <TaskView />
         </ViewSlot>
         <ViewSlot active={view === 'settings'}>
           <SettingsView />
