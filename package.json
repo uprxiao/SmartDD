@@ -1,0 +1,68 @@
+{
+  "name": "smartdd",
+  "version": "0.0.1",
+  "private": true,
+  "description": "SmartDD - Mac Desktop AI 开发工作台",
+  "main": "out/main/index.js",
+  "packageManager": "pnpm@10.27.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "vitest run",
+    "rebuild": "electron-rebuild -f --only=better-sqlite3,node-pty",
+    "postinstall": "electron-rebuild -f --only=better-sqlite3,node-pty",
+    "probe": "electron-vite build && SMARTDD_PROBE=1 electron .",
+    "package": "electron-vite build && electron-builder --mac --dir"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "node-pty": "1.1.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "electron": "^42.0.0",
+    "electron-builder": "^26.8.1",
+    "electron-vite": "^5.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.0",
+    "vite": "^6.4.1",
+    "vitest": "^4.1.0"
+  },
+  "build": {
+    "appId": "com.smartdd.desktop",
+    "productName": "SmartDD",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**"
+    ],
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "mac": {
+      "target": "dir",
+      "category": "public.app-category.developer-tools"
+    }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "node-pty",
+      "electron",
+      "esbuild"
+    ]
+  }
+}
