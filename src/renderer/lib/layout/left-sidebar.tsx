@@ -6,6 +6,7 @@ import { rpcErrorMessage } from '@shared/ipc/rpc';
 import type { SessionRecord } from '@shared/types';
 import { navigation, type ViewId } from '@renderer/core/navigation';
 import { sessionsStore } from '@renderer/core/sessions-store';
+import { SidebarProjects } from '@renderer/lib/layout/sidebar-projects';
 import { cn } from '@renderer/utils/utils';
 
 function NavButton({ view, icon, label }: { view: ViewId; icon: React.ReactNode; label: string }) {
@@ -43,6 +44,7 @@ export const LeftSidebar = observer(function LeftSidebar() {
         <NavButton view="home" icon={<Plus className="size-4" />} label={t('nav.newSession')} />
         <NavButton view="terminal" icon={<SquareTerminal className="size-4" />} label={t('nav.terminal')} />
       </div>
+      <SidebarProjects />
       <div className="mt-4 px-4 pb-1 text-xs text-foreground-passive">{t('nav.sessions')}</div>
       <div className="min-h-0 flex-1 overflow-y-auto px-2">
         {sessionsStore.sessions.length === 0 && (

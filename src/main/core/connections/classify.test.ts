@@ -32,6 +32,17 @@ describe('classifyError', () => {
     expect(classifyError(protocol, error).category).toBe(expected);
   });
 
+  it('appends the driver code once, so a vague server text still says what happened', () => {
+    expect(classifyError('mysql', err({ code: 'ER_ACCESS_DENIED_ERROR', message: 'Unknown error 1045' })).message).toBe(
+      'Unknown error 1045 [ER_ACCESS_DENIED_ERROR]'
+    );
+    expect(classifyError('mysql', err({ code: 'ECONNREFUSED', message: 'connect ECONNREFUSED 127.0.0.1:1' })).message).toBe(
+      'connect ECONNREFUSED 127.0.0.1:1'
+    );
+    expect(classifyError('mysql', new DeadlineError(300)).message).toBe('300 ms 内未完成');
+    expect(classifyError('mysql', err({ code: 'ER_DBACCESS_DENIED_ERROR' })).message).toContain('也可能库名填错');
+  });
+
   it('does not let a protocol-specific code leak into another protocol', () => {
     expect(classifyError('mysql', err({ code: '28P01' })).category).toBe('other');
   });

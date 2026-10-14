@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { and, asc, eq, isNull, ne, sql } from 'drizzle-orm';
 import {
   databaseInputSchema,
+  describeIssue,
   dirInputSchema,
   projectInputSchema,
   serverInputSchema,
@@ -10,6 +11,7 @@ import {
   type DatabaseView,
   type DbVendor,
   type DirInput,
+  type InputIssue,
   type LastTest,
   type ProjectDetail,
   type ProjectDirView,
@@ -36,11 +38,10 @@ export interface DeleteOptions {
 }
 
 /** zod issues → one readable line; the renderer shows it as is. */
-function parse<T>(schema: { safeParse: (v: unknown) => { success: true; data: T } | { success: false; error: { issues: { path: PropertyKey[]; message: string }[] } } }, value: unknown): T {
+function parse<T>(schema: { safeParse: (v: unknown) => { success: true; data: T } | { success: false; error: { issues: InputIssue[] } } }, value: unknown): T {
   const r = schema.safeParse(value);
   if (r.success) return r.data;
-  const first = r.error.issues[0];
-  throw new Error(`输入无效：${first.path.join('.') || '（根）'} ${first.message}`);
+  throw new Error(`输入无效：${describeIssue(r.error.issues[0])}`);
 }
 
 const parseAliases = (json: string): string[] => {

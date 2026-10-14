@@ -119,9 +119,19 @@ describe('projects', () => {
   });
 
   it('validates input with a readable message', () => {
-    expect(() => svc.createProject({ name: '  ', aliases: [], description: '', rulesPath: null })).toThrow(/^输入无效：name/);
+    expect(() => svc.createProject({ name: '  ', aliases: [], description: '', rulesPath: null })).toThrow('输入无效：项目名称不能为空');
     const p = svc.createProject({ name: 'A', aliases: [], description: '', rulesPath: null });
-    expect(() => svc.addDir(p.id, { label: '', path: 'relative/path' })).toThrow('必须是绝对路径');
+    expect(() => svc.addDir(p.id, { label: '', path: 'relative/path' })).toThrow('输入无效：路径：必须是绝对路径');
+    expect(() => svc.createDatabase(p.id, dbInput({ port: 70000 }))).toThrow('输入无效：端口必须是 1–65535 的整数');
+    expect(() => svc.createDatabase(p.id, dbInput({ port: Number('') || NaN }))).toThrow('端口必须是');
+    expect(() => svc.createDatabase(p.id, dbInput({ host: ' ' }))).toThrow('输入无效：主机不能为空');
+    expect(() => svc.createDatabase(p.id, dbInput({ vendor: 'oracle' as never }))).toThrow('输入无效：数据库类型取值无效');
+    expect(() => svc.createProject({ name: 'x'.repeat(101), aliases: [], description: '', rulesPath: null })).toThrow(
+      '输入无效：项目名称不能超过 100 个字符'
+    );
+    expect(() => svc.createServer(p.id, serverInput({ authType: 'key', privateKeyPath: null }))).toThrow(
+      '输入无效：私钥文件：密钥认证需要填写私钥路径'
+    );
   });
 
   it('archives and lists archived projects only on request', () => {

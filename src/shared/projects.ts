@@ -108,6 +108,60 @@ export const serverInputSchema = z
   });
 export type ServerInput = z.input<typeof serverInputSchema>;
 
+const FIELD_LABELS: Record<string, string> = {
+  name: '项目名称',
+  aliases: '别名',
+  description: '说明',
+  rulesPath: '规则文件',
+  label: '名称',
+  path: '路径',
+  env: '环境',
+  vendor: '数据库类型',
+  host: '主机',
+  port: '端口',
+  database: '库名',
+  schema: 'Schema',
+  username: '用户名',
+  accessLevel: '权限',
+  note: '备注',
+  authType: '认证方式',
+  privateKeyPath: '私钥文件',
+  sudoPolicy: 'sudo',
+  appRoot: '应用目录',
+  logsPath: '日志目录',
+  password: '密码',
+  passphrase: '私钥口令',
+  sudoPassword: 'sudo 密码',
+};
+
+export interface InputIssue {
+  code: string;
+  path: PropertyKey[];
+  message: string;
+  minimum?: number | bigint;
+  maximum?: number | bigint;
+  origin?: string;
+}
+
+/** One zod issue as a Chinese sentence naming the form field, e.g. "端口必须是 1–65535 的整数". */
+export function describeIssue(issue: InputIssue): string {
+  const key = issue.path.find((p) => typeof p === 'string');
+  const field = (key && FIELD_LABELS[key]) ?? (issue.path.join('.') || '输入');
+  if (key === 'port') return `${field}必须是 1–65535 的整数`;
+  switch (issue.code) {
+    case 'too_small':
+      return issue.origin === 'string' && Number(issue.minimum) === 1 ? `${field}不能为空` : `${field}过小或过短`;
+    case 'too_big':
+      return issue.origin === 'string' ? `${field}不能超过 ${issue.maximum} 个字符` : `${field}过大或过长`;
+    case 'invalid_type':
+    case 'invalid_value':
+      return `${field}取值无效`;
+    default:
+      // Our own refine() messages are already Chinese.
+      return /[一-鿿]/.test(issue.message) ? `${field}：${issue.message}` : `${field}无效`;
+  }
+}
+
 // ---- views returned to the renderer (never contain secrets) ----
 
 export interface ProjectSummary {

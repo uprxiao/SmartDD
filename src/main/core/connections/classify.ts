@@ -38,15 +38,19 @@ export function classifyError(protocol: Protocol, error: unknown): { category: T
   const e = (typeof error === 'object' && error !== null ? error : { message: String(error) }) as DriverError;
   const message = e.message || String(error);
   const code = typeof e.code === 'string' ? e.code : undefined;
-  const category = (c: TestCategory) => ({ category: c, message });
+  // Keep the driver code visible: some servers send a vague text (e.g. "Unknown error 1045").
+  const shown = code && code !== 'SMARTDD_DEADLINE' && !message.includes(code) ? `${message} [${code}]` : message;
+  const category = (c: TestCategory) => ({ category: c, message: shown });
 
   if (code === 'SMARTDD_DEADLINE' || code === 'ETIMEDOUT' || code === 'ESOCKETTIMEDOUT') return category('timeout');
   if (code && NETWORK_CODES.has(code)) return category('network');
 
   if (protocol === 'mysql') {
     switch (code) {
+      case 'ER_DBACCESS_DENIED_ERROR': // 1044
+        // MySQL answers 1044, not 1049, when an account without rights names a missing database.
+        return { category: 'auth', message: `${shown}（该账号无权访问此库，也可能库名填错：MySQL 对无权限账号不区分“库不存在”）` };
       case 'ER_ACCESS_DENIED_ERROR': // 1045 wrong user/password
-      case 'ER_DBACCESS_DENIED_ERROR': // 1044 user may not use this database
       case 'ER_ACCESS_DENIED_NO_PASSWORD_ERROR':
         return category('auth');
       case 'ER_BAD_DB_ERROR': // 1049

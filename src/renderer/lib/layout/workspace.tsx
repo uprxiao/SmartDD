@@ -10,7 +10,9 @@ import { events } from '@renderer/lib/ipc';
 import { LeftSidebar } from '@renderer/lib/layout/left-sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@renderer/lib/ui/resizable';
 import { cn } from '@renderer/utils/utils';
+import { useProject } from '@renderer/lib/hooks/useProjects';
 import { HomeView } from '@renderer/views/home-view';
+import { ProjectView } from '@renderer/views/project-view';
 import { SettingsView } from '@renderer/views/settings-view';
 import { TerminalView } from '@renderer/views/terminal-view';
 
@@ -75,6 +77,7 @@ const VIEW_TITLE_KEYS: Record<ViewId, string> = {
   home: 'nav.newSession',
   terminal: 'nav.terminal',
   settings: 'nav.settings',
+  project: 'projects.sidebar',
 };
 
 const MainContent = observer(function MainContent({
@@ -86,6 +89,7 @@ const MainContent = observer(function MainContent({
 }) {
   const { t } = useTranslation();
   const view = navigation.currentViewId;
+  const { data: project } = useProject(view === 'project' ? navigation.currentProjectId : null);
 
   return (
     <div className="flex h-full flex-col">
@@ -104,7 +108,7 @@ const MainContent = observer(function MainContent({
         >
           <PanelLeft className="size-4" />
         </button>
-        <span className="truncate text-sm text-foreground-muted">{t(VIEW_TITLE_KEYS[view])}</span>
+        <span className="truncate text-sm text-foreground-muted">{view === 'project' && project ? project.name : t(VIEW_TITLE_KEYS[view])}</span>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden">
         <ViewSlot active={view === 'home'}>
@@ -116,6 +120,9 @@ const MainContent = observer(function MainContent({
         </ViewSlot>
         <ViewSlot active={view === 'settings'}>
           <SettingsView />
+        </ViewSlot>
+        <ViewSlot active={view === 'project'}>
+          <ProjectView key={navigation.currentProjectId ?? ''} />
         </ViewSlot>
       </div>
     </div>
