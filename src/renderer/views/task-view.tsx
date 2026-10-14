@@ -1,10 +1,9 @@
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
-import { Bot, Folder, FolderOpen, Loader2, Play, Square, TriangleAlert } from 'lucide-react';
+import { Loader2, Play, TriangleAlert } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import { ptyInputEvent, ptyResizeEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import type { TaskView as Task } from '@shared/tasks';
@@ -14,7 +13,7 @@ import { tasksStore } from '@renderer/core/tasks-store';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import i18n from '@renderer/lib/i18n';
-import { events, rpc } from '@renderer/lib/ipc';
+import { events } from '@renderer/lib/ipc';
 import { useTheme } from '@renderer/lib/theme';
 import { Button } from '@renderer/lib/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
@@ -43,7 +42,6 @@ export const TaskView = observer(function TaskView() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {task && <TaskHeader task={task} />}
       <div className="relative min-h-0 flex-1 bg-(--xterm-bg)">
         {terminals.map(([taskId, ptyId]) => (
           <TaskTerminal key={ptyId} ptyId={ptyId} visible={navigation.currentViewId === 'task' && task?.id === taskId} />
@@ -51,86 +49,6 @@ export const TaskView = observer(function TaskView() {
         {task && !shownPty && <StoppedPanel task={task} />}
         {!task && <div className="absolute inset-0 flex items-center justify-center text-sm text-foreground-muted">{i18n.t('task.none')}</div>}
       </div>
-    </div>
-  );
-});
-
-const TaskHeader = observer(function TaskHeader({ task }: { task: Task }) {
-  const { t } = useTranslation();
-  const running = Boolean(task.ptyId);
-  const changed = task.configVersion !== null && task.projectConfigVersion !== null && task.configVersion !== task.projectConfigVersion;
-  return (
-    <div data-testid="task-header" className="flex shrink-0 flex-col gap-1.5 border-b border-border px-4 py-2 text-xs text-foreground-muted">
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="truncate text-sm text-foreground" title={task.title}>
-          {task.title}
-        </span>
-        <span className={cn('shrink-0 rounded px-1.5 py-0.5', running ? 'bg-background-2 text-foreground' : 'bg-background-1')}>
-          {running ? t('task.running') : t(`task.recovery.${task.recovery}`)}
-        </span>
-        <div className="ml-auto flex shrink-0 items-center gap-1">
-          {running ? (
-            <Button variant="ghost" size="sm" data-testid="task-kill" onClick={() => void rpc.tasks.kill(task.id)}>
-              <Square className="size-3.5" />
-              {t('task.kill')}
-            </Button>
-          ) : (
-            tasksStore.terminals.has(task.id) &&
-            task.recovery !== 'unrecoverable' && (
-              <>
-                {task.aiProfileId && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    data-testid="task-header-resume"
-                    onClick={() => void tasksStore.resume({ taskId: task.id }).catch((e) => toast.error(rpcErrorMessage(e)))}
-                  >
-                    <Play className="size-3.5" />
-                    {task.recovery === 'resumable' ? t('task.resume') : t('task.start')}
-                  </Button>
-                )}
-                <Button variant="ghost" size="sm" data-testid="task-header-switch" onClick={() => tasksStore.dropTerminal(task.id)}>
-                  {t('task.switchProfile')}
-                </Button>
-              </>
-            )
-          )}
-        </div>
-      </div>
-      <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="flex items-center gap-1">
-          <Folder className="size-3.5" />
-          {task.projectName ?? t('task.noProject')}
-        </span>
-        <span className="flex items-center gap-1">
-          <Bot className="size-3.5" />
-          <span className="inline-block size-2 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-foreground-passive)' }} />
-          {task.aiProfileName ?? '—'}
-          {task.aiProfileId === null && task.aiProfileName && <span className="text-foreground-passive">（{t('task.profileDeleted')}）</span>}
-        </span>
-        <span className="flex min-w-0 items-center gap-1 font-mono" title={task.cwd}>
-          <FolderOpen className="size-3.5 shrink-0" />
-          <span className="truncate select-text">{task.cwd}</span>
-        </span>
-      </div>
-      <div data-testid="task-env" className="flex flex-wrap items-center gap-1">
-        <span>{t('task.injected')}</span>
-        {task.injectedEnvNames.length === 0 ? (
-          <span className="text-foreground-passive">{t('task.injectedNone')}</span>
-        ) : (
-          task.injectedEnvNames.map((n) => (
-            <code key={n} className="rounded bg-background-1 px-1.5 py-0.5 font-mono text-[11px] text-foreground select-text">
-              {n}
-            </code>
-          ))
-        )}
-      </div>
-      {changed && (
-        <div className="flex items-center gap-1 text-foreground-passive">
-          <TriangleAlert className="size-3.5" />
-          {t('task.configChanged', { from: task.configVersion, to: task.projectConfigVersion })}
-        </div>
-      )}
     </div>
   );
 });

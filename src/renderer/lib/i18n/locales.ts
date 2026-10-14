@@ -32,8 +32,11 @@ export const zhCN = {
     kill: '结束',
     noProject: '无项目',
     profileDeleted: '配置已删除',
-    injected: '注入变量：',
     injectedNone: '无',
+    info: '任务信息',
+    fields: { project: '项目', profile: 'AI 配置', model: '模型', cwd: '目录', env: '注入变量' },
+    modelDefault: 'CLI 默认',
+    exitedShort: '已退出',
     configChanged: '项目配置在启动后有改动（版本 {{from}} → {{to}}），重新启动任务后生效。',
     recovery: {
       resumable: '可恢复',
@@ -49,6 +52,9 @@ export const zhCN = {
     crossProfile: '将用“{{to}}”恢复原本由“{{from}}”创建的任务。两者的接口地址、模型或账号可能不同，CLI 不一定能接上原上下文。',
     profileGone: '原 AI 配置已删除，请选择同一运行器的其他配置。',
     exited: '进程已退出，code={{code}}',
+  },
+  runtime: {
+    running: '{{count}} 个运行中',
   },
   tasks: {
     rename: '重命名',
@@ -309,8 +315,11 @@ export const en: Widen<typeof zhCN> = {
     kill: 'Stop',
     noProject: 'No project',
     profileDeleted: 'profile deleted',
-    injected: 'Injected:',
     injectedNone: 'none',
+    info: 'Task details',
+    fields: { project: 'Project', profile: 'AI profile', model: 'Model', cwd: 'Folder', env: 'Injected' },
+    modelDefault: 'CLI default',
+    exitedShort: 'Exited',
     configChanged: 'The project configuration changed after launch (version {{from}} → {{to}}); restart the task to apply it.',
     recovery: {
       resumable: 'Resumable',
@@ -326,6 +335,9 @@ export const en: Widen<typeof zhCN> = {
     crossProfile: 'Resuming a task created with "{{from}}" using "{{to}}". Their endpoint, model or account may differ, and the CLI may not pick up the earlier context.',
     profileGone: 'The original AI profile was deleted. Choose another profile for the same runner.',
     exited: 'Process exited, code={{code}}',
+  },
+  runtime: {
+    running: '{{count}} running',
   },
   tasks: {
     rename: 'Rename',

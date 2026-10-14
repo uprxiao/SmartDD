@@ -160,3 +160,21 @@ export function splitArgs(line: string): string[] {
 export function joinArgs(args: string[]): string {
   return args.map((a) => (a !== '' && /^[\w@%+=:,./-]+$/.test(a) ? a : `'${a.replace(/'/g, `'\\''`)}'`)).join(' ');
 }
+
+/**
+ * The model a profile asks for, for the status bar: `--model x` / `--model=x` (and Codex `-m x`)
+ * in the launch arguments win over a plain model variable, as on the CLIs themselves.
+ * null when the profile leaves it to the CLI's own default.
+ */
+export function profileModel(p: Pick<AiProfileView, 'runner' | 'env' | 'args'>): string | null {
+  const flags = p.runner === 'codex' ? ['--model', '-m'] : ['--model'];
+  for (let i = p.args.length - 1; i >= 0; i--) {
+    const a = p.args[i];
+    if (flags.includes(a) && i + 1 < p.args.length && p.args[i + 1]) return p.args[i + 1];
+    const eq = flags.find((f) => f.startsWith('--') && a.startsWith(`${f}=`));
+    if (eq && a.length > eq.length + 1) return a.slice(eq.length + 1);
+  }
+  const name = p.runner === 'claude' ? 'ANTHROPIC_MODEL' : null;
+  const v = name ? p.env.find((e) => e.name === name && !e.secret)?.value : null;
+  return v || null;
+}

@@ -15,6 +15,7 @@ import { useProject } from '@renderer/lib/hooks/useProjects';
 import { HomeView } from '@renderer/views/home-view';
 import { ProjectView } from '@renderer/views/project-view';
 import { SettingsView } from '@renderer/views/settings-view';
+import { RuntimeBar, TaskBreadcrumb, TaskTitleActions } from '@renderer/views/task-chrome';
 import { TaskView } from '@renderer/views/task-view';
 
 const LEFT_PANEL_DEFAULT_SIZE = '20%';
@@ -91,6 +92,7 @@ const MainContent = observer(function MainContent({
   const { t } = useTranslation();
   const view = navigation.currentViewId;
   const { data: project } = useProject(view === 'project' ? navigation.currentProjectId : null);
+  const task = view === 'task' ? tasksStore.current : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -109,11 +111,16 @@ const MainContent = observer(function MainContent({
         >
           <PanelLeft className="size-4" />
         </button>
-        <span className="truncate text-sm text-foreground-muted">{view === 'project' && project
-            ? project.name
-            : view === 'task' && tasksStore.current
-              ? tasksStore.current.title
-              : t(VIEW_TITLE_KEYS[view])}</span>
+        {task ? (
+          <>
+            <TaskBreadcrumb task={task} />
+            <TaskTitleActions task={task} />
+          </>
+        ) : (
+          <span className="truncate text-sm text-foreground-muted">
+            {view === 'project' && project ? project.name : t(VIEW_TITLE_KEYS[view])}
+          </span>
+        )}
       </div>
       <div className="min-h-0 flex-1 overflow-hidden">
         <ViewSlot active={view === 'home'}>
@@ -130,6 +137,7 @@ const MainContent = observer(function MainContent({
           <ProjectView key={navigation.currentProjectId ?? ''} />
         </ViewSlot>
       </div>
+      {task && <RuntimeBar task={task} />}
     </div>
   );
 });

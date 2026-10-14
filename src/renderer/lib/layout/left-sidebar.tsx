@@ -1,8 +1,10 @@
 import { Search, Settings, SquarePen } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { navigation } from '@renderer/core/navigation';
+import { rpc } from '@renderer/lib/ipc';
 import { SidebarProjects } from '@renderer/lib/layout/sidebar-projects';
 import { cn } from '@renderer/utils/utils';
 
@@ -38,7 +40,21 @@ function NavButton({
   );
 }
 
-/** Top: new task ⌘N, search ⌘K, settings (PRD F05); below: the project → task tree. */
+/** Product name and version, styled like Yoda's sidebar-status-bar footer. */
+function SidebarStatusBar() {
+  const info = useQuery({ queryKey: ['app', 'info'], queryFn: () => rpc.app.getInfo(), staleTime: Infinity });
+  return (
+    <footer
+      data-testid="sidebar-status-bar"
+      className="flex shrink-0 items-center gap-1 border-t border-border/45 bg-background-tertiary/65 px-3 py-1.5 text-[11px]"
+    >
+      <span className="truncate font-medium text-foreground-muted">SmartDD</span>
+      <span className="shrink-0 font-mono text-[10px] text-foreground-passive">(V{info.data?.version ?? '…'})</span>
+    </footer>
+  );
+}
+
+/** Top: new task ⌘N, search ⌘K, settings (PRD F05); below: the project → task tree; footer: version. */
 export const LeftSidebar = observer(function LeftSidebar() {
   const { t } = useTranslation();
   const view = navigation.currentViewId;
@@ -71,6 +87,7 @@ export const LeftSidebar = observer(function LeftSidebar() {
         />
       </div>
       <SidebarProjects />
+      <SidebarStatusBar />
     </div>
   );
 });

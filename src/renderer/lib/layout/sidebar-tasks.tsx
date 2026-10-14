@@ -1,8 +1,9 @@
 // Row layout follows Yoda (Apache-2.0) src/renderer/lib/layout/left-sidebar task rows:
-// h-8, a 3px colour bar, actions on hover; the context menu and the ⋯ menu share one item list.
+// h-8, a status tail (agent-status-indicator / relative time) that gives way to ⋯ on hover;
+// the context menu and the ⋯ menu share one item list.
 import { Archive, ArchiveRestore, Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
-import { useState, type ComponentType, type ReactNode } from 'react';
+import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
@@ -22,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@renderer/lib/ui/menu';
+import { compactRelativeTime } from '@renderer/utils/relative-time';
 import { cn } from '@renderer/utils/utils';
 import { ConfirmDeleteDialog } from '@renderer/views/projects/form-parts';
 
@@ -63,6 +65,54 @@ function TaskMenuItems({
   );
 }
 
+/**
+ * Yoda's sidebar tail: green ring while the CLI runs, grey ring for a terminal whose CLI has
+ * exited, otherwise how long ago the task was last started.
+ */
+const TaskStatusTail = observer(function TaskStatusTail({ task }: { task: TaskView }) {
+  const { t } = useTranslation();
+  const now = useMinuteClock();
+  if (task.ptyId || tasksStore.terminals.has(task.id)) {
+    const running = Boolean(task.ptyId);
+    return (
+      <span
+        data-testid="task-status"
+        data-status={running ? 'running' : 'exited'}
+        title={running ? t('task.running') : t('task.exitedShort')}
+        className="flex size-6 shrink-0 items-center justify-center group-hover:hidden"
+      >
+        <span
+          className={cn(
+            'size-2 rounded-full border',
+            running ? 'border-green-500 bg-green-200' : 'border-foreground-passive bg-background-secondary'
+          )}
+        />
+      </span>
+    );
+  }
+  const at = task.lastLaunchedAt ?? task.createdAt;
+  return (
+    <time
+      data-testid="task-time"
+      dateTime={new Date(at).toISOString()}
+      title={new Date(at).toLocaleString()}
+      className="flex h-full shrink-0 items-center pr-1 font-mono text-xs text-foreground-passive group-hover:hidden"
+    >
+      {compactRelativeTime(at, now)}
+    </time>
+  );
+});
+
+/** Re-renders once a minute, like Yoda's RelativeTime. */
+function useMinuteClock(): number {
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  return now;
+}
+
 export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskView; indent?: boolean }) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
@@ -89,17 +139,13 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
           data-testid="sidebar-task"
           data-task-id={task.id}
           className={cn(
-            'group relative flex h-8 w-full items-center gap-2 rounded-md pr-1 text-sm text-foreground-muted hover:bg-background-2 hover:text-foreground',
+            'group flex h-8 w-full items-center gap-2 rounded-md pr-1 text-sm text-foreground-muted hover:bg-background-2 hover:text-foreground',
             indent ? 'pl-6' : 'pl-2',
             active && 'bg-background-2 text-foreground',
             task.archivedAt !== null && 'opacity-60'
           )}
           onClick={() => !editing && tasksStore.show(task.id)}
         >
-          <span
-            className={cn('absolute top-1.5 bottom-1.5 w-[3px] rounded-full', indent ? 'left-3.5' : 'left-0.5')}
-            style={{ background: task.aiProfileColor ?? 'var(--color-border)' }}
-          />
           {editing ? (
             <input
               autoFocus
@@ -119,9 +165,7 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
               {task.title}
             </span>
           )}
-          {running && !editing && (
-            <span data-testid="task-running-dot" title={t('task.running')} className="size-1.5 shrink-0 rounded-full bg-green-500 group-hover:hidden" />
-          )}
+          {!editing && <TaskStatusTail task={task} />}
           {!editing && (
             <DropdownMenu>
               <DropdownMenuTrigger
