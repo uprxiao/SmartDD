@@ -26,15 +26,3 @@ export interface ProbeResult {
   ok: boolean;
   detail: string;
 }
-
-export interface SmartddApi {
-  listSessions(): Promise<SessionRecord[]>;
-  launch(req: LaunchRequest): Promise<LaunchResult>;
-  write(ptyId: string, data: string): void;
-  resize(ptyId: string, cols: number, rows: number): void;
-  kill(ptyId: string): void;
-  runProbes(): Promise<ProbeResult[]>;
-  onData(cb: (ptyId: string, data: string) => void): () => void;
-  onExit(cb: (ptyId: string, code: number) => void): () => void;
-  onSessionUpdated(cb: (session: SessionRecord) => void): () => void;
-}

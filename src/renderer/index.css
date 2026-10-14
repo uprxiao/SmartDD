@@ -1,0 +1,262 @@
+/* Theme tokens follow Yoda (Apache-2.0) src/renderer/index.css, trimmed to what SmartDD uses. */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@xterm/xterm/css/xterm.css';
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant ylight (&:is(.ylight *));
+@custom-variant ydark (&:is(.ydark *));
+
+@theme inline {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans',
+    'Droid Sans', 'Helvetica Neue', 'PingFang SC', sans-serif;
+  --font-mono: Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  --text-code: 13px;
+  --text-code--line-height: 1.2;
+  --text-tiny: 11px;
+  --text-tiny--line-height: 1.3;
+  --text-micro: 10px;
+  --text-micro--line-height: 1.2;
+
+  --color-background: var(--background);
+  --color-background-1: var(--background-1);
+  --color-background-2: var(--background-2);
+  --color-background-3: var(--background-3);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-inverse: var(--foreground-inverse);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-passive: var(--foreground-passive);
+
+  /* shadcn-convention aliases used by the copied components. */
+  --color-muted: var(--background-2);
+  --color-muted-foreground: var(--foreground-muted);
+
+  --color-background-secondary: var(--background-secondary);
+  --color-background-secondary-1: var(--background-secondary-1);
+  --color-background-secondary-2: var(--background-secondary-2);
+  --color-background-secondary-3: var(--background-secondary-3);
+
+  --color-background-tertiary: var(--background-tertiary);
+  --color-background-tertiary-1: var(--background-tertiary-1);
+  --color-background-tertiary-2: var(--background-tertiary-2);
+  --color-background-tertiary-3: var(--background-tertiary-3);
+
+  --color-background-destructive: var(--background-destructive);
+  --color-foreground-destructive: var(--foreground-destructive);
+  --color-destructive: var(--foreground-destructive);
+
+  --color-background-quaternary: var(--background-quaternary);
+  --color-background-quaternary-1: var(--background-quaternary-1);
+  --color-background-quaternary-2: var(--background-quaternary-2);
+
+  --color-background-neutral: var(--background-neutral);
+  --color-foreground-neutral: var(--foreground-neutral);
+
+  --color-primary-button-background: var(--primary-button-background);
+  --color-primary-button-background-hover: var(--primary-button-background-hover);
+  --color-primary-button-foreground: var(--primary-button-foreground);
+  --color-primary-button-border: var(--primary-button-border);
+
+  --color-border: var(--border);
+  --color-border-1: var(--border-1);
+  --color-border-2: var(--border-2);
+  --color-border-destructive: var(--border-destructive);
+  --color-border-primary: var(--border-primary);
+
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/*
+ * A terminal is a fixed character grid, so browser typography must not
+ * compress CJK punctuation or inject script-boundary spacing.
+ */
+.xterm {
+  font-kerning: none;
+  text-autospace: no-autospace;
+  text-spacing-trim: space-all;
+}
+
+.xterm .xterm-rows {
+  background-color: var(--xterm-bg);
+}
+
+.xterm .xterm-viewport {
+  background-color: var(--xterm-bg) !important;
+  scrollbar-width: none;
+}
+.xterm .xterm-viewport::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Draggable title bar; interactive children opt out. */
+.app-drag {
+  -webkit-app-region: drag;
+}
+.app-drag button,
+.app-drag input,
+.app-drag a,
+.app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+@layer base {
+  .ylight {
+    color-scheme: light;
+    --background: color(display-p3 1 1 1);
+    --background-1: color(display-p3 0.98 0.98 0.98);
+    --background-2: color(display-p3 0.949 0.949 0.949);
+    --background-3: color(display-p3 0.918 0.918 0.918);
+
+    --foreground: color(display-p3 0.125 0.125 0.125);
+    --foreground-inverse: white;
+    --foreground-muted: color(display-p3 0.392 0.392 0.392);
+    --foreground-passive: color(display-p3 0.732 0.732 0.732);
+
+    --background-secondary: var(--background-1);
+    --background-secondary-1: var(--background);
+    --background-secondary-2: color(display-p3 0.88 0.88 0.88);
+    --background-secondary-3: color(display-p3 0.849 0.849 0.849);
+
+    --background-tertiary: color(display-p3 0.939 0.939 0.939);
+    --background-tertiary-1: color(display-p3 0.908 0.908 0.908);
+    --background-tertiary-2: color(display-p3 0.88 0.88 0.88);
+    --background-tertiary-3: color(display-p3 0.849 0.849 0.849);
+
+    --background-quaternary: color(display-p3 0.997 0.997 0.997);
+    --background-quaternary-1: var(--background-1);
+    --background-quaternary-2: var(--background-2);
+
+    --background-destructive: color(display-p3 0.995 0.971 0.971);
+    --foreground-destructive: color(display-p3 0.744 0.234 0.222);
+
+    --background-neutral: color(display-p3 0.125 0.125 0.125);
+    --foreground-neutral: color(display-p3 0.988 0.988 0.988);
+
+    --primary-button-background: color(display-p3 0.142 0.229 0.194);
+    --primary-button-background-hover: color(display-p3 0.15 0.5 0.37);
+    --primary-button-foreground: color(display-p3 0.962 0.983 0.969);
+    --primary-button-border: transparent;
+
+    --border: color(display-p3 0.88 0.88 0.88);
+    --border-1: color(display-p3 0.732 0.732 0.732);
+    --border-2: color(display-p3 0.553 0.553 0.553);
+    --border-destructive: color(display-p3 0.872 0.575 0.572);
+    --border-primary: color(display-p3 0.553 0.553 0.553);
+
+    --ring: hsl(0 0% 3.9%);
+    --radius: 0.5rem;
+
+    --selection: color(display-p3 0.709 0.843 0.976);
+    --selection-foreground: color(display-p3 0.102 0.193 0.379);
+
+    --xterm-bg: var(--background);
+    --xterm-fg: #1f2937;
+    --xterm-cursor: #1e293b;
+    --xterm-cursor-accent: #ffffff;
+    --xterm-selection-bg: rgba(96, 165, 250, 0.3);
+    --xterm-selection-fg: #0f172a;
+  }
+
+  .ydark {
+    color-scheme: dark;
+    --background: #111111;
+    --background-1: #171717;
+    --background-2: #1e1e1d;
+    --background-3: #262624;
+
+    --foreground: #e9e9e6;
+    --foreground-inverse: #111111;
+    --foreground-muted: #8c8c86;
+    --foreground-passive: #5e5e59;
+
+    --background-secondary: var(--background);
+    --background-secondary-1: var(--background-1);
+    --background-secondary-2: var(--background-2);
+    --background-secondary-3: var(--background-3);
+
+    --background-tertiary: var(--background);
+    --background-tertiary-1: var(--background-1);
+    --background-tertiary-2: var(--background-2);
+    --background-tertiary-3: var(--background-3);
+
+    --background-quaternary: var(--background-1);
+    --background-quaternary-1: var(--background-2);
+    --background-quaternary-2: var(--background-3);
+
+    --background-destructive: #432723;
+    --foreground-destructive: #e06c5e;
+
+    --background-neutral: #e9e9e6;
+    --foreground-neutral: #111111;
+
+    --primary-button-background: #7fe0a7;
+    --primary-button-background-hover: #93eab6;
+    --primary-button-foreground: #0e1f16;
+    --primary-button-border: #5ec98f;
+
+    --border: #262624;
+    --border-1: #31312e;
+    --border-2: #403f3b;
+    --border-destructive: #9f544a;
+    --border-primary: #403f3b;
+
+    --ring: #403f3b;
+    --radius: 0.5rem;
+
+    --selection: #4e8364;
+    --selection-foreground: #e9e9e6;
+
+    --xterm-bg: var(--background-1);
+    --xterm-fg: var(--foreground);
+    --xterm-cursor: var(--foreground);
+    --xterm-cursor-accent: var(--background-1);
+    --xterm-selection-bg: #4e8364;
+    --xterm-selection-fg: #e9e9e6;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--selection) 35%, transparent);
+    color: var(--selection-foreground);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+}

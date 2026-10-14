@@ -6,14 +6,15 @@ import { join } from 'node:path';
 import { parseCodexSessionMeta, pickCodexSession, type CodexRolloutMeta } from '@shared/codex-session';
 import { buildRunnerArgs } from '@shared/runner-args';
 import type { LaunchRequest, LaunchResult, SessionRecord } from '@shared/types';
-import { claimedNativeIds, insertSession, setNativeSessionId, type Db } from './db';
+import type { AppDb } from './db/client';
+import { claimedNativeIds, insertSession, setNativeSessionId } from './db/sessions-repo';
 import type { PtyManager } from './pty-manager';
 
 export class SessionService {
   private readonly codexWatchers = new Map<string, NodeJS.Timeout>();
 
   constructor(
-    private readonly db: Db,
+    private readonly db: AppDb,
     private readonly ptys: PtyManager,
     private readonly onUpdated: (s: SessionRecord) => void
   ) {}

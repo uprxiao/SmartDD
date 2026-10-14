@@ -1,27 +1,31 @@
+import { eq } from 'drizzle-orm';
 import { safeStorage } from 'electron';
-import type { Db } from './db';
+import type { AppDb } from './db/client';
+import { appSecrets } from './db/schema';
 
 // The master key lives in the macOS Keychain ("<app name> Safe Storage"); SQLite only holds ciphertext.
 export class SecretsStore {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: AppDb) {}
 
   set(key: string, secret: string): void {
     this.assertAvailable();
     const enc = safeStorage.encryptString(secret).toString('base64');
     this.db
-      .prepare('INSERT INTO app_secrets (key, secret) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET secret = excluded.secret')
-      .run(key, enc);
+      .insert(appSecrets)
+      .values({ key, secret: enc })
+      .onConflictDoUpdate({ target: appSecrets.key, set: { secret: enc } })
+      .run();
   }
 
   get(key: string): string | null {
-    const row = this.db.prepare('SELECT secret FROM app_secrets WHERE key = ?').get(key) as { secret: string } | undefined;
+    const row = this.db.select().from(appSecrets).where(eq(appSecrets.key, key)).get();
     if (!row) return null;
     this.assertAvailable();
     return safeStorage.decryptString(Buffer.from(row.secret, 'base64'));
   }
 
   delete(key: string): void {
-    this.db.prepare('DELETE FROM app_secrets WHERE key = ?').run(key);
+    this.db.delete(appSecrets).where(eq(appSecrets.key, key)).run();
   }
 
   private assertAvailable(): void {

@@ -1,22 +1,15 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
-import type { SmartddApi } from '@shared/types';
+import type { ElectronAPI } from './api';
 
-function subscribe<A extends unknown[]>(channel: string, cb: (...args: A) => void): () => void {
-  const listener = (_e: IpcRendererEvent, ...args: unknown[]) => cb(...(args as A));
-  ipcRenderer.on(channel, listener);
-  return () => ipcRenderer.off(channel, listener);
-}
-
-const api: SmartddApi = {
-  listSessions: () => ipcRenderer.invoke('sessions:list'),
-  launch: (req) => ipcRenderer.invoke('sessions:launch', req),
-  write: (id, data) => ipcRenderer.send('pty:write', id, data),
-  resize: (id, cols, rows) => ipcRenderer.send('pty:resize', id, cols, rows),
-  kill: (id) => ipcRenderer.send('pty:kill', id),
-  runProbes: () => ipcRenderer.invoke('probes:run'),
-  onData: (cb) => subscribe('pty:data', cb),
-  onExit: (cb) => subscribe('pty:exit', cb),
-  onSessionUpdated: (cb) => subscribe('session:updated', cb),
+// Same generic bridge as Yoda: the typed RPC client and event emitter are built on top in the renderer.
+const api: ElectronAPI = {
+  invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
+  eventSend: (channel, data) => ipcRenderer.send(channel, data),
+  eventOn: (channel, cb) => {
+    const wrapped = (_: IpcRendererEvent, data: unknown) => cb(data);
+    ipcRenderer.on(channel, wrapped);
+    return () => ipcRenderer.removeListener(channel, wrapped);
+  },
 };
 
-contextBridge.exposeInMainWorld('smartdd', api);
+contextBridge.exposeInMainWorld('electronAPI', api);

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { promisify } from 'node:util';
 import { safeStorage } from 'electron';
 import type { ProbeResult } from '@shared/types';
-import type { Db } from './db';
+import type { DbClient } from './db/client';
 import { PtyManager } from './pty-manager';
 import { SecretsStore } from './secrets';
 
@@ -35,9 +35,10 @@ function runInPty(command: string, args: string[], env: Record<string, string>, 
   });
 }
 
-export async function runProbes(db: Db, dbFile: string, baseEnv: Record<string, string>): Promise<ProbeResult[]> {
+export async function runProbes(client: DbClient, dbFile: string, baseEnv: Record<string, string>): Promise<ProbeResult[]> {
   const results: ProbeResult[] = [];
   const home = baseEnv.HOME || process.cwd();
+  const db = client.sqlite;
 
   results.push(
     await probe('P1 better-sqlite3', () => {
@@ -62,7 +63,7 @@ export async function runProbes(db: Db, dbFile: string, baseEnv: Record<string, 
   results.push(
     await probe('P5 safeStorage', () => {
       if (!safeStorage.isEncryptionAvailable()) throw new Error('isEncryptionAvailable() = false');
-      const store = new SecretsStore(db);
+      const store = new SecretsStore(client.db);
       const plain = `probe-secret-${Date.now()}`;
       store.set('probe', plain);
       const back = store.get('probe');
