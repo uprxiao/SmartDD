@@ -335,7 +335,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 - 运行器和 AI 配置分开：运行器是程序，AI 配置是“程序加一组环境”。
 - 令牌不明文保存、不明文显示、不写入日志。导入后建议提醒用户处理 `.zshrc` 中的明文。
 - 不得推定某个 AI 配置具备 Claude 的全部原生功能；能力差异以实际测试为准。
-- 能否跨 AI 配置 resume 同一会话，待 M0 验证，未验证前界面不提供该选项。
+- 跨 AI 配置 resume：M0 已验证 CDSH（DeepSeek）与 claude 互相 resume 同一 Claude Code 会话可用，含思考块也不报错（见 M0 报告 P4）。界面可提供“换 AI 配置恢复”，但须提示：不同配置的模型能力不同，且只验证过这两套配置。
 
 ### 4.2 终端会话与会话树（F05）
 
@@ -361,6 +361,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 - 若无法获取某会话的原生 session ID，须标记“不可恢复”并说明原因，不得假装可恢复。
 - 会话只保存元数据（标题、项目、AI 配置、目录、session ID、时间、状态），**不持久化终端全文**，以避免密钥落盘（建议，待确认）。
 - Claude Code、Codex 获取 session ID 与 resume 的具体方式，以 M0 验证结果为准。
+- 两个 CLI 都是在**第一条用户消息之后**才写会话文件。拉起后未发过消息的会话没有可恢复的内容：Claude 会话再次打开时应沿用原 ID 以 `--session-id` 新开，而不是 `--resume`；Codex 会话标记为“未开始”。
 
 ## 5. Skill 与配置传递
 
@@ -381,7 +382,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 - 不覆盖用户现有的 Skill 目录和内容；内置 Skill 与用户自有 Skill 并存时须显示来源。
 - **不向代码目录写入**，因为 SVN 工作副本中新增文件会出现在 `svn status` 里，有被误提交的风险。装载方式按 M0 验证结果（见 M0 报告 P6/P8）：
   - Claude Code：把内置 Skill 打成插件放在 Desktop 数据目录，拉起时用 `--plugin-dir` 指定，只对该会话生效；Skill 名带插件前缀（如 `smartdd:xxx`）。
-  - Codex：没有按会话添加 Skill 目录的参数。建议投影到用户级 `~/.agents/skills`，对未在该项目启用的 Skill 用 `-c skills.config=[{path=…,enabled=false}]` 按会话停用（待确认）。
+  - Codex：没有按会话添加 Skill 目录的参数。投影到用户级 `~/.agents/skills`，对未在该项目启用的 Skill 用 `-c skills.config=[{path=…,enabled=false}]` 按会话停用（用户已于 2026-10-14 确认）。投影只增删 Desktop 自己的 Skill，不动用户已有目录。
   - MCP：Claude 用 `--mcp-config`，Codex 用 `-c mcp_servers.<名称>.*`，均按会话注入，不改全局配置。
 - 一期内置清单以现有 Skill 为基础，具体清单待确认。
 - 他人安装 Desktop 后默认可用的分发能力放二期，一期只保证结构上不排斥。
@@ -502,9 +503,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 | --- | --- | --- |
 | 验收功能 | 验收项目已确认为 AIS；具体调查哪个功能待用户选定 | V5 的验收内容 |
 | 内置 Skill 清单 | 以现有数据库、SSH 等 Skill 为基础；个人数据须剥离 | F06 的范围 |
-| Skill 装载位置 | M0 已验证：Claude 用 `--plugin-dir` 按会话装载；Codex 无按会话添加的参数，建议投影到用户级 `~/.agents/skills`，再用 `-c skills.config` 按会话停用；MCP 两边都能按会话注入；均不写代码目录，见 M0 报告 P6/P8 | Codex 方案会写用户级目录，需确认 |
 | 数据库类型范围 | MySQL 必需；PostgreSQL、盘维取决于现有 Skill | F02 的类型与测试 |
-| session ID 与跨配置 resume | 机制已在 M0 验证（Claude 预先指定 ID，Codex 扫描发现），跨配置 resume 待实测；见 M0 报告 | F05 的可恢复性 |
 | `servers.json` 明文策略 | 一期兼容；投影文件权限受限并在退出时清理（建议） | 密钥安全与 V6 |
 | 是否持久化终端全文 | 建议不持久化 | 隐私与 V6 |
 | `.zshrc` 账号导入 | 建议提供一次性导入，展示脱敏预览 | F04 的体验 |
