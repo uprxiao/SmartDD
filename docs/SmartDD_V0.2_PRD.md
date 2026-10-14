@@ -499,7 +499,8 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 | 内置 Skill 清单 | 以现有数据库、SSH 等 Skill 为基础；个人数据须剥离 | F06 的范围 |
 | Skill 装载位置 | 用户级目录、项目目录或运行器参数；默认不写入代码目录 | 是否污染 SVN 工作副本 |
 | 数据库类型范围 | MySQL 必需；PostgreSQL、盘维取决于现有 Skill | F02 的类型与测试 |
-| session ID 与跨配置 resume | Claude Code、Codex 的具体机制待 M0 验证 | F05 的可恢复性 |
+| session ID 与跨配置 resume | 机制已在 M0 验证（Claude 预先指定 ID，Codex 扫描发现），跨配置 resume 待实测；见 M0 报告 | F05 的可恢复性 |
+| 密钥存储方式 | M0 已验证 safeStorage 方案（SQLite 存密文，主密钥由 Keychain 托管），建议替代逐条写 Keychain | F09、V6 |
 | `servers.json` 明文策略 | 一期兼容；投影文件权限受限并在退出时清理（建议） | 密钥安全与 V6 |
 | 是否持久化终端全文 | 建议不持久化 | 隐私与 V6 |
 | `.zshrc` 账号导入 | 建议提供一次性导入，展示脱敏预览 | F04 的体验 |
