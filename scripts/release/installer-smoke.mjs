@@ -1,7 +1,7 @@
 // Verify payloads extracted from the new installer formats on their native runner.
 // These checks do not claim desktop integration or a complete business-flow test.
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { installerName } from './artifacts.mjs';
@@ -34,7 +34,29 @@ export function verifyInstallerPayloads(output, target, version, env) {
       const extracted = join(scratch, format);
       mkdirSync(extracted);
       if (format === 'msi') {
-        run('msiexec.exe', ['/a', installer, '/qn', `TARGETDIR=${extracted}`, '/l*v', join(scratch, 'msi.log')], { timeout: 180_000 });
+        // MSI parses PROPERTY="value with spaces", unlike normal Windows argv.
+        // Node's default quoting wraps the whole PROPERTY=value argument and can
+        // open an invisible usage dialog on CI. Preserve MSI's own quoting.
+        // https://learn.microsoft.com/en-us/windows/win32/msi/command-line-options
+        const log = join(scratch, 'msi.log');
+        const quote = (value) => {
+          assert(!/["\r\n]/.test(value), 'Unexpected character in MSI path');
+          return `"${value}"`;
+        };
+        try {
+          run('msiexec.exe', ['/a', quote(installer), '/qn', '/norestart', `TARGETDIR=${quote(extracted)}`, '/l*v!', quote(log)], {
+            timeout: 180_000, windowsVerbatimArguments: true, windowsHide: true,
+          });
+        } catch (error) {
+          if (existsSync(log)) {
+            const bytes = readFileSync(log);
+            const text = bytes.toString(bytes[0] === 0xff && bytes[1] === 0xfe ? 'utf16le' : 'utf8');
+            console.error(text.split(/\r?\n/).slice(-60).join('\n'));
+          } else {
+            console.error('MSI produced no log; check its command-line parsing before changing the timeout.');
+          }
+          throw error;
+        }
       } else if (format === 'AppImage') {
         // Extraction does not need FUSE or a display server on the build runner.
         run(installer, ['--appimage-extract'], { cwd: extracted, stdio: 'pipe', timeout: 120_000 });

@@ -7,6 +7,7 @@
 - 接入用户选定的橙色蚂蚁举重 Logo，覆盖应用页面、开发模式 Dock，以及 Mac/Windows/Linux 安装包图标。
 - 对照本地 Yoda 增加 Windows x64 MSI，以及 Linux x64 AppImage、DEB、RPM；保留 Mac arm64/x64 DMG 与 Windows EXE，共七个安装包。
 - 新增 Ubuntu 构建任务；Windows MSI 和三个 Linux 格式必须解出真实应用并通过版本、架构、SQLite、PTY 检查，再进入 Release。完整性检查覆盖全部格式、来源提交与 SHA-256，缺包禁止发布。
+- MSI 自动验证使用 Windows Installer 所需的属性值引号，支持含空格的临时解包目录，并在失败时输出安装器日志。
 - 继续采用无签名、无公证的个人自测预发布。Windows 和 Linux 为实验性安装包，桌面安装升级、终端、CLI、Skill 和系统安全存储的完整业务验收尚未完成；不代表稳定支持。
 - 自动更新仍是 PRD 中的后续功能；本版提供手动下载。Mac 网络下载后首次打开的系统安全限制仍适用。
 
