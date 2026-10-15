@@ -115,6 +115,14 @@ function artifactsFixture(t) {
   return dir;
 }
 
+test('installer filenames match native package architecture conventions', () => {
+  assert.deepEqual(targets.flatMap((target) => target.formats.map((format) => installerName('0.0.3', target, format))), [
+    'SmartDD-0.0.3-mac-arm64.dmg', 'SmartDD-0.0.3-mac-x64.dmg',
+    'SmartDD-0.0.3-win-x64.exe', 'SmartDD-0.0.3-win-x64.msi',
+    'SmartDD-0.0.3-linux-x86_64.AppImage', 'SmartDD-0.0.3-linux-amd64.deb', 'SmartDD-0.0.3-linux-x86_64.rpm',
+  ]);
+});
+
 test('all seven installers must match their recorded checksums and commit', (t) => {
   const dir = artifactsFixture(t);
   const result = verifyArtifacts(dir, '0.0.1', 'commit-a');
@@ -156,8 +164,8 @@ test('preview permits unsigned assets while stable still requires signing', (t) 
 
 test('missing MSI or Linux formats and altered manifest entries block publication', (t) => {
   const dir = artifactsFixture(t);
-  const required = ['SmartDD-0.0.1-win-x64.msi', 'SmartDD-0.0.1-linux-x64.AppImage',
-    'SmartDD-0.0.1-linux-x64.deb', 'SmartDD-0.0.1-linux-x64.rpm'];
+  const required = ['SmartDD-0.0.1-win-x64.msi', 'SmartDD-0.0.1-linux-x86_64.AppImage',
+    'SmartDD-0.0.1-linux-amd64.deb', 'SmartDD-0.0.1-linux-x86_64.rpm'];
   for (const file of required) {
     const path = join(dir, file);
     const original = readFileSync(path);

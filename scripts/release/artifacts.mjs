@@ -11,7 +11,10 @@ export const targets = [
 ];
 export const installerName = (version, target, format) => {
   if (!target.formats.includes(format)) throw new Error(`Unexpected installer format: ${format}`);
-  return `SmartDD-${version}-${target.platform}-${target.arch}.${format}`;
+  // electron-builder uses the native package convention in its ${arch} macro.
+  const arch = target.platform === 'linux' && target.arch === 'x64'
+    ? (format === 'deb' ? 'amd64' : 'x86_64') : target.arch;
+  return `SmartDD-${version}-${target.platform}-${arch}.${format}`;
 };
 export const manifestName = (target) => `manifest-${target.platform}-${target.arch}.json`;
 const digest = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
