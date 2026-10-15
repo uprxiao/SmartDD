@@ -16,7 +16,7 @@ export function stateRootFor(runner: Runner, profileEnv: Record<string, string>,
 }
 
 // Claude stores <root>/projects/<cwd with every non-alphanumeric char replaced by "->/<id>.jsonl.
-const encodeClaudeDir = (cwd: string) => cwd.replace(/[^a-zA-Z0-9]/g, '-');
+export const encodeClaudeDir =(cwd: string) => cwd.replace(/[^a-zA-Z0-9]/g, '-');
 
 /** The session file's path, or null while Claude has not written it. `scan` also looks in every project folder. */
 export function claudeSessionFile(root: string, cwd: string, sessionId: string, scan = true): string | null {

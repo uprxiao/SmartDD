@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { ProfileCheckCategory } from '@shared/ai-profiles';
@@ -8,12 +8,14 @@ import type { Runner } from '@shared/types';
 import { PARENT_AGENT_VARS, planLaunchEnv } from '../../launch-env';
 import { shellWrapped } from '../../pty-manager';
 import { redact } from '../connections/redact';
+import { encodeClaudeDir, stateRootFor } from '../tasks/native-sessions';
 import type { ResolvedProfile } from './ai-profile-service';
 import { classifyText, pickReason } from './health-classify';
 
 // One real round trip: the profile's CLI, started exactly like a task (login shell, profile
 // variables re-exported after the rc files), asked to echo a random code. Non-interactive flags
-// as in Yoda's rewritePrompt.ts; nothing is saved to the CLI's session history.
+// as in Yoda's rewritePrompt.ts; nothing is saved to the CLI's session history, and the empty
+// project folder Claude still creates for the check directory is removed afterwards.
 
 export const TEST_TIMEOUT_MS = 60_000;
 const OUTPUT_MAX = 64 * 1024;
@@ -38,6 +40,26 @@ const TEST_ENV: Record<Runner, Record<string, string>> = {
   codex: {},
 };
 
+/** Whether the tree holds nothing but (empty) directories. */
+function onlyDirs(dir: string): boolean {
+  return readdirSync(dir, { withFileTypes: true }).every((e) => e.isDirectory() && onlyDirs(join(dir, e.name)));
+}
+
+/**
+ * Even with --no-session-persistence Claude creates <config>/projects/<cwd>/memory/ for the
+ * check directory. Remove it — but only while it holds no file, so nothing real is ever lost.
+ */
+export function removeClaudeTrace(configDir: string, cwds: string[]): void {
+  for (const cwd of new Set(cwds)) {
+    const dir = join(configDir, 'projects', encodeClaudeDir(cwd));
+    try {
+      if (existsSync(dir) && onlyDirs(dir)) rmSync(dir, { recursive: true });
+    } catch {
+      // Best effort: a leftover empty folder is harmless.
+    }
+  }
+}
+
 export interface TestDeps {
   baseEnv: Record<string, string>;
   timeoutMs?: number;
@@ -56,6 +78,8 @@ export function runProfileTest(profile: ResolvedProfile, secrets: string[], d: T
   const timeoutMs = d.timeoutMs ?? TEST_TIMEOUT_MS;
   // An empty directory: no project instructions, nothing for the CLI to trust or touch.
   const cwd = mkdtempSync(join(tmpdir(), 'smartdd-check-'));
+  // Claude names its project folder after the resolved path (/var → /private/var on macOS).
+  const cwds = [cwd, realpathSync(cwd)];
   const started = Date.now();
   const scrub = (s: string) => redact(s, secrets);
 
@@ -69,6 +93,7 @@ export function runProfileTest(profile: ResolvedProfile, secrets: string[], d: T
       settled = true;
       clearTimeout(timer);
       rmSync(cwd, { recursive: true, force: true });
+      if (profile.runner === 'claude') removeClaudeTrace(stateRootFor('claude', profile.env, base), cwds);
       resolve({ ...r, message: scrub(r.message), ms: Date.now() - started });
     };
     // Own process group, so a timeout also stops what the shell started.

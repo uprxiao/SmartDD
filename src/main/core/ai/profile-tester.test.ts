@@ -14,6 +14,7 @@ const FAKE = `#!/bin/sh
 last=""; for a in "$@"; do last="$a"; done
 code=$(printf "%s" "$last" | grep -o 'SMARTDD-OK-[a-z0-9]*')
 case "$FAKE_MODE" in
+  trace) p="$CLAUDE_CONFIG_DIR/projects/$(pwd -P | sed 's/[^a-zA-Z0-9]/-/g')"; mkdir -p "$p/memory"; [ -n "$KEEP" ] && touch "$p/s.jsonl"; echo "$code" ;;
   ok) echo "noise before"; echo "$code key=$ANTHROPIC_API_KEY retries=$CLAUDE_CODE_MAX_RETRIES args=$*" ;;
   auth) echo "Invalid API key · Fix external API key"; echo "debug: using $ANTHROPIC_API_KEY" >&2; exit 1 ;;
   echo-stderr) echo "user"; echo "$last" >&2; echo "ERROR: unexpected status 402 Payment Required: Insufficient Balance" >&2; exit 1 ;;
@@ -72,6 +73,16 @@ describe('runProfileTest', () => {
     writeFileSync(join(bin, 'claude'), '#!/bin/sh\necho "key=$ANTHROPIC_API_KEY retries=$CLAUDE_CODE_MAX_RETRIES print=$1"; exit 3\n');
     const r = await runProfileTest(profile('x', { env: { ANTHROPIC_API_KEY: 'profile-key-1' } }), [], deps());
     expect(r).toMatchObject({ category: 'other', message: 'key=profile-key-1 retries=0 print=--print' });
+  });
+
+  it('leaves no project folder behind in the Claude config, unless it holds a file', async () => {
+    const config = join(home, 'claude-config');
+    const run = (keep: boolean) =>
+      runProfileTest(profile('trace', { env: { FAKE_MODE: 'trace', CLAUDE_CONFIG_DIR: config, ...(keep ? { KEEP: '1' } : {}) } }), [], deps());
+    expect((await run(false)).category).toBe('ok');
+    expect(readdirSync(join(config, 'projects'))).toEqual([]);
+    await run(true);
+    expect(readdirSync(join(config, 'projects'))).toHaveLength(1);
   });
 
   it('classifies an auth failure and redacts the secret', async () => {
