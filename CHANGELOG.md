@@ -1,6 +1,6 @@
 # Changelog
 
-以下为待发布版本说明；版本是否已发布以 GitHub Release 为准。
+版本是否已发布以 GitHub Release 为准。
 
 ## 0.0.1
 
@@ -9,4 +9,6 @@
 - 项目 Skill、MCP 和配置注入；完成 Mac 上的 AIS 只读数据库与 SSH 调查验收。
 - 增加 Mac arm64、Mac x64、Windows x64 构建配置，以及标签触发的发布流程。
 
-发布前验收状态：Mac arm64 是目前完成真实业务验收的平台；Mac x64、Windows x64 安装包与云端工作流仍需实测。Windows 终端启动、CLI 查找和 SSH Skill 的系统适配尚未完成，不能将构建成功当作 Windows 功能已通过。正式发布前更新本段为实际支持范围和验收结果。
+此版本为个人自测用的 **预发布版本**，无 Apple Developer ID 签名和公证；从网络下载后 macOS 可能拦截首次打开。Apple 签名与公证列入对外正式分发前的待办。
+
+平台验收：Mac arm64 已完成真实业务流程与本机 DMG 安装内容检查；Mac x64 尚未完成完整业务验收。Windows 为实验性构建，终端启动、CLI 查找和 SSH Skill 的系统适配尚未完成。三个目标的构建与包内 SQLite/PTY 检查由本次 GitHub Actions 执行；构建成功不代表未验收的业务功能可用。

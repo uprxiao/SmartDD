@@ -1,8 +1,9 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { isMain, readJson, root, run } from './common.mjs';
 import { nextTag, parseVersion } from './version.mjs';
+import { releasePolicy } from './policy.mjs';
 
 export function releaseNotes(tag, packageVersion, changelog) {
   if (!tag?.startsWith('v')) throw new Error('Release tag must start with v');
@@ -37,6 +38,8 @@ if (isMain(import.meta.url)) {
   const tag = values.tag ?? process.env.SMARTDD_RELEASE_TAG;
   const notes = releaseNotes(tag, readJson(join(root, 'package.json')).version, readFileSync(join(root, 'CHANGELOG.md'), 'utf8'));
   if (values.git) verifyTagCommit(tag);
+  const policy = releasePolicy();
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `channel=${policy.channel}\nrequire_signing=${policy.requireMacSigning}\n`);
   if (values.notes) writeFileSync(values.notes, notes);
-  console.log(`Release metadata verified: ${tag}`);
+  console.log(`Release metadata verified: ${tag} (${policy.channel})`);
 }

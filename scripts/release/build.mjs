@@ -29,8 +29,8 @@ if (electron.arch !== target.arch || electron.platform !== platform || electron.
   throw new Error('Installed Electron does not match the build target');
 }
 const signed = process.env.SMARTDD_SIGN === '1';
-if (process.env.SMARTDD_RELEASE === '1' && target.platform === 'mac' && !signed) {
-  throw new Error('Public macOS release requires MAC_CERTIFICATE and notarization credentials; manual trial builds may be unsigned');
+if (process.env.SMARTDD_REQUIRE_MAC_SIGNING === '1' && target.platform === 'mac' && !signed) {
+  throw new Error('Stable macOS release requires MAC_CERTIFICATE and notarization credentials; preview and manual builds may be unsigned');
 }
 if (signed) {
   const required = ['CSC_LINK', 'CSC_KEY_PASSWORD', ...(target.platform === 'mac' ? ['APPLE_ID', 'APPLE_APP_SPECIFIC_PASSWORD', 'APPLE_TEAM_ID'] : [])];

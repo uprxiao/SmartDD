@@ -5,6 +5,7 @@ import { parseArgs } from 'node:util';
 import { verifyArtifacts } from './artifacts.mjs';
 import { readJson, root, run } from './common.mjs';
 import { releaseNotes, verifyTagCommit } from './metadata.mjs';
+import { releasePolicy } from './policy.mjs';
 
 const { values } = parseArgs({ options: { artifacts: { type: 'string' } } });
 if (!values.artifacts) throw new Error('--artifacts is required');
@@ -13,7 +14,8 @@ const tag = process.env.SMARTDD_RELEASE_TAG;
 const version = readJson(join(root, 'package.json')).version;
 const notes = releaseNotes(tag, version, readFileSync(join(root, 'CHANGELOG.md'), 'utf8'));
 const commit = verifyTagCommit(tag);
-const { files, checksums } = verifyArtifacts(dir, version, commit);
+const policy = releasePolicy();
+const { files, checksums } = verifyArtifacts(dir, version, commit, policy);
 const repository = process.env.GITHUB_REPOSITORY;
 if (!repository) throw new Error('GITHUB_REPOSITORY is required');
 const gh = (args) => run('gh', [...args, '--repo', repository]);
@@ -30,4 +32,4 @@ if (existing.status !== 0) gh(['release', 'create', tag, '--verify-tag', '--draf
 else gh(['release', 'edit', tag, '--notes-file', notesFile]);
 // Replacement is restricted to an existing draft, to support a failed upload retry.
 gh(['release', 'upload', tag, ...files, sumsFile, '--clobber']);
-gh(['release', 'edit', tag, '--draft=false', '--latest']);
+gh(['release', 'edit', tag, '--draft=false', `--prerelease=${policy.prerelease}`, `--latest=${!policy.prerelease}`]);

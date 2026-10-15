@@ -9,6 +9,7 @@ import { installerName, manifestName, targets, verifyArtifacts, writeManifest } 
 import { root } from './common.mjs';
 import { releaseNotes, verifyTagCommit } from './metadata.mjs';
 import { nextTag, nextVersion, parseVersion } from './version.mjs';
+import { releasePolicy } from './policy.mjs';
 
 test('custom version carry and numeric tag ordering', () => {
   for (const [before, after] of [
@@ -108,6 +109,21 @@ test('missing platforms, dirty builds and unsigned Mac builds block publication'
   assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a'), /ENOENT/);
 });
 
+test('preview permits unsigned assets while stable still requires signing', (t) => {
+  assert.throws(() => releasePolicy({}), /channel/);
+  assert.throws(() => releasePolicy({ channel: 'unknown' }), /channel/);
+  const preview = releasePolicy({ channel: 'preview' });
+  const stable = releasePolicy({ channel: 'stable' });
+  assert.equal(preview.prerelease, true);
+  assert.equal(stable.prerelease, false);
+  const dir = artifactsFixture(t);
+  for (const target of targets) writeManifest(dir, target, '0.0.1', 'commit-a', { signed: false, dirty: false });
+  assert.equal(verifyArtifacts(dir, '0.0.1', 'commit-a', preview).files.length, 6);
+  assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a', stable), /signing/);
+  writeManifest(dir, targets[0], '0.0.1', 'commit-a', { signed: false, dirty: true });
+  assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a', preview), /provenance/);
+});
+
 test('workflow entry points keep builds read-only and publication dependent on all builds', () => {
   const load = (path) => {
     const doc = parseDocument(readFileSync(join(root, path), 'utf8'), { uniqueKeys: true });
@@ -126,6 +142,6 @@ test('workflow entry points keep builds read-only and publication dependent on a
   assert.equal(release.permissions.contents, 'read');
   assert.equal(release.jobs.publish.permissions.contents, 'write');
   assert.deepEqual(release.jobs.publish.needs, ['metadata', 'build']);
-  assert.equal(release.jobs.build.with.release, true);
+  assert.equal(release.jobs.build.with.require_mac_signing, "${{ needs.metadata.outputs.require_signing == 'true' }}");
   assert.equal(release.concurrency['cancel-in-progress'], false);
 });

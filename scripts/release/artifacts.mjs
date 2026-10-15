@@ -23,7 +23,7 @@ export function writeManifest(dir, target, version, commit, { signed, dirty }) {
   return manifest;
 }
 
-export function verifyArtifacts(dir, version, commit) {
+export function verifyArtifacts(dir, version, commit, { requireMacSigning = true } = {}) {
   const files = [];
   const sums = [];
   for (const target of targets) {
@@ -34,7 +34,7 @@ export function verifyArtifacts(dir, version, commit) {
         manifest.verification !== 'packaged-electron-sqlite-pty') {
       throw new Error(`Artifact provenance mismatch: ${manifestName(target)}`);
     }
-    if (target.platform === 'mac' && manifest.signed !== true) throw new Error('Public macOS releases require signing and notarization');
+    if (requireMacSigning && target.platform === 'mac' && manifest.signed !== true) throw new Error('Stable macOS releases require signing and notarization');
     const file = join(dir, expected);
     if (statSync(file).size === 0 || statSync(file).size !== manifest.size || digest(file) !== manifest.sha256) {
       throw new Error(`Artifact checksum mismatch: ${expected}`);
