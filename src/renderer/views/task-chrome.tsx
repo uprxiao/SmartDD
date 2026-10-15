@@ -1,6 +1,6 @@
-// Title bar and runtime bar of the task page, after Yoda (Apache-2.0): the breadcrumb + ⓘ task
+// Title bar and runtime bar of the task page, after Yoda (Apache-2.0): the task tabs + ⓘ task
 // details of its titlebar, and src/renderer/app/workspace-runtime-bar.tsx (runtime-item.tsx).
-import { Info, Play, Square, TriangleAlert } from 'lucide-react';
+import { Info, Play, Plus, Square, TriangleAlert, X } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,25 +24,71 @@ const RUNNER_LOGOS: Record<Runner, string> = { claude: claudeLogo, codex: openai
 /** The CLI exited but its terminal is still on screen: resume or switch from here. */
 const canRestartInPlace = (task: Task) => !task.ptyId && tasksStore.terminals.has(task.id) && task.recovery !== 'unrecoverable';
 
-export const TaskBreadcrumb = observer(function TaskBreadcrumb({ task }: { task: Task }) {
+/**
+ * Open task tabs, after Yoda's titlebar tabs. Clicking a sidebar task opens or focuses its tab;
+ * closing a tab ends that task's session (PRD F05).
+ */
+export const TaskTabs = observer(function TaskTabs() {
   const { t } = useTranslation();
+  const tabs = tasksStore.openTabs;
+  const currentId = navigation.currentTaskId;
   return (
-    <div data-testid="task-breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
-      {task.projectId ? (
-        <button
-          type="button"
-          onClick={() => navigation.openProject(task.projectId!)}
-          className="max-w-48 shrink-0 truncate text-foreground-muted hover:text-foreground"
-        >
-          {task.projectName}
-        </button>
-      ) : (
-        <span className="shrink-0 text-foreground-muted">{t('task.noProject')}</span>
-      )}
-      <span className="shrink-0 text-foreground-passive">/</span>
-      <span className="truncate text-foreground" title={task.title}>
-        {task.title}
-      </span>
+    <div data-testid="task-tabs" role="tablist" className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
+      {tabs.map((tab) => {
+        const active = tab.id === currentId;
+        const label = `${tab.projectName ?? t('task.noProject')} / ${tab.title}`;
+        return (
+          <div
+            key={tab.id}
+            role="tab"
+            aria-selected={active}
+            data-testid="task-tab"
+            data-task={tab.id}
+            data-active={active}
+            title={label}
+            onClick={() => tasksStore.show(tab.id)}
+            onAuxClick={(e) => {
+              // Middle click closes, as in browsers.
+              if (e.button === 1) void tasksStore.closeTab(tab.id);
+            }}
+            className={cn(
+              'app-no-drag group flex h-7 max-w-52 min-w-24 shrink-0 cursor-default items-center gap-1.5 rounded-md border pr-1 pl-2 text-xs',
+              active ? 'border-border bg-background-2 text-foreground' : 'border-transparent text-foreground-muted hover:bg-background-2/60 hover:text-foreground'
+            )}
+          >
+            <span
+              data-testid="task-tab-status"
+              data-status={tab.ptyId ? 'running' : 'stopped'}
+              className={cn('size-2 shrink-0 rounded-full border', tab.ptyId ? 'border-green-500 bg-green-200' : 'border-foreground-passive')}
+            />
+            <span className="min-w-0 flex-1 truncate">{tab.title}</span>
+            <button
+              type="button"
+              data-testid="task-tab-close"
+              title={t('nav.closeTab')}
+              onClick={(e) => {
+                e.stopPropagation();
+                void tasksStore.closeTab(tab.id);
+              }}
+              className={cn(
+                'flex size-4 shrink-0 items-center justify-center rounded text-foreground-muted hover:bg-background-3 hover:text-foreground',
+                !active && 'opacity-0 group-hover:opacity-100'
+              )}
+            >
+              <X className="size-3" />
+            </button>
+          </div>
+        );
+      })}
+      <button
+        type="button"
+        data-testid="task-tab-new"
+        title={t('nav.newTask')}
+        onClick={() => navigation.newTask(tasksStore.current?.projectId ?? undefined)}
+        className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-background-2 hover:text-foreground"
+      >
+        <Plus className="size-4" />
+      </button>
     </div>
   );
 });

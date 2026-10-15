@@ -38,6 +38,20 @@ export interface LaunchEnvPlan {
   injectedNames: string[];
 }
 
+/**
+ * What a terminal app sets for the programs inside, as Yoda's pty-env does. Without COLORTERM
+ * Claude Code falls back to 256 colours; an app started from Finder has no LANG, so the CLI
+ * would not assume UTF-8.
+ */
+export function terminalIdentity(env: Record<string, string>): Record<string, string> {
+  return {
+    TERM: 'xterm-256color',
+    COLORTERM: 'truecolor',
+    TERM_PROGRAM: 'smartdd',
+    ...(env.LANG || env.LC_ALL || env.LC_CTYPE ? {} : { LANG: 'en_US.UTF-8' }),
+  };
+}
+
 export function planLaunchEnv(
   base: Record<string, string>,
   injected: Record<string, string>,
@@ -49,6 +63,7 @@ export function planLaunchEnv(
     if (isolatePrefixes.some((p) => k.startsWith(p))) continue;
     env[k] = v;
   }
+  Object.assign(env, terminalIdentity(env));
   const scriptArgs: string[] = [];
   for (const p of isolatePrefixes) {
     if (!NAME_RE.test(p)) throw new Error(`无效的变量前缀：${p}`);

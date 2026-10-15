@@ -15,7 +15,7 @@ import { useProject } from '@renderer/lib/hooks/useProjects';
 import { HomeView } from '@renderer/views/home-view';
 import { ProjectView } from '@renderer/views/project-view';
 import { SettingsView } from '@renderer/views/settings-view';
-import { RuntimeBar, TaskBreadcrumb, TaskTitleActions } from '@renderer/views/task-chrome';
+import { RuntimeBar, TaskTabs, TaskTitleActions } from '@renderer/views/task-chrome';
 import { TaskView } from '@renderer/views/task-view';
 
 const LEFT_PANEL_DEFAULT_SIZE = '20%';
@@ -113,7 +113,7 @@ const MainContent = observer(function MainContent({
         </button>
         {task ? (
           <>
-            <TaskBreadcrumb task={task} />
+            <TaskTabs />
             <TaskTitleActions task={task} />
           </>
         ) : (
@@ -122,7 +122,7 @@ const MainContent = observer(function MainContent({
           </span>
         )}
       </div>
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div data-testid="main-body" className="min-h-0 flex-1 overflow-hidden">
         <ViewSlot active={view === 'home'}>
           <HomeView />
         </ViewSlot>

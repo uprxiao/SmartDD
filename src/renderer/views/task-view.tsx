@@ -10,10 +10,12 @@ import type { TaskView as Task } from '@shared/tasks';
 import { navigation } from '@renderer/core/navigation';
 import { attachPty } from '@renderer/core/pty-buffer';
 import { tasksStore } from '@renderer/core/tasks-store';
+import { buildTerminalFontFamily, terminalKeyAction } from '@renderer/core/terminal-keys';
+import { recordTerminalFont, recordTerminalSize } from '@renderer/core/terminal-size';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import i18n from '@renderer/lib/i18n';
-import { events } from '@renderer/lib/ipc';
+import { events, rpc } from '@renderer/lib/ipc';
 import { useTheme } from '@renderer/lib/theme';
 import { Button } from '@renderer/lib/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
@@ -42,11 +44,11 @@ export const TaskView = observer(function TaskView() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="relative min-h-0 flex-1 bg-(--xterm-bg)">
+      <div data-testid="task-area" className="relative min-h-0 flex-1 bg-(--xterm-bg)">
         {terminals.map(([taskId, ptyId]) => (
           <TaskTerminal key={ptyId} ptyId={ptyId} visible={navigation.currentViewId === 'task' && task?.id === taskId} />
         ))}
-        {task && !shownPty && <StoppedPanel task={task} />}
+        {task && !shownPty && <StoppedPanel key={task.id} task={task} />}
         {!task && <div className="absolute inset-0 flex items-center justify-center text-sm text-foreground-muted">{i18n.t('task.none')}</div>}
       </div>
     </div>
@@ -62,19 +64,9 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   useEffect(() => setProfileId(task.aiProfileId), [task.id, task.aiProfileId]);
-  // Opening a stopped task continues it on its own profile; the panel stays for real choices.
-  useEffect(() => {
-    let live = true;
-    setBusy(true);
-    setError('');
-    tasksStore
-      .autoResume(task)
-      .catch((e) => live && setError(rpcErrorMessage(e)))
-      .finally(() => live && setBusy(false));
-    return () => {
-      live = false;
-    };
-  }, [task.id]);
+  // Auto-resume runs in the store when the tab opens; this panel shows its progress and errors.
+  const resuming = busy || tasksStore.resuming.has(task.id);
+  const shownError = error || tasksStore.resumeErrors.get(task.id) || '';
 
   const chosen = candidates.find((p) => p.id === profileId) ?? null;
   const crossProfile = chosen !== null && chosen.id !== task.aiProfileId;
@@ -95,7 +87,7 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
     <div data-testid="task-stopped" className="absolute inset-0 overflow-y-auto bg-background">
       <div className="mx-auto flex max-w-xl flex-col gap-4 px-8 py-12 text-sm">
         <div className="flex items-center gap-2 text-base">
-          {busy && <Loader2 data-testid="task-resuming" className="size-4 animate-spin text-foreground-muted" />}
+          {resuming && <Loader2 data-testid="task-resuming" className="size-4 animate-spin text-foreground-muted" />}
           {t(`task.recovery.${task.recovery}`)}
         </div>
         <p className="text-foreground-muted">{task.recoveryReason || t('task.resumeHint')}</p>
@@ -114,7 +106,7 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
                   ))}
                 </SelectContent>
               </Select>
-              <Button data-testid="task-resume" disabled={!chosen || busy} onClick={() => void resume()}>
+              <Button data-testid="task-resume" disabled={!chosen || resuming} onClick={() => void resume()}>
                 <Play className="size-3.5" />
                 {task.recovery === 'resumable' ? t('task.resume') : t('task.start')}
               </Button>
@@ -128,12 +120,16 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
             {!task.aiProfileId && !chosen && <p className="text-foreground-muted">{t('task.profileGone')}</p>}
           </>
         )}
-        {error && <p className="whitespace-pre-wrap text-foreground-destructive select-text">{error}</p>}
+        {shownError && <p className="whitespace-pre-wrap text-foreground-destructive select-text">{shownError}</p>}
       </div>
     </div>
   );
 });
 
+/**
+ * An interactive terminal set up like Yoda's (src/renderer/lib/pty/pty.ts, use-pty.ts; Apache-2.0):
+ * same xterm options, font stack and key mapping, so a CLI looks as it does in a real terminal.
+ */
 function TaskTerminal({ ptyId, visible }: { ptyId: string; visible: boolean }) {
   const { effectiveTheme } = useTheme();
   const { value: terminalSettings } = useAppSettingsKey('terminal');
@@ -147,17 +143,46 @@ function TaskTerminal({ ptyId, visible }: { ptyId: string; visible: boolean }) {
     // Hidden hosts measure 0×0; fitting then would shrink the PTY to nothing.
     if (!term || !host || host.clientWidth === 0 || host.clientHeight === 0) return;
     fitRef.current?.fit();
+    recordTerminalSize(term.cols, term.rows);
     events.emit(ptyResizeEvent, { ptyId, cols: term.cols, rows: term.rows });
   };
 
   useEffect(() => {
-    const term = new Terminal({ cursorBlink: true, theme: xtermTheme(), allowProposedApi: false });
+    const term = new Terminal({
+      scrollback: 10_000,
+      // The PTY's termios owns newline translation; rewriting LF corrupts cursor-based TUIs.
+      convertEol: false,
+      fontFamily: buildTerminalFontFamily(terminalSettings?.fontFamily),
+      fontSize: terminalSettings?.fontSize ?? 13,
+      lineHeight: 1.0,
+      letterSpacing: 0,
+      reflowCursorLine: true,
+      rescaleOverlappingGlyphs: true,
+      allowProposedApi: true,
+      macOptionClickForcesSelection: true,
+      minimumContrastRatio: 4.5,
+      scrollOnUserInput: false,
+      linkHandler: { activate: (_e, text) => void rpc.app.openExternal(text).catch(() => undefined) },
+      theme: xtermTheme(),
+    });
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.open(hostRef.current!);
     termRef.current = term;
     fitRef.current = fit;
-    const offInput = term.onData((data) => events.emit(ptyInputEvent, { ptyId, data }));
+    const send = (data: string) => events.emit(ptyInputEvent, { ptyId, data });
+    term.attachCustomKeyEventHandler((e) => {
+      // A dialog over the terminal keeps its keys.
+      if (document.querySelector('[role="dialog"]')) return false;
+      const action = terminalKeyAction(e, term.hasSelection());
+      if (!action) return true;
+      e.preventDefault();
+      e.stopPropagation();
+      if (action.kind === 'copy') void navigator.clipboard.writeText(term.getSelection());
+      else send(action.data);
+      return false;
+    });
+    const offInput = term.onData(send);
     const detach = attachPty(ptyId, {
       data: (d) => term.write(d),
       exit: (code) => term.write(`\r\n[${i18n.t('task.exited', { code })}]\r\n`),
@@ -184,9 +209,12 @@ function TaskTerminal({ ptyId, visible }: { ptyId: string; visible: boolean }) {
   }, [effectiveTheme]);
 
   useEffect(() => {
+    if (!terminalSettings) return;
+    const fontFamily = buildTerminalFontFamily(terminalSettings.fontFamily);
+    recordTerminalFont({ fontFamily, fontSize: terminalSettings.fontSize });
     const term = termRef.current;
-    if (!term || !terminalSettings) return;
-    term.options.fontFamily = terminalSettings.fontFamily;
+    if (!term) return;
+    term.options.fontFamily = fontFamily;
     term.options.fontSize = terminalSettings.fontSize;
     fitAndSync();
   }, [terminalSettings]); // eslint-disable-line react-hooks/exhaustive-deps

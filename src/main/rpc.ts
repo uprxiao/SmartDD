@@ -35,6 +35,11 @@ export function createRpcRouter(d: RpcDeps) {
         dbFile: d.dbFile,
       }),
       revealDataDir: () => shell.openPath(app.getPath('userData')),
+      /** Links clicked in a terminal; anything but http(s) is refused. */
+      openExternal: async (url: string) => {
+        if (!/^https?:\/\//i.test(url)) throw new Error(`Refusing to open ${url.slice(0, 40)}`);
+        await shell.openExternal(url);
+      },
     }),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged),
     ...createProjectControllers(d.projects),

@@ -81,6 +81,13 @@ describe('planLaunchEnv', () => {
     expect(p.scriptArgs).toEqual(['-e', 'A', '-e', 'B', '--']);
   });
 
+  it('sets the terminal identity and a UTF-8 locale only when none is set', () => {
+    const p = planLaunchEnv({ TERM: 'dumb' }, {}, []);
+    expect(p.env).toMatchObject({ TERM: 'xterm-256color', COLORTERM: 'truecolor', TERM_PROGRAM: 'smartdd', LANG: 'en_US.UTF-8' });
+    expect(planLaunchEnv({ LANG: 'zh_CN.UTF-8' }, {}, []).env.LANG).toBe('zh_CN.UTF-8');
+    expect(planLaunchEnv({ LC_ALL: 'C.UTF-8' }, {}, []).env.LANG).toBeUndefined();
+  });
+
   it('names parent-agent variables to strip', () => {
     expect(PARENT_AGENT_VARS).toContain('CLAUDECODE');
   });

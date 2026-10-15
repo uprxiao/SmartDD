@@ -6,6 +6,7 @@ export const zhCN = {
     search: '搜索任务',
     settings: '设置',
     toggleSidebar: '显示/隐藏侧边栏',
+    closeTab: '关闭标签（结束会话）',
   },
   home: {
     title: '今天要做什么？',
@@ -289,6 +290,7 @@ export const en: Widen<typeof zhCN> = {
     search: 'Search tasks',
     settings: 'Settings',
     toggleSidebar: 'Toggle sidebar',
+    closeTab: 'Close tab (ends the session)',
   },
   home: {
     title: 'What are we working on?',
