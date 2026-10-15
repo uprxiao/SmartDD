@@ -10,7 +10,8 @@ import { rpcErrorMessage } from '@shared/ipc/rpc';
 import type { TaskView as Task } from '@shared/tasks';
 import type { Runner } from '@shared/types';
 import claudeLogo from '@renderer/assets/runners/claude.png';
-import openaiLogo from '@renderer/assets/runners/openai.svg';
+// Keep a file URL: the packaged renderer CSP intentionally excludes data: images.
+import openaiLogo from '@renderer/assets/runners/openai.svg?no-inline';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';

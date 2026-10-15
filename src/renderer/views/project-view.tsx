@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Database, FolderOpen, Server, Pencil, Plus, Trash2 } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -62,14 +62,15 @@ export const ProjectView = observer(function ProjectView() {
       activeId={section}
       onSelect={setSection}
       title={project.name}
-      description={t(`projects.descriptions.${section}`)}
+      description={project.description || t('m6.projectResources')}
+      actions={<Button variant="outline" disabled={project.archivedAt !== null} onClick={() => navigation.newTask(project.id)}><Plus />{t('nav.newTask')}</Button>}
     >
       {project.archivedAt !== null && (
         <div data-testid="archived-banner" className="rounded-md bg-background-2 px-3 py-2 text-sm text-foreground-muted">
           {t('projects.archivedBanner')}
         </div>
       )}
-      {section === 'overview' && <Overview project={project} />}
+      {section === 'overview' && <Overview project={project} onSection={setSection} />}
       {section === 'dirs' && <Dirs project={project} />}
       {section === 'databases' && <Databases project={project} />}
       {section === 'servers' && <Servers project={project} />}
@@ -107,7 +108,7 @@ function useAction() {
   return { busy, run };
 }
 
-function Overview({ project }: { project: ProjectDetail }) {
+function Overview({ project, onSection }: { project: ProjectDetail; onSection: (id: SectionId) => void }) {
   const { t } = useTranslation();
   const refresh = useRefreshProjects();
   const edit = useDialogTarget<ProjectDetail>();
@@ -120,7 +121,7 @@ function Overview({ project }: { project: ProjectDetail }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
+      <div className="settings-card project-info">
         <InfoRow label={t('projects.fields.name')}>{project.name}</InfoRow>
         <InfoRow label={t('projects.fields.aliases')}>{project.aliases.join('、') || '—'}</InfoRow>
         <InfoRow label={t('projects.fields.description')}>
@@ -132,7 +133,7 @@ function Overview({ project }: { project: ProjectDetail }) {
         </InfoRow>
         <InfoRow label={t('projects.fields.createdAt')}>{new Date(project.createdAt).toLocaleString()}</InfoRow>
       </div>
-      <div className="flex gap-2">
+      <div className="project-actions">
         <Button variant="outline" onClick={() => edit.open(project)}>
           <Pencil />
           {t('projects.actions.edit')}
@@ -150,6 +151,7 @@ function Overview({ project }: { project: ProjectDetail }) {
           {t('projects.actions.delete')}
         </Button>
       </div>
+      <div className="project-summary">{([{ id: 'dirs', Icon: FolderOpen, count: project.dirs.length }, { id: 'databases', Icon: Database, count: project.databases.length }, { id: 'servers', Icon: Server, count: project.servers.length }] as const).map(({ id, Icon, count }) => <button key={id} onClick={() => onSection(id)}><Icon size={18} /><span>{t(`projects.sections.${id}`)}</span><strong>{count}</strong></button>)}</div>
       {edit.target !== undefined && <ProjectDialog key={edit.key} {...edit.props} project={project} />}
       <ConfirmDeleteDialog
         open={confirmDelete}

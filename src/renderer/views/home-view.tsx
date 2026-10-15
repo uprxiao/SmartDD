@@ -1,18 +1,5 @@
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import {
-  ArrowUp,
-  Bot,
-  CircleAlert,
-  ClipboardCheck,
-  Compass,
-  Folder,
-  FolderOpen,
-  FolderTree,
-  Hammer,
-  Info,
-  Loader2,
-  Wrench,
-} from 'lucide-react';
+import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, ShieldCheck, Wrench, Zap } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,12 +11,16 @@ import { ProfileHealthMark } from '@renderer/lib/profile-health';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
+import { Button } from '@renderer/lib/ui/button';
+import { Dialog, DialogContent, DialogContentArea, DialogFooter, DialogHeader, DialogTitle } from '@renderer/lib/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
+import { Field } from './projects/form-parts';
+import { ProjectDialog } from './projects/project-dialogs';
 import { cn } from '@renderer/utils/utils';
 import { CapabilityLaunchPreview } from './capabilities';
 import appIcon from '../../assets/branding/app-icon.png';
 
-const CHIP =
-  'h-7 w-auto min-w-0 gap-1.5 rounded-md border border-border bg-background-1 px-2.5 text-xs text-foreground hover:bg-background-2';
+const CHIP = 'm6-composer-select';
 
 export const HomeView = observer(function HomeView() {
   const { t } = useTranslation();
@@ -37,6 +28,8 @@ export const HomeView = observer(function HomeView() {
   const { data: profiles } = useAiProfiles();
   const draft = useAppSettingsKey('homeDraft');
   const [message, setMessage] = useState('');
+  const [launchSettings, setLaunchSettings] = useState(false);
+  const [creatingProject, setCreatingProject] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [dirId, setDirId] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -51,7 +44,9 @@ export const HomeView = observer(function HomeView() {
     if (initialized.current || !projects || !profiles || !draft.value) return;
     initialized.current = true;
     const d = draft.value;
-    if (d.projectId && projects.some((p) => p.id === d.projectId)) {
+    if (navigation.homePreset && projects.some((p) => p.id === navigation.homePreset?.projectId)) {
+      setProjectId(navigation.homePreset.projectId);
+    } else if (d.projectId && projects.some((p) => p.id === d.projectId)) {
       setProjectId(d.projectId);
       setDirId(d.dirId);
     } else if (projects.length === 1) setProjectId(projects[0].id);
@@ -64,16 +59,22 @@ export const HomeView = observer(function HomeView() {
 
   // "New task" under a project selects it.
   const preset = navigation.homePreset;
+  const appliedPreset = useRef<number | null>(null);
   useEffect(() => {
-    if (!preset) return;
+    if (!preset || appliedPreset.current === preset.seq || !projects?.some((p) => p.id === preset.projectId)) return;
+    appliedPreset.current = preset.seq;
     setProjectId(preset.projectId);
     setDirId(null);
     inputRef.current?.focus();
-  }, [preset?.seq]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [preset?.seq, projects]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (navigation.currentViewId === 'home') inputRef.current?.focus();
   }, [navigation.currentViewId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (initialized.current) navigation.selectHomeProject(projectId);
+  }, [projectId]);
 
   // A stale or missing directory falls back to the project's default one.
   const dirs = project?.id === projectId ? (project?.dirs ?? []) : [];
@@ -104,151 +105,53 @@ export const HomeView = observer(function HomeView() {
     { Icon: Wrench, key: 'fix' },
   ] as const;
 
-  return (
-    <div className="@container h-full overflow-y-auto">
-      <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col px-5 pt-14 pb-8 @2xl:px-8">
-        <div className="flex flex-1 flex-col justify-center gap-8 pb-[8vh]">
-          <div className="text-center">
-            <div className="mb-4 flex justify-center">
-              <img src={appIcon} alt="SmartDD" className="size-16 object-contain" draggable={false} />
-            </div>
-            <h1 className="text-2xl font-semibold">{t('home.title')}</h1>
-            <p className="mt-2 text-sm text-foreground-muted">{t('home.subtitle')}</p>
-          </div>
+  const projectPicker = <Select value={projectId} onValueChange={(v) => { setProjectId(v as string | null); setDirId(null); if (v) navigation.newTask(String(v)); }}>
+    <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
+    <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+  </Select>;
+  const profilePicker = <Select value={profileId} onValueChange={(v) => setProfileId(v as string | null)}>
+    <SelectTrigger className={CHIP} data-testid="home-profile" aria-label={t('home.pickProfile')}><Zap size={15} fill="currentColor" /><SelectValue placeholder={t('home.pickProfile')} /></SelectTrigger>
+    <SelectContent>{(profiles ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}<ProfileHealthMark profile={p} /></SelectItem>)}</SelectContent>
+  </Select>;
+  const directoryPicker = <Select value={dir?.id ?? null} onValueChange={(v) => setDirId(v as string | null)}>
+    <SelectTrigger className={CHIP} data-testid="home-dir" aria-label={t('m6.directory')} title={dir?.path}><FolderTree size={15} /><SelectValue placeholder={t('home.noDir')} /></SelectTrigger>
+    <SelectContent>{dirs.map((d) => <SelectItem key={d.id} value={d.id}>{d.label || d.path}</SelectItem>)}</SelectContent>
+  </Select>;
 
-          <div className="mx-auto w-full max-w-3xl">
-            {projectId && profileId && dir && <div className="mb-3"><CapabilityLaunchPreview projectId={projectId} aiProfileId={profileId} cwd={dir.path} /></div>}
-            <div className="rounded-xl border border-border bg-background-1 shadow-sm transition-[border-color,box-shadow] focus-within:border-border-2 focus-within:shadow-md">
-              <textarea
-                ref={inputRef}
-                data-testid="home-input"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.metaKey) {
-                    e.preventDefault();
-                    void launch();
-                  }
-                }}
-                placeholder={t('home.placeholder')}
-                className="block min-h-28 w-full resize-none border-0 bg-transparent px-5 pt-4 pb-2 text-base leading-relaxed outline-none placeholder:text-foreground-passive"
-              />
-              <div className="flex items-center gap-3 px-3 pb-3 pl-5">
-                <span
-                  data-testid="home-cwd"
-                  className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-foreground-passive"
-                  title={dir?.path}
-                >
-                  {dir && (
-                    <>
-                      <FolderOpen className="size-3.5 shrink-0" />
-                      <span className="truncate font-mono">{dir.path}</span>
-                    </>
-                  )}
-                </span>
-                <kbd className="hidden shrink-0 font-sans text-xs text-foreground-passive @lg:inline">⌘↩</kbd>
-                <button
-                  type="button"
-                  data-testid="home-launch"
-                  disabled={!ready}
-                  aria-label={t('home.launchHint')}
-                  title={t('home.launchHint')}
-                  onClick={() => void launch()}
-                  className={cn(
-                    'flex size-8 shrink-0 items-center justify-center rounded-full transition-all duration-150',
-                    ready
-                      ? 'bg-primary-button-background text-primary-button-foreground shadow-sm hover:bg-primary-button-background-hover'
-                      : 'cursor-not-allowed bg-background-2 text-foreground-passive'
-                  )}
-                >
-                  {launching ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Select
-                value={projectId}
-                onValueChange={(v) => {
-                  setProjectId(v as string | null);
-                  setDirId(null);
-                }}
-              >
-                <SelectTrigger size="sm" className={CHIP} data-testid="home-project">
-                  <Folder className="size-3.5 text-foreground-muted" />
-                  <SelectValue placeholder={t('home.pickProject')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(projects ?? []).map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {dirs.length > 1 && (
-                <Select value={dir?.id ?? null} onValueChange={(v) => setDirId(v as string | null)}>
-                  <SelectTrigger size="sm" className={CHIP} data-testid="home-dir">
-                    <FolderTree className="size-3.5 text-foreground-muted" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dirs.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.label || d.path.split('/').filter(Boolean).pop() || d.path}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Select value={profileId} onValueChange={(v) => setProfileId(v as string | null)}>
-                <SelectTrigger size="sm" className={CHIP} data-testid="home-profile">
-                  {!profile && <Bot className="size-3.5 text-foreground-muted" />}
-                  <SelectValue placeholder={t('home.pickProfile')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(profiles ?? []).map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <span className="inline-block size-2 rounded-full" style={{ background: p.color ?? 'var(--color-foreground-passive)' }} />
-                      {p.name}
-                      <ProfileHealthMark profile={p} />
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="mt-4 flex flex-col gap-2">
-              {projects && projects.length === 0 && <Hint text={t('home.noProjects')} />}
-              {profiles && profiles.length === 0 && (
-                <Hint onClick={() => navigation.openSettings('aiProfiles')} text={t('home.noProfiles')} action={t('home.goSettings')} />
-              )}
-              {dirProblem && <Hint tone="error" text={dirProblem} />}
-              {error && <Hint tone="error" testId="home-error" text={error} />}
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-2 @3xl:grid-cols-4">
-              {suggestions.map(({ Icon, key }) => (
-                <button
-                  key={key}
-                  type="button"
-                  data-testid="home-suggestion"
-                  onClick={() => {
-                    setMessage(t(`home.suggestions.${key}.prompt`));
-                    inputRef.current?.focus();
-                  }}
-                  className="flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2.5 text-left text-sm text-foreground-muted transition-colors hover:border-border hover:bg-background-1 hover:text-foreground"
-                >
-                  <Icon className="size-4 shrink-0" />
-                  <span className="truncate">{t(`home.suggestions.${key}.title`)}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+  return <section className="reference-home" aria-label={t('nav.newTask')}>
+    <div className="reference-welcome"><img src={appIcon} alt="SmartDD" draggable={false} /><h1>{t('m6.welcomePrefix')} <button onClick={() => setLaunchSettings(true)}>{project?.name || 'SmartDD'}</button> {t('m6.welcomeSuffix')}</h1></div>
+    <div className="reference-composer-wrap">
+      {(dirProblem || error || !projectId || !profile) && <div className="launch-hint" role="status"><span>{error || dirProblem || (!projectId ? t(projects?.length ? 'home.pickProject' : 'home.noProjects') : t('home.noProfiles'))}</span><button onClick={() => setLaunchSettings(true)}>{t('m6.taskSettings')}</button></div>}
+      {error && <span data-testid="home-error" className="sr-only">{error}</span>}
+      <div className="reference-composer-context"><div className="reference-home-picker">{projectPicker}</div>
+        <button className="local-environment" data-testid="home-cwd" title={dir?.path} onClick={() => setLaunchSettings(true)}><Monitor size={16} /><span>{dirs.length > 1 ? dir?.label || t('m6.directory') : t('m6.thisComputer')}</span></button>
+        <button data-testid="home-task-settings" className="composer-settings" title={t('m6.taskSettings')} aria-label={t('m6.taskSettings')} onClick={() => setLaunchSettings(true)}><Settings size={16} /></button>
       </div>
+      <form className="reference-composer" onSubmit={(e) => { e.preventDefault(); void launch(); }}>
+        <textarea ref={inputRef} data-testid="home-input" aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void launch(); } }} />
+        <div className="reference-composer-toolbar">
+          <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">
+            <DropdownMenuItem onClick={() => setCreatingProject(true)}><Plus />{t('projects.new')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLaunchSettings(true)}><Folder />{t('home.pickProject')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigation.openSettings('aiProfiles')}><Settings />{t('settings.sections.aiProfiles')}</DropdownMenuItem><DropdownMenuSeparator />
+            {suggestions.map(({ Icon, key }) => <DropdownMenuItem key={key} data-testid="home-suggestion" onClick={() => { setMessage(t(`home.suggestions.${key}.prompt`)); inputRef.current?.focus(); }}><Icon />{t(`home.suggestions.${key}.title`)}</DropdownMenuItem>)}
+          </DropdownMenuContent></DropdownMenu>
+          <button type="button" className="composer-permission" onClick={() => setLaunchSettings(true)}><ShieldCheck size={15} />{t('m6.projectContext')}</button>
+          <div className="reference-home-picker composer-profile">{profilePicker}</div>
+          <button type="submit" data-testid="home-launch" className="reference-send" disabled={!ready} aria-label={t('home.launchHint')} title={t('home.launchHint')}>{launching ? <Loader2 size={19} className="animate-spin" /> : <ArrowUp size={19} />}</button>
+        </div>
+      </form>
     </div>
-  );
+    <Dialog open={launchSettings} onOpenChange={setLaunchSettings}><DialogContent className="m6-launch-dialog"><DialogHeader><DialogTitle>{t('m6.taskSettings')}</DialogTitle></DialogHeader><DialogContentArea>
+      <Field label={t('home.pickProject')}><div className="flex items-center justify-between gap-3">{projectPicker}<Button variant="outline" size="sm" onClick={() => { setLaunchSettings(false); setCreatingProject(true); }}>{t('projects.new')}</Button></div></Field>
+      <Field label={t('m6.directory')}>{directoryPicker}<span className="font-mono text-xs break-all text-foreground-muted">{dir?.path}</span></Field>
+      <Field label={t('home.pickProfile')}>{profilePicker}</Field>
+      {projectId && profileId && dir && <CapabilityLaunchPreview projectId={projectId} aiProfileId={profileId} cwd={dir.path} />}
+      {dirProblem && <Hint tone="error" text={dirProblem} />}
+      <div className="flex flex-wrap gap-2"><Button variant="outline" size="sm" disabled={!projectId} onClick={() => projectId && navigation.openProject(projectId)}>{t('m6.projectResources')}</Button><Button variant="outline" size="sm" onClick={() => navigation.openSettings('aiProfiles')}>{t('settings.sections.aiProfiles')}</Button></div>
+    </DialogContentArea><DialogFooter><Button data-testid="home-settings-done" onClick={() => setLaunchSettings(false)}>{t('m6.done')}</Button></DialogFooter></DialogContent></Dialog>
+    {creatingProject && <ProjectDialog open onOpenChange={setCreatingProject} />}
+  </section>;
 });
 
 function Hint({

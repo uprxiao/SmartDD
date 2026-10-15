@@ -39,7 +39,6 @@ function DialogContent({ className, children, ...props }: DialogPrimitive.Popup.
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
-        finalFocus={false}
         data-slot="dialog-content"
         onKeyDownCapture={(e) => {
           if ((e.metaKey || e.ctrlKey || e.altKey) && e.key === 'Enter') {

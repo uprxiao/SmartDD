@@ -50,6 +50,9 @@ export async function createMainWindow(): Promise<BrowserWindow> {
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
+      // Keep terminal painting and renderer state current when the workspace is
+      // covered by another window; PTY sessions continue to run in the background.
+      backgroundThrottling: false,
     },
   });
   mainWindow = win;

@@ -1,10 +1,10 @@
 import { makeAutoObservable } from 'mobx';
 
 /** The view registry: every top-level view the main area can show. */
-export const VIEW_IDS = ['home', 'task', 'settings', 'project'] as const;
+export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
-export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities';
+export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'about';
 
 class NavigationStore {
   currentViewId: ViewId = 'home';
@@ -17,9 +17,15 @@ class NavigationStore {
   settingsSection: SettingsSectionId = 'general';
   /** ⌘K task search. */
   searchOpen = false;
+  sidebarWidth = typeof localStorage === 'undefined' ? 240 : Math.max(240, Math.min(420, Number(localStorage.getItem('smartdd-sidebar-width')) || 240));
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  setSidebarWidth(width: number): void {
+    this.sidebarWidth = Math.max(240, Math.min(420, width));
+    if (typeof localStorage !== 'undefined') localStorage.setItem('smartdd-sidebar-width', String(this.sidebarWidth));
   }
 
   navigate(viewId: ViewId): void {
@@ -50,8 +56,13 @@ class NavigationStore {
     this.currentViewId = 'project';
   }
 
+  selectHomeProject(id: string | null): void {
+    this.currentProjectId = id;
+  }
+
   /** After a delete: leave the view instead of showing a project that no longer exists. */
   closeProject(id: string): void {
+    if (this.homePreset?.projectId === id) this.homePreset = null;
     if (this.currentProjectId !== id) return;
     this.currentProjectId = null;
     if (this.currentViewId === 'project') this.currentViewId = 'home';

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { CircleAlert, CircleCheck, FileInput, Loader2, Plus, RefreshCw, Stethoscope, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Check, ChevronRight, CircleAlert, Ellipsis, FileInput, ShieldCheck, SquareTerminal, Loader2, Plus, RefreshCw, Stethoscope, Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
@@ -15,6 +15,8 @@ import {
   type RunnerInfo,
   type ZshrcImportCandidate,
 } from '@shared/ai-profiles';
+import { inputForDetectedRunner, profileForRunner } from '@shared/detected-profile';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import type { Runner } from '@shared/types';
 import { useAiProfiles, useRefreshAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
@@ -56,88 +58,33 @@ export function AiProfilesSection() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <RunnerDetection />
-      <div className="flex items-center gap-2">
-        <span className="text-sm">{t('aiProfiles.list')}</span>
+    <div className="m6-ai-profiles">
+      <div className="page-heading"><h1>{t('settings.sections.aiProfiles')}</h1><Button variant="outline" size="sm" data-testid="profile-new" onClick={() => open(null)}><Plus />{t('aiProfiles.new')}</Button></div>
+      <RunnerDetection profiles={profiles} onOpen={open} />
+      <div className="group-heading profiles-heading"><h2>{t('aiProfiles.list')} <span className="subtle">{profiles.length}</span></h2>
         <div className="ml-auto flex gap-2">
           <Button variant="outline" size="sm" data-testid="profile-import" onClick={() => setImporting((n) => n + 1)}>
             <FileInput />
             {t('aiProfiles.import')}
           </Button>
-          <Button variant="outline" size="sm" data-testid="profile-new" onClick={() => open(null)}>
-            <Plus />
-            {t('aiProfiles.new')}
-          </Button>
+
         </div>
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="profile-list">
         {profiles.length === 0 && <p className="text-sm text-foreground-passive">{t('aiProfiles.none')}</p>}
-        {profiles.map((p) => (
-          <div key={p.id} data-testid="profile-card" data-profile-id={p.id} className="flex flex-col gap-2 rounded-lg border border-border px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ background: p.color ?? 'var(--color-foreground-passive)' }} />
-              <span className="truncate text-sm font-medium">{p.name}</span>
-              <Badge variant="secondary">{RUNNERS[p.runner].label}</Badge>
-              {p.isDefault && <Badge data-testid="profile-default">{t('aiProfiles.default')}</Badge>}
-              <span className="flex min-w-0 items-center gap-1.5 text-xs text-foreground-muted" title={healthTitle(t, p)}>
-                <HealthDot profile={p} />
-                <span data-testid="profile-health-label" className="truncate">
-                  {healthLabel(t, healthState(p))}
-                  {!p.checking && p.check && p.check.status !== 'ok' && ` · ${t(`aiProfiles.health.categories.${p.check.category}`)}`}
-                </span>
-              </span>
-              <div className="ml-auto flex shrink-0 gap-1">
-                <Button variant="ghost" size="xs" data-testid="profile-test" disabled={p.checking} onClick={() => void testProfile(p)}>
-                  {p.checking ? <Loader2 className="animate-spin" /> : <Stethoscope />}
-                  {t('aiProfiles.health.test')}
-                </Button>
-                {!p.isDefault && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() =>
-                      void rpc.aiProfiles
-                        .setDefault(p.id)
-                        .then(refresh)
-                        .catch((e) => toast.error(rpcErrorMessage(e)))
-                    }
-                  >
-                    {t('projects.actions.setDefault')}
-                  </Button>
-                )}
-                <Button variant="ghost" size="xs" data-testid="profile-edit" onClick={() => open(p)}>
-                  {t('projects.actions.edit')}
-                </Button>
-                <Button variant="ghost" size="xs" data-testid="profile-delete" onClick={() => setDeleting(p)}>
-                  {t('projects.actions.delete')}
-                </Button>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-1 text-xs text-foreground-muted">
-              <span className="font-mono">{p.executable ?? RUNNERS[p.runner].command}</span>
-              {p.args.length > 0 && <span className="font-mono">{joinArgs(p.args)}</span>}
-            </div>
-            {p.env.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {p.env.map((e) => (
-                  <code
-                    key={e.name}
-                    className={cn(
-                      'rounded bg-background-1 px-1.5 py-0.5 font-mono text-[11px]',
-                      e.secret && !e.hasValue && 'text-foreground-destructive'
-                    )}
-                    title={e.secret ? (e.hasValue ? t('aiProfiles.secretSaved') : t('aiProfiles.secretMissing')) : (e.value ?? '')}
-                  >
-                    {e.name}
-                    {e.secret && (e.hasValue ? ' 🔒' : ` · ${t('aiProfiles.secretMissing')}`)}
-                  </code>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+        {profiles.map((p) => <div key={p.id} data-testid="profile-card" data-profile-id={p.id} className="profile-row">
+          <SquareTerminal className="profile-symbol" size={18} />
+          <button className="profile-main text-left" data-testid="profile-edit" onClick={() => open(p)}><strong>{p.name} {p.isDefault && <Badge data-testid="profile-default">{t('aiProfiles.default')}</Badge>}</strong><small>{RUNNERS[p.runner].label} · {p.executable ?? RUNNERS[p.runner].command}</small></button>
+          <span className="status" title={healthTitle(t, p)}><HealthDot profile={p} /><span data-testid="profile-health-label">{healthLabel(t, healthState(p))}</span></span>
+          <Button variant="ghost" size="xs" data-testid="profile-test" disabled={p.checking} onClick={() => void testProfile(p)}>{p.checking ? <Loader2 className="animate-spin" /> : <Stethoscope />}{t('aiProfiles.health.test')}</Button>
+          <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={`${t('m6.more')}: ${p.name}`}><Ellipsis size={17} /></DropdownMenuTrigger><DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => open(p)}>{t('projects.actions.edit')}</DropdownMenuItem>
+            {!p.isDefault && <DropdownMenuItem onClick={() => void rpc.aiProfiles.setDefault(p.id).then(refresh).catch((e) => toast.error(rpcErrorMessage(e)))}>{t('projects.actions.setDefault')}</DropdownMenuItem>}
+            <DropdownMenuSeparator /><DropdownMenuItem data-testid="profile-delete" variant="destructive" onClick={() => setDeleting(p)}><Trash2 />{t('projects.actions.delete')}</DropdownMenuItem>
+          </DropdownMenuContent></DropdownMenu>
+        </div>)}
       </div>
+      <div className="quiet-note"><ShieldCheck size={16} /><p>{t('m6.localCredentials')}</p></div>
       {editing && (
         <ProfileDialog key={editing.key} profile={editing.profile} onClose={() => setEditing(null)} />
       )}
@@ -157,41 +104,47 @@ export function AiProfilesSection() {
 }
 
 function RunnerLine({ info }: { info: RunnerInfo }) {
-  return (
-    <div
-      data-testid="runner-info"
-      data-runner={info.runner}
-      className={cn('flex min-w-0 items-start gap-1.5 text-xs', info.path ? 'text-foreground-muted' : 'text-foreground-destructive')}
-    >
-      {info.path ? <CircleCheck className="mt-px size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" /> : <CircleAlert className="mt-px size-3.5 shrink-0" />}
-      <span className="shrink-0 font-medium text-foreground">{RUNNERS[info.runner].label}</span>
-      <span className="min-w-0 break-all">
-        {info.path ? `${info.version ?? ''} · ${info.path}` : ''}
-        {info.error && <span className={info.path ? 'text-foreground-destructive' : ''}>{info.path ? ` · ${info.error}` : info.error}</span>}
-      </span>
-    </div>
-  );
+  return <div data-testid="runner-info" data-runner={info.runner} className="text-xs text-foreground-muted break-all"><strong>{RUNNERS[info.runner].label}</strong> · {info.path ?? info.command} {info.version}<span className="text-foreground-destructive">{info.error}</span></div>;
 }
 
-/** Runners found on the login shell's PATH (PRD F04). */
-function RunnerDetection() {
+/** Local CLI discovery and saved profiles are separate states, joined by an explicit action. */
+function RunnerDetection({ profiles, onOpen }: { profiles: AiProfileView[]; onOpen: (profile: AiProfileView) => void }) {
   const { t } = useTranslation();
+  const refresh = useRefreshAiProfiles();
   const q = useQuery({ queryKey: ['runners'], queryFn: () => rpc.aiProfiles.detectRunners(), staleTime: Infinity });
-  return (
-    <div className="flex flex-col gap-2 rounded-lg bg-background-1 px-4 py-3">
-      <div className="flex items-center">
-        <span className="text-sm">{t('aiProfiles.detect')}</span>
-        <Button variant="ghost" size="xs" className="ml-auto" disabled={q.isFetching} data-testid="runner-detect" onClick={() => void q.refetch()}>
-          <RefreshCw className={cn(q.isFetching && 'animate-spin')} />
-          {t('aiProfiles.redetect')}
-        </Button>
-      </div>
-      {q.isFetching && !q.data && <span className="text-xs text-foreground-passive">{t('aiProfiles.detecting')}</span>}
-      {q.error && <span className="text-xs text-foreground-destructive">{rpcErrorMessage(q.error)}</span>}
-      {q.data?.map((info) => <RunnerLine key={info.runner} info={info} />)}
-      <span className="text-xs text-foreground-passive">{t('aiProfiles.detectHint')}</span>
+  const [adding, setAdding] = useState<Runner | null>(null);
+  const inFlight = useRef(false);
+  const add = async (info: RunnerInfo) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setAdding(info.runner);
+    try {
+      // Re-read before the mutation: detection may have stayed open during an import or edit.
+      const current = await rpc.aiProfiles.list();
+      const existing = profileForRunner(current, info.runner);
+      if (existing) onOpen(existing);
+      else {
+        const created = await rpc.aiProfiles.create(inputForDetectedRunner(info, current));
+        await refresh();
+        onOpen(created);
+        toast.success(t('m6.profileAdded', { name: created.name }));
+      }
+    } catch (e) { toast.error(rpcErrorMessage(e)); }
+    finally { setAdding(null); inFlight.current = false; }
+  };
+  return <section>
+    <div className="group-heading"><h2>{t('m6.localTools')}</h2><Button variant="ghost" size="xs" disabled={q.isFetching} data-testid="runner-detect" onClick={() => void q.refetch()}><RefreshCw className={cn(q.isFetching && 'animate-spin')} />{t('aiProfiles.redetect')}</Button></div>
+    <div className="detection-list">
+      {q.isFetching && !q.data && <p className="p-4 text-xs text-foreground-muted">{t('aiProfiles.detecting')}</p>}
+      {q.error && <p role="alert" className="p-4 text-xs text-foreground-destructive">{rpcErrorMessage(q.error)}</p>}
+      {q.data?.map((info) => {
+        const existing = profileForRunner(profiles, info.runner);
+        return <div key={info.runner} data-testid="runner-info" data-runner={info.runner} className="detection-row"><span className="tool-icon"><SquareTerminal size={20} /></span><div className="detection-info"><div><strong>{RUNNERS[info.runner].label}</strong><span className={`status ${info.path ? 'success' : ''}`}>{info.path ? t('m6.detected') : t('m6.notDetected')}</span></div><code>{info.path ?? RUNNERS[info.runner].command}</code>{info.version && <small>{info.version}</small>}{info.error && <p className="text-xs text-foreground-destructive">{info.error}</p>}</div>
+          <Button variant={existing ? 'ghost' : 'outline'} size="sm" data-testid={`runner-add-${info.runner}`} disabled={adding !== null || (!info.path && !existing)} onClick={() => existing ? onOpen(existing) : void add(info)}>{adding === info.runner ? <Loader2 className="animate-spin" /> : existing ? <Check /> : <Plus />}{existing ? t('m6.added') : t('m6.addProfile')}{existing && <ChevronRight />}</Button>
+        </div>;
+      })}
     </div>
-  );
+  </section>;
 }
 
 interface EnvRow {

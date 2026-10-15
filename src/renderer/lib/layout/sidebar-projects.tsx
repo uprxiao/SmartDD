@@ -1,4 +1,4 @@
-import { ChevronRight, Folder, FolderOpen, Plus, SquarePen } from 'lucide-react';
+import { ChevronDown, ChevronRight, Ellipsis, Folder, FolderOpen, MessageCircle, Plus, Settings, SquarePen } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,55 +6,35 @@ import type { ProjectSummary } from '@shared/projects';
 import type { TaskView } from '@shared/tasks';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
-import { useProjectList } from '@renderer/lib/hooks/useProjects';
+import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { TaskRow } from '@renderer/lib/layout/sidebar-tasks';
+import { Popover, PopoverContent, PopoverTrigger } from '@renderer/lib/ui/popover';
 import { cn } from '@renderer/utils/utils';
 import { ProjectDialog } from '@renderer/views/projects/project-dialogs';
 
 const ProjectNode = observer(function ProjectNode({ project, tasks }: { project: ProjectSummary; tasks: TaskView[] }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(true);
-  const active = navigation.currentViewId === 'project' && navigation.currentProjectId === project.id;
+  const [menu, setMenu] = useState(false);
+  const { data: detail } = useProject(menu ? project.id : null);
+  const dir = detail?.dirs.find((d) => d.isDefault) ?? detail?.dirs[0];
+  const active = (navigation.currentViewId === 'project' && navigation.currentProjectId === project.id) || (navigation.currentViewId === 'home' && navigation.currentProjectId === project.id);
   const archived = project.archivedAt !== null;
-  return (
-    <div>
-      <div
-        data-testid="sidebar-project"
-        data-project-id={project.id}
-        className={cn(
-          'group flex h-8 w-full items-center gap-1 rounded-md pr-1 pl-1 text-sm text-foreground-muted hover:bg-background-2 hover:text-foreground',
-          active && 'bg-background-2 text-foreground',
-          archived && 'opacity-60'
-        )}
-      >
-        <button
-          type="button"
-          data-testid="sidebar-project-toggle"
-          title={open ? t('tasks.collapse') : t('tasks.expand')}
-          onClick={() => setOpen((v) => !v)}
-          className="flex size-5 shrink-0 items-center justify-center rounded text-foreground-passive hover:text-foreground"
-        >
-          <ChevronRight className={cn('size-3 transition-transform', open && tasks.length > 0 && 'rotate-90', tasks.length === 0 && 'opacity-0')} />
-        </button>
-        <button type="button" onClick={() => navigation.openProject(project.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
-          {open && tasks.length > 0 ? <FolderOpen className="size-4 shrink-0" /> : <Folder className="size-4 shrink-0" />}
-          <span className="truncate">{project.name}</span>
-        </button>
-        {!archived && (
-          <button
-            type="button"
-            data-testid="sidebar-project-new-task"
-            title={t('tasks.newInProject')}
-            onClick={() => navigation.newTask(project.id)}
-            className="hidden size-6 shrink-0 items-center justify-center rounded text-foreground-passive group-hover:flex hover:bg-background-3 hover:text-foreground"
-          >
-            <SquarePen className="size-3.5" />
-          </button>
-        )}
-      </div>
-      {open && tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}
+  const edit = () => { setMenu(false); navigation.openProject(project.id); };
+  return <div className="reference-project-group">
+    <div data-testid="sidebar-project" data-project-id={project.id} className={cn('reference-project-row', (active || menu) && 'selected', archived && 'opacity-60')} onContextMenu={(e) => { e.preventDefault(); setMenu(true); }}>
+      <button className="reference-project-toggle" data-testid="sidebar-project-toggle" title={open ? t('tasks.collapse') : t('tasks.expand')} onClick={() => setOpen((v) => !v)}>{open ? <FolderOpen size={16} /> : <Folder size={16} />}</button>
+      <button className="reference-project-name" title={project.name} onClick={() => archived ? edit() : navigation.newTask(project.id)}>{project.name}</button>
+      <div className="row-actions"><Popover open={menu} onOpenChange={setMenu}><PopoverTrigger className="row-action" data-testid="sidebar-project-more" aria-label={`${t('m6.projectMenu')}: ${project.name}`}><Ellipsis size={16} /></PopoverTrigger><PopoverContent side="right" align="start" sideOffset={8} className="m6-project-popup project-detail-popup" data-testid="project-detail-popup">
+        <button className="popup-project-title" onClick={edit}><Folder size={16} /><span>{project.name}</span></button>
+        <div className="popup-meta"><MessageCircle size={15} /><span>{t('m6.taskCount', { count: tasks.length })}</span></div>
+        <div className="popup-divider" /><div className="popup-meta popup-project-path" title={dir?.path}><Folder size={15} /><span>{dir?.path ?? t('home.noDir')}</span></div><div className="popup-divider" />
+        <button data-testid="sidebar-project-edit" onClick={edit}><Settings size={16} />{t('projects.dialog.editProject')}</button>
+      </PopoverContent></Popover>
+      {!archived && <button className="row-action" data-testid="sidebar-project-new-task" title={t('tasks.newInProject')} onClick={() => navigation.newTask(project.id)}><SquarePen size={15} /></button>}</div>
     </div>
-  );
+    {open && tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}
+  </div>;
 });
 
 function Toggle({ open, onClick, label, testId }: { open: boolean; onClick: () => void; label: string; testId: string }) {
@@ -89,20 +69,20 @@ export const SidebarProjects = observer(function SidebarProjects() {
   const orphans = liveTasks.filter((x) => x.projectId === null || !known.has(x.projectId));
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mt-4 flex items-center px-4 pb-1">
-        <span className="text-xs text-foreground-passive">{t('projects.sidebar')}</span>
+    <div className="reference-projects">
+      <div className="reference-project-heading">
+        <span>{t('projects.sidebar')}<ChevronDown size={13} /></span>
         <button
           type="button"
           title={t('projects.new')}
           data-testid="sidebar-new-project"
           onClick={() => setCreating((n) => n + 1)}
-          className="ml-auto flex size-5 items-center justify-center rounded text-foreground-passive hover:bg-background-2 hover:text-foreground"
+          className="row-action"
         >
           <Plus className="size-3.5" />
         </button>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+      <div className="m6-project-tree">
         {activeProjects.length === 0 && <div className="px-2 py-2 text-xs text-foreground-passive">{t('projects.none')}</div>}
         {activeProjects.map((p) => (
           <ProjectNode key={p.id} project={p} tasks={tasksOf(p.id)} />

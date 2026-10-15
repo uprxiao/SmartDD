@@ -85,7 +85,11 @@ try {
   assert(await evaluate('document.body.innerText.includes("smartdd-project-db-diagnostics")'));
   assert(await evaluate('document.body.innerText.includes("已是随包最新版本")'));
   await screenshot('settings'); checks.push('Settings catalog, retained versions, source and static discovery rendered');
-  await click(`[data-project-id="${project.id}"] > button:nth-child(2)`); await section();
+  await click('[data-testid=nav-home]');
+  await waitFor(`Boolean(document.querySelector('[data-project-id="${project.id}"]'))`);
+  await click(`[data-project-id="${project.id}"] [data-testid=sidebar-project-more]`);
+  await waitFor('Boolean(document.querySelector("[data-testid=sidebar-project-edit]"))');
+  await click('[data-testid=sidebar-project-edit]'); await section();
   await waitFor('Boolean(document.querySelector("[aria-label=smartdd-project-db-diagnostics]"))');
   await click('[aria-label=smartdd-project-db-diagnostics]');
   await waitFor(`window.electronAPI.invoke('capabilities.projectSettings', '${project.id}').then(x=>!x.skills.find(s=>s.id==='project-db-diagnostics').enabled)`);
@@ -93,8 +97,10 @@ try {
   await click('[aria-label=smartdd-project-db-diagnostics]');
   await waitFor(`window.electronAPI.invoke('capabilities.projectSettings', '${project.id}').then(x=>x.skills.find(s=>s.id==='project-db-diagnostics').enabled)`);
   await click('[data-testid=nav-new-task]');
+  await click('[data-testid=home-task-settings]');
   await waitFor('Boolean(document.querySelector("[data-testid=capability-launch-preview]"))');
   await click('[data-testid=capability-launch-preview] summary'); await screenshot('launch-preview');
+  await click('[data-testid=home-settings-done]');
   await waitFor('!document.querySelector("[data-testid=home-launch]").disabled'); await click('[data-testid=home-launch]');
   await waitFor('Boolean(document.querySelector("[data-testid=task-info]"))'); await click('[data-testid=task-info]');
   await waitFor('document.querySelector("[data-testid=runtime-capabilities]")?.textContent.includes("终端自检通过")');

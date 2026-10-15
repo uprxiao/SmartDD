@@ -25,6 +25,8 @@ import {
 } from '@renderer/lib/ui/menu';
 import { compactRelativeTime } from '@renderer/utils/relative-time';
 import { cn } from '@renderer/utils/utils';
+import { Input } from '@renderer/lib/ui/input';
+import { FormDialog } from '@renderer/views/projects/project-dialogs';
 import { ConfirmDeleteDialog } from '@renderer/views/projects/form-parts';
 
 type ItemProps = { onClick: () => void; variant?: 'default' | 'destructive'; children: ReactNode; 'data-testid'?: string };
@@ -139,39 +141,22 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
           data-testid="sidebar-task"
           data-task-id={task.id}
           className={cn(
-            'group flex h-8 w-full items-center gap-2 rounded-md pr-1 text-sm text-foreground-muted hover:bg-background-2 hover:text-foreground',
-            indent ? 'pl-6' : 'pl-2',
+            'group reference-task-row',
+            !indent && 'm6-unindented-task',
             active && 'bg-background-2 text-foreground',
             task.archivedAt !== null && 'opacity-60'
           )}
           onClick={() => !editing && tasksStore.show(task.id)}
         >
-          {editing ? (
-            <input
-              autoFocus
-              data-testid="task-rename-input"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              onBlur={commitRename}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitRename();
-                else if (e.key === 'Escape') setEditing(false);
-              }}
-              className="h-6 min-w-0 flex-1 rounded border border-border bg-background px-1.5 text-sm text-foreground outline-none"
-            />
-          ) : (
-            <span className="min-w-0 flex-1 truncate" title={task.title}>
-              {task.title}
-            </span>
-          )}
+          <span className="reference-task-title" title={task.title}>{task.title}</span>
           {!editing && <TaskStatusTail task={task} />}
           {!editing && (
             <DropdownMenu>
               <DropdownMenuTrigger
                 data-testid="task-more"
                 onClick={(e) => e.stopPropagation()}
-                className="hidden size-6 shrink-0 items-center justify-center rounded text-foreground-passive group-hover:flex hover:bg-background-3 hover:text-foreground data-popup-open:flex"
+                className="row-action task-more"
+                aria-label={`${t('m6.more')}: ${task.title}`}
               >
                 <Ellipsis className="size-4" />
               </DropdownMenuTrigger>
@@ -186,6 +171,9 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
           <TaskMenuItems {...menu} Item={ContextMenuItem} Separator={ContextMenuSeparator} />
         </ContextMenuContent>
       </ContextMenu>
+      <FormDialog open={editing} onOpenChange={setEditing} title={t('tasks.rename')} error="" busy={false} submitLabel={t('projects.actions.save')} onSubmit={commitRename}>
+        <Input autoFocus data-testid="task-rename-input" aria-label={t('tasks.rename')} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') commitRename(); }} />
+      </FormDialog>
       <ConfirmDeleteDialog
         open={deleting}
         onOpenChange={setDeleting}
