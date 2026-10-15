@@ -1,10 +1,17 @@
 import { defineEvent } from './ipc/events';
+import type { ProfileCheckSource } from './ai-profiles';
 
 // main → renderer
 export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:data');
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
 export const tasksChangedEvent = defineEvent<void>('tasks:changed');
+export interface AiProfilesChange {
+  /** Set when a profile has just become unusable without the user asking (auto test or a task). */
+  failed?: { profileId: string; name: string; source: ProfileCheckSource; message: string };
+}
+/** Profiles or their health changed (a test started/finished, a task saw an API answer). */
+export const aiProfilesChangedEvent = defineEvent<AiProfilesChange>('aiProfiles:changed');
 export const menuOpenSettingsEvent = defineEvent<void>('menu:openSettings');
 export const menuToggleLeftSidebarEvent = defineEvent<void>('menu:toggleLeftSidebar');
 

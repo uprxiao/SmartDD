@@ -6,6 +6,7 @@ import { createRPCController } from '@shared/ipc/rpc';
 import type { Runner } from '@shared/types';
 import { PARENT_AGENT_VARS } from '../../launch-env';
 import type { AiProfileService } from './ai-profile-service';
+import type { ProfileHealth } from './profile-health';
 import { detectRunner } from './runner-detect';
 
 const defaultZshrc = () => join(homedir(), '.zshrc');
@@ -20,7 +21,7 @@ async function readRc(path?: string | null): Promise<string> {
   }
 }
 
-export function createAiProfileController(svc: AiProfileService, baseEnv: () => Record<string, string>) {
+export function createAiProfileController(svc: AiProfileService, health: ProfileHealth, baseEnv: () => Record<string, string>) {
   const detectEnv = () => {
     const env = { ...baseEnv() };
     for (const k of PARENT_AGENT_VARS) delete env[k];
@@ -28,15 +29,30 @@ export function createAiProfileController(svc: AiProfileService, baseEnv: () => 
   };
   return {
     aiProfiles: createRPCController({
-      list: () => svc.list(),
-      get: (id: string) => svc.get(id),
-      create: (input: AiProfileInput) => svc.create(input),
-      update: (id: string, input: AiProfileInput) => svc.update(id, input),
+      list: () => svc.list().map((v) => health.withChecking(v)),
+      get: (id: string) => health.withChecking(svc.get(id)),
+      // Auto tests run after import / create / an edit that changes how the CLI starts — never at startup.
+      create: (input: AiProfileInput) => {
+        const view = svc.create(input);
+        health.testInBackground(view.id, 'auto');
+        return health.withChecking(view);
+      },
+      update: (id: string, input: AiProfileInput) => {
+        const before = svc.launchSignature(id);
+        const view = svc.update(id, input);
+        if (svc.launchSignature(id) !== before) health.testInBackground(id, 'auto');
+        return health.withChecking(view);
+      },
+      test: (id: string) => health.test(id, 'manual'),
       delete: (id: string) => svc.delete(id),
       setDefault: (id: string) => svc.setDefault(id),
       defaultZshrcPath: () => defaultZshrc(),
       previewZshrc: async (path?: string | null) => svc.previewZshrc(await readRc(path)),
-      importZshrc: async (path: string | null, accounts: string[]) => svc.importZshrc(await readRc(path), accounts),
+      importZshrc: async (path: string | null, accounts: string[]) => {
+        const r = svc.importZshrc(await readRc(path), accounts);
+        for (const v of r.created) health.testInBackground(v.id, 'auto');
+        return { ...r, created: r.created.map((v) => health.withChecking(v)) };
+      },
       detectRunners: () => Promise.all(RUNNER_IDS.map((r) => detectRunner(r, null, { env: detectEnv() }))),
       detectRunner: (runner: Runner, executable: string | null) => detectRunner(runner, executable, { env: detectEnv() }),
     }),

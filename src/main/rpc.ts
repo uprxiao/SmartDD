@@ -3,6 +3,7 @@ import type { AppSettingsKey } from '@shared/app-settings';
 import { createRPCController, createRPCRouter } from '@shared/ipc/rpc';
 import { createAiProfileController } from './core/ai/controller';
 import type { AiProfileService } from './core/ai/ai-profile-service';
+import type { ProfileHealth } from './core/ai/profile-health';
 import { createProjectControllers } from './core/projects/controller';
 import type { ProjectService } from './core/projects/project-service';
 import { createAppSettingsController } from './core/settings/controller';
@@ -19,6 +20,7 @@ export interface RpcDeps {
   settings: SettingsStore;
   projects: ProjectService;
   aiProfiles: AiProfileService;
+  health: ProfileHealth;
   tasks: TaskService;
   ptys: PtyManager;
   baseEnv: () => Record<string, string>;
@@ -43,7 +45,7 @@ export function createRpcRouter(d: RpcDeps) {
     }),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged),
     ...createProjectControllers(d.projects),
-    ...createAiProfileController(d.aiProfiles, d.baseEnv),
+    ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
     ...createTaskController(d.tasks),
     dialog: createRPCController({
       /** Native folder picker; null when cancelled. */

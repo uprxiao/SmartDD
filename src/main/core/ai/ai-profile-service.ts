@@ -1,13 +1,17 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { asc, eq, like, sql } from 'drizzle-orm';
 import {
   aiProfileInputSchema,
+  CHECK_STATUS_OF,
   describeProfileIssue,
   ISOLATED_ENV_PREFIXES,
   RUNNERS,
   type AiProfileData,
   type AiProfileInput,
   type AiProfileView,
+  type ProfileCheck,
+  type ProfileCheckCategory,
+  type ProfileCheckSource,
   type ZshrcImportCandidate,
 } from '@shared/ai-profiles';
 import type { InputIssue } from '@shared/projects';
@@ -44,6 +48,18 @@ function parseJsonArray<T>(json: string, keep: (v: unknown) => v is T): T[] {
 const readEnv = (row: ProfileRow) =>
   parseJsonArray(row.env, (v): v is StoredEnv => typeof v === 'object' && v !== null && typeof (v as StoredEnv).name === 'string');
 const readArgs = (row: ProfileRow) => parseJsonArray(row.args, (v): v is string => typeof v === 'string');
+
+function checkOfRow(row: ProfileRow): ProfileCheck | null {
+  if (row.checkAt == null || !row.checkStatus) return null;
+  return {
+    status: row.checkStatus,
+    category: (row.checkCategory ?? 'other') as ProfileCheckCategory,
+    source: (row.checkSource ?? 'manual') as ProfileCheckSource,
+    message: row.checkMessage ?? '',
+    ms: row.checkMs,
+    at: row.checkAt,
+  };
+}
 
 /** Everything needed to start the CLI; values are plaintext and must stay in the main process. */
 export interface ResolvedProfile {
@@ -227,6 +243,44 @@ export class AiProfileService {
     return { created, skipped };
   }
 
+  /**
+   * Fingerprint of everything that decides how the CLI starts (runner, command, arguments,
+   * variable values), so an edit of only the name or colour does not trigger a re-test.
+   */
+  launchSignature(id: string): string {
+    let material: string;
+    try {
+      const p = this.resolve(id);
+      material = JSON.stringify([p.runner, p.command, p.args, Object.entries(p.env).sort()]);
+    } catch (e) {
+      material = `unresolvable:${(e as Error).message}`;
+    }
+    return createHash('sha256').update(material).digest('hex');
+  }
+
+  /** Stores the latest health result; a profile deleted meanwhile is ignored. */
+  recordCheck(id: string, r: { category: ProfileCheckCategory; source: ProfileCheckSource; message: string; ms: number | null }): ProfileCheck | null {
+    const check: ProfileCheck = { status: CHECK_STATUS_OF[r.category], category: r.category, source: r.source, message: r.message, ms: r.ms, at: this.now() };
+    const res = this.db
+      .update(aiProfiles)
+      .set({
+        checkStatus: check.status,
+        checkCategory: check.category,
+        checkSource: check.source,
+        checkMessage: check.message,
+        checkMs: check.ms,
+        checkAt: check.at,
+      })
+      .where(eq(aiProfiles.id, id))
+      .run();
+    return res.changes > 0 ? check : null;
+  }
+
+  checkOf(id: string): ProfileCheck | null {
+    const row = this.db.select().from(aiProfiles).where(eq(aiProfiles.id, id)).get();
+    return row ? checkOfRow(row) : null;
+  }
+
   /** Values of secret variables, for redacting CLI output in logs and errors. */
   secretValues(id: string): string[] {
     const row = this.db.select().from(aiProfiles).where(eq(aiProfiles.id, id)).get();
@@ -295,6 +349,8 @@ export class AiProfileService {
       args: readArgs(row),
       color: row.color,
       isDefault: row.isDefault,
+      check: checkOfRow(row),
+      checking: false,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

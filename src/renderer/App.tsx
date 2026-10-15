@@ -9,11 +9,18 @@ import { applyLanguage } from '@renderer/lib/i18n';
 import { events } from '@renderer/lib/ipc';
 import { TaskSearchDialog } from '@renderer/lib/layout/task-search';
 import { Workspace } from '@renderer/lib/layout/workspace';
+import { useProfileHealthEvents } from '@renderer/lib/profile-health';
 import { ThemeProvider } from '@renderer/lib/theme';
 import { Toaster } from '@renderer/lib/ui/sonner';
 import { TooltipProvider } from '@renderer/lib/ui/tooltip';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } } });
+
+// Needs the query client, so it lives inside the provider.
+function ProfileHealthEvents() {
+  useProfileHealthEvents();
+  return null;
+}
 
 function LanguageSync({ children }: { children: ReactNode }) {
   const { value } = useAppSettingsKey('general');
@@ -38,6 +45,7 @@ export function App() {
             <Workspace />
             <TaskSearchDialog />
             <Toaster />
+            <ProfileHealthEvents />
           </TooltipProvider>
         </LanguageSync>
       </ThemeProvider>

@@ -22,6 +22,8 @@ for (const f of files(join(__dirname, '../..'))) {
 // Built from template strings in the views.
 for (const r of ['resumable', 'fresh', 'not-started', 'unrecoverable']) used.add(`task.recovery.${r}`);
 for (const k of ['explore', 'build', 'review', 'fix']) used.add(`home.suggestions.${k}.title`).add(`home.suggestions.${k}.prompt`);
+for (const c of ['ok', 'auth', 'billing', 'model', 'config', 'not_found', 'rate_limit', 'server', 'network', 'timeout', 'unexpected', 'other']) used.add(`aiProfiles.health.categories.${c}`);
+for (const s of ['ok', 'failed', 'warning']) used.add(`aiProfiles.health.${s}`);
 for (const s of ['general', 'aiProfiles', 'appearance', 'terminal']) used.add(`settings.sections.${s}`).add(`settings.descriptions.${s}`);
 
 describe('locales', () => {

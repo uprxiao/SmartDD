@@ -14,6 +14,7 @@ import openaiLogo from '@renderer/assets/runners/openai.svg';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
+import { HealthDot, ProfileHealthMark } from '@renderer/lib/profile-health';
 import { rpc } from '@renderer/lib/ipc';
 import { Button } from '@renderer/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/lib/ui/popover';
@@ -160,6 +161,7 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
           <span className="flex items-center gap-1.5">
             <span className="inline-block size-2 shrink-0 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-foreground-passive)' }} />
             <span className="truncate">{task.aiProfileName ?? '—'}</span>
+            {profile && <ProfileHealthMark profile={profile} withLabel />}
             {task.aiProfileId === null && task.aiProfileName && <span className="text-foreground-passive">（{t('task.profileDeleted')}）</span>}
           </span>
         </InfoRow>
@@ -225,6 +227,7 @@ export const RuntimeBar = observer(function RuntimeBar({ task }: { task: Task })
       <span data-testid="runtime-profile" className="flex min-w-0 items-center gap-1">
         <span className="inline-block size-2 shrink-0 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-foreground-passive)' }} />
         <span className="truncate">{task.aiProfileName ?? '—'}</span>
+        {profile && <HealthDot profile={profile} className="size-1.5" />}
       </span>
       {model && (
         <>

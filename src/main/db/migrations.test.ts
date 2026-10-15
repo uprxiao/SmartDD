@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
 }
 afterEach(() => open.splice(0).forEach((db) => db.close()));
 
-const ALL = ['0000_init', '0001_projects', '0002_tasks'];
+const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check'];
 
 const tables = (db: Database.Database) =>
   (
@@ -30,6 +30,7 @@ describe('bundled migrations', () => {
     expect(migrations[0].sql).toContain('app_settings');
     expect(migrations[1].sql).toContain('project_databases');
     expect(migrations[2].sql).toContain('ai_profiles');
+    expect(migrations[3].sql).toContain('check_status');
     for (const m of migrations) expect(m.hash).toMatch(/^[0-9a-f]{64}$/);
   });
 
@@ -63,8 +64,8 @@ describe('bundled migrations', () => {
     const db = memoryDb();
     runBundledMigrations(db);
     db.exec("INSERT INTO projects (id, name, created_at, updated_at) VALUES ('p1', 'kept', 1, 1)");
-    db.exec('DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY id DESC LIMIT 2)');
-    expect(runBundledMigrations(db)).toEqual(['0001_projects', '0002_tasks']);
+    db.exec('DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY id DESC LIMIT 3)');
+    expect(runBundledMigrations(db)).toEqual(['0001_projects', '0002_tasks', '0003_ai_profile_check']);
     expect(db.prepare('SELECT name FROM projects').all()).toEqual([{ name: 'kept' }]);
   });
 
@@ -73,13 +74,30 @@ describe('bundled migrations', () => {
     runBundledMigrations(db);
     db.exec("INSERT INTO sessions VALUES ('s1', 'codex', '/tmp', 'n1', 'old', 5)");
     db.exec("UPDATE tasks SET title = 'renamed' WHERE id = 's1'");
-    db.exec('DELETE FROM __drizzle_migrations WHERE id = (SELECT MAX(id) FROM __drizzle_migrations)');
-    expect(runBundledMigrations(db)).toEqual(['0002_tasks']);
+    db.exec('DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY id DESC LIMIT 2)');
+    expect(runBundledMigrations(db)).toEqual(['0002_tasks', '0003_ai_profile_check']);
     expect(db.prepare('SELECT id, title FROM tasks').all()).toEqual([{ id: 's1', title: 'old' }]);
     db.exec("UPDATE tasks SET title = 'renamed' WHERE id = 's1'");
-    db.exec('DELETE FROM __drizzle_migrations WHERE id = (SELECT MAX(id) FROM __drizzle_migrations)');
+    db.exec('DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY id DESC LIMIT 2)');
     runBundledMigrations(db);
     expect(db.prepare('SELECT id, title FROM tasks').all()).toEqual([{ id: 's1', title: 'renamed' }]);
+  });
+
+  it('re-runs 0003 when its columns already exist, keeping the stored results', () => {
+    const db = memoryDb();
+    runBundledMigrations(db);
+    db.exec("INSERT INTO ai_profiles (id, name, runner, check_status, created_at, updated_at) VALUES ('a1', 'cc', 'claude', 'failed', 1, 1)");
+    db.exec('DELETE FROM __drizzle_migrations WHERE id = (SELECT MAX(id) FROM __drizzle_migrations)');
+    expect(runBundledMigrations(db)).toEqual(['0003_ai_profile_check']);
+    expect(columns(db, 'ai_profiles').filter((c) => c.startsWith('check_'))).toEqual([
+      'check_status',
+      'check_category',
+      'check_source',
+      'check_message',
+      'check_ms',
+      'check_at',
+    ]);
+    expect(db.prepare('SELECT check_status FROM ai_profiles').all()).toEqual([{ check_status: 'failed' }]);
   });
 
   it('adopts an M0 database without touching existing rows', () => {
@@ -119,6 +137,13 @@ describe('runMigrations', () => {
     expect(() => runMigrations(db, batch)).toThrow();
     expect(tables(db)).toEqual(['__drizzle_migrations']);
     expect(recorded(db)).toEqual([]);
+  });
+
+  it('skips ADD COLUMN for a column that is already there', () => {
+    const db = memoryDb();
+    db.exec('CREATE TABLE a (x, y)');
+    expect(runMigrations(db, [m(0, 'ALTER TABLE `a` ADD `y` text;\n--> statement-breakpoint\nALTER TABLE a ADD COLUMN z integer')])).toEqual(['m0']);
+    expect(columns(db, 'a')).toEqual(['x', 'y', 'z']);
   });
 
   it('refuses a database migrated by a newer version', () => {

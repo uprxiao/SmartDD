@@ -21,6 +21,7 @@ import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
+import { ProfileHealthMark } from '@renderer/lib/profile-health';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
@@ -210,6 +211,7 @@ export const HomeView = observer(function HomeView() {
                     <SelectItem key={p.id} value={p.id}>
                       <span className="inline-block size-2 rounded-full" style={{ background: p.color ?? 'var(--color-foreground-passive)' }} />
                       {p.name}
+                      <ProfileHealthMark profile={p} />
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
@@ -11,6 +11,7 @@ import * as schema from '../../db/schema';
 import type { SpawnOptions } from '../../pty-manager';
 import { SecretsStore, type SecretCipher } from '../../secrets';
 import { AiProfileService } from '../ai/ai-profile-service';
+import type { HealthEvent } from '../ai/health-classify';
 import { ProjectService } from '../projects/project-service';
 import { TaskService, type PtyHost } from './task-service';
 
@@ -46,6 +47,7 @@ let projects: ProjectService;
 let svc: TaskService;
 let changed: number;
 let clock: number;
+let reports: { profileId: string; ev: HealthEvent; source: string }[];
 
 beforeEach(() => {
   sqlite = new Database(':memory:');
@@ -59,6 +61,7 @@ beforeEach(() => {
   projects = new ProjectService(db, secrets, now);
   ptys = new FakePtys();
   changed = 0;
+  reports = [];
   tmp = realpathSync(mkdtempSync(join(tmpdir(), 'smartdd-task-')));
   svc = new TaskService({
     db,
@@ -75,6 +78,8 @@ beforeEach(() => {
     onChanged: () => changed++,
     now,
     codexPollMs: 20,
+    healthPollMs: 20,
+    health: { report: (profileId, ev, source) => reports.push({ profileId, ev, source }) },
   });
 });
 afterEach(() => {
@@ -133,7 +138,9 @@ const writeCodexRollout = (cwd: string, id: string, at: number) => {
   mkdirSync(dir, { recursive: true });
   const meta = { type: 'session_meta', payload: { id, cwd, timestamp: new Date(at + 500).toISOString(), originator: 'codex_cli_rs' } };
   writeFileSync(join(dir, `rollout-x-${id}.jsonl`), `${JSON.stringify(meta)}\n`);
+  return join(dir, `rollout-x-${id}.jsonl`);
 };
+const claudeSessionPath = (cwd: string, id: string) => join(claudeRoot(), 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'), `${id}.jsonl`);
 
 describe('TaskService.create', () => {
   it('launches in the project directory with the profile env injected and records only names', () => {
@@ -341,6 +348,67 @@ describe('Codex', () => {
     ptys.emit('exit', 'pty-1', 0);
     svc.open({ taskId: task.id });
     expect(ptys.last.args).toEqual([]);
+  });
+});
+
+describe('profile health from running tasks', () => {
+  const apiError = (status: number, text: string) =>
+    `${JSON.stringify({ type: 'assistant', isApiErrorMessage: true, error: 'unknown', apiErrorStatus: status, message: { model: '<synthetic>', content: [{ type: 'text', text }] } })}\n`;
+
+  it('reports the API errors Claude writes into the session file, and a later reply', async () => {
+    const p = project();
+    const prof = claudeProfile();
+    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' });
+    writeClaudeSession(task.cwd, task.id);
+    appendFileSync(claudeSessionPath(task.cwd, task.id), apiError(402, 'API Error: 402 Insufficient Balance'));
+    await vi.waitFor(() => expect(reports).toHaveLength(1), { timeout: 2000 });
+    expect(reports[0]).toEqual({ profileId: prof.id, ev: { category: 'billing', message: 'API Error: 402 Insufficient Balance' }, source: `task:${task.id}` });
+    appendFileSync(claudeSessionPath(task.cwd, task.id), `${JSON.stringify({ type: 'assistant', message: { model: 'ds', content: [] } })}\n`);
+    await vi.waitFor(() => expect(reports[1]?.ev.category).toBe('ok'), { timeout: 2000 });
+    // It already answered, so a non-zero exit afterwards is not a failed start.
+    ptys.emit('exit', 'pty-1', 1);
+    expect(reports).toHaveLength(2);
+  });
+
+  it('reads the error written just before the CLI exits', () => {
+    const p = project();
+    const prof = claudeProfile();
+    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' });
+    writeClaudeSession(task.cwd, task.id);
+    appendFileSync(claudeSessionPath(task.cwd, task.id), apiError(401, 'Invalid API key'));
+    ptys.emit('exit', 'pty-1', 1);
+    expect(reports.map((r) => r.ev.category)).toEqual(['auth']);
+  });
+
+  it('flags a CLI that dies right after launch, but not a normal quit or our own kill', () => {
+    const p = project();
+    const prof = claudeProfile();
+    svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' });
+    ptys.emit('exit', 'pty-1', 127);
+    svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' });
+    ptys.emit('exit', 'pty-2', 1);
+    expect(reports.map((r) => [r.ev.category, r.ev.message])).toEqual([
+      ['not_found', '找不到 CLI 命令（退出码 127）'],
+      ['other', 'CLI 启动后 1 秒退出（退出码 1）'],
+    ]);
+    const t3 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }).task;
+    ptys.emit('exit', 'pty-3', 0);
+    const t4 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }).task;
+    svc.kill(t4.id);
+    expect(reports).toHaveLength(2);
+    expect(t3.id).not.toBe(t4.id);
+  });
+
+  it('follows the Codex rollout once its session id is known', async () => {
+    const p = project();
+    const prof = codexProfile();
+    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看' });
+    const file = writeCodexRollout(task.cwd, 'mine', clock);
+    await vi.waitFor(() => expect(svc.get(task.id).nativeSessionId).toBe('mine'), { timeout: 2000 });
+    const done = { type: 'event_msg', payload: { type: 'task_complete', last_agent_message: null, error: { message: 'unexpected status 401 Unauthorized', codex_error_info: { http_connection_failed: { http_status_code: 401 } } } } };
+    appendFileSync(file, `${JSON.stringify(done)}\n`);
+    await vi.waitFor(() => expect(reports).toHaveLength(1), { timeout: 2000 });
+    expect(reports[0]).toMatchObject({ profileId: prof.id, ev: { category: 'auth' }, source: `task:${task.id}` });
   });
 });
 

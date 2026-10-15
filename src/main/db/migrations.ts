@@ -40,6 +40,17 @@ function appliedCount(connection: BetterSqlite3.Database): number {
   return (connection.prepare('SELECT COUNT(*) AS n FROM __drizzle_migrations').get() as { n: number }).n;
 }
 
+// SQLite has no `ADD COLUMN IF NOT EXISTS`; drizzle-kit writes `ALTER TABLE `t` ADD `c` ...`.
+const ADD_COLUMN_RE = /^ALTER\s+TABLE\s+[`"]?(\w+)[`"]?\s+ADD\s+(?:COLUMN\s+)?[`"]?(\w+)[`"]?/i;
+
+/** An ADD COLUMN whose column is already there (a half-applied or replayed migration) is skipped. */
+export function columnAlreadyExists(connection: BetterSqlite3.Database, stmt: string): boolean {
+  const m = ADD_COLUMN_RE.exec(stmt);
+  if (!m) return false;
+  const cols = connection.prepare('SELECT name FROM pragma_table_info(?)').all(m[1]) as { name: string }[];
+  return cols.some((c) => c.name.toLowerCase() === m[2].toLowerCase());
+}
+
 /**
  * Applies every migration past the recorded count, all inside one transaction: either the
  * whole batch lands or the database is left exactly as it was. Returns the applied tags.
@@ -56,7 +67,7 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
     for (const m of pending) {
       for (const stmt of m.sql.split('--> statement-breakpoint')) {
         const trimmed = stmt.trim();
-        if (trimmed) connection.exec(trimmed);
+        if (trimmed && !columnAlreadyExists(connection, trimmed)) connection.exec(trimmed);
       }
       record.run(m.hash, m.when);
     }

@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import {
+  aiProfilesChangedEvent,
   menuOpenSettingsEvent,
   menuToggleLeftSidebarEvent,
   ptyDataEvent,
@@ -14,6 +15,7 @@ import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
 import { buildAppMenu } from './app/menu';
 import { applyNativeTheme, createMainWindow, getMainWindow, markAppQuitting } from './app/window';
 import { AiProfileService } from './core/ai/ai-profile-service';
+import { ProfileHealth } from './core/ai/profile-health';
 import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
 import { TaskService } from './core/tasks/task-service';
@@ -91,6 +93,11 @@ async function main(): Promise<void> {
   const secrets = new SecretsStore(client.db, safeStorageCipher);
   const projects = new ProjectService(client.db, secrets);
   const aiProfiles = new AiProfileService(client.db, secrets);
+  const health = new ProfileHealth({
+    profiles: aiProfiles,
+    baseEnv,
+    onChanged: (change) => events.emit(aiProfilesChangedEvent, change),
+  });
   const ptys = new PtyManager();
   const tasks = new TaskService({
     db: client.db,
@@ -98,6 +105,7 @@ async function main(): Promise<void> {
     profiles: aiProfiles,
     projects,
     baseEnv,
+    health,
     onChanged: () => events.emit(tasksChangedEvent, undefined),
   });
 
@@ -124,6 +132,7 @@ async function main(): Promise<void> {
       settings,
       projects,
       aiProfiles,
+      health,
       tasks,
       ptys,
       baseEnv,

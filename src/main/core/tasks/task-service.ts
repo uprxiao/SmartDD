@@ -16,8 +16,10 @@ import { aiProfiles, projects, tasks } from '../../db/schema';
 import { PARENT_AGENT_VARS, planLaunchEnv } from '../../launch-env';
 import type { SpawnOptions } from '../../pty-manager';
 import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service';
+import type { ProfileHealth } from '../ai/profile-health';
 import type { ProjectService } from '../projects/project-service';
-import { claudeSessionFileExists, recentCodexRollouts, stateRootFor } from './native-sessions';
+import { claudeSessionFile, claudeSessionFileExists, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
+import { SessionTail } from './session-health';
 
 type TaskRow = typeof tasks.$inferSelect;
 
@@ -37,8 +39,22 @@ export interface TaskServiceDeps {
   baseEnv: () => Record<string, string>;
   /** Fired whenever the list or a running state changes; the renderer re-reads. */
   onChanged: () => void;
+  /** Where API answers seen in the session file go; without it nothing is followed. */
+  health?: Pick<ProfileHealth, 'report'>;
   now?: () => number;
   codexPollMs?: number;
+  healthPollMs?: number;
+}
+
+/** A CLI that dies this soon after launch, unprompted and without any API answer, failed to start. */
+export const EARLY_EXIT_MS = 15_000;
+
+interface Follow {
+  tail: SessionTail;
+  timer: NodeJS.Timeout;
+  ptyId: string;
+  profileId: string;
+  launchedAt: number;
 }
 
 export interface OpenResult {
@@ -59,6 +75,8 @@ export class TaskService {
   private readonly running = new Map<string, string>(); // taskId → ptyId
   private readonly codexWatchers = new Map<string, NodeJS.Timeout>();
   private readonly watchedPty = new Map<string, string>(); // ptyId → taskId, for the grace period after exit
+  private readonly follows = new Map<string, Follow>(); // taskId → session file follower
+  private readonly killedPtys = new Set<string>();
   private readonly now: () => number;
 
   constructor(private readonly d: TaskServiceDeps) {
@@ -130,6 +148,7 @@ export class TaskService {
       .run();
     this.running.set(id, ptyId);
     if (profile.runner === 'codex') this.watchCodex(id, ptyId, dir.path, stateRoot, ts);
+    this.follow(id, ptyId, profile, dir.path, stateRoot, ts);
     this.d.onChanged();
     return { task: this.get(id), ptyId };
   }
@@ -170,6 +189,7 @@ export class TaskService {
       .run();
     this.running.set(row.id, ptyId);
     if (row.runner === 'codex' && mode === 'new') this.watchCodex(row.id, ptyId, row.cwd, stateRoot, ts);
+    this.follow(row.id, ptyId, profile, row.cwd, stateRoot, ts);
     this.d.onChanged();
     return { task: this.get(row.id), ptyId };
   }
@@ -201,6 +221,7 @@ export class TaskService {
     this.require(id);
     this.kill(id);
     this.stopWatch(id);
+    this.unfollow(id);
     this.running.delete(id);
     this.d.db.delete(tasks).where(eq(tasks.id, id)).run();
     this.d.onChanged();
@@ -208,7 +229,9 @@ export class TaskService {
 
   kill(id: string): void {
     const ptyId = this.running.get(id);
-    if (ptyId) this.d.ptys.kill(ptyId);
+    if (!ptyId) return;
+    this.killedPtys.add(ptyId);
+    this.d.ptys.kill(ptyId);
   }
 
   runningCount(): number {
@@ -218,6 +241,8 @@ export class TaskService {
   dispose(): void {
     for (const t of this.codexWatchers.values()) clearInterval(t);
     this.codexWatchers.clear();
+    for (const f of this.follows.values()) clearInterval(f.timer);
+    this.follows.clear();
     this.d.ptys.off('exit', this.onPtyExit);
   }
 
@@ -296,11 +321,62 @@ export class TaskService {
     this.codexWatchers.delete(taskId);
   }
 
-  private readonly onPtyExit = (ptyId: string) => {
+  /** Report the API's answers in this run's session file to the profile's health (latest wins). */
+  private follow(taskId: string, ptyId: string, profile: ResolvedProfile, cwd: string, root: string, launchedAt: number): void {
+    const health = this.d.health;
+    if (!health) return;
+    this.unfollow(taskId);
+    let scanned = false;
+    const locate = (): string | null => {
+      const row = this.d.db.select({ sid: tasks.nativeSessionId }).from(tasks).where(eq(tasks.id, taskId)).get();
+      if (!row?.sid) return null; // Codex: known once watchCodex has matched the rollout
+      if (profile.runner === 'claude') return claudeSessionFile(root, cwd, row.sid, false);
+      // A resumed Codex session lives in the day folder it was created in: look everywhere, once.
+      const f = codexRolloutFile(root, row.sid, launchedAt, !scanned);
+      scanned = true;
+      return f;
+    };
+    const tail = new SessionTail({
+      runner: profile.runner,
+      locate,
+      launchedAt,
+      onEvent: (ev) => health.report(profile.id, ev, `task:${taskId}`),
+    });
+    const timer = setInterval(() => this.pollFollow(tail), this.d.healthPollMs ?? 2000);
+    this.follows.set(taskId, { tail, timer, ptyId, profileId: profile.id, launchedAt });
+  }
+
+  private pollFollow(tail: SessionTail): void {
+    try {
+      tail.poll();
+    } catch {
+      // A session file we cannot read only means no health update.
+    }
+  }
+
+  private unfollow(taskId: string): void {
+    const f = this.follows.get(taskId);
+    if (f) clearInterval(f.timer);
+    this.follows.delete(taskId);
+  }
+
+  private readonly onPtyExit = (ptyId: string, code: number) => {
     for (const [taskId, id] of this.running) {
       if (id !== ptyId) continue;
       this.running.delete(taskId);
       this.d.onChanged();
+    }
+    const killed = this.killedPtys.delete(ptyId);
+    for (const [taskId, f] of this.follows) {
+      if (f.ptyId !== ptyId) continue;
+      this.unfollow(taskId);
+      this.pollFollow(f.tail); // the last answers written before exit
+      const secs = (this.now() - f.launchedAt) / 1000;
+      if (!killed && code !== 0 && !f.tail.sawEvent && secs * 1000 < EARLY_EXIT_MS) {
+        const message =
+          code === 127 ? '找不到 CLI 命令（退出码 127）' : `CLI 启动后 ${Math.max(1, Math.round(secs))} 秒退出（退出码 ${code}）`;
+        this.d.health?.report(f.profileId, { category: code === 127 ? 'not_found' : 'other', message }, `task:${taskId}`);
+      }
     }
     const watched = this.watchedPty.get(ptyId);
     if (watched) {

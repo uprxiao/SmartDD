@@ -145,6 +145,14 @@ export const aiProfiles = sqliteTable('ai_profiles', {
   args: text('args').notNull().default('[]'),
   color: text('color'),
   isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+  /** Last health result: a test, or an API answer seen in a task (the latest wins). */
+  checkStatus: text('check_status', { enum: ['ok', 'failed', 'warning'] }),
+  checkCategory: text('check_category'),
+  /** manual / auto / task:<taskId> */
+  checkSource: text('check_source'),
+  checkMessage: text('check_message'),
+  checkMs: integer('check_ms'),
+  checkAt: integer('check_at'),
   ...timestamps,
 });
 

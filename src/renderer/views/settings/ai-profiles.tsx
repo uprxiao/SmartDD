@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { CircleAlert, CircleCheck, FileInput, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { CircleAlert, CircleCheck, FileInput, Loader2, Plus, RefreshCw, Stethoscope, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import { rpcErrorMessage } from '@shared/ipc/rpc';
 import type { Runner } from '@shared/types';
 import { useAiProfiles, useRefreshAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
 import { rpc } from '@renderer/lib/ipc';
+import { HealthDot, healthLabel, healthState, healthTitle } from '@renderer/lib/profile-health';
 import { Badge } from '@renderer/lib/ui/badge';
 import { Button } from '@renderer/lib/ui/button';
 import { Checkbox } from '@renderer/lib/ui/checkbox';
@@ -36,6 +37,23 @@ export function AiProfilesSection() {
   const [importing, setImporting] = useState(0);
   const [deleting, setDeleting] = useState<AiProfileView | null>(null);
   const open = (profile: AiProfileView | null) => setEditing({ key: Date.now(), profile });
+  const testProfile = async (p: AiProfileView) => {
+    try {
+      const pending = rpc.aiProfiles.test(p.id);
+      void refresh(); // show "testing" right away
+      const c = await pending;
+      if (!c) return;
+      if (c.status === 'ok') toast.success(t('aiProfiles.health.testOk', { name: p.name, s: ((c.ms ?? 0) / 1000).toFixed(1) }));
+      else {
+        const show = c.status === 'failed' ? toast.error : toast.warning;
+        show(t('aiProfiles.health.testFailed', { name: p.name, status: healthLabel(t, c.status), message: c.message || t(`aiProfiles.health.categories.${c.category}`) }));
+      }
+    } catch (e) {
+      toast.error(rpcErrorMessage(e));
+    } finally {
+      void refresh();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,7 +80,18 @@ export function AiProfilesSection() {
               <span className="truncate text-sm font-medium">{p.name}</span>
               <Badge variant="secondary">{RUNNERS[p.runner].label}</Badge>
               {p.isDefault && <Badge data-testid="profile-default">{t('aiProfiles.default')}</Badge>}
+              <span className="flex min-w-0 items-center gap-1.5 text-xs text-foreground-muted" title={healthTitle(t, p)}>
+                <HealthDot profile={p} />
+                <span data-testid="profile-health-label" className="truncate">
+                  {healthLabel(t, healthState(p))}
+                  {!p.checking && p.check && p.check.status !== 'ok' && ` · ${t(`aiProfiles.health.categories.${p.check.category}`)}`}
+                </span>
+              </span>
               <div className="ml-auto flex shrink-0 gap-1">
+                <Button variant="ghost" size="xs" data-testid="profile-test" disabled={p.checking} onClick={() => void testProfile(p)}>
+                  {p.checking ? <Loader2 className="animate-spin" /> : <Stethoscope />}
+                  {t('aiProfiles.health.test')}
+                </Button>
                 {!p.isDefault && (
                   <Button
                     variant="ghost"

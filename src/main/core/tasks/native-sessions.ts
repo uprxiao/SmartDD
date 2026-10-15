@@ -1,5 +1,6 @@
-// Where Claude Code and Codex keep their own session files (verified in M0). SmartDD only
-// reads file names and the first line of Codex rollouts; it never parses conversation content.
+// Where Claude Code and Codex keep their own session files (verified in M0). SmartDD reads file
+// names and the first line of Codex rollouts; session-health.ts additionally reads the lines that
+// carry the API's verdict (a reply arrived / which error) — never the conversation text itself.
 
 import { existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { open } from 'node:fs/promises';
@@ -17,7 +18,8 @@ export function stateRootFor(runner: Runner, profileEnv: Record<string, string>,
 // Claude stores <root>/projects/<cwd with every non-alphanumeric char replaced by "->/<id>.jsonl.
 const encodeClaudeDir = (cwd: string) => cwd.replace(/[^a-zA-Z0-9]/g, '-');
 
-export function claudeSessionFileExists(root: string, cwd: string, sessionId: string): boolean {
+/** The session file's path, or null while Claude has not written it. `scan` also looks in every project folder. */
+export function claudeSessionFile(root: string, cwd: string, sessionId: string, scan = true): string | null {
   const projects = join(root, 'projects');
   const candidates = new Set([cwd]);
   try {
@@ -25,10 +27,47 @@ export function claudeSessionFileExists(root: string, cwd: string, sessionId: st
   } catch {
     // Directory gone; the recorded path is all we have.
   }
-  for (const c of candidates) if (existsSync(join(projects, encodeClaudeDir(c), `${sessionId}.jsonl`))) return true;
+  for (const c of candidates) {
+    const f = join(projects, encodeClaudeDir(c), `${sessionId}.jsonl`);
+    if (existsSync(f)) return f;
+  }
   // Fallback for encodings we do not predict (e.g. a future Claude version).
-  if (!existsSync(projects)) return false;
-  return readdirSync(projects).some((d) => existsSync(join(projects, d, `${sessionId}.jsonl`)));
+  if (!scan || !existsSync(projects)) return null;
+  for (const d of readdirSync(projects)) {
+    const f = join(projects, d, `${sessionId}.jsonl`);
+    if (existsSync(f)) return f;
+  }
+  return null;
+}
+
+export function claudeSessionFileExists(root: string, cwd: string, sessionId: string): boolean {
+  return claudeSessionFile(root, cwd, sessionId) != null;
+}
+
+/** rollout-<time>-<id>.jsonl under sessions/YYYY/MM/DD: the recent days first, then (if `scan`) every day folder. */
+export function codexRolloutFile(root: string, sessionId: string, sinceMs: number, scan: boolean): string | null {
+  const sessions = join(root, 'sessions');
+  const suffix = `-${sessionId}.jsonl`;
+  const inDir = (dir: string) => {
+    if (!existsSync(dir)) return null;
+    const name = readdirSync(dir).find((n) => n.startsWith('rollout-') && n.endsWith(suffix));
+    return name ? join(dir, name) : null;
+  };
+  for (const dir of codexDayDirs(sessions, sinceMs)) {
+    const f = inDir(dir);
+    if (f) return f;
+  }
+  if (!scan || !existsSync(sessions)) return null;
+  const sub = (dir: string) => readdirSync(dir).filter((n) => /^\d+$/.test(n)).sort().reverse();
+  for (const y of sub(sessions)) {
+    for (const m of sub(join(sessions, y))) {
+      for (const d of sub(join(sessions, y, m))) {
+        const f = inDir(join(sessions, y, m, d));
+        if (f) return f;
+      }
+    }
+  }
+  return null;
 }
 
 export async function recentCodexRollouts(root: string, sinceMs: number): Promise<CodexRolloutMeta[]> {

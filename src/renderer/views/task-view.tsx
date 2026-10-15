@@ -14,6 +14,7 @@ import { tasksStore } from '@renderer/core/tasks-store';
 import { buildTerminalFontFamily, terminalKeyAction } from '@renderer/core/terminal-keys';
 import { recordTerminalFont, recordTerminalSize } from '@renderer/core/terminal-size';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
+import { ProfileHealthMark } from '@renderer/lib/profile-health';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import i18n from '@renderer/lib/i18n';
 import { events, rpc } from '@renderer/lib/ipc';
@@ -103,6 +104,7 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
                   {candidates.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
+                      <ProfileHealthMark profile={p} />
                     </SelectItem>
                   ))}
                 </SelectContent>

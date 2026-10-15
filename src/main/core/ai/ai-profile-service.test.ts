@@ -159,6 +159,43 @@ describe('AiProfileService', () => {
   });
 });
 
+describe('AiProfileService health', () => {
+  it('starts without a result, stores the latest one and keeps it across edits', () => {
+    const p = svc.create(input());
+    expect(p.check).toBeNull();
+    expect(p.checking).toBe(false);
+    const c = svc.recordCheck(p.id, { category: 'billing', source: 'task:t1', message: '402 Insufficient Balance', ms: null });
+    expect(c).toMatchObject({ status: 'failed', category: 'billing', source: 'task:t1', message: '402 Insufficient Balance', ms: null });
+    expect(svc.get(p.id).check).toEqual(c);
+    svc.recordCheck(p.id, { category: 'rate_limit', source: 'manual', message: '429', ms: 820 });
+    expect(svc.checkOf(p.id)).toMatchObject({ status: 'warning', category: 'rate_limit', ms: 820 });
+    svc.update(p.id, input({ name: 'renamed' }));
+    expect(svc.checkOf(p.id)?.category).toBe('rate_limit');
+    svc.delete(p.id);
+    expect(svc.recordCheck(p.id, { category: 'ok', source: 'auto', message: '', ms: 1 })).toBeNull();
+    expect(svc.checkOf(p.id)).toBeNull();
+  });
+
+  it('changes the launch signature only for what decides how the CLI starts', () => {
+    const p = svc.create(input());
+    const sig = svc.launchSignature(p.id);
+    svc.update(p.id, input({ name: 'other', color: '#ef4444', env: [{ name: 'ANTHROPIC_BASE_URL', secret: false, value: 'https://ds.invalid' }, { name: 'ANTHROPIC_AUTH_TOKEN', secret: true }] }));
+    expect(svc.launchSignature(p.id)).toBe(sig);
+    for (const over of [
+      { args: ['--model', 'x'] },
+      { executable: '/opt/claude' },
+      { env: [{ name: 'ANTHROPIC_BASE_URL', secret: false, value: 'https://ds.invalid' }, { name: 'ANTHROPIC_AUTH_TOKEN', secret: true, value: 'tok-new' }] },
+    ]) {
+      const before = svc.launchSignature(p.id);
+      svc.update(p.id, input(over));
+      expect(svc.launchSignature(p.id)).not.toBe(before);
+    }
+    // A cleared token cannot launch; that is a signature of its own, not an exception.
+    svc.update(p.id, input({ env: [{ name: 'ANTHROPIC_AUTH_TOKEN', secret: true, value: null }] }));
+    expect(svc.launchSignature(p.id)).toMatch(/^[0-9a-f]{64}$/);
+  });
+});
+
 describe('splitArgs / joinArgs', () => {
   it('splits like a shell without expansion', () => {
     expect(splitArgs(`--model "a b" --x='c d' e\\ f $HOME`)).toEqual(['--model', 'a b', '--x=c d', 'e f', '$HOME']);

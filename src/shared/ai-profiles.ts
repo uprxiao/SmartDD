@@ -87,6 +87,53 @@ export interface AiProfileEnvView {
   hasValue: boolean;
 }
 
+// ---- health: the profile's last test or the last API answer seen in a task ----
+
+/** ok: answered. failed: unusable until fixed (auth, billing, model). warning: probably temporary. */
+export type ProfileCheckStatus = 'ok' | 'failed' | 'warning';
+export type ProfileCheckCategory =
+  | 'ok'
+  | 'auth'
+  | 'billing'
+  | 'model'
+  | 'config'
+  | 'not_found'
+  | 'rate_limit'
+  | 'server'
+  | 'network'
+  | 'timeout'
+  | 'unexpected'
+  | 'other';
+
+export const CHECK_STATUS_OF: Record<ProfileCheckCategory, ProfileCheckStatus> = {
+  ok: 'ok',
+  auth: 'failed',
+  billing: 'failed',
+  model: 'failed',
+  config: 'failed',
+  not_found: 'failed',
+  other: 'failed',
+  rate_limit: 'warning',
+  server: 'warning',
+  network: 'warning',
+  timeout: 'warning',
+  unexpected: 'warning',
+};
+
+/** manual / auto (after import, create or a launch-affecting edit) / task:<taskId>. */
+export type ProfileCheckSource = 'manual' | 'auto' | `task:${string}`;
+
+export interface ProfileCheck {
+  status: ProfileCheckStatus;
+  category: ProfileCheckCategory;
+  source: ProfileCheckSource;
+  /** Redacted; the CLI's own words where there are any. */
+  message: string;
+  /** Test duration; null for results seen in a task. */
+  ms: number | null;
+  at: number;
+}
+
 export interface AiProfileView {
   id: string;
   name: string;
@@ -96,6 +143,9 @@ export interface AiProfileView {
   args: string[];
   color: string | null;
   isDefault: boolean;
+  check: ProfileCheck | null;
+  /** A test is running now (memory only). */
+  checking: boolean;
   createdAt: number;
   updatedAt: number;
 }
