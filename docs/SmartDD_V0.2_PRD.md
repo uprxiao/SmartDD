@@ -147,7 +147,7 @@ SmartDD 是 Mac 上的 AI 开发工作台。项目集中管理代码目录、数
 | M4 Skill 与注入 | 内置 Skill、按项目装载、投影、注入、Skill／MCP 识别 | V2、V3、V4、V6、V9 的实现及本机验证完成（2026-10-15）；AIS 正式验收与 M5 合并，见 `M4_Skill与配置注入.md` |
 | M5 端到端验收 | 用 AIS 项目跑完整流程 | 场景列表隔离自动化 V1–V10 通过；日常页面 CC-work 实际查询 Skill/Agent 数量和 173 包时间，修复交互启动与颜色缺陷（2026-10-15），见 `M5_AIS端到端验收.md` |
 
-一期补充（2026-10-15）：按用户要求在 `feature/0.0.1` 推进多平台构建与标签发版。`v0.0.1` 因标签检出问题失败并保留记录；修复后 `v0.0.2` 的两个 Mac、一个 Windows 目标在 GitHub Actions 全部构建成功，预发布安装包已下载并通过 SHA-256 校验，Mac arm64 下载包的原生模块和隔离 GUI 通过。用户进一步要求本轮补齐 Windows MSI 和 Linux AppImage/DEB/RPM，准备 `v0.0.3`，待四个目标实际构建和载荷检查通过后发布。Windows/Linux 的完整业务适配、Apple 签名、公证尚未完成，见 [多平台构建与发版](多平台构建与发版方案.md)。发布和版本进位规则统一维护在根目录 `AGENTS.md`。
+一期补充（2026-10-15）：按用户要求在 `feature/0.0.1` 推进多平台构建与标签发版。`v0.0.1` 因标签检出问题失败并保留记录；修复后 `v0.0.2` 首次成功发布安装包。后续 `v0.0.3` 补齐 Windows MSI、Linux AppImage/DEB/RPM 和用户选定的新 Logo，四个目标的构建、原生模块/解包检查及发布全部成功，七个安装包已实际下载校验，Mac arm64 下载包的图标与隔离 GUI 检查通过。Windows/Linux 的完整业务适配、Apple 签名、公证尚未完成，见 [多平台构建与发版](多平台构建与发版方案.md)。自动更新按 §8.1 继续作为后续功能；发布和版本进位规则统一维护在根目录 `AGENTS.md`。
 
 不在没有验证的情况下给出固定工期；M0 结果出来后再估算。
 
@@ -269,7 +269,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 | F09 | 凭据与安全 | safeStorage 加密存储、脱敏、日志 | P0 |
 | F10 | 设置与外观 | 主题、通用设置 | P1 |
 | F12 | 应用内自动更新 | 检查版本、展示变更、下载进度、确认重启安装、失败恢复 | P1（二期高优先级，已确认待开发） |
-| F13 | Windows MSI 与 Linux 分发 | Windows x64 MSI；Linux x64 AppImage、DEB、RPM 的构建、安装与升级验收 | P1（一期补充构建；完整平台验收待完成） |
+| F13 | Windows MSI 与 Linux 分发 | Windows x64 MSI；Linux x64 AppImage、DEB、RPM 的构建、安装与升级验收 | P1（v0.0.3 构建已交付；完整平台验收待完成） |
 
 二期预留（本版不展开）：禅道、Jenkins 与部署、手机端、Skill 分发与版本中心、SVN 信息展示。
 
@@ -513,7 +513,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 
 **验收**：从真实旧版本升级到新版本，验证检查与版本排序、预发布隔离、下载进度、包损坏拒绝、断网重试、运行中任务保护、安装重启、项目/配置/加密凭据/会话恢复信息保留，以及升级失败后的恢复。Mac、Windows、Linux 各自取得证据后才声明该平台支持自动更新。
 
-### 8.2 Windows MSI 与 Linux 安装包（F13，本轮接入构建）
+### 8.2 Windows MSI 与 Linux 安装包（F13，构建已交付）
 
 | 平台 / 格式 | 需求 | 验收要求 |
 | --- | --- | --- |
@@ -524,7 +524,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 
 **构建与发布**：在对应系统 runner 构建，重建 SQLite/PTY 原生依赖，保留版本与提交校验；增加对应的 Actions artifact、Release 资产、manifest 和 SHA-256。先完成 Windows、Linux 的终端、CLI 检测、Skill 运行时和安全存储适配，再声明平台可用。Linux 不允许把安全存储静默降级为明文。
 
-**当前状态**：v0.0.2 已完成原三个安装包的构建、发布和实际下载校验。v0.0.3 新增 Windows MSI 与 Linux AppImage/DEB/RPM 构建配置，在 Windows／Ubuntu 原生 runner 解包检查版本、架构、SQLite 和 PTY，七个安装包与四份清单齐备后才能发布；云端结果以构建发版文档记录为准。桌面安装升级、CLI、Skill、安全存储等完整业务验收仍待完成；自动更新仍未实现。参考本地 `../yoda/electron-builder.config.ts`、`src/main/core/updates/update-service.ts`、`mac-sparkle-updater.ts`、`src/renderer/features/settings/components/UpdateCard.tsx` 与其发布脚本。
+**当前状态**：v0.0.3 已在 GitHub Actions 完成四个目标、七个安装包的构建并公开预发布，包含新 Logo。Windows MSI 与 Linux AppImage/DEB/RPM 均在原生 runner 解包，通过版本、架构、SQLite 和 PTY 检查；构建与最终下载记录见[多平台构建与发版](多平台构建与发版方案.md#10-msi-与-linux-扩展v003)。桌面安装升级、CLI、Skill、安全存储等完整业务验收仍待完成；自动更新仍未实现。参考本地 `../yoda/electron-builder.config.ts`、`src/main/core/updates/update-service.ts`、`mac-sparkle-updater.ts`、`src/renderer/features/settings/components/UpdateCard.tsx` 与其发布脚本。
 
 ## 9. 异常与恢复要求
 
