@@ -32,5 +32,7 @@ terminal.onExit(({ exitCode }) => {
   clearTimeout(timer);
   assert.equal(exitCode, 0);
   assert(output.includes('SMARTDD_NATIVE_PTY_OK'), 'Packaged PTY output');
-  console.log(JSON.stringify({ version: expectedVersion, platform: process.platform, arch: process.arch, sqlite: 'passed', pty: 'passed' }));
+  // Windows ConPTY can retain worker handles after onExit. This is an isolated
+  // one-shot probe: once every assertion passes, flush the result and end it.
+  process.stdout.write(`${JSON.stringify({ version: expectedVersion, platform: process.platform, arch: process.arch, sqlite: 'passed', pty: 'passed' })}\n`, () => process.exit(0));
 });

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -47,6 +47,34 @@ test('packaging refuses another OS before rebuilding or producing installers', (
   assert.equal(result.status, 1);
   assert.match(result.stderr, /matching native runner/);
   assert(!result.stdout.includes('Building SmartDD'));
+});
+
+test('native probe finishes after PTY exit even if a worker handle remains open', (t) => {
+  // Reproduce the Windows ConPTY lifecycle without requiring a Windows host.
+  // Real SQLite/PTY behavior is verified separately inside each platform package.
+  const dir = mkdtempSync(join(tmpdir(), 'smartdd-native-exit-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const put = (name, text = '') => {
+    const file = join(dir, name);
+    mkdirSync(join(file, '..'), { recursive: true });
+    writeFileSync(file, text);
+  };
+  put('app.asar/package.json', JSON.stringify({ version: '0.0.2' }));
+  for (const name of ['out/main/index.js', 'out/preload/index.js', 'out/renderer/index.html', 'NOTICE', 'licenses/Yoda-Apache-2.0.txt']) put(`app.asar/${name}`);
+  put('app.asar/node_modules/better-sqlite3/index.js', `module.exports = class {
+    exec() {} close() {} prepare() { return {run() {}, get() {return {value:'SmartDD'}}} }
+  };`);
+  put('app.asar/node_modules/node-pty/index.js', `module.exports.spawn = () => ({
+    kill() {},
+    onData(fn) {setImmediate(() => fn('SMARTDD_NATIVE_PTY_OK'))},
+    onExit(fn) {setInterval(() => {}, 10000); setImmediate(() => fn({exitCode:0}))}
+  });`);
+  put('preload.cjs', "Object.defineProperty(process.versions, 'electron', {value:'fixture'});");
+  const result = spawnSync(process.execPath, ['--require', join(dir, 'preload.cjs'),
+    join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], { encoding: 'utf8', timeout: 5000 });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).pty, 'passed');
 });
 
 test('release tag must be annotated, checked out, sequential and already in main', (t) => {
