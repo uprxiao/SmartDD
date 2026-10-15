@@ -13,6 +13,7 @@ import {
 import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
 import { buildAppMenu } from './app/menu';
+import { appIcon } from './app/icon';
 import { applyNativeTheme, createMainWindow, getMainWindow, markAppQuitting } from './app/window';
 import { AiProfileService } from './core/ai/ai-profile-service';
 import { ProfileHealth } from './core/ai/profile-health';
@@ -70,6 +71,8 @@ function openDatabase(dbFile: string): DbClient {
 
 async function main(): Promise<void> {
   await app.whenReady();
+  // Packaged macOS apps use the bundle's ICNS; dev runs otherwise show Electron's icon.
+  if (!app.isPackaged) app.dock?.setIcon(appIcon);
   const dbFile = join(app.getPath('userData'), 'smartdd.db');
   let client: DbClient;
   try {

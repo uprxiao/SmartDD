@@ -7,6 +7,7 @@ import { navigation } from '@renderer/core/navigation';
 import { rpc } from '@renderer/lib/ipc';
 import { SidebarProjects } from '@renderer/lib/layout/sidebar-projects';
 import { cn } from '@renderer/utils/utils';
+import appIcon from '../../../assets/branding/app-icon.png';
 
 function NavButton({
   active,
@@ -48,6 +49,7 @@ function SidebarStatusBar() {
       data-testid="sidebar-status-bar"
       className="flex shrink-0 items-center gap-1 border-t border-border/45 bg-background-tertiary/65 px-3 py-1.5 text-[11px]"
     >
+      <img src={appIcon} alt="" aria-hidden="true" className="mr-1 size-5 shrink-0 object-contain" draggable={false} />
       <span className="truncate font-medium text-foreground-muted">SmartDD</span>
       <span className="shrink-0 font-mono text-[10px] text-foreground-passive">(V{info.data?.version ?? '…'})</span>
     </footer>

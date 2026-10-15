@@ -2,6 +2,7 @@
 import { join } from 'node:path';
 import { BrowserWindow, nativeTheme } from 'electron';
 import type { Theme } from '@shared/app-settings';
+import { appIcon } from './icon';
 
 let mainWindow: BrowserWindow | null = null;
 let appQuitting = false;
@@ -33,6 +34,7 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     minWidth: 700,
     minHeight: 500,
     title: 'SmartDD',
+    icon: appIcon,
     show: false,
     backgroundColor: windowBackground(),
     ...(isMac

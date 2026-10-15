@@ -11,7 +11,6 @@ import {
   Hammer,
   Info,
   Loader2,
-  SquareTerminal,
   Wrench,
 } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
@@ -27,6 +26,7 @@ import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { cn } from '@renderer/utils/utils';
 import { CapabilityLaunchPreview } from './capabilities';
+import appIcon from '../../assets/branding/app-icon.png';
 
 const CHIP =
   'h-7 w-auto min-w-0 gap-1.5 rounded-md border border-border bg-background-1 px-2.5 text-xs text-foreground hover:bg-background-2';
@@ -110,9 +110,7 @@ export const HomeView = observer(function HomeView() {
         <div className="flex flex-1 flex-col justify-center gap-8 pb-[8vh]">
           <div className="text-center">
             <div className="mb-4 flex justify-center">
-              <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-background-1 shadow-sm">
-                <SquareTerminal className="size-5 text-foreground-muted" />
-              </span>
+              <img src={appIcon} alt="SmartDD" className="size-16 object-contain" draggable={false} />
             </div>
             <h1 className="text-2xl font-semibold">{t('home.title')}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t('home.subtitle')}</p>

@@ -13,6 +13,7 @@ module.exports = {
   forceCodeSigning: signed,
   publish: null,
   mac: {
+    icon: 'build/icons/icon.icns',
     target: [{ target: 'dmg', arch: ['arm64', 'x64'] }],
     category: 'public.app-category.developer-tools',
     hardenedRuntime: true,
@@ -21,10 +22,11 @@ module.exports = {
     notarize: signed,
     ...(signed ? {} : { identity: null }),
   },
-  win: { target: [{ target: 'nsis', arch: ['x64'] }, { target: 'msi', arch: ['x64'] }] },
+  win: { icon: 'build/icons/icon.ico', target: [{ target: 'nsis', arch: ['x64'] }, { target: 'msi', arch: ['x64'] }] },
   msi: { oneClick: false, perMachine: false },
   nsis: { oneClick: false, perMachine: false, allowToChangeInstallationDirectory: true },
   linux: {
+    icon: 'build/icons/png',
     category: 'Development',
     executableName: 'smartdd',
     maintainer: 'SmartDD contributors',
