@@ -19,6 +19,7 @@ import { rpc } from '@renderer/lib/ipc';
 import { Button } from '@renderer/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/lib/ui/popover';
 import { cn } from '@renderer/utils/utils';
+import { RuntimeCapabilities } from './capabilities';
 
 const RUNNER_LOGOS: Record<Runner, string> = { claude: claudeLogo, codex: openaiLogo };
 
@@ -147,7 +148,7 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
       >
         <Info className="size-4" />
       </PopoverTrigger>
-      <PopoverContent align="end" data-testid="task-info-popup" className="w-96 gap-2.5 text-xs">
+      <PopoverContent align="end" data-testid="task-info-popup" className="max-h-[75vh] w-96 gap-2.5 overflow-y-auto text-xs">
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate text-sm font-medium" title={task.title}>
             {task.title}
@@ -184,6 +185,7 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
             )}
           </div>
         </InfoRow>
+        {task.runtimeSnapshot && <InfoRow label={t('capabilities.label')}><RuntimeCapabilities snapshot={task.runtimeSnapshot} /></InfoRow>}
         {changed && (
           <div className="flex items-start gap-1 text-foreground-muted">
             <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />

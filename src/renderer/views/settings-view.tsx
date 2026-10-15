@@ -14,8 +14,9 @@ import { SectionPage, SettingRow } from '@renderer/lib/ui/section-page';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@renderer/lib/ui/toggle-group';
 import { AiProfilesSection } from './settings/ai-profiles';
+import { CapabilitiesSection } from './capabilities';
 
-const SECTIONS: SettingsSectionId[] = ['general', 'aiProfiles', 'appearance', 'terminal'];
+const SECTIONS: SettingsSectionId[] = ['general', 'aiProfiles', 'capabilities', 'appearance', 'terminal'];
 
 export const SettingsView = observer(function SettingsView() {
   const { t } = useTranslation();
@@ -35,6 +36,7 @@ export const SettingsView = observer(function SettingsView() {
     >
       {section === 'general' && <GeneralSection />}
       {section === 'aiProfiles' && <AiProfilesSection />}
+      {section === 'capabilities' && <CapabilitiesSection />}
       {section === 'appearance' && <AppearanceSection />}
       {section === 'terminal' && <TerminalSection />}
     </SectionPage>

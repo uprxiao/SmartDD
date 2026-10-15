@@ -23,6 +23,7 @@ import { Button } from '@renderer/lib/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { cssVar } from '@renderer/utils/cssVars';
 import { cn } from '@renderer/utils/utils';
+import { InjectionFailure } from './capabilities';
 
 function xtermTheme() {
   return {
@@ -46,6 +47,7 @@ export const TaskView = observer(function TaskView() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      {task?.runtimeSnapshot?.selfCheck.status === 'failed' && <InjectionFailure snapshot={task.runtimeSnapshot} />}
       <div data-testid="task-area" className="relative min-h-0 flex-1 bg-(--xterm-bg)">
         {terminals.map(([taskId, ptyId]) => (
           <TaskTerminal key={ptyId} ptyId={ptyId} visible={navigation.currentViewId === 'task' && task?.id === taskId} />

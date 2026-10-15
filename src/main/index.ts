@@ -16,6 +16,7 @@ import { buildAppMenu } from './app/menu';
 import { applyNativeTheme, createMainWindow, getMainWindow, markAppQuitting } from './app/window';
 import { AiProfileService } from './core/ai/ai-profile-service';
 import { ProfileHealth } from './core/ai/profile-health';
+import { CapabilityService } from './core/capabilities/capability-service';
 import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
 import { TaskService } from './core/tasks/task-service';
@@ -93,6 +94,7 @@ async function main(): Promise<void> {
   const secrets = new SecretsStore(client.db, safeStorageCipher);
   const projects = new ProjectService(client.db, secrets);
   const aiProfiles = new AiProfileService(client.db, secrets);
+  const capabilities = new CapabilityService({ db: client.db, projects, secrets, userData: app.getPath('userData') });
   const health = new ProfileHealth({
     profiles: aiProfiles,
     baseEnv,
@@ -106,6 +108,7 @@ async function main(): Promise<void> {
     projects,
     baseEnv,
     health,
+    capabilities,
     onChanged: () => events.emit(tasksChangedEvent, undefined),
   });
 
@@ -134,6 +137,7 @@ async function main(): Promise<void> {
       aiProfiles,
       health,
       tasks,
+      capabilities,
       ptys,
       baseEnv,
       onSettingChanged: (key) => {
@@ -175,6 +179,7 @@ async function main(): Promise<void> {
   app.on('will-quit', () => {
     tasks.dispose();
     ptys.killAll();
+    capabilities.dispose();
     client.close();
   });
 }

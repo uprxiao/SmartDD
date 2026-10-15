@@ -1,0 +1,67 @@
+# Draft aggregation followed by publication, adapted from Yoda; see NOTICE.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check version, changelog, annotated tag and main ancestry
+        env:
+          SMARTDD_RELEASE_TAG: ${{ github.ref_name }}
+        run: node scripts/release/metadata.mjs --git
+  build:
+    needs: metadata
+    uses: ./.github/workflows/build.yml
+    with:
+      release: true
+    secrets:
+      MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
+      MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      WIN_CERTIFICATE: ${{ secrets.WIN_CERTIFICATE }}
+      WIN_CERTIFICATE_PASSWORD: ${{ secrets.WIN_CERTIFICATE_PASSWORD }}
+  publish:
+    needs: [metadata, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: smartdd-*
+          path: release/downloads
+          merge-multiple: true
+      - name: Verify complete assets, upload to draft, then publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SMARTDD_RELEASE_TAG: ${{ github.ref_name }}
+        run: node scripts/release/publish.mjs --artifacts release/downloads

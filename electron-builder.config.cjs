@@ -1,0 +1,26 @@
+// Adapted from ../yoda/electron-builder.config.ts (Apache-2.0); see NOTICE.
+const signed = process.env.SMARTDD_SIGN === '1';
+
+module.exports = {
+  appId: 'com.smartdd.desktop',
+  productName: 'SmartDD',
+  directories: { output: 'release' },
+  artifactName: 'SmartDD-${version}-${os}-${arch}.${ext}',
+  files: ['out/**', 'NOTICE', 'licenses/**'],
+  asarUnpack: ['node_modules/better-sqlite3/**', 'node_modules/node-pty/**', '**/*.node'],
+  // Rebuild these two modules explicitly, using the target Electron ABI.
+  npmRebuild: false,
+  forceCodeSigning: signed,
+  publish: null,
+  mac: {
+    target: [{ target: 'dmg', arch: ['arm64', 'x64'] }],
+    category: 'public.app-category.developer-tools',
+    hardenedRuntime: true,
+    entitlements: 'build/entitlements.mac.plist',
+    entitlementsInherit: 'build/entitlements.mac.plist',
+    notarize: signed,
+    ...(signed ? {} : { identity: null }),
+  },
+  win: { target: [{ target: 'nsis', arch: ['x64'] }] },
+  nsis: { oneClick: false, perMachine: false, allowToChangeInstallationDirectory: true },
+};

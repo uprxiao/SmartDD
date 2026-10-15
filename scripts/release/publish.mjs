@@ -1,0 +1,33 @@
+import { spawnSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { parseArgs } from 'node:util';
+import { verifyArtifacts } from './artifacts.mjs';
+import { readJson, root, run } from './common.mjs';
+import { releaseNotes, verifyTagCommit } from './metadata.mjs';
+
+const { values } = parseArgs({ options: { artifacts: { type: 'string' } } });
+if (!values.artifacts) throw new Error('--artifacts is required');
+const dir = resolve(values.artifacts);
+const tag = process.env.SMARTDD_RELEASE_TAG;
+const version = readJson(join(root, 'package.json')).version;
+const notes = releaseNotes(tag, version, readFileSync(join(root, 'CHANGELOG.md'), 'utf8'));
+const commit = verifyTagCommit(tag);
+const { files, checksums } = verifyArtifacts(dir, version, commit);
+const repository = process.env.GITHUB_REPOSITORY;
+if (!repository) throw new Error('GITHUB_REPOSITORY is required');
+const gh = (args) => run('gh', [...args, '--repo', repository]);
+const existing = spawnSync('gh', ['release', 'view', tag, '--repo', repository, '--json', 'isDraft'], { encoding: 'utf8' });
+if (existing.error) throw existing.error;
+if (existing.status === 0 && JSON.parse(existing.stdout).isDraft !== true) {
+  throw new Error(`${tag} is already public; refusing to replace release assets`);
+}
+const notesFile = join(dir, 'release-notes.md');
+const sumsFile = join(dir, 'SHA256SUMS.txt');
+writeFileSync(notesFile, notes);
+writeFileSync(sumsFile, checksums);
+if (existing.status !== 0) gh(['release', 'create', tag, '--verify-tag', '--draft', '--title', `SmartDD ${tag}`, '--notes-file', notesFile]);
+else gh(['release', 'edit', tag, '--notes-file', notesFile]);
+// Replacement is restricted to an existing draft, to support a failed upload retry.
+gh(['release', 'upload', tag, ...files, sumsFile, '--clobber']);
+gh(['release', 'edit', tag, '--draft=false', '--latest']);

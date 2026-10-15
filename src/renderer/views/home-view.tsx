@@ -26,6 +26,7 @@ import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
 import { cn } from '@renderer/utils/utils';
+import { CapabilityLaunchPreview } from './capabilities';
 
 const CHIP =
   'h-7 w-auto min-w-0 gap-1.5 rounded-md border border-border bg-background-1 px-2.5 text-xs text-foreground hover:bg-background-2';
@@ -118,6 +119,7 @@ export const HomeView = observer(function HomeView() {
           </div>
 
           <div className="mx-auto w-full max-w-3xl">
+            {projectId && profileId && dir && <div className="mb-3"><CapabilityLaunchPreview projectId={projectId} aiProfileId={profileId} cwd={dir.path} /></div>}
             <div className="rounded-xl border border-border bg-background-1 shadow-sm transition-[border-color,box-shadow] focus-within:border-border-2 focus-within:shadow-md">
               <textarea
                 ref={inputRef}

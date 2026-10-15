@@ -4,6 +4,8 @@ import { createRPCController, createRPCRouter } from '@shared/ipc/rpc';
 import { createAiProfileController } from './core/ai/controller';
 import type { AiProfileService } from './core/ai/ai-profile-service';
 import type { ProfileHealth } from './core/ai/profile-health';
+import { createCapabilityController } from './core/capabilities/controller';
+import type { CapabilityService } from './core/capabilities/capability-service';
 import { createProjectControllers } from './core/projects/controller';
 import type { ProjectService } from './core/projects/project-service';
 import { createAppSettingsController } from './core/settings/controller';
@@ -22,6 +24,7 @@ export interface RpcDeps {
   aiProfiles: AiProfileService;
   health: ProfileHealth;
   tasks: TaskService;
+  capabilities: CapabilityService;
   ptys: PtyManager;
   baseEnv: () => Record<string, string>;
   onSettingChanged: (key: AppSettingsKey) => void;
@@ -47,6 +50,7 @@ export function createRpcRouter(d: RpcDeps) {
     ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id) }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
     ...createTaskController(d.tasks),
+    ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv),
     dialog: createRPCController({
       /** Native folder picker; null when cancelled. */
       pickDirectory: async (defaultPath?: string) => {

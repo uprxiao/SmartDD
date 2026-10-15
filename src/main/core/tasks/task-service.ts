@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, realpathSync, statSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { desc, eq, isNotNull } from 'drizzle-orm';
 import { pickCodexSession, type CodexWaiter } from '@shared/codex-session';
 import { buildRunnerArgs, type LaunchMode } from '@shared/runner-args';
@@ -15,6 +17,8 @@ import type { AppDb } from '../../db/client';
 import { aiProfiles, projects, tasks } from '../../db/schema';
 import { PARENT_AGENT_VARS, planLaunchEnv } from '../../launch-env';
 import type { SpawnOptions } from '../../pty-manager';
+import type { RuntimeSnapshot } from '@shared/capabilities';
+import { RUNTIME_ISOLATION, type CapabilityService, type PreparedRuntime } from '../capabilities/capability-service';
 import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service';
 import type { ProfileHealth } from '../ai/profile-health';
 import { redact } from '../connections/redact';
@@ -42,6 +46,7 @@ export interface TaskServiceDeps {
   onChanged: () => void;
   /** Where API answers seen in the session file go; without it nothing is followed. */
   health?: Pick<ProfileHealth, 'report'>;
+  capabilities?: CapabilityService;
   now?: () => number;
   codexPollMs?: number;
   healthPollMs?: number;
@@ -90,6 +95,7 @@ export class TaskService {
   private readonly watchedPty = new Map<string, string>(); // ptyId → taskId, for the grace period after exit
   private readonly follows = new Map<string, Follow>(); // taskId → session file follower
   private readonly killedPtys = new Set<string>();
+  private readonly runtimes = new Map<string, { taskId: string; runtime: PreparedRuntime; timer: NodeJS.Timeout; startedAt: number }>();
   private readonly now: () => number;
 
   constructor(private readonly d: TaskServiceDeps) {
@@ -136,7 +142,7 @@ export class TaskService {
     const firstMessage = req.firstMessage.trim();
     // Claude takes our id, so the task id doubles as its session id.
     const sessionId = profile.runner === 'claude' ? id : null;
-    const { ptyId, injectedNames, stateRoot } = this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req);
+    const { ptyId, injectedNames, stateRoot, runtime } = this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id });
 
     this.d.db
       .insert(tasks)
@@ -152,6 +158,7 @@ export class TaskService {
         title: taskTitle(firstMessage, profile.name, ts),
         firstMessage,
         injectedEnvNames: JSON.stringify(injectedNames),
+        runtimeSnapshot: runtime ? JSON.stringify(runtime.snapshot) : null,
         configVersion: project.configVersion,
         stateRoot,
         lastLaunchedAt: ts,
@@ -160,8 +167,9 @@ export class TaskService {
       })
       .run();
     this.running.set(id, ptyId);
+    if (runtime) this.trackRuntime(id, ptyId, runtime);
     if (profile.runner === 'codex') this.watchCodex(id, ptyId, dir.path, stateRoot, ts, firstMessage);
-    this.follow(id, ptyId, profile, dir.path, stateRoot, ts);
+    this.follow(id, ptyId, profile, dir.path, stateRoot, ts, runtime?.secretValues);
     this.d.onChanged();
     return { task: this.get(id), ptyId };
   }
@@ -184,8 +192,9 @@ export class TaskService {
     if (recovery === 'unrecoverable') throw new Error(`无法恢复：${reason}`);
     const mode: LaunchMode = recovery === 'resumable' ? 'resume' : recovery === 'fresh' ? 'reopen' : 'new';
     // The session lives where it was written: resuming under another profile keeps that directory (M0 §5.4).
-    const keepRoot = mode === 'resume' && row.stateRoot ? row.stateRoot : null;
-    const { ptyId, injectedNames, stateRoot } = this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot);
+    const keepRoot = mode === 'resume' && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes('CLAUDE_CONFIG_DIR') } : null;
+    const { ptyId, injectedNames, stateRoot, runtime } = this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot,
+      row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row) } : undefined);
 
     const ts = this.now();
     const project = row.projectId ? this.d.db.select().from(projects).where(eq(projects.id, row.projectId)).get() : undefined;
@@ -195,6 +204,7 @@ export class TaskService {
         aiProfileId: profile.id,
         aiProfileName: profile.name,
         injectedEnvNames: JSON.stringify(injectedNames),
+        runtimeSnapshot: runtime ? JSON.stringify(runtime.snapshot) : null,
         stateRoot,
         configVersion: project?.configVersion ?? row.configVersion,
         lastLaunchedAt: ts,
@@ -203,8 +213,9 @@ export class TaskService {
       .where(eq(tasks.id, row.id))
       .run();
     this.running.set(row.id, ptyId);
+    if (runtime) this.trackRuntime(row.id, ptyId, runtime);
     if (row.runner === 'codex' && mode === 'new') this.watchCodex(row.id, ptyId, row.cwd, stateRoot, ts, '');
-    this.follow(row.id, ptyId, profile, row.cwd, stateRoot, ts);
+    this.follow(row.id, ptyId, profile, row.cwd, stateRoot, ts, runtime?.secretValues);
     this.d.onChanged();
     return { task: this.get(row.id), ptyId };
   }
@@ -262,6 +273,11 @@ export class TaskService {
   }
 
   dispose(): void {
+    for (const run of this.runtimes.values()) {
+      clearInterval(run.timer);
+      run.runtime.release();
+    }
+    this.runtimes.clear();
     for (const w of this.codexWatchers.values()) clearInterval(w.timer);
     this.codexWatchers.clear();
     for (const f of this.follows.values()) clearInterval(f.timer);
@@ -278,26 +294,80 @@ export class TaskService {
     sessionId: string | null,
     firstMessage: string,
     size: { cols?: number; rows?: number },
-    keepRoot: string | null = null
-  ): { ptyId: string; injectedNames: string[]; stateRoot: string } {
+    keepRoot: { path: string; explicit: boolean } | null = null,
+    context?: { projectId: string; taskId: string; previous?: RuntimeSnapshot | null }
+  ): { ptyId: string; injectedNames: string[]; stateRoot: string; runtime?: PreparedRuntime } {
     const base = { ...this.d.baseEnv() };
     for (const k of PARENT_AGENT_VARS) delete base[k];
-    let env = profile.env;
-    if (keepRoot && stateRootFor(profile.runner, env, base) !== keepRoot) {
-      env = { ...env, [profile.runner === 'claude' ? 'CLAUDE_CONFIG_DIR' : 'CODEX_HOME']: keepRoot };
+    let env = { ...profile.env };
+    if (keepRoot) {
+      const home = env.HOME || base.HOME || homedir();
+      if (profile.runner === 'claude' && !keepRoot.explicit && keepRoot.path === join(home, '.claude')) {
+        // Default Claude state uses ~/.claude.json; explicitly setting the same directory
+        // instead selects ~/.claude/.claude.json and loses onboarding/trust/MCP state.
+        delete env.CLAUDE_CONFIG_DIR;
+        delete base.CLAUDE_CONFIG_DIR;
+      } else {
+        env[profile.runner === 'claude' ? 'CLAUDE_CONFIG_DIR' : 'CODEX_HOME'] = keepRoot.path;
+      }
     }
-    const plan = planLaunchEnv(base, env, profile.isolatePrefixes);
-    const args = buildRunnerArgs(profile.runner, { mode, sessionId, cwd, profileArgs: profile.args, firstMessage });
-    const ptyId = this.d.ptys.spawn({
-      command: profile.command,
-      args,
+    if (context && this.d.capabilities) {
+      // Freeze the same discovery roots used for projection; rc files must not silently move
+      // Codex away from the HOME whose .agents/skills was prepared, or move session storage.
+      env.HOME = env.HOME || base.HOME || homedir();
+      if (profile.runner === 'codex') env.CODEX_HOME = keepRoot?.path || stateRootFor('codex', env, base);
+      else {
+        const explicitRoot = env.CLAUDE_CONFIG_DIR || base.CLAUDE_CONFIG_DIR;
+        if (explicitRoot) env.CLAUDE_CONFIG_DIR = explicitRoot;
+        else delete env.CLAUDE_CONFIG_DIR;
+      }
+    }
+    if (this.d.capabilities && Object.keys(profile.env).some((key) => RUNTIME_ISOLATION.some((p) => key.startsWith(p)))) throw new Error('AI 配置使用了 SmartDD 项目注入保留变量，请在项目中配置资源');
+    const runtime = context && this.d.capabilities?.prepare({ ...context, runner: profile.runner, cwd, home: env.HOME ?? base.HOME ?? process.env.HOME ?? '', profileArgs: profile.args });
+    const plan = planLaunchEnv(base, { ...env, ...runtime?.env }, [...profile.isolatePrefixes, ...RUNTIME_ISOLATION,
+      // Also clear a root introduced by shell rc; the selected explicit root, if any,
+      // is exported again by the ordinary launch plan.
+      ...(context && this.d.capabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME'] : [])]);
+    const args = buildRunnerArgs(profile.runner, { mode, sessionId, cwd, profileArgs: profile.args, runtimeArgs: runtime?.args, firstMessage });
+    const command = runtime?.wrap(profile.command, args) ?? { command: profile.command, args };
+    let ptyId: string;
+    try { ptyId = this.d.ptys.spawn({
+      ...command,
       cwd,
       env: plan.env,
       scriptArgs: plan.scriptArgs,
       cols: size.cols,
       rows: size.rows,
-    });
-    return { ptyId, injectedNames: plan.injectedNames, stateRoot: stateRootFor(profile.runner, env, base) };
+    }); } catch (e) { runtime?.release(); throw e; }
+    return { ptyId, injectedNames: plan.injectedNames, stateRoot: stateRootFor(profile.runner, env, base), runtime };
+  }
+
+  private runtimeOf(row: TaskRow): RuntimeSnapshot | null {
+    if (!row.runtimeSnapshot) return null;
+    try { return JSON.parse(row.runtimeSnapshot) as RuntimeSnapshot; } catch { throw new Error('任务的能力快照损坏，无法安全恢复'); }
+  }
+
+  private trackRuntime(taskId: string, ptyId: string, runtime: PreparedRuntime): void {
+    const run = { taskId, runtime, startedAt: Date.now(), timer: setInterval(() => {
+      if (this.runtimes.get(ptyId) !== run) return;
+      const report = runtime.check();
+      if (report) this.saveRuntimeCheck(taskId, runtime, report);
+      if (report || Date.now() - run.startedAt > 30_000) {
+        clearInterval(run.timer);
+        if (!report) {
+          this.saveRuntimeCheck(taskId, runtime, { status: 'failed', issues: ['self_check_timeout'], at: Date.now() });
+          this.killedPtys.add(ptyId);
+          this.d.ptys.kill(ptyId);
+        }
+      }
+    }, 200) };
+    this.runtimes.set(ptyId, run);
+  }
+
+  private saveRuntimeCheck(taskId: string, runtime: PreparedRuntime, report: RuntimeSnapshot['selfCheck']): void {
+    runtime.snapshot.selfCheck = report;
+    this.d.db.update(tasks).set({ runtimeSnapshot: JSON.stringify(runtime.snapshot) }).where(eq(tasks.id, taskId)).run();
+    this.d.onChanged();
   }
 
   private recoveryOf(row: TaskRow): { recovery: TaskRecovery; reason: string } {
@@ -370,7 +440,7 @@ export class TaskService {
   }
 
   /** Report the API's answers in this run's session file to the profile's health (latest wins). */
-  private follow(taskId: string, ptyId: string, profile: ResolvedProfile, cwd: string, root: string, launchedAt: number): void {
+  private follow(taskId: string, ptyId: string, profile: ResolvedProfile, cwd: string, root: string, launchedAt: number, resourceSecrets: string[] = []): void {
     const health = this.d.health;
     if (!health) return;
     this.unfollow(taskId);
@@ -386,7 +456,7 @@ export class TaskService {
     };
     // Bound to the settings this run started with: its answers say nothing about an edited profile.
     const signature = this.d.profiles.launchSignature(profile.id);
-    const secrets = this.d.profiles.secretValues(profile.id);
+    const secrets = [...this.d.profiles.secretValues(profile.id), ...resourceSecrets];
     const tail = new SessionTail({
       runner: profile.runner,
       locate,
@@ -412,6 +482,17 @@ export class TaskService {
   }
 
   private readonly onPtyExit = (ptyId: string, code: number) => {
+    const run = this.runtimes.get(ptyId);
+    let injectionFailed = false;
+    if (run) {
+      clearInterval(run.timer);
+      const report = run.runtime.check() ?? (run.runtime.snapshot.selfCheck.status !== 'pending' ? run.runtime.snapshot.selfCheck : { status: 'failed' as const, issues: ['self_check_not_received'], at: Date.now() });
+      // An old PTY exiting cannot overwrite a new run's snapshot or release its files.
+      if (this.running.get(run.taskId) === ptyId) this.saveRuntimeCheck(run.taskId, run.runtime, report);
+      injectionFailed = report.status === 'failed';
+      run.runtime.release();
+      this.runtimes.delete(ptyId);
+    }
     for (const [taskId, id] of this.running) {
       if (id !== ptyId) continue;
       this.running.delete(taskId);
@@ -426,7 +507,7 @@ export class TaskService {
       const w = this.codexWatchers.get(taskId);
       if (w) w.finalTail = f.tail;
       const secs = (this.now() - f.launchedAt) / 1000;
-      if (!killed && code !== 0 && !f.tail.sawEvent && secs * 1000 < EARLY_EXIT_MS) {
+      if (!killed && !injectionFailed && code !== 0 && !f.tail.sawEvent && secs * 1000 < EARLY_EXIT_MS) {
         const message =
           code === 127 ? '找不到 CLI 命令（退出码 127）' : `CLI 启动后 ${Math.max(1, Math.round(secs))} 秒退出（退出码 ${code}）`;
         this.d.health?.report(f.profileId, { category: code === 127 ? 'not_found' : 'other', message }, `task:${taskId}`);
@@ -465,6 +546,7 @@ export class TaskService {
       title: row.title,
       firstMessage: row.firstMessage,
       injectedEnvNames: parseNames(row.injectedEnvNames),
+      runtimeSnapshot: this.runtimeOf(row),
       configVersion: row.configVersion,
       projectConfigVersion: projectVersion,
       archivedAt: row.archivedAt,

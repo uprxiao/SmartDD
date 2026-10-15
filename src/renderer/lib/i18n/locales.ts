@@ -1,4 +1,17 @@
 export const zhCN = {
+  capabilities: {
+    label: '能力', name: '名称', source: '来源', validation: '配置检查', loading: '会话加载',
+    unverified: '加载未核验', disabled: '已停用', none: '没有匹配的能力', filter: '按名称、类型或来源筛选',
+    validity: { valid: '配置有效', partial: '部分待核验', invalid: '配置无效' },
+    check: { pending: '等待终端自检', passed: '终端自检通过', failed: '注入失败' },
+    injection: '配置注入', current: '当前', versions: '已保留 {{count}} 个版本', audit: '资源连接记录',
+    upgrade: '升级到 {{version}}', upToDate: '已是随包最新版本',
+    standardHint: '标准 Skill 与用户 Skill 并存。开关和升级对新任务生效；已有任务恢复时沿用原 Skill 版本和选择，资源配置采用最新项目版本。',
+    discoveryHint: '已发现 {{count}} 项。静态检查不会启动 MCP 或调用模型；文件存在不代表当前会话已加载。',
+    contextMcp: 'SmartDD 项目上下文 MCP', contextHint: '按会话提供当前项目的资源身份与配置路径，供模型核对目标。',
+    selectProfile: '选择 AI 配置以扫描对应运行器', scanning: '扫描中…', refresh: '重新扫描',
+    launchPreview: '本次任务能力', previewHint: '另发现 {{count}} 项本机/项目能力。启动时校验配置、环境变量和必要依赖；可调用状态在会话中核验。',
+  },
   nav: {
     home: '首页',
     newTask: '新建任务',
@@ -148,10 +161,11 @@ export const zhCN = {
   },
   settings: {
     title: '设置',
-    sections: { general: '通用', aiProfiles: 'AI 配置', appearance: '外观', terminal: '终端' },
+    sections: { general: '通用', aiProfiles: 'AI 配置', capabilities: 'Skill 与 MCP', appearance: '外观', terminal: '终端' },
     descriptions: {
       general: '语言、数据存放位置与环境自检。',
       aiProfiles: '运行器与账号：每个配置是一个程序加一组环境变量和启动参数。令牌加密保存，不出现在界面和日志中。',
+      capabilities: '管理标准 Skill，识别所选运行器的本机与项目能力。',
       appearance: '界面主题。',
       terminal: '终端显示。改动对已打开的终端立即生效。',
     },
@@ -179,12 +193,13 @@ export const zhCN = {
     new: '新建项目',
     none: '还没有项目',
     archived: '已归档（{{count}}）',
-    sections: { overview: '概览', dirs: '代码目录', databases: '数据库', servers: '服务器', tasks: '任务' },
+    sections: { overview: '概览', dirs: '代码目录', databases: '数据库', servers: '服务器', capabilities: 'Skill 与 MCP', tasks: '任务' },
     descriptions: {
       overview: '名称、别名、说明与项目规则文件。',
       dirs: '一个项目可登记多个代码目录；同一目录只能属于一个未归档的项目。',
       databases: '按环境登记数据库。密码用系统安全存储加密保存，界面不回显。',
       servers: '按环境登记 SSH 服务器。连接测试只执行 hostname; whoami。',
+      capabilities: '选择新任务启用的标准能力，并查看当前项目的能力来源与检查结果。',
       tasks: '该项目下的任务。',
     },
     fields: {
@@ -314,6 +329,19 @@ export const zhCN = {
 type Widen<T> = { [K in keyof T]: T[K] extends string ? string : Widen<T[K]> };
 
 export const en: Widen<typeof zhCN> = {
+  capabilities: {
+    label: 'Capabilities', name: 'Name', source: 'Source', validation: 'Configuration', loading: 'Session loading',
+    unverified: 'Loading unverified', disabled: 'Disabled', none: 'No matching capabilities', filter: 'Filter by name, kind or source',
+    validity: { valid: 'Valid', partial: 'Partly unverified', invalid: 'Invalid' },
+    check: { pending: 'Awaiting terminal check', passed: 'Terminal check passed', failed: 'Injection failed' },
+    injection: 'Injection', current: 'Current', versions: '{{count}} retained versions', audit: 'Resource connection log',
+    upgrade: 'Upgrade to {{version}}', upToDate: 'Latest bundled version',
+    standardHint: 'Standard and user skills coexist. Toggles and upgrades apply to new tasks. Resumed tasks keep their skill versions and selection, while resource configuration uses the latest project version.',
+    discoveryHint: '{{count}} discovered. Static checks do not start MCP servers or call models. Files on disk do not prove session loading.',
+    contextMcp: 'SmartDD project context MCP', contextHint: 'Supplies resource identities and configuration paths for the current session.',
+    selectProfile: 'Select an AI profile to scan its runner', scanning: 'Scanning…', refresh: 'Rescan',
+    launchPreview: 'Task capabilities', previewHint: '{{count}} local/project capabilities also discovered. Launch checks configuration, environment and required dependencies. Callability needs session evidence.',
+  },
   nav: {
     home: 'Home',
     newTask: 'New task',
@@ -463,10 +491,11 @@ export const en: Widen<typeof zhCN> = {
   },
   settings: {
     title: 'Settings',
-    sections: { general: 'General', aiProfiles: 'AI profiles', appearance: 'Appearance', terminal: 'Terminal' },
+    sections: { general: 'General', aiProfiles: 'AI profiles', capabilities: 'Skills & MCP', appearance: 'Appearance', terminal: 'Terminal' },
     descriptions: {
       general: 'Language, data location and environment self-check.',
       aiProfiles: 'Runners and accounts: each profile is a program plus environment variables and arguments. Tokens are stored encrypted and never shown in the UI or logs.',
+      capabilities: 'Manage standard skills and discover capabilities for the selected runner.',
       appearance: 'Interface theme.',
       terminal: 'Terminal display. Changes apply to open terminals immediately.',
     },
@@ -494,12 +523,13 @@ export const en: Widen<typeof zhCN> = {
     new: 'New project',
     none: 'No projects yet',
     archived: 'Archived ({{count}})',
-    sections: { overview: 'Overview', dirs: 'Code folders', databases: 'Databases', servers: 'Servers', tasks: 'Tasks' },
+    sections: { overview: 'Overview', dirs: 'Code folders', databases: 'Databases', servers: 'Servers', capabilities: 'Skills & MCP', tasks: 'Tasks' },
     descriptions: {
       overview: 'Name, aliases, description and the project rules file.',
       dirs: 'A project can have several code folders; a folder belongs to at most one active project.',
       databases: 'Databases per environment. Passwords are encrypted with the system keychain and never shown.',
       servers: 'SSH servers per environment. The connection test only runs hostname; whoami.',
+      capabilities: 'Choose standard capabilities for new tasks and inspect discovery results for this project.',
       tasks: 'Tasks in this project.',
     },
     fields: {

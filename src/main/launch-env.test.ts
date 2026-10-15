@@ -20,9 +20,9 @@ const RC = [
 for (const f of ['.zshrc', '.bash_profile', '.bashrc']) writeFileSync(join(home, f), RC);
 afterAll(() => rmSync(home, { recursive: true, force: true }));
 
-function runEnv(shell: string, injected: Record<string, string>, extraArgs: string[] = []) {
+function runEnv(shell: string, injected: Record<string, string>, extraArgs: string[] = [], base: Record<string, string> = {}) {
   const plan = planLaunchEnv(
-    { PATH: '/usr/bin:/bin', HOME: home, ANTHROPIC_MODEL: 'inherited', KEEP: 'yes' },
+    { PATH: '/usr/bin:/bin', HOME: home, ANTHROPIC_MODEL: 'inherited', KEEP: 'yes', ...base },
     injected,
     ['ANTHROPIC_']
   );
@@ -65,6 +65,22 @@ describe.each(['/bin/zsh', '/bin/bash'].filter(existsSync))('launch through %s',
     const { args } = runEnv(shell, { ANTHROPIC_AUTH_TOKEN: 'sk-secret-value' });
     expect(args.join(' ')).not.toContain('sk-secret-value');
     expect(args).toContain('ANTHROPIC_AUTH_TOKEN');
+  });
+
+  it('does not inherit the outer launcher\'s colour suppression in the interactive terminal', () => {
+    const inherited = { NO_COLOR: '1', FORCE_COLOR: '0', CLICOLOR: '0', CLICOLOR_FORCE: '0' };
+    const { vars, status } = runEnv(shell, {}, [], inherited);
+    expect(status).toBe(0);
+    for (const name of Object.keys(inherited)) expect(vars.has(name), name).toBe(false);
+    expect(vars.get('TERM')).toBe('xterm-256color');
+    expect(vars.get('COLORTERM')).toBe('truecolor');
+  });
+
+  it('preserves an explicit profile colour preference after sanitizing the launcher', () => {
+    const { vars, status } = runEnv(shell, { NO_COLOR: '1', FORCE_COLOR: '0' }, [], { FORCE_COLOR: '3' });
+    expect(status).toBe(0);
+    expect(vars.get('NO_COLOR')).toBe('1');
+    expect(vars.get('FORCE_COLOR')).toBe('0');
   });
 });
 

@@ -5,12 +5,13 @@ import { join } from 'node:path';
 import { Server, utils, type Connection } from 'ssh2';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { SSH_TEST_COMMAND, testSsh, type SshTarget } from './ssh-tester';
+import { generateSshTestKey } from '../../test-ssh-keys';
 
 // An in-process ssh2 server: no real host is contacted.
 
-const hostKey = utils.generateKeyPairSync('ed25519');
-const clientKey = utils.generateKeyPairSync('ed25519');
-const lockedKey = utils.generateKeyPairSync('ed25519', { passphrase: 'right-pp', cipher: 'aes256-cbc', rounds: 16 });
+const hostKey = generateSshTestKey();
+const clientKey = generateSshTestKey();
+const lockedKey = generateSshTestKey('right-pp');
 const clientPublic = utils.parseKey(clientKey.public);
 const lockedPublic = utils.parseKey(lockedKey.public);
 
@@ -62,7 +63,7 @@ afterEach(() => {
 });
 afterAll(async () => {
   clients.forEach((c) => c.end());
-  await new Promise((r) => server.close(r));
+  if (server) await new Promise((r) => server.close(r));
   rmSync(tmp, { recursive: true, force: true });
 });
 

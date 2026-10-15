@@ -13,8 +13,9 @@ import type { Runner } from '@shared/types';
 
 /** CLAUDE_CONFIG_DIR / CODEX_HOME as the CLI will see it: the profile wins, then the inherited env. */
 export function stateRootFor(runner: Runner, profileEnv: Record<string, string>, baseEnv: Record<string, string>): string {
-  if (runner === 'claude') return profileEnv.CLAUDE_CONFIG_DIR || join(homedir(), '.claude');
-  return profileEnv.CODEX_HOME || baseEnv.CODEX_HOME || join(homedir(), '.codex');
+  const home = profileEnv.HOME || baseEnv.HOME || homedir();
+  if (runner === 'claude') return profileEnv.CLAUDE_CONFIG_DIR || baseEnv.CLAUDE_CONFIG_DIR || join(home, '.claude');
+  return profileEnv.CODEX_HOME || baseEnv.CODEX_HOME || join(home, '.codex');
 }
 
 // Claude stores <root>/projects/<cwd with every non-alphanumeric char replaced by "->/<id>.jsonl.

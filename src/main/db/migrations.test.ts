@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
 }
 afterEach(() => open.splice(0).forEach((db) => db.close()));
 
-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check'];
+const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities'];
 
 const tables = (db: Database.Database) =>
   (
@@ -42,11 +42,13 @@ describe('bundled migrations', () => {
       'ai_profiles',
       'app_secrets',
       'app_settings',
+      'project_capabilities',
       'project_databases',
       'project_dirs',
       'project_servers',
       'projects',
       'sessions',
+      'skill_versions',
       'tasks',
     ]);
     expect(columns(db, 'app_settings')).toEqual(['key', 'value', 'updated_at']);
@@ -64,8 +66,8 @@ describe('bundled migrations', () => {
     const db = memoryDb();
     runBundledMigrations(db);
     db.exec("INSERT INTO projects (id, name, created_at, updated_at) VALUES ('p1', 'kept', 1, 1)");
-    db.exec('DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY id DESC LIMIT 3)');
-    expect(runBundledMigrations(db)).toEqual(['0001_projects', '0002_tasks', '0003_ai_profile_check']);
+    db.exec('DELETE FROM __drizzle_migrations WHERE id > 1');
+    expect(runBundledMigrations(db)).toEqual(ALL.slice(1));
     expect(db.prepare('SELECT name FROM projects').all()).toEqual([{ name: 'kept' }]);
   });
 
@@ -74,11 +76,11 @@ describe('bundled migrations', () => {
     runBundledMigrations(db);
     db.exec("INSERT INTO sessions VALUES ('s1', 'codex', '/tmp', 'n1', 'old', 5)");
     db.exec("UPDATE tasks SET title = 'renamed' WHERE id = 's1'");
-    db.exec('DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY id DESC LIMIT 2)');
-    expect(runBundledMigrations(db)).toEqual(['0002_tasks', '0003_ai_profile_check']);
+    db.exec('DELETE FROM __drizzle_migrations WHERE id > 2');
+    expect(runBundledMigrations(db)).toEqual(ALL.slice(2));
     expect(db.prepare('SELECT id, title FROM tasks').all()).toEqual([{ id: 's1', title: 'old' }]);
     db.exec("UPDATE tasks SET title = 'renamed' WHERE id = 's1'");
-    db.exec('DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY id DESC LIMIT 2)');
+    db.exec('DELETE FROM __drizzle_migrations WHERE id > 2');
     runBundledMigrations(db);
     expect(db.prepare('SELECT id, title FROM tasks').all()).toEqual([{ id: 's1', title: 'renamed' }]);
   });
@@ -87,8 +89,8 @@ describe('bundled migrations', () => {
     const db = memoryDb();
     runBundledMigrations(db);
     db.exec("INSERT INTO ai_profiles (id, name, runner, check_status, created_at, updated_at) VALUES ('a1', 'cc', 'claude', 'failed', 1, 1)");
-    db.exec('DELETE FROM __drizzle_migrations WHERE id = (SELECT MAX(id) FROM __drizzle_migrations)');
-    expect(runBundledMigrations(db)).toEqual(['0003_ai_profile_check']);
+    db.exec('DELETE FROM __drizzle_migrations WHERE id > 3');
+    expect(runBundledMigrations(db)).toEqual(ALL.slice(3));
     expect(columns(db, 'ai_profiles').filter((c) => c.startsWith('check_'))).toEqual([
       'check_status',
       'check_category',

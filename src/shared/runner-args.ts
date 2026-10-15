@@ -14,12 +14,14 @@ export interface RunnerArgsOptions {
   cwd: string;
   /** Profile arguments, placed before SmartDD's own. */
   profileArgs?: string[];
+  /** Session-scoped Skill/MCP arguments, never credentials. */
+  runtimeArgs?: string[];
   /** Only on `new`; passed as one argv entry, never through a shell. */
   firstMessage?: string;
 }
 
 export function buildRunnerArgs(runner: Runner, o: RunnerArgsOptions): string[] {
-  const args = [...(o.profileArgs ?? [])];
+  const args = [...(o.profileArgs ?? []), ...(o.runtimeArgs ?? [])];
   if (runner === 'claude') {
     if (!o.sessionId) throw new Error('Claude 任务缺少 session ID');
     args.push(o.mode === 'resume' ? '--resume' : '--session-id', o.sessionId);

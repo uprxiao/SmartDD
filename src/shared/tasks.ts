@@ -1,4 +1,5 @@
 import type { Runner } from './types';
+import type { RuntimeSnapshot } from './capabilities';
 
 /**
  * What "open" will do for a task that is not running (PRD F05):
@@ -24,6 +25,7 @@ export interface TaskView {
   title: string;
   firstMessage: string;
   injectedEnvNames: string[];
+  runtimeSnapshot?: RuntimeSnapshot | null;
   configVersion: number | null;
   /** The project's version now; differs from configVersion when it changed after launch. */
   projectConfigVersion: number | null;

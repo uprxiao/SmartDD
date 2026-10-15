@@ -1,0 +1,85 @@
+# Adapted from Yoda's release-prod + windows-beta-build workflows; see NOTICE.
+name: Build installers
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      release:
+        type: boolean
+        default: false
+    secrets:
+      MAC_CERTIFICATE:
+        required: false
+      MAC_CERTIFICATE_PASSWORD:
+        required: false
+      APPLE_ID:
+        required: false
+      APPLE_PASSWORD:
+        required: false
+      APPLE_TEAM_ID:
+        required: false
+      WIN_CERTIFICATE:
+        required: false
+      WIN_CERTIFICATE_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+  package:
+    needs: checks
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: mac
+            arch: arm64
+            runner: macos-latest
+            certificate: MAC_CERTIFICATE
+            password: MAC_CERTIFICATE_PASSWORD
+          - platform: mac
+            arch: x64
+            runner: macos-15-intel
+            certificate: MAC_CERTIFICATE
+            password: MAC_CERTIFICATE_PASSWORD
+          - platform: win
+            arch: x64
+            runner: windows-2022
+            certificate: WIN_CERTIFICATE
+            password: WIN_CERTIFICATE_PASSWORD
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+      - name: Check release helpers on this platform
+        run: pnpm test:release
+      - name: Build and verify packaged native modules
+        shell: bash
+        env:
+          BUILD_PLATFORM: ${{ matrix.platform }}
+          BUILD_ARCH: ${{ matrix.arch }}
+          SMARTDD_RELEASE: ${{ inputs.release && '1' || '0' }}
+          SMARTDD_SIGN: ${{ secrets[matrix.certificate] != '' && '1' || '0' }}
+          CSC_LINK: ${{ secrets[matrix.certificate] }}
+          CSC_KEY_PASSWORD: ${{ secrets[matrix.password] }}
+          APPLE_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.platform == 'mac' && secrets.APPLE_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_TEAM_ID || '' }}
+        run: node scripts/release/build.mjs --platform "$BUILD_PLATFORM" --arch "$BUILD_ARCH"
+      - name: Upload verified installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartdd-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.dmg
+            release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.exe
+            release/packages/${{ matrix.platform }}-${{ matrix.arch }}/manifest-*.json
+          if-no-files-found: error
+          retention-days: 14

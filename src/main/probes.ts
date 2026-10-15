@@ -11,9 +11,14 @@ import { SecretsStore } from './secrets';
 const execFileP = promisify(execFile);
 
 async function probe(name: string, fn: () => Promise<string> | string): Promise<ProbeResult> {
+  const progress = process.env.SMARTDD_PROBE === '1';
+  if (progress) process.stderr.write(`[probe] ${name}: started\n`);
   try {
-    return { name, ok: true, detail: await fn() };
+    const result = { name, ok: true, detail: await fn() };
+    if (progress) process.stderr.write(`[probe] ${name}: passed\n`);
+    return result;
   } catch (e) {
+    if (progress) process.stderr.write(`[probe] ${name}: failed\n`);
     return { name, ok: false, detail: e instanceof Error ? e.message : String(e) };
   }
 }

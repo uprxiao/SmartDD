@@ -178,9 +178,30 @@ export const tasks = sqliteTable(
     configVersion: integer('config_version'),
     /** CLAUDE_CONFIG_DIR / CODEX_HOME in effect, so resume looks for the session file in the right place. */
     stateRoot: text('state_root'),
+    /** M4: version pins, hashes and injection self-check, never secret values. */
+    runtimeSnapshot: text('runtime_snapshot'),
     archivedAt: integer('archived_at'),
     lastLaunchedAt: integer('last_launched_at'),
     ...timestamps,
   },
   (t) => ({ byProject: index('tasks_project_idx').on(t.projectId) })
 );
+
+// Installed standard packages are immutable; upgrading switches the active version only.
+export const skillVersions = sqliteTable('skill_versions', {
+  id: text('id').primaryKey(),
+  skillId: text('skill_id').notNull(),
+  name: text('name').notNull(),
+  version: text('version').notNull(),
+  hash: text('hash').notNull(),
+  installedAt: integer('installed_at').notNull(),
+  active: integer('active', { mode: 'boolean' }).notNull().default(false),
+});
+
+/** Absence means enabled (new projects get the standard catalog by default). */
+export const projectCapabilities = sqliteTable('project_capabilities', {
+  id: text('id').primaryKey(),
+  projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  capabilityId: text('capability_id').notNull(),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+});

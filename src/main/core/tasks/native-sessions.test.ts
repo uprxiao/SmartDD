@@ -3,11 +3,18 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { codexStateDb, codexThreads, recentCodexRollouts } from './native-sessions';
+import { codexStateDb, codexThreads, recentCodexRollouts, stateRootFor } from './native-sessions';
 
 let root: string;
 beforeEach(() => (root = mkdtempSync(join(tmpdir(), 'smartdd-codex-home-'))));
 afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+it.each(['claude', 'codex'] as const)('%s discovery follows the profile HOME and inherited explicit state root', (runner) => {
+  const key = runner === 'claude' ? 'CLAUDE_CONFIG_DIR' : 'CODEX_HOME';
+  expect(stateRootFor(runner, { HOME: '/selected' }, { HOME: '/other' })).toBe(`/selected/.${runner}`);
+  expect(stateRootFor(runner, {}, { [key]: '/inherited' })).toBe('/inherited');
+  expect(stateRootFor(runner, { [key]: '/profile' }, { [key]: '/inherited' })).toBe('/profile');
+});
 
 // The columns SmartDD reads, as in Codex's state_5.sqlite (created_at in seconds, created_at_ms optional).
 const makeDb = (name: string, rows: [string, string, number, number | null, string, number][]) => {

@@ -9,6 +9,11 @@ export const VALUE_PREFIX = '__SMARTDD_V_';
 
 const NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
+// Automation launchers often disable colour for their own captured output. The app's PTY
+// is a fresh interactive terminal, so do not inherit those output preferences. A user's
+// shell rc or explicit AI-profile setting can still opt in/out afterwards.
+const PARENT_COLOR_VARS = new Set(['NO_COLOR', 'FORCE_COLOR', 'CLICOLOR', 'CLICOLOR_FORCE']);
+
 /**
  * -u PREFIX  unset every variable starting with PREFIX (whatever the rc files exported)
  * -e NAME    export NAME from __SMARTDD_V_NAME, then drop the carrier
@@ -60,6 +65,7 @@ export function planLaunchEnv(
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(base)) {
     if (k.startsWith(VALUE_PREFIX)) continue;
+    if (PARENT_COLOR_VARS.has(k)) continue;
     if (isolatePrefixes.some((p) => k.startsWith(p))) continue;
     env[k] = v;
   }

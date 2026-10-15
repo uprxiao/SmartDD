@@ -16,9 +16,10 @@ import { cn } from '@renderer/utils/utils';
 import { ConfirmDeleteDialog, EnvBadge, TestResultLine } from './projects/form-parts';
 import { DirDialog, ProjectDialog } from './projects/project-dialogs';
 import { DatabaseDialog, ServerDialog } from './projects/resource-dialogs';
+import { CapabilitiesSection } from './capabilities';
 
-type SectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'tasks';
-const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'tasks'];
+type SectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'tasks';
+const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'capabilities', 'tasks'];
 
 /** Dialog state: which item a dialog is open for (`null` = create). Closed when undefined. */
 function useDialogTarget<T>() {
@@ -72,6 +73,7 @@ export const ProjectView = observer(function ProjectView() {
       {section === 'dirs' && <Dirs project={project} />}
       {section === 'databases' && <Databases project={project} />}
       {section === 'servers' && <Servers project={project} />}
+      {section === 'capabilities' && <CapabilitiesSection key={project.id} projectId={project.id} />}
       {section === 'tasks' && <Tasks project={project} />}
     </SectionPage>
   );
