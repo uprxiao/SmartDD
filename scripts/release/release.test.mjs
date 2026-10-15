@@ -143,5 +143,12 @@ test('workflow entry points keep builds read-only and publication dependent on a
   assert.equal(release.jobs.publish.permissions.contents, 'write');
   assert.deepEqual(release.jobs.publish.needs, ['metadata', 'build']);
   assert.equal(release.jobs.build.with.require_mac_signing, "${{ needs.metadata.outputs.require_signing == 'true' }}");
+  // Tag-triggered checkout otherwise refetches the event commit into refs/tags/*,
+  // replacing the annotated tag locally before our metadata/provenance checks.
+  for (const job of ['metadata', 'publish']) {
+    const checkout = release.jobs[job].steps.find((step) => step.uses === 'actions/checkout@v4');
+    assert.equal(checkout.with.ref, '${{ github.sha }}');
+    assert.equal(checkout.with['fetch-depth'], 0);
+  }
   assert.equal(release.concurrency['cancel-in-progress'], false);
 });
