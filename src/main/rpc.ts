@@ -44,7 +44,7 @@ export function createRpcRouter(d: RpcDeps) {
       },
     }),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged),
-    ...createProjectControllers(d.projects),
+    ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id) }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
     ...createTaskController(d.tasks),
     dialog: createRPCController({

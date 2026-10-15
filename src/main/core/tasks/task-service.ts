@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, realpathSync, statSync } from 'node:fs';
 import { desc, eq, isNotNull } from 'drizzle-orm';
-import { pickCodexSession } from '@shared/codex-session';
+import { pickCodexSession, type CodexWaiter } from '@shared/codex-session';
 import { buildRunnerArgs, type LaunchMode } from '@shared/runner-args';
 import {
   taskTitle,
@@ -17,6 +17,7 @@ import { PARENT_AGENT_VARS, planLaunchEnv } from '../../launch-env';
 import type { SpawnOptions } from '../../pty-manager';
 import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service';
 import type { ProfileHealth } from '../ai/profile-health';
+import { redact } from '../connections/redact';
 import type { ProjectService } from '../projects/project-service';
 import { claudeSessionFile, claudeSessionFileExists, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
 import { SessionTail } from './session-health';
@@ -49,6 +50,18 @@ export interface TaskServiceDeps {
 /** A CLI that dies this soon after launch, unprompted and without any API answer, failed to start. */
 export const EARLY_EXIT_MS = 15_000;
 
+/** How long a Codex watcher keeps looking after its PTY exited (the rollout may be flushed late). */
+const CODEX_EXIT_GRACE_MS = 3000;
+
+interface CodexWatch {
+  timer: NodeJS.Timeout;
+  root: string;
+  waiter: CodexWaiter;
+  busy: boolean;
+  /** Set once the PTY exited: the follower's last poll waits until the session is known. */
+  finalTail?: SessionTail;
+}
+
 interface Follow {
   tail: SessionTail;
   timer: NodeJS.Timeout;
@@ -73,7 +86,7 @@ const parseNames = (json: string): string[] => {
 
 export class TaskService {
   private readonly running = new Map<string, string>(); // taskId → ptyId
-  private readonly codexWatchers = new Map<string, NodeJS.Timeout>();
+  private readonly codexWatchers = new Map<string, CodexWatch>();
   private readonly watchedPty = new Map<string, string>(); // ptyId → taskId, for the grace period after exit
   private readonly follows = new Map<string, Follow>(); // taskId → session file follower
   private readonly killedPtys = new Set<string>();
@@ -147,7 +160,7 @@ export class TaskService {
       })
       .run();
     this.running.set(id, ptyId);
-    if (profile.runner === 'codex') this.watchCodex(id, ptyId, dir.path, stateRoot, ts);
+    if (profile.runner === 'codex') this.watchCodex(id, ptyId, dir.path, stateRoot, ts, firstMessage);
     this.follow(id, ptyId, profile, dir.path, stateRoot, ts);
     this.d.onChanged();
     return { task: this.get(id), ptyId };
@@ -170,7 +183,9 @@ export class TaskService {
     const { recovery, reason } = this.recoveryOf(row);
     if (recovery === 'unrecoverable') throw new Error(`无法恢复：${reason}`);
     const mode: LaunchMode = recovery === 'resumable' ? 'resume' : recovery === 'fresh' ? 'reopen' : 'new';
-    const { ptyId, injectedNames, stateRoot } = this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req);
+    // The session lives where it was written: resuming under another profile keeps that directory (M0 §5.4).
+    const keepRoot = mode === 'resume' && row.stateRoot ? row.stateRoot : null;
+    const { ptyId, injectedNames, stateRoot } = this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot);
 
     const ts = this.now();
     const project = row.projectId ? this.d.db.select().from(projects).where(eq(projects.id, row.projectId)).get() : undefined;
@@ -188,7 +203,7 @@ export class TaskService {
       .where(eq(tasks.id, row.id))
       .run();
     this.running.set(row.id, ptyId);
-    if (row.runner === 'codex' && mode === 'new') this.watchCodex(row.id, ptyId, row.cwd, stateRoot, ts);
+    if (row.runner === 'codex' && mode === 'new') this.watchCodex(row.id, ptyId, row.cwd, stateRoot, ts, '');
     this.follow(row.id, ptyId, profile, row.cwd, stateRoot, ts);
     this.d.onChanged();
     return { task: this.get(row.id), ptyId };
@@ -238,8 +253,16 @@ export class TaskService {
     return this.running.size;
   }
 
+  /** How many of the project's tasks have a live CLI (a project with any cannot be deleted). */
+  runningInProject(projectId: string): number {
+    const ids = new Set(
+      this.d.db.select({ id: tasks.id }).from(tasks).where(eq(tasks.projectId, projectId)).all().map((r) => r.id)
+    );
+    return [...this.running.keys()].filter((id) => ids.has(id)).length;
+  }
+
   dispose(): void {
-    for (const t of this.codexWatchers.values()) clearInterval(t);
+    for (const w of this.codexWatchers.values()) clearInterval(w.timer);
     this.codexWatchers.clear();
     for (const f of this.follows.values()) clearInterval(f.timer);
     this.follows.clear();
@@ -254,11 +277,16 @@ export class TaskService {
     mode: LaunchMode,
     sessionId: string | null,
     firstMessage: string,
-    size: { cols?: number; rows?: number }
+    size: { cols?: number; rows?: number },
+    keepRoot: string | null = null
   ): { ptyId: string; injectedNames: string[]; stateRoot: string } {
     const base = { ...this.d.baseEnv() };
     for (const k of PARENT_AGENT_VARS) delete base[k];
-    const plan = planLaunchEnv(base, profile.env, profile.isolatePrefixes);
+    let env = profile.env;
+    if (keepRoot && stateRootFor(profile.runner, env, base) !== keepRoot) {
+      env = { ...env, [profile.runner === 'claude' ? 'CLAUDE_CONFIG_DIR' : 'CODEX_HOME']: keepRoot };
+    }
+    const plan = planLaunchEnv(base, env, profile.isolatePrefixes);
     const args = buildRunnerArgs(profile.runner, { mode, sessionId, cwd, profileArgs: profile.args, firstMessage });
     const ptyId = this.d.ptys.spawn({
       command: profile.command,
@@ -269,7 +297,7 @@ export class TaskService {
       cols: size.cols,
       rows: size.rows,
     });
-    return { ptyId, injectedNames: plan.injectedNames, stateRoot: stateRootFor(profile.runner, profile.env, base) };
+    return { ptyId, injectedNames: plan.injectedNames, stateRoot: stateRootFor(profile.runner, env, base) };
   }
 
   private recoveryOf(row: TaskRow): { recovery: TaskRecovery; reason: string } {
@@ -283,8 +311,10 @@ export class TaskService {
     return { recovery: 'resumable', reason: '' };
   }
 
-  // Codex creates its rollout file only after the first user message, so poll until it appears.
-  private watchCodex(taskId: string, ptyId: string, cwd: string, root: string, launchedAt: number): void {
+  // Codex creates its session only after the first user message, so poll until it appears.
+  // Several tasks may wait in one directory: a session goes to the task it belongs to
+  // (codexOwnerOf), and is claimed synchronously after the read, so no two tasks share one.
+  private watchCodex(taskId: string, ptyId: string, cwd: string, root: string, launchedAt: number, firstMessage: string): void {
     this.stopWatch(taskId);
     let realCwd = cwd;
     try {
@@ -292,32 +322,50 @@ export class TaskService {
     } catch {
       // Checked before launch; keep the recorded path if it vanished since.
     }
-    const timer = setInterval(async () => {
-      const claimed = new Set(
-        this.d.db
-          .select({ id: tasks.nativeSessionId })
-          .from(tasks)
-          .where(isNotNull(tasks.nativeSessionId))
-          .all()
-          .map((r) => r.id as string)
-      );
-      const found = pickCodexSession(await recentCodexRollouts(root, launchedAt), {
-        realCwd,
-        launchedAtMs: launchedAt,
-        claimedIds: claimed,
-      });
-      if (!found || !this.codexWatchers.has(taskId)) return;
-      this.stopWatch(taskId);
-      this.d.db.update(tasks).set({ nativeSessionId: found.id, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
-      this.d.onChanged();
-    }, this.d.codexPollMs ?? 1500);
-    this.codexWatchers.set(taskId, timer);
+    const w: CodexWatch = {
+      root,
+      waiter: { taskId, realCwd, launchedAtMs: launchedAt, firstMessage },
+      busy: false,
+      timer: setInterval(async () => {
+        if (w.busy) return;
+        w.busy = true;
+        let candidates: Awaited<ReturnType<typeof recentCodexRollouts>> = [];
+        try {
+          candidates = await recentCodexRollouts(root, launchedAt);
+        } catch {
+          // Unreadable this round; try again on the next tick.
+        } finally {
+          w.busy = false;
+        }
+        // Stopped or replaced by a newer run while reading.
+        if (this.codexWatchers.get(taskId) !== w) return;
+        const waiters = [...this.codexWatchers.values()].filter((x) => x.root === root).map((x) => x.waiter);
+        const found = pickCodexSession(candidates, { taskId, waiters, claimedIds: this.claimedSessionIds() });
+        if (!found) return;
+        this.stopWatch(taskId);
+        this.d.db.update(tasks).set({ nativeSessionId: found.id, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
+        if (w.finalTail) this.pollFollow(w.finalTail);
+        this.d.onChanged();
+      }, this.d.codexPollMs ?? 1500),
+    };
+    this.codexWatchers.set(taskId, w);
     this.watchedPty.set(ptyId, taskId);
   }
 
+  private claimedSessionIds(): Set<string> {
+    return new Set(
+      this.d.db
+        .select({ id: tasks.nativeSessionId })
+        .from(tasks)
+        .where(isNotNull(tasks.nativeSessionId))
+        .all()
+        .map((r) => r.id as string)
+    );
+  }
+
   private stopWatch(taskId: string): void {
-    const t = this.codexWatchers.get(taskId);
-    if (t) clearInterval(t);
+    const w = this.codexWatchers.get(taskId);
+    if (w) clearInterval(w.timer);
     this.codexWatchers.delete(taskId);
   }
 
@@ -336,11 +384,14 @@ export class TaskService {
       scanned = true;
       return f;
     };
+    // Bound to the settings this run started with: its answers say nothing about an edited profile.
+    const signature = this.d.profiles.launchSignature(profile.id);
+    const secrets = this.d.profiles.secretValues(profile.id);
     const tail = new SessionTail({
       runner: profile.runner,
       locate,
       launchedAt,
-      onEvent: (ev) => health.report(profile.id, ev, `task:${taskId}`),
+      onEvent: (ev) => health.report(profile.id, { ...ev, message: redact(ev.message, secrets) }, `task:${taskId}`, signature),
     });
     const timer = setInterval(() => this.pollFollow(tail), this.d.healthPollMs ?? 2000);
     this.follows.set(taskId, { tail, timer, ptyId, profileId: profile.id, launchedAt });
@@ -371,6 +422,9 @@ export class TaskService {
       if (f.ptyId !== ptyId) continue;
       this.unfollow(taskId);
       this.pollFollow(f.tail); // the last answers written before exit
+      // A Codex session found only after exit still gets its last answers read.
+      const w = this.codexWatchers.get(taskId);
+      if (w) w.finalTail = f.tail;
       const secs = (this.now() - f.launchedAt) / 1000;
       if (!killed && code !== 0 && !f.tail.sawEvent && secs * 1000 < EARLY_EXIT_MS) {
         const message =
@@ -381,8 +435,10 @@ export class TaskService {
     const watched = this.watchedPty.get(ptyId);
     if (watched) {
       this.watchedPty.delete(ptyId);
-      // Give Codex a moment to flush the rollout after the last message before giving up.
-      setTimeout(() => this.stopWatch(watched), 3000);
+      // Give Codex a moment to flush the rollout after the last message before giving up —
+      // but only on this run's watcher: a reopened task has a new one by then.
+      const w = this.codexWatchers.get(watched);
+      if (w) setTimeout(() => this.codexWatchers.get(watched) === w && this.stopWatch(watched), CODEX_EXIT_GRACE_MS);
     }
   };
 

@@ -4,7 +4,12 @@ import { testDatabase } from '../connections/db-tester';
 import { testSsh } from '../connections/ssh-tester';
 import type { DeleteOptions, ProjectService } from './project-service';
 
-export function createProjectControllers(svc: ProjectService) {
+export interface ProjectControllerHooks {
+  /** Live tasks in the project; deleting it would drop their records while their CLIs keep running. */
+  runningTasks?: (projectId: string) => number;
+}
+
+export function createProjectControllers(svc: ProjectService, hooks: ProjectControllerHooks = {}) {
   const runDbTest = (input: DatabaseInput, existingId?: string) => {
     const { vendor, ...t } = svc.databaseTarget(input, existingId);
     return testDatabase({ transport: DB_VENDORS[vendor].transport, ...t });
@@ -18,7 +23,11 @@ export function createProjectControllers(svc: ProjectService) {
       create: (input: ProjectInput, dirs?: DirInput[]) => svc.createProject(input, dirs),
       update: (id: string, input: ProjectInput) => svc.updateProject(id, input),
       setArchived: (id: string, archived: boolean) => svc.setArchived(id, archived),
-      delete: (id: string, opts: DeleteOptions) => svc.deleteProject(id, opts),
+      delete: (id: string, opts: DeleteOptions) => {
+        const n = hooks.runningTasks?.(id) ?? 0;
+        if (n > 0) throw new Error(`项目下有 ${n} 个任务正在运行，请先结束`);
+        return svc.deleteProject(id, opts);
+      },
     }),
     projectDirs: createRPCController({
       add: (projectId: string, input: DirInput) => svc.addDir(projectId, input),

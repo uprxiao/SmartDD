@@ -35,13 +35,14 @@ describe('SessionTail', () => {
     expect(events).toEqual([{ category: 'ok', message: '' }]);
     appendFileSync(file, reply('again') + line({ type: 'system', subtype: 'api_error', error: { status: 402 } }));
     t.poll();
-    expect(events).toHaveLength(1); // a second ok and a retry notice say nothing new
+    // Every reply is passed on (ProfileHealth dedupes); a retry notice is no verdict.
+    expect(events).toEqual([{ category: 'ok', message: '' }, { category: 'ok', message: '' }]);
     appendFileSync(file, apiError('unknown', 402, 'API Error: 402 Insufficient Balance'));
     t.poll();
-    expect(events[1]).toEqual({ category: 'billing', message: 'API Error: 402 Insufficient Balance' });
+    expect(events[2]).toEqual({ category: 'billing', message: 'API Error: 402 Insufficient Balance' });
     appendFileSync(file, reply());
     t.poll();
-    expect(events[2].category).toBe('ok'); // recovered (e.g. topped up): ok again
+    expect(events[3].category).toBe('ok'); // recovered (e.g. topped up): ok again
     expect(t.sawEvent).toBe(true);
   });
 

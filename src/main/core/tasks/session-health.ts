@@ -33,22 +33,34 @@ export class SessionTail {
   private rest = '';
   private last: ProfileCheckCategory | null = null;
 
-  constructor(private readonly o: SessionTailOptions) {}
+  constructor(private readonly o: SessionTailOptions) {
+    // Fix the starting point now, at launch: a resumed file's old answers are skipped, and
+    // whatever the CLI writes from here on — even before the first poll — is read.
+    try {
+      this.attach();
+    } catch {
+      // Not readable yet; the first poll tries again.
+    }
+  }
 
   /** Whether any verdict was seen (used to tell an early crash from a working session). */
   get sawEvent(): boolean {
     return this.last != null;
   }
 
+  private attach(): boolean {
+    if (this.file) return true;
+    const f = this.o.locate();
+    if (!f) return false;
+    // A file written before this launch (resume) holds old answers: start at its end.
+    const st = statSync(f);
+    this.offset = st.birthtimeMs >= this.o.launchedAt - 2000 ? 0 : st.size;
+    this.file = f;
+    return true;
+  }
+
   poll(): void {
-    if (!this.file) {
-      const f = this.o.locate();
-      if (!f) return;
-      this.file = f;
-      // A file written before this launch (resume) holds old answers: start at its end.
-      const st = statSync(f);
-      this.offset = st.birthtimeMs >= this.o.launchedAt - 2000 ? 0 : st.size;
-    }
+    if (!this.attach() || !this.file) return;
     let size: number;
     try {
       size = statSync(this.file).size;
@@ -80,8 +92,9 @@ export class SessionTail {
   private take(line: string): void {
     const { runner } = this.o;
     const isError = ERROR_HINTS[runner].some((h) => line.includes(h));
-    // Once the last verdict was ok, further replies say nothing new.
-    if (!isError && (this.last === 'ok' || !OK_HINTS[runner].some((h) => line.includes(h)))) return;
+    // Every reply is passed on: the profile's state is shared with other tasks and tests, and
+    // ProfileHealth decides what is worth writing (latest wins).
+    if (!isError && !OK_HINTS[runner].some((h) => line.includes(h))) return;
     let json: unknown;
     try {
       json = JSON.parse(line);

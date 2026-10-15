@@ -96,7 +96,14 @@ class TasksStore {
   }
 
   async resume(req: OpenTaskRequest): Promise<void> {
+    const hadTab = this.tabs.includes(req.taskId);
     const res = await rpc.tasks.open({ ...terminalSize(), ...req });
+    // The tab was closed while the CLI was starting: closing means ending, so end it now.
+    if (hadTab && !this.tabs.includes(req.taskId)) {
+      await rpc.tasks.kill(req.taskId);
+      await this.refresh();
+      return;
+    }
     runInAction(() => {
       this.terminals.set(req.taskId, res.ptyId);
       this.autoResumed.add(req.taskId);
