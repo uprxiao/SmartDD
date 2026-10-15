@@ -46,8 +46,8 @@
 ## 自测与对外分发
 
 - 用户于 2026-10-15 确认：一期为个人自测，先无 Apple 签名、无公证打 tag 构建，边用边测；Apple 开发者资格和证书可同步申请，不阻塞自测版本。
-- `release.config.json` 的 `channel` 为 `preview` 时允许无签名，GitHub Release 标为预发布且不设为 latest；仍执行版本、测试、全部目标构建、原生检查和校验和验证。`v0.0.1` 首版采用此方式。
-- 预发布说明必须列出平台验收边界和安装限制；Windows 当前为实验性包，终端、CLI 与 SSH Skill 的业务适配尚未完成，不宣称稳定支持。
+- `release.config.json` 的 `channel` 为 `preview` 时允许无签名，GitHub Release 标为预发布且不设为 latest；仍执行版本、测试、全部目标构建、原生检查和校验和验证。首个成功发布安装包的版本为 `v0.0.2`，失败的 `v0.0.1` 保留。
+- 预发布说明必须列出平台验收边界和安装限制；Windows、Linux 当前为实验性包，终端、CLI、Skill 与安全存储的完整业务适配和验收尚未完成，不宣称稳定支持。
 - 二期／给其他用户正式分发前，完成 Apple 签名、公证与目标平台安装验收，再将 `channel` 改为 `stable`。此时 Mac 发布强制签名和公证，成功后可设为 latest。
 - 测试版与稳定版共用同一套 tag 进位规则；不覆盖已经公开的测试版。签名和公证的接入清单见 PRD §2.4 与构建发版文档。
 
@@ -75,7 +75,7 @@
 ## 已配置的构建入口
 
 - `.github/workflows/ci.yml`：`main` / `feature/**` push、面向 `main` 的 PR，执行工作流校验、类型检查、发布规则测试、Mac 应用测试和编译。
-- `.github/workflows/build.yml`：手动试打包或被发布流程复用，构建 Mac arm64、Mac x64、Windows x64；上传 Actions artifacts，不单独发布 Release。
+- `.github/workflows/build.yml`：手动试打包或被发布流程复用，构建 Mac arm64/x64 DMG、Windows x64 EXE/MSI、Linux x64 AppImage/DEB/RPM；上传四份 Actions artifacts，不单独发布 Release。MSI 与三个 Linux 格式另检查解包后的版本、架构和 SQLite/PTY；发布必须齐备七个安装包。
 - `.github/workflows/release.yml`：推送 `v*` tag 后，校验附注标签、main 归属、版本进位和 CHANGELOG；构建全部目标并校验产物后，汇集到草稿 Release，再公开。
 - `pnpm release:next`：根据本地已有 tag 输出下一版本，不修改文件；用于发布决策前必须先同步远端 tag。`pnpm release:check --tag v0.0.1` 仅检查版本元数据；实际发布工作流另执行 Git 归属校验。
 - 手动试包和 `preview` 预发布允许无签名；`stable` Mac 发布需要签名与公证配置。安装包生成与原生模块检查不代表 Windows 的终端、CLI、Skill 业务适配已经完成，完整平台业务验收是声明稳定支持的前提。

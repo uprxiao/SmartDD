@@ -21,6 +21,17 @@ module.exports = {
     notarize: signed,
     ...(signed ? {} : { identity: null }),
   },
-  win: { target: [{ target: 'nsis', arch: ['x64'] }] },
+  win: { target: [{ target: 'nsis', arch: ['x64'] }, { target: 'msi', arch: ['x64'] }] },
+  msi: { oneClick: false, perMachine: false },
   nsis: { oneClick: false, perMachine: false, allowToChangeInstallationDirectory: true },
+  linux: {
+    category: 'Development',
+    executableName: 'smartdd',
+    maintainer: 'SmartDD contributors',
+    target: [
+      { target: 'AppImage', arch: ['x64'] },
+      { target: 'deb', arch: ['x64'] },
+      { target: 'rpm', arch: ['x64'] },
+    ],
+  },
 };

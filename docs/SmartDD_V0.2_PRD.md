@@ -131,8 +131,8 @@ SmartDD 是 Mac 上的 AI 开发工作台。项目集中管理代码目录、数
 | 禅道 | 不做 | Skill 重写，拉取指派、状态流转、已解决等 |
 | Jenkins、部署 | 不做 | 构建、部署与环境验证 |
 | 生产库 | 可登记，默认只读 | 另行定义 |
-| 构建与分发 | tag 触发 Mac arm64/x64、Windows x64 构建；个人自测允许无签名、无公证的预发布 | 对外分发前接入 Apple 签名、公证并完成各目标平台验收 |
-| 安装格式与自动更新 | 先跑通两个 Mac DMG、一个 Windows EXE 的构建、校验与下载 | 对标 Yoda 补齐 Windows MSI、Linux 安装格式与应用内自动更新；逐项适配和验收，不以生成文件代替功能验证 |
+| 构建与分发 | tag 触发 Mac arm64/x64、Windows x64、Linux x64 构建；个人自测允许无签名、无公证的预发布 | 对外分发前接入 Apple 签名、公证并完成各目标平台验收 |
+| 安装格式与自动更新 | v0.0.2 已发布两个 Mac DMG、一个 Windows EXE；按用户后续要求，v0.0.3 补 MSI 与 Linux AppImage/DEB/RPM 的实验性包 | 平台完整业务适配、安装升级验收与应用内自动更新；逐项验证，不以生成文件代替功能验证 |
 
 不做：SVN 提交、更新、回滚的任何管理；tmux 持久化；Desktop 内嵌浏览器；git 相关功能。
 
@@ -147,7 +147,7 @@ SmartDD 是 Mac 上的 AI 开发工作台。项目集中管理代码目录、数
 | M4 Skill 与注入 | 内置 Skill、按项目装载、投影、注入、Skill／MCP 识别 | V2、V3、V4、V6、V9 的实现及本机验证完成（2026-10-15）；AIS 正式验收与 M5 合并，见 `M4_Skill与配置注入.md` |
 | M5 端到端验收 | 用 AIS 项目跑完整流程 | 场景列表隔离自动化 V1–V10 通过；日常页面 CC-work 实际查询 Skill/Agent 数量和 173 包时间，修复交互启动与颜色缺陷（2026-10-15），见 `M5_AIS端到端验收.md` |
 
-一期补充（2026-10-15）：按用户要求在 `feature/0.0.1` 推进多平台构建与标签发版。已配置日常 CI、Mac arm64/x64 与 Windows x64 试打包、tag 触发的发布流程；本机 Mac arm64 DMG 与隔离 GUI 验证通过，开发分支已推送且首轮 GitHub CI 通过。首版 `v0.0.1` 采用无签名、无公证预发布，其他平台构建仍以实际 Actions 结果为准；Windows 业务适配与 Apple 签名、公证尚未完成，见 [多平台构建与发版](多平台构建与发版方案.md)。发布和版本进位规则统一维护在根目录 `AGENTS.md`。
+一期补充（2026-10-15）：按用户要求在 `feature/0.0.1` 推进多平台构建与标签发版。`v0.0.1` 因标签检出问题失败并保留记录；修复后 `v0.0.2` 的两个 Mac、一个 Windows 目标在 GitHub Actions 全部构建成功，预发布安装包已下载并通过 SHA-256 校验，Mac arm64 下载包的原生模块和隔离 GUI 通过。用户进一步要求本轮补齐 Windows MSI 和 Linux AppImage/DEB/RPM，准备 `v0.0.3`，待四个目标实际构建和载荷检查通过后发布。Windows/Linux 的完整业务适配、Apple 签名、公证尚未完成，见 [多平台构建与发版](多平台构建与发版方案.md)。发布和版本进位规则统一维护在根目录 `AGENTS.md`。
 
 不在没有验证的情况下给出固定工期；M0 结果出来后再估算。
 
@@ -155,13 +155,13 @@ SmartDD 是 Mac 上的 AI 开发工作台。项目集中管理代码目录、数
 
 | 阶段 | 已确定的安排 | 后续完成条件 |
 | --- | --- | --- |
-| 一期：个人自测 | 先推送 `v0.0.1`，由 GitHub Actions 自动构建；允许无 Apple 签名、无公证，Release 标为预发布；边自测边使用和修复 | 持续记录问题、安装与真实业务测试；明确 Mac x64、Windows 的未验收范围 |
+| 一期：个人自测 | 从 `v0.0.1` 起递增 tag，`v0.0.2` 首次成功发布安装包；允许无 Apple 签名、无公证，Release 标为预发布；边自测边使用和修复 | 持续记录问题、安装与真实业务测试；明确 Mac x64、Windows、Linux 的未验收范围 |
 | 一期期间：申请准备 | 用户可同步申请 Apple Developer Program、Developer ID Application 证书和公证认证信息，不阻塞自测发版 | 准备证书及私钥的 P12、导出密码、Apple ID、应用专用密码和 Team ID，配置到 GitHub Actions Secrets |
 | 二期／正式交给其他用户使用前 | 接入自动签名、公证及票据装订，将发布通道切换为 `stable` | 签名校验、公证结果、下载后首次安装与启动、各声明支持平台的业务验收全部通过 |
 
 记录的问题：无签名包可以构建，但从网络下载后的首次打开可能被 macOS 安全机制拦截；这影响分发和安装体验。当前仅自测，已接受此限制；对外分发前解决。Apple 签名、公证与 Windows 平台适配分别跟踪，取得证书不代表平台功能已经通过。申请和接入目前均待完成，不预设 Apple 审批时间。
 
-Yoda 发布资产对标（2026-10-15 用户提出）：首轮交付 Mac arm64/x64 DMG 与 Windows x64 EXE；后续在对应系统适配完成后补 MSI、Linux AppImage／DEB／RPM 等实际需要的格式。`.blockmap` 属于差分下载元数据，`.delta` 属于旧版到新版的增量更新包，随应用内自动更新接入，不能仅上传同名文件就声称具备自动更新。具体对标与顺序见构建发版文档 §4.5。
+Yoda 发布资产对标（2026-10-15 用户提出）：v0.0.2 交付 Mac arm64/x64 DMG 与 Windows x64 EXE；按用户后续指示，v0.0.3 提前补 MSI、Linux AppImage／DEB／RPM 的实验性构建。完整平台业务和安装升级验收仍单独跟踪。`.blockmap` 属于差分下载元数据，`.delta` 属于旧版到新版的增量更新包，随应用内自动更新接入，不能仅上传同名文件就声称具备自动更新。具体对标与顺序见构建发版文档 §4.5。
 
 ## 3. 核心技术路线
 
@@ -269,7 +269,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 | F09 | 凭据与安全 | safeStorage 加密存储、脱敏、日志 | P0 |
 | F10 | 设置与外观 | 主题、通用设置 | P1 |
 | F12 | 应用内自动更新 | 检查版本、展示变更、下载进度、确认重启安装、失败恢复 | P1（二期高优先级，已确认待开发） |
-| F13 | Windows MSI 与 Linux 分发 | Windows x64 MSI；Linux x64 AppImage、DEB、RPM 的构建、安装与升级验收 | P1（二期，已确认待开发） |
+| F13 | Windows MSI 与 Linux 分发 | Windows x64 MSI；Linux x64 AppImage、DEB、RPM 的构建、安装与升级验收 | P1（一期补充构建；完整平台验收待完成） |
 
 二期预留（本版不展开）：禅道、Jenkins 与部署、手机端、Skill 分发与版本中心、SVN 信息展示。
 
@@ -483,7 +483,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 
 主题（浅色、深色）与配色参考 Yoda；通用设置包括数据目录、默认 AI 配置、启动行为。界面语言支持简体中文与英文，默认简体中文，菜单栏随之切换（M1 已实现）。
 
-## 8. 二期与后续需求（当前自测版尚未实现）
+## 8. 分发扩展与二期需求
 
 | 方向 | 说明 |
 | --- | --- |
@@ -493,7 +493,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 | Skill 分发 | 版本中心、他人安装即用、统一维护 |
 | SVN 信息展示 | 只读显示 URL 与 revision，可选 |
 | 应用内自动更新（F12） | 2026-10-15 用户确认的重要功能；参考本地 Yoda，列为二期高优先级，细则见 §8.1 |
-| Windows MSI 与 Linux 分发（F13） | 2026-10-15 用户确认；参考 Yoda 的 x64 MSI、AppImage、DEB、RPM，细则见 §8.2 |
+| Windows MSI 与 Linux 分发（F13） | 2026-10-15 用户要求提前接入本轮构建；参考 Yoda 的 x64 MSI、AppImage、DEB、RPM，完整平台验收要求见 §8.2 |
 
 ### 8.1 应用内自动更新（F12，已确认待开发）
 
@@ -513,7 +513,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 
 **验收**：从真实旧版本升级到新版本，验证检查与版本排序、预发布隔离、下载进度、包损坏拒绝、断网重试、运行中任务保护、安装重启、项目/配置/加密凭据/会话恢复信息保留，以及升级失败后的恢复。Mac、Windows、Linux 各自取得证据后才声明该平台支持自动更新。
 
-### 8.2 Windows MSI 与 Linux 安装包（F13，已确认待开发）
+### 8.2 Windows MSI 与 Linux 安装包（F13，本轮接入构建）
 
 | 平台 / 格式 | 需求 | 验收要求 |
 | --- | --- | --- |
@@ -524,7 +524,7 @@ SQLite 是唯一来源。Desktop 用两种方式把配置交给 Skill：
 
 **构建与发布**：在对应系统 runner 构建，重建 SQLite/PTY 原生依赖，保留版本与提交校验；增加对应的 Actions artifact、Release 资产、manifest 和 SHA-256。先完成 Windows、Linux 的终端、CLI 检测、Skill 运行时和安全存储适配，再声明平台可用。Linux 不允许把安全存储静默降级为明文。
 
-**当前状态**：仅记录为已确认需求；现有 tag 构建仍是 Mac arm64 DMG、Mac x64 DMG、Windows x64 EXE。MSI、Linux 和自动更新均不能计入当前已交付功能。参考本地 `../yoda/electron-builder.config.ts`、`src/main/core/updates/update-service.ts`、`mac-sparkle-updater.ts`、`src/renderer/features/settings/components/UpdateCard.tsx` 与其发布脚本。
+**当前状态**：v0.0.2 已完成原三个安装包的构建、发布和实际下载校验。v0.0.3 新增 Windows MSI 与 Linux AppImage/DEB/RPM 构建配置，在 Windows／Ubuntu 原生 runner 解包检查版本、架构、SQLite 和 PTY，七个安装包与四份清单齐备后才能发布；云端结果以构建发版文档记录为准。桌面安装升级、CLI、Skill、安全存储等完整业务验收仍待完成；自动更新仍未实现。参考本地 `../yoda/electron-builder.config.ts`、`src/main/core/updates/update-service.ts`、`mac-sparkle-updater.ts`、`src/renderer/features/settings/components/UpdateCard.tsx` 与其发布脚本。
 
 ## 9. 异常与恢复要求
 

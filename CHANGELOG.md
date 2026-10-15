@@ -2,6 +2,13 @@
 
 版本是否已发布以 GitHub Release 为准。
 
+## 0.0.3
+
+- 对照本地 Yoda 增加 Windows x64 MSI，以及 Linux x64 AppImage、DEB、RPM；保留 Mac arm64/x64 DMG 与 Windows EXE，共七个安装包。
+- 新增 Ubuntu 构建任务；Windows MSI 和三个 Linux 格式必须解出真实应用并通过版本、架构、SQLite、PTY 检查，再进入 Release。完整性检查覆盖全部格式、来源提交与 SHA-256，缺包禁止发布。
+- 继续采用无签名、无公证的个人自测预发布。Windows 和 Linux 为实验性安装包，桌面安装升级、终端、CLI、Skill 和系统安全存储的完整业务验收尚未完成；不代表稳定支持。
+- 自动更新仍是 PRD 中的后续功能；本版提供手动下载。Mac 网络下载后首次打开的系统安全限制仍适用。
+
 ## 0.0.2
 
 - 修复标签发布时 checkout 把本地附注标签替换成提交对象、导致元数据校验失败的问题；保留严格的标签与 main 归属校验。

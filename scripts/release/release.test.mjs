@@ -107,19 +107,21 @@ function artifactsFixture(t) {
   const dir = mkdtempSync(join(tmpdir(), 'smartdd-release-assets-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   for (const target of targets) {
-    writeFileSync(join(dir, installerName('0.0.1', target)), `fixture ${target.platform} ${target.arch}`);
+    for (const format of target.formats) {
+      writeFileSync(join(dir, installerName('0.0.1', target, format)), `fixture ${target.platform} ${target.arch} ${format}`);
+    }
     writeManifest(dir, target, '0.0.1', 'commit-a', { signed: true, dirty: false });
   }
   return dir;
 }
 
-test('all three installers must match their recorded checksums and commit', (t) => {
+test('all seven installers must match their recorded checksums and commit', (t) => {
   const dir = artifactsFixture(t);
   const result = verifyArtifacts(dir, '0.0.1', 'commit-a');
-  assert.equal(result.files.length, 6);
-  assert.equal(result.checksums.trim().split('\n').length, 3);
+  assert.equal(result.files.length, 11);
+  assert.equal(result.checksums.trim().split('\n').length, 7);
   assert.throws(() => verifyArtifacts(dir, '0.0.1', 'another-commit'), /provenance/);
-  const installer = join(dir, installerName('0.0.1', targets[0]));
+  const installer = join(dir, installerName('0.0.1', targets[0], 'dmg'));
   writeFileSync(installer, 'changed after verification');
   assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a'), /checksum/);
 });
@@ -133,7 +135,7 @@ test('missing platforms, dirty builds and unsigned Mac builds block publication'
   writeFileSync(file, JSON.stringify({ ...manifest, signed: false }));
   assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a'), /signing/);
   writeFileSync(file, JSON.stringify(manifest));
-  rmSync(join(dir, installerName('0.0.1', targets[2])));
+  rmSync(join(dir, installerName('0.0.1', targets[2], 'exe')));
   assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a'), /ENOENT/);
 });
 
@@ -146,10 +148,34 @@ test('preview permits unsigned assets while stable still requires signing', (t) 
   assert.equal(stable.prerelease, false);
   const dir = artifactsFixture(t);
   for (const target of targets) writeManifest(dir, target, '0.0.1', 'commit-a', { signed: false, dirty: false });
-  assert.equal(verifyArtifacts(dir, '0.0.1', 'commit-a', preview).files.length, 6);
+  assert.equal(verifyArtifacts(dir, '0.0.1', 'commit-a', preview).files.length, 11);
   assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a', stable), /signing/);
   writeManifest(dir, targets[0], '0.0.1', 'commit-a', { signed: false, dirty: true });
   assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a', preview), /provenance/);
+});
+
+test('missing MSI or Linux formats and altered manifest entries block publication', (t) => {
+  const dir = artifactsFixture(t);
+  const required = ['SmartDD-0.0.1-win-x64.msi', 'SmartDD-0.0.1-linux-x64.AppImage',
+    'SmartDD-0.0.1-linux-x64.deb', 'SmartDD-0.0.1-linux-x64.rpm'];
+  for (const file of required) {
+    const path = join(dir, file);
+    const original = readFileSync(path);
+    rmSync(path);
+    assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a'), /ENOENT/);
+    writeFileSync(path, original);
+  }
+  const path = join(dir, 'manifest-linux-x64.json');
+  const manifest = JSON.parse(readFileSync(path, 'utf8'));
+  for (const files of [[], manifest.files.slice(0, 2), [...manifest.files, manifest.files[0]],
+    [manifest.files[0], manifest.files[0], manifest.files[2]],
+    [{ ...manifest.files[0], file: '../outside.AppImage' }, ...manifest.files.slice(1)]]) {
+    writeFileSync(path, JSON.stringify({ ...manifest, files }));
+    assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a'), /provenance/);
+  }
+  writeFileSync(path, JSON.stringify(manifest));
+  writeFileSync(join(dir, required[0]), 'corrupt MSI payload');
+  assert.throws(() => verifyArtifacts(dir, '0.0.1', 'commit-a'), /checksum/);
 });
 
 test('workflow entry points keep builds read-only and publication dependent on all builds', () => {

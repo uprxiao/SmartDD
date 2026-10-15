@@ -51,12 +51,22 @@ jobs:
             runner: windows-2022
             certificate: WIN_CERTIFICATE
             password: WIN_CERTIFICATE_PASSWORD
+          - platform: linux
+            arch: x64
+            runner: ubuntu-22.04
+            certificate: ''
+            password: ''
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Install Linux build and package verification tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libsecret-1-dev rpm libarchive-tools libgtk-3-0 libnss3 libasound2 libgbm1
       - uses: ./.github/actions/setup-build
       - name: Check release helpers on this platform
         run: pnpm test:release
@@ -66,9 +76,9 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.platform }}
           BUILD_ARCH: ${{ matrix.arch }}
           SMARTDD_REQUIRE_MAC_SIGNING: ${{ inputs.require_mac_signing && '1' || '0' }}
-          SMARTDD_SIGN: ${{ secrets[matrix.certificate] != '' && '1' || '0' }}
-          CSC_LINK: ${{ secrets[matrix.certificate] }}
-          CSC_KEY_PASSWORD: ${{ secrets[matrix.password] }}
+          SMARTDD_SIGN: ${{ matrix.platform != 'linux' && secrets[matrix.certificate] != '' && '1' || '0' }}
+          CSC_LINK: ${{ matrix.platform != 'linux' && secrets[matrix.certificate] || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.platform != 'linux' && secrets[matrix.password] || '' }}
           APPLE_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_ID || '' }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.platform == 'mac' && secrets.APPLE_PASSWORD || '' }}
           APPLE_TEAM_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_TEAM_ID || '' }}
@@ -80,6 +90,10 @@ jobs:
           path: |
             release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.dmg
             release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.exe
+            release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.msi
+            release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.AppImage
+            release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.deb
+            release/packages/${{ matrix.platform }}-${{ matrix.arch }}/SmartDD-*.rpm
             release/packages/${{ matrix.platform }}-${{ matrix.arch }}/manifest-*.json
           if-no-files-found: error
           retention-days: 14

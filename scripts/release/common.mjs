@@ -23,9 +23,9 @@ export function runBin(packageName, binName, args, options = {}) {
 export function packagedApp(output, platform, arch) {
   const app = platform === 'mac'
     ? join(output, arch === 'arm64' ? 'mac-arm64' : 'mac', 'SmartDD.app', 'Contents')
-    : join(output, 'win-unpacked');
+    : join(output, platform === 'linux' ? 'linux-unpacked' : 'win-unpacked');
   return {
-    executable: platform === 'mac' ? join(app, 'MacOS', 'SmartDD') : join(app, 'SmartDD.exe'),
+    executable: platform === 'mac' ? join(app, 'MacOS', 'SmartDD') : join(app, platform === 'linux' ? 'smartdd' : 'SmartDD.exe'),
     resources: join(app, platform === 'mac' ? 'Resources' : 'resources'),
   };
 }

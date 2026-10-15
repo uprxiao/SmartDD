@@ -6,6 +6,7 @@ import { rebuild } from '@electron/rebuild';
 import { packagedApp, readJson, root, run, runBin } from './common.mjs';
 import { targets, writeManifest } from './artifacts.mjs';
 import { parseVersion } from './version.mjs';
+import { verifyInstallerPayloads } from './installer-smoke.mjs';
 
 const require = createRequire(import.meta.url);
 const { values } = parseArgs({ options: {
@@ -14,8 +15,8 @@ const { values } = parseArgs({ options: {
   dir: { type: 'boolean', default: false },
 } });
 const target = targets.find((t) => t.platform === values.platform && t.arch === values.arch);
-if (!target) throw new Error('Supported targets: mac arm64, mac x64, win x64');
-const platform = target.platform === 'mac' ? 'darwin' : 'win32';
+if (!target) throw new Error('Supported targets: mac arm64, mac x64, win x64, linux x64');
+const platform = { mac: 'darwin', win: 'win32', linux: 'linux' }[target.platform];
 if (platform !== process.platform || target.arch !== process.arch) {
   throw new Error(`Build ${target.platform}/${target.arch} on a matching native runner (current ${process.platform}/${process.arch})`);
 }
@@ -29,6 +30,7 @@ if (electron.arch !== target.arch || electron.platform !== platform || electron.
   throw new Error('Installed Electron does not match the build target');
 }
 const signed = process.env.SMARTDD_SIGN === '1';
+if (signed && target.platform === 'linux') throw new Error('Linux package signing is not configured');
 if (process.env.SMARTDD_REQUIRE_MAC_SIGNING === '1' && target.platform === 'mac' && !signed) {
   throw new Error('Stable macOS release requires MAC_CERTIFICATE and notarization credentials; preview and manual builds may be unsigned');
 }
@@ -45,7 +47,7 @@ console.log(`Building SmartDD ${version}: ${target.platform}/${target.arch}, ${s
 await rebuild({ buildPath: root, electronVersion, arch: target.arch, onlyModules: ['better-sqlite3', 'node-pty'], force: true, buildFromSource: true });
 runBin('electron-vite', 'electron-vite', ['build']);
 runBin('electron-builder', 'electron-builder', [
-  `--${target.platform}`, ...(values.dir ? ['--dir'] : [target.platform === 'mac' ? 'dmg' : 'nsis']), `--${target.arch}`,
+  `--${target.platform}`, ...(values.dir ? ['--dir'] : target.formats.map((format) => format === 'exe' ? 'nsis' : format)), `--${target.arch}`,
   '--publish', 'never', '--config', 'electron-builder.config.cjs', `--config.directories.output=${output}`,
   // Safe to reuse only after the runtime platform, architecture and version check above.
   `--config.electronDist=${join(root, 'node_modules', 'electron', 'dist')}`,
@@ -60,8 +62,9 @@ run(app.executable, [join(root, 'scripts/release/native-smoke.cjs'), app.resourc
   env: { ...env, ELECTRON_RUN_AS_NODE: '1' }, timeout: 30_000,
 });
 if (!values.dir) {
+  verifyInstallerPayloads(output, target, version, env);
   const commit = run('git', ['rev-parse', 'HEAD'], { stdio: 'pipe' });
   const dirty = Boolean(run('git', ['status', '--porcelain'], { stdio: 'pipe' }));
   const manifest = writeManifest(output, target, version, commit, { signed, dirty });
-  console.log(`Installer verified: ${manifest.file}`);
+  console.log(`Installers verified: ${manifest.files.map((entry) => entry.file).join(', ')}`);
 }
