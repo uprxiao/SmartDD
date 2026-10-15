@@ -1,4 +1,5 @@
 import { FitAddon } from '@xterm/addon-fit';
+import { Unicode11Addon } from '@xterm/addon-unicode11';
 import { Terminal } from '@xterm/xterm';
 import { Loader2, Play, TriangleAlert } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
@@ -167,6 +168,9 @@ function TaskTerminal({ ptyId, visible }: { ptyId: string; visible: boolean }) {
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
+    // Modern wcwidth tables, as in Yoda: xterm's Unicode 6 default mismeasures newer CJK/emoji.
+    term.loadAddon(new Unicode11Addon());
+    term.unicode.activeVersion = '11';
     term.open(hostRef.current!);
     termRef.current = term;
     fitRef.current = fit;
