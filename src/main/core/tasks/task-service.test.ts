@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { appendFileSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
@@ -13,7 +13,7 @@ import { SecretsStore, type SecretCipher } from '../../secrets';
 import { AiProfileService } from '../ai/ai-profile-service';
 import type { HealthEvent } from '../ai/health-classify';
 import { ProjectService } from '../projects/project-service';
-import { TaskService, type PtyHost } from './task-service';
+import { ARCHIVE_STOP_TIMEOUT_MS, TaskService, type PtyHost } from './task-service';
 
 const cipher: SecretCipher = {
   isAvailable: () => true,
@@ -247,6 +247,79 @@ describe('running state', () => {
     expect(ptys.killed).toEqual(['pty-1']);
     expect(svc.list({ includeArchived: true })).toEqual([]);
     expect(() => svc.get(task.id)).toThrow('任务不存在');
+  });
+});
+
+describe('TaskService archive lifecycle', () => {
+  const running = () => svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '保留归档记录' });
+
+  it('stops only the selected task, preserves its native file and identity, then restores without starting', async () => {
+    const a = running();
+    const b = svc.create({ projectId: a.task.projectId!, dirId: null, aiProfileId: a.task.aiProfileId!, firstMessage: 'other' });
+    writeClaudeSession(a.task.cwd, a.task.id);
+    const original = readFileSync(claudeSessionPath(a.task.cwd, a.task.id), 'utf8');
+    const archived = await svc.stopAndArchive(a.task.id);
+    expect(archived).toMatchObject({ id: a.task.id, projectId: a.task.projectId, cwd: a.task.cwd, aiProfileId: a.task.aiProfileId, nativeSessionId: a.task.nativeSessionId, firstMessage: a.task.firstMessage, ptyId: null });
+    expect(archived.archivedAt).not.toBeNull();
+    expect(ptys.killed).toEqual([a.ptyId]);
+    expect(svc.get(b.task.id).ptyId).toBe(b.ptyId);
+    expect(svc.list().map(t => t.id)).toEqual([b.task.id]);
+    expect(svc.list({ includeArchived: true })).toHaveLength(2);
+    expect(() => svc.open({ taskId: a.task.id })).toThrow('先取消归档');
+    expect(readFileSync(claudeSessionPath(a.task.cwd, a.task.id), 'utf8')).toBe(original);
+    const restored = svc.setArchived(a.task.id, false);
+    expect(restored).toMatchObject({ projectId: a.task.projectId, archivedAt: null, ptyId: null, recovery: 'resumable' });
+    expect(ptys.spawned).toHaveLength(2);
+    svc.open({ taskId: a.task.id });
+    expect(ptys.last.args).toContain('--resume');
+    expect(ptys.last.args).toContain(a.task.id);
+  });
+
+  it('waits for the exact PTY exit and prevents reopen or competing archive mutations during the wait', async () => {
+    const a = running();
+    vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
+    const pending = svc.stopAndArchive(a.task.id);
+    expect(svc.get(a.task.id)).toMatchObject({ archivedAt: null, ptyId: a.ptyId });
+    ptys.emit('exit', 'unrelated-pty', 0);
+    expect(() => svc.open({ taskId: a.task.id })).toThrow('正在结束并归档');
+    expect(() => svc.setArchived(a.task.id, false)).toThrow('正在结束并归档');
+    await expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('正在结束并归档');
+    ptys.emit('exit', a.ptyId, 0);
+    await expect(pending).resolves.toMatchObject({ ptyId: null, archivedAt: expect.any(Number) });
+    expect(ptys.listenerCount('exit')).toBe(1);
+  });
+
+  it('keeps the task visible after a stop timeout and allows a later retry', async () => {
+    vi.useFakeTimers();
+    const a = running();
+    const kill = vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
+    const pending = expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('未归档');
+    await vi.advanceTimersByTimeAsync(ARCHIVE_STOP_TIMEOUT_MS);
+    await pending;
+    expect(svc.get(a.task.id)).toMatchObject({ archivedAt: null, ptyId: a.ptyId });
+    expect(ptys.listenerCount('exit')).toBe(1);
+    kill.mockRestore();
+    await expect(svc.stopAndArchive(a.task.id)).resolves.toMatchObject({ ptyId: null, archivedAt: expect.any(Number) });
+  });
+
+  it('keeps the task visible and releases its guard if stopping throws', async () => {
+    const a = running();
+    const kill = vi.spyOn(ptys, 'kill').mockImplementation(() => { throw new Error('stop failed'); });
+    await expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('stop failed');
+    expect(svc.get(a.task.id).archivedAt).toBeNull();
+    expect(ptys.listenerCount('exit')).toBe(1);
+    kill.mockRestore();
+    await expect(svc.stopAndArchive(a.task.id)).resolves.toMatchObject({ archivedAt: expect.any(Number) });
+  });
+
+  it('cleans up a pending archive when the application exits', async () => {
+    const a = running();
+    vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
+    const pending = expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('归档未完成');
+    svc.dispose();
+    await pending;
+    expect(svc.get(a.task.id).archivedAt).toBeNull();
+    expect(ptys.listenerCount('exit')).toBe(0);
   });
 });
 

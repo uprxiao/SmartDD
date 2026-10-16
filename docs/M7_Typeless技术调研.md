@@ -150,7 +150,7 @@ Model Hub 的 Qwen 文档说明采用 `https://modelhub.ailemac.com/qwen/api/v1`
 
 本地 `../yoda/src/main/core/app/voice-input.ts` 只是检查／启动 Typeless，再通过 macOS 脚本模拟它的快捷键；`voice-input-shortcut.ts` 处理快捷键解析。Yoda 的这段代码没有提供自有采集、ASR、光标输入或纠错词库。
 
-按用户最新拆分，**M7 就采用这套外接 Typeless 的方式**，复用按钮、焦点恢复、后台启动与快捷键转发，再补齐用户要求的全局唤起键。SmartDD 现有设置与 RPC 可复用；本机自有词库和模型接入属于 F17-B，不再作为 M7 的完成条件。具体适配点与验收见 [M7 接入说明](M7_Typeless语音输入接入.md)。
+按用户最新拆分，**M7 就采用这套外接 Typeless 的方式**，复用按钮、焦点恢复、后台启动与快捷键转发，再补齐用户要求的全局唤起键。SmartDD 现有设置与 RPC 可复用；本机自有词库和模型接入属于 F17-B，不再作为 M7 的完成条件。本轮本地 Yoda 源码证据、模式差异和复用建议见 [Yoda 唤起调研](M7_Yoda语音唤起调研.md)；具体适配点与验收见 [M7 接入说明](M7_Typeless语音输入接入.md)。
 
 ## 8. 可复核定位与后续验证
 

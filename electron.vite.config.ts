@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
@@ -12,7 +13,7 @@ const alias = {
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [externalizeDepsPlugin(), { name: 'smartdd-voice-bridge', writeBundle() { execFileSync(process.execPath, ['scripts/voice/build.mjs'], { stdio: 'inherit' }); } }],
     resolve: { alias },
     build: { rollupOptions: { input: { index: resolve('src/main/index.ts') } } },
   },

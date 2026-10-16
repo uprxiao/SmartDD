@@ -369,7 +369,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if not args.config:
-        parser.error("REMOTE_SERVERS_CONFIG is missing. Start a SmartDD task or supply --config explicitly.")
+        parser.error("REMOTE_SERVERS_CONFIG is missing. Start a WillYou task or supply --config explicitly.")
 
     servers = load_servers(args.config.expanduser())
 

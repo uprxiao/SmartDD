@@ -1,6 +1,6 @@
-// Title bar and runtime bar of the task page, after Yoda (Apache-2.0): the task tabs + ⓘ task
-// details of its titlebar, and src/renderer/app/workspace-runtime-bar.tsx (runtime-item.tsx).
-import { Info, Play, Plus, Square, TriangleAlert, X } from 'lucide-react';
+// Task details and runtime bar adapted from Yoda (Apache-2.0).
+// The single window title follows the approved Codex reference; the sidebar switches sessions.
+import { Ellipsis, Folder, Moon, Play, SlidersHorizontal, Square, SquarePlus, Sun, TriangleAlert } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,107 +20,55 @@ import { rpc } from '@renderer/lib/ipc';
 import { Button } from '@renderer/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/lib/ui/popover';
 import { cn } from '@renderer/utils/utils';
+import { useTheme } from '@renderer/lib/theme';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import { RuntimeCapabilities } from './capabilities';
 
 const RUNNER_LOGOS: Record<Runner, string> = { claude: claudeLogo, codex: openaiLogo };
 
 /** The CLI exited but its terminal is still on screen: resume or switch from here. */
-const canRestartInPlace = (task: Task) => !task.ptyId && tasksStore.terminals.has(task.id) && task.recovery !== 'unrecoverable';
+const canRestartInPlace = (task: Task) => task.archivedAt === null && !task.ptyId && tasksStore.terminals.has(task.id) && task.recovery !== 'unrecoverable';
 
-/**
- * Open task tabs, after Yoda's titlebar tabs. Clicking a sidebar task opens or focuses its tab;
- * closing a tab ends that task's session (PRD F05).
- */
-export const TaskTabs = observer(function TaskTabs() {
+/** Window-level title: changing the selected sidebar task never unmounts its terminal. */
+export const TaskHeader = observer(function TaskHeader({ task }: { task: Task }) {
   const { t } = useTranslation();
-  const tabs = tasksStore.openTabs;
-  const currentId = navigation.currentTaskId;
-  return (
-    <div data-testid="task-tabs" role="tablist" className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
-      {tabs.map((tab) => {
-        const active = tab.id === currentId;
-        const label = `${tab.projectName ?? t('task.noProject')} / ${tab.title}`;
-        return (
-          <div
-            key={tab.id}
-            role="tab"
-            aria-selected={active}
-            data-testid="task-tab"
-            data-task={tab.id}
-            data-active={active}
-            title={label}
-            onClick={() => tasksStore.show(tab.id)}
-            onAuxClick={(e) => {
-              // Middle click closes, as in browsers.
-              if (e.button === 1) void tasksStore.closeTab(tab.id);
-            }}
-            className={cn(
-              'app-no-drag group flex h-7 max-w-52 min-w-24 shrink-0 cursor-default items-center gap-1.5 rounded-md border pr-1 pl-2 text-xs',
-              active ? 'border-border bg-background-2 text-foreground' : 'border-transparent text-foreground-muted hover:bg-background-2/60 hover:text-foreground'
-            )}
-          >
-            <span
-              data-testid="task-tab-status"
-              data-status={tab.ptyId ? 'running' : 'stopped'}
-              className={cn('size-2 shrink-0 rounded-full border', tab.ptyId ? 'border-green-500 bg-green-200' : 'border-foreground-passive')}
-            />
-            <span className="min-w-0 flex-1 truncate">{tab.title}</span>
-            <button
-              type="button"
-              data-testid="task-tab-close"
-              title={t('nav.closeTab')}
-              onClick={(e) => {
-                e.stopPropagation();
-                void tasksStore.closeTab(tab.id);
-              }}
-              className={cn(
-                'flex size-4 shrink-0 items-center justify-center rounded text-foreground-muted hover:bg-background-3 hover:text-foreground',
-                !active && 'opacity-0 group-hover:opacity-100'
-              )}
-            >
-              <X className="size-3" />
-            </button>
-          </div>
-        );
-      })}
-      <button
-        type="button"
-        data-testid="task-tab-new"
-        title={t('nav.newTask')}
-        onClick={() => navigation.newTask(tasksStore.current?.projectId ?? undefined)}
-        className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-background-2 hover:text-foreground"
-      >
-        <Plus className="size-4" />
-      </button>
-    </div>
-  );
-});
-
-export const TaskTitleActions = observer(function TaskTitleActions({ task }: { task: Task }) {
-  const { t } = useTranslation();
+  const { effectiveTheme, setTheme } = useTheme();
+  const [busy, setBusy] = useState(false);
+  const dark = effectiveTheme === 'ydark';
   const running = Boolean(task.ptyId);
-  return (
-    <div className="ml-auto flex shrink-0 items-center gap-1">
-      {running && (
-        <Button variant="ghost" size="sm" data-testid="task-kill" onClick={() => void rpc.tasks.kill(task.id)}>
-          <Square className="size-3.5" />
-          {t('task.kill')}
-        </Button>
-      )}
-      {canRestartInPlace(task) && task.aiProfileId && (
-        <Button
-          variant="ghost"
-          size="sm"
-          data-testid="task-header-resume"
-          onClick={() => void tasksStore.resume({ taskId: task.id }).catch((e) => toast.error(rpcErrorMessage(e)))}
-        >
-          <Play className="size-3.5" />
-          {task.recovery === 'resumable' ? t('task.resume') : t('task.start')}
-        </Button>
-      )}
-      <TaskInfo task={task} />
+  const restart = canRestartInPlace(task) && Boolean(task.aiProfileId);
+  const changeSession = async () => {
+    setBusy(true);
+    try {
+      if (running) await rpc.tasks.kill(task.id);
+      else await tasksStore.resume({ taskId: task.id });
+    } catch (e) { toast.error(rpcErrorMessage(e)); }
+    finally { setBusy(false); }
+  };
+  return <header className="task-window-header app-drag" data-testid="task-header">
+    <div className="task-window-title" title={`${task.projectName ?? t('task.noProject')} / ${task.title}`}>
+      <Folder size={17} aria-hidden="true" /><span>{task.title}</span>
     </div>
-  );
+    <div className="task-window-actions app-no-drag">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="icon-button" data-testid="task-actions" aria-label={t('m6.more')} title={t('m6.more')}><Ellipsis size={18} /></DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {(running || restart) && <>
+            <DropdownMenuItem data-testid={running ? 'task-kill' : 'task-header-resume'} disabled={busy || tasksStore.resuming.has(task.id)} onClick={() => void changeSession()}>
+              {running ? <Square /> : <Play />}{running ? t('task.kill') : task.recovery === 'resumable' ? t('task.resume') : t('task.start')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>}
+          <DropdownMenuItem onClick={() => setTheme(dark ? 'ylight' : 'ydark')}>
+            {dark ? <Sun /> : <Moon />}{t('settings.theme')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <TaskInfo task={task} />
+      <span className="task-window-divider" />
+      <button type="button" className="icon-button" title={t('nav.newTask')} aria-label={t('nav.newTask')} onClick={() => navigation.newTask(task.projectId ?? undefined)}><SquarePlus size={17} /></button>
+    </div>
+  </header>;
 });
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
@@ -145,9 +93,10 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
       <PopoverTrigger
         data-testid="task-info"
         title={t('task.info')}
-        className="flex size-7 items-center justify-center rounded-md text-foreground-muted hover:bg-background-2 hover:text-foreground data-popup-open:bg-background-2"
+        aria-label={t('task.info')}
+        className="icon-button data-popup-open:bg-background-2"
       >
-        <Info className="size-4" />
+        <SlidersHorizontal size={18} />
       </PopoverTrigger>
       <PopoverContent align="end" data-testid="task-info-popup" className="max-h-[75vh] w-96 gap-2.5 overflow-y-auto text-xs">
         <div className="flex min-w-0 items-center gap-2">

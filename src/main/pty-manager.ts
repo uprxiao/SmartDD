@@ -50,6 +50,8 @@ export class PtyManager extends EventEmitter {
     return id;
   }
 
+  has(id: string): boolean { return this.ptys.has(id); }
+
   write(id: string, data: string): void {
     this.ptys.get(id)?.write(data);
   }

@@ -199,7 +199,7 @@ export class CapabilityService {
     }
     const args: string[] = [];
     if (input.runner === 'claude') {
-      files['plugin/.claude-plugin/plugin.json'] = json({ name: 'smartdd', version: '1.0.0', description: 'SmartDD project capabilities' });
+      files['plugin/.claude-plugin/plugin.json'] = json({ name: 'smartdd', version: '1.0.0', description: 'WillYou project capabilities' });
       for (const { selection, files: source } of packages) if (selection.enabled) {
         for (const [path, content] of Object.entries(source)) files[`plugin/skills/${selection.skillId}/${path}`] = content;
         selection.path = join(runRoot, 'plugin', 'skills', selection.skillId, 'SKILL.md');

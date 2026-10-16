@@ -1,3 +1,5 @@
+import { createVoiceController } from './core/voice/controller';
+import type { VoiceService } from './core/voice/voice-service';
 import { app, BrowserWindow, dialog, shell } from 'electron';
 import type { AppSettingsKey } from '@shared/app-settings';
 import { createRPCController, createRPCRouter } from '@shared/ipc/rpc';
@@ -17,6 +19,7 @@ import { runProbes } from './probes';
 import type { PtyManager } from './pty-manager';
 
 export interface RpcDeps {
+  voice: VoiceService;
   client: DbClient;
   dbFile: string;
   settings: SettingsStore;
@@ -46,7 +49,8 @@ export function createRpcRouter(d: RpcDeps) {
         await shell.openExternal(url);
       },
     }),
-    appSettings: createAppSettingsController(d.settings, d.onSettingChanged),
+    voice: createVoiceController(d.voice),
+    appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
     ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id) }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
     ...createTaskController(d.tasks),

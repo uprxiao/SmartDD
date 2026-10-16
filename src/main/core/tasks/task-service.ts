@@ -54,6 +54,8 @@ export interface TaskServiceDeps {
 
 /** A CLI that dies this soon after launch, unprompted and without any API answer, failed to start. */
 export const EARLY_EXIT_MS = 15_000;
+/** A missing PTY exit must never leave an archive request pending indefinitely. */
+export const ARCHIVE_STOP_TIMEOUT_MS = 5000;
 
 /** How long a Codex watcher keeps looking after its PTY exited (the rollout may be flushed late). */
 const CODEX_EXIT_GRACE_MS = 3000;
@@ -95,6 +97,8 @@ export class TaskService {
   private readonly watchedPty = new Map<string, string>(); // ptyId → taskId, for the grace period after exit
   private readonly follows = new Map<string, Follow>(); // taskId → session file follower
   private readonly killedPtys = new Set<string>();
+  private readonly archiving = new Set<string>();
+  private readonly pendingArchiveStops = new Set<(error: Error) => void>();
   private readonly runtimes = new Map<string, { taskId: string; runtime: PreparedRuntime; timer: NodeJS.Timeout; startedAt: number }>();
   private readonly now: () => number;
 
@@ -177,6 +181,8 @@ export class TaskService {
   /** Resume / reopen a task that is not running; a running task just returns its terminal. */
   open(req: OpenTaskRequest): OpenResult {
     const row = this.require(req.taskId);
+    if (this.archiving.has(row.id)) throw new Error('任务正在结束并归档，请稍后再试');
+    if (row.archivedAt !== null) throw new Error('任务已归档，请先取消归档再启动');
     const live = this.running.get(row.id);
     if (live) {
       if (req.aiProfileId && req.aiProfileId !== row.aiProfileId) throw new Error('任务正在运行，结束后才能换 AI 配置恢复');
@@ -231,8 +237,10 @@ export class TaskService {
   }
 
   setArchived(id: string, archived: boolean): TaskView {
-    this.require(id);
+    const row = this.require(id);
+    if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
     if (archived && this.running.has(id)) throw new Error('任务正在运行，请先结束再归档');
+    if ((row.archivedAt !== null) === archived) return this.get(id);
     this.d.db
       .update(tasks)
       .set({ archivedAt: archived ? this.now() : null, updatedAt: this.now() })
@@ -242,9 +250,41 @@ export class TaskService {
     return this.get(id);
   }
 
+  /** Explicit user confirmation: wait for this PTY to exit before hiding its task. */
+  async stopAndArchive(id: string): Promise<TaskView> {
+    this.require(id);
+    if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
+    const ptyId = this.running.get(id);
+    if (!ptyId) return this.setArchived(id, true);
+    this.archiving.add(id);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const finish = (error?: Error) => {
+          clearTimeout(timer);
+          this.d.ptys.off('exit', onExit);
+          this.pendingArchiveStops.delete(finish);
+          if (error) reject(error);
+          else resolve();
+        };
+        const onExit = (exitedId: string) => { if (exitedId === ptyId) finish(); };
+        const timer = setTimeout(() => finish(new Error('终端尚未确认结束，未归档。请稍后重试。')), ARCHIVE_STOP_TIMEOUT_MS);
+        this.pendingArchiveStops.add(finish);
+        this.d.ptys.on('exit', onExit);
+        try { this.kill(id); }
+        catch (error) { finish(error instanceof Error ? error : new Error(String(error))); }
+      });
+      // No await between releasing the guard and saving the archived flag.
+      this.archiving.delete(id);
+      return this.setArchived(id, true);
+    } finally {
+      this.archiving.delete(id);
+    }
+  }
+
   /** Only SmartDD's record goes; the CLI's own session files stay (PRD F05 step 5). */
   delete(id: string): void {
     this.require(id);
+    if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
     this.kill(id);
     this.stopWatch(id);
     this.unfollow(id);
@@ -273,6 +313,7 @@ export class TaskService {
   }
 
   dispose(): void {
+    for (const cancel of this.pendingArchiveStops) cancel(new Error('应用正在退出，归档未完成'));
     for (const run of this.runtimes.values()) {
       clearInterval(run.timer);
       run.runtime.release();
@@ -322,7 +363,7 @@ export class TaskService {
         else delete env.CLAUDE_CONFIG_DIR;
       }
     }
-    if (this.d.capabilities && Object.keys(profile.env).some((key) => RUNTIME_ISOLATION.some((p) => key.startsWith(p)))) throw new Error('AI 配置使用了 SmartDD 项目注入保留变量，请在项目中配置资源');
+    if (this.d.capabilities && Object.keys(profile.env).some((key) => RUNTIME_ISOLATION.some((p) => key.startsWith(p)))) throw new Error('AI 配置使用了 WillYou 项目注入保留变量，请在项目中配置资源');
     const runtime = context && this.d.capabilities?.prepare({ ...context, runner: profile.runner, cwd, home: env.HOME ?? base.HOME ?? process.env.HOME ?? '', profileArgs: profile.args });
     const plan = planLaunchEnv(base, { ...env, ...runtime?.env }, [...profile.isolatePrefixes, ...RUNTIME_ISOLATION,
       // Also clear a root introduced by shell rc; the selected explicit root, if any,

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { readJson } from './common.mjs';
+import { productName, readJson } from './common.mjs';
 
 export const targets = [
   { platform: 'mac', arch: 'arm64', formats: ['dmg'] },
@@ -14,7 +14,7 @@ export const installerName = (version, target, format) => {
   // electron-builder uses the native package convention in its ${arch} macro.
   const arch = target.platform === 'linux' && target.arch === 'x64'
     ? (format === 'deb' ? 'amd64' : 'x86_64') : target.arch;
-  return `SmartDD-${version}-${target.platform}-${arch}.${format}`;
+  return `${productName}-${version}-${target.platform}-${arch}.${format}`;
 };
 export const manifestName = (target) => `manifest-${target.platform}-${target.arch}.json`;
 const digest = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');

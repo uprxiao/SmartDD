@@ -1,3 +1,5 @@
+import { VoiceButton } from './voice-controls';
+import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
 import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, ShieldCheck, Wrench, Zap } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
@@ -119,7 +121,7 @@ export const HomeView = observer(function HomeView() {
   </Select>;
 
   return <section className="reference-home" aria-label={t('nav.newTask')}>
-    <div className="reference-welcome"><img src={appIcon} alt="SmartDD" draggable={false} /><h1>{t('m6.welcomePrefix')} <button onClick={() => setLaunchSettings(true)}>{project?.name || 'SmartDD'}</button> {t('m6.welcomeSuffix')}</h1></div>
+    <div className="reference-welcome"><img src={appIcon} alt="WillYou" draggable={false} /><h1>{t('m6.welcomePrefix')} <button onClick={() => setLaunchSettings(true)}>{project?.name || 'WillYou'}</button> {t('m6.welcomeSuffix')}</h1></div>
     <div className="reference-composer-wrap">
       {(dirProblem || error || !projectId || !profile) && <div className="launch-hint" role="status"><span>{error || dirProblem || (!projectId ? t(projects?.length ? 'home.pickProject' : 'home.noProjects') : t('home.noProfiles'))}</span><button onClick={() => setLaunchSettings(true)}>{t('m6.taskSettings')}</button></div>}
       {error && <span data-testid="home-error" className="sr-only">{error}</span>}
@@ -138,6 +140,7 @@ export const HomeView = observer(function HomeView() {
           </DropdownMenuContent></DropdownMenu>
           <button type="button" className="composer-permission" onClick={() => setLaunchSettings(true)}><ShieldCheck size={15} />{t('m6.projectContext')}</button>
           <div className="reference-home-picker composer-profile">{profilePicker}</div>
+          <VoiceButton compact disabled={launching} onClick={() => void voiceStore.trigger(textareaVoiceTarget(inputRef.current), 'home')} />
           <button type="submit" data-testid="home-launch" className="reference-send" disabled={!ready} aria-label={t('home.launchHint')} title={t('home.launchHint')}>{launching ? <Loader2 size={19} className="animate-spin" /> : <ArrowUp size={19} />}</button>
         </div>
       </form>

@@ -27,7 +27,7 @@ try {
   const beforeSvn = execFileSync('svn', ['status', '--no-ignore'], { cwd: inputs.workdir, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });
   control = await controlResources(root);
   secretValues.push(control.password);
-  const open = () => openElectron({ userData: join(root, 'userdata'), executable: process.env.SMARTDD_UI_APP ?? 'release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD', env: { PYTHONDONTWRITEBYTECODE: '1' }, inspectMain: true });
+  const open = () => openElectron({ userData: join(root, 'userdata'), executable: process.env.SMARTDD_UI_APP ?? 'release/mac-arm64/WillYou.app/Contents/MacOS/WillYou', env: { PYTHONDONTWRITEBYTECODE: '1' }, inspectMain: true });
   app = await open();
   const project = await app.invoke('projects.create', { name: 'AIS M5', aliases: ['AIS'], description: 'Read-only end-to-end acceptance', rulesPath: null }, [{ label: 'AIS SVN', path: inputs.workdir }]);
   const database = await app.invoke('databases.create', project.id, inputs.dbInput);

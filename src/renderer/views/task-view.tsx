@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cssVar } from '@renderer/utils/cssVars';
 import { cn } from '@renderer/utils/utils';
 import { InjectionFailure } from './capabilities';
+import { ArchivedTaskNotice } from './task-archive';
 
 function xtermTheme() {
   return {
@@ -50,11 +51,12 @@ export const TaskView = observer(function TaskView() {
       {task?.runtimeSnapshot?.selfCheck.status === 'failed' && <InjectionFailure snapshot={task.runtimeSnapshot} />}
       <div data-testid="task-area" className="relative min-h-0 flex-1 bg-(--xterm-bg)">
         {terminals.map(([taskId, ptyId]) => (
-          <TaskTerminal key={ptyId} ptyId={ptyId} visible={navigation.currentViewId === 'task' && task?.id === taskId} />
+          <TaskTerminal key={ptyId} ptyId={ptyId} readOnly={tasksStore.byId.get(taskId)?.archivedAt != null} visible={navigation.currentViewId === 'task' && task?.id === taskId} />
         ))}
         {task && !shownPty && <StoppedPanel key={task.id} task={task} />}
         {!task && <div className="absolute inset-0 flex items-center justify-center text-sm text-foreground-muted">{i18n.t('task.none')}</div>}
       </div>
+      {task?.archivedAt != null && <ArchivedTaskNotice task={task} />}
     </div>
   );
 });
@@ -68,7 +70,7 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   useEffect(() => setProfileId(task.aiProfileId), [task.id, task.aiProfileId]);
-  // Auto-resume runs in the store when the tab opens; this panel shows its progress and errors.
+  // Auto-resume runs in the store when the conversation opens; this panel shows its progress and errors.
   const resuming = busy || tasksStore.resuming.has(task.id);
   const shownError = error || tasksStore.resumeErrors.get(task.id) || '';
 
@@ -86,6 +88,14 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
       setBusy(false);
     }
   };
+
+  if (task.archivedAt !== null) return <div data-testid="task-archived" className="absolute inset-0 overflow-y-auto bg-background">
+    <div className="mx-auto flex max-w-xl flex-col gap-4 px-8 py-12 text-sm">
+      <h2 className="text-base">{task.title}</h2>
+      <p className="text-foreground-muted">{t('tasks.archivedHint')}</p>
+      {task.firstMessage && <p className="whitespace-pre-wrap select-text">{task.firstMessage}</p>}
+    </div>
+  </div>;
 
   return (
     <div data-testid="task-stopped" className="absolute inset-0 overflow-y-auto bg-background">
@@ -135,7 +145,7 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
  * An interactive terminal set up like Yoda's (src/renderer/lib/pty/pty.ts, use-pty.ts; Apache-2.0):
  * same xterm options, font stack and key mapping, so a CLI looks as it does in a real terminal.
  */
-function TaskTerminal({ ptyId, visible }: { ptyId: string; visible: boolean }) {
+function TaskTerminal({ ptyId, visible, readOnly }: { ptyId: string; visible: boolean; readOnly: boolean }) {
   const { effectiveTheme } = useTheme();
   const { value: terminalSettings } = useAppSettingsKey('terminal');
   const hostRef = useRef<HTMLDivElement>(null);
@@ -209,8 +219,12 @@ function TaskTerminal({ ptyId, visible }: { ptyId: string; visible: boolean }) {
   useEffect(() => {
     if (!visible) return;
     fitAndSync();
-    termRef.current?.focus();
-  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!readOnly) termRef.current?.focus();
+  }, [visible, readOnly]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (termRef.current) termRef.current.options.disableStdin = readOnly;
+  }, [readOnly]);
 
   useEffect(() => {
     if (termRef.current) termRef.current.options.theme = xtermTheme();

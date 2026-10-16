@@ -1,16 +1,17 @@
 // Menu layout follows Yoda (Apache-2.0) src/main/app/menu.ts.
-import { app, Menu, type MenuItemConstructorOptions } from 'electron';
+import { Menu, type MenuItemConstructorOptions } from 'electron';
 import type { Language } from '@shared/app-settings';
+import { APP_NAME } from './identity';
 
 const LABELS = {
   'zh-CN': {
-    about: '关于 SmartDD',
+    about: '关于 WillYou',
     settings: '设置…',
     services: '服务',
-    hide: '隐藏 SmartDD',
+    hide: '隐藏 WillYou',
     hideOthers: '隐藏其他',
     unhide: '全部显示',
-    quit: '退出 SmartDD',
+    quit: '退出 WillYou',
     edit: '编辑',
     undo: '撤销',
     redo: '重做',
@@ -33,13 +34,13 @@ const LABELS = {
     close: '关闭窗口',
   },
   en: {
-    about: 'About SmartDD',
+    about: 'About WillYou',
     settings: 'Settings…',
     services: 'Services',
-    hide: 'Hide SmartDD',
+    hide: 'Hide WillYou',
     hideOthers: 'Hide Others',
     unhide: 'Show All',
-    quit: 'Quit SmartDD',
+    quit: 'Quit WillYou',
     edit: 'Edit',
     undo: 'Undo',
     redo: 'Redo',
@@ -72,7 +73,7 @@ export function buildAppMenu(language: Language, actions: MenuActions): void {
   const l = LABELS[language];
   const template: MenuItemConstructorOptions[] = [
     {
-      label: app.name,
+      label: APP_NAME,
       submenu: [
         { role: 'about', label: l.about },
         { type: 'separator' },

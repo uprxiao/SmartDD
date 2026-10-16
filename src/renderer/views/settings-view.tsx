@@ -1,4 +1,6 @@
-import { ChevronDown, Info, Keyboard, Search, Settings, ShieldCheck, SquareTerminal, Sun, Zap } from 'lucide-react';
+import { VoiceSettingsSection, readableVoiceKey } from './settings/voice';
+import { voiceStore } from '@renderer/core/voice-store';
+import { ChevronDown, Info, Keyboard, Mic, Search, Settings, ShieldCheck, SquareTerminal, Sun, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { useAiProfiles, useRefreshAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
@@ -24,6 +26,7 @@ const SECTIONS = [
   { id: 'appearance', Icon: Sun, group: 'personal' },
   { id: 'aiProfiles', Icon: ShieldCheck, group: 'personal' },
   { id: 'terminal', Icon: SquareTerminal, group: 'personal' },
+  { id: 'voice', Icon: Mic, group: 'personal' },
   { id: 'shortcuts', Icon: Keyboard, group: 'personal' },
   { id: 'capabilities', Icon: Zap, group: 'integrations' },
   { id: 'about', Icon: Info, group: 'application' },
@@ -45,6 +48,7 @@ export const SettingsView = observer(function SettingsView() {
       {!SECTIONS.some((item) => label(item.id).toLowerCase().includes(search.toLowerCase())) && <p className="settings-search-empty">{t('m6.noSettings')}</p>}
     </nav>
     <div className="settings-content" key={section}><div className="settings-inner">{section !== 'aiProfiles' && <div className="page-heading"><h1>{label(section)}</h1></div>}
+      {section === 'voice' && <VoiceSettingsSection />}
       {section === 'general' && <GeneralSection />}
       {section === 'aiProfiles' && <AiProfilesSection />}
       {section === 'capabilities' && <CapabilitiesSection />}
@@ -60,15 +64,16 @@ function SettingsGroup({ title, children }: { title: string; children: React.Rea
   return <section className="settings-group"><h2>{title}</h2><div className="settings-card">{children}</div></section>;
 }
 
-function ShortcutsSection() {
+const ShortcutsSection = observer(function ShortcutsSection() {
   const { t } = useTranslation();
-  return <SettingsGroup title={t('m6.shortcuts')}>{[['nav.newTask', '⌘ N'], ['nav.search', '⌘ K'], ['nav.toggleSidebar', '⌘ B'], ['nav.settings', '⌘ ,'], ['home.launchHint', '⌘ Enter']].map(([key, shortcut]) => <SettingRow key={key} label={t(key)}><kbd>{shortcut}</kbd></SettingRow>)}</SettingsGroup>;
-}
+  const key = voiceStore.inspection?.effectiveGlobalShortcut;
+  return <SettingsGroup title={t('m6.shortcuts')}>{[['nav.newTask', '⌘ N'], ['nav.search', '⌘ K'], ['nav.toggleSidebar', '⌘ B'], ['nav.settings', '⌘ ,'], ['home.launchHint', '⌘ Enter']].map(([key, shortcut]) => <SettingRow key={key} label={t(key)}><kbd>{shortcut}</kbd></SettingRow>)}<SettingRow label={t('voice.global')} hint={t('voice.globalHint')}><button className="text-button" onClick={() => navigation.openSettings('voice')}>{key ? readableVoiceKey(key) : t('voice.notEffective')}<ChevronDown size={14} /></button></SettingRow></SettingsGroup>;
+});
 
 function AboutSection() {
   const { t } = useTranslation();
   const info = useQuery({ queryKey: ['app', 'info'], queryFn: () => rpc.app.getInfo(), staleTime: Infinity });
-  return <SettingsGroup title="SmartDD"><SettingRow label={t('m6.version')}><span data-testid="app-version">{info.data?.version ?? '…'}</span></SettingRow><SettingRow label={t('settings.dataDir')} hint={<span className="font-mono break-all select-text">{info.data?.userDataPath}</span>}><Button variant="outline" size="sm" onClick={() => void rpc.app.revealDataDir()}>{t('settings.reveal')}</Button></SettingRow></SettingsGroup>;
+  return <SettingsGroup title="WillYou"><SettingRow label={t('m6.version')}><span data-testid="app-version">{info.data?.version ?? '…'}</span></SettingRow><SettingRow label={t('settings.dataDir')} hint={<span className="font-mono break-all select-text">{info.data?.userDataPath}</span>}><Button variant="outline" size="sm" onClick={() => void rpc.app.revealDataDir()}>{t('settings.reveal')}</Button></SettingRow></SettingsGroup>;
 }
 
 function GeneralSection() {

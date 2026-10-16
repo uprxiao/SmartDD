@@ -33,7 +33,7 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     height: 900,
     minWidth: 700,
     minHeight: 500,
-    title: 'SmartDD',
+    title: 'WillYou',
     icon: appIcon,
     show: false,
     backgroundColor: windowBackground(),

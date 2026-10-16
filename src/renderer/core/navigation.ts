@@ -4,7 +4,7 @@ import { makeAutoObservable } from 'mobx';
 export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
-export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'about';
+export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about';
 
 class NavigationStore {
   currentViewId: ViewId = 'home';

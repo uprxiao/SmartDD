@@ -1,9 +1,9 @@
 // Adapted from Yoda's release/build.ts + rebuild-native.ts; see NOTICE.
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { rebuild } from '@electron/rebuild';
-import { packagedApp, readJson, root, run, runBin } from './common.mjs';
+import { packagedApp, productName, readJson, root, run, runBin } from './common.mjs';
 import { targets, writeManifest } from './artifacts.mjs';
 import { parseVersion } from './version.mjs';
 import { verifyInstallerPayloads } from './installer-smoke.mjs';
@@ -13,6 +13,7 @@ const { values } = parseArgs({ options: {
   platform: { type: 'string', default: process.platform === 'darwin' ? 'mac' : process.platform === 'win32' ? 'win' : process.platform },
   arch: { type: 'string', default: process.arch },
   dir: { type: 'boolean', default: false },
+  'output-dir': { type: 'string' },
 } });
 const target = targets.find((t) => t.platform === values.platform && t.arch === values.arch);
 if (!target) throw new Error('Supported targets: mac arm64, mac x64, win x64, linux x64');
@@ -42,8 +43,10 @@ if (signed) {
 const env = { ...process.env, SMARTDD_SIGN: signed ? '1' : '0', CSC_IDENTITY_AUTO_DISCOVERY: signed ? 'true' : 'false' };
 if (!signed) for (const key of Object.keys(env)) if (/^(CSC_|WIN_CSC_|APPLE_)/.test(key)) delete env[key];
 env.CSC_IDENTITY_AUTO_DISCOVERY = signed ? 'true' : 'false';
-const output = values.dir ? join(root, 'release') : join(root, 'release', 'packages', `${target.platform}-${target.arch}`);
-console.log(`Building SmartDD ${version}: ${target.platform}/${target.arch}, ${signed ? 'signed' : 'unsigned trial'}`);
+// macOS file providers can re-add FinderInfo while codesign is running. Local
+// builds may use a non-synced output directory; CI keeps its established paths.
+const output = values['output-dir'] ? resolve(values['output-dir']) : values.dir ? join(root, 'release') : join(root, 'release', 'packages', `${target.platform}-${target.arch}`);
+console.log(`Building ${productName} ${version}: ${target.platform}/${target.arch}, ${signed ? 'signed' : 'unsigned trial'}`);
 await rebuild({ buildPath: root, electronVersion, arch: target.arch, onlyModules: ['better-sqlite3', 'node-pty'], force: true, buildFromSource: true });
 runBin('electron-vite', 'electron-vite', ['build']);
 runBin('electron-builder', 'electron-builder', [

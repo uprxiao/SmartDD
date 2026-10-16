@@ -95,7 +95,7 @@ async function testPostgres(t: DbTarget, timeoutMs: number): Promise<string> {
     ssl: false,
     connectionTimeoutMillis: timeoutMs,
     query_timeout: timeoutMs,
-    application_name: 'SmartDD connection test',
+    application_name: 'WillYou connection test',
     stream: guardedSocket,
   });
   // A socket error after connect() settled would otherwise be an unhandled 'error' event.

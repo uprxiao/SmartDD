@@ -13,11 +13,26 @@ assert.equal(packagedRequire('./package.json').version, expectedVersion);
 for (const file of ['out/main/index.js', 'out/preload/index.js', 'out/renderer/index.html', 'NOTICE', 'licenses/Yoda-Apache-2.0.txt']) {
   assert(fs.existsSync(path.join(asar, file)), `Missing packaged resource: ${file}`);
 }
+if (process.platform === 'darwin') {
+  const helper = path.join(resources, 'native/smartdd-voice');
+  assert(fs.existsSync(helper), 'Packaged voice key bridge');
+  const { execFileSync, spawnSync } = require('node:child_process');
+  const bundle = path.resolve(resources, '..', '..');
+  execFileSync('/usr/bin/codesign', ['--verify', '--deep', '--strict', bundle], { stdio: 'pipe' });
+  const identity = spawnSync('/usr/bin/codesign', ['-d', '--verbose=2', bundle], { encoding: 'utf8' });
+  assert.equal(identity.status, 0, 'Packaged bundle signing metadata');
+  const bundleId = execFileSync('/usr/libexec/PlistBuddy', ['-c', 'Print :CFBundleIdentifier', path.join(bundle, 'Contents/Info.plist')], { encoding: 'utf8' }).trim();
+  assert.equal(identity.stderr.match(/^Identifier=(.+)$/m)?.[1], bundleId, 'Code identity must match the application bundle');
+  const header = execFileSync('/usr/bin/lipo', ['-archs', helper], { encoding: 'utf8' }).trim();
+  assert.equal(header, expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'Voice bridge architecture');
+  const inspection = JSON.parse(execFileSync(helper, ['inspect', '{}'], { encoding: 'utf8', timeout: 8000 }));
+  assert('installed' in inspection && 'accessibility' in inspection, 'Voice bridge read-only startup');
+}
 const Database = packagedRequire('better-sqlite3');
 const db = new Database(':memory:');
 db.exec('CREATE TABLE packaging_probe (value TEXT NOT NULL)');
-db.prepare('INSERT INTO packaging_probe VALUES (?)').run('SmartDD');
-assert.equal(db.prepare('SELECT value FROM packaging_probe').get().value, 'SmartDD');
+db.prepare('INSERT INTO packaging_probe VALUES (?)').run('WillYou');
+assert.equal(db.prepare('SELECT value FROM packaging_probe').get().value, 'WillYou');
 db.close();
 
 const pty = packagedRequire('node-pty');
@@ -34,5 +49,5 @@ terminal.onExit(({ exitCode }) => {
   assert(output.includes('SMARTDD_NATIVE_PTY_OK'), 'Packaged PTY output');
   // Windows ConPTY can retain worker handles after onExit. This is an isolated
   // one-shot probe: once every assertion passes, flush the result and end it.
-  process.stdout.write(`${JSON.stringify({ version: expectedVersion, platform: process.platform, arch: process.arch, sqlite: 'passed', pty: 'passed' })}\n`, () => process.exit(0));
+  process.stdout.write(`${JSON.stringify({ version: expectedVersion, platform: process.platform, arch: process.arch, sqlite: 'passed', pty: 'passed', voiceBridge: process.platform === 'darwin' ? 'passed' : 'not-applicable' })}\n`, () => process.exit(0));
 });

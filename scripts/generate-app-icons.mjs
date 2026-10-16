@@ -1,5 +1,5 @@
 // Export the approved artwork into native icon containers; no image-generation dependency.
-// Run on macOS: node scripts/generate-app-icons.mjs [--proportion 70|75|80]
+// Run on macOS: node scripts/generate-app-icons.mjs [--artwork jade-teal | --proportion 70|75|80]
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -11,10 +11,15 @@ if (process.platform !== 'darwin') throw new Error('Icon export uses macOS sips/
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const icons = join(root, 'build/icons');
 const selectionFile = join(icons, 'selection.json');
-const { values } = parseArgs({ options: { proportion: { type: 'string' } } });
-const proportion = values.proportion ?? String(JSON.parse(readFileSync(selectionFile, 'utf8')).proportion);
-if (!['70', '75', '80'].includes(proportion)) throw new Error('Choose --proportion 70, 75 or 80.');
-const source = join(icons, 'variants', `SmartDD-06-${proportion}.png`);
+const { values } = parseArgs({ options: { proportion: { type: 'string' }, artwork: { type: 'string' } } });
+if (values.artwork && values.proportion) throw new Error('Choose either --artwork or --proportion.');
+const selected = JSON.parse(readFileSync(selectionFile, 'utf8'));
+const design = values.artwork ?? (values.proportion ? '06' : selected.artwork ?? '06');
+if (!['06', 'jade-teal', 'jade-teal-eyes'].includes(design)) throw new Error('Choose --artwork jade-teal, jade-teal-eyes or --proportion 70, 75 or 80.');
+const proportion = values.proportion ?? String(selected.proportion ?? 70);
+if (design === '06' && !['70', '75', '80'].includes(proportion)) throw new Error('Choose --proportion 70, 75 or 80.');
+const selection = design === '06' ? { artwork: design, proportion: Number(proportion) } : { artwork: design };
+const source = join(icons, 'variants', design === '06' ? `SmartDD-06-${proportion}.png` : design === 'jade-teal' ? 'WillYou-jade-teal.png' : 'Willyu-jade-teal-eyes.png');
 // The approved variants are already 1024px canvases: preserve their exact pixels.
 const png = readFileSync(source);
 if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' || png.readUInt32BE(16) !== 1024 || png.readUInt32BE(20) !== 1024) {
@@ -28,6 +33,10 @@ try {
   mkdirSync(join(icons, 'png'), { recursive: true });
   mkdirSync(dirname(artwork), { recursive: true });
   copyFileSync(source, artwork);
+  // The browser prototype and its favicon consume the same approved pixels.
+  const prototypeArtwork = join(root, 'prototypes/m6-codex/public/assets/app-icon.png');
+  mkdirSync(dirname(prototypeArtwork), { recursive: true });
+  copyFileSync(source, prototypeArtwork);
 
   const iconset = join(scratch, 'app.iconset');
   mkdirSync(iconset);
@@ -62,8 +71,8 @@ try {
   writeFileSync(join(icons, 'icon.ico'), Buffer.concat([header, ...images]));
   for (const size of [16, 32, 48, 64, 128, 256, 512]) resize(size, join(icons, 'png', `${size}x${size}.png`));
   copyFileSync(artwork, join(icons, 'icon.png'));
-  writeFileSync(selectionFile, `${JSON.stringify({ proportion: Number(proportion) }, null, 2)}\n`);
-  console.log(`Selected 06 / ${proportion}%. Exported app artwork, macOS ICNS, Windows ICO and Linux PNG icons.`);
+  writeFileSync(selectionFile, `${JSON.stringify(selection, null, 2)}\n`);
+  console.log(`Selected ${design}${design === '06' ? ` / ${proportion}%` : ''}. Exported app/prototype artwork, macOS ICNS, Windows ICO and Linux PNG icons.`);
 } finally {
   rmSync(scratch, { recursive: true, force: true });
 }

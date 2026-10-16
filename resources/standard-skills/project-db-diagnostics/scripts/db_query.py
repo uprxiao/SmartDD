@@ -434,7 +434,7 @@ def record_resource(status, db, args):
 def main():
     args = parse_args()
     if not args.config:
-        raise ValueError("PROJECT_DB_CONFIG is missing. Start a SmartDD task or supply --config explicitly.")
+        raise ValueError("PROJECT_DB_CONFIG is missing. Start a WillYou task or supply --config explicitly.")
     config = load_config(args.config)
     args.projection_metadata = config
     secrets = {} if os.environ.get("PROJECT_DB_CONFIG") else load_secrets(args.secrets)

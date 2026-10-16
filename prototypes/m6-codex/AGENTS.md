@@ -1,10 +1,27 @@
 # Prototype Instructions
 
-## Current authorization — 2026-10-16
+## M7 preparation — 2026-10-16
+
+- Current request is Yoda source research, additions to this approved high-fidelity prototype, and an actionable M7 requirements/technical document. This round does not implement production voice services or publish a release.
+- Work on `feature/0.0.1`. Keep the separate local voice experiment on `feature/typeless-special-test`.
+- M7 / F17-A uses installed Typeless: a microphone on the home composer and settings test field, plus configurable global activation (used directly in the terminal) and a dedicated voice settings page. Keep every existing page and the terminal workspace.
+- Use small M7 labels on the preview entry and voice settings. Prototype scenarios and example insertion must clearly say they are simulated; do not start audio capture, launch Typeless, register native shortcuts, change permissions, or read real settings from this browser prototype.
+- Own recording, models, text processing and dictionary stay in F17-B. UI shows request status only; it cannot know Typeless recording status from a successful launch.
+- Use the current approved production logo for WillYou (exact spelling): jade teal tile, white ant lifting a barbell, no eyes (2026-10-16 final choice). Sync `public/assets/app-icon.png` with `src/assets/branding/app-icon.png` using the root icon export script. The earlier 06 / 70% design remains an archived alternative. Preserve earlier QA as history and append scoped verification.
+
+## M6 production authorization — 2026-10-16
 
 - The user reviewed the prototype and authorized production integration on the existing `feature/0.0.1` branch, followed by testing and release. The dated decisions below retain the earlier prototype phase history; they do not block the approved production work. This directory remains an isolated design reference. Production evidence is in `../../docs/M6_实施与验收记录.md`.
 
 ## User decisions — 2026-10-15
+
+- 2026-10-16 字体补充（`codex-clipboard-IVLNeH.png`）：以实际 Codex 侧栏逐项对齐字体家族、字号、字重、行高、行距、颜色和长标题渐隐，不能仅称“相似”。本机桌面样式使用系统字体与 430 默认字重、14px 正文／21px 行高、18px 标题／24px 行高；浅色截图侧栏 `#fcfcfc`、文字 `#3b3e40`。保留 SmartDD 品牌和业务状态；不把运行状态误当未读状态来加粗。更完整的长期规则见根目录 `../../AGENTS.md` 的“Codex UI 细粒度复刻”。
+
+- 2026-10-16 最新确认（`codex-clipboard-1HSHMT.png` / `codex-clipboard-2MQXQ8.png`）：取消运行任务横向标签和重复面包屑，窗口顶栏仅当前会话标题；左侧项目会话切换，保留各终端状态。更多菜单保留结束／恢复与主题，右侧保留任务信息及新建。终端删除语音按钮，使用 SmartDD 全局快捷键直接输入；首页和设置试用 Mic 保留。原型的终端语音模拟移到更多菜单，明确标为模拟，不注册系统快捷键。
+
+- 2026-10-16 语音反馈补充：唤起中和成功时不弹浮动提示卡；只在失败、权限不足或配置异常时提示。按钮自身保留短暂忙碌状态。原型“演示文字回填”移到顶部预览控件区，不恢复成功浮层，正式产品不出现演示按钮。
+
+- 2026-10-16 补充参考 `codex-clipboard-14gupv.png`、`codex-clipboard-qo0GPi.png`：应用导航选中时使用实心图标与浅灰圆角底，未选中为灰色线框；悬停与选中分别处理，蓝点保留在首页，不能跟随选中项移动。同步生产实现和原型的浅／深色状态；不因参考图里出现 Spaces 而恢复已明确排除的入口。
 
 - M6 steps 1 and 2 only: reference analysis and interactive prototype. Step 3 (production integration) requires the user's review first.
 - The user requires Codex's actual layout and UI to be reproduced, not merely a similar minimal style. Keep SmartDD's own functionality and approved ant logo.
@@ -23,3 +40,5 @@ Before making substantial visual changes, use the Product Design plugin's `get-c
 When implementing from a selected generated mock, treat that image as the source of truth for layout, component anatomy, density, spacing, color, typography, visible content, and hierarchy.
 
 Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts/prepare-sites-build.mjs`, and `tests/sites-worker.test.mjs` intact so the same local prototype can be handed to Sites. Before a Sites handoff, run `npm run build` and `npm run test:sites`; the build must leave `dist/client/index.html`, `dist/server/index.js`, and `dist/.openai/hosting.json`.
+
+- 2026-10-16 会话归档追加确认：任务右键／更多菜单仅保留重命名、归档／取消归档，去掉会话删除。运行中先确认“结束并归档”；归档后在已归档列表及搜索可查，支持撤销／查看，取消归档回原项目且不自动启动。中央终端及其他项目／配置删除规则不变。

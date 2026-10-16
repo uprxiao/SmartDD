@@ -122,7 +122,7 @@ export function CapabilityLaunchPreview({ projectId, aiProfileId, cwd }: { proje
   return <details className="mt-3 text-xs text-foreground-muted" data-testid="capability-launch-preview"><summary className="cursor-pointer">{t('capabilities.launchPreview')} · {scan.isFetching ? t('capabilities.scanning') : t('capabilities.unverified')}</summary>
     {scan.error && <p className="mt-2 text-foreground-destructive">{rpcErrorMessage(scan.error)}</p>}
     {scan.data && <div className="mt-2 flex flex-col gap-2">
-      <p>{scan.data.skills.filter((s) => s.enabled).map((s) => `${s.name} v${s.current.version}`).join(' · ') || t('capabilities.none')}{scan.data.mcpEnabled ? ' · SmartDD MCP' : ''}</p>
+      <p>{scan.data.skills.filter((s) => s.enabled).map((s) => `${s.name} v${s.current.version}`).join(' · ') || t('capabilities.none')}{scan.data.mcpEnabled ? ' · WillYou MCP' : ''}</p>
       <p>{t('capabilities.previewHint', { count: scan.data.discovered.length })}</p>
       {scan.data.issues.map((s) => <p key={s} className="text-foreground-destructive">{s}</p>)}
     </div>}

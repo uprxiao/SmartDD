@@ -11,6 +11,7 @@ export function createTaskController(svc: TaskService) {
       open: (req: OpenTaskRequest) => svc.open(req),
       rename: (id: string, title: string) => svc.rename(id, title),
       setArchived: (id: string, archived: boolean) => svc.setArchived(id, archived),
+      stopAndArchive: (id: string) => svc.stopAndArchive(id),
       delete: (id: string) => svc.delete(id),
       kill: (id: string) => svc.kill(id),
     }),

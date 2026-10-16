@@ -112,6 +112,25 @@ class TasksStore {
     await this.refresh();
   }
 
+  /** Archive only after main confirms success; preserve other sessions and terminal scrollback. */
+  async setArchived(taskId: string, archived: boolean, stopRunning = false): Promise<void> {
+    const result = archived && stopRunning
+      ? await rpc.tasks.stopAndArchive(taskId)
+      : await rpc.tasks.setArchived(taskId, archived);
+    runInAction(() => {
+      this.tasks = this.tasks.map((task) => task.id === taskId ? result : task);
+      // Keep the terminal's scrollback in memory. Unarchiving never starts a CLI by itself.
+      this.autoResumed.add(taskId);
+      this.resumeErrors.delete(taskId);
+      if (archived) {
+        const wasVisible = navigation.currentTaskId === taskId && navigation.currentViewId === 'task';
+        navigation.closeTask(taskId);
+        if (wasVisible && result.projectId) navigation.newTask(result.projectId);
+      }
+    });
+    await this.refresh();
+  }
+
   /** Hide an exited terminal so the stopped panel (profile choice, recovery info) shows. */
   dropTerminal(taskId: string): void {
     this.terminals.delete(taskId);

@@ -13,6 +13,13 @@ export const TERMINAL_FONT_SIZE = { min: 10, max: 24 } as const;
  * being silently replaced by the default.
  */
 export const APP_SETTINGS_STRICT_SCHEMA_MAP = {
+  voice: z.object({
+    provider: z.literal('typeless'),
+    enabled: z.boolean(),
+    globalEnabled: z.boolean(),
+    globalShortcut: z.string().trim().min(1).max(80),
+    shortcutOverride: z.string().trim().max(80).nullable(),
+  }),
   general: z.object({
     language: z.enum(SUPPORTED_LANGUAGES),
   }),
@@ -37,6 +44,7 @@ export type AppSettingsKey = keyof AppSettings;
 export const AppSettingsKeys = Object.keys(APP_SETTINGS_STRICT_SCHEMA_MAP) as AppSettingsKey[];
 
 export const APP_SETTINGS_DEFAULTS: AppSettings = {
+  voice: { provider: 'typeless', enabled: true, globalEnabled: false, globalShortcut: 'Command+Shift+Space', shortcutOverride: null },
   general: { language: 'zh-CN' },
   theme: null,
   terminal: { fontFamily: 'Menlo, Monaco, monospace', fontSize: 13 },
@@ -53,6 +61,7 @@ function lenientObject<S extends z.ZodRawShape>(strict: z.ZodObject<S>, defaults
 
 const strict = APP_SETTINGS_STRICT_SCHEMA_MAP;
 export const APP_SETTINGS_SCHEMA_MAP: { [K in AppSettingsKey]: z.ZodType<AppSettings[K]> } = {
+  voice: lenientObject(strict.voice, APP_SETTINGS_DEFAULTS.voice),
   general: lenientObject(strict.general, APP_SETTINGS_DEFAULTS.general),
   theme: strict.theme.catch(APP_SETTINGS_DEFAULTS.theme),
   terminal: lenientObject(strict.terminal, APP_SETTINGS_DEFAULTS.terminal),

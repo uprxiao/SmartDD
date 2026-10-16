@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-TOOL = {"name": "project_context", "description": "Read the current SmartDD project's resource identities, configuration version and skill paths. Contains no credential values.", "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}}
+TOOL = {"name": "project_context", "description": "Read the current WillYou project's resource identities, configuration version and skill paths. Contains no credential values.", "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}}
 
 
 def handle(request, context):

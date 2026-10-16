@@ -63,7 +63,7 @@ def main():
     except OSError:
         issues.append("self_check_report_failed")
     if issues:
-        print("SmartDD injection self-check failed: " + ", ".join(issues), file=sys.stderr)
+        print("WillYou injection self-check failed: " + ", ".join(issues), file=sys.stderr)
         return 78
     os.execvpe(command[0], command, os.environ)
 

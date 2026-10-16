@@ -1,5 +1,6 @@
+import { voiceErrorsZh, voiceErrorsEn } from '@shared/voice-errors';
 import { join } from 'node:path';
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification } from 'electron';
 import {
   aiProfilesChangedEvent,
   menuOpenSettingsEvent,
@@ -9,6 +10,8 @@ import {
   ptyInputEvent,
   ptyResizeEvent,
   tasksChangedEvent,
+  voiceStatusChangedEvent,
+  voiceGlobalErrorEvent,
 } from '@shared/events';
 import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
@@ -28,10 +31,12 @@ import { PtyManager } from './pty-manager';
 import { createRpcRouter } from './rpc';
 import { safeStorageCipher } from './safe-storage-cipher';
 import { SecretsStore } from './secrets';
+import { VoiceService } from './core/voice/voice-service';
+import { TypelessAdapter } from './core/voice/typeless-adapter';
+import { configureAppIdentity } from './app/identity';
 
-app.setName('SmartDD');
-// Tests and trial runs point this at a scratch directory so they never touch the real database.
-if (process.env.SMARTDD_USER_DATA) app.setPath('userData', process.env.SMARTDD_USER_DATA);
+// Preserve both the existing data root and Electron's safeStorage identity.
+configureAppIdentity(app, process.env.SMARTDD_USER_DATA);
 
 const isProbeMode = process.env.SMARTDD_PROBE === '1';
 
@@ -71,6 +76,10 @@ function openDatabase(dbFile: string): DbClient {
 
 async function main(): Promise<void> {
   await app.whenReady();
+  // Publish our own Chromium AX tree before first focus. This does not grant
+  // macOS Accessibility permission; it lets the voice bridge see empty inputs
+  // without waiting for an external screen reader to activate the tree.
+  if (process.platform === 'darwin') app.setAccessibilitySupportEnabled(true);
   // Packaged macOS apps use the bundle's ICNS; dev runs otherwise show Electron's icon.
   if (!app.isPackaged) app.dock?.setIcon(appIcon);
   const dbFile = join(app.getPath('userData'), 'smartdd.db');
@@ -80,7 +89,7 @@ async function main(): Promise<void> {
   } catch (e) {
     const message = rpcErrorMessage(e);
     if (isProbeMode) process.stderr.write(`${message}\n`);
-    else dialog.showErrorBox('SmartDD 无法启动', message);
+    else dialog.showErrorBox('WillYou 无法启动', message);
     app.exit(1);
     return;
   }
@@ -120,6 +129,23 @@ async function main(): Promise<void> {
   events.on(ptyInputEvent, ({ ptyId, data }) => ptys.write(ptyId, data));
   events.on(ptyResizeEvent, ({ ptyId, cols, rows }) => ptys.resize(ptyId, cols, rows));
 
+  const voice = new VoiceService({
+    adapter: new TypelessAdapter(app.isPackaged ? join(process.resourcesPath, 'native/smartdd-voice') : join(app.getAppPath(), 'out/native/smartdd-voice')),
+    settings: { get: () => settings.get('voice'), save: (value) => settings.update('voice', value) },
+    shortcuts: globalShortcut,
+    focused: () => Boolean(getMainWindow()?.isFocused()),
+    ptyAlive: (id) => ptys.has(id),
+    changed: () => events.emit(voiceStatusChangedEvent, undefined),
+    globalError: (error) => {
+      events.emit(voiceGlobalErrorEvent, error);
+      if (getMainWindow()?.isFocused()) return;
+      const chinese = settings.get('general').language === 'zh-CN';
+      const notification = new Notification({ title: chinese ? 'WillYou 语音输入' : 'WillYou Voice Input', body: chinese ? voiceErrorsZh[error] : voiceErrorsEn[error] });
+      notification.show();
+    },
+  });
+  await voice.start();
+
   const showWindow = async () => {
     const win = getMainWindow() ?? (await createMainWindow());
     win.show();
@@ -133,6 +159,7 @@ async function main(): Promise<void> {
 
   registerRPCRouter(
     createRpcRouter({
+      voice,
       client,
       dbFile,
       settings,
@@ -166,7 +193,7 @@ async function main(): Promise<void> {
         defaultId: 1,
         cancelId: 1,
         message: `有 ${ptys.count} 个任务正在运行`,
-        detail: '退出 SmartDD 会结束这些终端进程。重新打开后可在侧栏中点任务恢复（resume）。',
+        detail: '退出 WillYou 会结束这些终端进程。重新打开后可在侧栏中点任务恢复（resume）。',
       });
       if (choice !== 0) {
         event.preventDefault();
@@ -180,6 +207,7 @@ async function main(): Promise<void> {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    voice.dispose();
     tasks.dispose();
     ptys.killAll();
     capabilities.dispose();

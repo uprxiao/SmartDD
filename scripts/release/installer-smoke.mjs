@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { installerName } from './artifacts.mjs';
-import { root, run } from './common.mjs';
+import { root, run, productName, linuxExecutableName } from './common.mjs';
 
 function findPayload(dir, executableName) {
   const matches = [];
@@ -69,7 +69,7 @@ export function verifyInstallerPayloads(output, target, version, env) {
         assert.equal(run('rpm', ['--query', '--package', '--queryformat', '%{ARCH}', installer], { stdio: 'pipe' }), 'x86_64');
         run('bsdtar', ['-xf', installer, '-C', extracted], { timeout: 120_000 });
       }
-      const app = findPayload(extracted, target.platform === 'win' ? 'SmartDD.exe' : 'smartdd');
+      const app = findPayload(extracted, target.platform === 'win' ? `${productName}.exe` : linuxExecutableName);
       run(app.executable, [join(root, 'scripts/release/native-smoke.cjs'), app.resources, version, target.arch], {
         env: { ...env, ELECTRON_RUN_AS_NODE: '1' }, timeout: 30_000,
       });

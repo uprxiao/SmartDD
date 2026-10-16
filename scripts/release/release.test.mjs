@@ -6,10 +6,24 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { parseDocument } from 'yaml';
 import { installerName, manifestName, targets, verifyArtifacts, writeManifest } from './artifacts.mjs';
-import { root } from './common.mjs';
+import { root, packagedApp, productName, linuxExecutableName } from './common.mjs';
 import { releaseNotes, verifyTagCommit } from './metadata.mjs';
 import { nextTag, nextVersion, parseVersion } from './version.mjs';
 import { releasePolicy } from './policy.mjs';
+import cleanGeneratedMacBundle from './mac-bundle-metadata.cjs';
+
+test('Mac bundle cleanup removes signing-blocking metadata and preserves quarantine', { skip: process.platform !== 'darwin' }, async (t) => {
+  const output = mkdtempSync(join(tmpdir(), 'smartdd-bundle-metadata-'));
+  t.after(() => rmSync(output, { recursive: true, force: true }));
+  const bundle = join(output, 'Fixture.app'); mkdirSync(bundle);
+  const file = join(bundle, 'fixture'); writeFileSync(file, 'isolated packaging test');
+  execFileSync('/usr/bin/xattr', ['-w', 'com.apple.ResourceFork', 'test', file]);
+  execFileSync('/usr/bin/xattr', ['-w', 'com.apple.quarantine', '0000;0;WillYou test;', file]);
+  await cleanGeneratedMacBundle({ electronPlatformName: 'darwin', appOutDir: output, packager: { appInfo: { productFilename: 'Fixture' } } });
+  const attributes = execFileSync('/usr/bin/xattr', [file], { encoding: 'utf8' });
+  assert(!attributes.includes('com.apple.ResourceFork'));
+  assert(attributes.includes('com.apple.quarantine'));
+});
 
 test('custom version carry and numeric tag ordering', () => {
   for (const [before, after] of [
@@ -46,7 +60,7 @@ test('packaging refuses another OS before rebuilding or producing installers', (
   assert.ifError(result.error);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /matching native runner/);
-  assert(!result.stdout.includes('Building SmartDD'));
+  assert(!result.stdout.includes('Building WillYou'));
 });
 
 test('native probe finishes after PTY exit even if a worker handle remains open', (t) => {
@@ -62,14 +76,14 @@ test('native probe finishes after PTY exit even if a worker handle remains open'
   put('app.asar/package.json', JSON.stringify({ version: '0.0.2' }));
   for (const name of ['out/main/index.js', 'out/preload/index.js', 'out/renderer/index.html', 'NOTICE', 'licenses/Yoda-Apache-2.0.txt']) put(`app.asar/${name}`);
   put('app.asar/node_modules/better-sqlite3/index.js', `module.exports = class {
-    exec() {} close() {} prepare() { return {run() {}, get() {return {value:'SmartDD'}}} }
+    exec() {} close() {} prepare() { return {run() {}, get() {return {value:'WillYou'}}} }
   };`);
   put('app.asar/node_modules/node-pty/index.js', `module.exports.spawn = () => ({
     kill() {},
     onData(fn) {setImmediate(() => fn('SMARTDD_NATIVE_PTY_OK'))},
     onExit(fn) {setInterval(() => {}, 10000); setImmediate(() => fn({exitCode:0}))}
   });`);
-  put('preload.cjs', "Object.defineProperty(process.versions, 'electron', {value:'fixture'});");
+  put('preload.cjs', "Object.defineProperty(process.versions, 'electron', {value:'fixture'}); Object.defineProperty(process, 'platform', {value:'win32'});");
   const result = spawnSync(process.execPath, ['--require', join(dir, 'preload.cjs'),
     join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], { encoding: 'utf8', timeout: 5000 });
   assert.ifError(result.error);
@@ -81,7 +95,7 @@ test('release tag must be annotated, checked out, sequential and already in main
   const cwd = mkdtempSync(join(tmpdir(), 'smartdd-release-git-'));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
   const git = (...args) => execFileSync('git', [
-    '-c', 'user.name=SmartDD Test', '-c', 'user.email=smartdd-test@example.invalid',
+    '-c', 'user.name=WillYou Test', '-c', 'user.email=smartdd-test@example.invalid',
     '-c', 'commit.gpgsign=false', '-c', 'tag.gpgsign=false', ...args,
   ], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   git('init', '-b', 'main');
@@ -92,7 +106,7 @@ test('release tag must be annotated, checked out, sequential and already in main
   git('tag', '-d', 'v0.0.1');
   git('switch', '-c', 'feature/0.0.1');
   git('commit', '--allow-empty', '-m', 'release');
-  git('tag', '-a', 'v0.0.1', '-m', 'SmartDD 0.0.1');
+  git('tag', '-a', 'v0.0.1', '-m', 'WillYou 0.0.1');
   assert.throws(() => verifyTagCommit('v0.0.1', cwd), /merged into/);
   git('update-ref', 'refs/remotes/origin/main', 'HEAD');
   assert.equal(verifyTagCommit('v0.0.1', cwd), git('rev-parse', 'HEAD'));
@@ -117,10 +131,25 @@ function artifactsFixture(t) {
 
 test('installer filenames match native package architecture conventions', () => {
   assert.deepEqual(targets.flatMap((target) => target.formats.map((format) => installerName('0.0.3', target, format))), [
-    'SmartDD-0.0.3-mac-arm64.dmg', 'SmartDD-0.0.3-mac-x64.dmg',
-    'SmartDD-0.0.3-win-x64.exe', 'SmartDD-0.0.3-win-x64.msi',
-    'SmartDD-0.0.3-linux-x86_64.AppImage', 'SmartDD-0.0.3-linux-amd64.deb', 'SmartDD-0.0.3-linux-x86_64.rpm',
+    'WillYou-0.0.3-mac-arm64.dmg', 'WillYou-0.0.3-mac-x64.dmg',
+    'WillYou-0.0.3-win-x64.exe', 'WillYou-0.0.3-win-x64.msi',
+    'WillYou-0.0.3-linux-x86_64.AppImage', 'WillYou-0.0.3-linux-amd64.deb', 'WillYou-0.0.3-linux-x86_64.rpm',
   ]);
+});
+
+test('WillYou packaging paths and workflow upload patterns stay consistent across platforms', () => {
+  assert.equal(productName, 'WillYou');
+  assert.equal(linuxExecutableName, 'willyou');
+  assert.equal(JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).productName, productName);
+  assert.equal(packagedApp('/build', 'mac', 'arm64').executable, join('/build', 'mac-arm64', 'WillYou.app', 'Contents', 'MacOS', 'WillYou'));
+  assert.equal(packagedApp('/build', 'mac', 'x64').executable, join('/build', 'mac', 'WillYou.app', 'Contents', 'MacOS', 'WillYou'));
+  assert.equal(packagedApp('/build', 'win', 'x64').executable, join('/build', 'win-unpacked', 'WillYou.exe'));
+  assert.equal(packagedApp('/build', 'linux', 'x64').executable, join('/build', 'linux-unpacked', 'willyou'));
+  const build = readFileSync(join(root, '.github/workflows/build.yml'), 'utf8');
+  const release = readFileSync(join(root, '.github/workflows/release.yml'), 'utf8');
+  for (const format of ['dmg', 'exe', 'msi', 'AppImage', 'deb', 'rpm']) assert(build.includes(`/WillYou-*.${format}`));
+  assert(build.includes('name: willyou-${{ matrix.platform }}-${{ matrix.arch }}'));
+  assert(release.includes('pattern: willyou-*'));
 });
 
 test('all seven installers must match their recorded checksums and commit', (t) => {
@@ -164,8 +193,8 @@ test('preview permits unsigned assets while stable still requires signing', (t) 
 
 test('missing MSI or Linux formats and altered manifest entries block publication', (t) => {
   const dir = artifactsFixture(t);
-  const required = ['SmartDD-0.0.1-win-x64.msi', 'SmartDD-0.0.1-linux-x86_64.AppImage',
-    'SmartDD-0.0.1-linux-amd64.deb', 'SmartDD-0.0.1-linux-x86_64.rpm'];
+  const required = ['WillYou-0.0.1-win-x64.msi', 'WillYou-0.0.1-linux-x86_64.AppImage',
+    'WillYou-0.0.1-linux-amd64.deb', 'WillYou-0.0.1-linux-x86_64.rpm'];
   for (const file of required) {
     const path = join(dir, file);
     const original = readFileSync(path);

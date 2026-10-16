@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 
 const SKILLS = [
-  { key: 'db', name: '数据库诊断', source: 'SmartDD 内置 · project-db-diagnostics' },
-  { key: 'ssh', name: 'SSH 远程调研', source: 'SmartDD 内置 · remote-password-ssh' },
+  { key: 'db', name: '数据库诊断', source: 'WillYou 内置 · project-db-diagnostics' },
+  { key: 'ssh', name: 'SSH 远程调研', source: 'WillYou 内置 · remote-password-ssh' },
 ];
 export function CapabilitiesPanel({ project, profiles, onChange }) {
   const [profileId, setProfileId] = useState(profiles.find(p => p.isDefault)?.id || profiles[0]?.id || '');
   const [filter, setFilter] = useState(''), [scanned, setScanned] = useState(false), [upgraded, setUpgraded] = useState(false);
   const profile = profiles.find(p => p.id === profileId) || profiles[0];
-  const discovered = [...SKILLS.map(s => ({ name: s.source.split(' · ')[1], kind: 'Skill', source: 'SmartDD 内置', path: '/preview/skills/' + s.key + '/SKILL.md', enabled: !project || project.capabilities[s.key] })), { name: 'smartdd-project-context', kind: 'MCP', source: '项目注入', path: '/preview/runtime/mcp.json', enabled: !project || project.capabilities.mcp }];
+  const discovered = [...SKILLS.map(s => ({ name: s.source.split(' · ')[1], kind: 'Skill', source: 'WillYou 内置', path: '/preview/skills/' + s.key + '/SKILL.md', enabled: !project || project.capabilities[s.key] })), { name: 'smartdd-project-context', kind: 'MCP', source: '项目注入', path: '/preview/runtime/mcp.json', enabled: !project || project.capabilities.mcp }];
   return <div className="capabilities-panel">
     <p className="section-description">区分“已发现”“配置有效”和“当前会话已加载”。以下版本、扫描与路径均为示例。</p>
     {SKILLS.map(s => <div className="capability-card" key={s.key}><div><strong>{s.name} <span className="tag">v{upgraded ? '1.0.1' : '1.0.0'}</span></strong><p>{s.source}</p><details><summary>版本记录</summary><code>1.0.0 · demo-sha256 · 2026-10-15</code>{upgraded && <p><code>1.0.1 · demo-update · 当前版本</code></p>}</details></div>{project ? <label className="checkbox-line"><input type="checkbox" checked={project.capabilities[s.key]} onChange={e => onChange({ ...project.capabilities, [s.key]: e.target.checked })} />启用</label> : <button className="button small secondary" disabled={upgraded} onClick={() => setUpgraded(true)}>{upgraded ? '已是最新（示例）' : '升级到 1.0.1（示例）'}</button>}</div>)}

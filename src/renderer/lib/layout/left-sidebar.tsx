@@ -10,7 +10,7 @@ export const LeftSidebar = observer(function LeftSidebar() {
   const running = tasksStore.tasks.filter((task) => task.ptyId).length;
   return <aside className="sidebar reference-sidebar">
     <div className="reference-sidebar-head">
-      <button className="workspace-picker" onClick={() => navigation.openSettings('about')}>SmartDD <ChevronDown size={14} /></button>
+      <button className="workspace-picker" onClick={() => navigation.openSettings('about')}>WillYou <ChevronDown size={14} /></button>
       <button className="row-action" title={t('m6.history')} onClick={() => navigation.setSearchOpen(true)}><History size={17} /></button>
       <button className="row-action" data-testid="nav-search" title={t('nav.search')} onClick={() => navigation.setSearchOpen(true)}><Search size={17} /></button>
     </div>

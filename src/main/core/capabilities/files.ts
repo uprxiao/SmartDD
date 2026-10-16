@@ -22,7 +22,7 @@ export function writeOwnedTree(root: string, files: Record<string, string>, back
     if (name.startsWith('/') || name.split('/').includes('..')) throw new Error('无效的包文件路径');
   }
   if (existsSync(root)) {
-    if (lstatSync(root).isSymbolicLink() || !lstatSync(root).isDirectory()) throw new Error(`Skill 目标已存在且不属于 SmartDD：${root}`);
+    if (lstatSync(root).isSymbolicLink() || !lstatSync(root).isDirectory()) throw new Error(`Skill 目标已存在且不属于 WillYou：${root}`);
     try {
       if (lstatSync(join(root, OWNER)).isSymbolicLink() || readFileSync(join(root, OWNER), 'utf8') !== owner) throw new Error();
     } catch { throw new Error(`Skill 目标已有用户内容，保留原样：${root}`); }

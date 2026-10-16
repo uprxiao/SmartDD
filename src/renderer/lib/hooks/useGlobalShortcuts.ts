@@ -8,6 +8,7 @@ import { navigation } from '@renderer/core/navigation';
 export function useGlobalShortcuts(): void {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && e.target.dataset.voiceShortcutRecording === 'true') return;
       if (!e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
       const key = e.key.toLowerCase();
       if (key === 'n') navigation.newTask();

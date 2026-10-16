@@ -1,7 +1,7 @@
 // Row layout follows Yoda (Apache-2.0) src/renderer/lib/layout/left-sidebar task rows:
 // h-8, a status tail (agent-status-indicator / relative time) that gives way to ⋯ on hover;
 // the context menu and the ⋯ menu share one item list.
-import { Archive, ArchiveRestore, Ellipsis, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Ellipsis, Pencil } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,53 +15,44 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuSeparator,
   ContextMenuTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@renderer/lib/ui/menu';
 import { compactRelativeTime } from '@renderer/utils/relative-time';
 import { cn } from '@renderer/utils/utils';
 import { Input } from '@renderer/lib/ui/input';
 import { FormDialog } from '@renderer/views/projects/project-dialogs';
-import { ConfirmDeleteDialog } from '@renderer/views/projects/form-parts';
+import { useTaskArchive } from '@renderer/views/task-archive';
 
-type ItemProps = { onClick: () => void; variant?: 'default' | 'destructive'; children: ReactNode; 'data-testid'?: string };
+type ItemProps = { onClick: () => void; disabled?: boolean; children: ReactNode; 'data-testid'?: string };
 
 function TaskMenuItems({
   task,
   Item,
-  Separator,
   onRename,
-  onDelete,
+  onArchive,
+  busy,
 }: {
   task: TaskView;
   Item: ComponentType<ItemProps>;
-  Separator: ComponentType;
   onRename: () => void;
-  onDelete: () => void;
+  onArchive: () => void;
+  busy: boolean;
 }) {
   const { t } = useTranslation();
   const archived = task.archivedAt !== null;
-  const toggleArchive = () =>
-    void rpc.tasks.setArchived(task.id, !archived).catch((e) => toast.error(rpcErrorMessage(e)));
   return (
     <>
       <Item data-testid="task-menu-rename" onClick={onRename}>
         <Pencil />
         {t('tasks.rename')}
       </Item>
-      <Item data-testid="task-menu-archive" onClick={toggleArchive}>
+      <Item data-testid="task-menu-archive" onClick={onArchive} disabled={busy}>
         {archived ? <ArchiveRestore /> : <Archive />}
         {archived ? t('tasks.unarchive') : t('tasks.archive')}
-      </Item>
-      <Separator />
-      <Item data-testid="task-menu-delete" variant="destructive" onClick={onDelete}>
-        <Trash2 />
-        {t('tasks.delete')}
       </Item>
     </>
   );
@@ -119,9 +110,8 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
-  const [deleting, setDeleting] = useState(false);
+  const { requestArchive, archiveDialog, busy } = useTaskArchive(task);
   const active = navigation.currentViewId === 'task' && navigation.currentTaskId === task.id;
-  const running = Boolean(task.ptyId);
 
   const startRename = () => {
     setDraft(task.title);
@@ -132,7 +122,7 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
     const title = draft.trim();
     if (title && title !== task.title) void rpc.tasks.rename(task.id, title).catch((e) => toast.error(rpcErrorMessage(e)));
   };
-  const menu = { task, onRename: startRename, onDelete: () => setDeleting(true) };
+  const menu = { task, onRename: startRename, onArchive: requestArchive, busy };
 
   return (
     <>
@@ -140,6 +130,7 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
         <ContextMenuTrigger
           data-testid="sidebar-task"
           data-task-id={task.id}
+          aria-current={active ? 'page' : undefined}
           className={cn(
             'group reference-task-row',
             !indent && 'm6-unindented-task',
@@ -148,7 +139,7 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
           )}
           onClick={() => !editing && tasksStore.show(task.id)}
         >
-          <span className="reference-task-title" title={task.title}>{task.title}</span>
+          <span className="reference-task-title" title={task.title}><span className="reference-task-label">{task.title}</span></span>
           {!editing && <TaskStatusTail task={task} />}
           {!editing && (
             <DropdownMenu>
@@ -162,25 +153,19 @@ export const TaskRow = observer(function TaskRow({ task, indent }: { task: TaskV
               </DropdownMenuTrigger>
               {/* React bubbles portal clicks up the tree: keep menu picks from also opening the row. */}
               <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                <TaskMenuItems {...menu} Item={DropdownMenuItem} Separator={DropdownMenuSeparator} />
+                <TaskMenuItems {...menu} Item={DropdownMenuItem} />
               </DropdownMenuContent>
             </DropdownMenu>
           )}
         </ContextMenuTrigger>
         <ContextMenuContent onClick={(e) => e.stopPropagation()}>
-          <TaskMenuItems {...menu} Item={ContextMenuItem} Separator={ContextMenuSeparator} />
+          <TaskMenuItems {...menu} Item={ContextMenuItem} />
         </ContextMenuContent>
       </ContextMenu>
       <FormDialog open={editing} onOpenChange={setEditing} title={t('tasks.rename')} error="" busy={false} submitLabel={t('projects.actions.save')} onSubmit={commitRename}>
         <Input autoFocus data-testid="task-rename-input" aria-label={t('tasks.rename')} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') commitRename(); }} />
       </FormDialog>
-      <ConfirmDeleteDialog
-        open={deleting}
-        onOpenChange={setDeleting}
-        title={t('tasks.confirmDeleteTitle', { title: task.title })}
-        body={running ? `${t('tasks.confirmDeleteBody')} ${t('tasks.confirmDeleteRunning')}` : t('tasks.confirmDeleteBody')}
-        onConfirm={() => tasksStore.remove(task.id)}
-      />
+      {archiveDialog}
     </>
   );
 });

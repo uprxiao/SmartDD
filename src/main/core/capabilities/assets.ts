@@ -23,7 +23,7 @@ export const BUNDLED_SKILLS: BundledSkill[] = [
   const prefix = `/standard-skills/${item.id}/`;
   const files = Object.fromEntries(Object.entries(sources).filter(([path]) => path.includes(prefix)).map(([path, content]) => [path.split(prefix)[1], content]));
   if (!files['SKILL.md']) throw new Error(`内置 Skill 资产缺失：${item.id}`);
-  return { ...item, source: `${item.id} → SmartDD`, version: '1.0.0', hash: treeHash(files), files };
+  return { ...item, source: `${item.id} → WillYou`, version: '1.0.0', hash: treeHash(files), files };
 });
 
 export const runtimeFiles = (): Record<string, string> => Object.fromEntries(Object.entries(runtime).map(([path, content]) => [path.split('/').at(-1)!, content]));

@@ -28,7 +28,7 @@ const notesFile = join(dir, 'release-notes.md');
 const sumsFile = join(dir, 'SHA256SUMS.txt');
 writeFileSync(notesFile, notes);
 writeFileSync(sumsFile, checksums);
-if (existing.status !== 0) gh(['release', 'create', tag, '--verify-tag', '--draft', '--title', `SmartDD ${tag}`, '--notes-file', notesFile]);
+if (existing.status !== 0) gh(['release', 'create', tag, '--verify-tag', '--draft', '--title', `WillYou ${tag}`, '--notes-file', notesFile]);
 else gh(['release', 'edit', tag, '--notes-file', notesFile]);
 // Replacement is restricted to an existing draft, to support a failed upload retry.
 gh(['release', 'upload', tag, ...files, sumsFile, '--clobber']);

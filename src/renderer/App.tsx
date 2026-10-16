@@ -1,3 +1,5 @@
+import { VoiceFeedback } from './views/voice-controls';
+import './voice.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, type ReactNode } from 'react';
 import { menuOpenSettingsEvent } from '@shared/events';
@@ -46,6 +48,7 @@ export function App() {
             <TaskSearchDialog />
             <Toaster />
             <ProfileHealthEvents />
+            <VoiceFeedback />
           </TooltipProvider>
         </LanguageSync>
       </ThemeProvider>

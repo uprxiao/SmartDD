@@ -59,7 +59,7 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
   const done = appliedCount(connection);
   if (done > migrations.length) {
     // A newer SmartDD already migrated this database; running older code on it is unsafe.
-    throw new Error(`数据库已执行 ${done} 个迁移，当前版本只包含 ${migrations.length} 个，请使用更新版本的 SmartDD`);
+    throw new Error(`数据库已执行 ${done} 个迁移，当前版本只包含 ${migrations.length} 个，请使用更新版本的 WillYou`);
   }
   const pending = migrations.slice(done);
   connection.transaction(() => {

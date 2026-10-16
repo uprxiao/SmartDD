@@ -33,7 +33,7 @@ const ProjectNode = observer(function ProjectNode({ project, tasks }: { project:
       </PopoverContent></Popover>
       {!archived && <button className="row-action" data-testid="sidebar-project-new-task" title={t('tasks.newInProject')} onClick={() => navigation.newTask(project.id)}><SquarePen size={15} /></button>}</div>
     </div>
-    {open && tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}
+    {open && <div className="reference-project-tasks">{tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}</div>}
   </div>;
 });
 
