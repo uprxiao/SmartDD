@@ -94,3 +94,4 @@
 - [M4 Skill 与配置注入](docs/M4_Skill与配置注入.md)
 - [M5 AIS 端到端验收](docs/M5_AIS端到端验收.md)
 - [M6 页面与 AI 配置体验优化](docs/M6_页面与AI配置体验优化.md)：一期追加 F14、F15 的范围与验收；实施前核对文档状态，按用户当前指令推进。
+- [M7 Typeless 语音输入接入](docs/M7_Typeless语音输入接入.md)：当前 M7 仅做页面按钮及全局快捷键唤起本机 Typeless，不要求 Option 单键；自有录音、模型和词库已拆至 [F17-B 后续需求](docs/F17B_自有语音输入与本机词库.md)，不作为 M7 前置条件。

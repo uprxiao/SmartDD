@@ -1,15 +1,25 @@
 // Export the approved artwork into native icon containers; no image-generation dependency.
-// Run on macOS: node scripts/generate-app-icons.mjs
+// Run on macOS: node scripts/generate-app-icons.mjs [--proportion 70|75|80]
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 
 if (process.platform !== 'darwin') throw new Error('Icon export uses macOS sips/iconutil. All generated icons are checked in for cross-platform builds.');
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const source = join(root, 'docs/design/app-icon/smartdd-ant-lift-v1.png');
 const icons = join(root, 'build/icons');
+const selectionFile = join(icons, 'selection.json');
+const { values } = parseArgs({ options: { proportion: { type: 'string' } } });
+const proportion = values.proportion ?? String(JSON.parse(readFileSync(selectionFile, 'utf8')).proportion);
+if (!['70', '75', '80'].includes(proportion)) throw new Error('Choose --proportion 70, 75 or 80.');
+const source = join(icons, 'variants', `SmartDD-06-${proportion}.png`);
+// The approved variants are already 1024px canvases: preserve their exact pixels.
+const png = readFileSync(source);
+if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' || png.readUInt32BE(16) !== 1024 || png.readUInt32BE(20) !== 1024) {
+  throw new Error('Expected an approved 1024 × 1024 PNG icon.');
+}
 const artwork = join(root, 'src/assets/branding/app-icon.png');
 const scratch = mkdtempSync(join(tmpdir(), 'smartdd-icons-'));
 const resize = (size, output) => execFileSync('/usr/bin/sips', ['-z', String(size), String(size), source, '--out', output], { stdio: 'pipe' });
@@ -17,7 +27,7 @@ const resize = (size, output) => execFileSync('/usr/bin/sips', ['-z', String(siz
 try {
   mkdirSync(join(icons, 'png'), { recursive: true });
   mkdirSync(dirname(artwork), { recursive: true });
-  resize(1024, artwork);
+  copyFileSync(source, artwork);
 
   const iconset = join(scratch, 'app.iconset');
   mkdirSync(iconset);
@@ -52,7 +62,8 @@ try {
   writeFileSync(join(icons, 'icon.ico'), Buffer.concat([header, ...images]));
   for (const size of [16, 32, 48, 64, 128, 256, 512]) resize(size, join(icons, 'png', `${size}x${size}.png`));
   copyFileSync(artwork, join(icons, 'icon.png'));
-  console.log('Exported app artwork, macOS ICNS, Windows ICO and Linux PNG icons.');
+  writeFileSync(selectionFile, `${JSON.stringify({ proportion: Number(proportion) }, null, 2)}\n`);
+  console.log(`Selected 06 / ${proportion}%. Exported app artwork, macOS ICNS, Windows ICO and Linux PNG icons.`);
 } finally {
   rmSync(scratch, { recursive: true, force: true });
 }
