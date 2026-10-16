@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LoaderCircle, Plug } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import {
@@ -59,6 +60,9 @@ function useDraftTest(test: () => Promise<ConnectionTestResult>) {
   const node = (
     <div className="flex min-w-0 items-start gap-3">
       <Button type="button" variant="outline" disabled={testing} onClick={() => void run()} data-testid="test-draft">
+        {testing
+          ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" strokeWidth={1.75} aria-hidden="true" />
+          : <Plug className="size-4" strokeWidth={1.75} aria-hidden="true" />}
         {testing ? t('projects.actions.testing') : t('projects.actions.test')}
       </Button>
       <div className="min-w-0 pt-1.5">

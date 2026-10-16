@@ -68,7 +68,8 @@ export class ProjectService {
   constructor(
     private readonly db: AppDb,
     private readonly secrets: SecretsStore,
-    private readonly now: () => number = Date.now
+    private readonly now: () => number = Date.now,
+    private readonly cleanupImportedKeys?: () => void
   ) {}
 
   // ---- projects ----
@@ -171,6 +172,7 @@ export class ProjectService {
       // Child rows go with it (ON DELETE CASCADE).
       this.db.delete(projects).where(eq(projects.id, id)).run();
     });
+    this.cleanupOwnedKeys();
   }
 
   // ---- code directories ----
@@ -349,6 +351,7 @@ export class ProjectService {
       this.applySecret(keys.sudo, sudoPassword);
       this.bump(row.projectId);
     });
+    this.cleanupOwnedKeys();
     return this.toServerView(this.requireServer(id));
   }
 
@@ -359,6 +362,12 @@ export class ProjectService {
       this.db.delete(projectServers).where(eq(projectServers.id, id)).run();
       this.bump(row.projectId);
     });
+    this.cleanupOwnedKeys();
+  }
+
+  private cleanupOwnedKeys() {
+    try { this.cleanupImportedKeys?.(); }
+    catch { console.warn('[project-transfer] owned key cleanup pending startup recovery'); }
   }
 
   serverTarget(input: ServerInput, existingId?: string) {

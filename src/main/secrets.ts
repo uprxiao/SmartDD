@@ -49,7 +49,7 @@ export class SecretsStore {
     if (keys.length) this.db.delete(appSecrets).where(inArray(appSecrets.key, keys)).run();
   }
 
-  private assertAvailable(): void {
+  assertAvailable(): void {
     if (!this.cipher.isAvailable()) {
       throw new Error('系统安全存储不可用（safeStorage），拒绝以明文保存密钥');
     }

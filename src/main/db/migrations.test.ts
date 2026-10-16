@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
 }
 afterEach(() => open.splice(0).forEach((db) => db.close()));
 
-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities'];
+const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer'];
 
 const tables = (db: Database.Database) =>
   (
@@ -42,9 +42,11 @@ describe('bundled migrations', () => {
       'ai_profiles',
       'app_secrets',
       'app_settings',
+      'imported_keys',
       'project_capabilities',
       'project_databases',
       'project_dirs',
+      'project_import_receipts',
       'project_servers',
       'projects',
       'sessions',

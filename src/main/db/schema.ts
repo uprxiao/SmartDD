@@ -145,6 +145,8 @@ export const aiProfiles = sqliteTable('ai_profiles', {
   args: text('args').notNull().default('[]'),
   color: text('color'),
   isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+  /** Imported command unavailable on this computer; a manual configuration/test releases it. */
+  commandPending: integer('command_pending', { mode: 'boolean' }).notNull().default(false),
   /** Last health result: a test, or an API answer seen in a task (the latest wins). */
   checkStatus: text('check_status', { enum: ['ok', 'failed', 'warning'] }),
   checkCategory: text('check_category'),
@@ -204,4 +206,19 @@ export const projectCapabilities = sqliteTable('project_capabilities', {
   projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
   capabilityId: text('capability_id').notNull(),
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+});
+
+/** Committed atomically with an imported project. Contains no credentials. */
+export const projectImportReceipts = sqliteTable('project_import_receipts', {
+  requestId: text('request_id').primaryKey(),
+  fingerprint: text('fingerprint').notNull(),
+  result: text('result').notNull(),
+  createdAt: integer('created_at').notNull(),
+});
+
+/** Ownership survives resource deletion until the unreferenced file is removed. */
+export const importedKeys = sqliteTable('imported_keys', {
+  serverId: text('server_id').primaryKey(),
+  path: text('path').notNull(),
+  createdAt: integer('created_at').notNull(),
 });

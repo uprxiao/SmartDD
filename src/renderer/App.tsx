@@ -15,6 +15,7 @@ import { useProfileHealthEvents } from '@renderer/lib/profile-health';
 import { ThemeProvider } from '@renderer/lib/theme';
 import { Toaster } from '@renderer/lib/ui/sonner';
 import { TooltipProvider } from '@renderer/lib/ui/tooltip';
+import { ProjectTransferHost } from './views/projects/project-transfer';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } } });
 
@@ -46,6 +47,7 @@ export function App() {
           <TooltipProvider>
             <Workspace />
             <TaskSearchDialog />
+            <ProjectTransferHost />
             <Toaster />
             <ProfileHealthEvents />
             <VoiceFeedback />

@@ -123,7 +123,7 @@ export const HomeView = observer(function HomeView() {
   return <section className="reference-home" aria-label={t('nav.newTask')}>
     <div className="reference-welcome"><img src={appIcon} alt="WillYou" draggable={false} /><h1>{t('m6.welcomePrefix')} <button onClick={() => setLaunchSettings(true)}>{project?.name || 'WillYou'}</button> {t('m6.welcomeSuffix')}</h1></div>
     <div className="reference-composer-wrap">
-      {(dirProblem || error || !projectId || !profile) && <div className="launch-hint" role="status"><span>{error || dirProblem || (!projectId ? t(projects?.length ? 'home.pickProject' : 'home.noProjects') : t('home.noProfiles'))}</span><button onClick={() => setLaunchSettings(true)}>{t('m6.taskSettings')}</button></div>}
+      {(dirProblem || error || !projectId || !profile) && <div className="launch-hint" role="status"><span>{error || dirProblem || (!projectId ? t(projects?.length ? 'home.pickProject' : 'home.noProjects') : t(profiles?.length ? 'home.pickProfile' : 'home.noProfiles'))}</span><button onClick={() => setLaunchSettings(true)}>{t('m6.taskSettings')}</button></div>}
       {error && <span data-testid="home-error" className="sr-only">{error}</span>}
       <div className="reference-composer-context"><div className="reference-home-picker">{projectPicker}</div>
         <button className="local-environment" data-testid="home-cwd" title={dir?.path} onClick={() => setLaunchSettings(true)}><Monitor size={16} /><span>{dirs.length > 1 ? dir?.label || t('m6.directory') : t('m6.thisComputer')}</span></button>

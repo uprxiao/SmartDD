@@ -135,6 +135,7 @@ export class AiProfileService {
           runner: data.runner,
           executable: data.executable,
           env: JSON.stringify(this.storeEnv(id, data, readEnv(row))),
+          commandPending: row.commandPending && data.executable === row.executable && data.runner === row.runner,
           args: JSON.stringify(data.args),
           color: data.color,
           updatedAt: this.now(),
@@ -168,8 +169,9 @@ export class AiProfileService {
    * Decrypts the profile for a launch. A secret variable without a value stops the launch
    * (PRD §9: never fall back to another profile's token or the shell's).
    */
-  resolve(id: string): ResolvedProfile {
+  resolve(id: string, allowPendingCommand = false): ResolvedProfile {
     const row = this.require(id);
+    if (row.commandPending && !allowPendingCommand) throw new Error(`AI 配置「${row.name}」的本机命令尚未配置，请在设置中修改命令或完成一次连接测试`);
     const env: Record<string, string> = {};
     const missing: string[] = [];
     for (const e of readEnv(row)) {
@@ -250,7 +252,7 @@ export class AiProfileService {
   launchSignature(id: string): string {
     let material: string;
     try {
-      const p = this.resolve(id);
+      const p = this.resolve(id, true);
       material = JSON.stringify([p.runner, p.command, p.args, Object.entries(p.env).sort()]);
     } catch (e) {
       material = `unresolvable:${(e as Error).message}`;
@@ -265,6 +267,7 @@ export class AiProfileService {
       .update(aiProfiles)
       .set({
         checkStatus: check.status,
+        ...(check.status === 'ok' ? { commandPending: false } : {}),
         checkCategory: check.category,
         checkSource: check.source,
         checkMessage: check.message,

@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, Database, FolderOpen, Server, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Check, Database, Download, FolderOpen, LoaderCircle, Pencil, Plug, Plus, Server, SquarePen, Trash2 } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +17,7 @@ import { ConfirmDeleteDialog, EnvBadge, TestResultLine } from './projects/form-p
 import { DirDialog, ProjectDialog } from './projects/project-dialogs';
 import { DatabaseDialog, ServerDialog } from './projects/resource-dialogs';
 import { CapabilitiesSection } from './capabilities';
+import { projectTransferNavigation } from '@renderer/core/project-transfer';
 
 type SectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'tasks';
 const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'capabilities', 'tasks'];
@@ -63,7 +64,7 @@ export const ProjectView = observer(function ProjectView() {
       onSelect={setSection}
       title={project.name}
       description={project.description || t('m6.projectResources')}
-      actions={<Button variant="outline" disabled={project.archivedAt !== null} onClick={() => navigation.newTask(project.id)}><Plus />{t('nav.newTask')}</Button>}
+      actions={<Button variant="outline" disabled={project.archivedAt !== null} onClick={() => navigation.newTask(project.id)}><SquarePen className="size-4" strokeWidth={1.75} aria-hidden="true" />{t('nav.newTask')}</Button>}
     >
       {project.archivedAt !== null && (
         <div data-testid="archived-banner" className="rounded-md bg-background-2 px-3 py-2 text-sm text-foreground-muted">
@@ -134,6 +135,7 @@ function Overview({ project, onSection }: { project: ProjectDetail; onSection: (
         <InfoRow label={t('projects.fields.createdAt')}>{new Date(project.createdAt).toLocaleString()}</InfoRow>
       </div>
       <div className="project-actions">
+        <Button variant="outline" onClick={event => projectTransferNavigation.openExport(project.id, event.currentTarget)}><Download />导出项目</Button>
         <Button variant="outline" onClick={() => edit.open(project)}>
           <Pencil />
           {t('projects.actions.edit')}
@@ -189,7 +191,7 @@ function SectionToolbar({ onAdd, label }: { onAdd: () => void; label: string }) 
   return (
     <div className="flex justify-end">
       <Button variant="outline" size="sm" onClick={onAdd} data-testid="section-add">
-        <Plus />
+        <Plus className="size-4" strokeWidth={1.75} aria-hidden="true" />
         {label}
       </Button>
     </div>
@@ -215,7 +217,7 @@ const Tasks = observer(function Tasks({ project }: { project: ProjectDetail }) {
       {project.archivedAt === null && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" data-testid="project-new-task" onClick={() => navigation.newTask(project.id)}>
-            <Plus />
+            <SquarePen className="size-4" strokeWidth={1.75} aria-hidden="true" />
             {t('tasks.newInProject')}
           </Button>
         </div>
@@ -257,10 +259,10 @@ function Dirs({ project }: { project: ProjectDetail }) {
       {project.dirs.length === 0 && <p className="text-sm text-foreground-passive">{t('projects.empty.dirs')}</p>}
       {project.dirs.map((d) => (
         <Card key={d.id} testId="dir-card">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium">{d.label || d.path.split('/').pop()}</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <span className="min-w-0 max-w-full truncate text-sm font-medium">{d.label || d.path.split('/').pop()}</span>
             <DirStatusBadges dir={d} />
-            <div className="ml-auto flex shrink-0 gap-1">
+            <div className="ml-auto flex max-w-full flex-wrap justify-end gap-1">
               {!d.isDefault && (
                 <Button
                   variant="ghost"
@@ -268,13 +270,16 @@ function Dirs({ project }: { project: ProjectDetail }) {
                   disabled={busy !== null}
                   onClick={() => void run(d.id, () => rpc.projectDirs.setDefault(d.id))}
                 >
+                  <Check className="size-4" strokeWidth={1.75} aria-hidden="true" />
                   {t('projects.actions.setDefault')}
                 </Button>
               )}
               <Button variant="ghost" size="xs" onClick={() => dialog.open(d)}>
+                <Pencil className="size-4" strokeWidth={1.75} aria-hidden="true" />
                 {t('projects.actions.edit')}
               </Button>
               <Button variant="ghost" size="xs" onClick={() => setRemoving(d)}>
+                <Trash2 className="size-4" strokeWidth={1.75} aria-hidden="true" />
                 {t('projects.actions.remove')}
               </Button>
             </div>
@@ -344,14 +349,19 @@ function ResourceActions({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="ml-auto flex shrink-0 gap-1">
+    <div className="ml-auto flex max-w-full flex-wrap justify-end gap-1">
       <Button variant="outline" size="xs" disabled={testing} onClick={onTest} data-testid="card-test">
+        {testing
+          ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" strokeWidth={1.75} aria-hidden="true" />
+          : <Plug className="size-4" strokeWidth={1.75} aria-hidden="true" />}
         {testing ? t('projects.actions.testing') : t('projects.actions.test')}
       </Button>
       <Button variant="ghost" size="xs" onClick={onEdit}>
+        <Pencil className="size-4" strokeWidth={1.75} aria-hidden="true" />
         {t('projects.actions.edit')}
       </Button>
       <Button variant="ghost" size="xs" onClick={onDelete}>
+        <Trash2 className="size-4" strokeWidth={1.75} aria-hidden="true" />
         {t('projects.actions.delete')}
       </Button>
     </div>
@@ -373,8 +383,8 @@ function Databases({ project }: { project: ProjectDetail }) {
         empty={t('projects.empty.databases')}
         renderCard={(d) => (
           <Card key={d.id} prod={isProdEnv(d.env)} testId="db-card">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-medium">{d.label || d.database || d.host}</span>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="min-w-0 max-w-full truncate text-sm font-medium">{d.label || d.database || d.host}</span>
               <Badge variant="outline">{DB_VENDORS[d.vendor].label}</Badge>
               {d.isDefault && <Badge>{t('projects.fields.isDefault')}</Badge>}
               <Badge variant="ghost">{d.accessLevel === 'readonly' ? t('projects.fields.readonly') : t('projects.fields.readwrite')}</Badge>
@@ -427,8 +437,8 @@ function Servers({ project }: { project: ProjectDetail }) {
         empty={t('projects.empty.servers')}
         renderCard={(s) => (
           <Card key={s.id} prod={isProdEnv(s.env)} testId="server-card">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-medium">{s.label || s.host}</span>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="min-w-0 max-w-full truncate text-sm font-medium">{s.label || s.host}</span>
               <Badge variant="outline">{s.authType === 'key' ? t('projects.fields.authKey') : t('projects.fields.authPassword')}</Badge>
               {s.defaultRoot && <Badge variant="ghost">root</Badge>}
               <ResourceActions

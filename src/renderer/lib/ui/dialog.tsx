@@ -34,10 +34,10 @@ function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) 
   );
 }
 
-function DialogContent({ className, children, ...props }: DialogPrimitive.Popup.Props) {
+function DialogContent({ className, children, backdropProps, ...props }: DialogPrimitive.Popup.Props & { backdropProps?: DialogPrimitive.Backdrop.Props }) {
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay {...backdropProps} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         onKeyDownCapture={(e) => {

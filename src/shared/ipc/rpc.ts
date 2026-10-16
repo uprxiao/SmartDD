@@ -1,9 +1,20 @@
 // Ported from Yoda (Apache-2.0) src/shared/ipc/rpc.ts; trimmed to what SmartDD uses.
-import type { IpcMain } from 'electron';
+import type { IpcMain, IpcMainInvokeEvent } from 'electron';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ProcedureMap = Record<string, (...args: any[]) => unknown>;
 type RouterMap = Record<string, ProcedureMap>;
+const scopedHandlers = new WeakMap<Function, Function>();
+type WithoutContext<F> = F extends (context: IpcMainInvokeEvent, ...args: infer A) => infer R ? (...args: A) => R : never;
+
+/** Context is supplied only by Electron, never by renderer arguments. */
+export function createScopedRPCController<T extends Record<string, (context: IpcMainInvokeEvent, ...args: any[]) => unknown>>(handlers: T): { [K in keyof T]: WithoutContext<T[K]> } {
+  return Object.fromEntries(Object.entries(handlers).map(([key, fn]) => {
+    const stub = () => { throw new Error('This procedure requires an IPC sender'); };
+    scopedHandlers.set(stub, fn);
+    return [key, stub];
+  })) as unknown as { [K in keyof T]: WithoutContext<T[K]> };
+}
 
 export function createRPCController<T extends ProcedureMap>(handlers: T): T {
   return handlers;
@@ -17,7 +28,10 @@ export function createRPCRouter<T extends RouterMap>(routers: T): T {
 export function registerRPCRouter(router: RouterMap, ipcMain: IpcMain): void {
   for (const [ns, handlers] of Object.entries(router)) {
     for (const [key, fn] of Object.entries(handlers)) {
-      ipcMain.handle(`${ns}.${key}`, (_event, ...args: unknown[]) => fn(...args));
+      ipcMain.handle(`${ns}.${key}`, (event, ...args: unknown[]) => {
+        const scoped = scopedHandlers.get(fn);
+        return scoped ? scoped(event, ...args) : fn(...args);
+      });
     }
   }
 }

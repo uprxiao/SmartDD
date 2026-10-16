@@ -17,8 +17,11 @@ import type { TaskService } from './core/tasks/task-service';
 import type { DbClient } from './db/client';
 import { runProbes } from './probes';
 import type { PtyManager } from './pty-manager';
+import { createTransferController } from './core/projects/transfer-controller';
+import type { ProjectTransferService } from './core/projects/transfer-service';
 
 export interface RpcDeps {
+  projectTransfer: ProjectTransferService;
   voice: VoiceService;
   client: DbClient;
   dbFile: string;
@@ -50,6 +53,7 @@ export function createRpcRouter(d: RpcDeps) {
       },
     }),
     voice: createVoiceController(d.voice),
+    projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
     ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id) }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),

@@ -52,7 +52,7 @@ export class ProfileHealth {
     const p = (async () => {
       let result: ProfileTestResult;
       try {
-        const profile = this.d.profiles.resolve(id);
+        const profile = this.d.profiles.resolve(id, true);
         result = await (this.d.runTest ?? runProfileTest)(profile, this.d.profiles.secretValues(id), { baseEnv: this.d.baseEnv() });
       } catch (e) {
         // A missing token stops a task the same way, so it is the profile's state too.

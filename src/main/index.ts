@@ -34,6 +34,7 @@ import { SecretsStore } from './secrets';
 import { VoiceService } from './core/voice/voice-service';
 import { TypelessAdapter } from './core/voice/typeless-adapter';
 import { configureAppIdentity } from './app/identity';
+import { ProjectTransferService } from './core/projects/transfer-service';
 
 // Preserve both the existing data root and Electron's safeStorage identity.
 configureAppIdentity(app, process.env.SMARTDD_USER_DATA);
@@ -104,8 +105,11 @@ async function main(): Promise<void> {
 
   const settings = new SettingsStore(client.db);
   const secrets = new SecretsStore(client.db, safeStorageCipher);
-  const projects = new ProjectService(client.db, secrets);
+  const projects = new ProjectService(client.db, secrets, Date.now, () => projectTransfer.keys.cleanup());
   const aiProfiles = new AiProfileService(client.db, secrets);
+  const projectTransfer = new ProjectTransferService({ db: client.db, secrets, projects, profiles: aiProfiles, userData: app.getPath('userData'), appVersion: app.getVersion(), env: baseEnv });
+  try { projectTransfer.recover(); }
+  catch { console.warn('[project-transfer] recovery pending: check managed-key storage before importing'); }
   const capabilities = new CapabilityService({ db: client.db, projects, secrets, userData: app.getPath('userData') });
   const health = new ProfileHealth({
     profiles: aiProfiles,
@@ -159,6 +163,7 @@ async function main(): Promise<void> {
 
   registerRPCRouter(
     createRpcRouter({
+      projectTransfer,
       voice,
       client,
       dbFile,
@@ -207,6 +212,7 @@ async function main(): Promise<void> {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    projectTransfer.disposeAll();
     voice.dispose();
     tasks.dispose();
     ptys.killAll();

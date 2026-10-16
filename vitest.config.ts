@@ -4,6 +4,7 @@ import { defineConfig } from 'vitest/config';
 // `pnpm test` runs vitest under Electron's bundled Node (ELECTRON_RUN_AS_NODE=1) so
 // better-sqlite3, which postinstall builds against Electron's ABI, loads in tests.
 export default defineConfig({
+  esbuild: { jsx: 'automatic' },
   resolve: {
     alias: {
       '@root': resolve('.'),
@@ -12,5 +13,5 @@ export default defineConfig({
       '@renderer': resolve('src/renderer'),
     },
   },
-  test: { include: ['src/**/*.test.ts'], environment: 'node' },
+  test: { include: ['src/**/*.test.{ts,tsx}'], environment: 'node' },
 });
