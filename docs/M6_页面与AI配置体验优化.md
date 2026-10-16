@@ -6,9 +6,9 @@
 
 范围：F14 页面与细节优化、F15 AI 工具检测与配置优化，两项均为必做项
 
-状态：正式接入及本机验收完成，准备 v0.0.4 预发布；多平台构建与发布结果以 GitHub Actions / Release 为准
+状态：正式接入、本机验收及 v0.0.4 预发布完成；四个构建目标、七个安装包下载核验及下载后 Mac arm64 回归通过，详见实施与验收记录
 
-产品要求以 [PRD 第三章 §13](SmartDD_V0.2_PRD.md#13-一期-m6页面与-ai-配置体验优化) 为准。用户已审阅独立原型，并于 2026-10-16 授权在现有 `feature/0.0.1` 正式接入、测试后提交 GitHub 并打 tag。本轮保留中央真实终端，使用 [独立原型](../prototypes/m6-codex/README.md) 的布局与样式接现有业务。数据库和 SSH 按用户明确范围验收页面、保存、重开及错误反馈，不以真实服务器连通作为本轮门槛。
+产品要求以 [PRD §13](SmartDD_V0.2_PRD.md#13-一期-m6页面与-ai-配置体验优化) 为准。用户已审阅独立原型，并于 2026-10-16 授权在现有 `feature/0.0.1` 正式接入、测试后提交 GitHub 并打 tag。本轮保留中央真实终端，使用 [独立原型](../prototypes/m6-codex/README.md) 的布局与样式接现有业务。数据库和 SSH 按用户明确范围验收页面、保存、重开及错误反馈，不以真实服务器连通作为本轮门槛。
 
 实现和测试结果见 [M6 实施与验收记录](M6_实施与验收记录.md)、[正式应用视觉检查](../design-qa.md)；[Codex 界面对标](design/m6/Codex界面对标.md) 和 [原型 QA](../prototypes/m6-codex/design-qa.md) 保留前期设计依据。原型示例与正式 App 的真实数据分别管理。
 
@@ -16,9 +16,9 @@
 
 用户已下载安装 v0.0.3，并反馈基本使用可行。M6 解决两项明确的体验问题：
 
-| 需求 | 当前情况 | M6 完成后的行为 |
+| 需求 | v0.0.3 试用反馈 | M6 交付行为 |
 | --- | --- | --- |
-| F14 页面与细节优化 | 当前界面主要参考 Yoda；用户要求按 Codex 实际界面复刻 | 布局、视觉与微交互按 Codex 实际截图还原，功能使用 SmartDD 自己的 |
+| F14 页面与细节优化 | 试用版本界面主要参考 Yoda；用户要求按 Codex 实际界面复刻 | 布局、视觉与微交互按 Codex 实际截图还原，功能使用 SmartDD 自己的 |
 | F15 AI 工具检测与配置优化 | 自动检测可显示 Codex，但结果未直接衔接到 AI 配置列表；新建配置默认 Claude Code，需手动配置 | 用户从检测结果方便地添加 Codex 或 Claude Code 配置，随后能在新建任务中选用并提问 |
 
 F15 已接入 `src/renderer/views/settings/ai-profiles.tsx`：检测结果旁可添加基础配置或打开已有配置；`src/shared/detected-profile.ts` 负责选择已有配置和创建最小输入。沿用现有检测及保存服务，不复制或覆盖本机 CLI 凭据。
@@ -72,7 +72,7 @@ F15 已接入 `src/renderer/views/settings/ai-profiles.tsx`：检测结果旁可
 - 平台验收基线为一期 Mac Desktop；Windows/Linux 延续实验性包状态，其完整业务适配与安装升级验收单独跟踪。
 - F12 自动更新、F16 实际定时调度、Apple 签名／公证、手机端、禅道、Jenkins 等不并入 M6 的功能实现。F16 仅导航与规划占位样式属于本轮 UI 范围。
 - 终端继续承载原生 CLI；本阶段优化 SmartDD 页面及配置流程，不新增自建聊天协议或替换 CLI 会话机制。
-- 用户已授权正式接入及验收后的发布。本轮准备应用版本 `0.0.4`，按 `AGENTS.md` 合并 main、创建附注 tag 并等待完整构建，不覆盖既有 tag。
+- 用户已授权正式接入及验收后的发布。本轮已按 `AGENTS.md` 合并 main、创建并推送附注 tag `v0.0.4`，全部构建及下载核验通过。后续修复使用新版本，不覆盖既有 tag。
 
 ## 5. 已确认的执行顺序
 
@@ -121,7 +121,7 @@ F15 已接入 `src/renderer/views/settings/ai-profiles.tsx`：检测结果旁可
 | M6-A06 | 实测不存在的 CLI 显示命令未找到及不可用；错误分类、调用失败／凭据不足由既有自动化覆盖，未改动真实登录来制造故障 |
 | M6-A07 | P01–P30 保留与证据已回填；项目与资源保存、导入、能力开关、搜索、归档、停止恢复等关键流程通过。数据库／SSH 故意使用回环失败目标，连接错误真实显示且仍可保存 |
 | M6-A08 | typecheck、build、278 项应用测试、12 项发布测试、2 项 CLI 探针、Electron UI 探针通过；本机 arm64 DMG 及包内 SQLite/PTY 通过 |
-| 发布 | 准备 `v0.0.4`；完整平台构建、上传及下载结果以 [Release](https://github.com/uprxiao/SmartDD/releases/tag/v0.0.4) 与 [Actions](https://github.com/uprxiao/SmartDD/actions/workflows/release.yml) 为准，不把本机打包视为多平台发布成功 |
+| 发布 | `v0.0.4` 已公开预发布；[Actions](https://github.com/uprxiao/SmartDD/actions/runs/38826301180) 四个构建目标及公开任务全部通过，[Release](https://github.com/uprxiao/SmartDD/releases/tag/v0.0.4) 七个安装包已实际下载，大小／摘要／版本／提交一致；下载的 Mac arm64 包原生与隔离界面回归通过 |
 
 文档记录的是本次已执行范围；Mac x64、Windows、Linux 未在本机进行真实桌面业务验收。后两者继续为实验性包。详细测试环境、命令、截图位置和保留边界见 [实施与验收记录](M6_实施与验收记录.md)。
 
