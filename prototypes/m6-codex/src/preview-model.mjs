@@ -19,7 +19,7 @@ export function saveResource(project, kind, value) {
   const rows = project[kind] || [];
   if (kind === 'dirs' && rows.length === 0) item.isDefault = true;
   const next = rows.some(r => r.id === item.id) ? rows.map(r => r.id === item.id ? item : r) : [...rows, item];
-  const normalized = next.map(r => item.isDefault && r.id !== item.id && (kind === 'dirs' || kind === 'databases' && r.env === item.env) ? { ...r, isDefault: false } : r);
+  const normalized = next.map(r => item.isDefault && r.id !== item.id && (kind === 'dirs' || kind === 'databases') ? { ...r, isDefault: false } : r);
   const result = { ...project, [kind]: normalized, configVersion: project.configVersion + 1 };
   if (kind === 'dirs') result.path = (normalized.find(r => r.isDefault) || normalized[0])?.path || '';
   return result;

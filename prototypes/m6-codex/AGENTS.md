@@ -1,5 +1,18 @@
 # Prototype Instructions
 
+## M8 preparation — 2026-10-16
+
+- Current work prepares M8 / F21 review artifacts on `feature/0.0.1`; production import/export requires the user’s review and explicit go-ahead.
+- Sender and recipient both use WillYou. Transfer project-associated configuration and passwords/private keys/tokens in an encrypted package; exclude conversation history. Production export queries local SQLite and linked credentials, and import inserts transactionally. Skills are only the source of the first isolated AIS test fixture.
+- Code directories have two radio choices: select a local folder (default, empty initially), or explicitly use the read-only source path. Both validate the selected target on the recipient computer; switching retains the local draft. A source package without directories disables the source choice and requires a new default main folder. Persist only the selected path; never overwrite source code files.
+- The recipient can choose which attached AI profiles to import, including none and use their own profiles. Import only selected profiles and their credentials; never replace the recipient's existing/default profiles. Counts follow the selection. Always show the unchecked “导入文件中的 AI 配置” master checkbox (disabled with an explanation when no profiles are attached). Checking it selects all and reveals per-profile choices; unchecking it clears all and collapses details.
+- Discard confirmation is a separate centered modal shown only when exiting an unfinished transfer, not a card appended to the form. Continue/Escape/dismiss returns to the unchanged draft; explicit discard closes the transfer.
+- Export passphrases require at least 8 Unicode characters; keep the existing confirmation and 1024 UTF-8 byte maximum. Do not impose character-class rules.
+- This prototype uses synthetic data only. No real file reading, encryption, credentials, network connections or database writes. Keep scenario selectors explicitly marked M8 preview. Actual encrypted AIS files stay outside the served prototype, under ignored `release/`, with the key stored separately.
+- Keep existing project editing, task navigation, terminal, M7 voice and settings reachable. Reuse approved Codex typography, icon and spacing tokens. The new transfer-specific layout is proposed; no native Codex equivalent has been verified.
+- M8 requirements are the source of truth: `../../docs/M8_真实项目导入导出.md`. Record scoped UI results in `../../docs/design/m8/M8_原型验收.md`.
+
+
 ## M7 preparation — 2026-10-16
 
 - Current request is Yoda source research, additions to this approved high-fidelity prototype, and an actionable M7 requirements/technical document. This round does not implement production voice services or publish a release.

@@ -1,0 +1,90 @@
+/* M8 reuses the approved Codex shell and modal tokens. No new global type or palette. */
+.dialog.transfer-dialog { width: min(680px, calc(100vw - 48px)); padding: 24px; font-size: 14px; line-height: 1.5; }
+.dialog.transfer-dialog .dialog-head { position: sticky; top: -24px; z-index: 2; background: var(--bg); padding: 20px 0 16px; margin: -20px 0 18px; border-bottom: 1px solid var(--border); }
+.transfer-dialog .dialog-head h2 { font-size: 18px; line-height: 24px; font-weight: 600; }
+.transfer-preview-controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; margin-bottom: 24px; border: 1px dashed var(--border-strong); border-radius: 10px; color: var(--secondary); font-size: 12px; }
+.transfer-preview-controls > span { color: var(--text); font-weight: 500; }
+.transfer-preview-controls label { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.transfer-preview-controls select { padding: 4px 7px; font-size: 12px; max-width: 180px; }
+.transfer-preview-controls small { width: 100%; color: var(--muted); }
+.dialog.transfer-dialog .transfer-stage:focus-visible { outline: none; }
+.transfer-stage:focus { outline: none; }
+.transfer-dialog .field { font-size: 13px; margin: 20px 0 10px; }
+.transfer-dialog .field input { font-size: 14px; min-height: 40px; }
+.transfer-dialog .dialog-footer { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 24px; }
+.transfer-dialog .dialog-footer .button { min-height: 36px; font-size: 13px; }
+.transfer-intro { display: flex; align-items: center; flex-direction: column; gap: 14px; text-align: center; padding: 16px 0 30px; }
+.transfer-intro > svg { color: var(--secondary); }
+.transfer-intro h3 { font-size: 20px; font-weight: 500; line-height: 28px; }
+.transfer-intro p { color: var(--secondary); line-height: 1.7; overflow-wrap: anywhere; }
+.transfer-file-choice { display: flex; align-items: center; gap: 14px; border: 1px solid var(--border-strong); border-radius: 14px; padding: 20px; width: 100%; text-align: left; }
+.transfer-file-choice:hover { background: var(--surface); }
+.transfer-file-choice > span { flex: 1; }
+.transfer-file-choice small { display: block; color: var(--secondary); font-size: 12px; margin-top: 4px; }
+.transfer-file-row { display: flex; gap: 13px; align-items: center; padding: 16px; border-radius: 14px; background: var(--surface); margin-bottom: 22px; }
+.transfer-file-row > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.transfer-file-row strong { font-weight: 500; }
+.transfer-file-row small { display: block; color: var(--secondary); margin-top: 3px; font-size: 12px; }
+.transfer-footnote { font-size: 12px; line-height: 1.7; color: var(--secondary); margin: 14px 0; }
+.transfer-simulation { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 15px 0 0; }
+.transfer-summary { display: grid; grid-template-columns: repeat(4, 1fr); padding: 16px 0; border-block: 1px solid var(--border); margin: 20px 0; gap: 10px; }
+.transfer-summary > div { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; color: var(--secondary); font-size: 12px; }
+.transfer-summary strong { color: var(--text); font-size: 19px; font-weight: 500; }
+.transfer-credential-line { display: flex; gap: 11px; margin: 20px 0; }
+.transfer-credential-line > svg { margin-top: 2px; color: var(--secondary); }
+.transfer-credential-line strong { font-size: 13px; font-weight: 500; }
+.transfer-credential-line p { font-size: 12px; color: var(--secondary); margin-top: 5px; }
+.transfer-details { margin: 20px 0; border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+.transfer-details summary { cursor: pointer; font-size: 13px; }
+.transfer-details p { color: var(--secondary); font-size: 12px; margin: 12px 0; }
+.transfer-resource { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.transfer-resource > div { min-width: 0; }
+.transfer-resource strong { font-size: 13px; font-weight: 500; margin-right: 8px; }
+.transfer-resource small { display: block; color: var(--secondary); font-size: 12px; overflow-wrap: anywhere; margin-top: 5px; }
+.transfer-secret { color: var(--secondary); font-size: 12px; display: inline-flex; gap: 5px; align-items: center; white-space: nowrap; }
+.transfer-passwords { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+.transfer-paths { margin-top: 24px; }
+.transfer-paths h3 { font-size: 14px; font-weight: 500; }
+.transfer-paths > p { font-size: 12px; color: var(--secondary); margin-top: 6px; }
+.transfer-paths .field small { font-size: 12px; }
+.transfer-paths .field-inline input { font-family: var(--mono); font-size: 12px; }
+.transfer-message { display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 12px; padding: 14px; font-size: 13px; margin: 16px 0; }
+.transfer-message > svg { margin-top: 2px; }
+.transfer-message.is-error { color: #c36c3c; border-color: #c36c3c55; background: transparent; }
+.transfer-warn { color: #c2854a !important; }
+.transfer-steps { display: flex; gap: 24px; margin: 0 0 24px; padding: 0; list-style: none; color: var(--secondary); font-size: 12px; }
+.transfer-steps li { display: flex; gap: 6px; align-items: center; }
+.transfer-steps .current { color: var(--text); font-weight: 500; }
+.transfer-loading { min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.transfer-loading p { color: var(--secondary); font-size: 12px; }
+.transfer-success { padding-top: 10px; }
+.transfer-success-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--surface); }
+.dialog.transfer-discard-dialog { width: min(420px, calc(100vw - 48px)); font-size: 14px; line-height: 1.5; }
+.transfer-discard-dialog > p { color: var(--secondary); font-size: 13px; line-height: 1.7; }
+.transfer-directory { border: 0; padding: 0; margin: 20px 0 0; min-width: 0; }
+.transfer-directory legend { padding: 0; margin-bottom: 10px; font-size: 13px; }
+.transfer-directory-options { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.transfer-directory-option { padding: 14px; }
+.transfer-directory-option + .transfer-directory-option { border-top: 1px solid var(--border); }
+.transfer-directory-option.is-selected { background: var(--surface); }
+.transfer-directory-option .checkbox-line { margin: 0; font-size: 13px; color: var(--text); align-items: flex-start; gap: 10px; }
+.transfer-directory-option .checkbox-line input { margin-top: 2px; }
+.transfer-directory-option .checkbox-line:has(input:disabled) { color: var(--secondary); }
+.transfer-directory-controls { margin: 12px 0 0 25px; }
+.transfer-directory-controls input { min-width: 0; width: 100%; min-height: 40px; padding: 9px 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg); font: 12px var(--mono); }
+.transfer-directory-controls input:disabled { color: var(--muted); background: var(--surface); }
+.transfer-source-path { display: block; font: 12px/1.6 var(--mono); color: var(--secondary); overflow-wrap: anywhere; margin-top: 4px; }
+.transfer-directory-status { font-size: 12px; color: var(--secondary); margin-top: 8px; }
+.transfer-retry { font-size: 13px; }
+.transfer-profile-options { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 14px; }
+.transfer-profile-option { padding: 14px; }
+.transfer-profile-option + .transfer-profile-option { border-top: 1px solid var(--border); }
+.transfer-profile-option .checkbox-line { align-items: center; gap: 10px; font-size: 13px; }
+.transfer-profile-option .checkbox-line > span:first-of-type { flex: 1; }
+.transfer-profile-option .field { margin: 14px 0 0 26px; }
+.transfer-profile-actions { display: flex; gap: 12px; margin-top: 12px; font-size: 12px; }
+.transfer-profile-count { color: var(--secondary); font-size: 12px; font-weight: 400; margin-left: 8px; }
+.transfer-required { color: var(--secondary); font-size: 12px; margin-left: 6px; }
+.transfer-profile-toggle { border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 14px; gap: 10px; font-size: 13px; }
+.transfer-profile-toggle:has(input:disabled) { color: var(--secondary); }
+@media (max-width: 720px) { .transfer-passwords { grid-template-columns: 1fr; gap: 0; } .transfer-resource { align-items: flex-start; flex-direction: column; } }

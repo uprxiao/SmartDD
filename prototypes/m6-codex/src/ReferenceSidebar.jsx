@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Archive, ArchiveRestore, ChevronDown, Ellipsis, Folder, FolderOpen, History, MessageCircle, Pencil, Plus, Search, Settings, SquarePen } from 'lucide-react';
+import { Archive, ArchiveRestore, ArrowDownToLine, ArrowUpFromLine, ChevronDown, Ellipsis, Folder, FolderOpen, History, MessageCircle, Pencil, Plus, Search, Settings, SquarePen } from 'lucide-react';
 
 function Popup({ position, children, onClose, className = '' }) {
   const ref = useRef(null);
@@ -23,7 +23,7 @@ function Popup({ position, children, onClose, className = '' }) {
     }}>{children}</div></>, document.body);
 }
 
-export function ReferenceSidebar({ projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onRenameTask, onArchiveTask, onSettings, onInfo }) {
+export function ReferenceSidebar({ projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onSettings, onInfo }) {
   const [menu, setMenu] = useState(null);
   const [showArchived, setShowArchived] = useState(false), [showArchivedProjects, setShowArchivedProjects] = useState(false);
   const close = () => setMenu(null);
@@ -35,7 +35,7 @@ export function ReferenceSidebar({ projects, tasks, activeProject, activeTaskId,
     trigger?.focus({ preventScroll: true });
     const rect = row.getBoundingClientRect();
     const width = type === 'project' ? 320 : 204;
-    const height = type === 'project' ? 150 : 112;
+    const height = type === 'project' ? 210 : 112;
     setMenu({ type, item, x: Math.max(8, Math.min(innerWidth - width - 8, context ? event.clientX : type === 'project' ? rect.right + 3 : rect.right - width + 4)), y: Math.max(8, Math.min(innerHeight - height - 8, context ? event.clientY : type === 'project' ? rect.top : rect.top + 24)) });
   };
   const taskRow = t => <div data-sidebar-row key={t.id} className={'reference-task-row ' + (activeTaskId === t.id || menu?.item.id === t.id ? 'selected' : '')} onContextMenu={e => open(e, 'task', t, true)}>
@@ -46,7 +46,7 @@ export function ReferenceSidebar({ projects, tasks, activeProject, activeTaskId,
   return <aside className={'sidebar reference-sidebar ' + (collapsed ? 'is-collapsed' : '')} aria-label="项目与任务">
     <div className="reference-sidebar-head"><button className="workspace-picker" onClick={onInfo}>WillYou<ChevronDown size={13} /></button><button className="row-action" aria-label="任务历史" onClick={onSearch}><History size={16} /></button><button className="row-action" aria-label="搜索任务" onClick={onSearch}><Search size={16} /></button></div>
     <nav className="reference-primary"><button className="nav-row" onClick={() => onHome()}><SquarePen size={16} />新建任务</button><button className="nav-row" onClick={onSearch}><History size={16} />任务历史<span className="history-count">{tasks.filter(t => t.status === 'running').length}</span></button></nav>
-    <div className="reference-projects"><div className="reference-project-heading"><span>项目<ChevronDown size={13} /></span><button className="row-action" aria-label="添加项目" onClick={onCreateProject}><Plus size={15} /></button></div>
+    <div className="reference-projects"><div className="reference-project-heading"><span>项目<ChevronDown size={13} /></span><button className="row-action" aria-label="添加项目" aria-haspopup="menu" aria-expanded={menu?.type === 'add-project'} onClick={e => open(e, 'add-project', { id: 'add-project' })}><Plus size={15} /></button></div>
       {projects.filter(p => !p.archived).map(p => <div className="reference-project-group" key={p.id}><div data-sidebar-row className={'reference-project-row ' + (activeProject === p.id || menu?.item.id === p.id ? 'selected' : '')} onContextMenu={e => open(e, 'project', p)}>
         <button className="reference-project-toggle" aria-label={(closedProjects.includes(p.id) ? '展开' : '折叠') + p.name} onClick={() => onToggleProject(p.id)}>{closedProjects.includes(p.id) ? <Folder size={16} /> : <FolderOpen size={16} />}</button>
         <button className="reference-project-name" title={p.name} onClick={() => onSelectProject(p.id)}>{p.name}</button>
@@ -62,6 +62,11 @@ export function ReferenceSidebar({ projects, tasks, activeProject, activeTaskId,
       <div className="popup-meta"><MessageCircle size={15} /><span>{tasks.filter(t => t.project === menu.item.id && !t.archived).length} 个任务</span></div>
       <div className="popup-divider" /><div className="popup-meta popup-project-path" title={menu.item.path}><Folder size={15} /><span>{menu.item.path}</span></div><div className="popup-divider" />
       <button role="menuitem" onClick={() => { onEditProject(menu.item); close(); }}><Settings size={16} />编辑项目</button>
+      <button role="menuitem" onClick={() => { onExportProject(menu.item); close(); }}><ArrowUpFromLine size={16} />导出项目</button>
+    </Popup>}
+    {menu?.type === 'add-project' && <Popup position={menu} onClose={close}>
+      <button role="menuitem" onClick={() => { onCreateProject(); close(); }}><Plus size={15} />新建项目</button>
+      <button role="menuitem" onClick={() => { onImportProject(); close(); }}><ArrowDownToLine size={15} />导入项目<span className="tag">M8</span></button>
     </Popup>}
     {menu?.type === 'task' && <Popup position={menu} onClose={close}>
       <button role="menuitem" onClick={() => { onRenameTask(menu.item); close(); }}><Pencil size={15} />重命名</button>

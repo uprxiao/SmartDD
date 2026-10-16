@@ -23,12 +23,12 @@ test('removing the last directory makes the project unavailable for launch', () 
   assert.deepEqual(next.dirs, []);
 });
 
-test('database defaults are separate for each environment', () => {
+test('database default is unique across the project, matching the existing app', () => {
   let project = makeProject({ id: 'ais' });
   project = saveResource(project, 'databases', { id: 'dev1', env: 'dev', isDefault: true });
   project = saveResource(project, 'databases', { id: 'prod1', env: 'prod', isDefault: true });
   project = saveResource(project, 'databases', { id: 'dev2', env: 'dev', isDefault: true });
-  assert.deepEqual(project.databases.filter(d => d.isDefault).map(d => d.id), ['prod1', 'dev2']);
+  assert.deepEqual(project.databases.filter(d => d.isDefault).map(d => d.id), ['dev2']);
 });
 
 test('saved passwords survive keep, clear explicitly, and never enter prototype model', () => {

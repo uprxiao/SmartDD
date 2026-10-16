@@ -7,7 +7,7 @@ export function IconButton({ icon: Icon, label, onClick, className = '', ...prop
 export function Dialog({ title, subtitle, children, onClose, className = '' }) {
   const ref = useRef(null);
   useEffect(() => { const d = ref.current; d.showModal(); return () => d.close(); }, []);
-  return <dialog ref={ref} className={'dialog ' + className} onCancel={onClose} onClick={e => { if (e.target === e.currentTarget) onClose(); }} aria-label={title}>
+  return <dialog ref={ref} className={'dialog ' + className} onCancel={e => { e.preventDefault(); onClose(); }} onClick={e => { if (e.target === e.currentTarget) onClose(); }} aria-label={title}>
     <div className="dialog-head"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><IconButton icon={X} label="关闭弹窗" onClick={onClose} /></div>{children}
   </dialog>;
 }

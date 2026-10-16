@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Archive, ArchiveRestore, Database, FolderOpen, Pencil, Plus, Server, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, ArrowUpFromLine, Database, FolderOpen, Pencil, Plus, Server, Trash2 } from 'lucide-react';
 import { Dialog, Field, PathField, SecretField, ConfirmDialog } from './PreviewUI';
 import { CapabilitiesPanel } from './CapabilitiesPanel';
 import { DB_VENDORS, removeResource, safeSecretFields, saveResource } from './preview-model.mjs';
@@ -41,7 +41,7 @@ function ResourceEditor({ kind, resource, onClose, onSave }) {
       <Field label="用户名" name="username" defaultValue={resource?.username || ''} required />
       {kind === 'servers' && <Field label="认证方式"><select name="authType" value={authType} onChange={e => setAuthType(e.target.value)}><option value="password">密码</option><option value="key">私钥</option></select></Field>}
       {kind === 'databases' || authType === 'password' ? <SecretField label="密码" name="password" saved={resource?.hasPassword} /> : <><PathField label="私钥路径" name="privateKeyPath" required defaultValue={resource?.privateKeyPath} sample="/workspace/keys/demo_ed25519" /><SecretField label="私钥口令" name="passphrase" saved={resource?.hasPassphrase} /></>}
-      {kind === 'databases' ? <><Field label="访问级别"><select name="accessLevel" defaultValue={resource?.accessLevel || 'readonly'}><option value="readonly">只读</option><option value="readwrite">读写</option></select></Field><label className="checkbox-line"><input type="checkbox" name="isDefault" defaultChecked={resource?.isDefault || false} />设为此环境的默认数据库</label></> : <>
+      {kind === 'databases' ? <><Field label="访问级别"><select name="accessLevel" defaultValue={resource?.accessLevel || 'readonly'}><option value="readonly">只读</option><option value="readwrite">读写</option></select></Field><label className="checkbox-line"><input type="checkbox" name="isDefault" defaultChecked={resource?.isDefault || false} />设为项目默认数据库</label></> : <>
         <Field label="sudo 策略"><select name="sudoPolicy" value={sudoPolicy} onChange={e => setSudoPolicy(e.target.value)}><option value="none">不使用 sudo</option><option value="same-as-login">使用登录密码</option><option value="separate">单独的 sudo 密码</option></select></Field>
         {sudoPolicy === 'separate' && <SecretField label="sudo 密码" name="sudoPassword" saved={resource?.hasSudoPassword} />}
         <label className="checkbox-line"><input name="defaultRoot" type="checkbox" defaultChecked={resource?.defaultRoot || false} />默认使用 root 上下文</label>
@@ -54,7 +54,7 @@ function ResourceEditor({ kind, resource, onClose, onSave }) {
   </form></Dialog>;
 }
 
-export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, onNewTask, onOpenTask }) {
+export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, onNewTask, onOpenTask, onExport }) {
   const [modal, setModal] = useState(null);
   const collection = COLLECTIONS[tab];
   const update = next => onUpdate({ ...next, configVersion: Math.max(next.configVersion, project.configVersion + 1) });
@@ -64,7 +64,7 @@ export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, on
     {project.archived && <p className="notice">项目已归档；取消归档后可创建新任务。</p>}
     <nav className="tabbar" aria-label="项目设置分类">{TABS.map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => onNavigate(key)}>{label}</button>)}</nav>
     {tab === 'overview' && <><div className="settings-card project-info"><div><span>项目名称</span><strong>{project.name}</strong></div><div><span>别名</span><span>{project.aliases || '—'}</span></div><div><span>说明</span><span>{project.description || '—'}</span></div><div><span>规则文件</span><code>{project.rulesPath || '未设置'}</code></div><div><span>配置版本</span><span>v{project.configVersion}</span></div><div><span>创建时间</span><span>{project.createdAt}</span></div></div>
-      <div className="project-actions"><button className="button secondary" onClick={() => setModal({ type: 'edit' })}><Pencil size={14} />编辑项目信息</button><button className="button secondary" onClick={() => update({ ...project, archived: !project.archived })}>{project.archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}{project.archived ? '取消归档项目' : '归档项目'}</button><button className="button danger" onClick={() => setModal({ type: 'delete-project' })}><Trash2 size={14} />删除项目</button></div>
+      <div className="project-actions"><button className="button secondary" onClick={onExport}><ArrowUpFromLine size={14} />导出项目</button><button className="button secondary" onClick={() => setModal({ type: 'edit' })}><Pencil size={14} />编辑项目信息</button><button className="button secondary" onClick={() => update({ ...project, archived: !project.archived })}>{project.archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}{project.archived ? '取消归档项目' : '归档项目'}</button><button className="button danger" onClick={() => setModal({ type: 'delete-project' })}><Trash2 size={14} />删除项目</button></div>
       <div className="project-summary">{[['code', FolderOpen, '代码目录', project.dirs.length], ['database', Database, '数据库', project.databases.length], ['server', Server, '服务器', project.servers.length]].map(([key, Icon, label, count]) => <button key={key} onClick={() => onNavigate(key)}><Icon size={18} /><span>{label}</span><strong>{count}</strong></button>)}</div>
     </>}
     {collection && <><div className="group-heading"><h2>{NAMES[collection]}</h2><button className="button secondary" onClick={() => setModal({ type: 'resource', collection })}><Plus size={14} />添加{NAMES[collection]}</button></div>
