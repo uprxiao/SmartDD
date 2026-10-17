@@ -16,23 +16,25 @@ from zentao_read_probe import BASE, EXPECTED_ACCOUNT, SKILL, ZenTaoClient
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--bug-id',action='append',default=[])
-    parser.add_argument('--user-verified-complete-page',action='store_true')
+    parser.add_argument('--resume',action='store_true')
     args=parser.parse_args()
     if any(not x.isdecimal() for x in args.bug_id) or len(args.bug_id)>10:
         raise SystemExit('Only up to 10 explicitly provided numeric Bug IDs are allowed.')
     for key in ['NO_PROXY','no_proxy']:os.environ[key]=os.environ.get(key,'')+',192.168.106.185'
     targeted=bool(args.bug_id)
     name='zentao-private-targeted' if targeted else 'zentao-private-export'
-    log_prefix='targeted-export' if targeted else 'export'
+    log_prefix=('targeted-export-resume' if args.resume else 'targeted-export') if targeted else 'export'
     root=Path.cwd()/'release/m10-research/live-verification-20261017'/name
-    if root.exists():raise SystemExit('Private export already exists; review before another run.')
+    if root.exists() and not args.resume:raise SystemExit('Private export already exists; review before another run.')
+    if args.resume and (not targeted or not root.is_dir()):raise SystemExit('Resume is restricted to existing explicitly selected artifacts.')
     root.parent.mkdir(parents=True,exist_ok=True);os.chmod(root.parent,0o700)
     secret=getpass.getpass('禅道现有密码（隐藏输入）: ')
     client=ZenTaoClient(BASE,timeout=8,retries=1)
     report={'schema':'m10-real-existing-skill-export-v1','at':dt.datetime.now(dt.timezone.utc).isoformat(),
             'scope':'explicit user-page IDs' if targeted else 'assigned to existing bound account; all accessible product inventory',
             'selectionMode':'direct_ids' if targeted else 'mine_inventory',
-            'userPageScopeEvidenceProvided':args.user_verified_complete_page,
+            'completeRelationshipScopeClaimed':False if targeted else None,
+            'resumedExistingArtifacts':args.resume,
             'privateBusinessArtifacts':str(root.relative_to(Path.cwd())),
             'credentialsSavedOrPrinted':False,'businessWrites':0,'exporterUnmodified':True,'verifierUnmodified':True}
     start=time.monotonic()
@@ -44,9 +46,7 @@ def main():
              '--username',EXPECTED_ACCOUNT,'--zentao-version','企业版 13.0','--mine','assigned',
              '--output',str(root),'--include-inline','--save-raw','--timeout','8','--retries','1','--page-size','1000']
         for bug_id in args.bug_id:cmd.extend(['--bug-id',bug_id])
-        if targeted and args.user_verified_complete_page:
-            cmd.extend(['--verified-scope-count',str(len(set(args.bug_id))),'--verified-scope-source',
-                        'User supplied the current assigned-to-me page complete ID list for this verification on 2026-10-17.'])
+        if args.resume:cmd.append('--resume')
         for name in [log_prefix+'.stdout.log',log_prefix+'.stderr.log']:
             p=root.parent/name;p.touch(mode=0o600,exist_ok=False);os.chmod(p,0o600)
         print('开始运行既有 Skill 的限定只读导出。',flush=True)
@@ -67,6 +67,8 @@ def main():
                 v=json.loads(verified.stdout)
                 report['verifier']={k:val for k,val in v.items() if isinstance(val,(bool,int))}
                 report['verifierErrorCount']=len(v.get('errors',[]))
+                report['verifierErrorCodes']=[e.get('code') for e in v.get('errors',[]) if isinstance(e,dict)]
+                report['verifierWarningCodes']=[e.get('code') for e in v.get('warnings',[]) if isinstance(e,dict)]
             except Exception:report['verifierOutputParsed']=False
         report['status']='completed' if report.get('verifierExitCode')==0 and all(report.get('manifestBooleanResults',{}).values()) else 'failed_or_partial'
     except Exception as exc:
@@ -76,6 +78,7 @@ def main():
         client.clear_token();secret=''
         report['elapsedSeconds']=round(time.monotonic()-start,3)
         report['limits']=['Skill Bug export only; Story and state transitions are separate tests.',
+                          'Three requested example IDs do not prove a complete assigned-to-me inventory; no caller-verified total is supplied.',
                           'Private raw exports and logs are not staged or copied into docs.']
         path=Path(__file__).with_name('existing-skill-targeted-result.json' if targeted else 'existing-skill-export-result.json')
         path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')

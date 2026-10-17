@@ -84,3 +84,14 @@ R3.1（2026-10-17）仅修改原型工程中的 `AGENTS.md`、`README.md`、`des
 较大的已验证原生试包另保留在忽略目录 [本机试包](../../../../../release/m9-research/predev-p1/willyou-native-resource-trial.tar.gz)，159985045 bytes，SHA-256 `7d740ab24b26942a6ab4b8fb47eb07bacdb02fae5d5f936c7209450a10713afb`。它包含TeX/JRE/POI，未含LibreOffice/Electron，不是WillYou安装包。恢复资源可用此包或按09固定源及清单重建；[保留记录](../../验收/证据/predev-native-trial-preservation.json)。
 
 [最终完整性结果](../../验收/证据/predev-final-verification.json)：591个本地链接无缺失，149/58/219文件的三个专项manifest匹配；14个Python、16个MJS与77份当前JSON检查通过；四个R3.4 ZIP原SHA不变。425条正式ID、需求映射、范围、实际结果/状态/证据/缺陷保持原值，仅修正Y29/Y30定义混淆。当前README和最终核对JSON不入ZIP以避免自引用；这只是归档校验，不是新App测试。
+
+## Git 提交关联（2026-10-17）
+
+用户要求将当前工作提交并推送后，以上基于 `d75bbaa` 的未提交增量已在 `feature/0.0.1` 保存为以下提交；前文的“未提交”描述保留为冻结时的历史事实。旧 ZIP、manifest 及验收结果未改写。
+
+| 提交 | 保存内容 |
+| --- | --- |
+| `a38a00b6e50f2af73b9fc6d1c00c703f16d294a6` | 11 个现有 App PTY 权限、任务归属及生命周期修复文件，与 R3.4 实现快照逐文件一致。 |
+| `e7432f1ca0bffdb8bb0d0ff7c813e627beeb63d8` | 阶段目录迁移、M9 需求／用例／研究／证据／P1 资料、共享 M9 原型及已有 M10 设计增量。299 个 R3.4 原型文件与 490 个 P1 文件均匹配原快照；10 份被引用的 M9 日志已纳入 Git。 |
+
+提交前重新执行 App 类型检查、构建及 50 项相关测试；共享原型 M9 192 项、parity 5 项、sites 4 项、M10 模型 8 项及构建通过。用例索引检查通过。许可证、原始日志、PDF 样本及已冻结源码中的既有空白保持原字节，未为格式整理改写证据哈希。提交不代表完整 M9 已开发完成，425 条正式验收状态保持原值；本次未合并 main、打 tag 或发布。
