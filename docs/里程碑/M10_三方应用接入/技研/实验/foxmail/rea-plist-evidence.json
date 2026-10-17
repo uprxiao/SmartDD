@@ -1,0 +1,153 @@
+{
+  "evidence_id": "ev_5d7cedb12c743b9125f8cae0934b1a84705cd2521585f40fcee04c72557ff5bc",
+  "subject": {
+    "name": "Foxmail",
+    "digest": {
+      "sha256": "b64f0b4edeac18eaa1496e361a64fecd68a454dec7afbb8594755ef8e8208e48"
+    },
+    "local_path": "/Applications/Foxmail.app/Contents/MacOS/Foxmail",
+    "format": "mach-o",
+    "architecture": "x86_64"
+  },
+  "provider": {
+    "id": "native-macos",
+    "name": "macOS native inspection utilities",
+    "version": null
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.analysis",
+  "operation": "inspect_plist",
+  "parameters": {
+    "path": "/Applications/Foxmail.app/Contents/Info.plist"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "format": "xml",
+    "value": {
+      "CFBundleName": "Foxmail",
+      "DTSDKName": "macosx13.1",
+      "DTXcode": "1420",
+      "NSHumanReadableCopyright": "Copyright © 2020 tencent. All rights reserved.",
+      "NSCalendarsUsageDescription": "Foxmail will sync meeting requests to calendar",
+      "DTSDKBuild": "22C55",
+      "CFBundleDevelopmentRegion": "en",
+      "CFBundleVersion": "94590",
+      "BuildMachineOSBuild": "21G83",
+      "NSPrincipalClass": "NSApplication",
+      "DTPlatformName": "macosx",
+      "CFBundleDocumentTypes": [
+        {
+          "CFBundleTypeName": "eml",
+          "CFBundleTypeExtensions": [
+            "eml"
+          ],
+          "CFBundleTypeMIMETypes": [
+            "message/rfc822"
+          ],
+          "CFBundleTypeRole": "Viewer",
+          "LSHandlerRank": "Alternate"
+        },
+        {
+          "CFBundleTypeName": "other",
+          "CFBundleTypeExtensions": [
+            "*"
+          ],
+          "CFBundleTypeRole": "Viewer",
+          "LSHandlerRank": "Alternate"
+        }
+      ],
+      "CFBundlePackageType": "APPL",
+      "CFBundleSupportedPlatforms": [
+        "MacOSX"
+      ],
+      "CFBundleIconFile": "logo",
+      "CFBundleShortVersionString": "1.5.8",
+      "NSMainNibFile": "MainMenu",
+      "NSAppTransportSecurity": {
+        "NSAllowsArbitraryLoads": true
+      },
+      "CFBundleInfoDictionaryVersion": "6.0",
+      "CFBundleExecutable": "Foxmail",
+      "DTCompiler": "com.apple.compilers.llvm.clang.1_0",
+      "NSRemindersUsageDescription": "Foxmail will sync meeting requests to reminder",
+      "CFBundleURLTypes": [
+        {
+          "CFBundleURLName": "mailto",
+          "CFBundleURLSchemes": [
+            "mailto"
+          ]
+        }
+      ],
+      "CFBundleIdentifier": "com.tencent.Foxmail",
+      "LSApplicationCategoryType": "public.app-category.productivity",
+      "DTPlatformVersion": "13.1",
+      "CFBundleSignature": "????",
+      "DTXcodeBuild": "14C18",
+      "LSMinimumSystemVersion": "10.13",
+      "NSContactsUsageDescription": "Foxmail needs to access the address book contacts",
+      "NSRequiresAquaSystemAppearance": true,
+      "DTPlatformBuild": "14C18"
+    },
+    "bundle": {
+      "identifier": "com.tencent.Foxmail",
+      "executable": "Foxmail",
+      "name": "Foxmail",
+      "version": "94590",
+      "short_version": "1.5.8"
+    },
+    "source_path": "/Applications/Foxmail.app/Contents/Info.plist",
+    "provenance": [
+      {
+        "tool": "file",
+        "command": [
+          "/usr/bin/file",
+          "-b",
+          "$PLIST"
+        ],
+        "tool_version": null,
+        "version_reason": "Tool exposes no uniform stable version flag; executable SHA-256 is a prelaunch file sample and does not prove atomic OS image binding.",
+        "executable_sha256": "ce0f6b87d442da6b67e3c735ce5e8315ec10b0bda124039376da805a8f9b0ac2",
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "stdout_bytes": 48,
+        "stderr_bytes": 0
+      },
+      {
+        "tool": "plutil",
+        "command": [
+          "/usr/bin/plutil",
+          "-convert",
+          "json",
+          "-o",
+          "-",
+          "--",
+          "$PLIST"
+        ],
+        "tool_version": null,
+        "version_reason": "Tool exposes no uniform stable version flag; executable SHA-256 is a prelaunch file sample and does not prove atomic OS image binding.",
+        "executable_sha256": "0814b3dadf0baf367c35c32720cdd3ea76e81ee8de6bd49e06c4ca5855b53132",
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "stdout_bytes": 1554,
+        "stderr_bytes": 0
+      }
+    ],
+    "limitations": []
+  },
+  "confidence": "observed",
+  "authority": "shipped-artifact",
+  "environment": null,
+  "limitations": [],
+  "relationship_coverage": null,
+  "locations": [
+    {
+      "kind": "artifact-path",
+      "path": "/Applications/Foxmail.app/Contents/Info.plist"
+    }
+  ],
+  "evidence_links": []
+}

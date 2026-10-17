@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T02:40:33.688Z",
+  "scriptSha256": "fc04b81276f29cbbf6e312b0cd834e2d0b98a7c7fdb5b8aaf24b3aed23178519",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0",
+    "cpus": 16,
+    "cpuModel": "Apple M4 Max",
+    "totalMemMiB": 131072
+  },
+  "frozenSamples": {
+    "generator": "makeDoc seed 20261017",
+    "sha256": {
+      "100KiB": "28505319cb4e3ffe23630d10a4e5223f7577fb6da8a163a672db513e147dc146",
+      "1MiB": "3a6e2ae55d68b42ba79855c9ad86edade0ea44f9026f43e465349dc9fee207f0",
+      "10MiB": "cf12323dda284d2178be5cb9a3d27ebe9a804eb70e2238a6d53468ab2d64ad65",
+      "1MiB-nomath": "4dee3c464f007b82f4e69bc3702f3a4b33fbf56453a05929d1338d25ed00cfec"
+    }
+  },
+  "scope": "Synthetic generated text; Node main/worker threads; no Chromium, no production implementation",
+  "cases": [
+    {
+      "id": "EC01",
+      "title": "主线程解析 + 全量渲染耗时（冷/热，5 次取 p50/p95）",
+      "status": "passed",
+      "durationMs": 5822.9,
+      "evidence": {
+        "runs": {
+          "100KiB": {
+            "blocks": 2225,
+            "parseColdMs": 13.8,
+            "parseP50Ms": 4.6,
+            "parseP95Ms": 13.8,
+            "renderAllP50Ms": 10.8,
+            "renderAllP95Ms": 18.8
+          },
+          "1MiB": {
+            "blocks": 22575,
+            "parseColdMs": 34,
+            "parseP50Ms": 28.2,
+            "parseP95Ms": 34,
+            "renderAllP50Ms": 67.2,
+            "renderAllP95Ms": 87.1
+          },
+          "10MiB": {
+            "blocks": 223522,
+            "parseColdMs": 315.1,
+            "parseP50Ms": 327.8,
+            "parseP95Ms": 336.1,
+            "renderAllP50Ms": 666.8,
+            "renderAllP95Ms": 804.8
+          },
+          "1MiB-nomath": {
+            "blocks": 21079,
+            "parseColdMs": 24,
+            "parseP50Ms": 23.5,
+            "parseP95Ms": 24.2,
+            "renderAllP50Ms": 5.5,
+            "renderAllP95Ms": 5.8
+          }
+        },
+        "note": "组件每次 text 变化重新 parse 全文；渲染按块，未变化的块应缓存。数字仅反映本机 Node，不是 Chromium 主线程"
+      }
+    },
+    {
+      "id": "EC02",
+      "title": "内存：解析 10MiB 前后 RSS 与释放（5 轮）",
+      "status": "passed",
+      "durationMs": 2084.7,
+      "evidence": {
+        "rssMiB": [
+          {
+            "before": 1104,
+            "during": 1121,
+            "after": 1104
+          },
+          {
+            "before": 1104,
+            "during": 1121,
+            "after": 1105
+          },
+          {
+            "before": 1105,
+            "during": 1121,
+            "after": 1105
+          },
+          {
+            "before": 1105,
+            "during": 1121,
+            "after": 1105
+          },
+          {
+            "before": 1105,
+            "during": 1121,
+            "after": 1105
+          }
+        ],
+        "growthOverFiveRunsMiB": 1,
+        "gcExposed": true,
+        "note": "5 轮后 RSS 增长应有界；单次峰值约等于 during-before"
+      }
+    },
+    {
+      "id": "EC03",
+      "title": "Worker 正常完成 10MiB（主线程不被占用）",
+      "status": "passed",
+      "durationMs": 1191.3,
+      "evidence": {
+        "kind": "exit",
+        "ms": 1190.9,
+        "events": [
+          "parsed",
+          "rendered"
+        ],
+        "code": 0,
+        "mainThreadTicksDuring": 109,
+        "expectedTicksIfBlockedNearZero": 119
+      }
+    },
+    {
+      "id": "EC04",
+      "title": "取消：Worker 处理 10MiB 中途 terminate，及时返回且无后续消息",
+      "status": "passed",
+      "durationMs": 159.8,
+      "evidence": {
+        "kind": "cancelled",
+        "ms": 159.7,
+        "events": [],
+        "code": 1,
+        "terminateMs": 5.8
+      }
+    },
+    {
+      "id": "EC05",
+      "title": "崩溃与异常：Worker process.exit / 抛错不拖垮主进程，错误可区分",
+      "status": "passed",
+      "durationMs": 83,
+      "evidence": {
+        "crash": {
+          "kind": "exit",
+          "ms": 43.7,
+          "events": [],
+          "code": 13
+        },
+        "thrown": {
+          "kind": "error",
+          "ms": 39.3,
+          "events": [],
+          "message": "injected worker failure"
+        },
+        "mainProcessAlive": true
+      }
+    },
+    {
+      "id": "EC06",
+      "title": "超时：看门狗 terminate 卡死/过长任务并报告 timeout",
+      "status": "passed",
+      "durationMs": 111,
+      "evidence": {
+        "kind": "timeout",
+        "ms": 110.9,
+        "events": [],
+        "code": 1,
+        "terminateMs": 7.2
+      }
+    },
+    {
+      "id": "EC07",
+      "title": "损坏/极端输入：NUL、孤立代理对、深嵌套、超长行、未闭合围栏——不抛错且字节往返",
+      "status": "passed",
+      "durationMs": 46.8,
+      "evidence": {
+        "rows": {
+          "nul": {
+            "ms": 0.3,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          },
+          "loneSurrogate": {
+            "ms": 0.1,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          },
+          "deepQuote": {
+            "ms": 0.2,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          },
+          "deepList": {
+            "ms": 3.4,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          },
+          "longLine": {
+            "ms": 19.4,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          },
+          "tableMany": {
+            "ms": 1.9,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          },
+          "unclosed": {
+            "ms": 0.2,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          },
+          "emphasis": {
+            "ms": 20.9,
+            "bytesRoundTrip": true,
+            "rendered": 1,
+            "error": null
+          }
+        },
+        "slowOver1500ms": [],
+        "note": "损坏输入的 CPU 耗时必须由 Worker 超时兜底，不能在渲染主线程直接解析不受信任的大文本"
+      }
+    },
+    {
+      "id": "EC08",
+      "title": "依赖清单：版本、许可证、安装体积（用于锁定与分发评估）",
+      "status": "passed",
+      "durationMs": 36.5,
+      "evidence": {
+        "info": {
+          "markdown-it": {
+            "version": "14.1.0",
+            "license": "MIT",
+            "installKiB": 749
+          },
+          "markdown-it-texmath": {
+            "version": "1.0.0",
+            "license": "MIT",
+            "installKiB": 103
+          },
+          "katex": {
+            "version": "0.16.22",
+            "license": "MIT",
+            "installKiB": 3891
+          },
+          "js-yaml": {
+            "version": "4.1.0",
+            "license": "MIT",
+            "installKiB": 395
+          },
+          "mermaid": {
+            "version": "11.12.0",
+            "license": "MIT",
+            "installKiB": 64519
+          }
+        },
+        "note": "仅包自身体积，不含传递依赖；mermaid 为运行时动态 import，体积见构建产物"
+      }
+    }
+  ],
+  "completedAt": "2026-10-17T02:40:43.225Z",
+  "summary": {
+    "passed": 8
+  }
+}

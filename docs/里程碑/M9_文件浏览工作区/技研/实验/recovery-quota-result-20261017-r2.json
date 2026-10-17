@@ -1,0 +1,87 @@
+{
+  "revision": "R3.4",
+  "policy": {
+    "projectBytes": 536870912,
+    "globalBytes": 2147483648,
+    "metadataReserveBytes": 65536,
+    "resolvedRetentionDays": 7,
+    "maxResolvedPerDocument": 2,
+    "unresolvedExpiry": null,
+    "spaceHeadroomBytes": 134217728
+  },
+  "scriptSha256": "074760910a898a2ebbbd9c83bc178d93ae0ef970ae6f3c83afad186ec825843c",
+  "startedAt": "2026-10-17T07:41:50Z",
+  "cases": [
+    {
+      "id": "RQ01",
+      "title": "10MiB可编辑文本的真实三版本与日志尺寸",
+      "status": "passed",
+      "evidence": {
+        "sourceBytes": 10485760,
+        "actualLogicalBytes": 31457708,
+        "reservationBytes": 31522816,
+        "journalSaveMs": 32.44,
+        "included": "target+displaced+draft+prepared JSON",
+        "notMeasured": "filesystem metadata/APFS extents/power-loss"
+      }
+    },
+    {
+      "id": "RQ02",
+      "title": "40MiB Office上界样本的真实三版本与日志尺寸",
+      "status": "passed",
+      "evidence": {
+        "sourceBytes": 41943040,
+        "actualLogicalBytes": 125829548,
+        "reservationBytes": 125894656,
+        "journalSaveMs": 109.65,
+        "included": "target+displaced+draft+prepared JSON",
+        "notMeasured": "filesystem metadata/APFS extents/power-loss"
+      }
+    },
+    {
+      "id": "RQ03",
+      "title": "五个并发大文件预约只能四个成功，不超512MiB项目配额",
+      "status": "passed",
+      "evidence": {
+        "accepted": 4,
+        "rejected": 1,
+        "reservedBytes": 503578624,
+        "concurrentConnections": 5
+      }
+    },
+    {
+      "id": "RQ04",
+      "title": "opId幂等且重用不同尺寸请求拒绝",
+      "status": "passed",
+      "evidence": {
+        "repeatedOpDoesNotReserveTwice": true,
+        "changedPayloadRejected": true
+      }
+    },
+    {
+      "id": "RQ05",
+      "title": "配额拒绝在目标写入前，原件不变；不假称真实满盘",
+      "status": "passed",
+      "evidence": {
+        "quotaRefusalBeforeAnyTargetWrite": true,
+        "callerMustKeepMemoryDraft": true,
+        "realENOSPC": "not-tested"
+      }
+    },
+    {
+      "id": "RQ06",
+      "title": "跨项目预约还受2GiB总配额约束",
+      "status": "passed",
+      "evidence": {
+        "additionalAccepted": 13,
+        "globalReservedBytes": 2140209152,
+        "globalLimitBytes": 2147483648
+      }
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0
+  },
+  "boundary": "Engineering defaults and isolated SQLite accounting/real-file sizing, not production recovery retention or actual disk exhaustion."
+}

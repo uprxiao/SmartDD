@@ -1,0 +1,443 @@
+{
+  "schemaVersion": 1,
+  "ranAt": "2026-10-17T03:53:55.068Z",
+  "target": "http://127.0.0.1:4176/?preview=m9",
+  "viewport": "1512x949 DPR1",
+  "scope": "合成原型的键鼠交互；不是 Codex 参考运行；untested 表示本轮未验证或无法验证",
+  "summary": {
+    "passed": 30,
+    "untested": 7
+  },
+  "rows": [
+    {
+      "id": "K01",
+      "audit": "T02",
+      "title": "↓/↑ 移动焦点到相邻可见行",
+      "status": "passed",
+      "detail": {
+        "down": "概要设计.docx",
+        "up": "发布演示.pptx"
+      }
+    },
+    {
+      "id": "K02",
+      "audit": "T02",
+      "title": "Home/End 到首尾行",
+      "status": "passed",
+      "detail": {
+        "home": "docs",
+        "end": "package.json\nA"
+      }
+    },
+    {
+      "id": "K03",
+      "audit": "T02",
+      "title": "→ 在已折叠目录上展开",
+      "status": "passed",
+      "detail": {
+        "dir": "drizzle"
+      }
+    },
+    {
+      "id": "K04",
+      "audit": "T02",
+      "title": "→ 在已展开目录上移到第一个子项",
+      "status": "passed",
+      "detail": {
+        "focus": "发布演示.pptx"
+      }
+    },
+    {
+      "id": "K05",
+      "audit": "T02",
+      "title": "← 在已展开目录上收起",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "K06",
+      "audit": "T02",
+      "title": "← 在叶子文件上聚焦父目录",
+      "status": "passed",
+      "detail": {
+        "focus": "docs"
+      }
+    },
+    {
+      "id": "K07",
+      "audit": "T02",
+      "title": "Shift+↓ 从锚点扩展范围选择",
+      "status": "passed",
+      "detail": {
+        "selected": [
+          "发布演示.pptx",
+          "概要设计.docx",
+          "公式.tex"
+        ]
+      }
+    },
+    {
+      "id": "K08",
+      "audit": "T02",
+      "title": "Ctrl/Meta+Space 切换焦点项选择，不打开文件",
+      "status": "passed",
+      "detail": {
+        "afterFirst": [
+          "发布演示.pptx"
+        ],
+        "afterSecond": [
+          "AGENTS.md\nM"
+        ],
+        "tabsBefore": 1,
+        "tabsAfter": 1,
+        "note": "选择清空后 aria-selected 回落为“当前打开的文件”，这是设计，不算选中"
+      }
+    },
+    {
+      "id": "K09",
+      "audit": "T03",
+      "title": "Ctrl/Meta+A 选择全部可见行（含目录）",
+      "status": "passed",
+      "detail": {
+        "selected": 34,
+        "visibleRows": 34,
+        "includesDocsDir": true
+      }
+    },
+    {
+      "id": "K10",
+      "audit": "T04",
+      "title": "roving tabindex：树内只有一个 Tab 停靠点",
+      "status": "passed",
+      "detail": {
+        "tabStops": 1
+      }
+    },
+    {
+      "id": "K11",
+      "audit": "T04",
+      "title": "ARIA：posinset/setsize 与树的可访问名称",
+      "status": "passed",
+      "detail": {
+        "level": "1",
+        "pos": "1",
+        "set": "19",
+        "multi": "true",
+        "name": "文件目录"
+      }
+    },
+    {
+      "id": "K12",
+      "audit": "T02",
+      "title": "Enter 打开并固定文件标签",
+      "status": "passed",
+      "detail": {
+        "before": 1,
+        "after": 2
+      }
+    },
+    {
+      "id": "S01",
+      "audit": "T01",
+      "title": "筛选结果保持目录层级：命中文件的祖先目录一并显示",
+      "status": "passed",
+      "detail": {
+        "rows": [
+          {
+            "level": 1,
+            "text": "docs"
+          },
+          {
+            "level": 2,
+            "text": "概要设计.docx"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S02",
+      "audit": "T05",
+      "title": "IME 合成中 ↓ 不抢焦点",
+      "status": "passed",
+      "detail": {
+        "focus": {
+          "text": "筛选文件",
+          "role": null,
+          "tag": "INPUT",
+          "expanded": null
+        }
+      }
+    },
+    {
+      "id": "S03",
+      "audit": "T01",
+      "title": "文件名框 ↓ 聚焦首个结果；Esc 清空并回到普通树",
+      "status": "passed",
+      "detail": {
+        "focus": {
+          "text": "docs",
+          "role": "treeitem",
+          "tag": "BUTTON",
+          "expanded": "true"
+        },
+        "restoredRows": 34,
+        "totalBefore": 34
+      }
+    },
+    {
+      "id": "S04",
+      "audit": "T08",
+      "title": "清空筛选后恢复筛选前的展开状态",
+      "status": "passed",
+      "detail": {
+        "before": 19,
+        "after": 19
+      }
+    },
+    {
+      "id": "S05",
+      "audit": "T01",
+      "title": "搜索排除目录（node_modules 等）；普通树仍含隐藏/依赖目录",
+      "status": "passed",
+      "detail": {
+        "plainHasHidden": true,
+        "searchedRows": ""
+      }
+    },
+    {
+      "id": "M01",
+      "audit": "T09",
+      "title": "右键菜单锚定在点击位置附近",
+      "status": "passed",
+      "detail": {
+        "click": {
+          "x": 1295,
+          "y": 226
+        },
+        "menu": {
+          "left": 1284,
+          "top": 225
+        }
+      }
+    },
+    {
+      "id": "M02",
+      "audit": "T09",
+      "title": "菜单在屏幕边缘翻转，完整留在视口内",
+      "status": "passed",
+      "detail": {
+        "menu": {
+          "left": 1284,
+          "top": 365,
+          "right": 1504,
+          "bottom": 568
+        }
+      }
+    },
+    {
+      "id": "M03",
+      "audit": "T09",
+      "title": "Esc 关闭菜单并把焦点还给触发行",
+      "status": "passed",
+      "detail": {
+        "focus": {
+          "text": "概要设计.docx",
+          "role": "treeitem",
+          "tag": "BUTTON",
+          "expanded": null
+        }
+      }
+    },
+    {
+      "id": "M04",
+      "audit": "T09",
+      "title": "菜单内 ↑↓ 移动焦点，打开时焦点进入菜单",
+      "status": "passed",
+      "detail": {
+        "first": "使用 Visual Studio Code 打开",
+        "second": "打开方式"
+      }
+    },
+    {
+      "id": "B01",
+      "audit": "T12",
+      "title": "面包屑：目录段按路径段边界判断，不用“含点号”推断文件",
+      "status": "passed",
+      "detail": {
+        "crumbs": [
+          "WillYou",
+          "docs",
+          "数据.csv"
+        ]
+      }
+    },
+    {
+      "id": "B02",
+      "audit": "T13",
+      "title": "长路径：面包屑容器可横向滚动并优先保留文件名端",
+      "status": "passed",
+      "detail": {
+        "overflowX": "auto",
+        "cls": "fw-breadcrumb"
+      }
+    },
+    {
+      "id": "D01",
+      "audit": "T18",
+      "title": "目录宽度：键盘调整上限与 aria 最大值一致，不超过父宽 60%",
+      "status": "passed",
+      "detail": {
+        "now": 497,
+        "max": 497,
+        "parentWidth": 829,
+        "sixtyPercent": 497
+      }
+    },
+    {
+      "id": "D02",
+      "audit": "T18",
+      "title": "拖到小于 100px 时目录收起",
+      "status": "passed",
+      "detail": {
+        "treeRows": 0
+      }
+    },
+    {
+      "id": "F01",
+      "audit": "T15",
+      "title": "全文搜索：Esc 关闭并把焦点还给触发按钮",
+      "status": "passed",
+      "detail": {
+        "opened": 1,
+        "focus": {
+          "text": "在文件中搜索",
+          "role": null,
+          "tag": "BUTTON",
+          "expanded": null
+        }
+      }
+    },
+    {
+      "id": "F02",
+      "audit": "T15",
+      "title": "全文搜索：Tab 焦点圈定在对话框内",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "F03",
+      "audit": "T15",
+      "title": "全文搜索：↓ 选择下方结果时，被选行滚动到可见",
+      "status": "passed",
+      "detail": {
+        "found": true,
+        "visible": true
+      }
+    },
+    {
+      "id": "X01",
+      "audit": "T06",
+      "title": "大目录：虚拟化（DOM 行数远小于数据量）",
+      "status": "untested",
+      "detail": {
+        "reason": "原型没有大目录 fixture；T06 的懒加载/虚拟化/粘性目录/子目录错误仍是未实现项，不用小 fixture 证明"
+      }
+    },
+    {
+      "id": "X02",
+      "audit": "T07",
+      "title": "目录场景：单根不显示根选择；多根显示；无根给出提示",
+      "status": "passed",
+      "detail": {
+        "options": [
+          "多根",
+          "单根",
+          "嵌套根",
+          "无根"
+        ],
+        "single": {
+          "rootButton": 0,
+          "rows": 34,
+          "notice": ""
+        },
+        "multiple": {
+          "rootButton": 1,
+          "rows": 34,
+          "notice": ""
+        },
+        "nested": {
+          "rootButton": 1,
+          "rows": 34,
+          "notice": ""
+        },
+        "none": {
+          "rootButton": 0,
+          "notice": "当前任务没有可用工作目录。请在项目中配置目录。"
+        }
+      }
+    },
+    {
+      "id": "X03",
+      "audit": "T10",
+      "title": "打开方式：加载/错误/首选 App 状态",
+      "status": "untested",
+      "detail": {
+        "reason": "菜单只有 Visual Studio Code/打开方式（模拟）；加载与能力缺失状态需要宿主能力，未做"
+      }
+    },
+    {
+      "id": "X04",
+      "audit": "T14",
+      "title": "路径 tooltip：500ms 延迟、滚动/Esc 关闭",
+      "status": "untested",
+      "detail": {
+        "reason": "当前用原生 title，未实现独立 tooltip 状态"
+      }
+    },
+    {
+      "id": "X05",
+      "audit": "T17",
+      "title": "程序定位文件后树内 nearest 滚动",
+      "status": "untested",
+      "detail": {
+        "reason": "需要含滚动的长树 fixture"
+      }
+    },
+    {
+      "id": "X06",
+      "audit": "T16",
+      "title": "generated/changedOnly 开关的禁用与能力条件",
+      "status": "untested",
+      "detail": {
+        "reason": "未发现该开关的稳定入口，需另查"
+      }
+    },
+    {
+      "id": "X07",
+      "audit": "T05",
+      "title": "真实中文输入法（拼音候选确认）",
+      "status": "untested",
+      "detail": {
+        "reason": "无头浏览器无法驱动系统输入法；S02 只用合成 composition 事件，不能代表真实 IME"
+      }
+    },
+    {
+      "id": "X08",
+      "audit": "—",
+      "title": "触屏/双指/拖动标签",
+      "status": "untested",
+      "detail": {
+        "reason": "无真实触屏设备；不以模拟事件推定通过"
+      }
+    },
+    {
+      "id": "E01",
+      "audit": "—",
+      "title": "全程没有 pageerror / console error",
+      "status": "passed",
+      "detail": {
+        "errors": []
+      }
+    }
+  ]
+}

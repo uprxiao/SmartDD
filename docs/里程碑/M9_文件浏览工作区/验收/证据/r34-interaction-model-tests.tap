@@ -1,0 +1,514 @@
+TAP version 13
+# Subtest: file drag resolves a complete path preserving Chinese, spaces, quotes and image extension
+ok 1 - file drag resolves a complete path preserving Chinese, spaces, quotes and image extension
+  ---
+  duration_ms: 1.2395
+  type: 'test'
+  ...
+# Subtest: file drag rejects control/bidi/lone surrogate paths rather than sanitising another file
+ok 2 - file drag rejects control/bidi/lone surrogate paths rather than sanitising another file
+  ---
+  duration_ms: 0.830208
+  type: 'test'
+  ...
+# Subtest: file drag rejects missing or ambiguous roots, traversal and foreign absolute paths
+ok 3 - file drag rejects missing or ambiguous roots, traversal and foreign absolute paths
+  ---
+  duration_ms: 0.181375
+  type: 'test'
+  ...
+# Subtest: drag payload is an ephemeral catalog token and cannot be replayed or moved to another task
+ok 4 - drag payload is an ephemeral catalog token and cannot be replayed or moved to another task
+  ---
+  duration_ms: 0.138292
+  type: 'test'
+  ...
+# Subtest: path insertion preserves input, separates successive paths, leaves space for typing and never Enter
+ok 5 - path insertion preserves input, separates successive paths, leaves space for typing and never Enter
+  ---
+  duration_ms: 0.303042
+  type: 'test'
+  ...
+# Subtest: path insertion refuses stopped or unrelated terminals without starting a task
+ok 6 - path insertion refuses stopped or unrelated terminals without starting a task
+  ---
+  duration_ms: 0.221333
+  type: 'test'
+  ...
+# Subtest: a successful drop consumes its token and a newer drag invalidates the previous token
+ok 7 - a successful drop consumes its token and a newer drag invalidates the previous token
+  ---
+  duration_ms: 0.174916
+  type: 'test'
+  ...
+# Subtest: prefix, complete-name and exact-case weights have independently derived scores
+ok 8 - prefix, complete-name and exact-case weights have independently derived scores
+  ---
+  duration_ms: 1.882166
+  type: 'test'
+  ...
+# Subtest: ordinary query case and surrounding whitespace are normalized, candidate case is not
+ok 9 - ordinary query case and surrounding whitespace are normalized, candidate case is not
+  ---
+  duration_ms: 0.767708
+  type: 'test'
+  ...
+# Subtest: fragment splitting, camel boundary, and later-fragment penalty
+ok 10 - fragment splitting, camel boundary, and later-fragment penalty
+  ---
+  duration_ms: 0.245292
+  type: 'test'
+  ...
+# Subtest: arbitrary subsequence matching does not replace fragment eligibility
+ok 11 - arbitrary subsequence matching does not replace fragment eligibility
+  ---
+  duration_ms: 0.192042
+  type: 'test'
+  ...
+# Subtest: internal space is a wildcard with a word-boundary restriction
+ok 12 - internal space is a wildcard with a word-boundary restriction
+  ---
+  duration_ms: 0.090708
+  type: 'test'
+  ...
+# Subtest: a short entire remaining match can succeed inside a word
+ok 13 - a short entire remaining match can succeed inside a word
+  ---
+  duration_ms: 0.06475
+  type: 'test'
+  ...
+# Subtest: adjacent numeric query characters cannot skip a candidate digit
+ok 14 - adjacent numeric query characters cannot skip a candidate digit
+  ---
+  duration_ms: 0.139333
+  type: 'test'
+  ...
+# Subtest: a dotted query cannot jump across an unrelated intervening dot
+ok 15 - a dotted query cannot jump across an unrelated intervening dot
+  ---
+  duration_ms: 0.069416
+  type: 'test'
+  ...
+# Subtest: path query falls back to a prefix of the basename, not a substring
+ok 16 - path query falls back to a prefix of the basename, not a substring
+  ---
+  duration_ms: 0.398875
+  type: 'test'
+  ...
+# Subtest: primary path pattern can match a supplied separator-containing label
+ok 17 - primary path pattern can match a supplied separator-containing label
+  ---
+  duration_ms: 0.428042
+  type: 'test'
+  ...
+# Subtest: trailing separator does not silently become a basename query
+ok 18 - trailing separator does not silently become a basename query
+  ---
+  duration_ms: 1.702709
+  type: 'test'
+  ...
+# Subtest: ranking uses file_name rather than relative path or native score
+ok 19 - ranking uses file_name rather than relative path or native score
+  ---
+  duration_ms: 0.20075
+  type: 'test'
+  ...
+# Subtest: zero-score candidates stay in the returned candidate set
+ok 20 - zero-score candidates stay in the returned candidate set
+  ---
+  duration_ms: 0.107708
+  type: 'test'
+  ...
+# Subtest: equal scores use raw JS label order, not locale or natural ordering
+ok 21 - equal scores use raw JS label order, not locale or natural ordering
+  ---
+  duration_ms: 0.084333
+  type: 'test'
+  ...
+# Subtest: identical basenames preserve original index, not root or path order
+ok 22 - identical basenames preserve original index, not root or path order
+  ---
+  duration_ms: 0.081792
+  type: 'test'
+  ...
+# Subtest: empty query preserves supplied order and yields no client highlights
+ok 23 - empty query preserves supplied order and yields no client highlights
+  ---
+  duration_ms: 0.060458
+  type: 'test'
+  ...
+# Subtest: indices and length penalty use UTF-16 units, including surrogate pairs
+ok 24 - indices and length penalty use UTF-16 units, including surrogate pairs
+  ---
+  duration_ms: 0.154167
+  type: 'test'
+  ...
+# Subtest: literal Chinese works without claiming pinyin or accent normalization
+ok 25 - literal Chinese works without claiming pinyin or accent normalization
+  ---
+  duration_ms: 0.057542
+  type: 'test'
+  ...
+# Subtest: lowercasing that expands UTF-16 length preserves the original character
+ok 26 - lowercasing that expands UTF-16 length preserves the original character
+  ---
+  duration_ms: 0.054167
+  type: 'test'
+  ...
+# Subtest: compiled pattern threshold includes the automatically inserted star
+ok 27 - compiled pattern threshold includes the automatically inserted star
+  ---
+  duration_ms: 0.178458
+  type: 'test'
+  ...
+# Subtest: long-pattern fallback removes stars but treats internal spaces literally
+ok 28 - long-pattern fallback removes stars but treats internal spaces literally
+  ---
+  duration_ms: 0.102458
+  type: 'test'
+  ...
+# Subtest: wildcard-only patterns produce a positive match with no fragments
+ok 29 - wildcard-only patterns produce a positive match with no fragments
+  ---
+  duration_ms: 0.044834
+  type: 'test'
+  ...
+# Subtest: input objects and native indices are not mutated
+ok 30 - input objects and native indices are not mutated
+  ---
+  duration_ms: 0.091417
+  type: 'test'
+  ...
+# Subtest: missing file_name derives basename from either path separator
+ok 31 - missing file_name derives basename from either path separator
+  ---
+  duration_ms: 0.066958
+  type: 'test'
+  ...
+# Subtest: directory queries expose only immediate children including stable sorted empty folders
+ok 32 - directory queries expose only immediate children including stable sorted empty folders
+  ---
+  duration_ms: 8.841125
+  type: 'test'
+  ...
+# Subtest: unexpanded directories never trigger recursive list calls
+ok 33 - unexpanded directories never trigger recursive list calls
+  ---
+  duration_ms: 17.833792
+  type: 'test'
+  ...
+# Subtest: loaded rows preserve distinct loading, rejected and empty child states
+ok 34 - loaded rows preserve distinct loading, rejected and empty child states
+  ---
+  duration_ms: 0.289458
+  type: 'test'
+  ...
+# Subtest: a directory error can be retried without substituting an empty result
+ok 35 - a directory error can be retried without substituting an empty result
+  ---
+  duration_ms: 1.858542
+  type: 'test'
+  ...
+# Subtest: 6,000 rows keep the rendered window bounded and retain full scroll extent
+ok 36 - 6,000 rows keep the rendered window bounded and retain full scroll extent
+  ---
+  duration_ms: 3.638667
+  type: 'test'
+  ...
+# Subtest: sticky ancestry follows path boundaries rather than similar folder prefixes
+ok 37 - sticky ancestry follows path boundaries rather than similar folder prefixes
+  ---
+  duration_ms: 0.149541
+  type: 'test'
+  ...
+# Subtest: nearest reveal preserves visible position and avoids the sticky overlay
+ok 38 - nearest reveal preserves visible position and avoids the sticky overlay
+  ---
+  duration_ms: 0.182625
+  type: 'test'
+  ...
+# Subtest: superseding query and root identities abort and reject old completion tokens
+ok 39 - superseding query and root identities abort and reject old completion tokens
+  ---
+  duration_ms: 0.301083
+  type: 'test'
+  ...
+# Subtest: abort cancels a pending fixture callback rather than delivering a late result
+ok 40 - abort cancels a pending fixture callback rather than delivering a late result
+  ---
+  duration_ms: 0.3915
+  type: 'test'
+  ...
+# Subtest: async candidates cover unopened descendants and omit excluded path segments
+ok 41 - async candidates cover unopened descendants and omit excluded path segments
+  ---
+  duration_ms: 2.50625
+  type: 'test'
+  ...
+# Subtest: candidate cancellation is observed during a multi-batch large scan
+ok 42 - candidate cancellation is observed during a multi-batch large scan
+  ---
+  duration_ms: 13.871167
+  type: 'test'
+  ...
+# Subtest: fulltext streams bounded batches and preserves UTF-16 editor columns
+ok 43 - fulltext streams bounded batches and preserves UTF-16 editor columns
+  ---
+  duration_ms: 1.935083
+  type: 'test'
+  ...
+# Subtest: exactly 100 matches are not falsely labelled truncated and glob negation excludes
+ok 44 - exactly 100 matches are not falsely labelled truncated and glob negation excludes
+  ---
+  duration_ms: 2.7135
+  type: 'test'
+  ...
+# Subtest: ranked search rows preserve compact ancestor and collapsed hierarchy for large candidates
+ok 45 - ranked search rows preserve compact ancestor and collapsed hierarchy for large candidates
+  ---
+  duration_ms: 2.1225
+  type: 'test'
+  ...
+# Subtest: preview replacement retains fixed tabs and activates the latest file
+ok 46 - preview replacement retains fixed tabs and activates the latest file
+  ---
+  duration_ms: 1.264125
+  type: 'test'
+  ...
+# Subtest: overlapping roots reuse the first open document and its unsaved buffer
+ok 47 - overlapping roots reuse the first open document and its unsaved buffer
+  ---
+  duration_ms: 0.438792
+  type: 'test'
+  ...
+# Subtest: active root view survives persistence without needing to leave the root first
+ok 48 - active root view survives persistence without needing to leave the root first
+  ---
+  duration_ms: 0.223375
+  type: 'test'
+  ...
+# Subtest: right arrow on leaf or empty expanded directory cannot move to a sibling
+ok 49 - right arrow on leaf or empty expanded directory cannot move to a sibling
+  ---
+  duration_ms: 0.210792
+  type: 'test'
+  ...
+# Subtest: same draft callback after save remains clean; undo to base clears dirty
+ok 50 - same draft callback after save remains clean; undo to base clears dirty
+  ---
+  duration_ms: 0.114709
+  type: 'test'
+  ...
+# Subtest: double click pins; reopening pinned file never downgrades it
+ok 51 - double click pins; reopening pinned file never downgrades it
+  ---
+  duration_ms: 0.077833
+  type: 'test'
+  ...
+# Subtest: same basename and relative path in separate roots are different files
+ok 52 - same basename and relative path in separate roots are different files
+  ---
+  duration_ms: 0.078083
+  type: 'test'
+  ...
+# Subtest: dirty preview survives another preview open
+ok 53 - dirty preview survives another preview open
+  ---
+  duration_ms: 0.14625
+  type: 'test'
+  ...
+# Subtest: closing active tab picks nearest remaining item and restores original position
+ok 54 - closing active tab picks nearest remaining item and restores original position
+  ---
+  duration_ms: 0.409333
+  type: 'test'
+  ...
+# Subtest: close history is bounded to 25 and an empty history is a no-op
+ok 55 - close history is bounded to 25 and an empty history is a no-op
+  ---
+  duration_ms: 0.5435
+  type: 'test'
+  ...
+# Subtest: durable prototype snapshot excludes preview routes, without mutating live state
+ok 56 - durable prototype snapshot excludes preview routes, without mutating live state
+  ---
+  duration_ms: 0.146791
+  type: 'test'
+  ...
+# Subtest: collapsed tree hides descendants, expanded tree and dotfiles are present
+ok 57 - collapsed tree hides descendants, expanded tree and dotfiles are present
+  ---
+  duration_ms: 8.849833
+  type: 'test'
+  ...
+# Subtest: filename search reaches unopened descendants and omits excluded dependency paths
+ok 58 - filename search reaches unopened descendants and omits excluded dependency paths
+  ---
+  duration_ms: 1.455125
+  type: 'test'
+  ...
+# Subtest: no-match and Unicode queries produce deterministic results
+ok 59 - no-match and Unicode queries produce deterministic results
+  ---
+  duration_ms: 0.416125
+  type: 'test'
+  ...
+# Subtest: directory navigation uses path segment boundaries and allows dotted directories
+ok 60 - directory navigation uses path segment boundaries and allows dotted directories
+  ---
+  duration_ms: 0.188583
+  type: 'test'
+  ...
+# Subtest: tree keyboard distinguishes focus, folder expansion, and range selection
+ok 61 - tree keyboard distinguishes focus, folder expansion, and range selection
+  ---
+  duration_ms: 0.1305
+  type: 'test'
+  ...
+# Subtest: filename results retain hierarchy and can collapse a compact directory
+ok 62 - filename results retain hierarchy and can collapse a compact directory
+  ---
+  duration_ms: 0.55925
+  type: 'test'
+  ...
+# Subtest: nested navigation roots share one physical synthetic document and migration is ambiguity-safe
+ok 63 - nested navigation roots share one physical synthetic document and migration is ambiguity-safe
+  ---
+  duration_ms: 0.179667
+  type: 'test'
+  ...
+# Subtest: document identity separates projects and hosts while retaining aliases for the same root
+ok 64 - document identity separates projects and hosts while retaining aliases for the same root
+  ---
+  duration_ms: 0.067208
+  type: 'test'
+  ...
+# Subtest: saving the same relative path in two projects never reads or overwrites the other project
+ok 65 - saving the same relative path in two projects never reads or overwrites the other project
+  ---
+  duration_ms: 0.158458
+  type: 'test'
+  ...
+# Subtest: same underlying document may share saved content but keeps task drafts independent
+ok 66 - same underlying document may share saved content but keeps task drafts independent
+  ---
+  duration_ms: 0.067084
+  type: 'test'
+  ...
+# Subtest: conflict survives visiting another tab and persistence; ordinary save cannot clear it
+ok 67 - conflict survives visiting another tab and persistence; ordinary save cannot clear it
+  ---
+  duration_ms: 0.194458
+  type: 'test'
+  ...
+# Subtest: saving a non-active conflict consults its own status and explicit resolution affects only that file
+ok 68 - saving a non-active conflict consults its own status and explicit resolution affects only that file
+  ---
+  duration_ms: 0.118417
+  type: 'test'
+  ...
+# Subtest: selection handoff captures the exact UTF-16 range without editing the source
+ok 69 - selection handoff captures the exact UTF-16 range without editing the source
+  ---
+  duration_ms: 0.10175
+  type: 'test'
+  ...
+# Subtest: selection handoff rejects stale file, task, revision, or changed source
+ok 70 - selection handoff rejects stale file, task, revision, or changed source
+  ---
+  duration_ms: 0.071625
+  type: 'test'
+  ...
+# Subtest: adopting disk invalidates the viewer instance and old selection without discarding another draft
+ok 71 - adopting disk invalidates the viewer instance and old selection without discarding another draft
+  ---
+  duration_ms: 0.173458
+  type: 'test'
+  ...
+# Subtest: slide edits survive serialization on their own page and preserve other slides/comments
+ok 72 - slide edits survive serialization on their own page and preserve other slides/comments
+  ---
+  duration_ms: 0.229916
+  type: 'test'
+  ...
+# Subtest: workbook edits are isolated per sheet and an explicit disk reload uses the new model
+ok 73 - workbook edits are isolated per sheet and an explicit disk reload uses the new model
+  ---
+  duration_ms: 0.147041
+  type: 'test'
+  ...
+# Subtest: another task saving the same document makes a stale draft conflict instead of overwriting
+ok 74 - another task saving the same document makes a stale draft conflict instead of overwriting
+  ---
+  duration_ms: 0.080833
+  type: 'test'
+  ...
+# Subtest: changing a task root cannot rebind its old draft aliases to another project
+ok 75 - changing a task root cannot rebind its old draft aliases to another project
+  ---
+  duration_ms: 0.087583
+  type: 'test'
+  ...
+# Subtest: Shift+arrow without an anchor starts at the focused row, not the first row
+ok 76 - Shift+arrow without an anchor starts at the focused row, not the first row
+  ---
+  duration_ms: 0.0635
+  type: 'test'
+  ...
+# Subtest: Shift+arrow keeps a valid anchor when extending in both directions
+ok 77 - Shift+arrow keeps a valid anchor when extending in both directions
+  ---
+  duration_ms: 0.049333
+  type: 'test'
+  ...
+# Subtest: tree set info counts siblings per parent over the visible rows
+ok 78 - tree set info counts siblings per parent over the visible rows
+  ---
+  duration_ms: 0.161209
+  type: 'test'
+  ...
+# Subtest: IME composition is detected from the native event, keyCode 229, or the synthetic flag
+ok 79 - IME composition is detected from the native event, keyCode 229, or the synthetic flag
+  ---
+  duration_ms: 0.0815
+  type: 'test'
+  ...
+# Subtest: external update refreshes a clean file and remains latest after reopening, with no request state
+ok 80 - external update refreshes a clean file and remains latest after reopening, with no request state
+  ---
+  duration_ms: 0.2235
+  type: 'test'
+  ...
+# Subtest: external update protects a manual draft; ordinary conflict actions choose disk or local
+ok 81 - external update protects a manual draft; ordinary conflict actions choose disk or local
+  ---
+  duration_ms: 0.088
+  type: 'test'
+  ...
+# Subtest: external update matching the draft becomes clean, matching its base preserves draft without conflict
+ok 82 - external update matching the draft becomes clean, matching its base preserves draft without conflict
+  ---
+  duration_ms: 0.059709
+  type: 'test'
+  ...
+# Subtest: external update cannot overwrite another file draft or cross the root identity
+ok 83 - external update cannot overwrite another file draft or cross the root identity
+  ---
+  duration_ms: 0.061167
+  type: 'test'
+  ...
+# Subtest: synthetic external file appears only after directory refresh and stays scoped to its root
+ok 84 - synthetic external file appears only after directory refresh and stays scoped to its root
+  ---
+  duration_ms: 0.126541
+  type: 'test'
+  ...
+1..84
+# tests 84
+# suites 0
+# pass 84
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 125.261958

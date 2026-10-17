@@ -1,0 +1,124 @@
+{
+  "kind": "synthetic-local-ipc-experiment",
+  "date": "2026-10-17",
+  "python": "3.11.9",
+  "system": "Darwin",
+  "machine": "arm64",
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "LB-01",
+      "name": "private-endpoint",
+      "status": "passed",
+      "detail": "actual AF_UNIX listener under own 0700 short directory; socket 0600"
+    },
+    {
+      "id": "LB-02",
+      "name": "private-bootstrap-subprocess",
+      "status": "passed",
+      "detail": "real stdio child; one-time 0600 bootstrap consumed/unlinked; no token in argv or child env"
+    },
+    {
+      "id": "LB-03",
+      "name": "stdio-to-broker-run-binding",
+      "status": "passed",
+      "detail": "initialize/tools-list/tools-call traversed real subprocess and AF_UNIX; actor derived in owner"
+    },
+    {
+      "id": "LB-04",
+      "name": "wrong-token",
+      "status": "passed",
+      "detail": "wrong bearer cannot access bound context"
+    },
+    {
+      "id": "LB-05",
+      "name": "no-caller-scope-switch",
+      "status": "passed",
+      "detail": "top-level and nested project spoof rejected before dispatch; no project parameter controls identity"
+    },
+    {
+      "id": "LB-06",
+      "name": "unknown-operation",
+      "status": "passed",
+      "detail": "no generic exec/path/url dispatch"
+    },
+    {
+      "id": "LB-07",
+      "name": "newline-framing",
+      "status": "passed",
+      "detail": "escaped LF round-trips through JSON; literal LF malformed frame rejected; later valid request succeeds"
+    },
+    {
+      "id": "LB-08",
+      "name": "request-and-response-budget",
+      "status": "passed",
+      "detail": "1024-byte frame and 2048-byte result caps enforced on actual socket"
+    },
+    {
+      "id": "LB-09",
+      "name": "broker-write-policy",
+      "status": "passed",
+      "detail": "owner policy blocks write; OS read-only marker is not used as a business permission"
+    },
+    {
+      "id": "LB-10",
+      "name": "revision-recheck",
+      "status": "passed",
+      "detail": "existing stdio child denied on next request after current policy revision changes"
+    },
+    {
+      "id": "LB-11",
+      "name": "os-marker-is-not-write-isolation",
+      "status": "passed",
+      "detail": "synthetic policy-granted in-memory write succeeds despite marker; no real external write performed"
+    },
+    {
+      "id": "LB-12",
+      "name": "token-expiry",
+      "status": "passed",
+      "detail": "same running child loses access after owner expiry check"
+    },
+    {
+      "id": "LB-13",
+      "name": "run-revocation",
+      "status": "passed",
+      "detail": "owner revocation applies to existing child at next request"
+    },
+    {
+      "id": "LB-14",
+      "name": "child-eof-protocol-cleanup",
+      "status": "passed",
+      "detail": "all 3 children exit on stdin EOF; captured stdout is JSON-RPC; no token or diagnostics leaked"
+    },
+    {
+      "id": "LB-15",
+      "name": "owner-shutdown-cleanup",
+      "status": "passed",
+      "detail": "normal owner shutdown clears run tokens and listener/thread/socket/private directory"
+    }
+  ],
+  "transport": "stdio JSON-RPC subprocess -> private AF_UNIX -> synthetic owner broker",
+  "localSocketConnections": 15,
+  "tcpSockets": 0,
+  "externalNetworkCalls": 0,
+  "realCredentials": false,
+  "realProviders": false,
+  "productionCodeChanged": false,
+  "actualElectronMain": false,
+  "windowsVerified": false,
+  "normalShutdownCleanupVerified": true,
+  "crashRecoveryVerified": false,
+  "tokenBytes": 32,
+  "tokenLifetimeSeconds": 60,
+  "requestBudgetBytes": 1024,
+  "responseBudgetBytes": 2048,
+  "scriptSha256": "15d9539650809dc8c85e9cc069e30a73f6d8bedec9cca1888d35f2dfd39815d2",
+  "limits": [
+    "Minimal MCP subset, not SDK conformance or real CLI acceptance",
+    "Python owner substitutes Electron main; no production bridge implemented",
+    "No OS-strong isolation between processes of the same UID",
+    "One request/connection; no concurrency/backpressure or crash-restart acceptance",
+    "OS read-only is a synthetic marker, not an OS sandbox test"
+  ]
+}

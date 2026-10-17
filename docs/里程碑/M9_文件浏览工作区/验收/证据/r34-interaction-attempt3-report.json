@@ -1,0 +1,168 @@
+{
+  "requirementRevision": "R3.3-20261017",
+  "iteration": "r34-interaction",
+  "timestamp": "2026-10-17T07:30:06.077Z",
+  "environment": {
+    "url": "http://127.0.0.1:4176/?preview=m9",
+    "browser": "155.0.8059.80",
+    "viewport": {
+      "width": 1512,
+      "height": 949
+    },
+    "DPR": 1,
+    "locale": "zh-CN"
+  },
+  "boundary": "Synthetic local prototype only. No Codex/native file provider/real IME/touch/screenreader/OS apps/packaged app or all-state reference parity. Actual HTML drag only, no native file/speech integration.",
+  "checks": [
+    {
+      "id": "I01",
+      "title": "初次只查询根及已展开目录，未递归加载全部子目录",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I02",
+      "title": "6,000合成文件按目录懒加载，250子文件使用有界虚拟DOM",
+      "status": "passed",
+      "detail": {
+        "total": 312,
+        "dom": 28,
+        "loaded": "4"
+      }
+    },
+    {
+      "id": "I03",
+      "title": "滚动后显示粘性祖先目录，虚拟行总数仍受控",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I04",
+      "title": "End能聚焦未挂载的末行并正确滚入视区",
+      "status": "passed",
+      "detail": {
+        "focused": "package.json",
+        "scrollTop": 8083
+      }
+    },
+    {
+      "id": "I05",
+      "title": "Home恢复首行且只有一个Tab停靠点",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I06",
+      "title": "文件名候选能检索从未展开的第24目录",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I07",
+      "title": "打开检索文件后展开祖先并nearest定位，文件行留在视区",
+      "status": "passed",
+      "detail": {
+        "top": 786.5,
+        "bottom": 814.5,
+        "treeTop": 161.5,
+        "treeBottom": 814.5
+      }
+    },
+    {
+      "id": "I08",
+      "title": "子目录读取失败展示可重试错误，不伪装空目录",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I09",
+      "title": "目录重试完成后真实切换为空状态，失败提示清除",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I10",
+      "title": "慢候选快速换query时旧结果不会覆盖新结果",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I11",
+      "title": "候选在途切根后不把旧query或结果写入新根",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I12",
+      "title": "候选失败保留输入并提供重试",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I13",
+      "title": "候选重试可恢复正常结果",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I14",
+      "title": "路径tooltip不早于500ms显示",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I15",
+      "title": "路径tooltip随后显示完整本机路径且允许文本选择",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I16",
+      "title": "Escape立即关闭tooltip",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I17",
+      "title": "键盘focus-visible触发路径tooltip",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I18",
+      "title": "目录滚动立即关闭tooltip",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I19",
+      "title": "外开列表加载中禁用启动并给出加载状态",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I-RUN",
+      "title": "interaction execution",
+      "status": "failed",
+      "detail": {
+        "error": "TimeoutError: locator.click: Timeout 6000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=treeitem][data-path=\"src/main.ts\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button tabindex=\"0\" aria-level=\"2\" role=\"treeitem\" aria-setsize=\"1\" draggable=\"true\" aria-posinset=\"1\" aria-selected=\"false\" data-path=\"src/main.ts\" class=\"fw-tree-row fw-tree-virtual-row \">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"menu\" aria-label=\"文件操作菜单\" class=\"fw-menu fw-positioned-menu \">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"menu\" aria-label=\"文件操作菜单\" class=\"fw-menu fw-positioned-menu \">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    11 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div role=\"menu\" aria-label=\"文件操作菜单\" class=\"fw-menu fw-positioned-menu \">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+        "stack": "locator.click: Timeout 6000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=treeitem][data-path=\"src/main.ts\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button tabindex=\"0\" aria-level=\"2\" role=\"treeitem\" aria-setsize=\"1\" draggable=\"true\" aria-posinset=\"1\" aria-selected=\"false\" data-path=\"src/main.ts\" class=\"fw-tree-row fw-tree-virtual-row \">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"menu\" aria-label=\"文件操作菜单\" class=\"fw-menu fw-positioned-menu \">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"menu\" aria-label=\"文件操作菜单\" class=\"fw-menu fw-positioned-menu \">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    11 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div role=\"menu\" aria-label=\"文件操作菜单\" class=\"fw-menu fw-positioned-menu \">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at /Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/r34-interaction-check.mjs:66:100"
+      }
+    }
+  ],
+  "shots": [
+    {
+      "file": "r34-interaction-large-tree-light.png",
+      "sha256": "8ec8b726e88329b3a31953a3bde28a0b068aa6c2ba4928996c5c4a423d20d85d"
+    },
+    {
+      "file": "r34-interaction-failure.png",
+      "sha256": "653194668ba127d6114466d9db08e4b22fb5d63697fcaa40b059516399c6f620"
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "passed": 19,
+    "failed": 1
+  }
+}

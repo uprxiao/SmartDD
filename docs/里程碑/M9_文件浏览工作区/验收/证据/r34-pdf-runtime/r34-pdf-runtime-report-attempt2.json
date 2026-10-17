@@ -1,0 +1,409 @@
+{
+  "schemaVersion": 1,
+  "ranAt": "2026-10-17T07:28:00.965Z",
+  "browser": "155.0.8059.80",
+  "target": "http://127.0.0.1:4176/tests/r34-pdf-runtime.html",
+  "scope": "isolated synthetic WillYou prototype; real Chromium workers; no Codex operations; not formal App acceptance",
+  "budget": {
+    "scope": "R3.4 isolated Chromium synthetic PDF/Notebook design feasibility; not installed App acceptance",
+    "viewport": "1280x960 DPR1",
+    "largePages": 2000,
+    "rounds": 3,
+    "openReadyMsMax": 10000,
+    "cancelDisposeMsMax": 1000,
+    "workerFailureRecoveryMsMax": 5000,
+    "mountedMainPagesMax": 8,
+    "canvasElementsMax": 20,
+    "activeWorkersAfterClose": 0,
+    "mainLongTaskMsMax": 250,
+    "postGcHeapGrowthBytesMax": 20971520,
+    "boundary": "Page JS heap and native worker lifetime are measured; full renderer/GPU/process RSS and installed resource loading remain separate. CJK glyph coverage depends on system fallback fonts."
+  },
+  "checks": [
+    {
+      "id": "PDF01",
+      "title": "native dedicated pdf.js worker renders artifact canvas/text/links",
+      "status": "passed",
+      "detail": {
+        "runtime": {
+          "created": 1,
+          "destroyed": 0,
+          "active": 1,
+          "sessions": [
+            {
+              "id": 1,
+              "nativeWorker": true,
+              "disposed": false,
+              "failed": false,
+              "pendingTimers": 0
+            }
+          ]
+        },
+        "workerUrls": [
+          "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs"
+        ]
+      }
+    },
+    {
+      "id": "PDF02",
+      "title": "real worker crash surfaces error and terminates owned worker",
+      "status": "passed",
+      "detail": {
+        "alert": "PDF 页面渲染失败\n\nPDF 工作进程意外退出，请重试。原始文件没有被修改。\n\n重试"
+      }
+    },
+    {
+      "id": "PDF03",
+      "title": "retry creates a fresh native worker and renders",
+      "status": "passed",
+      "detail": {
+        "ms": 441
+      }
+    },
+    {
+      "id": "PDF04",
+      "title": "real worker self-exit rejects pending operation by watchdog",
+      "status": "passed",
+      "detail": {
+        "error": "PdfWorkerTimeout",
+        "runtime": {
+          "created": 3,
+          "destroyed": 3,
+          "active": 0,
+          "sessions": []
+        }
+      }
+    },
+    {
+      "id": "PDF05",
+      "title": "cancel loading terminates native worker within budget",
+      "status": "passed",
+      "detail": {
+        "ms": 104
+      }
+    },
+    {
+      "id": "PDF06",
+      "title": "review route has canvas and pager, no text/link/comment layer",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "PDF07",
+      "title": "review next page changes canvas identity",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "PDF08",
+      "title": "non-embedded CJK CMap extracts expected Chinese and paints glyphs",
+      "status": "passed",
+      "detail": {
+        "text": "文件工作区\n \n中文测试",
+        "darkPixels": 1016,
+        "caveat": "system CJK fallback; pixel glyph correctness inspected separately"
+      }
+    },
+    {
+      "id": "PDF09",
+      "title": "2000-page open/end-page access keeps bounded mounted pages and canvases (3 rounds)",
+      "status": "passed",
+      "detail": {
+        "budget": {
+          "scope": "R3.4 isolated Chromium synthetic PDF/Notebook design feasibility; not installed App acceptance",
+          "viewport": "1280x960 DPR1",
+          "largePages": 2000,
+          "rounds": 3,
+          "openReadyMsMax": 10000,
+          "cancelDisposeMsMax": 1000,
+          "workerFailureRecoveryMsMax": 5000,
+          "mountedMainPagesMax": 8,
+          "canvasElementsMax": 20,
+          "activeWorkersAfterClose": 0,
+          "mainLongTaskMsMax": 250,
+          "postGcHeapGrowthBytesMax": 20971520,
+          "boundary": "Page JS heap and native worker lifetime are measured; full renderer/GPU/process RSS and installed resource loading remain separate. CJK glyph coverage depends on system fallback fonts."
+        },
+        "measurements": [
+          {
+            "round": 1,
+            "openedMs": 984,
+            "initialPages": 2,
+            "lastPageNodes": 2,
+            "canvasElements": 8,
+            "postGcHeap": 11969672
+          },
+          {
+            "round": 2,
+            "openedMs": 1044,
+            "initialPages": 2,
+            "lastPageNodes": 2,
+            "canvasElements": 8,
+            "postGcHeap": 12989296
+          },
+          {
+            "round": 3,
+            "openedMs": 1180,
+            "initialPages": 2,
+            "lastPageNodes": 2,
+            "canvasElements": 8,
+            "postGcHeap": 14058016
+          }
+        ]
+      }
+    },
+    {
+      "id": "PDF10",
+      "title": "large PDF close returns worker count to zero and bounded post-GC page heap",
+      "status": "passed",
+      "detail": {
+        "baselineHeap": 10689276,
+        "finalHeap": 14058016,
+        "workerRecords": [
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222071877,
+            "closed": 1792222072160
+          },
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222072298,
+            "closed": 1792222072609
+          },
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222072824,
+            "closed": 1792222072916
+          },
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222073644,
+            "closed": 1792222073970
+          },
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222074173,
+            "closed": 1792222074373
+          },
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222074611,
+            "closed": 1792222075940
+          },
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222076177,
+            "closed": 1792222077729
+          },
+          {
+            "url": "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            "created": 1792222077980,
+            "closed": 1792222079444
+          }
+        ]
+      }
+    },
+    {
+      "id": "PDF11",
+      "title": "large PDF main-thread long tasks remain within declared smoke budget",
+      "status": "passed",
+      "detail": {
+        "longTasks": [
+          160,
+          91,
+          159,
+          90,
+          168,
+          101,
+          189,
+          108
+        ],
+        "max": 189,
+        "budgetMs": 250
+      }
+    },
+    {
+      "id": "PDF12",
+      "title": "batch tracks each delivery; unknown is retained without auto-resend or CLI completion",
+      "status": "passed",
+      "detail": {
+        "state": {
+          "scope": "fixture.pdf:normal",
+          "requests": [
+            {
+              "id": "fixture.pdf:normal:1",
+              "body": "first context",
+              "page": 1,
+              "anchor": {
+                "kind": "point",
+                "point": {
+                  "x": 306,
+                  "y": 396
+                }
+              },
+              "pageSize": {
+                "width": 612,
+                "height": 792
+              },
+              "delivery": "inserted"
+            },
+            {
+              "id": "fixture.pdf:normal:2",
+              "body": "second context",
+              "page": 1,
+              "anchor": {
+                "kind": "point",
+                "point": {
+                  "x": 306,
+                  "y": 435.59999084472656
+                }
+              },
+              "pageSize": {
+                "width": 612,
+                "height": 792
+              },
+              "delivery": "unknown"
+            }
+          ],
+          "delivered": [],
+          "phase": "unknown",
+          "error": "插入结果未知，请先检查终端；不会自动重发。",
+          "serial": 2,
+          "operation": 1,
+          "pendingIds": []
+        },
+        "inserted": [
+          {
+            "text": "fixture.pdf · 第 1 页\n\n评论：first context",
+            "metadata": {
+              "source": "pdf-comment",
+              "path": "fixture.pdf",
+              "commentId": "fixture.pdf:normal:1",
+              "page": 1,
+              "anchor": {
+                "kind": "point",
+                "point": {
+                  "x": 306,
+                  "y": 396
+                }
+              }
+            }
+          },
+          {
+            "text": "fixture.pdf · 第 1 页\n\n评论：second context",
+            "metadata": {
+              "source": "pdf-comment",
+              "path": "fixture.pdf",
+              "commentId": "fixture.pdf:normal:2",
+              "page": 1,
+              "anchor": {
+                "kind": "point",
+                "point": {
+                  "x": 306,
+                  "y": 435.59999084472656
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "NB01",
+      "title": "Notebook complex outputs render without executing code/scripts",
+      "status": "passed",
+      "detail": {
+        "sentinel": 0,
+        "outputTypes": [
+          "html",
+          "svg",
+          "json",
+          "stream",
+          "error",
+          "vega fallback"
+        ]
+      }
+    },
+    {
+      "id": "NB02",
+      "title": "HTML output is sandboxed, strips active content and cannot make external requests",
+      "status": "failed",
+      "detail": {
+        "forbiddenNodes": 0,
+        "external": [
+          "https://example.invalid/css"
+        ]
+      }
+    },
+    {
+      "id": "PDF13",
+      "title": "all test-owned native workers closed, no unhandled page errors",
+      "status": "passed",
+      "detail": {
+        "workersCreated": 9,
+        "workersClosed": 9,
+        "errors": []
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "round": 1,
+      "openedMs": 984,
+      "initialPages": 2,
+      "lastPageNodes": 2,
+      "canvasElements": 8,
+      "postGcHeap": 11969672
+    },
+    {
+      "round": 2,
+      "openedMs": 1044,
+      "initialPages": 2,
+      "lastPageNodes": 2,
+      "canvasElements": 8,
+      "postGcHeap": 12989296
+    },
+    {
+      "round": 3,
+      "openedMs": 1180,
+      "initialPages": 2,
+      "lastPageNodes": 2,
+      "canvasElements": 8,
+      "postGcHeap": 14058016
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "r34-pdf-artifact.png",
+      "sha256": "20b572f85b252245ca22666b83d296a92da8cda6c958fa8f83fdf030e9cc3193"
+    },
+    {
+      "file": "r34-pdf-review.png",
+      "sha256": "6ea0d945fb081e685468e281c7988fd4ba8ffdc229418cce683fb7ec1ab294bc"
+    },
+    {
+      "file": "r34-pdf-cjk.png",
+      "sha256": "3da15065e5d8c18154302c960a2200fd0ab1cbdc5a3967e3ec9d7a00dd5445cc"
+    },
+    {
+      "file": "r34-pdf-2000-pages.png",
+      "sha256": "d8f6a7cde5d0fbf88ea82f01c496d4b4052fef766a557f88a6b99ed8a363b429"
+    },
+    {
+      "file": "r34-pdf-delivery.png",
+      "sha256": "3a7d3435b1870ef72b29be4c426dc5c19130c7afac521652d2c00c4756e8347d"
+    },
+    {
+      "file": "r34-notebook-complex.png",
+      "sha256": "26203f57b32a19ecde3a0da573bee1af1e83aa0f55e86e81b86ac6dd5cbfab4a"
+    }
+  ],
+  "errors": [],
+  "externalRequests": [
+    "https://example.invalid/css"
+  ],
+  "summary": {
+    "passed": 14,
+    "failed": 1
+  }
+}

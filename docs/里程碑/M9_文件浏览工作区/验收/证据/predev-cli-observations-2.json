@@ -1,0 +1,51 @@
+{
+  "kind": "genuine-Claude-Code-PTY-capture-replay",
+  "version": "2.1.302 (Claude Code)",
+  "sourceSha256": "3c31dfabb00aa6b13d76e33916e93d51e4a8bf972cf785ad024ac687c7a3ae70",
+  "replayScriptSha256": "905a4d3eee6d9c8d73ef16cb59992e6d8d62ec3f8e3d7777ac93615b0af00c33",
+  "checks": [
+    {
+      "id": "CLI-existing",
+      "status": "passed",
+      "evidence": "separate prefix event observed before path event"
+    },
+    {
+      "id": "CLI-text-path",
+      "status": "passed",
+      "evidence": "later full text-file path preserves earlier input including Chinese/spaces"
+    },
+    {
+      "id": "CLI-png-text",
+      "status": "passed",
+      "evidence": "same PNG inserted as raw text remains full path with prior input and no attachment marker"
+    },
+    {
+      "id": "CLI-png-attachment",
+      "status": "passed",
+      "evidence": "explicit bracketed file-path paste for same PNG produces genuine CLI [Image #1]"
+    },
+    {
+      "id": "CLI-followup",
+      "status": "passed",
+      "evidence": "subsequent Chinese text stays alongside attachment"
+    },
+    {
+      "id": "CLI-no-enter",
+      "status": "passed",
+      "evidence": "5 separate editor input events contain zero CR/LF; network denied and no model submission"
+    }
+  ],
+  "screens": {
+    "EDITOR-existing": " ▐▛███▛█   Claude Code v2.1.302\n▝▜██████▀  Opus 5.5 · API Usage Billing\n ▝▝   ▝▝   /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1\n\n▎ Auto mode is now Claude Code's default permission mode.\n▎ Auto mode lets Claude handle permission prompts automatically. Claude checks each tool call for risky actions and prompt injection before\n▎ executing, runs the ones it assesses as lower-risk, and blocks the rest.\n▎ https://code.claude.com/docs/en/permission-modes\n\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n❯ preexisting  \n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n  ⏵⏵ auto mode on (shift+tab to cycle)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+    "EDITOR-text-path": " ▐▛███▛█   Claude Code v2.1.302\n▝▜██████▀  Opus 5.5 · API Usage Billing\n ▝▝   ▝▝   /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1\n\n▎ Auto mode is now Claude Code's default permission mode.\n▎ Auto mode lets Claude handle permission prompts automatically. Claude checks each tool call for risky actions and prompt injection before\n▎ executing, runs the ones it assesses as lower-risk, and blocks the rest.\n▎ https://code.claude.com/docs/en/permission-modes\n\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n❯ preexisting /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1/中文 a quote.txt  \n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n  ⏵⏵ auto mode on (shift+tab to cycle)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+    "EDITOR-png-text": " ▐▛███▛█   Claude Code v2.1.302\n▝▜██████▀  Opus 5.5 · API Usage Billing\n ▝▝   ▝▝   /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1\n\n▎ Auto mode is now Claude Code's default permission mode.\n▎ Auto mode lets Claude handle permission prompts automatically. Claude checks each tool call for risky actions and prompt injection before\n▎ executing, runs the ones it assesses as lower-risk, and blocks the rest.\n▎ https://code.claude.com/docs/en/permission-modes\n\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n❯ preexisting /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1/中文 a quote.txt\n  /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1/fixture.png  \n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n  ⏵⏵ auto mode on (shift+tab to cycle)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+    "EDITOR-png-attachment": " ▐▛███▛█   Claude Code v2.1.302\n▝▜██████▀  Opus 5.5 · API Usage Billing\n ▝▝   ▝▝   /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1\n\n▎ Auto mode is now Claude Code's default permission mode.\n▎ Auto mode lets Claude handle permission prompts automatically. Claude checks each tool call for risky actions and prompt injection before\n▎ executing, runs the ones it assesses as lower-risk, and blocks the rest.\n▎ https://code.claude.com/docs/en/permission-modes\n\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n❯ preexisting /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1/中文 a quote.txt  [Image #1] \n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n  ⏵⏵ auto mode on (shift+tab to cycle)                                                                        Ctrl+Y to paste deleted text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+    "EDITOR-followup": " ▐▛███▛█   Claude Code v2.1.302\n▝▜██████▀  Opus 5.5 · API Usage Billing\n ▝▝   ▝▝   /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1\n\n▎ Auto mode is now Claude Code's default permission mode.\n▎ Auto mode lets Claude handle permission prompts automatically. Claude checks each tool call for risky actions and prompt injection before\n▎ executing, runs the ones it assesses as lower-risk, and blocks the rest.\n▎ https://code.claude.com/docs/en/permission-modes\n\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n❯ preexisting /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-cli-predev-92k9l9o1/中文 a quote.txt  [Image #1]\n  帮我看一下这张图 \n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n  ⏵⏵ auto mode on (shift+tab to cycle)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  },
+  "limits": [
+    "not a packaged WillYou drag/drop flow",
+    "not model receipt or image understanding",
+    "Claude Code 2.1.302 macOS only; no Codex observation",
+    "clipboard untouched; real CLI bracketed file-path conversion, not clipboard image paste"
+  ]
+}

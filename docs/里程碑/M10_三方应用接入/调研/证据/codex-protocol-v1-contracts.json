@@ -1,0 +1,246 @@
+{
+  "schema": "m10-local-codex-protocol-v1",
+  "time": "2026-10-17T05:57:43.289160+00:00",
+  "cli_version": "0.162.1",
+  "scope": "local CLI-generated experimental JSON Schema; no app-server session or model started",
+  "desktop_version_distinct": "26.1007.30912; these schemas are not claimed to match the desktop embedded CLI",
+  "client_schema_sha256": "f1425525dae2903cb5b658ee412530ff7a8fcaf78887f182c169b299e7f6b09b",
+  "schema_files": 447,
+  "entries": [
+    {
+      "method": "app/list",
+      "found": true,
+      "params_ref": "#/definitions/AppsListParams",
+      "required": [],
+      "fields": [
+        "cursor",
+        "forceRefetch",
+        "limit",
+        "threadId"
+      ]
+    },
+    {
+      "method": "app/installed",
+      "found": true,
+      "params_ref": "#/definitions/AppsInstalledParams",
+      "required": [],
+      "fields": [
+        "forceRefresh",
+        "threadId"
+      ]
+    },
+    {
+      "method": "app/read",
+      "found": true,
+      "params_ref": "#/definitions/AppsReadParams",
+      "required": [
+        "appIds"
+      ],
+      "fields": [
+        "appIds",
+        "includeTools",
+        "threadId"
+      ]
+    },
+    {
+      "method": "plugin/list",
+      "found": true,
+      "params_ref": "#/definitions/PluginListParams",
+      "required": [],
+      "fields": [
+        "cwds",
+        "forceRefetch",
+        "marketplaceKinds"
+      ]
+    },
+    {
+      "method": "plugin/read",
+      "found": true,
+      "params_ref": "#/definitions/PluginReadParams",
+      "required": [
+        "pluginName"
+      ],
+      "fields": [
+        "marketplacePath",
+        "pluginName",
+        "remoteMarketplaceName"
+      ]
+    },
+    {
+      "method": "plugin/install",
+      "found": true,
+      "params_ref": "#/definitions/PluginInstallParams",
+      "required": [
+        "pluginName"
+      ],
+      "fields": [
+        "installAttemptId",
+        "marketplacePath",
+        "pluginName",
+        "remoteMarketplaceName"
+      ]
+    },
+    {
+      "method": "plugin/uninstall",
+      "found": true,
+      "params_ref": "#/definitions/PluginUninstallParams",
+      "required": [
+        "pluginId"
+      ],
+      "fields": [
+        "pluginId"
+      ]
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "found": true,
+      "params_ref": "#/definitions/ListMcpServerStatusParams",
+      "required": [],
+      "fields": [
+        "cursor",
+        "detail",
+        "limit",
+        "serverName",
+        "threadId"
+      ]
+    },
+    {
+      "method": "mcpServer/tool/call",
+      "found": true,
+      "params_ref": "#/definitions/McpServerToolCallParams",
+      "required": [
+        "server",
+        "threadId",
+        "tool"
+      ],
+      "fields": [
+        "_meta",
+        "arguments",
+        "server",
+        "threadId",
+        "tool"
+      ]
+    },
+    {
+      "method": "mcpServer/oauth/login",
+      "found": true,
+      "params_ref": "#/definitions/McpServerOauthLoginParams",
+      "required": [
+        "name"
+      ],
+      "fields": [
+        "clientRegistration",
+        "name",
+        "scopes",
+        "threadId",
+        "timeoutSecs"
+      ]
+    },
+    {
+      "method": "config/mcpServer/reload",
+      "found": true,
+      "params_ref": null,
+      "required": [],
+      "fields": []
+    },
+    {
+      "method": "thread/start",
+      "found": true,
+      "params_ref": "#/definitions/ThreadStartParams",
+      "required": [],
+      "fields": [
+        "allowProviderModelFallback",
+        "approvalPolicy",
+        "approvalsReviewer",
+        "baseInstructions",
+        "config",
+        "cwd",
+        "daybreakEnabled",
+        "developerInstructions",
+        "dynamicTools",
+        "environments",
+        "ephemeral",
+        "experimentalRawEvents",
+        "historyMode",
+        "mockExperimentalField",
+        "model",
+        "modelProvider",
+        "multiAgentMode",
+        "permissions",
+        "personality",
+        "projectId",
+        "runtimeWorkspaceRoots",
+        "sandbox",
+        "selectedCapabilityRoots",
+        "serviceName",
+        "serviceTier",
+        "sessionStartSource",
+        "threadSource"
+      ]
+    },
+    {
+      "method": "turn/start",
+      "found": true,
+      "params_ref": "#/definitions/TurnStartParams",
+      "required": [
+        "input",
+        "threadId"
+      ],
+      "fields": [
+        "additionalContext",
+        "approvalPolicy",
+        "approvalsReviewer",
+        "clientUserMessageId",
+        "collaborationMode",
+        "cwd",
+        "cyberAccessProgram",
+        "disabledPluginIds",
+        "effort",
+        "environments",
+        "input",
+        "model",
+        "multiAgentMode",
+        "outputSchema",
+        "parentTurnId",
+        "permissions",
+        "personality",
+        "responsesapiClientMetadata",
+        "rootTurnId",
+        "runtimeWorkspaceRoots",
+        "sandboxPolicy",
+        "serviceTier",
+        "serviceTierForTurn",
+        "summary",
+        "threadId",
+        "toolOutput",
+        "turnTrigger"
+      ]
+    }
+  ],
+  "local_source_hashes": [
+    {
+      "path": "src/main/core/capabilities/capability-service.ts",
+      "sha256": "40eda28cfb0d1870bfbc34742c0ab49b08950f693b6d26e17007a8b29c8bbb95"
+    },
+    {
+      "path": "src/shared/capabilities.ts",
+      "sha256": "b674e747f6ad31f04ab920ad7f4527fe9c405295da6b76cbf276be68e5dd1ac9"
+    },
+    {
+      "path": "resources/runtime/context_mcp.py",
+      "sha256": "df2179a45beb9a06bd9e86bf4764be4133a3db3889e4f9756aa585446c6f6e86"
+    },
+    {
+      "path": "src/main/secrets.ts",
+      "sha256": "e2c8e99dcd0f11dfbfca2218977cc9bf2c99115ed6c08455ebb79510d23f54be"
+    },
+    {
+      "path": "src/main/core/projects/transfer-format.ts",
+      "sha256": "3340424f58da0d760891dec11f79aac87ed3cc621db99c0a638716d6af0f8c03"
+    },
+    {
+      "path": "src/shared/project-transfer.ts",
+      "sha256": "b573767f7b69e13b8b78e6c3c0d8afe6ee79493737a342decbfba22456e1907b"
+    }
+  ]
+}

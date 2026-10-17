@@ -1,0 +1,18 @@
+node:fs:2791
+      const stats = binding.lstat(base, true, undefined, true /* throwIfNoEntry */);
+                            ^
+
+Error: EPERM: operation not permitted, lstat '/private'
+    at Object.realpathSync (node:fs:2791:29)
+    at toRealPath (node:internal/modules/helpers:61:13)
+    at Function._findPath (node:internal/modules/cjs/loader:760:22)
+    at resolveMainPath (node:internal/modules/run_main:39:23)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:163:20)
+    at node:internal/main/run_main_module:36:49 {
+  errno: -1,
+  code: 'EPERM',
+  syscall: 'lstat',
+  path: '/private'
+}
+
+Node.js v22.23.1

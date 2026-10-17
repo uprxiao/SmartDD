@@ -1,0 +1,99 @@
+{
+  "kind": "synthetic-design-experiment",
+  "executedAt": "2026-10-17",
+  "python": "3.11.9",
+  "networkCalls": 0,
+  "realCredentials": false,
+  "productionImplementation": false,
+  "realServiceAcceptance": false,
+  "schemaCoverage": "object/string/required/additionalProperties/enum subset only",
+  "passed": 14,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "PC-01",
+      "name": "three-provider-registration",
+      "status": "passed",
+      "detail": "3 synthetic definitions share one contract; no runtime provider loaded"
+    },
+    {
+      "id": "PC-02",
+      "name": "registry-duplicate-and-future-version",
+      "status": "passed",
+      "detail": "unknown contract version and duplicate identity rejected"
+    },
+    {
+      "id": "PC-03",
+      "name": "common-read-dispatch",
+      "status": "passed",
+      "detail": "all three synthetic reads pass the same broker; no external calls"
+    },
+    {
+      "id": "PC-04",
+      "name": "schema-gate",
+      "status": "passed",
+      "detail": "unknown fields, wrong types and undeclared enum are rejected before dispatch"
+    },
+    {
+      "id": "PC-05",
+      "name": "effect-is-registry-owned",
+      "status": "passed",
+      "detail": "caller readOnly hint cannot convert external write into a read"
+    },
+    {
+      "id": "PC-06",
+      "name": "current-policy-recheck",
+      "status": "passed",
+      "detail": "captured task revision cannot override current revocation"
+    },
+    {
+      "id": "PC-07",
+      "name": "mail-read-send-split",
+      "status": "passed",
+      "detail": "local source registration alone cannot grant a configured send backend"
+    },
+    {
+      "id": "PC-08",
+      "name": "folder-encoding-and-scope",
+      "status": "passed",
+      "detail": "segment encoding and boundary scope; complex branch slash names intentionally rejected"
+    },
+    {
+      "id": "PC-09",
+      "name": "queue-location-constraint",
+      "status": "passed",
+      "detail": "same origin, context path and exact queue-item grammar; no general URL proxy"
+    },
+    {
+      "id": "PC-10",
+      "name": "provider-progress-extension",
+      "status": "passed",
+      "detail": "queue acceptance, build mapping and terminal tracking remain distinct; exact business result preserved"
+    },
+    {
+      "id": "PC-11",
+      "name": "write-timeout-policy",
+      "status": "passed",
+      "detail": "all synthetic external writes reconcile; no automatic repeat after uncertain response"
+    },
+    {
+      "id": "PC-12",
+      "name": "unknown-and-cancel-race",
+      "status": "passed",
+      "detail": "poll timeout is unknown; cancel request acknowledgement is not final cancellation"
+    },
+    {
+      "id": "PC-13",
+      "name": "provider-config-migration",
+      "status": "passed",
+      "detail": "copy-on-transform retains opaque secret ref; unsupported future version blocked"
+    },
+    {
+      "id": "PC-14",
+      "name": "resource-budget-binding-revocation",
+      "status": "passed",
+      "detail": "opaque resource metadata is bound and byte-limited; no content fetched"
+    }
+  ],
+  "scriptSha256": "e4812fb218d02ba0329ff343c70a46915ea957a9d4a5a1ad2673b22ede2d8fb4"
+}

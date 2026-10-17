@@ -1,0 +1,616 @@
+{
+  "ranAt": "2026-10-17T08:20:52.005Z",
+  "scope": "isolated real CodeMirror/current parser/native Worker feasibility; no production App acceptance",
+  "budget": {
+    "frozenBeforeRun": true,
+    "scope": "isolated editor feasibility, not product SLA",
+    "workerReadyMs": 5000,
+    "parseDeadlineMs": 15000,
+    "editBurstCount": 100,
+    "renderWindowMax": 60,
+    "largeInputBytes": 10485760,
+    "longSingleLineBytes": 2097152,
+    "complexCaseDeadlineMs": 15000,
+    "editorInitialMountMs": 3000,
+    "editorLongTaskMs": 1000,
+    "cmDomLinesMax": 1000,
+    "cancelCloseMs": 1000
+  },
+  "checks": [
+    {
+      "id": "PE01",
+      "title": "real editor and current Markdown native Worker render semantic blocks",
+      "status": "passed",
+      "detail": {
+        "epoch": 1,
+        "revision": 1,
+        "length": 256,
+        "rawLength": 291,
+        "pending": false,
+        "queued": false,
+        "activeWorkers": 1,
+        "indexBytes": 352,
+        "items": 22,
+        "renderedRevision": 1,
+        "viewLines": 32,
+        "domWidgets": 1,
+        "composing": false,
+        "selection": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    },
+    {
+      "id": "PE02",
+      "title": "mixed CRLF/CR/LF and emoji map by UTF-16 and preserve untouched bytes",
+      "status": "passed",
+      "detail": {
+        "roundtrip": true,
+        "normalized": "first😀\n中文\nlast\nEND",
+        "unchanged": true,
+        "utf16Emoji": 7,
+        "rawLength": 20,
+        "docLength": 19
+      }
+    },
+    {
+      "id": "PE03",
+      "title": "real history restores exact mixed EOL source across replacement undo/redo",
+      "status": "passed",
+      "detail": {
+        "original": "first😀\r\n中文\nlast\rEND",
+        "changed": "first😀中文新\r\n行\nlast\rEND",
+        "undo": "first😀\r\n中文\nlast\rEND",
+        "redo": "first😀中文新\r\n行\nlast\rEND",
+        "undoExact": true,
+        "redoExact": true
+      }
+    },
+    {
+      "id": "PE04",
+      "title": "cross-block selection through table/list/quote uses actual editor transaction and undo",
+      "status": "passed",
+      "detail": {
+        "from": 30,
+        "to": 152,
+        "selected": "重复 **bold** 与 `code`，公式 $a^2$；[中文](需求.md)。\n\n- [ ] task\n- child\n\n| 中文 | value |\n| --- | --- |\n| 文本 | 42 |\n\n> 引用\n> 二行\n\n```js",
+        "changed": "---\r\ntitle: 合成语义\r\n---\r\n\r\n# 标题 😀\r\n\r\n跨段替换😀\r\nconst n = 42\r\n```\r\n\r\n```mermaid\r\ngraph TD\r\n A-->B\r\n```\r\n\r\n[ref]: ./本地.md\r\n\r\n末尾 [引用][ref]。\r\n\r\n$$\r\na^2+b^2=c^2\r\n$$\r\n\r\nEND",
+        "restored": true,
+        "selectionBlocks": true
+      }
+    },
+    {
+      "id": "PE05",
+      "title": "direct StateField block math widget renders and reveals exact source without DOM roundtrip",
+      "status": "passed",
+      "detail": {
+        "widgets": {
+          "widgets": 1,
+          "hasKatex": true
+        },
+        "reveal": {
+          "selected": "$$\na^2+b^2=c^2\n$$\n",
+          "widgets": 0
+        }
+      }
+    },
+    {
+      "id": "PE06",
+      "title": "rendered preview source navigation targets exact heading range",
+      "status": "passed",
+      "detail": {
+        "previewSelection": "# 标题 😀\n"
+      }
+    },
+    {
+      "id": "PE07",
+      "title": "100 edits coalesce latest snapshot and delayed stale parse cannot overwrite content",
+      "status": "passed",
+      "detail": {
+        "ignored": 1,
+        "snapshot": {
+          "epoch": 4,
+          "revision": 102,
+          "length": 116,
+          "rawLength": 116,
+          "pending": false,
+          "queued": false,
+          "activeWorkers": 1,
+          "indexBytes": 48,
+          "items": 3,
+          "renderedRevision": 102,
+          "viewLines": 3,
+          "domWidgets": 0,
+          "composing": false,
+          "selection": {
+            "from": 0,
+            "to": 0
+          }
+        },
+        "text": "# Old\n\nhello old0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+        "last": "<h1><span data-md-source-from=\"2\" data-md-source-to=\"5\" data-md-source-mode=\"linear\">Old</span></h1>\n<p><span data-md-source-from=\"7\" data-md-source-to=\"116\" data-md-source-mode=\"linear\">hello old0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789</span></p>\n",
+        "maxQueued": 1
+      }
+    },
+    {
+      "id": "PE08",
+      "title": "Chromium composition replacement commits once without duplicate romanization (CDP, not OS IME)",
+      "status": "passed",
+      "detail": {
+        "text": "开始 中文😀",
+        "events": [
+          {
+            "type": "compositionstart",
+            "trusted": true
+          },
+          {
+            "type": "compositionupdate",
+            "data": "zhong",
+            "trusted": true
+          },
+          {
+            "type": "compositionupdate",
+            "data": "中文😀",
+            "trusted": true
+          },
+          {
+            "type": "compositionupdate",
+            "data": "中文😀",
+            "trusted": true
+          },
+          {
+            "type": "compositionend",
+            "data": "中文😀",
+            "trusted": false
+          }
+        ],
+        "transactions": [
+          {
+            "revision": 100,
+            "userEvent": [
+              "input"
+            ],
+            "composing": false
+          },
+          {
+            "revision": 101,
+            "userEvent": [
+              "input"
+            ],
+            "composing": false
+          },
+          {
+            "revision": 102,
+            "userEvent": [
+              "input"
+            ],
+            "composing": false
+          },
+          {
+            "revision": 2,
+            "userEvent": [
+              "input.type.compose.start"
+            ],
+            "composing": true
+          },
+          {
+            "revision": 3,
+            "userEvent": [
+              "input.type.compose"
+            ],
+            "composing": true
+          }
+        ],
+        "composing": false
+      }
+    },
+    {
+      "id": "PE09",
+      "title": "composition undo/redo restores complete composed text",
+      "status": "passed",
+      "detail": {
+        "imeUndo": "开始 ",
+        "imeRedo": "开始 中文😀"
+      }
+    },
+    {
+      "id": "PE10",
+      "title": "four adversarial representative shapes stay bounded and produce current output",
+      "status": "passed",
+      "detail": [
+        {
+          "name": "single-line-2MiB",
+          "bytes": 2097152,
+          "ms": 349.9000000357628,
+          "snapshot": {
+            "epoch": 6,
+            "revision": 1,
+            "length": 2097148,
+            "rawLength": 2097148,
+            "pending": false,
+            "queued": false,
+            "activeWorkers": 1,
+            "indexBytes": 16,
+            "items": 1,
+            "renderedRevision": 1,
+            "viewLines": 1,
+            "domWidgets": 0,
+            "composing": false,
+            "selection": {
+              "from": 0,
+              "to": 0
+            }
+          },
+          "latest": {
+            "status": "parsed",
+            "revision": 1,
+            "parseMs": 40.5,
+            "blocks": 1
+          },
+          "errors": []
+        },
+        {
+          "name": "deep-quotes-100",
+          "bytes": 211,
+          "ms": 214.5,
+          "snapshot": {
+            "epoch": 7,
+            "revision": 1,
+            "length": 211,
+            "rawLength": 211,
+            "pending": false,
+            "queued": false,
+            "activeWorkers": 1,
+            "indexBytes": 48,
+            "items": 3,
+            "renderedRevision": 1,
+            "viewLines": 3,
+            "domWidgets": 0,
+            "composing": false,
+            "selection": {
+              "from": 0,
+              "to": 0
+            }
+          },
+          "latest": {
+            "status": "parsed",
+            "revision": 1,
+            "parseMs": 1.699999988079071,
+            "blocks": 3
+          },
+          "errors": []
+        },
+        {
+          "name": "table-1000x20",
+          "bytes": 262204,
+          "ms": 228.39999997615814,
+          "snapshot": {
+            "epoch": 8,
+            "revision": 1,
+            "length": 142204,
+            "rawLength": 142204,
+            "pending": false,
+            "queued": false,
+            "activeWorkers": 1,
+            "indexBytes": 16,
+            "items": 1,
+            "renderedRevision": 1,
+            "viewLines": 22,
+            "domWidgets": 0,
+            "composing": false,
+            "selection": {
+              "from": 0,
+              "to": 0
+            }
+          },
+          "latest": {
+            "status": "parsed",
+            "revision": 1,
+            "parseMs": 30.19999998807907,
+            "blocks": 1
+          },
+          "errors": []
+        },
+        {
+          "name": "unbalanced-math-2000",
+          "bytes": 60890,
+          "ms": 114,
+          "snapshot": {
+            "epoch": 9,
+            "revision": 1,
+            "length": 60890,
+            "rawLength": 60890,
+            "pending": false,
+            "queued": false,
+            "activeWorkers": 1,
+            "indexBytes": 16,
+            "items": 1,
+            "renderedRevision": 1,
+            "viewLines": 54,
+            "domWidgets": 0,
+            "composing": false,
+            "selection": {
+              "from": 0,
+              "to": 0
+            }
+          },
+          "latest": {
+            "status": "parsed",
+            "revision": 1,
+            "parseMs": 12.399999976158142,
+            "blocks": 1
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "PE11",
+      "title": "10MiB real CodeMirror stays editable with bounded DOM and current parsed revision",
+      "status": "passed",
+      "detail": {
+        "bytes": 10485760,
+        "mountMs": 23.5,
+        "elapsedMs": 1112.7999999523163,
+        "sourceEnds": true,
+        "snapshot": {
+          "epoch": 10,
+          "revision": 2,
+          "length": 10418888,
+          "rawLength": 10418917,
+          "pending": false,
+          "queued": false,
+          "activeWorkers": 1,
+          "indexBytes": 356512,
+          "items": 60,
+          "renderedRevision": 2,
+          "viewLines": 9,
+          "domWidgets": 0,
+          "composing": false,
+          "selection": {
+            "from": 10418877,
+            "to": 10418877
+          }
+        },
+        "longTasks": []
+      }
+    },
+    {
+      "id": "PE12",
+      "title": "all owned workers close and no external request or page exception",
+      "status": "passed",
+      "detail": {
+        "workers": 10,
+        "external": [],
+        "errors": []
+      }
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "workers": [
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    }
+  ],
+  "browser": "155.0.8059.80",
+  "complex": [
+    {
+      "name": "single-line-2MiB",
+      "bytes": 2097152,
+      "ms": 349.9000000357628,
+      "snapshot": {
+        "epoch": 6,
+        "revision": 1,
+        "length": 2097148,
+        "rawLength": 2097148,
+        "pending": false,
+        "queued": false,
+        "activeWorkers": 1,
+        "indexBytes": 16,
+        "items": 1,
+        "renderedRevision": 1,
+        "viewLines": 1,
+        "domWidgets": 0,
+        "composing": false,
+        "selection": {
+          "from": 0,
+          "to": 0
+        }
+      },
+      "latest": {
+        "status": "parsed",
+        "revision": 1,
+        "parseMs": 40.5,
+        "blocks": 1
+      },
+      "errors": []
+    },
+    {
+      "name": "deep-quotes-100",
+      "bytes": 211,
+      "ms": 214.5,
+      "snapshot": {
+        "epoch": 7,
+        "revision": 1,
+        "length": 211,
+        "rawLength": 211,
+        "pending": false,
+        "queued": false,
+        "activeWorkers": 1,
+        "indexBytes": 48,
+        "items": 3,
+        "renderedRevision": 1,
+        "viewLines": 3,
+        "domWidgets": 0,
+        "composing": false,
+        "selection": {
+          "from": 0,
+          "to": 0
+        }
+      },
+      "latest": {
+        "status": "parsed",
+        "revision": 1,
+        "parseMs": 1.699999988079071,
+        "blocks": 3
+      },
+      "errors": []
+    },
+    {
+      "name": "table-1000x20",
+      "bytes": 262204,
+      "ms": 228.39999997615814,
+      "snapshot": {
+        "epoch": 8,
+        "revision": 1,
+        "length": 142204,
+        "rawLength": 142204,
+        "pending": false,
+        "queued": false,
+        "activeWorkers": 1,
+        "indexBytes": 16,
+        "items": 1,
+        "renderedRevision": 1,
+        "viewLines": 22,
+        "domWidgets": 0,
+        "composing": false,
+        "selection": {
+          "from": 0,
+          "to": 0
+        }
+      },
+      "latest": {
+        "status": "parsed",
+        "revision": 1,
+        "parseMs": 30.19999998807907,
+        "blocks": 1
+      },
+      "errors": []
+    },
+    {
+      "name": "unbalanced-math-2000",
+      "bytes": 60890,
+      "ms": 114,
+      "snapshot": {
+        "epoch": 9,
+        "revision": 1,
+        "length": 60890,
+        "rawLength": 60890,
+        "pending": false,
+        "queued": false,
+        "activeWorkers": 1,
+        "indexBytes": 16,
+        "items": 1,
+        "renderedRevision": 1,
+        "viewLines": 54,
+        "domWidgets": 0,
+        "composing": false,
+        "selection": {
+          "from": 0,
+          "to": 0
+        }
+      },
+      "latest": {
+        "status": "parsed",
+        "revision": 1,
+        "parseMs": 12.399999976158142,
+        "blocks": 1
+      },
+      "errors": []
+    }
+  ],
+  "sources": [
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/budget.json",
+      "bytes": 348,
+      "sha256": "291c3a151eed66ed66794efbb7e970747e359f77cb14604006e4cf6d2a98627a"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/check.mjs",
+      "bytes": 10511,
+      "sha256": "9f38f75e48d78470a3e84b5e58497643c84e289da617cc5f27e3ad2252c294ab"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/deps-entry.mjs",
+      "bytes": 107,
+      "sha256": "d7a59bf6f732840e0ec2d37c95b22c153787f26eafadb0b39a67fc8d43fabe0f"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/host.mjs",
+      "bytes": 8176,
+      "sha256": "4a09a4f12f9fa655c5620b7bd8093823bb24061dc8af35424605f314f60b12a8"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/index.html",
+      "bytes": 750,
+      "sha256": "aa017f01999cd8b54abf4d0ef5f4ebff01efef448c92241a40ffcd0f7a909bec"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/offsets.mjs",
+      "bytes": 1105,
+      "sha256": "81c91ef4a4db66e3e125aefc6d43e56787f422cd4ce0414d204bbff5f7c62f45"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/pdf-generate.py",
+      "bytes": 2808,
+      "sha256": "31191437b8a631bdb79c3436a8b1ff359feed64674ab0406c31a5a12cd5229e6"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/pdf-host.mjs",
+      "bytes": 2424,
+      "sha256": "a45787af70875330d7dcd133e8850c97ece008a4a4c80bd51916ee2564bd20bc"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/pdf.html",
+      "bytes": 237,
+      "sha256": "930d5ac24d6d479480062815949ddabd89c29c93804d1e7eed027d9fda09fc2d"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/vite.config.mjs",
+      "bytes": 395,
+      "sha256": "a5a44ec0db399556fbd956a52d55dfb816253c133c234ac6a73403ff0d67aa4b"
+    }
+  ],
+  "summary": {
+    "passed": 12
+  }
+}

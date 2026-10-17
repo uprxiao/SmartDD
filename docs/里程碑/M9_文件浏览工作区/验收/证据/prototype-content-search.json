@@ -1,0 +1,504 @@
+{
+  "evidence_id": "ev_acfac841d3584a0044126bac0b67a6fb2fa4c20e1b440d57b3b7761a3ef2f3db",
+  "reference": "local synthetic prototype, not Codex reference runtime",
+  "request": {
+    "scenario_sha256": "77578f51cfecca3fbf36749607a862e13a074817d420fd46cadec4e307166da8",
+    "browser_mode": "launch",
+    "browser_headless": true,
+    "start_url": {
+      "url": "http://127.0.0.1:4176/?preview=m9",
+      "origin": "http://127.0.0.1:4176",
+      "query_parameter_names": [
+        "preview"
+      ],
+      "redacted": false
+    },
+    "environment": {
+      "viewport": {
+        "width": 1512,
+        "height": 949,
+        "device_scale_factor": 1
+      },
+      "locale": "zh-CN",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "open-search",
+        "action": "click"
+      },
+      {
+        "step_id": "query",
+        "action": "fill"
+      },
+      {
+        "step_id": "mask",
+        "action": "fill"
+      },
+      {
+        "step_id": "results",
+        "action": "wait_for_timeout"
+      },
+      {
+        "step_id": "open-match",
+        "action": "click"
+      }
+    ],
+    "action_timeouts_ms": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "secret_declarations": [],
+    "capture": {
+      "after_each_step": [
+        "accessibility"
+      ],
+      "at_end": [
+        "screenshot",
+        "accessibility"
+      ],
+      "events": [
+        "console",
+        "page-errors"
+      ],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      }
+    }
+  },
+  "browser": {
+    "mode": "launch",
+    "process_ownership": "provider-owned",
+    "cleanup": "terminated-owned-process",
+    "product": "Chromium",
+    "version": "155.0.8059.80"
+  },
+  "scenario": {
+    "start_origin": "http://127.0.0.1:4176",
+    "action_count": 5,
+    "secret_references": [],
+    "network_content": {
+      "request_body": false,
+      "response_body": false,
+      "header_values": false
+    }
+  },
+  "duration_ms": 1032,
+  "steps": [
+    {
+      "step_index": 0,
+      "step_id": "scenario_start",
+      "action": "goto_start",
+      "elapsed_ms": 326,
+      "before_url": {
+        "url": "about:blank",
+        "origin": null,
+        "query_parameter_names": [],
+        "redacted": false
+      },
+      "after_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "event_sequence_start": 1,
+      "event_sequence_end": 3,
+      "artifacts": {
+        "screenshot": {
+          "state": "not_requested"
+        },
+        "dom": {
+          "state": "not-retained-in-summary"
+        },
+        "accessibility": {
+          "state": "captured",
+          "value": {
+            "sha256": "ce184701780f6761dca003db4d758a1f82a50c23f7580ccd93390f3c7c80fdcc",
+            "bytes": 4532,
+            "text": "- document:\n  - button \"返回工作台\"\n  - button \"前进\"\n  - button \"收起侧栏\"\n  - banner \"当前会话\":\n    - text: 检查多平台安装包\n    - button \"文件工作区\"\n    - button \"更多\"\n    - button \"任务信息\"\n    - button \"新建任务\"\n  - navigation \"应用导航\":\n    - button \"工作台\"\n    - button \"定时任务\"\n    - button \"AI 工具\"\n    - button \"预览说明\"\n    - button \"项目资源\"\n    - button \"Skill 与 MCP\"\n    - button \"版本信息\"\n    - button \"设置\"\n  - complementary \"项目与任务\":\n    - button \"WillYou\"\n    - button \"任务历史\"\n    - button \"搜索任务\"\n    - navigation:\n      - button \"新建任务\"\n      - button \"任务历史 1\"\n    - text: 项目\n    - button \"添加项目\"\n    - button \"折叠AIS\"\n    - button \"AIS\"\n    - button \"项目菜单：AIS\"\n    - button \"在 AIS 新建任务\"\n    - button \"调研开发环境中的 Skill 与 Agent\"\n    - button \"梳理项目结构和关键模块\"\n    - text: 2 小时前\n    - button \"折叠WillYou\"\n    - button \"WillYou\"\n    - button \"项目菜单：WillYou\"\n    - button \"在 WillYou 新建任务\"\n    - button \"检查多平台安装包\"\n    - text: 昨天\n    - button \"设置\"\n  - separator \"调整侧栏宽度\"\n  - main:\n    - textbox \"Terminal input\"\n    - text: 任务已停止，在右上角更多菜单中选择“恢复”继续预览 已停止 /workspace/SmartDD 1 个运行中 · 演示终端 UTF-8\n  - complementary \"M9 文件工作区原型\":\n    - tablist \"文件标签\":\n      - tab \"AGENTS.md\" [selected]\n      - button \"关闭 AGENTS.md\"\n      - button \"查找并打开文件\"\n      - button \"聚焦文件工作区\"\n      - button \"隐藏文件工作区\"\n    - button \"WillYou\"\n    - button \"AGENTS.md\"\n    - button \"在文件中搜索\"\n    - button \"查看源代码\"\n    - button \"文件查看选项\"\n    - button \"切换文件目录\"\n    - button \"打开\"\n    - region \"文件内容\":\n      - article:\n        - heading \"SmartDD 协作与发布约定\" [level=1]\n        - paragraph: 本文件是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。\n        - heading \"开发与分支\" [level=2]\n        - paragraph: \"- 在 feature/<版本号> 分支开发，同一版本完成前沿用该分支。\"\n        - paragraph: \"- main 保存经过验证、可发布的代码。\"\n        - paragraph: \"- 开始工作先检查当前分支与工作区，保留用户和其他 Agent 的改动。\"\n        - paragraph: \"- 有适用的现成实现就复用，按项目实际依赖和配置适配。\"\n        - heading \"Codex UI 细粒度复刻\" [level=2]\n        - paragraph: \"- 逐项对齐布局、尺寸、字体、颜色、图标、间距与微交互。\"\n        - paragraph: \"- 覆盖浅色、深色、选中、悬停和长文本状态。\"\n        - paragraph: \"- 中央运行工作区继续使用终端。\"\n        - heading \"验收与交付\" [level=2]\n        - paragraph: 需求、原型、技术方案与测试用例必须逐项对应。未经验证的状态不能宣称完全一致。\n    - separator \"调整目录宽度\"\n    - complementary \"目录树\":\n      - textbox \"筛选文件\":\n        - /placeholder: 筛选文件…\n      - combobox \"选择工作目录\":\n        - option \"WillYou\" [selected]\n        - option \"共享文档\"\n      - tree:\n        - treeitem \"docs\" [expanded]\n        - treeitem \"发布演示.pptx\"\n        - treeitem \"概要设计.docx\"\n        - treeitem \"公式.tex\"\n        - treeitem \"含宏工作簿.xlsm\"\n        - treeitem \"实验.ipynb\"\n        - treeitem \"数据.csv\"\n        - treeitem \"数据.tsv\"\n        - treeitem \"数据.xlsx\"\n        - treeitem \"需求.md\"\n        - treeitem \"验收.pdf\"\n        - treeitem \"一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md\"\n        - treeitem \"drizzle\"\n        - treeitem \"fixtures\"\n        - treeitem \"licenses\"\n        - treeitem \"native\"\n        - treeitem \"node_modules\"\n        - treeitem \"out\"\n        - treeitem \"prototypes\"\n        - treeitem \"release\"\n        - treeitem \"resources\"\n        - treeitem \"scripts\"\n        - treeitem \"src\"\n        - treeitem \".DS_Store\"\n        - treeitem \".gitignore\"\n        - treeitem \"AGENTS.md\" [selected]\n        - treeitem \"CHANGELOG.md\"\n        - treeitem \"CLAUDE.md\"\n        - treeitem \"index.html\"\n        - treeitem \"package.json\"\n    - button \"M9 交互样例\"\n    - status: 示例数据 · 未连接真实文件\n    - text: 已固定 · UTF-8\n    - button \"切换原型主题\""
+          }
+        },
+        "url": {
+          "state": "not_requested"
+        },
+        "history": {
+          "state": "not_requested"
+        },
+        "storage": {
+          "state": "not_requested"
+        }
+      },
+      "completeness": {
+        "status": "complete",
+        "equality_eligible": true,
+        "missing_sections": [],
+        "truncated_sections": []
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "step_index": 1,
+      "step_id": "open-search",
+      "action": "click",
+      "elapsed_ms": 40,
+      "before_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "after_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "event_sequence_start": 4,
+      "event_sequence_end": 3,
+      "artifacts": {
+        "screenshot": {
+          "state": "not_requested"
+        },
+        "dom": {
+          "state": "not-retained-in-summary"
+        },
+        "accessibility": {
+          "state": "captured",
+          "value": {
+            "sha256": "57946fe2a2319469b7336f28891685cfdb5bc318be27504676da89cd36db8a8f",
+            "bytes": 5050,
+            "text": "- document:\n  - button \"返回工作台\"\n  - button \"前进\"\n  - button \"收起侧栏\"\n  - banner \"当前会话\":\n    - text: 检查多平台安装包\n    - button \"文件工作区\"\n    - button \"更多\"\n    - button \"任务信息\"\n    - button \"新建任务\"\n  - navigation \"应用导航\":\n    - button \"工作台\"\n    - button \"定时任务\"\n    - button \"AI 工具\"\n    - button \"预览说明\"\n    - button \"项目资源\"\n    - button \"Skill 与 MCP\"\n    - button \"版本信息\"\n    - button \"设置\"\n  - complementary \"项目与任务\":\n    - button \"WillYou\"\n    - button \"任务历史\"\n    - button \"搜索任务\"\n    - navigation:\n      - button \"新建任务\"\n      - button \"任务历史 1\"\n    - text: 项目\n    - button \"添加项目\"\n    - button \"折叠AIS\"\n    - button \"AIS\"\n    - button \"项目菜单：AIS\"\n    - button \"在 AIS 新建任务\"\n    - button \"调研开发环境中的 Skill 与 Agent\"\n    - button \"梳理项目结构和关键模块\"\n    - text: 2 小时前\n    - button \"折叠WillYou\"\n    - button \"WillYou\"\n    - button \"项目菜单：WillYou\"\n    - button \"在 WillYou 新建任务\"\n    - button \"检查多平台安装包\"\n    - text: 昨天\n    - button \"设置\"\n  - separator \"调整侧栏宽度\"\n  - main:\n    - textbox \"Terminal input\"\n    - text: 任务已停止，在右上角更多菜单中选择“恢复”继续预览 已停止 /workspace/SmartDD 1 个运行中 · 演示终端 UTF-8\n  - complementary \"M9 文件工作区原型\":\n    - tablist \"文件标签\":\n      - tab \"AGENTS.md\" [selected]\n      - button \"关闭 AGENTS.md\"\n      - button \"查找并打开文件\"\n      - button \"聚焦文件工作区\"\n      - button \"隐藏文件工作区\"\n    - button \"WillYou\"\n    - button \"AGENTS.md\"\n    - button \"在文件中搜索\"\n    - button \"查看源代码\"\n    - button \"文件查看选项\"\n    - button \"切换文件目录\"\n    - button \"打开\"\n    - region \"文件内容\":\n      - article:\n        - heading \"SmartDD 协作与发布约定\" [level=1]\n        - paragraph: 本文件是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。\n        - heading \"开发与分支\" [level=2]\n        - paragraph: \"- 在 feature/<版本号> 分支开发，同一版本完成前沿用该分支。\"\n        - paragraph: \"- main 保存经过验证、可发布的代码。\"\n        - paragraph: \"- 开始工作先检查当前分支与工作区，保留用户和其他 Agent 的改动。\"\n        - paragraph: \"- 有适用的现成实现就复用，按项目实际依赖和配置适配。\"\n        - heading \"Codex UI 细粒度复刻\" [level=2]\n        - paragraph: \"- 逐项对齐布局、尺寸、字体、颜色、图标、间距与微交互。\"\n        - paragraph: \"- 覆盖浅色、深色、选中、悬停和长文本状态。\"\n        - paragraph: \"- 中央运行工作区继续使用终端。\"\n        - heading \"验收与交付\" [level=2]\n        - paragraph: 需求、原型、技术方案与测试用例必须逐项对应。未经验证的状态不能宣称完全一致。\n    - separator \"调整目录宽度\"\n    - complementary \"目录树\":\n      - textbox \"筛选文件\":\n        - /placeholder: 筛选文件…\n      - combobox \"选择工作目录\":\n        - option \"WillYou\" [selected]\n        - option \"共享文档\"\n      - tree:\n        - treeitem \"docs\" [expanded]\n        - treeitem \"发布演示.pptx\"\n        - treeitem \"概要设计.docx\"\n        - treeitem \"公式.tex\"\n        - treeitem \"含宏工作簿.xlsm\"\n        - treeitem \"实验.ipynb\"\n        - treeitem \"数据.csv\"\n        - treeitem \"数据.tsv\"\n        - treeitem \"数据.xlsx\"\n        - treeitem \"需求.md\"\n        - treeitem \"验收.pdf\"\n        - treeitem \"一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md\"\n        - treeitem \"drizzle\"\n        - treeitem \"fixtures\"\n        - treeitem \"licenses\"\n        - treeitem \"native\"\n        - treeitem \"node_modules\"\n        - treeitem \"out\"\n        - treeitem \"prototypes\"\n        - treeitem \"release\"\n        - treeitem \"resources\"\n        - treeitem \"scripts\"\n        - treeitem \"src\"\n        - treeitem \".DS_Store\"\n        - treeitem \".gitignore\"\n        - treeitem \"AGENTS.md\" [selected]\n        - treeitem \"CHANGELOG.md\"\n        - treeitem \"CLAUDE.md\"\n        - treeitem \"index.html\"\n        - treeitem \"package.json\"\n    - button \"M9 交互样例\"\n    - status: 示例数据 · 未连接真实文件\n    - text: 已固定 · UTF-8\n    - button \"切换原型主题\"\n    - dialog \"在文件中搜索\":\n      - textbox \"搜索文件内容\":\n        - /placeholder: 搜索所有文件中的文本…\n      - button \"关闭内容搜索\"\n      - text: 文件范围\n      - combobox \"文件范围\"\n      - text: 0 条匹配\n      - listbox \"搜索结果\":\n        - paragraph: 搜索当前目录中的文件内容；↑ 可访问本目录的查询历史。\n      - text: ↑↓ 选择 · Enter 打开 · Esc 关闭。原型仅搜索示例文件，glob与取消服务不是实际rg后端。"
+          }
+        },
+        "url": {
+          "state": "not_requested"
+        },
+        "history": {
+          "state": "not_requested"
+        },
+        "storage": {
+          "state": "not_requested"
+        }
+      },
+      "completeness": {
+        "status": "complete",
+        "equality_eligible": true,
+        "missing_sections": [],
+        "truncated_sections": []
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "step_index": 2,
+      "step_id": "query",
+      "action": "fill",
+      "elapsed_ms": 34,
+      "before_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "after_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "event_sequence_start": 4,
+      "event_sequence_end": 3,
+      "artifacts": {
+        "screenshot": {
+          "state": "not_requested"
+        },
+        "dom": {
+          "state": "not-retained-in-summary"
+        },
+        "accessibility": {
+          "state": "captured",
+          "value": {
+            "sha256": "463172bdbe724594cfb2f6ff292aa849c11250d6903609dee5ea63dc5e79175b",
+            "bytes": 4971,
+            "text": "- document:\n  - button \"返回工作台\"\n  - button \"前进\"\n  - button \"收起侧栏\"\n  - banner \"当前会话\":\n    - text: 检查多平台安装包\n    - button \"文件工作区\"\n    - button \"更多\"\n    - button \"任务信息\"\n    - button \"新建任务\"\n  - navigation \"应用导航\":\n    - button \"工作台\"\n    - button \"定时任务\"\n    - button \"AI 工具\"\n    - button \"预览说明\"\n    - button \"项目资源\"\n    - button \"Skill 与 MCP\"\n    - button \"版本信息\"\n    - button \"设置\"\n  - complementary \"项目与任务\":\n    - button \"WillYou\"\n    - button \"任务历史\"\n    - button \"搜索任务\"\n    - navigation:\n      - button \"新建任务\"\n      - button \"任务历史 1\"\n    - text: 项目\n    - button \"添加项目\"\n    - button \"折叠AIS\"\n    - button \"AIS\"\n    - button \"项目菜单：AIS\"\n    - button \"在 AIS 新建任务\"\n    - button \"调研开发环境中的 Skill 与 Agent\"\n    - button \"梳理项目结构和关键模块\"\n    - text: 2 小时前\n    - button \"折叠WillYou\"\n    - button \"WillYou\"\n    - button \"项目菜单：WillYou\"\n    - button \"在 WillYou 新建任务\"\n    - button \"检查多平台安装包\"\n    - text: 昨天\n    - button \"设置\"\n  - separator \"调整侧栏宽度\"\n  - main:\n    - textbox \"Terminal input\"\n    - text: 任务已停止，在右上角更多菜单中选择“恢复”继续预览 已停止 /workspace/SmartDD 1 个运行中 · 演示终端 UTF-8\n  - complementary \"M9 文件工作区原型\":\n    - tablist \"文件标签\":\n      - tab \"AGENTS.md\" [selected]\n      - button \"关闭 AGENTS.md\"\n      - button \"查找并打开文件\"\n      - button \"聚焦文件工作区\"\n      - button \"隐藏文件工作区\"\n    - button \"WillYou\"\n    - button \"AGENTS.md\"\n    - button \"在文件中搜索\"\n    - button \"查看源代码\"\n    - button \"文件查看选项\"\n    - button \"切换文件目录\"\n    - button \"打开\"\n    - region \"文件内容\":\n      - article:\n        - heading \"SmartDD 协作与发布约定\" [level=1]\n        - paragraph: 本文件是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。\n        - heading \"开发与分支\" [level=2]\n        - paragraph: \"- 在 feature/<版本号> 分支开发，同一版本完成前沿用该分支。\"\n        - paragraph: \"- main 保存经过验证、可发布的代码。\"\n        - paragraph: \"- 开始工作先检查当前分支与工作区，保留用户和其他 Agent 的改动。\"\n        - paragraph: \"- 有适用的现成实现就复用，按项目实际依赖和配置适配。\"\n        - heading \"Codex UI 细粒度复刻\" [level=2]\n        - paragraph: \"- 逐项对齐布局、尺寸、字体、颜色、图标、间距与微交互。\"\n        - paragraph: \"- 覆盖浅色、深色、选中、悬停和长文本状态。\"\n        - paragraph: \"- 中央运行工作区继续使用终端。\"\n        - heading \"验收与交付\" [level=2]\n        - paragraph: 需求、原型、技术方案与测试用例必须逐项对应。未经验证的状态不能宣称完全一致。\n    - separator \"调整目录宽度\"\n    - complementary \"目录树\":\n      - textbox \"筛选文件\":\n        - /placeholder: 筛选文件…\n      - combobox \"选择工作目录\":\n        - option \"WillYou\" [selected]\n        - option \"共享文档\"\n      - tree:\n        - treeitem \"docs\" [expanded]\n        - treeitem \"发布演示.pptx\"\n        - treeitem \"概要设计.docx\"\n        - treeitem \"公式.tex\"\n        - treeitem \"含宏工作簿.xlsm\"\n        - treeitem \"实验.ipynb\"\n        - treeitem \"数据.csv\"\n        - treeitem \"数据.tsv\"\n        - treeitem \"数据.xlsx\"\n        - treeitem \"需求.md\"\n        - treeitem \"验收.pdf\"\n        - treeitem \"一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md\"\n        - treeitem \"drizzle\"\n        - treeitem \"fixtures\"\n        - treeitem \"licenses\"\n        - treeitem \"native\"\n        - treeitem \"node_modules\"\n        - treeitem \"out\"\n        - treeitem \"prototypes\"\n        - treeitem \"release\"\n        - treeitem \"resources\"\n        - treeitem \"scripts\"\n        - treeitem \"src\"\n        - treeitem \".DS_Store\"\n        - treeitem \".gitignore\"\n        - treeitem \"AGENTS.md\" [selected]\n        - treeitem \"CHANGELOG.md\"\n        - treeitem \"CLAUDE.md\"\n        - treeitem \"index.html\"\n        - treeitem \"package.json\"\n    - button \"M9 交互样例\"\n    - status: 示例数据 · 未连接真实文件\n    - text: 已固定 · UTF-8\n    - button \"切换原型主题\"\n    - dialog \"在文件中搜索\":\n      - textbox \"搜索文件内容\":\n        - /placeholder: 搜索所有文件中的文本…\n        - text: 文件\n      - button \"关闭内容搜索\"\n      - text: 文件范围\n      - combobox \"文件范围\"\n      - text: 0 条匹配\n      - listbox \"搜索结果\"\n      - text: ↑↓ 选择 · Enter 打开 · Esc 关闭。原型仅搜索示例文件，glob与取消服务不是实际rg后端。"
+          }
+        },
+        "url": {
+          "state": "not_requested"
+        },
+        "history": {
+          "state": "not_requested"
+        },
+        "storage": {
+          "state": "not_requested"
+        }
+      },
+      "completeness": {
+        "status": "complete",
+        "equality_eligible": true,
+        "missing_sections": [],
+        "truncated_sections": []
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "step_index": 3,
+      "step_id": "mask",
+      "action": "fill",
+      "elapsed_ms": 7,
+      "before_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "after_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "event_sequence_start": 4,
+      "event_sequence_end": 3,
+      "artifacts": {
+        "screenshot": {
+          "state": "not_requested"
+        },
+        "dom": {
+          "state": "not-retained-in-summary"
+        },
+        "accessibility": {
+          "state": "captured",
+          "value": {
+            "sha256": "0427f75016f6be69ec73eb020a43aeef5cce12ff9fc49f4c1ae72ef8e84349e6",
+            "bytes": 4979,
+            "text": "- document:\n  - button \"返回工作台\"\n  - button \"前进\"\n  - button \"收起侧栏\"\n  - banner \"当前会话\":\n    - text: 检查多平台安装包\n    - button \"文件工作区\"\n    - button \"更多\"\n    - button \"任务信息\"\n    - button \"新建任务\"\n  - navigation \"应用导航\":\n    - button \"工作台\"\n    - button \"定时任务\"\n    - button \"AI 工具\"\n    - button \"预览说明\"\n    - button \"项目资源\"\n    - button \"Skill 与 MCP\"\n    - button \"版本信息\"\n    - button \"设置\"\n  - complementary \"项目与任务\":\n    - button \"WillYou\"\n    - button \"任务历史\"\n    - button \"搜索任务\"\n    - navigation:\n      - button \"新建任务\"\n      - button \"任务历史 1\"\n    - text: 项目\n    - button \"添加项目\"\n    - button \"折叠AIS\"\n    - button \"AIS\"\n    - button \"项目菜单：AIS\"\n    - button \"在 AIS 新建任务\"\n    - button \"调研开发环境中的 Skill 与 Agent\"\n    - button \"梳理项目结构和关键模块\"\n    - text: 2 小时前\n    - button \"折叠WillYou\"\n    - button \"WillYou\"\n    - button \"项目菜单：WillYou\"\n    - button \"在 WillYou 新建任务\"\n    - button \"检查多平台安装包\"\n    - text: 昨天\n    - button \"设置\"\n  - separator \"调整侧栏宽度\"\n  - main:\n    - textbox \"Terminal input\"\n    - text: 任务已停止，在右上角更多菜单中选择“恢复”继续预览 已停止 /workspace/SmartDD 1 个运行中 · 演示终端 UTF-8\n  - complementary \"M9 文件工作区原型\":\n    - tablist \"文件标签\":\n      - tab \"AGENTS.md\" [selected]\n      - button \"关闭 AGENTS.md\"\n      - button \"查找并打开文件\"\n      - button \"聚焦文件工作区\"\n      - button \"隐藏文件工作区\"\n    - button \"WillYou\"\n    - button \"AGENTS.md\"\n    - button \"在文件中搜索\"\n    - button \"查看源代码\"\n    - button \"文件查看选项\"\n    - button \"切换文件目录\"\n    - button \"打开\"\n    - region \"文件内容\":\n      - article:\n        - heading \"SmartDD 协作与发布约定\" [level=1]\n        - paragraph: 本文件是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。\n        - heading \"开发与分支\" [level=2]\n        - paragraph: \"- 在 feature/<版本号> 分支开发，同一版本完成前沿用该分支。\"\n        - paragraph: \"- main 保存经过验证、可发布的代码。\"\n        - paragraph: \"- 开始工作先检查当前分支与工作区，保留用户和其他 Agent 的改动。\"\n        - paragraph: \"- 有适用的现成实现就复用，按项目实际依赖和配置适配。\"\n        - heading \"Codex UI 细粒度复刻\" [level=2]\n        - paragraph: \"- 逐项对齐布局、尺寸、字体、颜色、图标、间距与微交互。\"\n        - paragraph: \"- 覆盖浅色、深色、选中、悬停和长文本状态。\"\n        - paragraph: \"- 中央运行工作区继续使用终端。\"\n        - heading \"验收与交付\" [level=2]\n        - paragraph: 需求、原型、技术方案与测试用例必须逐项对应。未经验证的状态不能宣称完全一致。\n    - separator \"调整目录宽度\"\n    - complementary \"目录树\":\n      - textbox \"筛选文件\":\n        - /placeholder: 筛选文件…\n      - combobox \"选择工作目录\":\n        - option \"WillYou\" [selected]\n        - option \"共享文档\"\n      - tree:\n        - treeitem \"docs\" [expanded]\n        - treeitem \"发布演示.pptx\"\n        - treeitem \"概要设计.docx\"\n        - treeitem \"公式.tex\"\n        - treeitem \"含宏工作簿.xlsm\"\n        - treeitem \"实验.ipynb\"\n        - treeitem \"数据.csv\"\n        - treeitem \"数据.tsv\"\n        - treeitem \"数据.xlsx\"\n        - treeitem \"需求.md\"\n        - treeitem \"验收.pdf\"\n        - treeitem \"一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md\"\n        - treeitem \"drizzle\"\n        - treeitem \"fixtures\"\n        - treeitem \"licenses\"\n        - treeitem \"native\"\n        - treeitem \"node_modules\"\n        - treeitem \"out\"\n        - treeitem \"prototypes\"\n        - treeitem \"release\"\n        - treeitem \"resources\"\n        - treeitem \"scripts\"\n        - treeitem \"src\"\n        - treeitem \".DS_Store\"\n        - treeitem \".gitignore\"\n        - treeitem \"AGENTS.md\" [selected]\n        - treeitem \"CHANGELOG.md\"\n        - treeitem \"CLAUDE.md\"\n        - treeitem \"index.html\"\n        - treeitem \"package.json\"\n    - button \"M9 交互样例\"\n    - status: 示例数据 · 未连接真实文件\n    - text: 已固定 · UTF-8\n    - button \"切换原型主题\"\n    - dialog \"在文件中搜索\":\n      - textbox \"搜索文件内容\":\n        - /placeholder: 搜索所有文件中的文本…\n        - text: 文件\n      - button \"关闭内容搜索\"\n      - text: 文件范围\n      - combobox \"文件范围\": \"*.md\"\n      - text: 0 条匹配\n      - listbox \"搜索结果\"\n      - text: ↑↓ 选择 · Enter 打开 · Esc 关闭。原型仅搜索示例文件，glob与取消服务不是实际rg后端。"
+          }
+        },
+        "url": {
+          "state": "not_requested"
+        },
+        "history": {
+          "state": "not_requested"
+        },
+        "storage": {
+          "state": "not_requested"
+        }
+      },
+      "completeness": {
+        "status": "complete",
+        "equality_eligible": true,
+        "missing_sections": [],
+        "truncated_sections": []
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "step_index": 4,
+      "step_id": "results",
+      "action": "wait_for_timeout",
+      "elapsed_ms": 209,
+      "before_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "after_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "event_sequence_start": 4,
+      "event_sequence_end": 3,
+      "artifacts": {
+        "screenshot": {
+          "state": "not_requested"
+        },
+        "dom": {
+          "state": "not-retained-in-summary"
+        },
+        "accessibility": {
+          "state": "captured",
+          "value": {
+            "sha256": "fd2b49cbcce59d0442d54ad9d25ba1472a396c02fdb519e049d13c9ccd08e32f",
+            "bytes": 6409,
+            "text": "- document:\n  - button \"返回工作台\"\n  - button \"前进\"\n  - button \"收起侧栏\"\n  - banner \"当前会话\":\n    - text: 检查多平台安装包\n    - button \"文件工作区\"\n    - button \"更多\"\n    - button \"任务信息\"\n    - button \"新建任务\"\n  - navigation \"应用导航\":\n    - button \"工作台\"\n    - button \"定时任务\"\n    - button \"AI 工具\"\n    - button \"预览说明\"\n    - button \"项目资源\"\n    - button \"Skill 与 MCP\"\n    - button \"版本信息\"\n    - button \"设置\"\n  - complementary \"项目与任务\":\n    - button \"WillYou\"\n    - button \"任务历史\"\n    - button \"搜索任务\"\n    - navigation:\n      - button \"新建任务\"\n      - button \"任务历史 1\"\n    - text: 项目\n    - button \"添加项目\"\n    - button \"折叠AIS\"\n    - button \"AIS\"\n    - button \"项目菜单：AIS\"\n    - button \"在 AIS 新建任务\"\n    - button \"调研开发环境中的 Skill 与 Agent\"\n    - button \"梳理项目结构和关键模块\"\n    - text: 2 小时前\n    - button \"折叠WillYou\"\n    - button \"WillYou\"\n    - button \"项目菜单：WillYou\"\n    - button \"在 WillYou 新建任务\"\n    - button \"检查多平台安装包\"\n    - text: 昨天\n    - button \"设置\"\n  - separator \"调整侧栏宽度\"\n  - main:\n    - textbox \"Terminal input\"\n    - text: 任务已停止，在右上角更多菜单中选择“恢复”继续预览 已停止 /workspace/SmartDD 1 个运行中 · 演示终端 UTF-8\n  - complementary \"M9 文件工作区原型\":\n    - tablist \"文件标签\":\n      - tab \"AGENTS.md\" [selected]\n      - button \"关闭 AGENTS.md\"\n      - button \"查找并打开文件\"\n      - button \"聚焦文件工作区\"\n      - button \"隐藏文件工作区\"\n    - button \"WillYou\"\n    - button \"AGENTS.md\"\n    - button \"在文件中搜索\"\n    - button \"查看源代码\"\n    - button \"文件查看选项\"\n    - button \"切换文件目录\"\n    - button \"打开\"\n    - region \"文件内容\":\n      - article:\n        - heading \"SmartDD 协作与发布约定\" [level=1]\n        - paragraph: 本文件是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。\n        - heading \"开发与分支\" [level=2]\n        - paragraph: \"- 在 feature/<版本号> 分支开发，同一版本完成前沿用该分支。\"\n        - paragraph: \"- main 保存经过验证、可发布的代码。\"\n        - paragraph: \"- 开始工作先检查当前分支与工作区，保留用户和其他 Agent 的改动。\"\n        - paragraph: \"- 有适用的现成实现就复用，按项目实际依赖和配置适配。\"\n        - heading \"Codex UI 细粒度复刻\" [level=2]\n        - paragraph: \"- 逐项对齐布局、尺寸、字体、颜色、图标、间距与微交互。\"\n        - paragraph: \"- 覆盖浅色、深色、选中、悬停和长文本状态。\"\n        - paragraph: \"- 中央运行工作区继续使用终端。\"\n        - heading \"验收与交付\" [level=2]\n        - paragraph: 需求、原型、技术方案与测试用例必须逐项对应。未经验证的状态不能宣称完全一致。\n    - separator \"调整目录宽度\"\n    - complementary \"目录树\":\n      - textbox \"筛选文件\":\n        - /placeholder: 筛选文件…\n      - combobox \"选择工作目录\":\n        - option \"WillYou\" [selected]\n        - option \"共享文档\"\n      - tree:\n        - treeitem \"docs\" [expanded]\n        - treeitem \"发布演示.pptx\"\n        - treeitem \"概要设计.docx\"\n        - treeitem \"公式.tex\"\n        - treeitem \"含宏工作簿.xlsm\"\n        - treeitem \"实验.ipynb\"\n        - treeitem \"数据.csv\"\n        - treeitem \"数据.tsv\"\n        - treeitem \"数据.xlsx\"\n        - treeitem \"需求.md\"\n        - treeitem \"验收.pdf\"\n        - treeitem \"一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md\"\n        - treeitem \"drizzle\"\n        - treeitem \"fixtures\"\n        - treeitem \"licenses\"\n        - treeitem \"native\"\n        - treeitem \"node_modules\"\n        - treeitem \"out\"\n        - treeitem \"prototypes\"\n        - treeitem \"release\"\n        - treeitem \"resources\"\n        - treeitem \"scripts\"\n        - treeitem \"src\"\n        - treeitem \".DS_Store\"\n        - treeitem \".gitignore\"\n        - treeitem \"AGENTS.md\" [selected]\n        - treeitem \"CHANGELOG.md\"\n        - treeitem \"CLAUDE.md\"\n        - treeitem \"index.html\"\n        - treeitem \"package.json\"\n    - button \"M9 交互样例\"\n    - status: 示例数据 · 未连接真实文件\n    - text: 已固定 · UTF-8\n    - button \"切换原型主题\"\n    - dialog \"在文件中搜索\":\n      - textbox \"搜索文件内容\":\n        - /placeholder: 搜索所有文件中的文本…\n        - text: 文件\n      - button \"关闭内容搜索\"\n      - text: 文件范围\n      - combobox \"文件范围\": \"*.md\"\n      - text: 5 条匹配\n      - listbox \"搜索结果\":\n        - option \"本文件是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。 AGENTS.md :3:2\" [selected]:\n          - code:\n            - text: 本\n            - mark: 文件\n            - text: 是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。\n          - text: AGENTS.md :3:2\n        - option \"文件浏览工作区 · 设计预览 CHANGELOG.md :5:1\":\n          - code:\n            - mark: 文件\n            - text: 浏览工作区 · 设计预览\n          - text: CHANGELOG.md :5:1\n        - option \"# 文件浏览工作区 docs/需求.md :1:3\":\n          - code:\n            - text: \"#\"\n            - mark: 文件\n            - text: 浏览工作区\n          - text: docs/需求.md :1:3\n        - option \"完整记录每个文件行为，保留独立终端会话。 docs/需求.md :5:7\":\n          - code:\n            - text: 完整记录每个\n            - mark: 文件\n            - text: 行为，保留独立终端会话。\n          - text: docs/需求.md :5:7\n        - option \"# 长文件名 docs/一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md :1:4\":\n          - code:\n            - text: \"# 长\"\n            - mark: 文件\n            - text: 名\n          - text: docs/一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md :1:4\n      - text: ↑↓ 选择 · Enter 打开 · Esc 关闭。原型仅搜索示例文件，glob与取消服务不是实际rg后端。"
+          }
+        },
+        "url": {
+          "state": "not_requested"
+        },
+        "history": {
+          "state": "not_requested"
+        },
+        "storage": {
+          "state": "not_requested"
+        }
+      },
+      "completeness": {
+        "status": "complete",
+        "equality_eligible": true,
+        "missing_sections": [],
+        "truncated_sections": []
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "step_index": 5,
+      "step_id": "open-match",
+      "action": "click",
+      "elapsed_ms": 193,
+      "before_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "after_url": {
+        "url": "http://127.0.0.1:4176/?preview=m9",
+        "origin": "http://127.0.0.1:4176",
+        "query_parameter_names": [
+          "preview"
+        ],
+        "redacted": false
+      },
+      "event_sequence_start": 4,
+      "event_sequence_end": 3,
+      "artifacts": {
+        "screenshot": {
+          "state": "captured",
+          "value": {
+            "sha256": "da1a0a571b1f87e27768a0a6d4ac845abdd28aa7017ff19a19a35682f246feb9",
+            "bytes": 197187,
+            "media_type": "image/png",
+            "path": "prototype-content-search.png"
+          }
+        },
+        "dom": {
+          "state": "not-retained-in-summary"
+        },
+        "accessibility": {
+          "state": "captured",
+          "value": {
+            "sha256": "bc806c58b220c7b64acac7e9e69f76bf51d1ba8c24860a2b3c5b2252515ff70a",
+            "bytes": 4521,
+            "text": "- document:\n  - button \"返回工作台\"\n  - button \"前进\"\n  - button \"收起侧栏\"\n  - banner \"当前会话\":\n    - text: 检查多平台安装包\n    - button \"文件工作区\"\n    - button \"更多\"\n    - button \"任务信息\"\n    - button \"新建任务\"\n  - navigation \"应用导航\":\n    - button \"工作台\"\n    - button \"定时任务\"\n    - button \"AI 工具\"\n    - button \"预览说明\"\n    - button \"项目资源\"\n    - button \"Skill 与 MCP\"\n    - button \"版本信息\"\n    - button \"设置\"\n  - complementary \"项目与任务\":\n    - button \"WillYou\"\n    - button \"任务历史\"\n    - button \"搜索任务\"\n    - navigation:\n      - button \"新建任务\"\n      - button \"任务历史 1\"\n    - text: 项目\n    - button \"添加项目\"\n    - button \"折叠AIS\"\n    - button \"AIS\"\n    - button \"项目菜单：AIS\"\n    - button \"在 AIS 新建任务\"\n    - button \"调研开发环境中的 Skill 与 Agent\"\n    - button \"梳理项目结构和关键模块\"\n    - text: 2 小时前\n    - button \"折叠WillYou\"\n    - button \"WillYou\"\n    - button \"项目菜单：WillYou\"\n    - button \"在 WillYou 新建任务\"\n    - button \"检查多平台安装包\"\n    - text: 昨天\n    - button \"设置\"\n  - separator \"调整侧栏宽度\"\n  - main:\n    - textbox \"Terminal input\"\n    - text: 任务已停止，在右上角更多菜单中选择“恢复”继续预览 已停止 /workspace/SmartDD 1 个运行中 · 演示终端 UTF-8\n  - complementary \"M9 文件工作区原型\":\n    - tablist \"文件标签\":\n      - tab \"AGENTS.md\" [selected]\n      - button \"关闭 AGENTS.md\"\n      - button \"查找并打开文件\"\n      - button \"聚焦文件工作区\"\n      - button \"隐藏文件工作区\"\n    - button \"WillYou\"\n    - button \"AGENTS.md\"\n    - button \"在文件中搜索\"\n    - button \"查看文档\"\n    - button \"文件查看选项\"\n    - button \"切换文件目录\"\n    - button \"打开\"\n    - region \"文件内容\":\n      - textbox \"查找当前文件\": 文件\n      - text: 1 个匹配\n      - button \"关闭查找\"\n      - button \"撤销\" [disabled]\n      - button \"重做\" [disabled]\n      - button \"自动换行\"\n      - button \"复制文件内容\"\n      - button \"编辑所选文本\" [disabled]\n      - textbox \"文件编辑器\": \"# SmartDD 协作与发布约定 本文件是 Codex 与 Claude Code 共用的项目规则。用户在当前会话明确提出的要求优先。 ## 开发与分支 - 在 feature/<版本号> 分支开发，同一版本完成前沿用该分支。 - main 保存经过验证、可发布的代码。 - 开始工作先检查当前分支与工作区，保留用户和其他 Agent 的改动。 - 有适用的现成实现就复用，按项目实际依赖和配置适配。 ## Codex UI 细粒度复刻 - 逐项对齐布局、尺寸、字体、颜色、图标、间距与微交互。 - 覆盖浅色、深色、选中、悬停和长文本状态。 - 中央运行工作区继续使用终端。 ## 验收与交付 需求、原型、技术方案与测试用例必须逐项对应。未经验证的状态不能宣称完全一致。\"\n    - separator \"调整目录宽度\"\n    - complementary \"目录树\":\n      - textbox \"筛选文件\":\n        - /placeholder: 筛选文件…\n      - combobox \"选择工作目录\":\n        - option \"WillYou\" [selected]\n        - option \"共享文档\"\n      - tree:\n        - treeitem \"docs\" [expanded]\n        - treeitem \"发布演示.pptx\"\n        - treeitem \"概要设计.docx\"\n        - treeitem \"公式.tex\"\n        - treeitem \"含宏工作簿.xlsm\"\n        - treeitem \"实验.ipynb\"\n        - treeitem \"数据.csv\"\n        - treeitem \"数据.tsv\"\n        - treeitem \"数据.xlsx\"\n        - treeitem \"需求.md\"\n        - treeitem \"验收.pdf\"\n        - treeitem \"一份需要完整展示而不能挤掉关闭按钮的很长的中文需求文档名称.md\"\n        - treeitem \"drizzle\"\n        - treeitem \"fixtures\"\n        - treeitem \"licenses\"\n        - treeitem \"native\"\n        - treeitem \"node_modules\"\n        - treeitem \"out\"\n        - treeitem \"prototypes\"\n        - treeitem \"release\"\n        - treeitem \"resources\"\n        - treeitem \"scripts\"\n        - treeitem \"src\"\n        - treeitem \".DS_Store\"\n        - treeitem \".gitignore\"\n        - treeitem \"AGENTS.md\" [selected]\n        - treeitem \"CHANGELOG.md\"\n        - treeitem \"CLAUDE.md\"\n        - treeitem \"index.html\"\n        - treeitem \"package.json\"\n    - button \"M9 交互样例\"\n    - status: 示例数据 · 未连接真实文件\n    - text: 已固定 · UTF-8\n    - button \"切换原型主题\""
+          }
+        },
+        "url": {
+          "state": "not_requested"
+        },
+        "history": {
+          "state": "not_requested"
+        },
+        "storage": {
+          "state": "not_requested"
+        }
+      },
+      "completeness": {
+        "status": "complete",
+        "equality_eligible": true,
+        "missing_sections": [],
+        "truncated_sections": []
+      },
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "events": {
+    "retained": 3,
+    "dropped": 0,
+    "items": [
+      {
+        "sequence": 1,
+        "step_index": 0,
+        "kind": "console",
+        "level": "debug",
+        "text": "[vite] connecting...",
+        "url": {
+          "url": "http://127.0.0.1:4176/@vite/client",
+          "origin": "http://127.0.0.1:4176",
+          "query_parameter_names": [],
+          "redacted": false
+        }
+      },
+      {
+        "sequence": 2,
+        "step_index": 0,
+        "kind": "console",
+        "level": "debug",
+        "text": "[vite] connected.",
+        "url": {
+          "url": "http://127.0.0.1:4176/@vite/client",
+          "origin": "http://127.0.0.1:4176",
+          "query_parameter_names": [],
+          "redacted": false
+        }
+      },
+      {
+        "sequence": 3,
+        "step_index": 0,
+        "kind": "console",
+        "level": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+        "url": {
+          "url": "http://127.0.0.1:4176/node_modules/.vite/deps/react-dom_client.js?v=d2a9e13a",
+          "origin": "http://127.0.0.1:4176",
+          "query_parameter_names": [
+            "v"
+          ],
+          "redacted": false
+        }
+      }
+    ]
+  },
+  "completeness": {
+    "status": "complete",
+    "equality_eligible": true,
+    "missing_sections": [],
+    "truncated_sections": []
+  },
+  "limitations": [
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; response bytes are browser-decoded, not compressed wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and never wait for unfinished responses or refetch them.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction."
+  ]
+}

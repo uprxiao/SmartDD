@@ -1,0 +1,227 @@
+{
+  "schema": "m9-predev-tex-offline-v1",
+  "timestamp": "2026-10-17T08:27:55.123153+00:00",
+  "environment": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "arch": "arm64"
+  },
+  "engine": {
+    "version": "0.17.0",
+    "binarySHA256": "b52b5a730e2b0b33087304f7720f649603953f270a6b1c88bb031e1ae01f7f9c",
+    "bytes": 53998928
+  },
+  "resources": {
+    "schema": "m9-predev-tex-resource-candidate-v1",
+    "sourceURL": "https://data1b.fullyjustified.net/tlextras-2022.0r0.tar",
+    "sourceBundle": "tlextras-2022.0r0",
+    "sourceSVNRevision": "62885",
+    "sourceGitHash": "082081a375be008c2e049cd7cf1137314f888b18",
+    "indexSHA256": "0fb434b0fa5fdebea7f767ed9c31939c99a780d6f95cd3f540aae55910bb5697",
+    "discoveryDatabaseSHA256": "0ec80acb5d263eb5daddb7f1a06253b2aceec4e7ea67a7e023de04ec82dfc8c6",
+    "discoveryDatabaseNote": "TeX Live 2022 tlnet-final used for package name/path mapping only. Runtime bytes are all fixed v33 bundle; catalogue versions here are NOT runtime version claims. Embedded source headers and package source archives are authoritative.",
+    "candidateIdentity": "e63266fbf35015446ff45dfbf1e35d03e96b626287d826df8e87ea2e29c596cc",
+    "candidateArchiveSHA256": "1b0b496b02feab81da01514bd9913b7ad99a7eb4c400ee79e14ee8cc638b3d1d",
+    "candidateArchiveBytes": 73844114,
+    "resourceBytes": 154043548,
+    "fileCount": 3685
+  },
+  "limits": {
+    "coldWallSeconds": 30,
+    "warmWallSeconds": 15,
+    "cpuSeconds": [
+      25,
+      27
+    ],
+    "rssKillKiB": 786432,
+    "outputFileBytes": 41943040,
+    "openFiles": 128,
+    "sourceBytes": 10485760,
+    "snapshotBytes": 134217728,
+    "pdfPages": 2000,
+    "cancelDeadlineMs": 2000
+  },
+  "policy": "(version 1)(deny default)(allow process-exec (literal \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/tectonic\"))(allow process-info* (target self))(allow sysctl-read)(allow file-read* (subpath \"/usr/lib\")(subpath \"/System/Library\")(subpath \"/System/Volumes/Preboot\")(subpath \"/private/var/db/dyld\")(literal \"/\")(literal \"/dev/null\")(literal \"/dev/random\")(literal \"/dev/urandom\")(literal \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/tectonic\")(literal \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/willyou-tex-v33-candidate.zip\")(subpath \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/probe-latex-cold\"))(allow file-write* (subpath \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/probe-latex-cold/out\")(subpath \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/probe-latex-cold/cache\")(subpath \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/probe-latex-cold/home\")(subpath \"/private/tmp/m9-predev-resources/relocated \\u4e2d\\u6587 space/resources/probe-latex-cold/tmp\"))",
+  "checks": [
+    {
+      "id": "PRETEX-01",
+      "title": "冷启动：真实 LaTeX/数学/表格/PNG/PDF/include/交叉引用，全字体嵌入",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 33,
+        "peakRssKiB": 4048,
+        "pdf": null,
+        "sourceSHA256": "1ee70c3a5b5a7bd013c99630778d2a89a2f0869fe6ed8d557ff10196c0342d2c",
+        "logFile": "predev-tex-latex-cold.log.txt",
+        "pid": 23863,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-02",
+      "title": "中文正向：内置 Fandol 字体，中英数学与图片、中文路径",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 26,
+        "peakRssKiB": 4032,
+        "pdf": null,
+        "sourceSHA256": "2cb04eb8a048cca48956673d6cda27ca700d69d96a315f0237a07b7eab7f3b43",
+        "logFile": "predev-tex-cjk-math-images.log.txt",
+        "pid": 23865,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-03",
+      "title": "OpenType 数学字体正向，不依赖用户安装字体",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 29,
+        "peakRssKiB": 4032,
+        "pdf": null,
+        "sourceSHA256": "f648446c2dd876241ef93336ce6fbcf1ec488d92a889c334acf845e57ed35020",
+        "logFile": "predev-tex-unicode-math.log.txt",
+        "pid": 23872,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-04",
+      "title": "12页中文数学文档全页可重读",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 25,
+        "peakRssKiB": 4032,
+        "pdf": null,
+        "sourceSHA256": "cea9e0ebe364e32fff91b4dc05400d0aaa942683758fa0fdcea36ab939299aab",
+        "logFile": "predev-tex-twelve-pages.log.txt",
+        "pid": 23874,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-05",
+      "title": "缺包单列失败，绝不联网补包或把残留产物作为成功",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 25,
+        "peakRssKiB": 4032,
+        "pdf": null,
+        "sourceSHA256": "a55833dc2a6eb47a075616e4a808f1ec8b29b48dbc97b187d414b6bce227151b",
+        "logFile": "predev-tex-missing-package.log.txt",
+        "pid": 23877,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-06",
+      "title": "完整资源下仍拒绝根外读",
+      "status": "passed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 26,
+        "peakRssKiB": 4032,
+        "pdf": null,
+        "sourceSHA256": "0b3f1ec9e79ab2997f6e02d8f8ab6d3e3c9ec7f9459dc61f4e9a62c32073b643",
+        "logFile": "predev-tex-outside-read.log.txt",
+        "pid": 23880,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-07",
+      "title": "完整资源下 shell escape 仍禁用",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 30,
+        "peakRssKiB": 4016,
+        "pdf": null,
+        "sourceSHA256": "bcaa89dc38fd7ff0e816f61b9bbea4b59f681b8b6e22078e43ab1b6c1afb2176",
+        "logFile": "predev-tex-shell-disabled.log.txt",
+        "pid": 23883,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-08",
+      "title": "完整格式缓存下真实无限循环可取消",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 29,
+        "peakRssKiB": 4032,
+        "pdf": null,
+        "sourceSHA256": "666b27ae40a10fcde7ff053f3a16cb510be6138d21963a1052c6626019b34b8a",
+        "logFile": "predev-tex-cancel.log.txt",
+        "pid": 23887,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-09",
+      "title": "完整格式缓存下真实无限循环超时被终止",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 32,
+        "peakRssKiB": 4064,
+        "pdf": null,
+        "sourceSHA256": "666b27ae40a10fcde7ff053f3a16cb510be6138d21963a1052c6626019b34b8a",
+        "logFile": "predev-tex-timeout.log.txt",
+        "pid": 23889,
+        "cacheBytes": 0
+      }
+    },
+    {
+      "id": "PRETEX-10",
+      "title": "资源包编译策略禁止网络 socket",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stderr": "Auto configuration failed\n8322015616:error:02FFF001:system library:func(4095):Operation not permitted:/AppleInternal/Library/BuildRoots/4~CTzXugBFCxhZ492Edy-igjnepdP69SzlG80V1IQ/Library/Caches/com.apple.xbs/TemporaryDirectory.yQ55nz/Sources/libressl/libressl-3.3/crypto/bio/bss_file.c:122:fopen('/private/etc/ssl/openssl.cnf', 'rb')\n8322015616:error:20FFF002:BIO routines:CRYPTO_internal:system lib:/AppleInternal/Library/BuildRoots/4~CTzXugBFCxhZ492Edy-igjnepdP69SzlG80V1IQ/Library/Caches/com.apple.xbs/TemporaryDirectory.yQ55nz/Sources/libressl/libressl-3.3/crypto/bio/bss_file.c:127:\n8322015616:error:0EFFF002:configuration file routines:CRYPTO_internal:system lib:/AppleInternal/Library/BuildRoots/4~CTzXugBFCxhZ492Edy-igjnepdP69SzlG80V1IQ/Library/Caches/com.apple.xbs/TemporaryDirectory.yQ55nz/Sources/libressl/libressl-3.3/crypto/conf/conf_def.c:202:\n"
+      }
+    },
+    {
+      "id": "PRETEX-11",
+      "title": "有效空 PDF 图片：仅规范化私有快照的缺失 Contents，原件不改",
+      "status": "failed",
+      "detail": {
+        "exit": 71,
+        "stop": null,
+        "elapsedMs": 32,
+        "peakRssKiB": 4064,
+        "pdf": null,
+        "sourceSHA256": "1ee70c3a5b5a7bd013c99630778d2a89a2f0869fe6ed8d557ff10196c0342d2c",
+        "logFile": "predev-tex-blank-pdf-normalized.log.txt",
+        "pid": 23892,
+        "cacheBytes": 0,
+        "blankPdfNormalization": {
+          "originalSHA256": "7cf41d17a80e5f527217753e7546860b6df220a8df97360cf416777f0ad7cf1e",
+          "originalUnchanged": true,
+          "snapshotSHA256": "c8257159544e774365173abbd4261e37530c1bde73fd2d12950d9c6e5e7c6895",
+          "change": "Only absent Contents of synthetic blank page replaced with empty q/Q stream in private snapshot"
+        }
+      }
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 9
+  },
+  "boundary": "Isolated native macOS arm64, real fixed resources and synthetic files. Not App integration, cross-platform validation, arbitrary packages, editable source fidelity or release license approval."
+}

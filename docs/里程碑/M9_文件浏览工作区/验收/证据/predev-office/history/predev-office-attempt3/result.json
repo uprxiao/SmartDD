@@ -1,0 +1,400 @@
+{
+  "scope": "Office predevelopment candidate proof, not App acceptance",
+  "startedAt": "2026-10-17T08:22:05Z",
+  "cases": [
+    {
+      "id": "OP03",
+      "title": "Original OA12 failing workbook: independent POI calculation + saved candidate reopened",
+      "status": "passed",
+      "facts": {
+        "first": {
+          "verifiedCells": 3,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "#REF!+#REF!",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            }
+          }
+        },
+        "reopen": {
+          "verifiedCells": 3,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "#REF!+#REF!",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            }
+          }
+        },
+        "originalAdapterUnchanged": true
+      }
+    },
+    {
+      "id": "OP04",
+      "title": "Direct/range/named/structured/3D/shared/array/IFERROR/INDIRECT real workbook",
+      "status": "passed",
+      "facts": {
+        "calculation": {
+          "verifiedCells": 15,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "Data!$B$2+Data!B3",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D2": {
+              "sheet": "Calc",
+              "cell": "D2",
+              "formula": "Data!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "9.0",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(Data!B2:B3)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D3": {
+              "sheet": "Calc",
+              "cell": "D3",
+              "formula": "Data!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "12.0",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            },
+            "B5": {
+              "sheet": "Calc",
+              "cell": "B5",
+              "formula": "IFERROR(Data!B2,77)",
+              "type": "NUMERIC",
+              "value": "3.0",
+              "exception": ""
+            },
+            "B6": {
+              "sheet": "Calc",
+              "cell": "B6",
+              "formula": "IF(FALSE,Data!B2,42)",
+              "type": "NUMERIC",
+              "value": "42.0",
+              "exception": ""
+            },
+            "B7": {
+              "sheet": "Calc",
+              "cell": "B7",
+              "formula": "IFERROR(B2,88)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B8": {
+              "sheet": "Calc",
+              "cell": "B8",
+              "formula": "SUM(InputTotal)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B9": {
+              "sheet": "Calc",
+              "cell": "B9",
+              "formula": "SUM(Sales[Value])",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B10": {
+              "sheet": "Calc",
+              "cell": "B10",
+              "formula": "SUM(Data:Spare!A1)",
+              "type": "NUMERIC",
+              "value": "5.0",
+              "exception": ""
+            },
+            "B11": {
+              "sheet": "Calc",
+              "cell": "B11",
+              "formula": "Data!B2*2",
+              "type": "NUMERIC",
+              "value": "6.0",
+              "exception": ""
+            },
+            "B12": {
+              "sheet": "Calc",
+              "cell": "B12",
+              "formula": "Data!B3*2",
+              "type": "NUMERIC",
+              "value": "8.0",
+              "exception": ""
+            },
+            "B15": {
+              "sheet": "Calc",
+              "cell": "B15",
+              "formula": "IFERROR(SUM(Data!B2:B3),99)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B16": {
+              "sheet": "Calc",
+              "cell": "B16",
+              "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+              "type": "NUMERIC",
+              "value": "3.0",
+              "exception": ""
+            }
+          }
+        },
+        "expandedShared": [
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B11",
+            "formula": "Data!B2*2"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B12",
+            "formula": "Data!B3*2"
+          }
+        ],
+        "note": "POI raw shared cross-sheet parsing is not used"
+      }
+    },
+    {
+      "id": "OP05",
+      "title": "Precise rename with dependency evaluation, value-only extraction and reopen",
+      "status": "failed",
+      "error": "AttributeError(\"module 'old_actions' has no attribute 'OPAQUE_NAME'\")"
+    },
+    {
+      "id": "OP06",
+      "title": "Precise delete with dependency evaluation, value-only extraction and reopen",
+      "status": "failed",
+      "error": "AttributeError(\"module 'old_actions' has no attribute 'OPAQUE_NAME'\")"
+    },
+    {
+      "id": "OP07",
+      "title": "Independent XSLF reads real table/chart embedded data and master",
+      "status": "passed",
+      "facts": {
+        "engine": "Apache POI 5.5.1",
+        "slides": 2,
+        "masters": 1,
+        "tables": [
+          "Label",
+          "Value",
+          "A",
+          "TABLE_EDITED",
+          "B",
+          "UNCHANGED_CELL"
+        ],
+        "texts": [
+          "MASTER_TITLE",
+          "OTHER_SLIDE",
+          "UNCHANGED_SLIDE"
+        ],
+        "charts": [
+          {
+            "embeddedB2": 9.0,
+            "chartXml": "<xml-fragment xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><c:chart><c:autoTitleDeleted val=\"1\"/><c:plotArea><c:layout/><c:barChart><c:barDir val=\"col\"/><c:grouping val=\"clustered\"/><c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:v>Value</c:v></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$3</c:f><c:strCache><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>A</c:v></c:pt><c:pt idx=\"1\"><c:v>B</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2:$B$3</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>9</c:v></c:pt><c:pt idx=\"1\"><c:v>4</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser><c:axId val=\"1\"/><c:axId val=\"2\"/></c:barChart><c:catAx><c:axId val=\"1\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"b\"/><c:crossAx val=\"2\"/><c:crosses val=\"autoZero\"/></c:catAx><c:valAx><c:axId val=\"2\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"l\"/><c:crossAx val=\"1\"/><c:crosses val=\"autoZero\"/></c:valAx></c:plotArea><c:plotVisOnly val=\"1\"/></c:chart><c:externalData r:id=\"rIdEmbedded\"><c:autoUpdate val=\"0\"/></c:externalData></xml-fragment>"
+          }
+        ]
+      }
+    },
+    {
+      "id": "OP08",
+      "title": "Package gate rejects undeclared unknown part loss",
+      "status": "failed",
+      "error": "AttributeError(\"module 'old_actions' has no attribute 'OPAQUE_NAME'\")"
+    }
+  ],
+  "subprocesses": [
+    {
+      "name": "oa12-recalc",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt3/oa12-deleted.xlsx",
+        "/private/tmp/predev-office-attempt3/oa12-poi-candidate.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 470.89
+    },
+    {
+      "name": "oa12-reopen",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt3/oa12-poi-candidate.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 417.42
+    },
+    {
+      "name": "rich-normalized",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt3/rich-normalized.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 372.97
+    },
+    {
+      "name": "rich-rename-calc",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt3/rich-rename-patched.xlsx",
+        "/private/tmp/predev-office-attempt3/rich-rename-engine.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 439.18
+    },
+    {
+      "name": "rich-rename-final-reopen",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt3/rich-rename-final.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 386.62
+    },
+    {
+      "name": "rich-delete-calc",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt3/rich-delete-patched.xlsx",
+        "/private/tmp/predev-office-attempt3/rich-delete-engine.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 395.5
+    },
+    {
+      "name": "rich-delete-final-reopen",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt3/rich-delete-final.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 395.6
+    },
+    {
+      "name": "ppt-read",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "pptx",
+        "/private/tmp/predev-office-attempt3/rich-edited.pptx"
+      ],
+      "exitCode": 0,
+      "durationMs": 421.75
+    }
+  ],
+  "sources": {
+    "predev-office-adapter.py": "f1e6dcf101c6431a6d624ecf7f2778a4a20aeae5f9795c86dc531207616c44af",
+    "predev-office-probe.py": "6b6678a39f06440f449323227c77599eecaf99dbf297488455c8c22c286c756d",
+    "predev-office-run.py": "b8d2a9f2ba5a323e53b64b27183e80ec3973e08f273b85d50ae618fdd2c18673"
+  },
+  "originalUnchanged": true,
+  "summary": {
+    "passed": 3,
+    "failed": 3
+  },
+  "completedAt": "2026-10-17T08:22:08Z"
+}

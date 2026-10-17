@@ -1,0 +1,59 @@
+{
+  "electron": "42.11.14",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "PA01",
+      "title": "真实Electron主frame经生产校验送入真实PTY，不追加Enter",
+      "status": "failed",
+      "error": "Error: timeout\n    at until (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:206:9)\n    at async /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:259:5\n    at async check (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:213:22)\n    at async /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:257:3"
+    },
+    {
+      "id": "PA02",
+      "title": "另一个真实窗口即使知道task/PTY也不能输入",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA03",
+      "title": "真实子frame同一webContents仍被拒绝",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA04",
+      "title": "错任务及停止/重开后的旧PTY不能输入",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA05",
+      "title": "真实resize仅接受合法来源/任务和尺寸",
+      "status": "failed",
+      "error": "Error: resize leak\n    at assert (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:220:17)\n    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:294:5\n    at async check (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:213:22)\n    at async /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-Hem54e/probe.cjs:289:3"
+    },
+    {
+      "id": "PA06",
+      "title": "原生invoke的kill校验sender/task，合法调用只结束合成PTY",
+      "status": "passed",
+      "evidence": {
+        "foreignAndWrongTaskRejected": true,
+        "legitimateKill": true
+      }
+    }
+  ],
+  "scope": "Own hidden Electron windows and synthetic raw PTY; not packaged WillYou or third-party CLI acceptance",
+  "startedFromScript": "/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/技研/实验/pty-access-probe.mjs",
+  "scriptSha256": "aad55ec8222700f75a5a4ec3a66a8fdb33131438333b81ecfd48d8979a9efe81",
+  "summary": {
+    "passed": 4,
+    "failed": 2
+  }
+}

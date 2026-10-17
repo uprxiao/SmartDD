@@ -1,0 +1,767 @@
+{
+  "schema": "m10-bug-story-biz13.0-matrix-v1",
+  "repository": "https://github.com/easysoft/zentao-api",
+  "commit_sha": "6f57de2ec9647af9f782781eb267b431cba8dbad",
+  "target": "biz13.0",
+  "note": "Public static interface research only. No SDK execution or target-instance request. SDK-declared candidates still require target verification. Individual parameter versions are not declared.",
+  "entries": [
+    {
+      "method": "GET",
+      "path": "/projects/{projectID}/stories",
+      "summary": "获取项目需求列表",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1projects~1{projectID}~1stories/get",
+      "minVersion_map_pointer": "#/get ~1projects~1{projectID}~1stories",
+      "generated_version_line": 2491,
+      "generated_path_line": 2495,
+      "path_query_parameters": [
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是allstory。(allstory 全部 | assignedtome 指派给我 | openedbyme 我创建 | reviewbyme 待我评审 | draftstory 草稿)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态)，倒序使用id_desc, title_desc, status_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "projectID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "GET",
+      "path": "/stories/{storyID}",
+      "summary": "获取需求详情",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1stories~1{storyID}/get",
+      "minVersion_map_pointer": "#/get ~1stories~1{storyID}",
+      "generated_version_line": 2679,
+      "generated_path_line": 2683,
+      "path_query_parameters": [
+        {
+          "name": "storyID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "PUT",
+      "path": "/stories/{storyID}/change",
+      "summary": "变更需求",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1stories~1{storyID}~1change/put",
+      "minVersion_map_pointer": "#/put ~1stories~1{storyID}~1change",
+      "generated_version_line": 2846,
+      "generated_path_line": 2850,
+      "path_query_parameters": [
+        {
+          "name": "storyID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [
+        {
+          "content_type": "application/json",
+          "required_fields": [
+            "reviewer"
+          ],
+          "fields": [
+            "title",
+            "reviewer",
+            "spec",
+            "verify"
+          ]
+        }
+      ],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "workflow_research_only"
+    },
+    {
+      "method": "GET",
+      "path": "/products/{productID}/stories",
+      "summary": "获取产品需求列表",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1products~1{productID}~1stories/get",
+      "minVersion_map_pointer": "#/get ~1products~1{productID}~1stories",
+      "generated_version_line": 2491,
+      "generated_path_line": 2495,
+      "path_query_parameters": [
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是unclosed。(allstory 全部 | assignedtome 指派给我 | openedbyme 我创建 | reviewbyme 待我评审 | draftstory 草稿)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态)，倒序使用id_desc, title_desc, status_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "productID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "GET",
+      "path": "/executions/{executionID}/stories",
+      "summary": "获取执行需求列表",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1executions~1{executionID}~1stories/get",
+      "minVersion_map_pointer": "#/get ~1executions~1{executionID}~1stories",
+      "generated_version_line": 2491,
+      "generated_path_line": 2495,
+      "path_query_parameters": [
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是allstory。(allstory 全部 | assignedtome 指派给我 | openedbyme 我创建 | reviewbyme 待我评审 | draftstory 草稿)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态)，倒序使用id_desc, title_desc, status_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "executionID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "PUT",
+      "path": "/stories/{storyID}/close",
+      "summary": "关闭需求",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1stories~1{storyID}~1close/put",
+      "minVersion_map_pointer": "#/put ~1stories~1{storyID}~1close",
+      "generated_version_line": 2896,
+      "generated_path_line": 2900,
+      "path_query_parameters": [
+        {
+          "name": "storyID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [
+        {
+          "content_type": "application/json",
+          "required_fields": [
+            "closedReason"
+          ],
+          "fields": [
+            "closedReason",
+            "comment"
+          ]
+        }
+      ],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "workflow_research_only"
+    },
+    {
+      "method": "PUT",
+      "path": "/stories/{storyID}/activate",
+      "summary": "激活需求",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1stories~1{storyID}~1activate/put",
+      "minVersion_map_pointer": "#/put ~1stories~1{storyID}~1activate",
+      "generated_version_line": 2815,
+      "generated_path_line": 2819,
+      "path_query_parameters": [
+        {
+          "name": "storyID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [
+        {
+          "content_type": "application/json",
+          "required_fields": [],
+          "fields": [
+            "assignedTo",
+            "comment"
+          ]
+        }
+      ],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "workflow_research_only"
+    },
+    {
+      "method": "GET",
+      "path": "/projects/{projectID}/bugs",
+      "summary": "获取项目Bug列表",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1projects~1{projectID}~1bugs/get",
+      "minVersion_map_pointer": "#/get ~1projects~1{projectID}~1bugs",
+      "generated_version_line": 3700,
+      "generated_path_line": 3704,
+      "path_query_parameters": [
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是all。(all 全部 | unresolved 未关闭)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态)，倒序使用id_desc, title_desc, status_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "projectID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "GET",
+      "path": "/bugs/{bugID}",
+      "summary": "获取Bug详情",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1bugs~1{bugID}/get",
+      "minVersion_map_pointer": "#/get ~1bugs~1{bugID}",
+      "generated_version_line": 3868,
+      "generated_path_line": 3872,
+      "path_query_parameters": [
+        {
+          "name": "bugID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "GET",
+      "path": "/products/{productID}/bugs",
+      "summary": "获取产品Bug列表",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1products~1{productID}~1bugs/get",
+      "minVersion_map_pointer": "#/get ~1products~1{productID}~1bugs",
+      "generated_version_line": 3700,
+      "generated_path_line": 3704,
+      "path_query_parameters": [
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是unclosed。(all 全部 | unclosed 未关闭 | assignedtome 指派给我 | openedbyme 我创建 | assignedbyme 由我指派)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态)，倒序使用id_desc, title_desc, status_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "productID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "GET",
+      "path": "/executions/{executionID}/bugs",
+      "summary": "获取执行Bug列表",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1executions~1{executionID}~1bugs/get",
+      "minVersion_map_pointer": "#/get ~1executions~1{executionID}~1bugs",
+      "generated_version_line": 3700,
+      "generated_path_line": 3704,
+      "path_query_parameters": [
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是all。(all 全部 | unresolved 未关闭)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态)，倒序使用id_desc, title_desc, status_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "executionID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "read_candidate"
+    },
+    {
+      "method": "PUT",
+      "path": "/bugs/{bugID}/confirm",
+      "summary": "确认Bug",
+      "minBizVersion": "biz13.5",
+      "status": "excluded_from_biz13.0_default",
+      "json_pointer": "#/paths/~1bugs~1{bugID}~1confirm/put",
+      "minVersion_map_pointer": "#/put ~1bugs~1{bugID}~1confirm",
+      "generated_version_line": 4082,
+      "generated_path_line": 4086,
+      "path_query_parameters": [
+        {
+          "name": "bugID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [
+        {
+          "content_type": "application/json",
+          "required_fields": [],
+          "fields": [
+            "assignedTo",
+            "type",
+            "pri",
+            "deadline",
+            "status",
+            "mailto",
+            "comment"
+          ]
+        }
+      ],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "excluded_by_sdk_version"
+    },
+    {
+      "method": "PUT",
+      "path": "/bugs/{bugID}/resolve",
+      "summary": "解决Bug",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1bugs~1{bugID}~1resolve/put",
+      "minVersion_map_pointer": "#/put ~1bugs~1{bugID}~1resolve",
+      "generated_version_line": 4143,
+      "generated_path_line": 4147,
+      "path_query_parameters": [
+        {
+          "name": "bugID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [
+        {
+          "content_type": "application/json",
+          "required_fields": [
+            "resolution"
+          ],
+          "fields": [
+            "resolution",
+            "resolvedDate",
+            "resolvedBuild",
+            "assignedTo",
+            "comment"
+          ]
+        }
+      ],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "workflow_research_only"
+    },
+    {
+      "method": "PUT",
+      "path": "/bugs/{bugID}/close",
+      "summary": "关闭Bug",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1bugs~1{bugID}~1close/put",
+      "minVersion_map_pointer": "#/put ~1bugs~1{bugID}~1close",
+      "generated_version_line": 4058,
+      "generated_path_line": 4062,
+      "path_query_parameters": [
+        {
+          "name": "bugID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [
+        {
+          "content_type": "application/json",
+          "required_fields": [],
+          "fields": [
+            "comment"
+          ]
+        }
+      ],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "workflow_research_only"
+    },
+    {
+      "method": "PUT",
+      "path": "/bugs/{bugID}/activate",
+      "summary": "激活Bug",
+      "minBizVersion": "biz13.0",
+      "status": "sdk_declared_candidate",
+      "json_pointer": "#/paths/~1bugs~1{bugID}~1activate/put",
+      "minVersion_map_pointer": "#/put ~1bugs~1{bugID}~1activate",
+      "generated_version_line": 4017,
+      "generated_path_line": 4021,
+      "path_query_parameters": [
+        {
+          "name": "bugID",
+          "in": "path",
+          "required": true,
+          "description": null
+        }
+      ],
+      "request_body_fields": [
+        {
+          "content_type": "application/json",
+          "required_fields": [],
+          "fields": [
+            "openedBuild",
+            "assignedTo",
+            "comment"
+          ]
+        }
+      ],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "workflow_research_only"
+    },
+    {
+      "method": "GET",
+      "path": "/my/bugs",
+      "summary": "指派给我的Bug",
+      "minBizVersion": "biz13.5",
+      "status": "excluded_from_biz13.0_default",
+      "json_pointer": "#/paths/~1my~1bugs/get",
+      "minVersion_map_pointer": "#/get ~1my~1bugs",
+      "generated_version_line": 11111,
+      "generated_path_line": 11115,
+      "path_query_parameters": [
+        {
+          "name": "param",
+          "in": "query",
+          "required": false,
+          "description": "搜索参数；browseType=bysearch 或 bySearch 时必填。"
+        },
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是assignedTo，取值取自 zt_bug 的字段名（区分大小写）。(assignedTo 指派给我 | openedBy 由我创建 | resolvedBy 由我解决 | closedBy 由我关闭 | assignedBy 由我指派 | bysearch 按查询搜索，需同时传 param)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态 | severity_asc 严重程度)，倒序使用id_desc, title_desc, status_desc, severity_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "excluded_by_sdk_version"
+    },
+    {
+      "method": "GET",
+      "path": "/my/stories",
+      "summary": "指派给我的研发需求",
+      "minBizVersion": "biz13.5",
+      "status": "excluded_from_biz13.0_default",
+      "json_pointer": "#/paths/~1my~1stories/get",
+      "minVersion_map_pointer": "#/get ~1my~1stories",
+      "generated_version_line": 11190,
+      "generated_path_line": 11194,
+      "path_query_parameters": [
+        {
+          "name": "param",
+          "in": "query",
+          "required": false,
+          "description": "搜索参数；browseType=bysearch 或 bySearch 时必填。"
+        },
+        {
+          "name": "browseType",
+          "in": "query",
+          "required": false,
+          "description": "状态，默认是assignedTo，取值区分大小写。(all 全部 | assignedTo 指派给我 | openedBy 由我创建 | reviewBy 待我评审 | reviewedBy 我评审过 | closedBy 由我关闭 | assignedBy 由我指派 | bysearch 按查询搜索，需同时传 param)"
+        },
+        {
+          "name": "orderBy",
+          "in": "query",
+          "required": false,
+          "description": "排序(id_asc | title_asc 标题 | status_asc 状态)，倒序使用id_desc, title_desc, status_desc"
+        },
+        {
+          "name": "recPerPage",
+          "in": "query",
+          "required": false,
+          "description": "每页数量，不超过1000"
+        },
+        {
+          "name": "pageID",
+          "in": "query",
+          "required": false,
+          "description": "页码，从第1页开始"
+        },
+        {
+          "name": "filters",
+          "in": "query",
+          "required": false,
+          "description": null
+        },
+        {
+          "name": "groupJoin",
+          "in": "query",
+          "required": false,
+          "description": null
+        }
+      ],
+      "request_body_fields": [],
+      "execution_status": "not_executed_against_target",
+      "planned_use": "excluded_by_sdk_version"
+    }
+  ],
+  "confirmed_deployment": {
+    "base_url": "http://192.168.106.185/biz/",
+    "version": "biz13.0",
+    "included_objects": [
+      "bug",
+      "story"
+    ],
+    "excluded_objects": [
+      "ticket"
+    ]
+  },
+  "counts": {
+    "read_candidate": 8,
+    "workflow_research_only": 6,
+    "excluded_by_sdk_version": 3
+  },
+  "license": "MIT; Copyright (c) 2026 Sun Hao; see zentao-api.LICENSE"
+}

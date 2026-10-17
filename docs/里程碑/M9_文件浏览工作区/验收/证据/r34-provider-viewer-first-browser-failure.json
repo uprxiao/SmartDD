@@ -1,0 +1,708 @@
+{
+  "date": "2026-10-17T07:49:58.938Z",
+  "kind": "official-third-party-viewer-in-isolated-test-host",
+  "package": "@modelcontextprotocol/server-pdf",
+  "version": "2.0.3",
+  "checks": [
+    {
+      "name": "OS sandbox denies fixture overwrite",
+      "pass": true,
+      "details": "EPERM"
+    },
+    {
+      "name": "OS sandbox denies outside-canary contents",
+      "pass": true,
+      "details": "EPERM"
+    },
+    {
+      "name": "OS sandbox denies even loopback network",
+      "pass": true,
+      "details": "EPERM"
+    },
+    {
+      "name": "real MCP discovers display tool and UI resource linkage",
+      "pass": true,
+      "details": "ui://pdf-viewer/mcp-app.html"
+    },
+    {
+      "name": "official MCP resource equals published HTML bytes",
+      "pass": true,
+      "details": {
+        "uri": "ui://pdf-viewer/mcp-app.html",
+        "mimeType": "text/html;profile=mcp-app",
+        "bytes": 4305806,
+        "sha256": "3c8aa8ca4d27bf20429b8b3a8dd6521340594cc1c1cbf69f50e3d35908625be7",
+        "declaredCsp": {
+          "connectDomains": [
+            "https://unpkg.com"
+          ],
+          "resourceDomains": [
+            "https://unpkg.com"
+          ]
+        }
+      }
+    },
+    {
+      "name": "real provider returns exact local PDF bytes",
+      "pass": true
+    },
+    {
+      "name": "real provider rejects non-fixture file",
+      "pass": true,
+      "details": "Local file not in allowed list: /private/tmp/m9-r34-provider/outside-canary.txt\nAllowed directories: "
+    },
+    {
+      "name": "official UI initialize handshake completes",
+      "pass": true
+    },
+    {
+      "name": "probe completes",
+      "pass": false,
+      "details": "TimeoutError: frame.waitForFunction: Timeout 30000ms exceeded."
+    }
+  ],
+  "calls": [
+    {
+      "name": "read_pdf_bytes",
+      "arguments": {
+        "url": "/private/tmp/m9-r34-provider/fixture/example.pdf",
+        "offset": 0,
+        "byteCount": 1
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    },
+    {
+      "name": "poll_pdf_commands",
+      "arguments": {
+        "viewUUID": "582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+      }
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "warning",
+      "text": "An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing."
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, method: ui/notifications/sandbox-resource-ready, params: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: ui/initialize, params: Object, jsonrpc: 2.0, id: 0}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 0, method: ui/initialize, params: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {result: Object, jsonrpc: 2.0, id: 0}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 0, result: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, method: ui/notifications/initialized}"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] Connected to host"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] Host context changed: {theme: light, displayMode: inline, availableDisplayModes: Array(1), containerDimensions: Object, platform: web}"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] Inline mode"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] Container dimensions changed: {maxHeight: 900, width: 1100}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, method: ui/notifications/initialized}"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, method: ui/notifications/tool-input, params: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, method: ui/notifications/tool-result, params: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, method: ui/notifications/tool-input, params: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, method: ui/notifications/tool-result, params: Object}"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] Received tool result: {_meta: Object, content: Array(1), structuredContent: Object}"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] loadSavedPage: key= 582b0f59-9c79-42b7-b75d-5ca3ebf608f1"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] loadSavedPage: saved value= null"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] loadSavedPage: returning null"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] URL: /private/tmp/m9-r34-provider/fixture/example.pdf Starting at page: 1"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 1}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 1, method: tools/call, params: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {result: Object, jsonrpc: 2.0, id: 1}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 1, result: Object}"
+    },
+    {
+      "type": "log",
+      "text": "[PDF-VIEWER] PDF file size: 4 KB"
+    },
+    {
+      "type": "warning",
+      "text": "Warning: Setting up fake worker."
+    },
+    {
+      "type": "error",
+      "text": "Loading the script 'data:text/javascript;base64,LyoqCiAqIEBsaWNzdGFydCBUaGUgZm9sbG93aW5nIGlzIHRoZSBlbnRpcmUgbGljZW5zZSBub3RpY2UgZm9yIHRoZQogKiBKYXZhU2NyaXB0IGNvZGUgaW4gdGhpcyBwYWdlCiAqCiAqIENvcHlyaWdodCAyMDI0IE1vemlsbGEgRm91bmRhdGlvbgogKgogKiBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKICogeW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLgogKiBZb3UgbWF5IG9idGFpbiBhIGNvcHkgb2YgdGhlIExpY2Vuc2UgYXQKICoKICogICAgIGh0dHA6Ly93d3cuYXBhY2hlLm9yZy9saWNlbnNlcy9...sKICAgIHJldHVybiB3b3JrZXJIYW5kbGVyTmFtZTsKICB9CiAgc3RhdGljIGluaXRpYWxpemVGcm9tUG9ydChwb3J0KSB7CiAgICBjb25zdCBoYW5kbGVyID0gbmV3IE1lc3NhZ2VIYW5kbGVyKCJ3b3JrZXIiLCAibWFpbiIsIHBvcnQpOwogICAgdGhpcy5zZXR1cChoYW5kbGVyLCBwb3J0KTsKICAgIGhhbmRsZXIuc2VuZCgicmVhZHkiLCBudWxsKTsK"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Error loading PDF document: Error: Setting up fake worker failed: \"Failed to fetch dynamically imported module: data:text/javascript;base64,LyoqCiAqIEBsaWNzdGFydCBUaGUgZm9sbG93aW5nIGlzIHRoZSBlbnRpcmUgbGljZW5zZSBub3RpY2UgZm9yIHRoZQogKiBKYXZhU2NyaXB0IGNvZGUgaW4gdGhpcyBwYWdlCiAqCiAqIENvcHlyaWdodCAyMDI0IE1vemlsbGEgRm91bmRhdGlvbgogKgogKiBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKICogeW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLgogKiBZb3UgbWF5IG9idGFpbiBhIGNvcHkgb2YgdGhlIExpY2Vuc2UgYXQKICoKICogICAgIGh0dHA6Ly93d3cuYXBhY2hlLm9yZy9saWNlbnNlcy9MSUNFTlNFLTIuMAogKgogKiBVbmxlc3MgcmVxdWlyZWQgYnkgYXBwbGljYWJsZSBsYXcgb3IgYWdyZWVkIHRvIGluIHdyaXRpbmcsIHNvZnR3YXJlCiAqIGRpc3RyaWJ1dGVkIHVuZGVyIHRoZSBMaWNlbnNlIGlzIGR"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Error loading PDF: Error: Setting up fake worker failed: \"Failed to fetch dynamically imported module: data:text/javascript;base64,LyoqCiAqIEBsaWNzdGFydCBUaGUgZm9sbG93aW5nIGlzIHRoZSBlbnRpcmUgbGljZW5zZSBub3RpY2UgZm9yIHRoZQogKiBKYXZhU2NyaXB0IGNvZGUgaW4gdGhpcyBwYWdlCiAqCiAqIENvcHlyaWdodCAyMDI0IE1vemlsbGEgRm91bmRhdGlvbgogKgogKiBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKICogeW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLgogKiBZb3UgbWF5IG9idGFpbiBhIGNvcHkgb2YgdGhlIExpY2Vuc2UgYXQKICoKICogICAgIGh0dHA6Ly93d3cuYXBhY2hlLm9yZy9saWNlbnNlcy9MSUNFTlNFLTIuMAogKgogKiBVbmxlc3MgcmVxdWlyZWQgYnkgYXBwbGljYWJsZSBsYXcgb3IgYWdyZWVkIHRvIGluIHdyaXRpbmcsIHNvZnR3YXJlCiAqIGRpc3RyaWJ1dGVkIHVuZGVyIHRoZSBMaWNlbnNlIGlzIGRpc3RyaWJ1"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 2}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 2, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 2, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 2, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 3}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 3, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 3, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 3, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 4}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 4, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 4, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 4, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 5}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 5, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 5, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 5, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 6}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 6, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 6, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 6, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 7}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 7, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 7, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 7, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 8}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 8, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 8, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 8, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 9}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 9, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 9, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 9, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 10}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 10, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 10, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 10, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 11}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 11, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 11, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 11, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 12}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 12, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 12, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 12, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 13}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 13, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 13, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 13, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 14}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 14, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 14, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 14, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 15}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 15, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 15, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 15, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {method: tools/call, params: Object, jsonrpc: 2.0, id: 16}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 16, method: tools/call, params: Object}"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "debug",
+      "text": "Sending message {jsonrpc: 2.0, id: 16, error: Object}"
+    },
+    {
+      "type": "debug",
+      "text": "Parsed message {jsonrpc: 2.0, id: 16, error: Object}"
+    },
+    {
+      "type": "error",
+      "text": "[PDF-VIEWER] Poll error: ProtocolError: only exact fixture read_pdf_bytes allowed\n    at Ld.fromError (<anonymous>:39:83533)\n    at nw._onresponse (<anonymous>:39:117392)\n    at _transport.onmessage (<anonymous>:39:111966)\n    at Hx.messageListener (<anonymous>:43:7486)"
+    }
+  ],
+  "externalRequests": [],
+  "fixture": {
+    "bytes": 4479,
+    "sha256": "c07e98c323fcb4bb0b381bf902af50c9bdcbd6d7f27781a57424cbfd14c3f40c"
+  },
+  "isolation": {
+    "profile": "(version 1)(deny default)(allow process-exec (literal \"/Users/liubu/.hermes/node/bin/node\"))(allow process-info* (target self))(allow sysctl-read)(allow file-read* (subpath \"/usr/lib\") (subpath \"/System/Library\") (subpath \"/System/Volumes/Preboot\") (subpath \"/private/var/db/dyld\") (subpath \"/private/tmp/m9-r34-provider/node_modules\") (literal \"/\") (literal \"/dev/null\") (literal \"/dev/random\") (literal \"/dev/urandom\") (literal \"/Users/liubu/.hermes/node/bin/node\") (literal \"/private/tmp/m9-r34-provider/fixture/example.pdf\"))(allow file-read-metadata (subpath \"/private/tmp/m9-r34-provider\") (literal \"/Users/liubu/.hermes/node/bin\") (literal \"/Users/liubu/.hermes/node\") (literal \"/Users/liubu/.hermes\") (literal \"/Users/liubu\") (literal \"/Users\") (literal \"/private/tmp\") (literal \"/private\"))",
+    "network": "deny default: no network allow rule",
+    "writes": "deny default: no file-write allow rule",
+    "modelRequests": "none; host rejects context/message/open/download requests"
+  },
+  "officialHtml": {
+    "uri": "ui://pdf-viewer/mcp-app.html",
+    "mimeType": "text/html;profile=mcp-app",
+    "bytes": 4305806,
+    "sha256": "3c8aa8ca4d27bf20429b8b3a8dd6521340594cc1c1cbf69f50e3d35908625be7",
+    "declaredCsp": {
+      "connectDomains": [
+        "https://unpkg.com"
+      ],
+      "resourceDomains": [
+        "https://unpkg.com"
+      ]
+    }
+  },
+  "policyProbe": {
+    "status": 0,
+    "stdout": "{\"outsideRead\":\"EPERM\",\"write\":\"EPERM\",\"network\":\"EPERM\"}\n",
+    "stderr": ""
+  },
+  "serverInfo": {
+    "name": "PDF Server",
+    "version": "2.0.0"
+  },
+  "serverCapabilities": {
+    "resources": {
+      "listChanged": true
+    },
+    "tools": {
+      "listChanged": true
+    }
+  },
+  "toolNames": [
+    "list_pdfs",
+    "read_pdf_bytes",
+    "display_pdf",
+    "interact",
+    "submit_page_data",
+    "submit_save_data",
+    "submit_viewer_state",
+    "poll_pdf_commands",
+    "save_pdf"
+  ],
+  "loopbackOrigins": [
+    "http://127.0.0.1:58149",
+    "http://127.0.0.1:58148"
+  ],
+  "error": "frame.waitForFunction: Timeout 30000ms exceeded.\n    at /Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/r34-provider-viewer-check.mjs:115:14",
+  "summary": {
+    "passed": 8,
+    "total": 9
+  }
+}

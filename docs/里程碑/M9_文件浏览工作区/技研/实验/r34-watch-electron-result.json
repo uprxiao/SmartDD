@@ -1,0 +1,260 @@
+{
+  "date": "2026-10-17T07:36:07.660Z",
+  "requirements": "R3.3-20261017",
+  "iteration": "r34-watch",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.19.0",
+    "electron": "42.11.14",
+    "backendRequested": "fs-events",
+    "moduleRoot": "/private/tmp/m9-r34-watch-deps"
+  },
+  "boundary": "Only fresh temporary files and a real @parcel/watcher native binding. No production IPC, packaged app, other OS/arch, permission fault, OS overflow or native kernel handle census.",
+  "checks": [
+    {
+      "id": "NW01",
+      "title": "精确版本与原生 arm64 binding 实际加载",
+      "status": "passed",
+      "detail": {
+        "version": "2.5.6",
+        "nativeInfo": [
+          {
+            "path": "/private/tmp/m9-r34-watch-deps/node_modules/@parcel/watcher-darwin-arm64/watcher.node",
+            "bytes": 326112,
+            "sha256": "ab8bc3d89413ab68ddca894b9b0a217c9209dace11a2056f299d144fba38f230"
+          }
+        ]
+      }
+    },
+    {
+      "id": "NW02",
+      "title": "递归原生 create/update/delete 通知",
+      "status": "passed",
+      "detail": {
+        "observed": [
+          {
+            "time": 1792222565211,
+            "type": "create",
+            "path": ""
+          },
+          {
+            "time": 1792222565211,
+            "type": "create",
+            "path": "nested"
+          },
+          {
+            "time": 1792222565211,
+            "type": "create",
+            "path": "nested/file.txt"
+          },
+          {
+            "time": 1792222565293,
+            "type": "update",
+            "path": "nested/file.txt"
+          },
+          {
+            "time": 1792222565369,
+            "type": "delete",
+            "path": "nested/file.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "NW03",
+      "title": "rename 以旧 delete 与新 create 表达",
+      "status": "passed",
+      "detail": {
+        "observed": [
+          {
+            "time": 1792222565529,
+            "type": "create",
+            "path": "after.txt"
+          },
+          {
+            "time": 1792222565529,
+            "type": "delete",
+            "path": "before.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "NW04",
+      "title": "原子替换后继续观察新 inode 的后续修改",
+      "status": "passed",
+      "detail": {
+        "value": "v2 v3",
+        "observed": [
+          {
+            "time": 1792222565684,
+            "type": "delete",
+            "path": ".replacement"
+          },
+          {
+            "time": 1792222565684,
+            "type": "create",
+            "path": "watched.txt"
+          },
+          {
+            "time": 1792222565761,
+            "type": "update",
+            "path": "watched.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "NW05",
+      "title": "共享订阅一个消费者关闭不影响另一者，归零后无回调",
+      "status": "passed",
+      "detail": {
+        "starts": 1,
+        "stops": 1,
+        "closedConsumerEvents": 1,
+        "remainingConsumerEvents": 2
+      }
+    },
+    {
+      "id": "NW06",
+      "title": "subscribe 尚未返回就取消仍 await unsubscribe",
+      "status": "passed",
+      "detail": {
+        "starts": 1,
+        "stops": 1,
+        "events": 0
+      }
+    },
+    {
+      "id": "NW07",
+      "title": "原生快照弥补停止订阅期间的文件变化",
+      "status": "passed",
+      "detail": {
+        "events": [
+          {
+            "path": "after.txt",
+            "type": "delete"
+          },
+          {
+            "path": "during-gap.txt",
+            "type": "create"
+          }
+        ]
+      }
+    },
+    {
+      "id": "NW08",
+      "title": "根失效后显式补扫和新订阅恢复，不延用旧句柄",
+      "status": "passed",
+      "detail": {
+        "rootUnavailable": true,
+        "explicitResubscribe": true,
+        "snapshot": [
+          "missed.txt"
+        ],
+        "oldNativeEvents": [
+          "delete"
+        ],
+        "newNativeEvents": [
+          {
+            "type": "create",
+            "path": "live.txt"
+          }
+        ],
+        "boundary": "probe orchestrates recovery; not production automatic health detection"
+      }
+    },
+    {
+      "id": "NW09",
+      "title": "缺失根订阅失败可识别，不能报 native 覆盖",
+      "status": "passed",
+      "detail": {
+        "error": "Error: No such file or directory",
+        "requiredCoverage": "none until explicit recovery/fallback"
+      }
+    },
+    {
+      "id": "NW10",
+      "title": "unsubscribe 后子进程自然退出，未用强制退出掩盖句柄",
+      "status": "passed",
+      "detail": {
+        "code": 0,
+        "signal": null,
+        "timeout": false,
+        "elapsedMs": 60.68687500000033,
+        "stdout": "{\"nativeSubscriptionsStarted\":1,\"nativeSubscriptionsStopped\":1}",
+        "stderr": ""
+      }
+    }
+  ],
+  "raw": [
+    {
+      "time": 1792222565211,
+      "type": "create",
+      "path": ""
+    },
+    {
+      "time": 1792222565211,
+      "type": "create",
+      "path": "nested"
+    },
+    {
+      "time": 1792222565211,
+      "type": "create",
+      "path": "nested/file.txt"
+    },
+    {
+      "time": 1792222565293,
+      "type": "update",
+      "path": "nested/file.txt"
+    },
+    {
+      "time": 1792222565369,
+      "type": "delete",
+      "path": "nested/file.txt"
+    },
+    {
+      "time": 1792222565445,
+      "type": "create",
+      "path": "before.txt"
+    },
+    {
+      "time": 1792222565529,
+      "type": "create",
+      "path": "after.txt"
+    },
+    {
+      "time": 1792222565529,
+      "type": "delete",
+      "path": "before.txt"
+    },
+    {
+      "time": 1792222565605,
+      "type": "create",
+      "path": "watched.txt"
+    },
+    {
+      "time": 1792222565684,
+      "type": "delete",
+      "path": ".replacement"
+    },
+    {
+      "time": 1792222565684,
+      "type": "create",
+      "path": "watched.txt"
+    },
+    {
+      "time": 1792222565761,
+      "type": "update",
+      "path": "watched.txt"
+    }
+  ],
+  "summary": {
+    "passed": 10,
+    "failed": 0
+  },
+  "cleanup": {
+    "scratchRemoved": true
+  }
+}

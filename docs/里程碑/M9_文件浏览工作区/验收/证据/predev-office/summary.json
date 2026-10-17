@@ -1,0 +1,65 @@
+{
+  "item": "04",
+  "stage": "predevelopment",
+  "result": "selected-route-validated-ready-for-implementation",
+  "scope": "R3.4 Office candidate mechanisms, not production App or full compatibility acceptance",
+  "evidenceGroups": {
+    "packageStructure": {
+      "passed": 2,
+      "failed": 0,
+      "report": "final/preparation.json"
+    },
+    "engineAndRelationships": {
+      "passed": 8,
+      "failed": 0,
+      "report": "final/result.json",
+      "includesRejectionGuard": [
+        "OP08"
+      ]
+    },
+    "nameAndValueVariations": {
+      "passed": 16,
+      "failed": 0,
+      "report": "final/variations/result.json",
+      "definition": "8 samples times rename/delete, not 16 UI cases"
+    },
+    "realCheckbox": {
+      "passed": 1,
+      "failed": 0,
+      "report": "checkbox/checkbox-result.json"
+    },
+    "libreOfficeRendering": {
+      "passed": 4,
+      "observedLimitation": 1,
+      "failed": 0,
+      "report": "final/render-result.json"
+    }
+  },
+  "originalBlocker": {
+    "fixture": "original office-actions-probe fixture + original delete_sheet; unchanged original expected assertions",
+    "selectedEngine": "Apache POI 5.5.1",
+    "result": [
+      "#REF!",
+      "#REF!",
+      100
+    ],
+    "recalculationAndReopen": "passed",
+    "passiveCacheReader": "openpyxl 3.1.5"
+  },
+  "rawEngineLimitationsRetained": [
+    "LibreOffice 26.2.4.2 imports #REF! as #NAME?; not selected for affected XLSX calculation/rendering",
+    "POI removeSheetAt does not rewrite dependencies; explicit dependency candidate adapter required",
+    "POI raw shared cross-sheet formula import loses sheet reference on this fixture; explicit shared-group expansion required",
+    "POI native sheet rename expands structured references; only result caches extracted, exact source formula retained"
+  ],
+  "productionWork": [
+    "typed IPC and file-identity integration",
+    "complete operation/compatibility adapters and UI",
+    "cancel/timeout/memory process enforcement and packaging",
+    "Microsoft Office and target-platform acceptance",
+    "save broker, undo, flush, crash/conflict verification"
+  ],
+  "formalAppCasesExecuted": 0,
+  "scripts": "../../../技研/实验/predev-office-*.py and predev-office-PoiProbe.java",
+  "report": "../../../技研/开发前_04_Office.md"
+}

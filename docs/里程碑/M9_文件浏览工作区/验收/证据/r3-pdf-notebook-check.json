@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "ranAt": "2026-10-17T03:56:00.749Z",
+  "target": "http://127.0.0.1:4176/?preview=m9",
+  "browser": "Google Chrome (local, headless, isolated context)",
+  "viewport": "1512x949 DPR2",
+  "scope": "合成 PDF/Notebook 原型；不是 Codex 参考运行，不计入正式用例",
+  "screenshots": [
+    {
+      "file": "r3-pdf-normal.png",
+      "sha256": "eac7d825ba86f071dc9cb0b76b4422e668da5056759f352c009cbd93dff6e70b"
+    },
+    {
+      "file": "r3-pdf-encrypted-opened.png",
+      "sha256": "beb82b6863706af15b2765722c735b709f48582fe54d84ba79f7fe4993f5090b"
+    },
+    {
+      "file": "r3-pdf-invalid.png",
+      "sha256": "29ab113520ec5ac0a85b6e8afae89562cae180fa834a93bc31ab38db6e7c58d1"
+    },
+    {
+      "file": "r3-notebook-light.png",
+      "sha256": "78648d0619400e873af910c48ce1859e3e35cf1454677a1f35d60f36b0207aac"
+    },
+    {
+      "file": "r3-notebook-dark.png",
+      "sha256": "75682a83fd3de036c944a55b00b686bb276787e35f89132ed2925bb085aa19af"
+    }
+  ],
+  "checks": [
+    {
+      "id": "R3-PN01",
+      "title": "真实 PDF：3 页画布均渲染，且画布不是空白",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN02",
+      "title": "文本层含中文与英文，可选择",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN03",
+      "title": "链接层：1 个外部、1 个内部（指向第 3 页）",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN04",
+      "title": "点击内部链接滚动到第 3 页",
+      "status": "passed",
+      "detail": {
+        "topOffsetPx": 68
+      }
+    },
+    {
+      "id": "R3-PN05",
+      "title": "点击外部链接只提示，不导航",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN06",
+      "title": "缩略图悬停标题含大纲标题（第 2、3 页），并渲染真实小图",
+      "status": "passed",
+      "detail": {
+        "thumbs": [
+          "",
+          "第 2 页 · 交互与状态",
+          "第 3 页 · 验收与交付"
+        ]
+      }
+    },
+    {
+      "id": "R3-PN07",
+      "title": "缩放到 150%：页面变宽并重新渲染",
+      "status": "passed",
+      "detail": {
+        "wBefore": 498,
+        "wAfter": 1224
+      }
+    },
+    {
+      "id": "R3-PN08",
+      "title": "真实文本层选择文字后出现评论编辑器，引用所选文字",
+      "status": "passed",
+      "detail": {
+        "editor": "第 1 页 · 所选文字\n文件浏览工作区\n取消\n添加（模拟）"
+      }
+    },
+    {
+      "id": "R3-PN09",
+      "title": "空白处拖出矩形：区域评论，坐标按真实页面尺寸（点）换算",
+      "status": "passed",
+      "detail": {
+        "header": "第 1 页 · 所选区域"
+      }
+    },
+    {
+      "id": "R3-PN10",
+      "title": "批处理模式下，添加评论后页面显示标记（非批处理模式发送后队列清空，属原设计）",
+      "status": "passed",
+      "detail": {
+        "markers": 1
+      }
+    },
+    {
+      "id": "R3-PN11",
+      "title": "加密 PDF：弹出密码框，内容不泄漏",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN12",
+      "title": "错误密码：提示重试，仍未显示内容",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN13",
+      "title": "正确密码：对话框关闭并渲染 3 页",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN14",
+      "title": "取消密码框：显示需要密码的错误与重试，没有残留对话框",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-PN15",
+      "title": "截断损坏：显示“不是有效 PDF 或已损坏”，提供重试，原文件未改",
+      "status": "passed",
+      "detail": {
+        "alert": "PDF 页面渲染失败\n\n文件不是有效的 PDF，或已损坏、不完整。原始文件没有被修改。\n\n重试"
+      }
+    },
+    {
+      "id": "R3-PN16",
+      "title": "随机字节：显示“不是有效 PDF 或已损坏”，提供重试，原文件未改",
+      "status": "passed",
+      "detail": {
+        "alert": "PDF 页面渲染失败\n\n文件不是有效的 PDF，或已损坏、不完整。原始文件没有被修改。\n\n重试"
+      }
+    },
+    {
+      "id": "R3-PN17",
+      "title": "14400×14400pt 超大页：画布面积与边长受限并提示降采样",
+      "status": "passed",
+      "detail": {
+        "w": 4096,
+        "h": 4096
+      }
+    },
+    {
+      "id": "R3-PN18",
+      "title": "快速切换 6 次来源：无页面错误，最终正常渲染",
+      "status": "passed",
+      "detail": {
+        "newErrors": []
+      }
+    },
+    {
+      "id": "R3-NB01",
+      "title": "Notebook Markdown 单元用通用渲染（列表/表格/行内代码/公式）",
+      "status": "passed",
+      "detail": {
+        "markdownBlocks": 4
+      }
+    },
+    {
+      "id": "R3-NB02",
+      "title": "代码单元与 JSON 输出有语法高亮（hljs）",
+      "status": "passed",
+      "detail": {
+        "tokens": 28
+      }
+    },
+    {
+      "id": "R3-NB03",
+      "title": "Notebook 内没有 script 元素；HTML 输出仍在 sandbox 空权限 iframe",
+      "status": "passed",
+      "detail": {
+        "iframes": 1
+      }
+    },
+    {
+      "id": "R3-NB04",
+      "title": "深色主题下 Notebook 可切换并截图（高亮色另行配置）",
+      "status": "passed",
+      "detail": {
+        "theme": "dark"
+      }
+    },
+    {
+      "id": "R3-PN19",
+      "title": "全程没有 pageerror / console error",
+      "status": "passed",
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "summary": {
+    "passed": 23
+  }
+}

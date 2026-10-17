@@ -1,0 +1,94 @@
+# 05 PDF / Notebook：开发前资源、样本与失败基线
+
+2026-10-17，依据 [需求 R3.4](../需求.md) R06.5、R06.11、R06.17 和[前期划分](../开发前与开发中工作划分.md)。本页沿用 R3.4 已验证资源/生命周期，不重跑整套；补充 **10/10 真实 PDF 变体检查，以及 11/11 输入额度与 Notebook 大输出调度实验**。没有改 App、共享原型组件、项目依赖或正式用例实际结果。前期路线和代表样本已形成；安装环境、总内存、长期循环和全平台属于实施后验证。
+
+## 1. 可直接实施的资源与能力契约
+
+| 内容 | 固定方案 | 已验证边界 |
+| --- | --- | --- |
+| PDF 引擎 | `pdfjs-dist 5.4.296`，原生 module Worker；没有 fake-worker 静默降级。自有端口，由宿主销毁 | 既有 PDF00–07、13–14；本轮 PP01–10 |
+| CMap / 标准字体 | 保留 `public/assets/m9-pdf/runtime/cmaps/`、`standard_fonts/` 和来源/许可证；共 187 文件、1958597 字节，以旧 source manifest 的逐文件哈希为准 | 本机 CMap、标准字体可离线加载，非嵌入中文已实际显示；资源复制进入包后须另验 |
+| 中文 | 当前 `useSystemFonts:true`，非嵌入 CJK 使用本机字体 fallback；不能说已捆绑中文字体。字体声明、CMap 和 glyph 显示是三件事 | 既有 macOS STSong-Light / UniGB-UCS2-H 合成样本正确；Windows/Linux、字体缺失环境没有通过证据 |
+| artifact / review | artifact 连续页 canvas + text/link；review 单页 canvas。表单 `renderForms=false`，不加入填写/签名能力。评论只投递上下文，不改 PDF、不回车 | 既有 PDF06–07、12；本轮 PP04–05 |
+| Notebook | 只读 code / markdown / raw；MIME 按既有顺序。Markdown 共用当前渲染器，HTML/SVG 空 sandbox + CSP + 清理，不执行单元/输出脚本，不接内核 | 既有 NB01–03 和 16 项相关单测；本轮未重新累计 |
+| 资源访问 | 当前合成资源 URL 只证明渲染器；生产 PDF 输入须由已授权本机文件句柄/版本服务供应；外部链接由宿主提示，不自动导航 | 本轮 link 无网络请求；真实文件协议、root lease 和分块读取属 07/生产接入 |
+
+[既有运行报告](实验/r34-pdf-notebook-runtime.md)、[预算/源码/资源 manifest](../验收/证据/r34-pdf-runtime/r34-source-manifest.json)、[旧浏览器结果](../验收/证据/r34-pdf-runtime/r34-pdf-runtime-report.json)为沿用依据。本轮没有替换这些历史文件。
+
+## 2. 预算与明确的失败处置
+
+| 场景 | 可判定基线 | 到达边界时的处理 |
+| --- | --- | --- |
+| 引擎加载 / 页面 RPC | 当前 `timeoutMs=15000`；密码等待暂停该计时，每次提交密码后重新开始 | Worker 超时分类，保留文件/评论；退出当前 session 后可手动重试；不默默 fallback fake-worker |
+| Worker 销毁 | pdf.js destroy 握手最多 200ms，再 terminate 自有端口 | active Worker 回零；旧 source/session 回调不得更新新页面 |
+| 画布 | 每页 ≤16×1024×1024 pixels，单边 ≤16384；按实际 zoom 与 DPR 计算 | 降采样并明确状态，不能分配超上限画布或静默裁掉页面 |
+| 已证大页数 | 2000 页，首屏 <10s，挂载正文页 ≤8、canvas ≤20；3 轮 post-GC 主页 JS 增量 <20MiB，long task <250ms | 既有夹具通过；更复杂文件仍需生命周期 deadline，不能把页数当唯一内存代理 |
+| Notebook 文件 | 沿用非 PDF artifact >40MiB 拦截，按读取后的 UTF-8 实际 bytes 判断；JSON 解析失败与 schema 失败分开 | 保留文件，给出错误和下载/外开路径；不运行内容“试修复” |
+| Notebook 大量输出 | 每窗口1原生Worker；parse deadline15s；每窗口≤30 cells、≤100 output records；正文/标题/输出合计≤1Mi UTF-16 unit，单段≤65536 unit；DOM目标≤5000元素；原文和完整输出留在Worker，按偏移继续读，不能直接截断丢弃 | 当前parser + 新隔离调度器已实测1/8/40MiB、3000cells和1000outputs；完整原型还未接入。HTML帧目标≤4、活跃图片像素总额≤32Mi pixels，超预算推迟离屏挂载；图片解压和复杂HTML分段尚待实施验证 |
+| PDF 文件 bytes / 并发 | 依据既有review source前置256MiB，固定统一输入工程候选为≤268435456 bytes；每窗口1活动PDF session，换源先销毁；画布总额度目标≤33554432 pixels（128MiB RGBA），不按20张画布各自满额分配 | 实测16/128/256MiB合法文件可真实解析/渲染，256MiB+1在进入engine前拒绝。该候选是artifact/protocol入口新统一防护，需同步07/09与需求；它不是所有≤256MiB复杂PDF都已支持的保证。总画布额度、完整renderer/GPU峰值留在生产调度验证 |
+
+上表前三项及2000页夹具已有真实证据；本轮新增的输入边界和文本窗口有实测，图像/HTML及总画布预算已定为实施目标，不能宣称“全部资源成本已经通过”。与原需求“PDF 不能称无限大”的要求一致，不能将未测的总额写成“合理范围”。如资源试验导致对用户可打开范围的实际收缩，应回到需求/用例同步确认。
+
+## 3. 冻结样本清单与本轮结果
+
+原有固定样本：正常、无效/损坏、2000页、非嵌入 CJK；Notebook all/empty/invalid-json/invalid-schema、HTML/CSS/转义URL/image-set、PNG/JPEG/SVG/Markdown/text/JSON/Vega/error/stream。样本输入、哈希、截图与当前实现均在旧 manifest；不复制改名冒充新测试。
+
+本轮使用本地 `pypdf 6.13.0` 生成 7 个真实 PDF，全部合成，无用户文件。生成器、夹具位于[隔离实验目录](../../../../prototypes/m6-codex/tests/predev-editor/)，逐文件 byte/SHA-256 见[manifest](../../../../prototypes/m6-codex/tests/predev-editor/pdf-fixtures/manifest.json)。最终 [10/10 机器结果](../验收/证据/predev-pdf-result-1792225490830.json)，2026-10-17T08:24:48.189Z，macOS arm64、Chrome155.0.8059.80；独立端口4193，新浏览器、外部请求拦截。
+
+| 编号 | 样本 / 操作 | 实际结果 |
+| --- | --- | --- |
+| PP01 | 90° 旋转页 | 实际 viewport 为 792×612；文字提取包含 WillYou；不是新增旋转按钮 |
+| PP02 | AES-256 加密，先错密码再正确密码 | 回调 reason 1→2，随后成功渲染；密码为合成测试口令，不读取用户密码 |
+| PP03 | 等待密码时取消 | Abort 分类；对应 Worker 释放，不无限等待 |
+| PP04 | AcroForm 文本字段 | fieldValue `READONLY SAMPLE` 可读；renderForms=false，editable input/textarea/select 数为0，不宣称表单填写功能 |
+| PP05 | 文档 JavaScript + 外部 URI link | JS action 真实存在但未执行；link 元数据可提取，链接被宿主做成惰性；外部请求0、脚本标志未设置 |
+| PP06 | 200000×200000 点巨页 | 真实渲染计划降采样；canvas 面积≤16777216 pixels、边长≤16384 |
+| PP07–08 | 扩展名冒充与截断 PDF | 均为 invalid 分类，未误报密码或 Worker 故障 |
+| PP09 | 损坏后重新打开正常 PDF | 同一实验宿主真实成功恢复 |
+| PP10 | 全部关闭 | 9 个创建/观察到的 Worker 全关闭，active=0，外部请求0、页面异常0 |
+
+[惰性链接截图](../验收/证据/predev-pdf-inert-link.png)是隔离宿主的实际渲染，不是正式 App 截图。两轮早期[9通过/1失败](../验收/证据/predev-pdf-result-1792225287275.json)由实验宿主把 `linkService` 传给 AnnotationLayer.render 而非 constructor 引起；修正实验代码后最终10项全部通过。旧失败保留，不改写成产品已修缺陷。
+
+复现：启动上述4193实验服务器后运行：
+
+```sh
+node prototypes/m6-codex/tests/predev-editor/pdf-check.mjs
+```
+
+
+## 3.1 输入与大输出预算的新增证据
+
+[运行前冻结预算](../../../../prototypes/m6-codex/tests/predev-editor/resource-budget.json)、[最终11/11结果](../验收/证据/predev-pdf-notebook-budget-1792225639501.json)、[大型PDF字节/SHA-256](../验收/证据/predev-pdf-large-manifest.json)。实验数据仅在 `/private/tmp/m9-predev-editor`，未把数百MiB二进制写进仓库；生成器可重建，Notebook生成器、精确字节和SHA随结果保留。
+
+| 采样 | 实际结果 | 能证明 / 不能外推 |
+| --- | --- | --- |
+| PDF 16 / 128 / 256MiB | 当前真实 pdf.js、同一URL接口、逐一加载并渲染1页，所有时刻活动session=1，均<15s | 证明入口尺寸、URL读取和取消旧session路线。文件含合法未引用填充stream，**不是复杂图片/解码后内存压力**；range/自动取流可能只需部分内容，不声称每个字节已完整驻留内存 |
+| PDF 256MiB+1 | HEAD尺寸预检拒绝，未建新的PDF session | 证明候选guard，生产还须以真实本机打开句柄fstat、读取实际累计bytes和version复核，不能信任renderer提供的size或仅HTTP header |
+| Notebook 1 / 8 / 40MiB | Worker使用现有真实 `parseNotebook`；最大样本解析约35ms、完整请求到窗口约76ms；DOM只有4元素、可见文本约64Ki；末尾TAIL经另一chunk请求真实可达 | 证明文本流大输出可保留完整内容并分页，不是永久只显示前64Ki。数据为单code cell + 长stream，不能外推任意HTML/图像复杂度 |
+| Notebook 3000cells（8MiB） | 首窗口30cells、120元素、最后cell2999可取 | 证明窗口索引与底层保留，不是把输入裁成30cells |
+| Notebook 1000outputs | 当前窗口最多100条，原总数1000，最后OUTPUT999可取 | 输出数量和正文大小均有单独调度额度；未展示部分仍可访问 |
+| Notebook 40MiB+1 | 明确source-too-large，沿用现有非PDF artifact门槛 | 原文不作为已解析文档替换上一有效版本；真实读取前也应先预检 |
+| 关闭 | 3个PDF Worker + 1个Notebook Worker全关闭；请求/异常0 | 有限生命周期通过；长时间/GPU/RSS尚未测 |
+
+大型PDF生成器首版一个内容stream声明少1字节，pdf.js能修复后读出，但不足以当严格合法夹具；旧[manifest](../验收/证据/predev-pdf-large-manifest-attempt1.json)与[结果](../验收/证据/predev-pdf-notebook-budget-1792225588761.json)保留。已修正长度并用pypdf strict模式独立检查，最终11项只使用修正版。Notebook候选只做文本窗，实际产品仍须使用原MIME显示能力，并为HTML/图片建立对应额度和不丢内容的分段策略。
+
+复现新增实验：
+
+```sh
+python3 prototypes/m6-codex/tests/predev-editor/pdf-large-generate.py
+node prototypes/m6-codex/tests/predev-editor/resources-check.mjs
+```
+
+## 4. 状态、恢复和验收连接
+
+- **密码缺失/错误**：保留当前文件与密码输入状态，仅内存持有；再次提交前不进入固定15秒等待计时；取消释放资源，不落日志/草稿。正式窗口关闭/切任务的密码回调还须版本与 session 校验。
+- **损坏/冒充/缺失/读取失败**：错误分类明确，保留可重新选择、重试、下载/外开路径；不创建假的空白成功页面。本轮缺失/权限需真实文件服务才可验。
+- **Worker 异常/静默退出**：有待处理RPC时15秒 watchdog；空闲时无法宣称“立即发现退出”。重试新建实例，旧回调无效。
+- **评论交接**：idle → inserting → inserted/failed/unknown；unknown 保留评论、不自动重发；inserted 只表示插入终端，不推断执行成功。收到CLI改文件后普通监听刷新，二者不组成审批链。
+- **Notebook schema / 输出错误**：源文件始终保留；JSON/schema错误用整文件状态，单个图片失败保留该输出和原始信息；不将“Run N”改成可运行任务。
+
+既有正式用例维持未执行。新增变体可关联 R06.17 的旋转元数据、加密/取消、表单禁用、脚本禁止、巨页、损坏恢复对应用例；本轮实验通过只能作为技术证据，不回填 App 通过。
+
+开发时持续验证：真实文件变更/切任务取消；安装包 CSP/worker/CMap/fonts；实际 Electron 进程和 GPU 资源；跨平台字体；表单/链接/注释等更多PDF变体；Notebook 大量 cell/超大图片。长期方案固定为 **50次2000页打开→首末页→关闭**，每5次在同一基线记录 renderer/worker/GPU RSS、JS heap、活跃Worker与canvas；验收前固定内存门槛与稳定期，失败保留曲线并修复。当前只执行旧3轮，不能写成已跑50轮。
+
+结论：资源来源、输入额度候选、明确调度上限、错误恢复和代表样本已有可执行基线，可交对应开发实施。PDF统一256MiB候选须与07/09及需求同步；总画布、图片/HTML和整包内存已有明确目标或测量工作，不用空泛“合理范围”代替。复杂输出完整语义、实际IPC/协议与安装资源仍在开发中逐项证明。

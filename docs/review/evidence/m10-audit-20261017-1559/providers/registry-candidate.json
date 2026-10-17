@@ -1,0 +1,181 @@
+{
+  "designCandidateOnly": true,
+  "providers": [
+    {
+      "id": "zentao",
+      "adapterVersion": "0.0.0-probe",
+      "contractVersion": 1,
+      "configSchemaVersion": 1,
+      "authKinds": [
+        "server-session-or-token"
+      ],
+      "capabilities": [
+        "zentao.bug.get",
+        "zentao.story.transition"
+      ],
+      "compatibility": {
+        "server": "biz13.0",
+        "verifiedAgainstServer": false
+      }
+    },
+    {
+      "id": "mail",
+      "adapterVersion": "0.0.0-probe",
+      "contractVersion": 1,
+      "configSchemaVersion": 1,
+      "authKinds": [
+        "local-files",
+        "configured-send-backend"
+      ],
+      "capabilities": [
+        "mail.message.get",
+        "mail.message.send"
+      ],
+      "compatibility": {
+        "backend": "separate-read-and-send",
+        "verifiedAgainstServer": false
+      }
+    },
+    {
+      "id": "jenkins",
+      "adapterVersion": "0.0.0-probe",
+      "contractVersion": 1,
+      "configSchemaVersion": 2,
+      "authKinds": [
+        "username-api-token"
+      ],
+      "capabilities": [
+        "jenkins.job.get",
+        "jenkins.build.trigger"
+      ],
+      "compatibility": {
+        "server": "unknown",
+        "plugins": {},
+        "verifiedAgainstServer": false
+      }
+    }
+  ],
+  "capabilities": {
+    "zentao.bug.get": {
+      "effect": "read",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "reconcile": "none",
+      "role": "api"
+    },
+    "zentao.story.transition": {
+      "effect": "external-write",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "review",
+              "close"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "reconcile": "object-read-back",
+      "role": "api"
+    },
+    "mail.message.get": {
+      "effect": "read",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "reconcile": "none",
+      "role": "local-read"
+    },
+    "mail.message.send": {
+      "effect": "external-write",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "draftRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "draftRef"
+        ],
+        "additionalProperties": false
+      },
+      "reconcile": "backend-specific",
+      "role": "send"
+    },
+    "jenkins.job.get": {
+      "effect": "read",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "jobRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobRef"
+        ],
+        "additionalProperties": false
+      },
+      "reconcile": "none",
+      "role": "api"
+    },
+    "jenkins.build.trigger": {
+      "effect": "external-write",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "jobRef": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "BRANCH": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "jobRef",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "reconcile": "queue-to-build",
+      "role": "api"
+    }
+  }
+}

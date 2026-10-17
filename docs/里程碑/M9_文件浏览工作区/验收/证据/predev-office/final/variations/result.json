@@ -1,0 +1,2546 @@
+{
+  "scope": "8 declared varied names/value samples × 2 real engine operations; not a compatibility corpus",
+  "sourceSha256": "82a4763c8fba394897d0702fc7ffeba99140680ed6ebbdc9252ac9945e25b920",
+  "cases": [
+    {
+      "sample": 0,
+      "operation": "rename",
+      "old": "Data",
+      "new": "新表",
+      "values": [
+        -3,
+        4
+      ],
+      "status": "passed",
+      "durationMs": 472.64,
+      "facts": {
+        "expected": {
+          "B2": 1,
+          "B3": 1,
+          "B4": 100,
+          "B5": -3,
+          "B6": 42,
+          "B7": 1,
+          "B8": 1,
+          "B9": 1,
+          "B10": 5,
+          "B11": -6,
+          "B12": 8,
+          "B15": 1,
+          "B16": 66,
+          "D2": -9,
+          "D3": 12
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'新表'!$B$2+'新表'!B3",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'新表'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "-9.0",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('新表'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'新表'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "12.0",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('新表'!B2,77)",
+            "type": "NUMERIC",
+            "value": "-3.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'新表'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('新表:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'新表'!B2*2",
+            "type": "NUMERIC",
+            "value": "-6.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'新表'!B3*2",
+            "type": "NUMERIC",
+            "value": "8.0",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('新表'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 0,
+      "operation": "delete",
+      "old": "Data",
+      "new": "新表",
+      "values": [
+        -3,
+        4
+      ],
+      "status": "passed",
+      "durationMs": 377.76,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 1,
+      "operation": "rename",
+      "old": "O'Brien",
+      "new": "另一个 O'Brien",
+      "values": [
+        0,
+        0
+      ],
+      "status": "passed",
+      "durationMs": 384.08,
+      "facts": {
+        "expected": {
+          "B2": 0,
+          "B3": 0,
+          "B4": 100,
+          "B5": 0,
+          "B6": 42,
+          "B7": 0,
+          "B8": 0,
+          "B9": 0,
+          "B10": 5,
+          "B11": 0,
+          "B12": 0,
+          "B15": 0,
+          "B16": 66,
+          "D2": 0,
+          "D3": 0
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'另一个 O''Brien'!$B$2+'另一个 O''Brien'!B3",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'另一个 O''Brien'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('另一个 O''Brien'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'另一个 O''Brien'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('另一个 O''Brien'!B2,77)",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'另一个 O''Brien'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('另一个 O''Brien:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'另一个 O''Brien'!B2*2",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'另一个 O''Brien'!B3*2",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('另一个 O''Brien'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "0.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 1,
+      "operation": "delete",
+      "old": "O'Brien",
+      "new": "另一个 O'Brien",
+      "values": [
+        0,
+        0
+      ],
+      "status": "passed",
+      "durationMs": 368.21,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 2,
+      "operation": "rename",
+      "old": "计划 表",
+      "new": "Budget 2027",
+      "values": [
+        0.5,
+        1.25
+      ],
+      "status": "passed",
+      "durationMs": 369.67,
+      "facts": {
+        "expected": {
+          "B2": 1.75,
+          "B3": 1.75,
+          "B4": 100,
+          "B5": 0.5,
+          "B6": 42,
+          "B7": 1.75,
+          "B8": 1.75,
+          "B9": 1.75,
+          "B10": 5,
+          "B11": 1.0,
+          "B12": 2.5,
+          "B15": 1.75,
+          "B16": 66,
+          "D2": 1.5,
+          "D3": 3.75
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'Budget 2027'!$B$2+'Budget 2027'!B3",
+            "type": "NUMERIC",
+            "value": "1.75",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'Budget 2027'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "1.5",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('Budget 2027'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "1.75",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'Budget 2027'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "3.75",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('Budget 2027'!B2,77)",
+            "type": "NUMERIC",
+            "value": "0.5",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'Budget 2027'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "1.75",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "1.75",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "1.75",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Budget 2027:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'Budget 2027'!B2*2",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'Budget 2027'!B3*2",
+            "type": "NUMERIC",
+            "value": "2.5",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('Budget 2027'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "1.75",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 2,
+      "operation": "delete",
+      "old": "计划 表",
+      "new": "Budget 2027",
+      "values": [
+        0.5,
+        1.25
+      ],
+      "status": "passed",
+      "durationMs": 374.78,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 3,
+      "operation": "rename",
+      "old": "汇总_1",
+      "new": "Sheet_42",
+      "values": [
+        12345,
+        -333
+      ],
+      "status": "passed",
+      "durationMs": 405.11,
+      "facts": {
+        "expected": {
+          "B2": 12012,
+          "B3": 12012,
+          "B4": 100,
+          "B5": 12345,
+          "B6": 42,
+          "B7": 12012,
+          "B8": 12012,
+          "B9": 12012,
+          "B10": 5,
+          "B11": 24690,
+          "B12": -666,
+          "B15": 12012,
+          "B16": 66,
+          "D2": 37035,
+          "D3": -999
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'Sheet_42'!$B$2+'Sheet_42'!B3",
+            "type": "NUMERIC",
+            "value": "12012.0",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'Sheet_42'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "37035.0",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('Sheet_42'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "12012.0",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'Sheet_42'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "-999.0",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('Sheet_42'!B2,77)",
+            "type": "NUMERIC",
+            "value": "12345.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'Sheet_42'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "12012.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "12012.0",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "12012.0",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Sheet_42:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'Sheet_42'!B2*2",
+            "type": "NUMERIC",
+            "value": "24690.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'Sheet_42'!B3*2",
+            "type": "NUMERIC",
+            "value": "-666.0",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('Sheet_42'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "12012.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 3,
+      "operation": "delete",
+      "old": "汇总_1",
+      "new": "Sheet_42",
+      "values": [
+        12345,
+        -333
+      ],
+      "status": "passed",
+      "durationMs": 420.86,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 4,
+      "operation": "rename",
+      "old": "Data",
+      "new": "Σ",
+      "values": [
+        -0.5,
+        -1.5
+      ],
+      "status": "passed",
+      "durationMs": 396.34,
+      "facts": {
+        "expected": {
+          "B2": -2.0,
+          "B3": -2.0,
+          "B4": 100,
+          "B5": -0.5,
+          "B6": 42,
+          "B7": -2.0,
+          "B8": -2.0,
+          "B9": -2.0,
+          "B10": 5,
+          "B11": -1.0,
+          "B12": -3.0,
+          "B15": -2.0,
+          "B16": 66,
+          "D2": -1.5,
+          "D3": -4.5
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'Σ'!$B$2+'Σ'!B3",
+            "type": "NUMERIC",
+            "value": "-2.0",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'Σ'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "-1.5",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('Σ'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "-2.0",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'Σ'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "-4.5",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('Σ'!B2,77)",
+            "type": "NUMERIC",
+            "value": "-0.5",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'Σ'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "-2.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "-2.0",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "-2.0",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Σ:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'Σ'!B2*2",
+            "type": "NUMERIC",
+            "value": "-1.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'Σ'!B3*2",
+            "type": "NUMERIC",
+            "value": "-3.0",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('Σ'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "-2.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 4,
+      "operation": "delete",
+      "old": "Data",
+      "new": "Σ",
+      "values": [
+        -0.5,
+        -1.5
+      ],
+      "status": "passed",
+      "durationMs": 412.19,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 5,
+      "operation": "rename",
+      "old": "计划 表",
+      "new": "名称中含😀",
+      "values": [
+        1,
+        100000
+      ],
+      "status": "passed",
+      "durationMs": 538.49,
+      "facts": {
+        "expected": {
+          "B2": 100001,
+          "B3": 100001,
+          "B4": 100,
+          "B5": 1,
+          "B6": 42,
+          "B7": 100001,
+          "B8": 100001,
+          "B9": 100001,
+          "B10": 5,
+          "B11": 2,
+          "B12": 200000,
+          "B15": 100001,
+          "B16": 66,
+          "D2": 3,
+          "D3": 300000
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'名称中含😀'!$B$2+'名称中含😀'!B3",
+            "type": "NUMERIC",
+            "value": "100001.0",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'名称中含😀'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "3.0",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('名称中含😀'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "100001.0",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'名称中含😀'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "300000.0",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('名称中含😀'!B2,77)",
+            "type": "NUMERIC",
+            "value": "1.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'名称中含😀'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "100001.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "100001.0",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "100001.0",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('名称中含😀:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'名称中含😀'!B2*2",
+            "type": "NUMERIC",
+            "value": "2.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'名称中含😀'!B3*2",
+            "type": "NUMERIC",
+            "value": "200000.0",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('名称中含😀'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "100001.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 5,
+      "operation": "delete",
+      "old": "计划 表",
+      "new": "名称中含😀",
+      "values": [
+        1,
+        100000
+      ],
+      "status": "passed",
+      "durationMs": 380.38,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 6,
+      "operation": "rename",
+      "old": "A'B'C",
+      "new": "D E",
+      "values": [
+        2,
+        5
+      ],
+      "status": "passed",
+      "durationMs": 363.51,
+      "facts": {
+        "expected": {
+          "B2": 7,
+          "B3": 7,
+          "B4": 100,
+          "B5": 2,
+          "B6": 42,
+          "B7": 7,
+          "B8": 7,
+          "B9": 7,
+          "B10": 5,
+          "B11": 4,
+          "B12": 10,
+          "B15": 7,
+          "B16": 66,
+          "D2": 6,
+          "D3": 15
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'D E'!$B$2+'D E'!B3",
+            "type": "NUMERIC",
+            "value": "7.0",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'D E'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "6.0",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('D E'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "7.0",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'D E'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "15.0",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('D E'!B2,77)",
+            "type": "NUMERIC",
+            "value": "2.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'D E'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "7.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "7.0",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "7.0",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('D E:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'D E'!B2*2",
+            "type": "NUMERIC",
+            "value": "4.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'D E'!B3*2",
+            "type": "NUMERIC",
+            "value": "10.0",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('D E'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "7.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 6,
+      "operation": "delete",
+      "old": "A'B'C",
+      "new": "D E",
+      "values": [
+        2,
+        5
+      ],
+      "status": "passed",
+      "durationMs": 382.49,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 7,
+      "operation": "rename",
+      "old": "Data",
+      "new": "Αβγ",
+      "values": [
+        17,
+        19
+      ],
+      "status": "passed",
+      "durationMs": 420.36,
+      "facts": {
+        "expected": {
+          "B2": 36,
+          "B3": 36,
+          "B4": 100,
+          "B5": 17,
+          "B6": 42,
+          "B7": 36,
+          "B8": 36,
+          "B9": 36,
+          "B10": 5,
+          "B11": 34,
+          "B12": 38,
+          "B15": 36,
+          "B16": 66,
+          "D2": 51,
+          "D3": 57
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "'Αβγ'!$B$2+'Αβγ'!B3",
+            "type": "NUMERIC",
+            "value": "36.0",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "'Αβγ'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "51.0",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM('Αβγ'!B2:B3)",
+            "type": "NUMERIC",
+            "value": "36.0",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "'Αβγ'!B2:B3*3",
+            "type": "NUMERIC",
+            "value": "57.0",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR('Αβγ'!B2,77)",
+            "type": "NUMERIC",
+            "value": "17.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,'Αβγ'!B2,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "36.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "NUMERIC",
+            "value": "36.0",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(Sales[Value])",
+            "type": "NUMERIC",
+            "value": "36.0",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Αβγ:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "'Αβγ'!B2*2",
+            "type": "NUMERIC",
+            "value": "34.0",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "'Αβγ'!B3*2",
+            "type": "NUMERIC",
+            "value": "38.0",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM('Αβγ'!B2:B3),99)",
+            "type": "NUMERIC",
+            "value": "36.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    },
+    {
+      "sample": 7,
+      "operation": "delete",
+      "old": "Data",
+      "new": "Αβγ",
+      "values": [
+        17,
+        19
+      ],
+      "status": "passed",
+      "durationMs": 400.89,
+      "facts": {
+        "expected": {
+          "B2": "#REF!",
+          "B3": "#REF!",
+          "B4": 100,
+          "B5": 77,
+          "B6": 42,
+          "B7": 88,
+          "B8": "#REF!",
+          "B9": "#REF!",
+          "B10": 5,
+          "B11": "#REF!",
+          "B12": "#REF!",
+          "B15": 99,
+          "B16": 66,
+          "D2": "#REF!",
+          "D3": "#REF!"
+        },
+        "actual": {
+          "B2": {
+            "sheet": "Calc",
+            "cell": "B2",
+            "formula": "#REF!+#REF!",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D2": {
+            "sheet": "Calc",
+            "cell": "D2",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B3": {
+            "sheet": "Calc",
+            "cell": "B3",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "D3": {
+            "sheet": "Calc",
+            "cell": "D3",
+            "formula": "#REF!*3",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B4": {
+            "sheet": "Calc",
+            "cell": "B4",
+            "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+            "type": "NUMERIC",
+            "value": "100.0",
+            "exception": ""
+          },
+          "B5": {
+            "sheet": "Calc",
+            "cell": "B5",
+            "formula": "IFERROR(#REF!,77)",
+            "type": "NUMERIC",
+            "value": "77.0",
+            "exception": ""
+          },
+          "B6": {
+            "sheet": "Calc",
+            "cell": "B6",
+            "formula": "IF(FALSE,#REF!,42)",
+            "type": "NUMERIC",
+            "value": "42.0",
+            "exception": ""
+          },
+          "B7": {
+            "sheet": "Calc",
+            "cell": "B7",
+            "formula": "IFERROR(B2,88)",
+            "type": "NUMERIC",
+            "value": "88.0",
+            "exception": ""
+          },
+          "B8": {
+            "sheet": "Calc",
+            "cell": "B8",
+            "formula": "SUM(InputTotal)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B9": {
+            "sheet": "Calc",
+            "cell": "B9",
+            "formula": "SUM(#REF!)",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B10": {
+            "sheet": "Calc",
+            "cell": "B10",
+            "formula": "SUM('Calc:Spare'!A1)",
+            "type": "NUMERIC",
+            "value": "5.0",
+            "exception": ""
+          },
+          "B11": {
+            "sheet": "Calc",
+            "cell": "B11",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B12": {
+            "sheet": "Calc",
+            "cell": "B12",
+            "formula": "#REF!*2",
+            "type": "ERROR",
+            "value": "#REF!",
+            "exception": ""
+          },
+          "B15": {
+            "sheet": "Calc",
+            "cell": "B15",
+            "formula": "IFERROR(SUM(#REF!),99)",
+            "type": "NUMERIC",
+            "value": "99.0",
+            "exception": ""
+          },
+          "B16": {
+            "sheet": "Calc",
+            "cell": "B16",
+            "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+            "type": "NUMERIC",
+            "value": "66.0",
+            "exception": ""
+          }
+        },
+        "partChanges": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "passed": 16,
+    "failed": 0
+  }
+}

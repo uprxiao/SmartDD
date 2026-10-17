@@ -1,0 +1,149 @@
+{
+  "startedAt": "2026-10-17T08:21:10.482Z",
+  "scope": "official MCP SDK 2.0.0, custom isolated adapter, real synthetic file/native exchange/watch; not production viewer host",
+  "cases": [
+    {
+      "id": "PV01",
+      "title": "官方协议握手、声明订阅、严格资源读取与真实文件哈希",
+      "status": "passed",
+      "evidence": {
+        "etag": "79be79dd1262068ba05b5841eac5c474e2a244bcefd8eee353234eea125dc77b",
+        "coverage": "poll"
+      }
+    },
+    {
+      "id": "PV02",
+      "title": "自定义ifMatch保存真实文件并保留原件和独立草稿",
+      "status": "passed",
+      "evidence": {
+        "state": "saved",
+        "etag": "c4e437779a60239849eb45e2d1d676e4e146aab70f6f2678487b6d4e81bfce36",
+        "recoveryObjects": 3
+      }
+    },
+    {
+      "id": "PV03",
+      "title": "同opId同载荷返回原回执、不重写文件",
+      "status": "passed",
+      "evidence": {
+        "state": "saved",
+        "etag": "c4e437779a60239849eb45e2d1d676e4e146aab70f6f2678487b6d4e81bfce36",
+        "replayed": true
+      }
+    },
+    {
+      "id": "PV04",
+      "title": "同opId改载荷拒绝",
+      "status": "passed",
+      "evidence": {
+        "state": "rejected",
+        "reason": "op-id-payload-mismatch"
+      }
+    },
+    {
+      "id": "PV05",
+      "title": "旧版本写回冲突，不覆盖外部内容",
+      "status": "passed",
+      "evidence": {
+        "state": "conflict",
+        "etag": "943435e39e419f317afd23b45eef79b69b49f3768781b108d6a96a478ccb3031"
+      }
+    },
+    {
+      "id": "PV06",
+      "title": "订阅真实磁盘变化，收到通知后重新读取内容",
+      "status": "passed",
+      "evidence": {
+        "notifications": 1
+      }
+    },
+    {
+      "id": "PV07",
+      "title": "解除订阅后不再推送新磁盘变化",
+      "status": "passed",
+      "evidence": {
+        "additionalNotifications": 0
+      }
+    },
+    {
+      "id": "PV08",
+      "title": "读取或写入其他URI被拒绝，当前文件不变",
+      "status": "passed",
+      "evidence": {
+        "readRejected": true,
+        "write": {
+          "state": "rejected",
+          "reason": "wrong-resource-or-tool"
+        }
+      }
+    },
+    {
+      "id": "PV09",
+      "title": "旧会话代际写回拒绝",
+      "status": "passed",
+      "evidence": {
+        "state": "rejected",
+        "reason": "stale-generation"
+      }
+    },
+    {
+      "id": "PV10",
+      "title": "取消会话后迟到资源通知不更新活动文档",
+      "status": "passed",
+      "evidence": {
+        "ignored": 1,
+        "acceptedUnchanged": true
+      }
+    },
+    {
+      "id": "PV11",
+      "title": "错误工具不能成为任意命令入口",
+      "status": "passed",
+      "evidence": {
+        "state": "rejected",
+        "reason": "wrong-resource-or-tool"
+      }
+    },
+    {
+      "id": "PV12",
+      "title": "关闭传输后子进程实际退出、watcher释放",
+      "status": "passed",
+      "evidence": {
+        "pid": 16385,
+        "alive": false,
+        "transportClosed": true
+      }
+    }
+  ],
+  "sources": [
+    "https://modelcontextprotocol.io/specification/2025-06-18/server/resources"
+  ],
+  "limits": [
+    "Custom write contract is not standardized MCP and does not make arbitrary viewers writable",
+    "Node read boundary is fixed fixture only; production fd-anchored root broker still required",
+    "No cross-platform or App acceptance"
+  ],
+  "notifications": [
+    "willyou-test://session/document.txt",
+    "willyou-test://session/document.txt"
+  ],
+  "serverPid": 16385,
+  "server": {
+    "name": "WillYou isolated disk adapter",
+    "version": "predev-1"
+  },
+  "capabilities": {
+    "resources": {
+      "subscribe": true
+    },
+    "tools": {}
+  },
+  "coverage": "poll",
+  "stderr": "watch fallback: EMFILE\n",
+  "scriptSha256": "6918d08e4a8063459d5d76eef7df81111dc790dcc82ea95fef37198f8be075fa",
+  "completedAt": "2026-10-17T08:21:11.075Z",
+  "summary": {
+    "passed": 12,
+    "failed": 0
+  }
+}

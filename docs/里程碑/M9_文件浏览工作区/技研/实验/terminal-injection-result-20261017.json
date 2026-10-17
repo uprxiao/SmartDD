@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T04:44:17.476Z",
+  "scriptSha256": "701087b4e5cb1b9698891fdba882abbcff52b27c4d2cf9fb244586b14162ff7f",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0",
+    "nodePty": "1.1.0",
+    "zsh": "5.9"
+  },
+  "scope": "真实 PTY + zsh/sh/cat/受控 Node 子进程；不运行 CLI、不连模型；不含 Claude Code/Codex 的真实 TUI 行为（其对括号粘贴与 @ 提及的处理未验证）",
+  "cases": [
+    {
+      "id": "TI01",
+      "title": "zsh 启用括号粘贴（ESC[?2004h）；这是 bracketedPaste 开关的真实来源",
+      "status": "passed",
+      "ms": 704,
+      "evidence": {
+        "enabled": true
+      }
+    },
+    {
+      "id": "TI02",
+      "title": "括号粘贴的多行内容不会提交；只有用户自己按 Enter 才执行",
+      "status": "passed",
+      "ms": 2305,
+      "evidence": {
+        "mode": "bracketed",
+        "afterPaste": {
+          "a": false,
+          "b": false
+        },
+        "afterEnter": {
+          "a": true,
+          "b": true
+        },
+        "note": "粘贴后没有任何命令执行；Enter 之后才执行 —— 提交永远是用户的显式动作"
+      }
+    },
+    {
+      "id": "TI03",
+      "title": "危险演示：不清理时，文本里的 ESC[201~ 提前结束粘贴，后面的内容被当作键入并执行",
+      "status": "observed-gap",
+      "ms": 1805,
+      "evidence": {
+        "injected": true,
+        "meaning": "这是故意的负对照：证明“括号粘贴”本身不能防住内容里的结束标记，必须在送入前清理 ESC 等控制字符"
+      }
+    },
+    {
+      "id": "TI04",
+      "title": "同样的恶意文本经 pasteData 清理后：不会执行，且无结束标记泄漏",
+      "status": "passed",
+      "ms": 1954,
+      "evidence": {
+        "injected": false,
+        "escapeInsidePaste": false,
+        "removed": {
+          "escape": 1
+        }
+      }
+    },
+    {
+      "id": "TI05",
+      "title": "非括号模式：换行会被终端当回车而自动提交（危险）；折叠为一行后不会，Enter 后只提交一次",
+      "status": "passed",
+      "ms": 2011,
+      "evidence": {
+        "rawSubmittedLines": [
+          "first",
+          "second"
+        ],
+        "collapsedData": "first second",
+        "collapsedSubmittedBeforeEnter": 0,
+        "afterEnter": [
+          "first second"
+        ],
+        "collapsedFlag": true
+      }
+    },
+    {
+      "id": "TI06",
+      "title": "控制字符：^C 会杀死前台进程（危险）；清理后进程保持存活",
+      "status": "passed",
+      "ms": 2015,
+      "evidence": {
+        "unsanitizedKilledForeground": true,
+        "sanitizedKilledForeground": false,
+        "sentData": "abcdef",
+        "removed": {
+          "control": 2
+        }
+      }
+    },
+    {
+      "id": "TI07",
+      "title": "大文本（接近 8000 字符上限，中英文+emoji）经受控 raw-mode TUI 无损到达，且时间可测",
+      "status": "passed",
+      "ms": 559,
+      "evidence": {
+        "chars": 7900,
+        "bytes": 12060,
+        "received": {
+          "len": 7900,
+          "sha": "16ab20474e081d00f864b9b73eb01e340d981d65bd1bd9da01e121c4a5c69c56",
+          "submitted": false
+        },
+        "deliveredMs": 50,
+        "mode": "bracketed",
+        "submittedByInsertion": false
+      }
+    },
+    {
+      "id": "TI08",
+      "title": "插入永不追加回车：括号与非括号两种数据都不以 CR/LF 结尾",
+      "status": "passed",
+      "ms": 1,
+      "evidence": {
+        "samples": [
+          {
+            "in": "\"x\"",
+            "bracketed": "\"\\u001b[200~x\\u001b[201~\"",
+            "plain": "\"x\""
+          },
+          {
+            "in": "\"x\\n\"",
+            "bracketed": "\"\\u001b[200~x\\r\\u001b[201~\"",
+            "plain": "\"x\""
+          },
+          {
+            "in": "\"x\\n\\n\"",
+            "bracketed": "\"\\u001b[200~x\\r\\r\\u001b[201~\"",
+            "plain": "\"x\""
+          },
+          {
+            "in": "\"  x  \\n\"",
+            "bracketed": "\"\\u001b[200~  x  \\r\\u001b[201~\"",
+            "plain": "\"  x\""
+          }
+        ]
+      }
+    }
+  ],
+  "fixtureCleanup": {
+    "removed": true
+  },
+  "completedAt": "2026-10-17T04:44:28.834Z",
+  "summary": {
+    "passed": 7,
+    "observed-gap": 1
+  }
+}

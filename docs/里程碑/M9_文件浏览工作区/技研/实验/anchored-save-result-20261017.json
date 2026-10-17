@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T02:40:33Z",
+  "scriptSha256": "6042a0e6b1da8a04310d2cc0fab3465a47716515e066cca8b452d2f6afaa7b0a",
+  "environment": {
+    "python": "3.12.7",
+    "platform": "darwin",
+    "machine": "arm64",
+    "osRelease": "25.6.0",
+    "hasRenameSwap": true
+  },
+  "scope": "Synthetic temporary directories; Python/dir_fd native-agent prototype; no Electron IPC or production implementation",
+  "cases": [
+    {
+      "id": "AFS01",
+      "title": "FS09 重放：目录 fd 锚定后父目录被换成 symlink，写入不越根",
+      "status": "passed",
+      "durationMs": 0.41,
+      "evidence": {
+        "landedInOriginalDirectory": "NEW",
+        "outsideSentinel": "OUTSIDE-ORIGINAL",
+        "note": "写入落在被持有 fd 指向的原目录（现名 a.moved），没有越出根；这是“不越界”而非“写到用户期望的路径”，调用方需在提交后复核根内路径身份"
+      }
+    },
+    {
+      "id": "AFS02",
+      "title": "已存在的目录 symlink 被逐级 O_NOFOLLOW 拒绝",
+      "status": "passed",
+      "durationMs": 0.39,
+      "evidence": {
+        "errno": 20,
+        "name": "Not a directory"
+      }
+    },
+    {
+      "id": "AFS03",
+      "title": "根目录被替换后 fd 身份与路径身份不同，可作为 lease 失效依据",
+      "status": "passed",
+      "durationMs": 0.19,
+      "evidence": {
+        "sameIdentity": false
+      }
+    },
+    {
+      "id": "AFS04",
+      "title": "交换式提交：无竞争时保存成功且无临时文件残留",
+      "status": "passed",
+      "durationMs": 0.68,
+      "evidence": {
+        "result": {
+          "status": "saved"
+        },
+        "content": "SAVED",
+        "dirEntries": [
+          "file.txt"
+        ]
+      }
+    },
+    {
+      "id": "AFS05",
+      "title": "FS08 重放：外部写入在最终校验之后、提交之前 → 检测、还原并返回冲突",
+      "status": "passed",
+      "durationMs": 0.39,
+      "evidence": {
+        "result": {
+          "status": "conflict",
+          "externalHash": "943435e39e419f317afd23b45eef79b69b49f3768781b108d6a96a478ccb3031"
+        },
+        "finalContent": "EXTERNAL",
+        "meaning": "旧实现(FS08)在此时间点静默覆盖外部写入；交换式提交检测到被换下的 inode 与基线不符，已换回外部内容并返回冲突"
+      }
+    },
+    {
+      "id": "AFS06",
+      "title": "交换之后仍向旧 inode 写入的外部进程：数据被检测并还原，不丢失",
+      "status": "passed",
+      "durationMs": 0.37,
+      "evidence": {
+        "result": {
+          "status": "conflict",
+          "externalHash": "607849f49589674f597de0784fc001994f3f040dd46b226a20c7fcf3da740f70"
+        },
+        "finalContent": "LATE"
+      }
+    },
+    {
+      "id": "AFS07",
+      "title": "交换后按路径新写入的进程：提交后回读报冲突，不再静默显示已保存",
+      "status": "passed",
+      "durationMs": 0.35,
+      "evidence": {
+        "result": {
+          "status": "conflict",
+          "kind": "overwritten-after-commit"
+        },
+        "finalContent": "PATH-WRITER",
+        "meaning": "提交后回读发现内容不是我们写的，返回 conflict（不再显示已保存）；对方内容保留，本地草稿由调用方保留"
+      }
+    },
+    {
+      "id": "AFS10",
+      "title": "回读之后的外部写入：保存已成功，只能由监听发现（残余窗口）",
+      "status": "observed-gap",
+      "durationMs": 0.36,
+      "evidence": {
+        "result": {
+          "status": "saved"
+        },
+        "finalContent": "AFTER-READBACK",
+        "meaning": "回读结束之后的写入属于“保存之后的新外改”，只能由 watch 发现；保存时刻无法区分。残余窗口缩小到回读与返回之间的几微秒级，未测量"
+      }
+    },
+    {
+      "id": "AFS08",
+      "title": "重复/旧回执的保存请求按 opId 幂等返回，不重复落盘",
+      "status": "passed",
+      "durationMs": 0.31,
+      "evidence": {
+        "sameResultObject": true,
+        "content": "ONE"
+      }
+    },
+    {
+      "id": "AFS09",
+      "title": "保存保持 mode 与字节（CRLF/中文）；ACL、xattr、owner、目录 fsync 不在保证内",
+      "status": "passed",
+      "durationMs": 0.58,
+      "evidence": {
+        "mode": "0o640",
+        "limits": "不保持 ACL/xattr/owner；未做目录 fsync 与断电耐久性验证"
+      }
+    }
+  ],
+  "fixtureCleanup": {
+    "removed": true
+  },
+  "completedAt": "2026-10-17T02:40:33Z",
+  "summary": {
+    "passed": 9,
+    "observed-gap": 1
+  }
+}

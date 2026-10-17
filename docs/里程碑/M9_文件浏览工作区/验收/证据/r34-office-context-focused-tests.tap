@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: Office context captures exact draft/page/selection independently of document edits
+ok 1 - Office context captures exact draft/page/selection independently of document edits
+  ---
+  duration_ms: 0.452792
+  type: 'test'
+  ...
+# Subtest: inserted receipt ends delivery without CLI review or resend
+ok 2 - inserted receipt ends delivery without CLI review or resend
+  ---
+  duration_ms: 0.398375
+  type: 'test'
+  ...
+# Subtest: failed receipt retains content and permits one explicit retry
+ok 3 - failed receipt retains content and permits one explicit retry
+  ---
+  duration_ms: 0.09875
+  type: 'test'
+  ...
+# Subtest: unknown is retained and excluded from retry while a new queued comment remains eligible
+ok 4 - unknown is retained and excluded from retry while a new queued comment remains eligible
+  ---
+  duration_ms: 0.076416
+  type: 'test'
+  ...
+# Subtest: late scope/operation/duplicate receipts cannot update another delivery
+ok 5 - late scope/operation/duplicate receipts cannot update another delivery
+  ---
+  duration_ms: 0.131041
+  type: 'test'
+  ...
+# Subtest: a newly added draft is not implicitly appended to an in-flight batch
+ok 6 - a newly added draft is not implicitly appended to an in-flight batch
+  ---
+  duration_ms: 0.064208
+  type: 'test'
+  ...
+# Subtest: terminal receipt classifier treats absent/timeout as unknown and explicit rejection as failed
+ok 7 - terminal receipt classifier treats absent/timeout as unknown and explicit rejection as failed
+  ---
+  duration_ms: 0.107625
+  type: 'test'
+  ...
+# Subtest: delivery uses the Promise adapter without appending Enter or changing metadata
+ok 8 - delivery uses the Promise adapter without appending Enter or changing metadata
+  ---
+  duration_ms: 0.155375
+  type: 'test'
+  ...
+# Subtest: transport rejection and timeout are unknown, no adapter is explicit failure
+ok 9 - transport rejection and timeout are unknown, no adapter is explicit failure
+  ---
+  duration_ms: 4.87575
+  type: 'test'
+  ...
+# Subtest: host readOnly is a hard guard for every source and DOCX stays readonly
+ok 10 - host readOnly is a hard guard for every source and DOCX stays readonly
+  ---
+  duration_ms: 0.541209
+  type: 'test'
+  ...
+# Subtest: workbook live editing and manual format gates are independent
+ok 11 - workbook live editing and manual format gates are independent
+  ---
+  duration_ms: 0.133792
+  type: 'test'
+  ...
+# Subtest: PPT source and annotation gates and DOCX route controls
+ok 12 - PPT source and annotation gates and DOCX route controls
+  ---
+  duration_ms: 0.083416
+  type: 'test'
+  ...
+# Subtest: legacy fixtures migrate preserving titles, sheets, wide rows and string zero
+ok 13 - legacy fixtures migrate preserving titles, sheets, wide rows and string zero
+  ---
+  duration_ms: 0.22975
+  type: 'test'
+  ...
+# Subtest: serialization roundtrip preserves formats, notes, merges and identifiers
+ok 14 - serialization roundtrip preserves formats, notes, merges and identifiers
+  ---
+  duration_ms: 1.017375
+  type: 'test'
+  ...
+# Subtest: address mapping, reverse selections and clipping do not escape sheet
+ok 15 - address mapping, reverse selections and clipping do not escape sheet
+  ---
+  duration_ms: 0.27325
+  type: 'test'
+  ...
+# Subtest: range formatting applies all selected cells and does not touch neighbors
+ok 16 - range formatting applies all selected cells and does not touch neighbors
+  ---
+  duration_ms: 0.339125
+  type: 'test'
+  ...
+# Subtest: readOnly rejects edits and disabled manual UI rejects format and clear-format
+ok 17 - readOnly rejects edits and disabled manual UI rejects format and clear-format
+  ---
+  duration_ms: 0.140166
+  type: 'test'
+  ...
+# Subtest: undo redo restore complete model; branching discards redo
+ok 18 - undo redo restore complete model; branching discards redo
+  ---
+  duration_ms: 0.666792
+  type: 'test'
+  ...
+# Subtest: save acknowledgement for older snapshot never marks newer model clean
+ok 19 - save acknowledgement for older snapshot never marks newer model clean
+  ---
+  duration_ms: 0.726042
+  type: 'test'
+  ...
+# Subtest: sheet names validate empty, reserved, overlength and case duplicate
+ok 20 - sheet names validate empty, reserved, overlength and case duplicate
+  ---
+  duration_ms: 0.358917
+  type: 'test'
+  ...
+# Subtest: sheet add move and delete retain identity and guard last sheet
+ok 21 - sheet add move and delete retain identity and guard last sheet
+  ---
+  duration_ms: 0.528042
+  type: 'test'
+  ...
+# Subtest: merge collision is rejected; unmerge retains underlying values
+ok 22 - merge collision is rejected; unmerge retains underlying values
+  ---
+  duration_ms: 0.255375
+  type: 'test'
+  ...
+# Subtest: fill/clear separates values and formats
+ok 23 - fill/clear separates values and formats
+  ---
+  duration_ms: 0.270833
+  type: 'test'
+  ...
+# Subtest: validation rejects invalid numbers and checkbox creates boolean fixtures
+ok 24 - validation rejects invalid numbers and checkbox creates boolean fixtures
+  ---
+  duration_ms: 0.214583
+  type: 'test'
+  ...
+# Subtest: restricted formulas calculate refs, ranges and arithmetic and recalculate dependencies
+ok 25 - restricted formulas calculate refs, ranges and arithmetic and recalculate dependencies
+  ---
+  duration_ms: 0.766792
+  type: 'test'
+  ...
+# Subtest: unsupported formulas, references, cycles and divide-by-zero remain explicit
+ok 26 - unsupported formulas, references, cycles and divide-by-zero remain explicit
+  ---
+  duration_ms: 0.498958
+  type: 'test'
+  ...
+# Subtest: number display changes presentation without modifying raw value
+ok 27 - number display changes presentation without modifying raw value
+  ---
+  duration_ms: 0.180042
+  type: 'test'
+  ...
+# Subtest: slide insertion duplication visibility and last-delete safety
+ok 28 - slide insertion duplication visibility and last-delete safety
+  ---
+  duration_ms: 0.33025
+  type: 'test'
+  ...
+# Subtest: PPT object insertion properties table and layer actions serialize
+ok 29 - PPT object insertion properties table and layer actions serialize
+  ---
+  duration_ms: 0.790542
+  type: 'test'
+  ...
+# Subtest: slide notes and title update participate in undo
+ok 30 - slide notes and title update participate in undo
+  ---
+  duration_ms: 0.2245
+  type: 'test'
+  ...
+# Subtest: PPT verified shortcut guards exclude input, IME, repeat, double primary and wrong modifiers
+ok 31 - PPT verified shortcut guards exclude input, IME, repeat, double primary and wrong modifiers
+  ---
+  duration_ms: 0.080542
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 56.782333

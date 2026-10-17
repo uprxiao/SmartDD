@@ -1,0 +1,108 @@
+{
+  "schema": "m10-codex-mcp-call-experiment-v1",
+  "startedAt": "2026-10-17T06:04:37.105Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.19.0"
+  },
+  "isolation": {
+    "temporaryHome": true,
+    "temporaryCodexHome": true,
+    "sqlite": ":memory:",
+    "fixtureProjects": 2,
+    "realAccount": false,
+    "realThirdParty": false,
+    "turnStarted": false,
+    "httpListener": false,
+    "providerBaseUrl": "http://127.0.0.1:1/v1",
+    "providerRequiresOpenAIAuth": false,
+    "proxyBaseUrl": "http://127.0.0.1:1",
+    "inheritedEnvironment": [
+      "PATH"
+    ],
+    "configuredApiKey": false
+  },
+  "methods": [
+    "initialize",
+    "thread/start",
+    "mcpServer/tool/call",
+    "thread/unsubscribe"
+  ],
+  "notificationMethods": [
+    "remoteControl/status/changed",
+    "thread/started",
+    "mcpServer/startupStatus/updated",
+    "mcpServer/startupStatus/updated"
+  ],
+  "unexpectedServerRequests": [],
+  "status": "passed",
+  "limitations": [
+    "Direct app-server RPC without a model turn; does not test model tool selection or terminal UI.",
+    "Existing read-only project_context with synthetic projects only; does not test ZenTao, Foxmail or writes.",
+    "The custom provider and all proxy destinations point to loopback port 1; no HTTP listener is started. This is configuration isolation, not a packet capture or OS network proof."
+  ],
+  "cliVersion": "codex-cli 0.162.1",
+  "initialize": {
+    "userAgent": "m10_isolated_mcp_call/0.162.1 (Mac OS 26.6.1; arm64) unknown (m10_isolated_mcp_call; 1.0.0)"
+  },
+  "thread": {
+    "id": "01a14876-563c-7c01-833b-2b3f1d9eac2c",
+    "ephemeral": true,
+    "sandbox": {
+      "type": "readOnly",
+      "networkAccess": false
+    },
+    "approvalPolicy": "never",
+    "modelProvider": "m10_offline_fixture",
+    "model": "m10-no-model"
+  },
+  "assertions": {
+    "directMcpToolCallSucceeded": true,
+    "currentProjectOnly": true,
+    "currentConfigHashMatched": true,
+    "otherProjectAbsent": true,
+    "databasesAndServersSyntheticEmpty": true,
+    "credentialFieldsAbsent": true,
+    "capabilityProjectionSelfCheck": {
+      "status": "passed",
+      "issues": [],
+      "at": 1792217077208
+    },
+    "unexpectedServerRequestsAbsent": true,
+    "noModelTurn": true
+  },
+  "returnedContext": {
+    "schemaVersion": 1,
+    "projectId": "0910f25b-aae2-41aa-8657-201841e585f0",
+    "configVersion": 1,
+    "configHash": "e3cbd41bdfd19bf021bad7a3adba8b5ac53eba475ffe08a99b4ebf0cfddc150f",
+    "name": "M10_CURRENT_SYNTHETIC_PROJECT",
+    "databases": [],
+    "servers": [],
+    "skillNames": [
+      "smartdd-project-db-diagnostics",
+      "smartdd-remote-password-ssh"
+    ],
+    "resultKeys": [
+      "content"
+    ],
+    "contentTypes": [
+      "text"
+    ]
+  },
+  "sourceHashes": {
+    "resources/runtime/context_mcp.py": "df2179a45beb9a06bd9e86bf4764be4133a3db3889e4f9756aa585446c6f6e86",
+    "src/main/core/capabilities/capability-service.ts": "40eda28cfb0d1870bfbc34742c0ab49b08950f693b6d26e17007a8b29c8bbb95",
+    "src/main/core/capabilities/cli-smoke.test.ts": "b39af988fce8ff5692c674e61eff9d0d6b5d38cc548fb2b9ad78d543f4703f72",
+    "docs/里程碑/M10_三方应用接入/技研/实验/agent-bridge/codex-mcp-call.probe.test.ts": "e9035e03aa8168ceaac5666cc4aad4a9daabb675a24b89c3b9218a6b8b7e0f81",
+    "docs/里程碑/M10_三方应用接入/技研/实验/agent-bridge/vitest.codex-call.config.ts": "5861d6874a547d68243bcc87ac124a6c5a438eca96c4a2f24784ba464cb614f0"
+  },
+  "finishedAt": "2026-10-17T06:04:37.371Z",
+  "cleanup": {
+    "childExited": true,
+    "temporaryRootRemoved": true,
+    "capabilityRuntimeReleased": true
+  },
+  "stderrTail": ""
+}

@@ -1,0 +1,123 @@
+{
+  "revision": "R3.4",
+  "startedAt": "2026-10-17T07:30:01Z",
+  "scriptSha256": "146023f0c62ad1c7a7ead92a1b9a08f597a9b3d015910e217ebafcf6cdf4dab4",
+  "environment": "macOS-26.6.1-arm64-arm-64bit",
+  "scope": "Synthetic macOS save-race/recovery feasibility. Not production, cross-platform, ACL/xattr or power-loss acceptance.",
+  "cases": [
+    {
+      "id": "SR01",
+      "title": "成功保存仍保留独立草稿与被换下inode，恢复区权限受限",
+      "status": "passed",
+      "evidence": {
+        "status": "saved",
+        "sameDirectoryIdentity": true,
+        "displacedPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/success/.m9-recovery/27dc77e4-c9b4-494e-9576-d28ce7d4a445.original",
+        "draftPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/success/.m9-recovery/27dc77e4-c9b4-494e-9576-d28ce7d4a445.draft",
+        "journalPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/success/.m9-recovery/27dc77e4-c9b4-494e-9576-d28ce7d4a445.json",
+        "displacedHash": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+        "currentHash": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+        "automaticRollback": false,
+        "powerLossDurability": "not-proved"
+      }
+    },
+    {
+      "id": "SR02",
+      "title": "负对照：旧自动换回遇到两个写入者会丢失较新的路径内容",
+      "status": "observed-gap",
+      "evidence": {
+        "result": {
+          "status": "conflict",
+          "externalHash": "ad1a6d4826d33829efa631ae3761e7411cc7975bccce8f4d65a3903081b0ebfe"
+        },
+        "lostNewerPathWrite": true,
+        "final": "EXTERNAL-OLD",
+        "meaning": "旧自动换回删除了新路径写入；此负对照不能列为保护通过"
+      }
+    },
+    {
+      "id": "SR03",
+      "title": "两个写入者冲突：保留新路径、旧inode和我的草稿，不自动换回",
+      "status": "passed",
+      "evidence": {
+        "status": "conflict-recovery",
+        "sameDirectoryIdentity": true,
+        "displacedPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/two-writers/.m9-recovery/88b23f53-7e2e-4f28-863a-cce27f9841d5.original",
+        "draftPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/two-writers/.m9-recovery/88b23f53-7e2e-4f28-863a-cce27f9841d5.draft",
+        "journalPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/two-writers/.m9-recovery/88b23f53-7e2e-4f28-863a-cce27f9841d5.json",
+        "displacedHash": "ad1a6d4826d33829efa631ae3761e7411cc7975bccce8f4d65a3903081b0ebfe",
+        "currentHash": "373e9145465452e8614710b5f569ee6027d9825a2836e1f9fd16fd53e44aaeac",
+        "automaticRollback": false,
+        "powerLossDurability": "not-proved",
+        "allThreeVersionsPreserved": true
+      }
+    },
+    {
+      "id": "SR04",
+      "title": "旧fd在返回后继续写入仍有可恢复inode；不能过早回收日志",
+      "status": "passed",
+      "evidence": {
+        "lateWriteRecoverable": true,
+        "detectionNeedsJournalWatchOrRescan": true,
+        "unboundedExternalFdLifetime": "cannot-prove-safe-time-to-delete"
+      }
+    },
+    {
+      "id": "SR05",
+      "title": "提交前已知版本不符不触碰目标，也不创建恢复垃圾",
+      "status": "passed",
+      "evidence": {
+        "status": "conflict-before-commit"
+      }
+    },
+    {
+      "id": "SR06",
+      "title": "目标为symlink时在首次写入前拒绝",
+      "status": "passed",
+      "evidence": {
+        "rejected": true,
+        "outsideUnchanged": true
+      }
+    },
+    {
+      "id": "SR07",
+      "title": "交换后异常不清除恢复物，准备日志可定位三个版本",
+      "status": "passed",
+      "evidence": {
+        "journalState": "prepared",
+        "originalAndDraftRecoverable": true,
+        "recoveryMustReconcileInodeAndHash": true,
+        "actualProcessKill": false
+      }
+    },
+    {
+      "id": "SR08",
+      "title": "校验和交换之间的外改进入恢复冲突，不承诺自动还原到路径",
+      "status": "passed",
+      "evidence": {
+        "status": "conflict-recovery",
+        "sameDirectoryIdentity": true,
+        "displacedPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/race-before/.m9-recovery/fd6a6112-0d3d-4ab7-b59d-5c703a7b5269.original",
+        "draftPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/race-before/.m9-recovery/fd6a6112-0d3d-4ab7-b59d-5c703a7b5269.draft",
+        "journalPath": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-recovery-yk35e_7e/race-before/.m9-recovery/fd6a6112-0d3d-4ab7-b59d-5c703a7b5269.json",
+        "displacedHash": "f4b99a7eb7c3344a9c0284a4fbdb8ae3fd0635e6328a3882356946203b8dcf7b",
+        "currentHash": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+        "automaticRollback": false,
+        "powerLossDurability": "not-proved",
+        "externalRecoverableButNotAutomaticallyRestoredAtTarget": true
+      }
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "observed-gap": 1,
+    "failed": 0
+  },
+  "limits": [
+    "No OS-level CAS",
+    "An external process can mutate/unlink any accessible journal; not adversarial OS isolation",
+    "No safe finite deletion time for an externally held fd; production needs quota/retention/conflict UX",
+    "Directory fsync requested but power-loss/full-disk/native crash not tested",
+    "ACL/xattr/owner and Linux/Windows remain unverified"
+  ]
+}

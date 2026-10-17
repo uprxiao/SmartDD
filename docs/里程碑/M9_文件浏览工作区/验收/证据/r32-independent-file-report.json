@@ -1,0 +1,207 @@
+{
+  "revision": "R3.2-20261017",
+  "timestamp": "2026-10-17T05:48:09.638Z",
+  "environment": {
+    "url": "http://127.0.0.1:4176/?preview=m9",
+    "browser": "155.0.8059.80",
+    "viewport": {
+      "width": 1512,
+      "height": 949
+    },
+    "mode": "isolated headless Chromium; synthetic fixtures only"
+  },
+  "boundary": "No real disk, CLI, native watcher, Codex, packaged app, visual parity or cross-platform acceptance. Existing service reused; no user browser session accessed.",
+  "checks": [
+    {
+      "id": "R32-01",
+      "title": "停止的终端不妨碍独立文件刷新；干净文件直接显示最新示例内容",
+      "status": "passed",
+      "detail": {
+        "updated": " const workspace = {\n  name: \"WillYou\",\n  root: \"SmartDD\"\n};\n\n独立外部更新示例"
+      }
+    },
+    {
+      "id": "R32-02",
+      "title": "外改没有 CLI 归因、审阅、保留或还原审批条",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-03",
+      "title": "合成外部新增在目录刷新前不冒充已读取",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-04",
+      "title": "刷新示例目录后新增文件可见，终端仍停止",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-05",
+      "title": "停止终端仅禁用指令投递，未形成文件审批",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-06",
+      "title": "指令投递即结束交接，只放入终端不回车，文件没有被修改",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-07",
+      "title": "用户 Enter 后只有演示终端回显，不自动归因或跟踪修改",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-08",
+      "title": "取消指令草稿不发送停止命令、不终止会话、不改文件",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-09",
+      "title": "存在手工未保存草稿时，普通外改冲突保留草稿与磁盘两方",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-10",
+      "title": "普通冲突展示磁盘版本和手工草稿，未归因给 CLI",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-11",
+      "title": "明确采用磁盘版本后清除手工草稿并显示最新内容",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-13",
+      "title": "实际树拖放保留既有输入，直接插完整中文空格路径且未回车",
+      "status": "passed",
+      "detail": {
+        "terminalTail": "elp、pwd、status 或 clear，试试\n终端交互。\n❯ src/main.ts:L1 > 请把所选文字整理得更清\n楚     import { app } from \"electron\";\n已收到演示输入。这里没有运行真实 CLI，也\n不会修改文件。\n❯ ^C\n❯ 查看 /workspace/SmartDD/docs/拖放 空格\n示例.txt  "
+      }
+    },
+    {
+      "id": "R32-14",
+      "title": "拖放后焦点回终端，可直接接续键入且尾空格保留",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-15",
+      "title": "路径与随后键入内容实际显示为空格分隔",
+      "status": "passed",
+      "detail": {
+        "terminalTail": "、pwd、status 或 clear，试试\n终端交互。\n❯ src/main.ts:L1 > 请把所选文字整理得更清\n楚     import { app } from \"electron\";\n已收到演示输入。这里没有运行真实 CLI，也\n不会修改文件。\n❯ ^C\n❯ 查看 /workspace/SmartDD/docs/拖放 空格\n示例.txt 请说明 "
+      }
+    },
+    {
+      "id": "R32-16",
+      "title": "图片连续拖入同一输入，只插磁盘路径，不插资源 URL 或附件",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-17",
+      "title": "图片预览拖放沿用文件身份和完整路径",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-18",
+      "title": "已打开文件标签也可向终端拖完整路径",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-19",
+      "title": "文件标签之间拖放仍重排，不向终端追加输入",
+      "status": "passed",
+      "detail": {
+        "tabsBefore": [
+          "AGENTS.md",
+          "main.ts",
+          "app-icon.png"
+        ],
+        "tabsAfter": [
+          "main.ts",
+          "AGENTS.md",
+          "app-icon.png"
+        ]
+      }
+    },
+    {
+      "id": "R32-21",
+      "title": "同次拖放的重复 drop 不重复插入路径",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-22",
+      "title": "拖动开始后根范围变化会取消旧文件身份，不转投",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-23",
+      "title": "合成已删除文件不能发起路径拖放，保留终端输入并提示",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-24",
+      "title": "不能投递路径的已删除文件标签仍可在标签内排序",
+      "status": "passed",
+      "detail": {
+        "missingTabsBefore": [
+          "AGENTS.md",
+          "已删除.md"
+        ],
+        "missingTabsAfter": [
+          "已删除.md",
+          "AGENTS.md"
+        ]
+      }
+    },
+    {
+      "id": "R32-20",
+      "title": "停止终端拒绝拖放并提示，不隐式启动或改变输入",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R32-12",
+      "title": "浏览器运行没有未处理页面异常",
+      "status": "passed",
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "shots": [
+    {
+      "file": "r32-terminal-handoff.png",
+      "sha256": "208f2e97ff66fe082c7138dd94cbfe5d1737b58b5ef1bcf487ea30ddd7779508"
+    },
+    {
+      "file": "r32-manual-conflict.png",
+      "sha256": "1a97391b0751ee6a9891deeafafd285b97793f2fcc9d8a4bdd05354193add8d7"
+    },
+    {
+      "file": "r32-file-path-drop.png",
+      "sha256": "7c791d1ec10e30e35c55c2fe3edfebe224f20b1527e3418e40e55cdfb3075e76"
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "passed": 24,
+    "failed": 0
+  }
+}

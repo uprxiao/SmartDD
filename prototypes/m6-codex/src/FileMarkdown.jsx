@@ -1,0 +1,217 @@
+import { composing as imeComposing } from './file-ime.mjs';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, Download, X, ZoomIn, ZoomOut, Copy, Check } from 'lucide-react';
+import 'katex/dist/katex.min.css';
+import { parseMarkdown, renderMarkdownBlock, standaloneImage, codeBody, highlightedCode, markdownTextareaEdit, parseFrontmatter, safeImageSrc, replaceMarkdownBlock, resolveMarkdownPath, imageMenuActions, fitImage, stepImageZoom, anchoredImageZoom, scaleWheelDelta } from './file-markdown-model.mjs';
+import './file-markdown.css';
+import { domSourcePoint, sourceRange } from './file-markdown-source.mjs';
+import { renderThemedMermaid } from './file-markdown-mermaid.mjs';
+
+// Markdown editor over markdown-it tokens. Source offsets stay authoritative: a block is edited as its own source text and
+// only that range is replaced; rendered HTML is never parsed back into Markdown.
+function highlight(root, query) {
+  const needle = query.toLowerCase(), walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('.katex,.katex-display,script,style') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const value = node.nodeValue, lower = value.toLowerCase(); let start = 0, index = lower.indexOf(needle); if (index < 0) continue;
+    const fragment = document.createDocumentFragment();
+    while (index >= 0) { fragment.append(value.slice(start, index)); const mark = document.createElement('mark'); mark.textContent = value.slice(index, index + needle.length); fragment.append(mark); start = index + needle.length; index = lower.indexOf(needle, start); }
+    fragment.append(value.slice(start)); node.replaceWith(fragment);
+  }
+}
+function MdHtml({ html, find, ...props }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => { ref.current.innerHTML = html; if (find) highlight(ref.current, find); }, [html, find]);
+  return <div ref={ref} {...props} />;
+}
+let mermaidSeq = 0;
+function MermaidView({ source }) {
+  const [state, setState] = useState({ status: 'loading' });
+  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme || 'light');
+  useEffect(() => {
+    const observer = new MutationObserver(() => setTheme(document.documentElement.dataset.theme || 'light'));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    let cancelled = false; const id = 'fw-mermaid-' + (++mermaidSeq);
+    setState({ status: 'loading' });
+    renderThemedMermaid({ id, source, theme, cancelled: () => cancelled }).then(svg => {
+      if (!cancelled && svg) setState({ status: 'ready', svg, theme, source });
+    }).catch(error => { if (!cancelled) setState({ status: 'error', message: String(error?.message || error).split('\n')[0], theme, source }); });
+    return () => { cancelled = true; document.getElementById('d' + id)?.remove(); };
+  }, [source, theme]);
+  if (state.status === 'loading' || state.theme !== theme || state.source !== source) return <div className="fw-md-mermaid" aria-busy="true">正在渲染图表…</div>;
+  if (state.status === 'error') return <div className="fw-md-mermaid-error" role="alert">Mermaid 图表无法渲染：{state.message}</div>;
+  return <div className="fw-md-mermaid" data-md-theme={theme} aria-label="Mermaid 图示" dangerouslySetInnerHTML={{ __html: state.svg }} />;
+}
+export function FileMarkdown({ text, path, findQuery='', overlay=false, readOnly=false, onEdit, onSelect, onOpenFile, onImageReference, onImageAction, onComposition }) {
+  const { blocks, env } = useMemo(() => parseMarkdown(text), [text]);
+  const [editing, setEditing] = useState(null), [context, setContext] = useState(null), [active, setActive] = useState(null), [copied, setCopied] = useState(false);
+  const [imageScenario, setImageScenario] = useState('local'), [showScenario, setShowScenario] = useState(false);
+  const article = useRef(null), editRef = useRef(null), origin = useRef(null), editSequence = useRef(0), restoreSourceFocus = useRef(null);
+  const [selectionNotice, setSelectionNotice] = useState('');
+  const pictures = blocks.filter(b => b.type === 'image').map(b => {
+    const { alt, original: raw } = standaloneImage(b), resolved = resolveMarkdownPath(path, raw);
+    return { id:b.from, alt, src:safeImageSrc(raw), original:raw, path:resolved || 'resources/app-icon.png', localPath:resolved ? '/workspace/' + resolved : undefined };
+  });
+  useLayoutEffect(() => {
+    if (!editing) {
+      if (restoreSourceFocus.current !== null) {
+        const target = article.current?.querySelector('[data-md-from="' + restoreSourceFocus.current + '"]') || article.current;
+        restoreSourceFocus.current = null; target?.focus({ preventScroll: true });
+      }
+      return;
+    }
+    if (!editRef.current) return;
+    editRef.current.focus({ preventScroll: true });
+    editRef.current.setSelectionRange(editing.selectionStart, editing.selectionEnd, editing.direction);
+  }, [editing?.id]);
+  useEffect(() => {
+    if (editing && (readOnly || text !== editing.source)) { setEditing(null); setSelectionNotice('文件内容或编辑权限已变化，请重新选择源码。'); }
+  }, [text, readOnly]);
+  const finishEditing = (restoreFocus = false) => {
+    if (restoreFocus) restoreSourceFocus.current = editing?.from ?? 0;
+    setEditing(null);
+  };
+  const openSource = (from, to, selectionFrom = from, selectionTo = selectionFrom, direction = 'forward') => {
+    if (readOnly) return;
+    const before = blocks.filter(block => block.to <= from), after = blocks.filter(block => block.from >= to);
+    const raw = text.slice(from, to), normalizedOffset = offset => text.slice(from, offset).replace(/\r\n?/g, '\n').length;
+    setEditing({ id: ++editSequence.current, from, to, line: text.slice(0, from).split(/\r\n|\r|\n/).length, source: text, before, after, originalTo: to,
+      selectionStart: normalizedOffset(selectionFrom), selectionEnd: normalizedOffset(selectionTo), direction, raw });
+    onSelect?.(selectionFrom, selectionTo);
+  };
+  const begin = (block, event) => {
+    if (readOnly || editing || event?.target.closest('a,button,input,summary')) return;
+    const selected = window.getSelection();
+    if (selected && !selected.isCollapsed && article.current?.contains(selected.anchorNode)) return;
+    const formula = event?.target.closest('.katex')?.closest('[data-md-source-from]');
+    if (formula) {
+      setSelectionNotice('已定位这条公式的完整源码；公式字形不作字符坐标。');
+      openSource(block.from, block.to, Number(formula.dataset.mdSourceFrom), Number(formula.dataset.mdSourceTo));
+    } else { setSelectionNotice(''); openSource(block.from, block.to); }
+  };
+  const captureRenderedSelection = () => {
+    if (editing) return;
+    const selected = window.getSelection();
+    if (!selected || selected.isCollapsed || !selected.rangeCount) return;
+    const native = selected.getRangeAt(0), start = domSourcePoint(article.current, native.startContainer, native.startOffset, 'start'), end = domSourcePoint(article.current, native.endContainer, native.endOffset, 'end');
+    const range = sourceRange(start, end, text.length); if (!range) return;
+    const first = blocks.find(block => block.to > range.from), last = [...blocks].reverse().find(block => block.from < range.to);
+    if (!first || !last) return;
+    setSelectionNotice(range.exact ? '选区已映射到原始 Markdown；包含两端之间的源码标记。' : '此选区含公式或无法逐字映射的内容，已展开完整源码单元供核对。');
+    if (readOnly) onSelect?.(range.from, range.to);
+    else {
+      openSource(first.from, last.to, range.from, range.to, selected.anchorNode === native.endContainer && selected.anchorOffset === native.endOffset ? 'backward' : 'forward');
+      selected.removeAllRanges();
+    }
+  };
+  const toggleTask = (b, line, checked) => {
+    const rel = line - (b.line - 1), parts = b.raw.match(/[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$/g) || [];
+    if (rel < 0 || rel >= parts.length || !/\[[ xX]\]/.test(parts[rel])) return;
+    parts[rel] = parts[rel].replace(/\[[ xX]\]/, checked ? '[x]' : '[ ]');
+    const next = replaceMarkdownBlock(text, b, parts.join('')); if (next !== null) onEdit(next);
+  };
+  const htmlClick = (b, e) => {
+    if (editing) return;
+    const link = e.target.closest('a[data-md-href]');
+    if (link) { e.preventDefault(); const href = link.dataset.mdHref, target = resolveMarkdownPath(path, href); target ? onOpenFile(target) : onImageAction('外部链接入口（原型不导航）：' + href); return; }
+    const box = e.target.closest('input[data-md-task-line]');
+    if (box) { if (readOnly) e.preventDefault(); else toggleTask(b, Number(box.dataset.mdTaskLine), box.checked); return; }
+    begin(b, e);
+  };
+  const editBlock = b => <textarea ref={editRef} aria-label={'编辑 Markdown 第 '+b.line+' 行'} value={b.raw} rows={Math.max(1,b.raw.split(/\r\n|\r|\n/).length)} spellCheck={false}
+    onChange={e=>{
+      if (readOnly || text !== editing.source) return;
+      const value = markdownTextareaEdit(b.raw, e.target.value), next = replaceMarkdownBlock(text, b, value);
+      if(next!==null){setEditing({...editing,to:b.from+value.length,source:next,raw:value});onEdit(next);}
+    }}
+    onBlur={e=>{if(!e.relatedTarget?.closest('[data-markdown-tools]'))finishEditing();}}
+    onSelect={e=>{
+      const map = offset => {
+        const value = e.target.value.slice(0, offset); let i=0, count=0;
+        while(i<b.raw.length && count<value.length){ if(b.raw[i]==='\r'&&b.raw[i+1]==='\n')i+=2;else i++;count++; }
+        return b.from+i;
+      };
+      onSelect?.(map(e.target.selectionStart),map(e.target.selectionEnd));
+    }}
+    onCompositionStart={()=>onComposition?.(true)} onCompositionEnd={()=>onComposition?.(false)}
+    onKeyDown={e=>{if(e.key==='Escape'&&!imeComposing(e)){e.stopPropagation();e.preventDefault();finishEditing(true);}}} />;
+  const openImage = (p,e) => {
+    origin.current=e.currentTarget;
+    const connected=[...article.current.querySelectorAll('[data-md-image]')].filter(n=>n.isConnected).map(n=>pictures.find(p=>p.id===Number(n.dataset.mdImage))).filter(Boolean);
+    setActive({ picture:p, pictures:connected.length?connected:[p] });
+  };
+  const imageAction = async (action,picture) => {
+    setContext(null);
+    if(action.id==='open') return onOpenFile(picture.path);
+    if(action.id==='reference'&&imageScenario==='no-input')return onImageAction('当前模型不支持图片输入，图片未加入会话草稿。');
+    if(action.id==='reference') return onImageReference({path:picture.path,alt:picture.alt,src:picture.src});
+    if(action.id==='reveal') return onImageAction('已选择“在文件管理器中显示”（原型不启动外部应用）');
+    try {
+      if(action.id==='address') await navigator.clipboard.writeText(action.value);
+      if(action.id==='copy') {
+        const img=new window.Image();img.src=picture.src;await img.decode();
+        const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+        canvas.getContext('2d').drawImage(img,0,0);
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+        if(!blob)throw new Error('图片转换失败');
+        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      }
+      if(action.id==='download') {
+        const a=document.createElement('a');a.href=picture.src;a.download='willyou-image-fixture.'+(picture.src.endsWith('.svg')?'svg':'png');a.click();
+      }
+      onImageAction(action.id==='download'?'已下载合成图片副本':action.id==='copy'?'已复制合成图片（PNG）':'已复制示例图片地址');
+    } catch {onImageAction('图片操作失败：权限或图片解码不可用，请重试。');}
+  };
+  return <>
+    <article className="fw-markdown fw-markdown-editable" ref={article} tabIndex={-1} aria-label="Markdown 文档编辑区" onMouseUp={captureRenderedSelection} onKeyUp={e=>{if(e.shiftKey)captureRenderedSelection();}}>
+      {(editing ? [...editing.before, {type:'editing',from:editing.from,to:editing.to,line:editing.line,raw:editing.raw}, ...editing.after.map(block=>({...block,tokens:block.tokens,from:block.from+editing.to-editing.originalTo,to:block.to+editing.to-editing.originalTo}))] : blocks).map(b=>{
+        if(b.type==='editing')return <div key={'edit-'+editing.id} className="fw-md-edit-block">{editBlock(b)}</div>;
+        const raw=b.raw.replace(/\r?\n$/,'');
+        const attr={onClick:e=>begin(b,e),onKeyDown:e=>{if((e.key==='Enter'||e.key==='F2')&&e.target===e.currentTarget&&!imeComposing(e)){e.preventDefault();begin(b,e);}},tabIndex:readOnly||b.type==='image'?-1:0,'data-md-line':b.line,'data-md-from':b.from,'data-md-to':b.to};
+        if(b.type==='frontmatter'){const fm=parseFrontmatter(raw);return <dl key={b.from} className="fw-md-frontmatter" {...attr}>{fm.error&&<div role="alert" className="fw-md-frontmatter-error">{fm.error}</div>}{fm.entries.map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>;}
+        if(b.type==='blank')return <div key={b.from} className="fw-paragraph-break" {...attr} aria-label={'空行 '+b.line}/>;
+        if(b.type==='definition')return <div key={b.from} className="fw-md-definition" {...attr}>{raw}</div>;
+        if(b.type==='image'){
+          const p=pictures.find(p=>p.id===b.from);
+          return <button className="fw-md-image" data-md-image={p.id} key={b.from} title="打开嵌入图片" onClick={e=>openImage(p,e)} onContextMenu={e=>{e.preventDefault();origin.current=e.currentTarget;setContext({picture:p,x:e.clientX,y:e.clientY});}}><img src={p.src} alt={p.alt}/></button>;
+        }
+        if(b.type==='code'||b.type==='mermaid'){
+          const body=codeBody(b), highlighted=highlightedCode(b);
+          return <div key={b.from} className="fw-md-fence" {...attr}><small>{b.language||b.type}</small>{b.type==='mermaid'?<><MermaidView source={body}/><details onClick={e=>e.stopPropagation()}><summary>查看图表源码</summary><pre>{body}</pre></details></>:<pre><code className={highlighted.language?'hljs language-'+highlighted.language:''} data-md-source-from={b.from} data-md-source-to={b.to} data-md-source-mode="atomic" data-md-source-runs={highlighted.map?JSON.stringify(highlighted.map.runs):undefined} dangerouslySetInnerHTML={{__html:highlighted.html}} /></pre>}</div>;
+        }
+        return <MdHtml key={b.from} html={renderMarkdownBlock(b,{...env,readOnly})} find={findQuery} className={'fw-md-html fw-md-'+b.type} {...attr} onClick={e=>htmlClick(b,e)}/>;
+      })}
+      {!text&&!readOnly&&<button className="fw-md-empty" onClick={()=>openSource(0,0)}>使用 Markdown 写作…</button>}
+    </article>
+    {selectionNotice&&<p className="fw-md-selection-notice" role="status">{selectionNotice}</p>}
+    <div className="fw-md-fixture-tools"><button onClick={()=>setShowScenario(!showScenario)}>图片能力样例</button>{showScenario&&<select aria-label="图片能力场景" value={imageScenario} onChange={e=>setImageScenario(e.target.value)}><option value="local">本机静态图</option><option value="remote">远程静态图</option><option value="http">HTTP 地址</option><option value="gif">动画 GIF</option><option value="no-input">模型不接收图片</option><option value="fallback">新叠层不可用，退旧灯箱</option></select>}<button aria-label="复制 Markdown" onClick={async()=>{try{await navigator.clipboard.writeText(text);setCopied(true);}catch{onImageAction('复制失败');}}}>{copied?<Check size={13}/>:<Copy size={13}/>}</button></div>
+    {context&&<ImageMenu context={context} onClose={()=>{setContext(null);origin.current?.focus();}} actions={imageMenuActions({src:imageScenario==='http'?'https://example.invalid/fixture.png':context.picture.original,localPath:context.picture.localPath,host:imageScenario==='remote'?'remote':'local',animated:imageScenario==='gif',canSelect:true,clipboard:typeof ClipboardItem!=='undefined'&&!!navigator.clipboard?.write})} onAction={action=>imageAction(action,context.picture)}/>}
+    {active&&<ImageGallery initial={active} overlay={overlay&&imageScenario!=='fallback'} download={!(overlay&&imageScenario==='fallback')} onClose={()=>{setActive(null);origin.current?.focus({preventScroll:true});}} onDownload={p=>imageAction({id:'download'},p)}/>}
+  </>;
+}
+function ImageMenu({context,actions,onAction,onClose}){
+  const ref=useRef(null);
+  useEffect(()=>{const el=ref.current;const rect=el.getBoundingClientRect();el.style.left=Math.max(8,Math.min(context.x,window.innerWidth-rect.width-8))+'px';el.style.top=Math.max(8,Math.min(context.y,window.innerHeight-rect.height-8))+'px';el.querySelector('button')?.focus({preventScroll:true});},[context]);
+  return <><div className="fw-dismiss" onClick={onClose}/><div ref={ref} className="fw-menu fw-image-menu" role="menu" onKeyDown={e=>{e.stopPropagation();const all=[...ref.current.querySelectorAll('button')],i=all.indexOf(document.activeElement);if(e.key==='Escape')onClose();if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();all[e.key==='Home'?0:e.key==='End'?all.length-1:(i+(e.key==='ArrowDown'?1:-1)+all.length)%all.length]?.focus();}}}>{actions.map(a=><button role="menuitem" key={a.id} onClick={()=>onAction(a)}>{a.label}</button>)}</div></>;
+}
+function ImageGallery({initial,overlay,download,onClose,onDownload}){
+  const [index,setIndex]=useState(initial.pictures.findIndex(p=>p.id===initial.picture.id)),[zoom,setZoom]=useState(1),[fit,setFit]=useState(1),[pan,setPan]=useState({x:0,y:0}),[failed,setFailed]=useState(false),[attempt,setAttempt]=useState(0),[dimensions,setDimensions]=useState({width:1024,height:1024});
+  const view=useRef(null), image=useRef(null), pointers=useRef(new Map()),gesture=useRef(null),transform=useRef({zoom,pan});
+  transform.current={zoom,pan}; const picture=initial.pictures[index];
+  const reset=()=>{if(!view.current||!image.current)return;const next=fitImage(image.current.naturalWidth||1024,image.current.naturalHeight||1024,view.current.clientWidth-64,view.current.clientHeight-32);setFit(next);setZoom(next);setPan({x:0,y:0});pointers.current.clear();gesture.current=null;};
+  useEffect(()=>{setFailed(false);reset();view.current?.focus();},[index]);
+  useEffect(()=>{const el=view.current;const observer=new ResizeObserver(reset);observer.observe(el);const wheel=e=>{if(!e.ctrlKey)return;e.preventDefault();const {zoom:old,pan:p}=transform.current;const next=Math.min(5,Math.max(.1,old*Math.exp(-scaleWheelDelta(e.deltaY,e.deltaMode)*.002)));const r=el.getBoundingClientRect();setPan(anchoredImageZoom(old,next,p,{x:e.clientX-r.left-r.width/2,y:e.clientY-r.top-r.height/2}));setZoom(next);};el.addEventListener('wheel',wheel,{passive:false});return()=>{observer.disconnect();el.removeEventListener('wheel',wheel);};},[index]);
+  const initializeGesture=()=>{const points=[...pointers.current.values()];gesture.current={...transform.current,points,distance:points.length===2?Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y):0};};
+  const pointerMove=e=>{if(!pointers.current.has(e.pointerId))return;pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});const points=[...pointers.current.values()],g=gesture.current;if(!g)return;if(points.length===1&&g.points.length===1)setPan({x:g.pan.x+points[0].x-g.points[0].x,y:g.pan.y+points[0].y-g.points[0].y});if(points.length===2&&g.distance){const next=Math.min(5,Math.max(.1,g.zoom*Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)/g.distance));const r=view.current.getBoundingClientRect(),p={x:(g.points[0].x+g.points[1].x)/2-r.left-r.width/2,y:(g.points[0].y+g.points[1].y)/2-r.top-r.height/2};const base=anchoredImageZoom(g.zoom,next,g.pan,p);setZoom(next);setPan({x:base.x+(points[0].x+points[1].x-g.points[0].x-g.points[1].x)/2,y:base.y+(points[0].y+points[1].y-g.points[0].y-g.points[1].y)/2});}};
+  const up=e=>{pointers.current.delete(e.pointerId);initializeGesture();};
+  const move=delta=>setIndex(i=>Math.max(0,Math.min(initial.pictures.length-1,i+delta)));
+  return <div className={'fw-gallery '+(overlay?'fw-gallery-overlay':'fw-gallery-legacy')} role="dialog" aria-modal="true" aria-label={overlay?'图片只读叠层':'图片预览'} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();onClose();return;}if(imeComposing(e)||e.defaultPrevented||e.altKey||e.metaKey||e.ctrlKey||e.shiftKey||e.target.closest('input,textarea,select,[contenteditable=true],[role=menu],[role=slider],[role=grid],[role=tree]'))return;if(e.key==='ArrowLeft'){e.preventDefault();move(-1);}if(e.key==='ArrowRight'){e.preventDefault();move(1);}}}>
+    <header><span>{picture.alt}</span><div>{download&&<button onClick={()=>onDownload(picture)}><Download size={16}/>{overlay?'保存':'下载'}</button>}<button aria-label="关闭图片预览" onClick={onClose}><X size={18}/></button></div></header>
+    <div className="fw-gallery-viewport" tabIndex={0} ref={view} onPointerDown={e=>{if(e.button!==0)return;e.currentTarget.setPointerCapture(e.pointerId);pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});initializeGesture();}} onPointerMove={pointerMove} onPointerUp={up} onPointerCancel={up}>
+      {failed?<div className="fw-gallery-error"><p>无法加载图片</p><button onClick={()=>{setFailed(false);setAttempt(n=>n+1);}}>重试加载图片</button></div>:<img ref={image} key={picture.id+':'+attempt} src={picture.src} alt={picture.alt} referrerPolicy="no-referrer" draggable={false} onError={()=>setFailed(true)} onLoad={e=>{setDimensions({width:e.target.naturalWidth,height:e.target.naturalHeight});reset();}} style={{width:dimensions.width,height:dimensions.height,transform:`translate(${pan.x}px, ${pan.y}px) scale(${zoom})`}}/>}
+    </div><footer><button aria-label="上一张图片" disabled={index===0} onClick={()=>move(-1)}><ArrowLeft size={17}/></button><button aria-label="缩小图片" disabled={zoom<=.1} onClick={()=>setZoom(stepImageZoom(zoom,-1,fit))}><ZoomOut size={17}/></button><button aria-label="重置图片适应缩放" onClick={reset}>{Math.round(zoom*100)}%</button><button aria-label="放大图片" disabled={zoom>=5} onClick={()=>setZoom(stepImageZoom(zoom,1,fit))}><ZoomIn size={17}/></button><button aria-label="下一张图片" disabled={index===initial.pictures.length-1} onClick={()=>move(1)}><ArrowRight size={17}/></button>{overlay&&<span>{index+1} / {initial.pictures.length}</span>}</footer>
+  </div>;
+}

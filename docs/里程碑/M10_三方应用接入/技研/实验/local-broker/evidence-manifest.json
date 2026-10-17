@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-17",
+  "kind": "synthetic-local-ipc-evidence",
+  "requirement": "R1.3-20261017/M10-R02,R07,R08,R09",
+  "attempts": [
+    {
+      "number": 1,
+      "sandbox": "use_default",
+      "result": "blocked-before-protocol-checks",
+      "stage": "AF_UNIX bind",
+      "error": "PermissionError / EPERM / Operation not permitted",
+      "toolExitCode": 1
+    },
+    {
+      "number": 2,
+      "sandbox": "require_escalated",
+      "authorization": "parent delegated authorized local synthetic Unix socket experiment; automatic review permitted command",
+      "result": "passed",
+      "toolExitCode": 0,
+      "checksPassed": 15,
+      "checksFailed": 0,
+      "localSocketConnections": 15,
+      "tcpSockets": 0,
+      "externalNetworkCalls": 0
+    }
+  ],
+  "officialSources": [
+    {
+      "url": "https://modelcontextprotocol.io/specification/2025-06-18/basic/transports",
+      "supports": "UTF-8 newline-delimited stdio JSON-RPC; stdout protocol only; HTTP requirements"
+    },
+    {
+      "url": "https://nodejs.org/api/net.html#ipc-support",
+      "supports": "Unix sockets/named pipes; path length; socket cleanup; current live docs not Electron runtime acceptance"
+    },
+    {
+      "url": "https://docs.python.org/3.11/library/socket.html",
+      "supports": "stdlib AF_UNIX and platform-dependent socket interface"
+    }
+  ],
+  "existingCode": {
+    "path": "src/main/core/capabilities/capability-service.ts",
+    "lines": "232-262",
+    "supports": "existing per-run MCP command/args projection only; not a main-process broker"
+  },
+  "artifacts": [
+    {
+      "path": "MCP到主进程桥接候选V2.md",
+      "bytes": 14168,
+      "sha256": "010f2d6b9de6e3f03381588764e5b0ea4b7aeb1605a3fc5d45d55a73c56fc8e4"
+    },
+    {
+      "path": "实验/local-broker/README.md",
+      "bytes": 2360,
+      "sha256": "6b5ecfb396c7b01cf626de53b3ecae8f970a0deba487b2eac30606fcb5aa9ca6"
+    },
+    {
+      "path": "实验/local-broker/local_broker_probe.py",
+      "bytes": 19986,
+      "sha256": "15d9539650809dc8c85e9cc069e30a73f6d8bedec9cca1888d35f2dfd39815d2"
+    },
+    {
+      "path": "实验/local-broker/report.json",
+      "bytes": 4063,
+      "sha256": "2fd6bbf51fe0c858e799648d1df8c3829da05b26d31b81c558e82ecad6cccc1e"
+    }
+  ],
+  "verification": {
+    "relativeLinksCheckedBeforeManifest": 11,
+    "brokenLinks": 0,
+    "reportScriptHashMatched": true,
+    "normalCleanupVerified": true,
+    "relativeLinksChecked": 13
+  },
+  "notVerified": [
+    "Electron main/real CLI/MCP full conformance",
+    "actual OS read-only sandbox",
+    "same-UID strong isolation or cross-UID attack",
+    "Windows",
+    "in-flight revocation",
+    "concurrency/backpressure",
+    "token renewal",
+    "crash recovery"
+  ],
+  "privacy": {
+    "rawTokensArchived": false,
+    "bootstrapArchived": false,
+    "realCredentialsRead": false,
+    "temporaryPrivateDirectoryRetained": false
+  }
+}

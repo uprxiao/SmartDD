@@ -1,0 +1,54 @@
+{
+  "schema": "m10-candidate-storage-research-v1",
+  "time": "2026-10-17T07:59:15.465822+00:00",
+  "sqlite_version": "3.45.1",
+  "checks": [
+    {
+      "id": "DB-01",
+      "observation": "same numeric ID remains distinct by object type and connection",
+      "assertion_met": true
+    },
+    {
+      "id": "DB-02",
+      "observation": "duplicate external identity rejected by storage constraint",
+      "assertion_met": true
+    },
+    {
+      "id": "DB-03",
+      "observation": "binding to nonexistent connection rejected",
+      "assertion_met": true
+    },
+    {
+      "id": "DB-04",
+      "observation": "project-bound query rejects another project",
+      "assertion_met": true
+    },
+    {
+      "id": "DB-05",
+      "observation": "disabled/revised connection cannot be reused under old snapshot",
+      "assertion_met": true
+    },
+    {
+      "id": "DB-06",
+      "observation": "local duplicate intent prevented independently of call ID",
+      "assertion_met": true
+    },
+    {
+      "id": "DB-07",
+      "observation": "failed transaction preserves prior connection state",
+      "assertion_met": true
+    },
+    {
+      "id": "DB-08",
+      "observation": "reopen preserves unknown outcome and credential reference, not a raw secret",
+      "assertion_met": true
+    }
+  ],
+  "fixture": "synthetic temporary SQLite only",
+  "limitations": [
+    "candidate schema, not production migration or confirmed product rules",
+    "local uniqueness cannot guarantee remote exactly-once execution",
+    "no network request, real secret, safeStorage, UI or real service tested",
+    "revocation check does not undo an operation already sent to a remote service"
+  ]
+}

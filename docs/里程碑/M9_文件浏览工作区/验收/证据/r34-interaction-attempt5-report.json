@@ -1,0 +1,259 @@
+{
+  "requirementRevision": "R3.3-20261017",
+  "iteration": "r34-interaction",
+  "timestamp": "2026-10-17T07:31:13.886Z",
+  "environment": {
+    "url": "http://127.0.0.1:4176/?preview=m9",
+    "browser": "155.0.8059.80",
+    "viewport": {
+      "width": 1512,
+      "height": 949
+    },
+    "DPR": 1,
+    "locale": "zh-CN"
+  },
+  "boundary": "Synthetic local prototype only. No Codex/native file provider/real IME/touch/screenreader/OS apps/packaged app or all-state reference parity. Actual HTML drag only, no native file/speech integration.",
+  "checks": [
+    {
+      "id": "I01",
+      "title": "初次只查询根及已展开目录，未递归加载全部子目录",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I02",
+      "title": "6,000合成文件按目录懒加载，250子文件使用有界虚拟DOM",
+      "status": "passed",
+      "detail": {
+        "total": 312,
+        "dom": 28,
+        "loaded": "4"
+      }
+    },
+    {
+      "id": "I03",
+      "title": "滚动后显示粘性祖先目录，虚拟行总数仍受控",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I04",
+      "title": "End能聚焦未挂载的末行并正确滚入视区",
+      "status": "passed",
+      "detail": {
+        "focused": "package.json",
+        "scrollTop": 8083
+      }
+    },
+    {
+      "id": "I05",
+      "title": "Home恢复首行且只有一个Tab停靠点",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I06",
+      "title": "文件名候选能检索从未展开的第24目录",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I07",
+      "title": "打开检索文件后展开祖先并nearest定位，文件行留在视区",
+      "status": "passed",
+      "detail": {
+        "top": 786.5,
+        "bottom": 814.5,
+        "treeTop": 161.5,
+        "treeBottom": 814.5
+      }
+    },
+    {
+      "id": "I08",
+      "title": "子目录读取失败展示可重试错误，不伪装空目录",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I09",
+      "title": "目录重试完成后真实切换为空状态，失败提示清除",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I10",
+      "title": "慢候选快速换query时旧结果不会覆盖新结果",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I11",
+      "title": "候选在途切根后不把旧query或结果写入新根",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I12",
+      "title": "候选失败保留输入并提供重试",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I13",
+      "title": "候选重试可恢复正常结果",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I14",
+      "title": "路径tooltip不早于500ms显示",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I15",
+      "title": "路径tooltip随后显示完整本机路径且允许文本选择",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I16",
+      "title": "Escape立即关闭tooltip",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I17",
+      "title": "键盘focus-visible触发路径tooltip",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I18",
+      "title": "目录滚动立即关闭tooltip",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I19",
+      "title": "外开列表加载中禁用启动并给出加载状态",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I20",
+      "title": "外开列表失败后可重试，恢复首选项且保留复制路径",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I21",
+      "title": "无外开能力仍显示说明和复制路径",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I22",
+      "title": "generated筛选只在变化文件上下文出现",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I23",
+      "title": "generated筛除保留其他变化文件并隐藏指定生成文件",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I24",
+      "title": "全文搜索500ms后显示忙状态",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I25",
+      "title": "全文旧请求取消，新结果保留正确文件和多字节列定位",
+      "status": "failed",
+      "detail": {
+        "hits": [
+          "多根",
+          "单根",
+          "嵌套根",
+          "无根",
+          "正常",
+          "读取中",
+          "外部修改冲突",
+          "保存失败",
+          "已删除",
+          "无读取权限",
+          "过大",
+          "未知二进制",
+          "根不可用",
+          "普通样本",
+          "6,000文件 / 懒加载",
+          "空目录",
+          "正常异步",
+          "慢响应",
+          "失败",
+          "可用",
+          "加载中",
+          "读取失败",
+          "无能力",
+          "export const 中文😀 = \"needle-24-0250\";大目录/模块-24/文件-0250.ts:2:22"
+        ],
+        "busy": "false"
+      }
+    },
+    {
+      "id": "I26",
+      "title": "关闭全文搜索返焦点且终端仍在",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I27",
+      "title": "虚拟树文件拖放保留完整路径且不自动发送",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I29",
+      "title": "可比静态常量：树行28px、文字13px、文件图标16px",
+      "status": "passed",
+      "detail": {
+        "height": 28,
+        "font": "13px",
+        "icon": 16
+      }
+    },
+    {
+      "id": "I30",
+      "title": "深色状态下tooltip和文件树使用主题而非仅换背景",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "I28",
+      "title": "本轮界面无未处理运行异常",
+      "status": "passed",
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "shots": [
+    {
+      "file": "r34-interaction-large-tree-light.png",
+      "sha256": "7bf2d6dd1ca6fd91b0bd2bd7d7a222d62a37d30797ca03c05b98525fc2158519"
+    },
+    {
+      "file": "r34-interaction-dark-tooltip.png",
+      "sha256": "ccb6809f2a174d768656357b0cf47d658c224189e13f095848102142840ae768"
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "passed": 29,
+    "failed": 1
+  }
+}

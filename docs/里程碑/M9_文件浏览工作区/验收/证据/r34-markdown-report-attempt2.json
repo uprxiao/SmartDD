@@ -1,0 +1,322 @@
+{
+  "revision": "R3.4-20261017",
+  "attempt": "attempt2",
+  "timestamp": "2026-10-17T07:31:16.352Z",
+  "environment": {
+    "url": "http://127.0.0.1:4176/tests/r34-markdown-runtime.html",
+    "browser": "155.0.8059.80",
+    "viewport": {
+      "width": 1512,
+      "height": 949
+    },
+    "storage": "isolated synthetic fixture harness"
+  },
+  "boundary": "Source-token mapping and whole-unit fallbacks, not CodeMirror equivalence. No Codex, real filesystem, CLI/model, real OS IME, packaged application or visual-reference parity claim.",
+  "checks": [
+    {
+      "id": "MD34-01",
+      "title": "TypeScript 围栏使用真实高亮，未知语言安全纯文本",
+      "status": "passed",
+      "detail": {
+        "color": "rgb(130, 80, 223)"
+      }
+    },
+    {
+      "id": "MD34-02",
+      "title": "未闭合或非小写 mermaid 围栏保留源码",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "MD34-03",
+      "title": "完整 Mermaid 围栏解析为浅色 SVG",
+      "status": "passed",
+      "detail": {
+        "fill": "rgb(236, 236, 255)"
+      }
+    },
+    {
+      "id": "MD34-04",
+      "title": "主题按钮触发 Mermaid 重渲染，渲染内容与主题标签一致",
+      "status": "passed",
+      "detail": {
+        "fill": "rgb(31, 32, 32)",
+        "lightFill": "rgb(236, 236, 255)"
+      }
+    },
+    {
+      "id": "MD34-05",
+      "title": "连续主题变化不会显示迟到主题且清理临时渲染容器",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "MD34-06",
+      "title": "非法图表保留错误，临时 SVG 容器不泄漏",
+      "status": "passed",
+      "detail": {
+        "error": "Mermaid 图表无法渲染：No diagram type detected matching given configuration for text: not-a-diagram @@"
+      }
+    },
+    {
+      "id": "MD34-07",
+      "title": "图表挂载后立即卸载不会留下绘图节点",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "MD34-08",
+      "title": "键盘聚焦不抢进编辑，Enter 编辑，Escape 还原焦点",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "MD34-09",
+      "title": "重复行内公式点击定位第二条完整源码",
+      "status": "passed",
+      "detail": {
+        "value": "😀 $x^2$ and $x^2$ tail",
+        "start": 13,
+        "end": 18,
+        "direction": "forward",
+        "selected": "$x^2$",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-10",
+      "title": "块公式点击展开完整源码单元，不使用字形坐标",
+      "status": "passed",
+      "detail": {
+        "value": "$$\nx^2 + y^2\n$$\n",
+        "start": 0,
+        "end": 16,
+        "direction": "forward",
+        "selected": "$$\nx^2 + y^2\n$$\n",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-11",
+      "title": "跨块选择按源码 token 映射中文/emoji/CRLF 和标记",
+      "status": "passed",
+      "detail": {
+        "edit": {
+          "value": "中文 😀 first **bold** tail\n\nsecond *中文* end\n",
+          "start": 3,
+          "end": 33,
+          "direction": "forward",
+          "selected": "😀 first **bold** tail\n\nsecond",
+          "focused": true
+        },
+        "sourceRange": {
+          "from": 3,
+          "to": 35
+        }
+      }
+    },
+    {
+      "id": "MD34-12",
+      "title": "反向跨块选择保留方向和源码范围",
+      "status": "passed",
+      "detail": {
+        "value": "中文 😀 first **bold** tail\n\nsecond *中文* end\n",
+        "start": 0,
+        "end": 33,
+        "direction": "backward",
+        "selected": "中文 😀 first **bold** tail\n\nsecond",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-13",
+      "title": "实际鼠标拖动跨段后进入带源码标记的选区",
+      "status": "passed",
+      "detail": {
+        "value": "Alpha start **bold** tail\n\nBravo ending text",
+        "start": 1,
+        "end": 34,
+        "direction": "forward",
+        "selected": "lpha start **bold** tail\n\nBravo e",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-14",
+      "title": "HTML 实体选区回到完整实体源码并告知边界",
+      "status": "passed",
+      "detail": {
+        "value": "A &amp; B",
+        "start": 2,
+        "end": 7,
+        "direction": "forward",
+        "selected": "&amp;",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-15",
+      "title": "高亮围栏内选择保留代码源码坐标",
+      "status": "passed",
+      "detail": {
+        "edit": {
+          "value": "```ts\nconst 中文 = 42;\n```\n",
+          "start": 12,
+          "end": 14,
+          "direction": "forward",
+          "selected": "中文",
+          "focused": true
+        },
+        "selection": {
+          "from": 13,
+          "to": 15
+        }
+      }
+    },
+    {
+      "id": "MD34-16",
+      "title": "textarea 修改只替换源码范围，保留未改 CRLF/CR/LF",
+      "status": "passed",
+      "detail": {
+        "source": "first\r\nLINE\nthird\r\n\r\nlast\r"
+      }
+    },
+    {
+      "id": "MD34-17",
+      "title": "连续编辑换行不会重建 textarea 或丢失光标",
+      "status": "passed",
+      "detail": {
+        "value": "changed\nnew paragraph\n!",
+        "start": 23,
+        "end": 23,
+        "direction": "none",
+        "selected": "",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-18",
+      "title": "外部内容修订到达时失效旧编辑范围，保留新内容",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "MD34-19",
+      "title": "编辑权限变只读立即关闭编辑，任务框不得写入",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "MD34-20",
+      "title": "只读跨块选区可报告来源但不进入编辑",
+      "status": "passed",
+      "detail": {
+        "text": "first\n\nsecond",
+        "edits": [],
+        "selections": [
+          {
+            "from": 0,
+            "to": 13
+          }
+        ],
+        "events": []
+      }
+    },
+    {
+      "id": "MD34-21",
+      "title": "搜索 mark 包装不破坏源坐标映射",
+      "status": "passed",
+      "detail": {
+        "value": "find 中文 again",
+        "start": 5,
+        "end": 7,
+        "direction": "forward",
+        "selected": "中文",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-22",
+      "title": "无法唯一映射的渲染文本明确退回完整源码块",
+      "status": "failed",
+      "detail": {
+        "error": "Error: page.evaluate: Error: Fixture selection offset exceeds text\n    at leaf (eval at evaluate (:234:30), <anonymous>:3:214)\n    at eval (eval at evaluate (:234:30), <anonymous>:4:13)\n    at UtilityScript.evaluate (<anonymous>:236:17)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+        "stack": "page.evaluate: Error: Fixture selection offset exceeds text\n    at leaf (eval at evaluate (:234:30), <anonymous>:3:214)\n    at eval (eval at evaluate (:234:30), <anonymous>:4:13)\n    at UtilityScript.evaluate (<anonymous>:236:17)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at select (/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/r34-markdown-check.mjs:19:14)\n    at /Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/r34-markdown-check.mjs:102:45\n    at async step (/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/r34-markdown-check.mjs:13:61)\n    at /Users/liubu/Documents/ChatGPT/SmartDD/async file:/Users/liubu/Documents/ChatGPT/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M9_%E6%96%87%E4%BB%B6%E6%B5%8F%E8%A7%88%E5%B7%A5%E4%BD%9C%E5%8C%BA/%E9%AA%8C%E6%94%B6/%E8%AF%81%E6%8D%AE/r34-markdown-check.mjs:101:1"
+      }
+    },
+    {
+      "id": "MD34-23",
+      "title": "合成 IME 组合时 Escape 不提前退出，结束后可退出",
+      "status": "passed",
+      "detail": {
+        "boundary": "Synthetic composition events; actual OS IME not exercised."
+      }
+    },
+    {
+      "id": "MD34-24",
+      "title": "输入后重新选择后续块使用最新源码坐标",
+      "status": "passed",
+      "detail": {
+        "value": "two **bold**",
+        "start": 0,
+        "end": 0,
+        "direction": "forward",
+        "selected": "",
+        "focused": true
+      }
+    },
+    {
+      "id": "MD34-25",
+      "title": "多个图表在同一主题下串行渲染且深色代码高亮可读",
+      "status": "passed",
+      "detail": {
+        "fills": [
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)",
+          "rgb(31, 32, 32)"
+        ],
+        "color": "rgb(194, 151, 255)"
+      }
+    },
+    {
+      "id": "MD34-26",
+      "title": "本组页面没有未处理 JavaScript 异常",
+      "status": "passed",
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    {
+      "file": "r34-markdown-light-diagram.png",
+      "sha256": "803c3fc500875dcc8ee8be7dd673e280a1e509e3d0498efbd7c012fc6d640f8f"
+    },
+    {
+      "file": "r34-markdown-dark-diagram.png",
+      "sha256": "609855c7baeabca3456535effc83ceb800a279d761b131a46e32e951e9db683c"
+    },
+    {
+      "file": "r34-markdown-cross-block-selection.png",
+      "sha256": "95d2b0949dfeb9a922c9c8853ee9380f76037d2cee56e8792c16f0229894e3ae"
+    },
+    {
+      "file": "r34-markdown-multiple-dark-diagrams.png",
+      "sha256": "ada87602c03b67a975894c1c5d4f3a9c5b7ed8347d67c52b77674a97766134f4"
+    }
+  ],
+  "summary": {
+    "passed": 25,
+    "failed": 1
+  }
+}

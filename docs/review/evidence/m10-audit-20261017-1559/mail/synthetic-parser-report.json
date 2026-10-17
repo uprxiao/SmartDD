@@ -1,0 +1,78 @@
+{
+  "schema": "m10-foxmail-synthetic-parser-v1",
+  "at": "2026-10-17T07:59:15.497085+00:00",
+  "input": "synthetic_only",
+  "dependencies": "Python standard library only",
+  "network_calls": 0,
+  "foxmail_files_read": 0,
+  "checks": [
+    {
+      "id": "S01_UTF8_MULTIPART",
+      "passed": true,
+      "detail": "UTF-8, alternative text/HTML, inline CID and two separate attachments parsed from synthetic EML."
+    },
+    {
+      "id": "S02_NO_RENDER_OR_FETCH",
+      "passed": true,
+      "detail": "Parser classifies HTML; no browser renderer or network API is used. This does not validate an HTML sanitizer."
+    },
+    {
+      "id": "S03_STABLE_REFERENCE",
+      "passed": true,
+      "detail": "Re-reading the same candidate source/native ID preserves its reference."
+    },
+    {
+      "id": "S04_CONTENT_REVISION",
+      "passed": true,
+      "detail": "A changed payload updates content revision without changing the source-native reference."
+    },
+    {
+      "id": "S05_SOURCE_AND_HEADER_COLLISIONS",
+      "passed": true,
+      "detail": "Equal Message-ID or native IDs in different sources cannot merge unrelated local records."
+    },
+    {
+      "id": "S06_MISSING_MESSAGE_ID",
+      "passed": true,
+      "detail": "A source-native reference does not require the optional RFC Message-ID header."
+    },
+    {
+      "id": "S07_MALFORMED_MIME",
+      "passed": true,
+      "detail": "Malformed synthetic MIME produces parser defects and must not be silently marked complete."
+    },
+    {
+      "id": "S08_ATTACHMENT_ISOLATION",
+      "passed": true,
+      "detail": "Traversal-style MIME filename and duplicate display name cannot escape or overwrite the isolated ID/hash paths."
+    },
+    {
+      "id": "S09_PRIVATE_OUTPUT_MODES",
+      "passed": true,
+      "detail": "Synthetic extraction creates 0700 directory and 0600 files."
+    },
+    {
+      "id": "S10_QUOTA_BEFORE_WRITE",
+      "passed": true,
+      "detail": "Attachment budget is checked before creating output files."
+    },
+    {
+      "id": "S11_MBOX_BOUNDARIES",
+      "passed": true,
+      "detail": "Two synthetic messages survive mbox boundaries; the body From line does not create a false third message."
+    },
+    {
+      "id": "S12_MBOX_FORMAT_NOT_BYTE_IDENTITY",
+      "passed": true,
+      "detail": "An mbox container is not a raw EML byte identity; preserve source-native references separately from transport packaging."
+    }
+  ],
+  "passed": true,
+  "script_sha256": "13956058a433c1f12d4544b722f2469bc0808fd03746841bd4704e94959f5a65",
+  "limits": [
+    "No real Foxmail MIME content parsed.",
+    "No live mailbox/index-to-file mapping or incremental synchronization verified.",
+    "No HTML rendering/sanitizer verified.",
+    "No client automation, account login or actual sending performed."
+  ]
+}

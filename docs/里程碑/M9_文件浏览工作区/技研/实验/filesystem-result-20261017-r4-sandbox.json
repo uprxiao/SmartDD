@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T01:24:45.744Z",
+  "scriptSha256": "3e91c2668b3812555543bbe01f2c3ec71f9b830343e718963b51c738718244a4",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0"
+  },
+  "scope": "Synthetic temporary files; no Electron IPC or production implementation",
+  "cases": [
+    {
+      "id": "FS01",
+      "title": "Real paths, Unicode, dotfile, traversal and symlink bounds",
+      "status": "passed",
+      "durationMs": 1.76,
+      "evidence": {
+        "rejected": {
+          "../outside/sentinel.txt": "PATH_ESCAPE",
+          "/etc/passwd": "INVALID_ARGUMENT",
+          "C:\\outside\\x": "INVALID_ARGUMENT",
+          "//server/share": "INVALID_ARGUMENT",
+          "file:///tmp/x": "INVALID_ARGUMENT",
+          "bad<NUL>name": "INVALID_ARGUMENT"
+        },
+        "outsideSymlink": "rejected",
+        "insideAlias": "same canonical identity",
+        "bytePreservation": "CRLF exact"
+      }
+    },
+    {
+      "id": "FS02",
+      "title": "Host/root/task identity and owner/generation guards",
+      "status": "passed",
+      "durationMs": 0.75,
+      "evidence": {
+        "differentProjectSameName": "distinct",
+        "sameRootAlias": "shared",
+        "differentHost": "distinct",
+        "taskBufferPolicy": "separate scope; file identity shared",
+        "ownerValidation": "research registry only, not Electron sender verification"
+      }
+    },
+    {
+      "id": "FS03",
+      "title": "Root directory replacement invalidates the lease",
+      "status": "passed",
+      "durationMs": 0.85,
+      "evidence": {
+        "sameDisplayPathDifferentInode": "rejected"
+      }
+    },
+    {
+      "id": "FS04",
+      "title": "Same mtime and size content change defeats mtime-only detection",
+      "status": "passed",
+      "durationMs": 23.55,
+      "evidence": {
+        "sameMtimeNs": true,
+        "sameSize": true,
+        "hashChanged": true,
+        "staleSave": "conflict",
+        "outsideProcess": true
+      }
+    },
+    {
+      "id": "FS05",
+      "title": "Atomic replacement preserves complete bytes, mode and precommit failure",
+      "status": "passed",
+      "durationMs": 13.62,
+      "evidence": {
+        "exactBytes": "db402f0c9ed759bfff8d1c928417465bb00e0196fe521eda66bbbe6ead3227ed",
+        "mode": "640",
+        "failedCommitOriginalPreserved": true,
+        "temporaryFilesCleaned": true,
+        "durability": "temp file fsync only; power-loss/directory fsync not proven"
+      }
+    },
+    {
+      "id": "FS06",
+      "title": "Independent reader sees old/new whole files during 32 renames",
+      "status": "passed",
+      "durationMs": 116.03,
+      "evidence": {
+        "reads": 71,
+        "partial": 0,
+        "errors": 0,
+        "replacements": 32,
+        "bytesPerFile": 262144,
+        "boundary": "observed macOS local FS semantics, not cross-platform/crash durability"
+      }
+    },
+    {
+      "id": "FS07",
+      "title": "Concurrent external write before final revision check is rejected",
+      "status": "passed",
+      "durationMs": 29.18,
+      "evidence": {
+        "save": "conflict",
+        "externalContentPreserved": true
+      }
+    },
+    {
+      "id": "FS08",
+      "title": "Negative control: external write after final check is overwritten by rename",
+      "status": "observed-gap",
+      "durationMs": 35.53,
+      "evidence": {
+        "reproduced": true,
+        "externalWriteLost": true,
+        "implication": "hash+atomic rename is not a cross-process CAS; native/cooperative locking or explicit residual race boundary required"
+      }
+    },
+    {
+      "id": "FS09",
+      "title": "Negative control: parent symlink swap bypasses a prior path check",
+      "status": "observed-gap",
+      "durationMs": 1.2,
+      "evidence": {
+        "reproduced": true,
+        "finalComponentNoFollowInsufficient": true,
+        "outsideSyntheticSentinelChanged": true,
+        "implication": "anchored component-by-component descriptor operations/native broker required for adversarial topology"
+      }
+    },
+    {
+      "id": "FS10",
+      "title": "Real directory watcher observes atomic replacement and subsequent edit",
+      "status": "failed",
+      "error": {
+        "code": "ERR_ASSERTION",
+        "message": "The expression evaluated to a falsy value:\n\n  assert.ok(events.some(e => e.name === 'watched.txt'))\n"
+      },
+      "durationMs": 4648.83
+    },
+    {
+      "id": "FS12",
+      "title": "Bounded polling detects replacements and missed events without native watch",
+      "status": "passed",
+      "durationMs": 507.91,
+      "evidence": {
+        "observations": [
+          {
+            "names": [
+              "poll.txt"
+            ],
+            "changed": [
+              "poll.txt"
+            ]
+          },
+          {
+            "names": [
+              "poll.txt"
+            ],
+            "changed": [
+              "poll.txt"
+            ]
+          },
+          {
+            "names": [
+              "new.txt",
+              "poll.txt"
+            ],
+            "changed": [
+              "new.txt"
+            ]
+          }
+        ],
+        "intervalMs": 50,
+        "fixtureFiles": 2,
+        "boundary": "bounded fixture proof only; production must budget enumeration/hash cost and adapt interval, not hash all project files every 50 ms"
+      }
+    },
+    {
+      "id": "FS11",
+      "title": "Native file-inode watch does not guarantee monitoring after atomic replacement",
+      "status": "passed",
+      "durationMs": 577.27,
+      "evidence": {
+        "events": [
+          {
+            "phase": "replace",
+            "type": "rename",
+            "name": "inode-watch.txt"
+          }
+        ],
+        "laterEditObserved": false,
+        "implication": "prefer containing-directory subscription + rescan/rebind; one run is not a universal watcher guarantee"
+      }
+    }
+  ],
+  "fixtureCleanup": "completed",
+  "completedAt": "2026-10-17T01:24:51.706Z",
+  "summary": {
+    "passed": 9,
+    "observed-gap": 2,
+    "failed": 1
+  }
+}

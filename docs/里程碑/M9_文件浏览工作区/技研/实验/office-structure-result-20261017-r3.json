@@ -1,0 +1,180 @@
+{
+  "revision": "R3.4",
+  "startedAt": "2026-10-17T07:27:15Z",
+  "scriptSha256": "7db3016abdcba830941aa8cb9c3c2b54bc40a04228c1c0b93bd0511554852226",
+  "environment": "macOS-26.6.1-arm64-arm-64bit",
+  "scope": "Synthetic OOXML structural mutation prototypes, not production codecs or Microsoft Office acceptance",
+  "cases": [
+    {
+      "id": "OS01",
+      "title": "新增工作表保留旧表公式、图表、合并、批注、校验与未知部件",
+      "status": "passed",
+      "durationMs": 3.73,
+      "facts": {
+        "changed": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml"
+        ],
+        "added": [
+          "xl/worksheets/sheet2.xml"
+        ],
+        "removed": [],
+        "unchangedPartCount": 13,
+        "internalRelationships": 12,
+        "opaquePreserved": true,
+        "independentReader": "openpyxl",
+        "sheets": [
+          "Data",
+          "Added"
+        ],
+        "chartFormulaMergeCommentValidationPreserved": true
+      }
+    },
+    {
+      "id": "OS02",
+      "title": "复制幻灯片与独立备注，原幻灯片/主题/未知部件不变",
+      "status": "passed",
+      "durationMs": 0.38,
+      "facts": {
+        "changed": [
+          "[Content_Types].xml",
+          "ppt/_rels/presentation.xml.rels",
+          "ppt/presentation.xml"
+        ],
+        "added": [
+          "ppt/notesSlides/_rels/notesSlide2.xml.rels",
+          "ppt/notesSlides/notesSlide2.xml",
+          "ppt/slides/_rels/slide3.xml.rels",
+          "ppt/slides/slide3.xml"
+        ],
+        "removed": [],
+        "unchangedPartCount": 43,
+        "internalRelationships": 47,
+        "opaquePreserved": true,
+        "slideCount": 3,
+        "notesClonedWithNewBackReference": true
+      }
+    },
+    {
+      "id": "OS03",
+      "title": "幻灯片重排只改presentation顺序，不重写对象和备注",
+      "status": "passed",
+      "durationMs": 0.31,
+      "facts": {
+        "changed": [
+          "ppt/presentation.xml"
+        ],
+        "added": [],
+        "removed": [],
+        "unchangedPartCount": 49,
+        "internalRelationships": 47,
+        "opaquePreserved": true
+      }
+    },
+    {
+      "id": "OS04",
+      "title": "隐藏幻灯片只修改show标记，保留对象内容",
+      "status": "passed",
+      "durationMs": 0.28,
+      "facts": {
+        "changed": [
+          "ppt/slides/slide3.xml"
+        ],
+        "added": [],
+        "removed": [],
+        "unchangedPartCount": 49,
+        "internalRelationships": 47,
+        "opaquePreserved": true
+      }
+    },
+    {
+      "id": "OS05",
+      "title": "拒绝非预期损失/修改/断链/新增外部关系：loss",
+      "status": "passed",
+      "durationMs": 0.06,
+      "facts": {
+        "rejected": true,
+        "reason": "unexpected package mutation: changed={'xl/workbook.xml', 'xl/_rels/workbook.xml.rels', '[Content_Types].xml'} added={'xl/worksheets/sheet2.xml'} removed={'customXml/m9-opaque.bin'}",
+        "originalUnchanged": true
+      }
+    },
+    {
+      "id": "OS06",
+      "title": "拒绝非预期损失/修改/断链/新增外部关系：chart",
+      "status": "passed",
+      "durationMs": 0.03,
+      "facts": {
+        "rejected": true,
+        "reason": "unexpected package mutation: changed={'xl/workbook.xml', 'xl/_rels/workbook.xml.rels', '[Content_Types].xml', 'xl/charts/chart1.xml'} added={'xl/worksheets/sheet2.xml'} removed=set()",
+        "originalUnchanged": true
+      }
+    },
+    {
+      "id": "OS07",
+      "title": "拒绝非预期损失/修改/断链/新增外部关系：relation",
+      "status": "passed",
+      "durationMs": 0.1,
+      "facts": {
+        "rejected": true,
+        "reason": "broken relationship xl/_rels/workbook.xml.rels -> xl/worksheets/missing.xml",
+        "originalUnchanged": true
+      }
+    },
+    {
+      "id": "OS08",
+      "title": "拒绝非预期损失/修改/断链/新增外部关系：external",
+      "status": "passed",
+      "durationMs": 0.07,
+      "facts": {
+        "rejected": true,
+        "reason": "operation must not introduce an external relationship",
+        "originalUnchanged": true
+      }
+    },
+    {
+      "id": "OS09",
+      "title": "独立LibreOffice读取新增工作表并导出PDF",
+      "status": "passed",
+      "durationMs": 2150.84,
+      "facts": {
+        "renderer": "LibreOffice headless",
+        "convert": {
+          "exitCode": 0,
+          "ms": 2133,
+          "stderr": "2026-10-17 15:27:17.791 soffice[65612:11499417] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "pdfExists": true,
+        "text": "Label\nA\nB\nMERGED\n\nValue\n3\n4\n\n7\n\n4.5\n4\n3.5\n3\n2.5\n2\n1.5\n1\n0.5\n0\n\n1\n\n2\n\n\fValue\n\n2\n\n\fSTRUCTURE_ADDED\n\n12\n24",
+        "layoutPixelParity": "not-tested"
+      }
+    },
+    {
+      "id": "OS10",
+      "title": "独立LibreOffice读取复制幻灯片并导出PDF",
+      "status": "passed",
+      "durationMs": 2348.79,
+      "facts": {
+        "renderer": "LibreOffice headless",
+        "convert": {
+          "exitCode": 0,
+          "ms": 2332,
+          "stderr": "2026-10-17 15:27:20.455 soffice[65646:11499670] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "pdfExists": true,
+        "text": "PPT_TITLE_ONE\n• 要点 BULLET_ONE\n\n\fPPT_TITLE_TWO\n正文 BODY_TWO\n\n\fPPT_TITLE_ONE\n• 要点 BULLET_ONE",
+        "layoutPixelParity": "not-tested"
+      }
+    }
+  ],
+  "originalInputsUnchanged": true,
+  "completedAt": "2026-10-17T07:27:20Z",
+  "cleanup": "Temporary packages, private LibreOffice profiles and PDFs removed",
+  "limitations": [
+    "No Microsoft Office installation or real user-created Office files used",
+    "Only sheet append, slide clone/reorder/hide were implemented; arbitrary row insertion, charts/formula editing and all Office commands remain unproven",
+    "Untouched ZIP part bytes are preserved; ZIP container metadata and visual pixel parity are not asserted",
+    "Macro-like placeholder bytes are inert, not a signed VBA project compatibility test",
+    "Not connected to the WillYou UI, real disk save service or packaged application"
+  ]
+}

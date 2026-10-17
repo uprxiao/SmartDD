@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "ranAt": "2026-10-17T03:54:39.438Z",
+  "target": "http://127.0.0.1:4176/?preview=m9",
+  "browser": "Google Chrome (local, headless, isolated context)",
+  "viewport": "1512x949 DPR1",
+  "scope": "合成数据原型；不是 Codex 参考运行，不计入 385 条正式用例",
+  "screenshots": [
+    {
+      "file": "r3-markdown-syntax-top.png",
+      "sha256": "ac4e46208ea8a94fc5b6358aff5a5cb4a5b793952ec2e99eaae1c833d50be6f9"
+    },
+    {
+      "file": "r3-markdown-mermaid-class.png",
+      "sha256": "1dd2fd87b74932535d3edce7534903ce16a50068902f56fd0bf5fa3ffdad6939"
+    },
+    {
+      "file": "r3-markdown-find.png",
+      "sha256": "fb31b6f79eb16e0d2bc1d77b6b5a337ee84d36faf4fd9ed5acbfc838863718ca"
+    },
+    {
+      "file": "r3-markdown-abnormal.png",
+      "sha256": "3c2d9ebb7418ce2d4b93bd1642f4578881f068f26ba4c6a41aa947c54f8ef32c"
+    }
+  ],
+  "checks": [
+    {
+      "id": "R3-MD01",
+      "title": "KaTeX 行内与块级公式渲染；价格文本“$5 和 $6”不被当作公式",
+      "status": "passed",
+      "detail": {
+        "katex": 2,
+        "display": 1
+      }
+    },
+    {
+      "id": "R3-MD02",
+      "title": "Mermaid 实际渲染（序列图+类图），无错误块",
+      "status": "passed",
+      "detail": {
+        "svg": 2
+      }
+    },
+    {
+      "id": "R3-MD03",
+      "title": "类图节点标签文字可见（htmlLabels:false 修复前为空白）",
+      "status": "passed",
+      "detail": {
+        "text": "l,sans-serif;}FileWorkspaceTab"
+      }
+    },
+    {
+      "id": "R3-MD04",
+      "title": "表格对齐 left/center/right",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-MD05",
+      "title": "原始 HTML 被转义，无 script 元素",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-MD06",
+      "title": "frontmatter 键值（含数组/对象）与引用定义保留为源码",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-MD07",
+      "title": "嵌套有序/无序列表与任务项渲染",
+      "status": "passed",
+      "detail": {
+        "lists": 5
+      }
+    },
+    {
+      "id": "R3-MD08",
+      "title": "勾选第一个任务只改写其所在源码行 [ ] → [x]，其余字节不变",
+      "status": "passed",
+      "detail": {
+        "changed": [
+          [
+            17,
+            "   - [ ] 嵌套任务",
+            "   - [x] 嵌套任务"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "R3-MD09",
+      "title": "点击段落进入该块源码；输入后渲染结果更新，总行数不变（逐字节比对由模型测试覆盖）",
+      "status": "passed",
+      "detail": {
+        "editedLines": 59
+      }
+    },
+    {
+      "id": "R3-MD10",
+      "title": "文件内查找在渲染后的 HTML 文本节点上高亮（“嵌套”命中 2 处）；公式内部是否排除高亮未单独验证",
+      "status": "passed",
+      "detail": {
+        "marks": 2
+      }
+    },
+    {
+      "id": "R3-MD11",
+      "title": "相对链接 ../AGENTS.md 切换到已存在标签；外部链接只提示不导航",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-MD12",
+      "title": "无效 YAML 显示可读错误；无效 Mermaid 显示错误块；无效公式不抛出；未闭合围栏延伸到文末",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-MD13",
+      "title": "失败的 Mermaid 渲染不在 body 留下残余节点",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-MD15",
+      "title": "重构后图片画廊可打开/Escape 关闭（2 张独立图片）",
+      "status": "passed",
+      "detail": {
+        "images": 2
+      }
+    },
+    {
+      "id": "R3-MD16",
+      "title": "图片右键菜单项与顺序不变",
+      "status": "passed",
+      "detail": {
+        "menu": [
+          "在新标签打开图片",
+          "添加到当前任务",
+          "复制图片",
+          "在文件管理器中显示",
+          "下载副本"
+        ]
+      }
+    },
+    {
+      "id": "R3-MD17",
+      "title": "编辑后等 3.6 秒自动保存，刷新页面后内容仍在",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-MD18",
+      "title": "渲染未完成时快速来回切换 5 轮：无页面错误、body 无残留 Mermaid 节点",
+      "status": "passed",
+      "detail": {
+        "errors": [],
+        "leaked": 0
+      }
+    },
+    {
+      "id": "R3-MD14",
+      "title": "全程没有 pageerror / console error",
+      "status": "passed",
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "summary": {
+    "passed": 18
+  }
+}

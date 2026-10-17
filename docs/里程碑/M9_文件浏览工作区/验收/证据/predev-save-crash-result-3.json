@@ -1,0 +1,330 @@
+{
+  "startedAt": "2026-10-17T08:34:07Z",
+  "environment": "macOS-26.6.1-arm64-arm-64bit",
+  "scope": "real child SIGKILL, read-only recovery, FIFO/type/quarantine, injected ENOSPC/fsync; NOT physical full disk, power loss, cross-volume layout or production App",
+  "recoveryScanBudgetSeconds": 1.0,
+  "cases": [
+    {
+      "id": "SC-prepared",
+      "title": "真实SIGKILL于prepared阶段，启动恢复保留全部可见版本",
+      "status": "passed",
+      "evidence": {
+        "childSignal": 9,
+        "recovered": [
+          {
+            "opId": "915e4d55-da8e-4ac9-86e3-7ad514c189ad",
+            "state": "prepared-uncommitted",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250495161
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250495163
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "staging": {
+                "identity": [
+                  16777233,
+                  250495164
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "recoveryIsIdempotentAndReadOnly": true
+      }
+    },
+    {
+      "id": "SC-swapped",
+      "title": "真实SIGKILL于swapped阶段，启动恢复保留全部可见版本",
+      "status": "passed",
+      "evidence": {
+        "childSignal": 9,
+        "recovered": [
+          {
+            "opId": "4c931c8c-1dd1-46f1-b721-7b201159e6cb",
+            "state": "postcommit-review",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250495170
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250495169
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "staging": {
+                "identity": [
+                  16777233,
+                  250495167
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "recoveryIsIdempotentAndReadOnly": true
+      }
+    },
+    {
+      "id": "SC-returned",
+      "title": "真实SIGKILL于returned阶段，启动恢复保留全部可见版本",
+      "status": "passed",
+      "evidence": {
+        "childSignal": 9,
+        "recovered": [
+          {
+            "opId": "6e182d18-468b-4159-8e5c-e0606d7c38c3",
+            "state": "postcommit-review",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250495177
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250495176
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "displaced": {
+                "identity": [
+                  16777233,
+                  250495173
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "recoveryIsIdempotentAndReadOnly": true
+      }
+    },
+    {
+      "id": "SC-enospc",
+      "title": "提交前草稿写失败不修改原件",
+      "status": "passed",
+      "evidence": {
+        "targetUnchanged": true,
+        "fault": "injected ENOSPC before commit",
+        "physicalDiskFilled": false,
+        "memoryDraftMustRemain": true
+      }
+    },
+    {
+      "id": "SC-fsync",
+      "title": "提交后fsync失败保留冲突版本，不能谎报未写入或已保存",
+      "status": "passed",
+      "evidence": {
+        "recovered": [
+          {
+            "opId": "bcc4b3f6-1d26-40f3-a02e-8b2ba041ca92",
+            "state": "postcommit-review",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250495187
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250495186
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "displaced": {
+                "identity": [
+                  16777233,
+                  250495184
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "mayNotReportSaved": true,
+        "fault": "injected fsync EIO after exchange"
+      }
+    },
+    {
+      "id": "SC-journal",
+      "title": "启动重核日志字段，不按篡改路径读取或清理",
+      "status": "passed",
+      "evidence": {
+        "untrustedPathRejected": true,
+        "noRecoveryMutation": true,
+        "recordIsolated": {
+          "journalName": "a58b4c72-04d6-4e64-a970-fc252bf19d4e.json",
+          "state": "quarantined-record",
+          "reason": "unsafe journal path",
+          "errorType": "ValueError",
+          "automaticMutation": false
+        }
+      }
+    },
+    {
+      "id": "SC-metadata",
+      "title": "本机权限和自有xattr可在提交前复制并回读",
+      "status": "passed",
+      "evidence": {
+        "mode": "0640",
+        "syntheticXattrPreserved": true,
+        "sameOwnerAndGroup": true,
+        "ACL": "not tested; preserve via platform metadata adapter before commit, fail closed if it cannot preserve required metadata"
+      }
+    },
+    {
+      "id": "SC-journal-types",
+      "title": "真实FIFO/目录/symlink/损坏/超大日志被隔离，健康记录继续恢复",
+      "status": "passed",
+      "evidence": {
+        "actualObjects": [
+          "FIFO",
+          "directory",
+          "symlink",
+          "truncated JSON",
+          "oversize regular file",
+          "non-object JSON",
+          "non-string opId",
+          "excessive JSON nesting"
+        ],
+        "elapsedMs": 1.96,
+        "isolatedRecords": [
+          {
+            "journalName": "1eb32442-5576-4934-bc5a-3d3a4c7027db.json",
+            "state": "quarantined-record",
+            "reason": "maximum recursion depth exceeded while decoding a JSON array from a unicode string",
+            "errorType": "RecursionError",
+            "automaticMutation": false
+          },
+          {
+            "journalName": "24687d4d-fc02-4350-88e0-5adc59835997.json",
+            "state": "quarantined-record",
+            "reason": "[Errno 62] Too many levels of symbolic links: '24687d4d-fc02-4350-88e0-5adc59835997.json'",
+            "errorType": "OSError",
+            "automaticMutation": false
+          },
+          {
+            "journalName": "609d6b30-916b-459c-8402-b62b7638bbd9.json",
+            "state": "quarantined-record",
+            "reason": "non-regular recovery object",
+            "errorType": "ValueError",
+            "automaticMutation": false
+          },
+          {
+            "journalName": "6e741745-352f-4352-b37f-b0e847980b9a.json",
+            "state": "quarantined-record",
+            "reason": "oversize recovery object",
+            "errorType": "ValueError",
+            "automaticMutation": false
+          },
+          {
+            "journalName": "9058350e-5269-4b39-8fdf-6dfda5bbed11.json",
+            "state": "quarantined-record",
+            "reason": "journal must be an object",
+            "errorType": "ValueError",
+            "automaticMutation": false
+          },
+          {
+            "journalName": "9832e21e-f5b5-45f4-9fff-4db3661a631d.json",
+            "state": "quarantined-record",
+            "reason": "Expecting value: line 1 column 9 (char 8)",
+            "errorType": "JSONDecodeError",
+            "automaticMutation": false
+          },
+          {
+            "journalName": "ac1385c7-cffd-4e84-acc4-2d1877025fed.json",
+            "state": "quarantined-record",
+            "reason": "journal opId must be a string",
+            "errorType": "ValueError",
+            "automaticMutation": false
+          },
+          {
+            "journalName": "bdd14db3-9d12-4209-a29f-d2c3450db675.json",
+            "state": "quarantined-record",
+            "reason": "non-regular recovery object",
+            "errorType": "ValueError",
+            "automaticMutation": false
+          }
+        ],
+        "healthyRecordsRecovered": 1,
+        "noFilesystemMutation": true,
+        "outsideCanaryUnchanged": true
+      }
+    },
+    {
+      "id": "SC-version-fifo",
+      "title": "合法内部draft名称上的真实FIFO不阻塞，不影响另一健康记录",
+      "status": "passed",
+      "evidence": {
+        "actualObject": "FIFO at exact allowlisted draft leaf",
+        "elapsedMs": 1.5,
+        "isolatedRecord": {
+          "journalName": "defcaa65-c85a-4768-9c0f-2010faedc3ac.json",
+          "state": "quarantined-record",
+          "reason": "non-regular recovery object",
+          "errorType": "ValueError",
+          "automaticMutation": false
+        },
+        "healthyRecordsRecovered": 1,
+        "noFilesystemMutation": true
+      }
+    },
+    {
+      "id": "SC-prepared-hash",
+      "title": "prepared阶段目标inode未变但内容外改，按hash进入冲突而非可恢复提交",
+      "status": "passed",
+      "evidence": {
+        "sameInodeExternalChangeDetectedByHash": true,
+        "state": "recovery-conflict",
+        "noAutomaticResumeOrMutation": true
+      }
+    }
+  ],
+  "scriptSha256": "f0e64093c361c7f277bca7eec93e838f310a9501f810d42229c37dc962f365d0",
+  "dependencySha256": {
+    "save-recovery-probe.py": "e173c644b4c826080093592b74488bd7d89bc692485a56ad984036fcb058fa14",
+    "anchored-save-probe.py": "6042a0e6b1da8a04310d2cc0fab3465a47716515e066cca8b452d2f6afaa7b0a"
+  },
+  "summary": {
+    "passed": 10,
+    "failed": 0
+  }
+}

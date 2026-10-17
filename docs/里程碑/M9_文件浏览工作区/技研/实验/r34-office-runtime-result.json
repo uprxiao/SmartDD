@@ -1,0 +1,1234 @@
+{
+  "libreOfficeVersion": "26.2.4.2",
+  "libreOfficeBuild": "26.2.4.2",
+  "revision": "R3.4",
+  "startedAt": "2026-10-17T07:36:49Z",
+  "scope": "isolated synthetic LibreOffice process cost/cancellation, no user documents or global profile",
+  "environment": "macOS-26.6.1-arm64-arm-64bit",
+  "scriptSha256": "92778a2c5efcc42c202a90c121a1d29b696b50493b67bbd096ceaa1e1351415e",
+  "fixtureGeneratorSha256": "7ca60f379dac5780c34290b44d9b18b86cd89b122be53f6b39b1451e19a8ff88",
+  "budget": {
+    "revision": "R3.4",
+    "scope": "macOS installed LibreOffice isolated synthetic conversion feasibility, not bundled App acceptance",
+    "conversionTimeoutSeconds": 20,
+    "ownedProcessTreeRssBytesMax": 1073741824,
+    "cancelCompleteMsMax": 5000,
+    "terminationGraceSeconds": 0.6,
+    "sampleIntervalSeconds": 0.05,
+    "largeParagraphs": 20000,
+    "cancelAfterSeconds": 1.0,
+    "forcedTimeoutSeconds": 1.2,
+    "injectStoppedProcessAfterSeconds": 0.3,
+    "warmDefinition": "same private profile and input, new LibreOffice process; OS cache not reset, not persistent UNO warm worker"
+  },
+  "cases": [
+    {
+      "id": "LO-docx-cold-new-profile",
+      "title": "docx PDF conversion cold-new-profile",
+      "status": "passed",
+      "facts": {
+        "mode": "normal",
+        "durationMs": 1676.56,
+        "exitCode": 0,
+        "reason": null,
+        "injectedStoppedProcess": false,
+        "peakSampledTreeRssBytes": 301137920,
+        "processesObserved": [
+          {
+            "pid": 77739,
+            "ppid": 77735,
+            "pgid": 77739,
+            "rssKiB": 0,
+            "state": "Z",
+            "command": "<defunct>"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 2.22,
+            "rssBytes": 376832,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 126.47,
+            "rssBytes": 33030144,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 252.43,
+            "rssBytes": 138543104,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 378.92,
+            "rssBytes": 175407104,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 508.62,
+            "rssBytes": 188039168,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 635.18,
+            "rssBytes": 220495872,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 761.09,
+            "rssBytes": 33193984,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 887.31,
+            "rssBytes": 167280640,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 1017.25,
+            "rssBytes": 188956672,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 1147.05,
+            "rssBytes": 226787328,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 1276.95,
+            "rssBytes": 270516224,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 1404.09,
+            "rssBytes": 301137920,
+            "pids": [
+              77739
+            ]
+          },
+          {
+            "ms": 1535.62,
+            "rssBytes": 0,
+            "pids": [
+              77739
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {},
+        "stdout": "convert /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/inputs/docx/fixture.docx as a Writer document -> /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/out-docx-cold-new-profile/fixture.pdf using filter : writer_pdf_Export\n",
+        "stderr": "2026-10-17 15:36:51.371 soffice[77739:11548059] Task policy set failed: 4 ((os/kern) invalid argument)\n",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log",
+          "fixture.pdf"
+        ],
+        "pdf": {
+          "bytes": 42201,
+          "sha256": "a02862bedee874eba5e913303b98bf0b8d9a4677c984955a4e2cb154491105d8",
+          "textPrefix": "M9_DOC_TITLE\n普通段落 PLAIN_ONE 保持格式。\n跨 SPLIT_RUN 两个格式不同的 run。\n批注范围内 COMMENTED_TEXT 末尾。\n修订段落：TRACKED_INSERTTRACKED_DELETE\nCELL_A\n\n单元格\n\n\f"
+        }
+      }
+    },
+    {
+      "id": "LO-docx-warm-reused-profile",
+      "title": "docx PDF conversion warm-reused-profile",
+      "status": "passed",
+      "facts": {
+        "mode": "normal",
+        "durationMs": 1021.87,
+        "exitCode": 0,
+        "reason": null,
+        "injectedStoppedProcess": false,
+        "peakSampledTreeRssBytes": 295206912,
+        "processesObserved": [
+          {
+            "pid": 77800,
+            "ppid": 77735,
+            "pgid": 77800,
+            "rssKiB": 0,
+            "state": "Z",
+            "command": "<defunct>"
+          },
+          {
+            "pid": 77818,
+            "ppid": 1,
+            "pgid": 77800,
+            "rssKiB": 1024,
+            "state": "R",
+            "command": "(gpgconf)"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 1.55,
+            "rssBytes": 688128,
+            "pids": [
+              77800
+            ]
+          },
+          {
+            "ms": 122.75,
+            "rssBytes": 33144832,
+            "pids": [
+              77800
+            ]
+          },
+          {
+            "ms": 248.73,
+            "rssBytes": 135217152,
+            "pids": [
+              77800
+            ]
+          },
+          {
+            "ms": 375.18,
+            "rssBytes": 181977088,
+            "pids": [
+              77800
+            ]
+          },
+          {
+            "ms": 506.45,
+            "rssBytes": 217432064,
+            "pids": [
+              77800
+            ]
+          },
+          {
+            "ms": 632.87,
+            "rssBytes": 266846208,
+            "pids": [
+              77800
+            ]
+          },
+          {
+            "ms": 754.23,
+            "rssBytes": 295206912,
+            "pids": [
+              77800,
+              77818
+            ]
+          },
+          {
+            "ms": 882.08,
+            "rssBytes": 0,
+            "pids": [
+              77800
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {},
+        "stdout": "convert /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/inputs/docx/fixture.docx as a Writer document -> /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/out-docx-warm-reused-profile/fixture.pdf using filter : writer_pdf_Export\n",
+        "stderr": "",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log",
+          "fixture.pdf"
+        ],
+        "pdf": {
+          "bytes": 42201,
+          "sha256": "68325c662afbf5b3b28c259e9596760280809e154b905335664619b54487cc6b",
+          "textPrefix": "M9_DOC_TITLE\n普通段落 PLAIN_ONE 保持格式。\n跨 SPLIT_RUN 两个格式不同的 run。\n批注范围内 COMMENTED_TEXT 末尾。\n修订段落：TRACKED_INSERTTRACKED_DELETE\nCELL_A\n\n单元格\n\n\f"
+        }
+      }
+    },
+    {
+      "id": "LO-xlsx-cold-new-profile",
+      "title": "xlsx PDF conversion cold-new-profile",
+      "status": "passed",
+      "facts": {
+        "mode": "normal",
+        "durationMs": 1553.91,
+        "exitCode": 0,
+        "reason": null,
+        "injectedStoppedProcess": false,
+        "peakSampledTreeRssBytes": 299319296,
+        "processesObserved": [
+          {
+            "pid": 77823,
+            "ppid": 77735,
+            "pgid": 77823,
+            "rssKiB": 292304,
+            "state": "Rs",
+            "command": "(soffice)"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 1.96,
+            "rssBytes": 786432,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 125.82,
+            "rssBytes": 33144832,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 252.15,
+            "rssBytes": 167428096,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 379.54,
+            "rssBytes": 175702016,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 511.0,
+            "rssBytes": 192495616,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 641.15,
+            "rssBytes": 229015552,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 774.7,
+            "rssBytes": 46088192,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 903.15,
+            "rssBytes": 169394176,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 1025.26,
+            "rssBytes": 192774144,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 1155.29,
+            "rssBytes": 234389504,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 1281.93,
+            "rssBytes": 285540352,
+            "pids": [
+              77823
+            ]
+          },
+          {
+            "ms": 1411.76,
+            "rssBytes": 299319296,
+            "pids": [
+              77823
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {},
+        "stdout": "convert /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/inputs/xlsx/fixture.xlsx as a Calc document -> /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/out-xlsx-cold-new-profile/fixture.pdf using filter : calc_pdf_Export\n",
+        "stderr": "2026-10-17 15:36:54.132 soffice[77823:11548450] Task policy set failed: 4 ((os/kern) invalid argument)\n",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log",
+          "fixture.pdf"
+        ],
+        "pdf": {
+          "bytes": 18670,
+          "sha256": "7140ce894bc7c5f2489eb79f8b51c96075f4f14bf825a2a0e31bf8437e0e3bc5",
+          "textPrefix": "UNIQUE_LABEL\nSHARED_TEXT\nSHARED_TEXT\n\n3.00\n4\n\n7\n\n\fSECOND_SHEET\n\n\f"
+        }
+      }
+    },
+    {
+      "id": "LO-xlsx-warm-reused-profile",
+      "title": "xlsx PDF conversion warm-reused-profile",
+      "status": "passed",
+      "facts": {
+        "mode": "normal",
+        "durationMs": 893.38,
+        "exitCode": 0,
+        "reason": null,
+        "injectedStoppedProcess": false,
+        "peakSampledTreeRssBytes": 295337984,
+        "processesObserved": [
+          {
+            "pid": 77907,
+            "ppid": 77735,
+            "pgid": 77907,
+            "rssKiB": 288416,
+            "state": "Rs",
+            "command": "(soffice)"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 1.76,
+            "rssBytes": 835584,
+            "pids": [
+              77907
+            ]
+          },
+          {
+            "ms": 129.13,
+            "rssBytes": 33177600,
+            "pids": [
+              77907
+            ]
+          },
+          {
+            "ms": 253.03,
+            "rssBytes": 148586496,
+            "pids": [
+              77907
+            ]
+          },
+          {
+            "ms": 374.65,
+            "rssBytes": 184336384,
+            "pids": [
+              77907
+            ]
+          },
+          {
+            "ms": 503.28,
+            "rssBytes": 216055808,
+            "pids": [
+              77907
+            ]
+          },
+          {
+            "ms": 627.94,
+            "rssBytes": 273170432,
+            "pids": [
+              77907
+            ]
+          },
+          {
+            "ms": 752.69,
+            "rssBytes": 295337984,
+            "pids": [
+              77907
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {},
+        "stdout": "convert /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/inputs/xlsx/fixture.xlsx as a Calc document -> /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/out-xlsx-warm-reused-profile/fixture.pdf using filter : calc_pdf_Export\n",
+        "stderr": "",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log",
+          "fixture.pdf"
+        ],
+        "pdf": {
+          "bytes": 18670,
+          "sha256": "74ae5bc91b009d7565502253df2fe3a30f6da476a3a48e16314f15b3d66b565d",
+          "textPrefix": "UNIQUE_LABEL\nSHARED_TEXT\nSHARED_TEXT\n\n3.00\n4\n\n7\n\n\fSECOND_SHEET\n\n\f"
+        }
+      }
+    },
+    {
+      "id": "LO-pptx-cold-new-profile",
+      "title": "pptx PDF conversion cold-new-profile",
+      "status": "passed",
+      "facts": {
+        "mode": "normal",
+        "durationMs": 1867.34,
+        "exitCode": 0,
+        "reason": null,
+        "injectedStoppedProcess": false,
+        "peakSampledTreeRssBytes": 336183296,
+        "processesObserved": [
+          {
+            "pid": 77942,
+            "ppid": 77735,
+            "pgid": 77942,
+            "rssKiB": 0,
+            "state": "Z",
+            "command": "<defunct>"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 1.81,
+            "rssBytes": 688128,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 146.57,
+            "rssBytes": 33112064,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 275.96,
+            "rssBytes": 149487616,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 407.88,
+            "rssBytes": 175669248,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 535.51,
+            "rssBytes": 191922176,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 662.6,
+            "rssBytes": 228655104,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 792.28,
+            "rssBytes": 46006272,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 918.32,
+            "rssBytes": 167739392,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 1047.37,
+            "rssBytes": 188973056,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 1178.27,
+            "rssBytes": 220954624,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 1308.54,
+            "rssBytes": 280231936,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 1436.8,
+            "rssBytes": 317112320,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 1573.79,
+            "rssBytes": 336183296,
+            "pids": [
+              77942
+            ]
+          },
+          {
+            "ms": 1715.19,
+            "rssBytes": 0,
+            "pids": [
+              77942
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {},
+        "stdout": "convert /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/inputs/pptx/fixture.pptx as a Impress document -> /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/out-pptx-cold-new-profile/fixture.pdf using filter : impress_pdf_Export\n",
+        "stderr": "2026-10-17 15:36:57.023 soffice[77942:11548902] Task policy set failed: 4 ((os/kern) invalid argument)\n",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log",
+          "fixture.pdf"
+        ],
+        "pdf": {
+          "bytes": 34032,
+          "sha256": "75a85c9fa084054d207fa7247ae70da0fe916712ce19453e4c1f4a59071b0b90",
+          "textPrefix": "PPT_TITLE_ONE\n• 要点 BULLET_ONE\n\n\fPPT_TITLE_TWO\n正文 BODY_TWO\n\n\f"
+        }
+      }
+    },
+    {
+      "id": "LO-pptx-warm-reused-profile",
+      "title": "pptx PDF conversion warm-reused-profile",
+      "status": "passed",
+      "facts": {
+        "mode": "normal",
+        "durationMs": 1211.9,
+        "exitCode": 0,
+        "reason": null,
+        "injectedStoppedProcess": false,
+        "peakSampledTreeRssBytes": 333119488,
+        "processesObserved": [
+          {
+            "pid": 78010,
+            "ppid": 77735,
+            "pgid": 78010,
+            "rssKiB": 0,
+            "state": "Z",
+            "command": "<defunct>"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 2.07,
+            "rssBytes": 770048,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 130.12,
+            "rssBytes": 33193984,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 260.66,
+            "rssBytes": 147849216,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 391.84,
+            "rssBytes": 186351616,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 526.86,
+            "rssBytes": 216924160,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 662.99,
+            "rssBytes": 276905984,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 791.96,
+            "rssBytes": 313327616,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 923.19,
+            "rssBytes": 333119488,
+            "pids": [
+              78010
+            ]
+          },
+          {
+            "ms": 1054.57,
+            "rssBytes": 0,
+            "pids": [
+              78010
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {},
+        "stdout": "convert /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/inputs/pptx/fixture.pptx as a Impress document -> /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k/out-pptx-warm-reused-profile/fixture.pdf using filter : impress_pdf_Export\n",
+        "stderr": "",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log",
+          "fixture.pdf"
+        ],
+        "pdf": {
+          "bytes": 34032,
+          "sha256": "3b2cc20ac5b691931af1054e90c9c4339a0426cf704ae92fe59ce4993cf7af6b",
+          "textPrefix": "PPT_TITLE_ONE\n• 要点 BULLET_ONE\n\n\fPPT_TITLE_TWO\n正文 BODY_TWO\n\n\f"
+        }
+      }
+    },
+    {
+      "id": "LO-cancel",
+      "title": "owned real LibreOffice process group cancel",
+      "status": "passed",
+      "facts": {
+        "mode": "cancel",
+        "durationMs": 1695.79,
+        "exitCode": 255,
+        "reason": "user-cancel",
+        "injectedStoppedProcess": false,
+        "peakSampledTreeRssBytes": 229457920,
+        "processesObserved": [
+          {
+            "pid": 78034,
+            "ppid": 77735,
+            "pgid": 78034,
+            "rssKiB": 185616,
+            "state": "Rs",
+            "command": "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 1.91,
+            "rssBytes": 704512,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 131.64,
+            "rssBytes": 33193984,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 265.06,
+            "rssBytes": 148717568,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 395.18,
+            "rssBytes": 175800320,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 527.67,
+            "rssBytes": 192249856,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 654.68,
+            "rssBytes": 229457920,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 785.24,
+            "rssBytes": 46039040,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 920.02,
+            "rssBytes": 168689664,
+            "pids": [
+              78034
+            ]
+          },
+          {
+            "ms": 1045.07,
+            "rssBytes": 190070784,
+            "pids": [
+              78034
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {
+          "signals": [
+            {
+              "signal": "SIGTERM",
+              "pids": [
+                78034
+              ]
+            }
+          ],
+          "cancelMs": 426.82,
+          "remainingProcesses": []
+        },
+        "stdout": "",
+        "stderr": "",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log"
+        ],
+        "cancelledOutputDirectoryRemoved": true
+      }
+    },
+    {
+      "id": "LO-timeout",
+      "title": "owned real LibreOffice process group timeout",
+      "status": "passed",
+      "facts": {
+        "mode": "timeout",
+        "durationMs": 2365.04,
+        "exitCode": -9,
+        "reason": "controlled-timeout",
+        "injectedStoppedProcess": true,
+        "peakSampledTreeRssBytes": 190054400,
+        "processesObserved": [
+          {
+            "pid": 78103,
+            "ppid": 77735,
+            "pgid": 78103,
+            "rssKiB": 185600,
+            "state": "Ts",
+            "command": "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+          }
+        ],
+        "samples": [
+          {
+            "ms": 1.92,
+            "rssBytes": 737280,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 126.34,
+            "rssBytes": 33030144,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 252.07,
+            "rssBytes": 119652352,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 384.17,
+            "rssBytes": 175685632,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 590.42,
+            "rssBytes": 190054400,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 716.28,
+            "rssBytes": 190054400,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 851.25,
+            "rssBytes": 190054400,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 980.99,
+            "rssBytes": 190054400,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 1114.43,
+            "rssBytes": 190054400,
+            "pids": [
+              78103
+            ]
+          },
+          {
+            "ms": 1241.75,
+            "rssBytes": 190054400,
+            "pids": [
+              78103
+            ]
+          }
+        ],
+        "remainingProcesses": [],
+        "termination": {
+          "signals": [
+            {
+              "signal": "SIGTERM",
+              "pids": [
+                78103
+              ]
+            },
+            {
+              "signal": "SIGKILL",
+              "pids": [
+                78103
+              ]
+            }
+          ],
+          "cancelMs": 905.67,
+          "remainingProcesses": []
+        },
+        "stdout": "",
+        "stderr": "",
+        "outputFilesBeforeCleanup": [
+          "stderr.log",
+          "stdout.log"
+        ],
+        "cancelledOutputDirectoryRemoved": true
+      }
+    },
+    {
+      "id": "LO-originals",
+      "title": "all generated input packages remain byte-identical",
+      "status": "passed",
+      "facts": {
+        "sha256": {
+          "inputs/docx/fixture.docx": "40de5fdbad391c17bd5c5763db20fc8e9259f08014594459e331356bd8d83c99",
+          "inputs/xlsx/fixture.xlsx": "45291f4de8945307663bf7fe107d888725ffd8ff0931fc86509e12a032e8499d",
+          "inputs/pptx/fixture.pptx": "b2575a488daa113bacdbb64f8a60d5483e9700ab9866e32ebb6cbe1058e80506",
+          "large.docx": "86455d323b969dbf8724841a273664689662de86329fa2838b5f0f4a23229126"
+        }
+      }
+    },
+    {
+      "id": "LO-cleanup",
+      "title": "private profiles, outputs and fixtures removed",
+      "status": "passed",
+      "facts": {
+        "temporaryRootRemoved": true
+      }
+    }
+  ],
+  "temporaryRoot": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-r34-lo-runtime-cq3ljd_k",
+  "fixtures": [
+    {
+      "path": "inputs/docx/fixture.docx",
+      "bytes": 38099,
+      "sha256": "40de5fdbad391c17bd5c5763db20fc8e9259f08014594459e331356bd8d83c99"
+    },
+    {
+      "path": "inputs/xlsx/fixture.xlsx",
+      "bytes": 6375,
+      "sha256": "45291f4de8945307663bf7fe107d888725ffd8ff0931fc86509e12a032e8499d"
+    },
+    {
+      "path": "inputs/pptx/fixture.pptx",
+      "bytes": 32172,
+      "sha256": "b2575a488daa113bacdbb64f8a60d5483e9700ab9866e32ebb6cbe1058e80506"
+    },
+    {
+      "path": "large.docx",
+      "bytes": 94172,
+      "sha256": "86455d323b969dbf8724841a273664689662de86329fa2838b5f0f4a23229126"
+    }
+  ],
+  "ownedFilesBeforeFinalCleanup": [
+    "large.docx",
+    "out-xlsx-warm-reused-profile/stderr.log",
+    "out-xlsx-warm-reused-profile/stdout.log",
+    "out-xlsx-warm-reused-profile/fixture.pdf",
+    "profile-xlsx/.lock",
+    "profile-xlsx/cache/skia.log",
+    "profile-xlsx/cache/opencl_profile.xml",
+    "profile-xlsx/cache/opencl_devices.log",
+    "profile-xlsx/user/registrymodifications.xcu",
+    "profile-xlsx/user/database/biblio.odb",
+    "profile-xlsx/user/database/evolocal.odb",
+    "profile-xlsx/user/database/biblio/biblio.dbf",
+    "profile-xlsx/user/database/biblio/biblio.dbt",
+    "profile-xlsx/user/config/autotbl.fmt",
+    "profile-xlsx/user/gallery/sg30.sdv",
+    "profile-xlsx/user/gallery/sg30.thm",
+    "profile-xlsx/user/basic/dialog.xlc",
+    "profile-xlsx/user/basic/script.xlc",
+    "profile-xlsx/user/basic/Standard/dialog.xlb",
+    "profile-xlsx/user/basic/Standard/script.xlb",
+    "profile-xlsx/user/basic/Standard/Module1.xba",
+    "profile-xlsx/user/pack/ExtensionInfo.pack",
+    "profile-xlsx/user/pack/registrymodifications.pack",
+    "profile-xlsx/user/pack/database/evolocal.pack",
+    "profile-xlsx/user/pack/database/biblio.pack",
+    "profile-xlsx/user/pack/database/biblio/biblio.pack",
+    "profile-xlsx/user/pack/config/autotbl.pack",
+    "profile-xlsx/user/pack/basic/dialog.pack",
+    "profile-xlsx/user/pack/basic/script.pack",
+    "profile-xlsx/user/pack/basic/Standard/Module1.pack",
+    "profile-xlsx/user/pack/basic/Standard/dialog.pack",
+    "profile-xlsx/user/pack/basic/Standard/script.pack",
+    "profile-xlsx/user/pack/autotext/mytexts.pack",
+    "profile-xlsx/user/extensions/buildid",
+    "profile-xlsx/user/extensions/bundled/extensions.pmap",
+    "profile-xlsx/user/extensions/bundled/lastsynchronized",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu778234mvq3k.tmp/dictionaries.xcu",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu778234mvq3h.tmp/dictionaries.xcu",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu778234mvq3i.tmp/OptionsDialog.xcu",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu778234mvq3l.tmp/dictionaries.xcu",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.component.PackageRegistryBackend/unorc",
+    "profile-xlsx/user/extensions/bundled/registry/com.sun.star.comp.deployment.bundle.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/extensions/shared/lastsynchronized",
+    "profile-xlsx/user/extensions/shared/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/extensions/shared/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/extensions/tmp/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/extensions/tmp/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/autotext/mytexts.bau",
+    "profile-xlsx/user/uno_packages/cache/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-xlsx/user/uno_packages/cache/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "out-pptx-cold-new-profile/stderr.log",
+    "out-pptx-cold-new-profile/stdout.log",
+    "out-pptx-cold-new-profile/fixture.pdf",
+    "out-pptx-warm-reused-profile/stderr.log",
+    "out-pptx-warm-reused-profile/stdout.log",
+    "out-pptx-warm-reused-profile/fixture.pdf",
+    "out-docx-warm-reused-profile/stderr.log",
+    "out-docx-warm-reused-profile/stdout.log",
+    "out-docx-warm-reused-profile/fixture.pdf",
+    "out-xlsx-cold-new-profile/stderr.log",
+    "out-xlsx-cold-new-profile/stdout.log",
+    "out-xlsx-cold-new-profile/fixture.pdf",
+    "profile-timeout/.lock",
+    "profile-timeout/user/database/biblio.odb",
+    "profile-timeout/user/database/evolocal.odb",
+    "profile-timeout/user/database/biblio/biblio.dbf",
+    "profile-timeout/user/database/biblio/biblio.dbt",
+    "profile-timeout/user/config/autotbl.fmt",
+    "profile-timeout/user/gallery/sg30.sdv",
+    "profile-timeout/user/gallery/sg30.thm",
+    "profile-timeout/user/basic/dialog.xlc",
+    "profile-timeout/user/basic/script.xlc",
+    "profile-timeout/user/basic/Standard/dialog.xlb",
+    "profile-timeout/user/basic/Standard/script.xlb",
+    "profile-timeout/user/basic/Standard/Module1.xba",
+    "profile-timeout/user/extensions/buildid",
+    "profile-timeout/user/extensions/bundled/extensions.pmap",
+    "profile-timeout/user/extensions/bundled/lastsynchronized",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu781034mvvx8.tmp/OptionsDialog.xcu",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu781034mvvx7.tmp/dictionaries.xcu",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu781034mvvxa.tmp/dictionaries.xcu",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu781034mvvxb.tmp/dictionaries.xcu",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.component.PackageRegistryBackend/unorc",
+    "profile-timeout/user/extensions/bundled/registry/com.sun.star.comp.deployment.bundle.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/extensions/shared/lastsynchronized",
+    "profile-timeout/user/extensions/shared/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/extensions/shared/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/extensions/tmp/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/extensions/tmp/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/autotext/mytexts.bau",
+    "profile-timeout/user/uno_packages/cache/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-timeout/user/uno_packages/cache/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/.lock",
+    "profile-docx/cache/skia.log",
+    "profile-docx/cache/opencl_profile.xml",
+    "profile-docx/cache/opencl_devices.log",
+    "profile-docx/user/registrymodifications.xcu",
+    "profile-docx/user/database/biblio.odb",
+    "profile-docx/user/database/evolocal.odb",
+    "profile-docx/user/database/biblio/biblio.dbf",
+    "profile-docx/user/database/biblio/biblio.dbt",
+    "profile-docx/user/config/autotbl.fmt",
+    "profile-docx/user/gallery/sg30.sdv",
+    "profile-docx/user/gallery/sg30.thm",
+    "profile-docx/user/basic/dialog.xlc",
+    "profile-docx/user/basic/script.xlc",
+    "profile-docx/user/basic/Standard/dialog.xlb",
+    "profile-docx/user/basic/Standard/script.xlb",
+    "profile-docx/user/basic/Standard/Module1.xba",
+    "profile-docx/user/pack/ExtensionInfo.pack",
+    "profile-docx/user/pack/registrymodifications.pack",
+    "profile-docx/user/pack/database/evolocal.pack",
+    "profile-docx/user/pack/database/biblio.pack",
+    "profile-docx/user/pack/database/biblio/biblio.pack",
+    "profile-docx/user/pack/config/autotbl.pack",
+    "profile-docx/user/pack/basic/dialog.pack",
+    "profile-docx/user/pack/basic/script.pack",
+    "profile-docx/user/pack/basic/Standard/Module1.pack",
+    "profile-docx/user/pack/basic/Standard/dialog.pack",
+    "profile-docx/user/pack/basic/Standard/script.pack",
+    "profile-docx/user/pack/autotext/mytexts.pack",
+    "profile-docx/user/extensions/buildid",
+    "profile-docx/user/extensions/bundled/extensions.pmap",
+    "profile-docx/user/extensions/bundled/lastsynchronized",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu777394mvnxh.tmp/dictionaries.xcu",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu777394mvnxi.tmp/OptionsDialog.xcu",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu777394mvnxk.tmp/dictionaries.xcu",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu777394mvnxl.tmp/dictionaries.xcu",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.component.PackageRegistryBackend/unorc",
+    "profile-docx/user/extensions/bundled/registry/com.sun.star.comp.deployment.bundle.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/extensions/shared/lastsynchronized",
+    "profile-docx/user/extensions/shared/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/extensions/shared/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/extensions/tmp/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/extensions/tmp/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/autotext/mytexts.bau",
+    "profile-docx/user/uno_packages/cache/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-docx/user/uno_packages/cache/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "out-docx-cold-new-profile/stderr.log",
+    "out-docx-cold-new-profile/stdout.log",
+    "out-docx-cold-new-profile/fixture.pdf",
+    "profile-pptx/.lock",
+    "profile-pptx/cache/skia.log",
+    "profile-pptx/cache/opencl_profile.xml",
+    "profile-pptx/cache/opencl_devices.log",
+    "profile-pptx/user/registrymodifications.xcu",
+    "profile-pptx/user/database/biblio.odb",
+    "profile-pptx/user/database/evolocal.odb",
+    "profile-pptx/user/database/biblio/biblio.dbf",
+    "profile-pptx/user/database/biblio/biblio.dbt",
+    "profile-pptx/user/config/autotbl.fmt",
+    "profile-pptx/user/gallery/sg30.sdv",
+    "profile-pptx/user/gallery/sg30.thm",
+    "profile-pptx/user/basic/dialog.xlc",
+    "profile-pptx/user/basic/script.xlc",
+    "profile-pptx/user/basic/Standard/dialog.xlb",
+    "profile-pptx/user/basic/Standard/script.xlb",
+    "profile-pptx/user/basic/Standard/Module1.xba",
+    "profile-pptx/user/pack/ExtensionInfo.pack",
+    "profile-pptx/user/pack/registrymodifications.pack",
+    "profile-pptx/user/pack/database/evolocal.pack",
+    "profile-pptx/user/pack/database/biblio.pack",
+    "profile-pptx/user/pack/database/biblio/biblio.pack",
+    "profile-pptx/user/pack/config/autotbl.pack",
+    "profile-pptx/user/pack/basic/dialog.pack",
+    "profile-pptx/user/pack/basic/script.pack",
+    "profile-pptx/user/pack/basic/Standard/Module1.pack",
+    "profile-pptx/user/pack/basic/Standard/dialog.pack",
+    "profile-pptx/user/pack/basic/Standard/script.pack",
+    "profile-pptx/user/pack/autotext/mytexts.pack",
+    "profile-pptx/user/extensions/buildid",
+    "profile-pptx/user/extensions/bundled/extensions.pmap",
+    "profile-pptx/user/extensions/bundled/lastsynchronized",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu779424mvs3x.tmp/dictionaries.xcu",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu779424mvs3y.tmp/dictionaries.xcu",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu779424mvs3v.tmp/OptionsDialog.xcu",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu779424mvs3u.tmp/dictionaries.xcu",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.component.PackageRegistryBackend/unorc",
+    "profile-pptx/user/extensions/bundled/registry/com.sun.star.comp.deployment.bundle.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/extensions/shared/lastsynchronized",
+    "profile-pptx/user/extensions/shared/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/extensions/shared/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/extensions/tmp/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/extensions/tmp/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/autotext/mytexts.bau",
+    "profile-pptx/user/uno_packages/cache/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-pptx/user/uno_packages/cache/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/.lock",
+    "profile-cancel/user/registrymodifications.xcu",
+    "profile-cancel/user/database/biblio.odb",
+    "profile-cancel/user/database/evolocal.odb",
+    "profile-cancel/user/database/biblio/biblio.dbf",
+    "profile-cancel/user/database/biblio/biblio.dbt",
+    "profile-cancel/user/config/autotbl.fmt",
+    "profile-cancel/user/gallery/sg30.sdv",
+    "profile-cancel/user/gallery/sg30.thm",
+    "profile-cancel/user/basic/dialog.xlc",
+    "profile-cancel/user/basic/script.xlc",
+    "profile-cancel/user/basic/Standard/dialog.xlb",
+    "profile-cancel/user/basic/Standard/script.xlb",
+    "profile-cancel/user/basic/Standard/Module1.xba",
+    "profile-cancel/user/extensions/buildid",
+    "profile-cancel/user/extensions/bundled/extensions.pmap",
+    "profile-cancel/user/extensions/bundled/lastsynchronized",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu780344mvukp.tmp/dictionaries.xcu",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu780344mvukq.tmp/OptionsDialog.xcu",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu780344mvuks.tmp/dictionaries.xcu",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/lu780344mvukt.tmp/dictionaries.xcu",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.component.PackageRegistryBackend/unorc",
+    "profile-cancel/user/extensions/bundled/registry/com.sun.star.comp.deployment.bundle.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/extensions/shared/lastsynchronized",
+    "profile-cancel/user/extensions/shared/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/extensions/shared/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/extensions/tmp/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/extensions/tmp/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/autotext/mytexts.bau",
+    "profile-cancel/user/uno_packages/cache/registry/com.sun.star.comp.deployment.help.PackageRegistryBackend/backenddb.xml",
+    "profile-cancel/user/uno_packages/cache/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/backenddb.xml",
+    "inputs/xlsx/src.xlsx",
+    "inputs/xlsx/fixture.xlsx",
+    "inputs/pptx/slides.md",
+    "inputs/pptx/src.pptx",
+    "inputs/pptx/fixture.pptx",
+    "inputs/docx/src.docx",
+    "inputs/docx/fixture.docx"
+  ],
+  "sourceHashes": {
+    "/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/技研/实验/r34-office-runtime-probe.py": "92778a2c5efcc42c202a90c121a1d29b696b50493b67bbd096ceaa1e1351415e",
+    "/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/技研/实验/r34-office-runtime-budget.json": "988b37edf5b5c7fe069f1ef507d6f80b9f78bd2871470d2bcfe86b391571f926"
+  },
+  "completedAt": "2026-10-17T07:37:02Z",
+  "summary": {
+    "passed": 10,
+    "failed": 0
+  }
+}

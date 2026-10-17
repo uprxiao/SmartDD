@@ -1,0 +1,1547 @@
+{
+  "scope": "Office predevelopment candidate proof, not App acceptance",
+  "startedAt": "2026-10-17T08:23:30Z",
+  "cases": [
+    {
+      "id": "OP03",
+      "title": "Original OA12 failing workbook: independent POI calculation + saved candidate reopened",
+      "status": "passed",
+      "facts": {
+        "first": {
+          "verifiedCells": 3,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "#REF!+#REF!",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            }
+          }
+        },
+        "reopen": {
+          "verifiedCells": 3,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "#REF!+#REF!",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            }
+          }
+        },
+        "originalAdapterUnchanged": true
+      }
+    },
+    {
+      "id": "OP04",
+      "title": "Direct/range/named/structured/3D/shared/array/IFERROR/INDIRECT real workbook",
+      "status": "passed",
+      "facts": {
+        "calculation": {
+          "verifiedCells": 15,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "Data!$B$2+Data!B3",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D2": {
+              "sheet": "Calc",
+              "cell": "D2",
+              "formula": "Data!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "9.0",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(Data!B2:B3)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D3": {
+              "sheet": "Calc",
+              "cell": "D3",
+              "formula": "Data!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "12.0",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            },
+            "B5": {
+              "sheet": "Calc",
+              "cell": "B5",
+              "formula": "IFERROR(Data!B2,77)",
+              "type": "NUMERIC",
+              "value": "3.0",
+              "exception": ""
+            },
+            "B6": {
+              "sheet": "Calc",
+              "cell": "B6",
+              "formula": "IF(FALSE,Data!B2,42)",
+              "type": "NUMERIC",
+              "value": "42.0",
+              "exception": ""
+            },
+            "B7": {
+              "sheet": "Calc",
+              "cell": "B7",
+              "formula": "IFERROR(B2,88)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B8": {
+              "sheet": "Calc",
+              "cell": "B8",
+              "formula": "SUM(InputTotal)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B9": {
+              "sheet": "Calc",
+              "cell": "B9",
+              "formula": "SUM(Sales[Value])",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B10": {
+              "sheet": "Calc",
+              "cell": "B10",
+              "formula": "SUM(Data:Spare!A1)",
+              "type": "NUMERIC",
+              "value": "5.0",
+              "exception": ""
+            },
+            "B11": {
+              "sheet": "Calc",
+              "cell": "B11",
+              "formula": "Data!B2*2",
+              "type": "NUMERIC",
+              "value": "6.0",
+              "exception": ""
+            },
+            "B12": {
+              "sheet": "Calc",
+              "cell": "B12",
+              "formula": "Data!B3*2",
+              "type": "NUMERIC",
+              "value": "8.0",
+              "exception": ""
+            },
+            "B15": {
+              "sheet": "Calc",
+              "cell": "B15",
+              "formula": "IFERROR(SUM(Data!B2:B3),99)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B16": {
+              "sheet": "Calc",
+              "cell": "B16",
+              "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+              "type": "NUMERIC",
+              "value": "3.0",
+              "exception": ""
+            }
+          }
+        },
+        "expandedShared": [
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B11",
+            "formula": "Data!B2*2"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B12",
+            "formula": "Data!B3*2"
+          }
+        ],
+        "note": "POI raw shared cross-sheet parsing is not used"
+      }
+    },
+    {
+      "id": "OP05",
+      "title": "Precise rename with dependency evaluation, value-only extraction and reopen",
+      "status": "passed",
+      "facts": {
+        "calculation": {
+          "verifiedCells": 15,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "'计划 O''Brien'!$B$2+'计划 O''Brien'!B3",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D2": {
+              "sheet": "Calc",
+              "cell": "D2",
+              "formula": "'计划 O''Brien'!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "9.0",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM('计划 O''Brien'!B2:B3)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D3": {
+              "sheet": "Calc",
+              "cell": "D3",
+              "formula": "'计划 O''Brien'!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "12.0",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            },
+            "B5": {
+              "sheet": "Calc",
+              "cell": "B5",
+              "formula": "IFERROR('计划 O''Brien'!B2,77)",
+              "type": "NUMERIC",
+              "value": "3.0",
+              "exception": ""
+            },
+            "B6": {
+              "sheet": "Calc",
+              "cell": "B6",
+              "formula": "IF(FALSE,'计划 O''Brien'!B2,42)",
+              "type": "NUMERIC",
+              "value": "42.0",
+              "exception": ""
+            },
+            "B7": {
+              "sheet": "Calc",
+              "cell": "B7",
+              "formula": "IFERROR(B2,88)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B8": {
+              "sheet": "Calc",
+              "cell": "B8",
+              "formula": "SUM(InputTotal)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B9": {
+              "sheet": "Calc",
+              "cell": "B9",
+              "formula": "SUM(Sales[Value])",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B10": {
+              "sheet": "Calc",
+              "cell": "B10",
+              "formula": "SUM('计划 O''Brien:Spare'!A1)",
+              "type": "NUMERIC",
+              "value": "5.0",
+              "exception": ""
+            },
+            "B11": {
+              "sheet": "Calc",
+              "cell": "B11",
+              "formula": "'计划 O''Brien'!B2*2",
+              "type": "NUMERIC",
+              "value": "6.0",
+              "exception": ""
+            },
+            "B12": {
+              "sheet": "Calc",
+              "cell": "B12",
+              "formula": "'计划 O''Brien'!B3*2",
+              "type": "NUMERIC",
+              "value": "8.0",
+              "exception": ""
+            },
+            "B15": {
+              "sheet": "Calc",
+              "cell": "B15",
+              "formula": "IFERROR(SUM('计划 O''Brien'!B2:B3),99)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B16": {
+              "sheet": "Calc",
+              "cell": "B16",
+              "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+              "type": "NUMERIC",
+              "value": "66.0",
+              "exception": ""
+            }
+          }
+        },
+        "reopen": {
+          "verifiedCells": 15,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "'计划 O''Brien'!$B$2+'计划 O''Brien'!B3",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D2": {
+              "sheet": "Calc",
+              "cell": "D2",
+              "formula": "'计划 O''Brien'!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "9.0",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM('计划 O''Brien'!B2:B3)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "D3": {
+              "sheet": "Calc",
+              "cell": "D3",
+              "formula": "'计划 O''Brien'!B2:B3*3",
+              "type": "NUMERIC",
+              "value": "12.0",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            },
+            "B5": {
+              "sheet": "Calc",
+              "cell": "B5",
+              "formula": "IFERROR('计划 O''Brien'!B2,77)",
+              "type": "NUMERIC",
+              "value": "3.0",
+              "exception": ""
+            },
+            "B6": {
+              "sheet": "Calc",
+              "cell": "B6",
+              "formula": "IF(FALSE,'计划 O''Brien'!B2,42)",
+              "type": "NUMERIC",
+              "value": "42.0",
+              "exception": ""
+            },
+            "B7": {
+              "sheet": "Calc",
+              "cell": "B7",
+              "formula": "IFERROR(B2,88)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B8": {
+              "sheet": "Calc",
+              "cell": "B8",
+              "formula": "SUM(InputTotal)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B9": {
+              "sheet": "Calc",
+              "cell": "B9",
+              "formula": "SUM(Sales[Value])",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B10": {
+              "sheet": "Calc",
+              "cell": "B10",
+              "formula": "SUM('计划 O''Brien:Spare'!A1)",
+              "type": "NUMERIC",
+              "value": "5.0",
+              "exception": ""
+            },
+            "B11": {
+              "sheet": "Calc",
+              "cell": "B11",
+              "formula": "'计划 O''Brien'!B2*2",
+              "type": "NUMERIC",
+              "value": "6.0",
+              "exception": ""
+            },
+            "B12": {
+              "sheet": "Calc",
+              "cell": "B12",
+              "formula": "'计划 O''Brien'!B3*2",
+              "type": "NUMERIC",
+              "value": "8.0",
+              "exception": ""
+            },
+            "B15": {
+              "sheet": "Calc",
+              "cell": "B15",
+              "formula": "IFERROR(SUM('计划 O''Brien'!B2:B3),99)",
+              "type": "NUMERIC",
+              "value": "7.0",
+              "exception": ""
+            },
+            "B16": {
+              "sheet": "Calc",
+              "cell": "B16",
+              "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+              "type": "NUMERIC",
+              "value": "66.0",
+              "exception": ""
+            }
+          }
+        },
+        "adapter": {
+          "sharedExpanded": [
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "cell": "B11",
+              "formula": "Data!B2*2"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "cell": "B12",
+              "formula": "Data!B3*2"
+            }
+          ],
+          "dependencyEdits": [
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!$B$2+Data!B3",
+              "after": "'计划 O''Brien'!$B$2+'计划 O''Brien'!B3"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!B2:B3*3",
+              "after": "'计划 O''Brien'!B2:B3*3"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "SUM(Data!B2:B3)",
+              "after": "SUM('计划 O''Brien'!B2:B3)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "IFERROR(Data!B2,77)",
+              "after": "IFERROR('计划 O''Brien'!B2,77)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "IF(FALSE,Data!B2,42)",
+              "after": "IF(FALSE,'计划 O''Brien'!B2,42)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "SUM(Data:Spare!A1)",
+              "after": "SUM('计划 O''Brien:Spare'!A1)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!B2*2",
+              "after": "'计划 O''Brien'!B2*2"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!B3*2",
+              "after": "'计划 O''Brien'!B3*2"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "IFERROR(SUM(Data!B2:B3),99)",
+              "after": "IFERROR(SUM('计划 O''Brien'!B2:B3),99)"
+            },
+            {
+              "part": "xl/charts/chart1.xml",
+              "before": "'Data'!B1",
+              "after": "'计划 O''Brien'!B1"
+            },
+            {
+              "part": "xl/charts/chart1.xml",
+              "before": "'Data'!$B$2:$B$3",
+              "after": "'计划 O''Brien'!$B$2:$B$3"
+            },
+            {
+              "part": "xl/workbook.xml",
+              "before": "'Data'!$B$2:$B$3",
+              "after": "'计划 O''Brien'!$B$2:$B$3"
+            }
+          ],
+          "removedParts": [],
+          "removedTables": []
+        },
+        "cacheExtraction": [
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B2",
+            "type": "n",
+            "value": "7.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "D2",
+            "type": "n",
+            "value": "9.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B3",
+            "type": "n",
+            "value": "7.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "D3",
+            "type": "n",
+            "value": "12.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B4",
+            "type": "n",
+            "value": "100.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B5",
+            "type": "n",
+            "value": "3.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B6",
+            "type": "n",
+            "value": "42.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B7",
+            "type": "n",
+            "value": "7.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B8",
+            "type": "n",
+            "value": "7.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B9",
+            "type": "n",
+            "value": "7.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B10",
+            "type": "n",
+            "value": "5.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B11",
+            "type": "n",
+            "value": "6.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B12",
+            "type": "n",
+            "value": "8.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B15",
+            "type": "n",
+            "value": "7.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B16",
+            "type": "n",
+            "value": "66.0"
+          }
+        ],
+        "packageGuard": {
+          "changed": [
+            "xl/charts/chart1.xml",
+            "xl/workbook.xml",
+            "xl/worksheets/sheet2.xml"
+          ],
+          "added": [],
+          "removed": [],
+          "unchangedPartCount": 14,
+          "internalRelationships": 12,
+          "opaquePreserved": true,
+          "retainedHashes": {
+            "docProps/app.xml": "209fca6b00afe72a5029754b94be5953d8f16d96f67130325566b9366ad4ccc5",
+            "docProps/core.xml": "6fa7063d1a9bb8ee3e265a427e4f736ad0fbe1c4de2d791a7f12d8ba8474df2d",
+            "xl/theme/theme1.xml": "d15e8ebf78ef7b9720839d7ae8fdc81a7df5bc24706d8e137df61a5683c358d9",
+            "xl/worksheets/sheet1.xml": "ece1440f7aebbe441c70f1931345ca9830a119dc1feabd5c73136c6566599e88",
+            "xl/drawings/drawing1.xml": "5458894a7a5c68be91cc4faff50b07150200ceebaaa61761693593ce1fab3fee",
+            "xl/drawings/_rels/drawing1.xml.rels": "74667459a717caf5ced763d00fd999c3b180fd96c5804b901a08b8ecd5795128",
+            "xl/tables/table1.xml": "63e6c0ab0720efa012465d8c4451e2836f5cf9040559a73d0a0fa43a64c0793a",
+            "xl/worksheets/_rels/sheet1.xml.rels": "b180f80797b3c49526490875ca23732865a31011c7b7f03531066710f07eb911",
+            "xl/worksheets/sheet3.xml": "95c5d2a7ae3e6396577738427aa8aeb1bee2d4fac752c468f10b63a7b51060f1",
+            "xl/styles.xml": "d6159f7db15684c802220d44701f0b362fdc0b0b761dfa8afc54ae31f80355c0",
+            "_rels/.rels": "6cdc09aaac6e24ef50f77710d3c79ebc6f465fbd76365ca7223b1e850208bbcd",
+            "xl/_rels/workbook.xml.rels": "9f80b92319d8b9c20f25d718624b941fcbb42403a9f86fe137722889b35d4b87",
+            "[Content_Types].xml": "ef79db4a09bd1cf4f3713cd506f5fbba7d40a3e2cd1d8b14c55fdda549b4fd35",
+            "customXml/m9-opaque.bin": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+          }
+        },
+        "wholeEnginePackageNotInstalled": true
+      }
+    },
+    {
+      "id": "OP06",
+      "title": "Precise delete with dependency evaluation, value-only extraction and reopen",
+      "status": "passed",
+      "facts": {
+        "calculation": {
+          "verifiedCells": 15,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "#REF!+#REF!",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "D2": {
+              "sheet": "Calc",
+              "cell": "D2",
+              "formula": "#REF!*3",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "D3": {
+              "sheet": "Calc",
+              "cell": "D3",
+              "formula": "#REF!*3",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            },
+            "B5": {
+              "sheet": "Calc",
+              "cell": "B5",
+              "formula": "IFERROR(#REF!,77)",
+              "type": "NUMERIC",
+              "value": "77.0",
+              "exception": ""
+            },
+            "B6": {
+              "sheet": "Calc",
+              "cell": "B6",
+              "formula": "IF(FALSE,#REF!,42)",
+              "type": "NUMERIC",
+              "value": "42.0",
+              "exception": ""
+            },
+            "B7": {
+              "sheet": "Calc",
+              "cell": "B7",
+              "formula": "IFERROR(B2,88)",
+              "type": "NUMERIC",
+              "value": "88.0",
+              "exception": ""
+            },
+            "B8": {
+              "sheet": "Calc",
+              "cell": "B8",
+              "formula": "SUM(InputTotal)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B9": {
+              "sheet": "Calc",
+              "cell": "B9",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B10": {
+              "sheet": "Calc",
+              "cell": "B10",
+              "formula": "SUM('Calc:Spare'!A1)",
+              "type": "NUMERIC",
+              "value": "5.0",
+              "exception": ""
+            },
+            "B11": {
+              "sheet": "Calc",
+              "cell": "B11",
+              "formula": "#REF!*2",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B12": {
+              "sheet": "Calc",
+              "cell": "B12",
+              "formula": "#REF!*2",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B15": {
+              "sheet": "Calc",
+              "cell": "B15",
+              "formula": "IFERROR(SUM(#REF!),99)",
+              "type": "NUMERIC",
+              "value": "99.0",
+              "exception": ""
+            },
+            "B16": {
+              "sheet": "Calc",
+              "cell": "B16",
+              "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+              "type": "NUMERIC",
+              "value": "66.0",
+              "exception": ""
+            }
+          }
+        },
+        "reopen": {
+          "verifiedCells": 15,
+          "cells": {
+            "B2": {
+              "sheet": "Calc",
+              "cell": "B2",
+              "formula": "#REF!+#REF!",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "D2": {
+              "sheet": "Calc",
+              "cell": "D2",
+              "formula": "#REF!*3",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B3": {
+              "sheet": "Calc",
+              "cell": "B3",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "D3": {
+              "sheet": "Calc",
+              "cell": "D3",
+              "formula": "#REF!*3",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B4": {
+              "sheet": "Calc",
+              "cell": "B4",
+              "formula": "IF(\"Data!B2\"=\"Data!B2\",100,0)",
+              "type": "NUMERIC",
+              "value": "100.0",
+              "exception": ""
+            },
+            "B5": {
+              "sheet": "Calc",
+              "cell": "B5",
+              "formula": "IFERROR(#REF!,77)",
+              "type": "NUMERIC",
+              "value": "77.0",
+              "exception": ""
+            },
+            "B6": {
+              "sheet": "Calc",
+              "cell": "B6",
+              "formula": "IF(FALSE,#REF!,42)",
+              "type": "NUMERIC",
+              "value": "42.0",
+              "exception": ""
+            },
+            "B7": {
+              "sheet": "Calc",
+              "cell": "B7",
+              "formula": "IFERROR(B2,88)",
+              "type": "NUMERIC",
+              "value": "88.0",
+              "exception": ""
+            },
+            "B8": {
+              "sheet": "Calc",
+              "cell": "B8",
+              "formula": "SUM(InputTotal)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B9": {
+              "sheet": "Calc",
+              "cell": "B9",
+              "formula": "SUM(#REF!)",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B10": {
+              "sheet": "Calc",
+              "cell": "B10",
+              "formula": "SUM('Calc:Spare'!A1)",
+              "type": "NUMERIC",
+              "value": "5.0",
+              "exception": ""
+            },
+            "B11": {
+              "sheet": "Calc",
+              "cell": "B11",
+              "formula": "#REF!*2",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B12": {
+              "sheet": "Calc",
+              "cell": "B12",
+              "formula": "#REF!*2",
+              "type": "ERROR",
+              "value": "#REF!",
+              "exception": ""
+            },
+            "B15": {
+              "sheet": "Calc",
+              "cell": "B15",
+              "formula": "IFERROR(SUM(#REF!),99)",
+              "type": "NUMERIC",
+              "value": "99.0",
+              "exception": ""
+            },
+            "B16": {
+              "sheet": "Calc",
+              "cell": "B16",
+              "formula": "IFERROR(INDIRECT(\"Data!B2\"),66)",
+              "type": "NUMERIC",
+              "value": "66.0",
+              "exception": ""
+            }
+          }
+        },
+        "adapter": {
+          "sharedExpanded": [
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "cell": "B11",
+              "formula": "Data!B2*2"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "cell": "B12",
+              "formula": "Data!B3*2"
+            }
+          ],
+          "dependencyEdits": [
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!$B$2+Data!B3",
+              "after": "#REF!+#REF!"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!B2:B3*3",
+              "after": "#REF!*3"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "SUM(Data!B2:B3)",
+              "after": "SUM(#REF!)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "IFERROR(Data!B2,77)",
+              "after": "IFERROR(#REF!,77)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "IF(FALSE,Data!B2,42)",
+              "after": "IF(FALSE,#REF!,42)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "SUM(Sales[Value])",
+              "after": "SUM(#REF!)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "SUM(Data:Spare!A1)",
+              "after": "SUM('Calc:Spare'!A1)"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!B2*2",
+              "after": "#REF!*2"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "Data!B3*2",
+              "after": "#REF!*2"
+            },
+            {
+              "part": "xl/worksheets/sheet2.xml",
+              "before": "IFERROR(SUM(Data!B2:B3),99)",
+              "after": "IFERROR(SUM(#REF!),99)"
+            },
+            {
+              "part": "xl/workbook.xml",
+              "before": "'Data'!$B$2:$B$3",
+              "after": "#REF!"
+            }
+          ],
+          "removedParts": [
+            "xl/charts/chart1.xml",
+            "xl/drawings/_rels/drawing1.xml.rels",
+            "xl/drawings/drawing1.xml",
+            "xl/tables/table1.xml",
+            "xl/worksheets/_rels/sheet1.xml.rels",
+            "xl/worksheets/sheet1.xml"
+          ],
+          "removedTables": [
+            "Sales"
+          ]
+        },
+        "cacheExtraction": [
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B2",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "D2",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B3",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "D3",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B4",
+            "type": "n",
+            "value": "100.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B5",
+            "type": "n",
+            "value": "77.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B6",
+            "type": "n",
+            "value": "42.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B7",
+            "type": "n",
+            "value": "88.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B8",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B9",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B10",
+            "type": "n",
+            "value": "5.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B11",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B12",
+            "type": "e",
+            "value": "#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B15",
+            "type": "n",
+            "value": "99.0"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "cell": "B16",
+            "type": "n",
+            "value": "66.0"
+          }
+        ],
+        "packageGuard": {
+          "changed": [
+            "[Content_Types].xml",
+            "xl/_rels/workbook.xml.rels",
+            "xl/workbook.xml",
+            "xl/worksheets/sheet2.xml"
+          ],
+          "added": [],
+          "removed": [
+            "xl/charts/chart1.xml",
+            "xl/drawings/_rels/drawing1.xml.rels",
+            "xl/drawings/drawing1.xml",
+            "xl/tables/table1.xml",
+            "xl/worksheets/_rels/sheet1.xml.rels",
+            "xl/worksheets/sheet1.xml"
+          ],
+          "unchangedPartCount": 7,
+          "internalRelationships": 8,
+          "opaquePreserved": true,
+          "retainedHashes": {
+            "docProps/app.xml": "209fca6b00afe72a5029754b94be5953d8f16d96f67130325566b9366ad4ccc5",
+            "docProps/core.xml": "6fa7063d1a9bb8ee3e265a427e4f736ad0fbe1c4de2d791a7f12d8ba8474df2d",
+            "xl/theme/theme1.xml": "d15e8ebf78ef7b9720839d7ae8fdc81a7df5bc24706d8e137df61a5683c358d9",
+            "xl/worksheets/sheet3.xml": "95c5d2a7ae3e6396577738427aa8aeb1bee2d4fac752c468f10b63a7b51060f1",
+            "xl/styles.xml": "d6159f7db15684c802220d44701f0b362fdc0b0b761dfa8afc54ae31f80355c0",
+            "_rels/.rels": "6cdc09aaac6e24ef50f77710d3c79ebc6f465fbd76365ca7223b1e850208bbcd",
+            "customXml/m9-opaque.bin": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+          }
+        },
+        "wholeEnginePackageNotInstalled": true
+      }
+    },
+    {
+      "id": "OP07",
+      "title": "Independent XSLF reads real table/chart embedded data and master",
+      "status": "passed",
+      "facts": {
+        "engine": "Apache POI 5.5.1",
+        "slides": 2,
+        "masters": 1,
+        "tables": [
+          "Label",
+          "Value",
+          "A",
+          "TABLE_EDITED",
+          "B",
+          "UNCHANGED_CELL"
+        ],
+        "texts": [
+          "MASTER_TITLE",
+          "OTHER_SLIDE",
+          "UNCHANGED_SLIDE"
+        ],
+        "charts": [
+          {
+            "embeddedB2": 9.0,
+            "chartXml": "<xml-fragment xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><c:chart><c:autoTitleDeleted val=\"1\"/><c:plotArea><c:layout/><c:barChart><c:barDir val=\"col\"/><c:grouping val=\"clustered\"/><c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:v>Value</c:v></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$3</c:f><c:strCache><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>A</c:v></c:pt><c:pt idx=\"1\"><c:v>B</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2:$B$3</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>9</c:v></c:pt><c:pt idx=\"1\"><c:v>4</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser><c:axId val=\"1\"/><c:axId val=\"2\"/></c:barChart><c:catAx><c:axId val=\"1\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"b\"/><c:crossAx val=\"2\"/><c:crosses val=\"autoZero\"/></c:catAx><c:valAx><c:axId val=\"2\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"l\"/><c:crossAx val=\"1\"/><c:crosses val=\"autoZero\"/></c:valAx></c:plotArea><c:plotVisOnly val=\"1\"/></c:chart><c:externalData r:id=\"rIdEmbedded\"><c:autoUpdate val=\"0\"/></c:externalData></xml-fragment>"
+          }
+        ]
+      }
+    },
+    {
+      "id": "OP08",
+      "title": "Package gate rejects undeclared unknown part loss",
+      "status": "passed",
+      "facts": {
+        "rejected": true,
+        "reason": "undeclared unknown part loss"
+      }
+    },
+    {
+      "id": "OP09",
+      "title": "Duplicate slide clones mutable chart/workbook + notes while retaining shared masters",
+      "status": "passed",
+      "facts": {
+        "packageGuard": {
+          "changed": [
+            "[Content_Types].xml",
+            "ppt/_rels/presentation.xml.rels",
+            "ppt/presentation.xml"
+          ],
+          "added": [
+            "ppt/charts/_rels/chart2.xml.rels",
+            "ppt/charts/chart2.xml",
+            "ppt/embeddings/chart-data2.xlsx",
+            "ppt/notesSlides/_rels/notesSlide2.xml.rels",
+            "ppt/notesSlides/notesSlide2.xml",
+            "ppt/slides/_rels/slide3.xml.rels",
+            "ppt/slides/slide3.xml"
+          ],
+          "removed": [],
+          "unchangedPartCount": 45,
+          "internalRelationships": 51,
+          "opaquePreserved": true,
+          "retainedHashes": {
+            "ppt/slides/slide1.xml": "ef832d5f5d4688b10279fb49ad8dc11fbe838c7805b1e171ad2dad9bf79b6516",
+            "ppt/slides/slide2.xml": "00648a3cd683f7bab4a6545ada7ad812720ef26a8273fecc9e34ccb2c3c1474b",
+            "ppt/slides/_rels/slide1.xml.rels": "ddf5c2996cf454fb1ead6e2b878d68a4a81e19a6de67ea16f0be9528752ba112",
+            "ppt/slides/_rels/slide2.xml.rels": "9b4f02f4a2e524e91d15ddc0ceb6ab3dad7f58d64adf357489c11dc83bfaefc8",
+            "ppt/notesSlides/notesSlide1.xml": "a6da796093ad9bc525a46f83653c5f0ef866658a19d658204b0a78c4fbe98699",
+            "ppt/notesSlides/_rels/notesSlide1.xml.rels": "323974c47845596749223a6506d4e8e5251abfa3660431da4138c39472c0963e",
+            "ppt/slideMasters/slideMaster1.xml": "f15faef798215e73a2ab072ed5ba6f3b5294105c09ea1ff62d7f74d8bffd4cd9",
+            "ppt/slideMasters/_rels/slideMaster1.xml.rels": "8aab7dd8d4745bee9d3416b34dc47b0353a4483a178b6d9ec540fea11125d91c",
+            "docProps/core.xml": "c2720518924d44540e9b356e0c5354ea0b66d60d621366942ecba4a259179754",
+            "docProps/custom.xml": "9c2a5541f9dd5d568d7c5841e795e575e874ea07adb07acc8bc6fb188f8755c3",
+            "_rels/.rels": "9dd1dd1df7cafae380f98fce0941bcb5932ba9304df12f991a5366e78e9a0e73",
+            "ppt/viewProps.xml": "4bbb00401a1b2002bc8a3c723bb5d3a4df95bc2eae276c62c5544a3b391e1d5f",
+            "ppt/notesMasters/_rels/notesMaster1.xml.rels": "c900da93a4de8bad9a582295b1dbcb892e6cfec52985354da973ebb3fab497c1",
+            "ppt/notesMasters/notesMaster1.xml": "4a0ba93755e0c30a62391303f6b57215be754f027979c4dba0ffc587f8e4aeeb",
+            "ppt/tableStyles.xml": "0e7ac03251337ecbaf6c8ca13619db1caeda5c90c4e3210d45d6c3f5df4de103",
+            "ppt/presProps.xml": "9b2d272fb0c0ec29606b8b513dd3e9185f940c53cb81fa0db446c0445ec0ba85",
+            "ppt/theme/theme2.xml": "742d478f54677b91fbf79324bebf35a3134670137b471f9bb3594e064225c14f",
+            "ppt/theme/theme1.xml": "4c3412087e8fa20cf5642f42e69f1e733881c28611a2bdd4622654ee313d214e",
+            "ppt/slideLayouts/_rels/slideLayout11.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout10.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout9.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout8.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout7.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout6.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout5.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout4.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout3.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout2.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout1.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/slideLayout9.xml": "504b275fb7a5f07f7362c192cf63372663a0d390723132fb4d6289910059a245",
+            "ppt/slideLayouts/slideLayout8.xml": "ed20fd6a6d234da7a812668c67a018a85e8e4818a80ea6e9810d7278d66c4435",
+            "ppt/slideLayouts/slideLayout7.xml": "97b4e2224113d064e3aaa3b00cb3544b65e7dee22fe20ba7b6bc289e29cacbd1",
+            "ppt/slideLayouts/slideLayout6.xml": "c14204aebf4797052b90b6f4b7e5271b9060cb1c86e94685d733253edec7420c",
+            "ppt/slideLayouts/slideLayout5.xml": "e8ee676e06782150fa3c858499d7913687f14786192e7dbb96eab3ee36310b13",
+            "ppt/slideLayouts/slideLayout4.xml": "ae3caa6d17cd86708b6534193d6316f02009407ec0724fd393e9720ddba5d107",
+            "ppt/slideLayouts/slideLayout3.xml": "f0b16712eb34e7618057f93324c57a0f5334fc94ae90b9dfc3c0bf9f3a939131",
+            "ppt/slideLayouts/slideLayout2.xml": "a0b216b20d7a1262aff28ad76b40ac3a238b5bed30c54fe3b77a891a7f8176ca",
+            "ppt/slideLayouts/slideLayout11.xml": "136b411daf8c6031293fcd72cbb08e8f178ffea1eee6a2b8df86eca4be61256c",
+            "ppt/slideLayouts/slideLayout10.xml": "4ceb427c5ef65880955cf804415425b23a8e2f575d58dbb13d5800b8c7d669e0",
+            "ppt/slideLayouts/slideLayout1.xml": "04ecc1eb419f50d375fa62eab4d723604e157823f4b7391e215715acc7e4b440",
+            "docProps/app.xml": "65a732abca18e22a4de3ea33e8e3868fd1f1ad28ff854b98894e557126e942e3",
+            "ppt/charts/chart1.xml": "88a69e092718c8305c2092ee3a837862dac13b54c5ee63075c22e774cb096514",
+            "ppt/embeddings/chart-data.xlsx": "4491cff5ffc8dc7c78bfbc90cf6aaca08acc1762e98f35efd5b9aac502534897",
+            "ppt/charts/_rels/chart1.xml.rels": "27cd23a2710db207dd664635b030dfe7227491b0f8ade734557ae6329b7ccbad",
+            "customXml/m9-opaque.bin": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+          }
+        },
+        "independentRead": {
+          "engine": "Apache POI 5.5.1",
+          "slides": 3,
+          "masters": 1,
+          "tables": [
+            "Label",
+            "Value",
+            "A",
+            "TABLE_EDITED",
+            "B",
+            "UNCHANGED_CELL",
+            "Label",
+            "Value",
+            "A",
+            "TABLE_EDITED",
+            "B",
+            "UNCHANGED_CELL"
+          ],
+          "texts": [
+            "MASTER_TITLE",
+            "OTHER_SLIDE",
+            "UNCHANGED_SLIDE",
+            "MASTER_TITLE"
+          ],
+          "charts": [
+            {
+              "embeddedB2": 15.0,
+              "chartXml": "<xml-fragment xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><c:chart><c:autoTitleDeleted val=\"1\"/><c:plotArea><c:layout/><c:barChart><c:barDir val=\"col\"/><c:grouping val=\"clustered\"/><c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:v>Value</c:v></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$3</c:f><c:strCache><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>A</c:v></c:pt><c:pt idx=\"1\"><c:v>B</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2:$B$3</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>15</c:v></c:pt><c:pt idx=\"1\"><c:v>4</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser><c:axId val=\"1\"/><c:axId val=\"2\"/></c:barChart><c:catAx><c:axId val=\"1\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"b\"/><c:crossAx val=\"2\"/><c:crosses val=\"autoZero\"/></c:catAx><c:valAx><c:axId val=\"2\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"l\"/><c:crossAx val=\"1\"/><c:crosses val=\"autoZero\"/></c:valAx></c:plotArea><c:plotVisOnly val=\"1\"/></c:chart><c:externalData r:id=\"rIdEmbedded\"><c:autoUpdate val=\"0\"/></c:externalData></xml-fragment>"
+            },
+            {
+              "embeddedB2": 9.0,
+              "chartXml": "<xml-fragment xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><c:chart><c:autoTitleDeleted val=\"1\"/><c:plotArea><c:layout/><c:barChart><c:barDir val=\"col\"/><c:grouping val=\"clustered\"/><c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:v>Value</c:v></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$3</c:f><c:strCache><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>A</c:v></c:pt><c:pt idx=\"1\"><c:v>B</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2:$B$3</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>9</c:v></c:pt><c:pt idx=\"1\"><c:v>4</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser><c:axId val=\"1\"/><c:axId val=\"2\"/></c:barChart><c:catAx><c:axId val=\"1\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"b\"/><c:crossAx val=\"2\"/><c:crosses val=\"autoZero\"/></c:catAx><c:valAx><c:axId val=\"2\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"l\"/><c:crossAx val=\"1\"/><c:crosses val=\"autoZero\"/></c:valAx></c:plotArea><c:plotVisOnly val=\"1\"/></c:chart><c:externalData r:id=\"rIdEmbedded\"><c:autoUpdate val=\"0\"/></c:externalData></xml-fragment>"
+            }
+          ]
+        },
+        "originalMutableChartPreserved": true
+      }
+    },
+    {
+      "id": "OP10",
+      "title": "Delete cloned slide removes only private chart/embedded/notes closure, preserves shared master",
+      "status": "passed",
+      "facts": {
+        "packageGuard": {
+          "changed": [
+            "[Content_Types].xml",
+            "ppt/_rels/presentation.xml.rels",
+            "ppt/presentation.xml"
+          ],
+          "added": [],
+          "removed": [
+            "ppt/charts/_rels/chart2.xml.rels",
+            "ppt/charts/chart2.xml",
+            "ppt/embeddings/chart-data2.xlsx",
+            "ppt/notesSlides/_rels/notesSlide2.xml.rels",
+            "ppt/notesSlides/notesSlide2.xml",
+            "ppt/slides/_rels/slide3.xml.rels",
+            "ppt/slides/slide3.xml"
+          ],
+          "unchangedPartCount": 45,
+          "internalRelationships": 44,
+          "opaquePreserved": true,
+          "retainedHashes": {
+            "ppt/slides/slide1.xml": "ef832d5f5d4688b10279fb49ad8dc11fbe838c7805b1e171ad2dad9bf79b6516",
+            "ppt/slides/slide2.xml": "00648a3cd683f7bab4a6545ada7ad812720ef26a8273fecc9e34ccb2c3c1474b",
+            "ppt/slides/_rels/slide1.xml.rels": "ddf5c2996cf454fb1ead6e2b878d68a4a81e19a6de67ea16f0be9528752ba112",
+            "ppt/slides/_rels/slide2.xml.rels": "9b4f02f4a2e524e91d15ddc0ceb6ab3dad7f58d64adf357489c11dc83bfaefc8",
+            "ppt/notesSlides/notesSlide1.xml": "a6da796093ad9bc525a46f83653c5f0ef866658a19d658204b0a78c4fbe98699",
+            "ppt/notesSlides/_rels/notesSlide1.xml.rels": "323974c47845596749223a6506d4e8e5251abfa3660431da4138c39472c0963e",
+            "ppt/slideMasters/slideMaster1.xml": "f15faef798215e73a2ab072ed5ba6f3b5294105c09ea1ff62d7f74d8bffd4cd9",
+            "ppt/slideMasters/_rels/slideMaster1.xml.rels": "8aab7dd8d4745bee9d3416b34dc47b0353a4483a178b6d9ec540fea11125d91c",
+            "docProps/core.xml": "c2720518924d44540e9b356e0c5354ea0b66d60d621366942ecba4a259179754",
+            "docProps/custom.xml": "9c2a5541f9dd5d568d7c5841e795e575e874ea07adb07acc8bc6fb188f8755c3",
+            "_rels/.rels": "9dd1dd1df7cafae380f98fce0941bcb5932ba9304df12f991a5366e78e9a0e73",
+            "ppt/viewProps.xml": "4bbb00401a1b2002bc8a3c723bb5d3a4df95bc2eae276c62c5544a3b391e1d5f",
+            "ppt/notesMasters/_rels/notesMaster1.xml.rels": "c900da93a4de8bad9a582295b1dbcb892e6cfec52985354da973ebb3fab497c1",
+            "ppt/notesMasters/notesMaster1.xml": "4a0ba93755e0c30a62391303f6b57215be754f027979c4dba0ffc587f8e4aeeb",
+            "ppt/tableStyles.xml": "0e7ac03251337ecbaf6c8ca13619db1caeda5c90c4e3210d45d6c3f5df4de103",
+            "ppt/presProps.xml": "9b2d272fb0c0ec29606b8b513dd3e9185f940c53cb81fa0db446c0445ec0ba85",
+            "ppt/theme/theme2.xml": "742d478f54677b91fbf79324bebf35a3134670137b471f9bb3594e064225c14f",
+            "ppt/theme/theme1.xml": "4c3412087e8fa20cf5642f42e69f1e733881c28611a2bdd4622654ee313d214e",
+            "ppt/slideLayouts/_rels/slideLayout11.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout10.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout9.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout8.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout7.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout6.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout5.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout4.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout3.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout2.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/_rels/slideLayout1.xml.rels": "8246d333bf3764cd35563e3df1828c26bbc28890815a2987caf3e592791ba60d",
+            "ppt/slideLayouts/slideLayout9.xml": "504b275fb7a5f07f7362c192cf63372663a0d390723132fb4d6289910059a245",
+            "ppt/slideLayouts/slideLayout8.xml": "ed20fd6a6d234da7a812668c67a018a85e8e4818a80ea6e9810d7278d66c4435",
+            "ppt/slideLayouts/slideLayout7.xml": "97b4e2224113d064e3aaa3b00cb3544b65e7dee22fe20ba7b6bc289e29cacbd1",
+            "ppt/slideLayouts/slideLayout6.xml": "c14204aebf4797052b90b6f4b7e5271b9060cb1c86e94685d733253edec7420c",
+            "ppt/slideLayouts/slideLayout5.xml": "e8ee676e06782150fa3c858499d7913687f14786192e7dbb96eab3ee36310b13",
+            "ppt/slideLayouts/slideLayout4.xml": "ae3caa6d17cd86708b6534193d6316f02009407ec0724fd393e9720ddba5d107",
+            "ppt/slideLayouts/slideLayout3.xml": "f0b16712eb34e7618057f93324c57a0f5334fc94ae90b9dfc3c0bf9f3a939131",
+            "ppt/slideLayouts/slideLayout2.xml": "a0b216b20d7a1262aff28ad76b40ac3a238b5bed30c54fe3b77a891a7f8176ca",
+            "ppt/slideLayouts/slideLayout11.xml": "136b411daf8c6031293fcd72cbb08e8f178ffea1eee6a2b8df86eca4be61256c",
+            "ppt/slideLayouts/slideLayout10.xml": "4ceb427c5ef65880955cf804415425b23a8e2f575d58dbb13d5800b8c7d669e0",
+            "ppt/slideLayouts/slideLayout1.xml": "04ecc1eb419f50d375fa62eab4d723604e157823f4b7391e215715acc7e4b440",
+            "docProps/app.xml": "65a732abca18e22a4de3ea33e8e3868fd1f1ad28ff854b98894e557126e942e3",
+            "ppt/charts/chart1.xml": "88a69e092718c8305c2092ee3a837862dac13b54c5ee63075c22e774cb096514",
+            "ppt/embeddings/chart-data.xlsx": "4491cff5ffc8dc7c78bfbc90cf6aaca08acc1762e98f35efd5b9aac502534897",
+            "ppt/charts/_rels/chart1.xml.rels": "27cd23a2710db207dd664635b030dfe7227491b0f8ade734557ae6329b7ccbad",
+            "customXml/m9-opaque.bin": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+          }
+        },
+        "independentRead": {
+          "engine": "Apache POI 5.5.1",
+          "slides": 2,
+          "masters": 1,
+          "tables": [
+            "Label",
+            "Value",
+            "A",
+            "TABLE_EDITED",
+            "B",
+            "UNCHANGED_CELL"
+          ],
+          "texts": [
+            "MASTER_TITLE",
+            "OTHER_SLIDE",
+            "UNCHANGED_SLIDE"
+          ],
+          "charts": [
+            {
+              "embeddedB2": 9.0,
+              "chartXml": "<xml-fragment xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><c:chart><c:autoTitleDeleted val=\"1\"/><c:plotArea><c:layout/><c:barChart><c:barDir val=\"col\"/><c:grouping val=\"clustered\"/><c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:v>Value</c:v></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$2:$A$3</c:f><c:strCache><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>A</c:v></c:pt><c:pt idx=\"1\"><c:v>B</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$2:$B$3</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val=\"2\"/><c:pt idx=\"0\"><c:v>9</c:v></c:pt><c:pt idx=\"1\"><c:v>4</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser><c:axId val=\"1\"/><c:axId val=\"2\"/></c:barChart><c:catAx><c:axId val=\"1\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"b\"/><c:crossAx val=\"2\"/><c:crosses val=\"autoZero\"/></c:catAx><c:valAx><c:axId val=\"2\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:axPos val=\"l\"/><c:crossAx val=\"1\"/><c:crosses val=\"autoZero\"/></c:valAx></c:plotArea><c:plotVisOnly val=\"1\"/></c:chart><c:externalData r:id=\"rIdEmbedded\"><c:autoUpdate val=\"0\"/></c:externalData></xml-fragment>"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "subprocesses": [
+    {
+      "name": "oa12-recalc",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt5/oa12-deleted.xlsx",
+        "/private/tmp/predev-office-attempt5/oa12-poi-candidate.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 452.22
+    },
+    {
+      "name": "oa12-reopen",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt5/oa12-poi-candidate.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 405.71
+    },
+    {
+      "name": "rich-normalized",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt5/rich-normalized.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 370.7
+    },
+    {
+      "name": "rich-rename-calc",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt5/rich-rename-patched.xlsx",
+        "/private/tmp/predev-office-attempt5/rich-rename-engine.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 412.11
+    },
+    {
+      "name": "rich-rename-final-reopen",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt5/rich-rename-final.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 394.17
+    },
+    {
+      "name": "rich-delete-calc",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt5/rich-delete-patched.xlsx",
+        "/private/tmp/predev-office-attempt5/rich-delete-engine.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 407.85
+    },
+    {
+      "name": "rich-delete-final-reopen",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "read",
+        "/private/tmp/predev-office-attempt5/rich-delete-final.xlsx"
+      ],
+      "exitCode": 0,
+      "durationMs": 418.15
+    },
+    {
+      "name": "ppt-read",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "pptx",
+        "/private/tmp/predev-office-attempt5/rich-edited.pptx"
+      ],
+      "exitCode": 0,
+      "durationMs": 436.89
+    },
+    {
+      "name": "ppt-cloned",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "pptx",
+        "/private/tmp/predev-office-attempt5/rich-cloned.pptx"
+      ],
+      "exitCode": 0,
+      "durationMs": 481.11
+    },
+    {
+      "name": "ppt-removed",
+      "args": [
+        "java",
+        "-Xmx512m",
+        "-Dlog4j2.statusLoggerLevel=OFF",
+        "-cp",
+        "/private/tmp/predev-office-poi/classes:/private/tmp/predev-office-poi/lib/*",
+        "PoiProbe",
+        "pptx",
+        "/private/tmp/predev-office-attempt5/rich-clone-removed.pptx"
+      ],
+      "exitCode": 0,
+      "durationMs": 425.31
+    }
+  ],
+  "sources": {
+    "predev-office-render.py": "895330ac27a44314c0c374d63e13a2661912ef56b4835fc0527ebc6a5510fec1",
+    "predev-office-adapter.py": "cc662ef6f390968f3ca8e8089088ef36d58448dc295e582a7566c00f7fb8c795",
+    "predev-office-probe.py": "6b6678a39f06440f449323227c77599eecaf99dbf297488455c8c22c286c756d",
+    "predev-office-run.py": "3880bfe2dd3d6cf0a9b29f72b3485967adef5ed39693d94eb876e3c574a04388"
+  },
+  "originalUnchanged": true,
+  "summary": {
+    "passed": 8,
+    "failed": 0
+  },
+  "completedAt": "2026-10-17T08:23:34Z"
+}

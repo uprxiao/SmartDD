@@ -1,0 +1,311 @@
+{
+  "ranAt": "2026-10-17T08:27:17.160Z",
+  "budget": {
+    "frozenBeforeMeasurement": true,
+    "pdf": {
+      "sourceBytesMaxCandidate": 268435456,
+      "singleActiveSessionPerWindow": 1,
+      "perCanvasPixels": 16777216,
+      "perCanvasSide": 16384,
+      "activeCanvasPixelsTarget": 33554432,
+      "rpcDeadlineMs": 15000,
+      "destroyHandshakeMs": 200,
+      "sourceSamples": [
+        16777216,
+        134217728,
+        268435456
+      ]
+    },
+    "notebook": {
+      "sourceBytesMax": 41943040,
+      "activeWorkerPerWindow": 1,
+      "parseDeadlineMs": 15000,
+      "visibleCellsMax": 30,
+      "visibleOutputRecordsMax": 100,
+      "visibleTextUnitsMax": 1048576,
+      "textChunkUnitsMax": 65536,
+      "activeHtmlFramesTarget": 4,
+      "activeImagePixelsTarget": 33554432,
+      "domElementsMaxTarget": 5000,
+      "sourceSamples": [
+        1048576,
+        8388608,
+        41943040
+      ]
+    },
+    "scope": "predevelopment input and scheduling candidate; max PDF source is 256MiB review ceiling extended as a proposed unified guard, not previously accepted artifact support; targets require production measurements"
+  },
+  "checks": [
+    {
+      "id": "PR-PDF-16777216",
+      "title": "actual PDF byte-size source loads by URL and one live session",
+      "status": "passed",
+      "detail": {
+        "actual": 16777216,
+        "pages": 1,
+        "text": "WillYou large source byte guard",
+        "ms": 298.80000001192093,
+        "sessions": {
+          "created": 1,
+          "destroyed": 0,
+          "active": 1,
+          "sessions": [
+            {
+              "id": 1,
+              "nativeWorker": true,
+              "disposed": false,
+              "failed": false,
+              "pendingTimers": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "PR-PDF-134217728",
+      "title": "actual PDF byte-size source loads by URL and one live session",
+      "status": "passed",
+      "detail": {
+        "actual": 134217728,
+        "pages": 1,
+        "text": "WillYou large source byte guard",
+        "ms": 339.69999998807907,
+        "sessions": {
+          "created": 2,
+          "destroyed": 1,
+          "active": 1,
+          "sessions": [
+            {
+              "id": 2,
+              "nativeWorker": true,
+              "disposed": false,
+              "failed": false,
+              "pendingTimers": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "PR-PDF-268435456",
+      "title": "actual PDF byte-size source loads by URL and one live session",
+      "status": "passed",
+      "detail": {
+        "actual": 268435456,
+        "pages": 1,
+        "text": "WillYou large source byte guard",
+        "ms": 348.80000001192093,
+        "sessions": {
+          "created": 3,
+          "destroyed": 2,
+          "active": 1,
+          "sessions": [
+            {
+              "id": 3,
+              "nativeWorker": true,
+              "disposed": false,
+              "failed": false,
+              "pendingTimers": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "PR-PDF-OVER",
+      "title": "candidate source cap rejects 256MiB plus one before creating PDF session",
+      "status": "passed",
+      "detail": {
+        "status": "rejected",
+        "reason": "source-too-large",
+        "actual": 268435457
+      }
+    },
+    {
+      "id": "PR-NB-1048576",
+      "title": "actual Notebook parser in Worker preserves full output and exposes bounded windows",
+      "status": "passed",
+      "detail": {
+        "bytes": 1048576,
+        "parsed": {
+          "id": 1,
+          "rev": 1,
+          "type": "ready",
+          "cells": 1,
+          "bytes": 1048576,
+          "parseMs": 1.4000000357627869
+        },
+        "ms": 24.19999998807907,
+        "windowCells": 1,
+        "domElements": 4,
+        "visibleTextUnits": 65565,
+        "tailEnds": true,
+        "lastIndex": 0,
+        "hash": "1240ae7eba08b923bc68057a8c173619100be292af3faac8e884a4c87dc3706c"
+      }
+    },
+    {
+      "id": "PR-NB-8388608",
+      "title": "actual Notebook parser in Worker preserves full output and exposes bounded windows",
+      "status": "passed",
+      "detail": {
+        "bytes": 8388608,
+        "parsed": {
+          "id": 5,
+          "rev": 2,
+          "type": "ready",
+          "cells": 1,
+          "bytes": 8388608,
+          "parseMs": 7.300000011920929
+        },
+        "ms": 16.599999964237213,
+        "windowCells": 1,
+        "domElements": 4,
+        "visibleTextUnits": 65565,
+        "tailEnds": true,
+        "lastIndex": 0,
+        "hash": "3a8a2beadd92fa138b12604657ef78ea43866d641066c4b70d1fd3967ca3c2cf"
+      }
+    },
+    {
+      "id": "PR-NB-41943040",
+      "title": "actual Notebook parser in Worker preserves full output and exposes bounded windows",
+      "status": "passed",
+      "detail": {
+        "bytes": 41943040,
+        "parsed": {
+          "id": 9,
+          "rev": 3,
+          "type": "ready",
+          "cells": 1,
+          "bytes": 41943040,
+          "parseMs": 35.19999998807907
+        },
+        "ms": 76.20000004768372,
+        "windowCells": 1,
+        "domElements": 4,
+        "visibleTextUnits": 65565,
+        "tailEnds": true,
+        "lastIndex": 0,
+        "hash": "4abdee4f3baee5341c0847040aa68977eb9423895faf4eb26906ba2f1b165972"
+      }
+    },
+    {
+      "id": "PR-NB-CELLS",
+      "title": "3000 actual cells use a 30-cell window and last cell stays reachable",
+      "status": "passed",
+      "detail": {
+        "bytes": 8388608,
+        "parsed": {
+          "id": 13,
+          "rev": 4,
+          "type": "ready",
+          "cells": 3000,
+          "bytes": 8388608,
+          "parseMs": 9.900000035762787
+        },
+        "ms": 20.19999998807907,
+        "windowCells": 30,
+        "domElements": 120,
+        "visibleTextUnits": 66621,
+        "tailEnds": true,
+        "lastIndex": 2999,
+        "hash": "9eeced836f8b0959bf3bbed5712c64ff2fd3db8a78542d7e02c3993693a99fac"
+      }
+    },
+    {
+      "id": "PR-NB-OUTPUTS",
+      "title": "1000 outputs preserve last output while mounting at most 100 records",
+      "status": "passed",
+      "detail": {
+        "parsed": {
+          "id": 17,
+          "rev": 5,
+          "type": "ready",
+          "cells": 1,
+          "bytes": 45484,
+          "parseMs": 0.30000001192092896
+        },
+        "visibleOutputs": 100,
+        "totalOutputs": 1000,
+        "units": 970,
+        "dom": 103,
+        "last": "OUTPUT 999"
+      }
+    },
+    {
+      "id": "PR-NB-OVER",
+      "title": "40MiB plus one rejected under existing non-PDF artifact rule",
+      "status": "passed",
+      "detail": {
+        "id": 20,
+        "rev": 6,
+        "type": "error",
+        "error": "source-too-large"
+      }
+    },
+    {
+      "id": "PR-CLOSE",
+      "title": "owned workers and sessions close without external request",
+      "status": "passed",
+      "detail": {
+        "closed": {
+          "created": 3,
+          "destroyed": 3,
+          "active": 0,
+          "sessions": []
+        },
+        "workers": 4,
+        "errors": [],
+        "requests": []
+      }
+    }
+  ],
+  "workers": [
+    {
+      "url": "http://127.0.0.1:4193/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/predev-editor/notebook-worker.mjs?worker_file&type=module",
+      "closed": true
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "scope": "isolated byte admission / bounded Notebook text windows / actual PDF.js URL route; no App or GPU/process memory acceptance",
+  "browser": "155.0.8059.80",
+  "summary": {
+    "passed": 11
+  },
+  "sources": [
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/resource-budget.json",
+      "sha256": "43f40077f97798f534ddf00f889d96f228064c230af5d2f6eac1be1b9937c65f"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/resources-host.mjs",
+      "sha256": "c1cdf5079db5210f11611b3df608974deab5cf7ec6581ca5ac5a5c8de48fb4ea"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/resources-check.mjs",
+      "sha256": "3e42987af991f259ee2697bf3573a2012e559aa951cce84c468972dee3824ccd"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/notebook-worker.mjs",
+      "sha256": "f404b0b1bbba2d04076a2f59e4c2751a97b3aac37d8238222db3c36d8ed94550"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/pdf-large-generate.py",
+      "sha256": "63367a0ced006dfe455ecf46fd26e2cb50b48f7bceef53f455b663bb9699f83c"
+    }
+  ]
+}

@@ -1,0 +1,284 @@
+{
+  "startedAt": "2026-10-17T08:31:52.334Z",
+  "scope": "isolated real temporary filesystem, ripgrep; no App/GUI/platform acceptance",
+  "budget": {
+    "rootListMs": 1000,
+    "nameEnumerationMs": 5000,
+    "fullSearchMs": 10000,
+    "firstResultMs": 5000,
+    "cancelExitMs": 1000,
+    "resultLines": 100,
+    "maxFileBytes": 20971520,
+    "protocolLineBytes": 2097152
+  },
+  "cases": [
+    {
+      "id": "FS01",
+      "title": "普通树包含隐藏和排除目录；按层读取、目录优先且同类稳定排序",
+      "status": "passed",
+      "ms": 0.92,
+      "evidence": {
+        "rootEntries": 41,
+        "elapsedMs": 0.6197920000000181,
+        "subdirectoryEntries": 300
+      }
+    },
+    {
+      "id": "FS02",
+      "title": "名称枚举含未展开目录和点文件；固定路径段排除不等于gitignore",
+      "status": "passed",
+      "ms": 10.42,
+      "evidence": {
+        "count": 6008,
+        "elapsedMs": 9.352874999999983,
+        "nullDelimitedNames": true,
+        "ignorePolicy": "fixed-segment-exclusions; include dotfiles; do not inherit project/global gitignore"
+      }
+    },
+    {
+      "id": "FS03",
+      "title": "默认不跟随根外、循环和失效symlink",
+      "status": "passed",
+      "ms": 43.45,
+      "evidence": {
+        "symlinksShownInTree": true,
+        "followedBySearch": false,
+        "noResultExitCode": 1
+      }
+    },
+    {
+      "id": "FS04",
+      "title": "真实搜索UTF-8字节范围转UTF-16位置，CRLF/中文/emoji/带引号路径可定位",
+      "status": "passed",
+      "ms": 33.04,
+      "evidence": {
+        "rows": [
+          {
+            "path": "中文 空格/quote'\"name.ts",
+            "line": 1,
+            "text": "中文😀 before TARGET after\r\n",
+            "offsets": [
+              {
+                "from": 12,
+                "to": 18
+              }
+            ]
+          },
+          {
+            "path": "中文 空格/quote'\"name.ts",
+            "line": 2,
+            "text": "next TARGET\n",
+            "offsets": [
+              {
+                "from": 5,
+                "to": 11
+              }
+            ]
+          }
+        ],
+        "reason": null,
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "invalid": 0,
+        "stderr": "",
+        "forcedKill": false,
+        "firstMs": 14.814499999999953,
+        "totalMs": 32.364540999999974,
+        "stopToExitMs": null
+      }
+    },
+    {
+      "id": "FS05",
+      "title": "mask按参数传递，不做shell拼接；不存在匹配不是查询失败",
+      "status": "passed",
+      "ms": 38.58,
+      "evidence": {
+        "maskRows": 1,
+        "emptyExit": 1
+      }
+    },
+    {
+      "id": "FS06",
+      "title": "二进制与非法UTF-8不生成误导性文本定位",
+      "status": "passed",
+      "ms": 28.65,
+      "evidence": {
+        "textMatches": 3,
+        "invalidTextSkipped": 1,
+        "binarySkipped": true
+      }
+    },
+    {
+      "id": "FS07",
+      "title": "100匹配行上限终止真实进程并明确部分结果",
+      "status": "passed",
+      "ms": 7.16,
+      "evidence": {
+        "rows": [
+          {
+            "path": "folder-10/item-199.ts",
+            "line": 2,
+            "text": "export const n199 = 199; // COMMON_NEEDLE\n",
+            "offsets": [
+              {
+                "from": 28,
+                "to": 41
+              }
+            ]
+          },
+          {
+            "path": "folder-10/item-279.ts",
+            "line": 2,
+            "text": "export const n279 = 279; // COMMON_NEEDLE\n",
+            "offsets": [
+              {
+                "from": 28,
+                "to": 41
+              }
+            ]
+          }
+        ],
+        "reason": "limit",
+        "exit": {
+          "code": null,
+          "signal": "SIGTERM"
+        },
+        "invalid": 0,
+        "stderr": "",
+        "forcedKill": false,
+        "firstMs": 5.008875000000046,
+        "totalMs": 6.530708000000004,
+        "stopToExitMs": 0.5794169999999781,
+        "returnedLines": 100,
+        "mayHaveMore": true
+      }
+    },
+    {
+      "id": "FS08",
+      "title": "取消流式查询后真实进程退出，已排队结果不再追加",
+      "status": "passed",
+      "ms": 4.69,
+      "evidence": {
+        "rows": [
+          {
+            "path": "folder-19/item-6.ts",
+            "line": 2,
+            "text": "export const n6 = 6; // COMMON_NEEDLE\n",
+            "offsets": [
+              {
+                "from": 24,
+                "to": 37
+              }
+            ]
+          }
+        ],
+        "reason": "cancelled",
+        "exit": {
+          "code": null,
+          "signal": "SIGTERM"
+        },
+        "invalid": 0,
+        "stderr": "",
+        "forcedKill": false,
+        "firstMs": 3.4332920000000513,
+        "totalMs": 4.185125000000028,
+        "stopToExitMs": 0.7434999999999832
+      }
+    },
+    {
+      "id": "FS09",
+      "title": "根目录被替换时旧lease身份失效",
+      "status": "passed",
+      "ms": 1.71,
+      "evidence": {
+        "staleDetected": true,
+        "requiredHandling": "discard old generation; re-authorize root; no silent rebind"
+      }
+    },
+    {
+      "id": "FS10",
+      "title": "已删除目录返回明确错误，不冒充空目录",
+      "status": "passed",
+      "ms": 0.09,
+      "evidence": {
+        "code": "ENOENT"
+      }
+    },
+    {
+      "id": "FS11",
+      "title": "6000真实文件无命中查询三轮成本",
+      "status": "passed",
+      "ms": 95.19,
+      "evidence": {
+        "roundsMs": [
+          31.77,
+          28.74,
+          33.13
+        ],
+        "coldCache": false,
+        "uiScrolling": "covered separately by existing prototype; no new GUI timing claim"
+      }
+    },
+    {
+      "id": "FS12",
+      "title": "用户mask不能覆盖固定排除，旧参数顺序负对照复现",
+      "status": "passed",
+      "ms": 47.16,
+      "evidence": {
+        "oldExcludedLeaks": 11,
+        "fixedRows": 1,
+        "argvOrder": "user glob first, mandatory exclusion globs last"
+      }
+    },
+    {
+      "id": "FS13",
+      "title": "不响应SIGTERM的自有子进程250ms后强制退出",
+      "status": "passed",
+      "ms": 273.1,
+      "evidence": {
+        "syntheticIgnoringTerm": true,
+        "exit": {
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "stopToExitMs": 252.408458,
+        "graceMs": 250
+      }
+    },
+    {
+      "id": "FS14",
+      "title": "真实20MiB文件跳过和超2MiB协议行有界失败",
+      "status": "passed",
+      "ms": 58.33,
+      "evidence": {
+        "overFileBytes": 20971521,
+        "oversizeFileSkipped": true,
+        "longFrame": "response-too-large",
+        "stopToExitMs": 0.5741249999999809
+      }
+    }
+  ],
+  "environment": {
+    "platform": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "rg": "ripgrep 15.2.0 (rev e89fff89ac)",
+    "locale": "en-US"
+  },
+  "fixture": {
+    "files": 6000,
+    "folders": 20,
+    "canarySha256": "ae81c12f908254cc276b94b845190e2a826ad1d869903152d60581e594b1f6bf",
+    "fingerprint": "dc1fe8698664716ee248d65bd81ef4d5f566408337264428ab67bd300a29691b"
+  },
+  "completedAt": "2026-10-17T08:31:53.414Z",
+  "cleanup": true,
+  "scriptSha256": "7a1946d835b2aa45da12bc1a1c91156a174f937980e7f3b01d83cc6664fcf52a",
+  "summary": {
+    "passed": 14,
+    "failed": 0
+  }
+}
