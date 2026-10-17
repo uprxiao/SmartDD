@@ -17,6 +17,7 @@ import type { TaskService } from './core/tasks/task-service';
 import type { DbClient } from './db/client';
 import { runProbes } from './probes';
 import type { PtyManager } from './pty-manager';
+import { createPtyController, type PtyAccess } from './pty-access';
 import { createTransferController } from './core/projects/transfer-controller';
 import type { ProjectTransferService } from './core/projects/transfer-service';
 
@@ -32,6 +33,7 @@ export interface RpcDeps {
   tasks: TaskService;
   capabilities: CapabilityService;
   ptys: PtyManager;
+  ptyAccess: PtyAccess;
   baseEnv: () => Record<string, string>;
   onSettingChanged: (key: AppSettingsKey) => void;
 }
@@ -57,7 +59,7 @@ export function createRpcRouter(d: RpcDeps) {
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
     ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id) }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
-    ...createTaskController(d.tasks),
+    ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event)),
     ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv),
     dialog: createRPCController({
       /** Native folder picker; null when cancelled. */
@@ -74,9 +76,7 @@ export function createRpcRouter(d: RpcDeps) {
         return r.canceled ? null : (r.filePaths[0] ?? null);
       },
     }),
-    pty: createRPCController({
-      kill: (ptyId: string) => d.ptys.kill(ptyId),
-    }),
+    pty: createPtyController(d.ptyAccess),
     probes: createRPCController({
       run: () => runProbes(d.client, d.dbFile, d.baseEnv()),
     }),

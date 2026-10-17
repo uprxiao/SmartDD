@@ -296,12 +296,23 @@ export class TaskService {
   kill(id: string): void {
     const ptyId = this.running.get(id);
     if (!ptyId) return;
+    const alreadyStopping = this.killedPtys.has(ptyId);
     this.killedPtys.add(ptyId);
-    this.d.ptys.kill(ptyId);
+    try { this.d.ptys.kill(ptyId); }
+    catch (error) { if (!alreadyStopping) this.killedPtys.delete(ptyId); throw error; }
   }
 
   runningCount(): number {
     return this.running.size;
+  }
+
+  /** Main-process ownership check for input; no database work on each keypress.
+   * Archived tasks cannot be running. Stop/archive/delete revoke input immediately,
+   * even while the native process is still delivering its final exit event.
+   */
+  activePty(taskId: string): string | null {
+    const id = this.running.get(taskId);
+    return id && !this.killedPtys.has(id) && !this.archiving.has(taskId) ? id : null;
   }
 
   /** How many of the project's tasks have a live CLI (a project with any cannot be deleted). */

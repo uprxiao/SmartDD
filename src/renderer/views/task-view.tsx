@@ -51,7 +51,7 @@ export const TaskView = observer(function TaskView() {
       {task?.runtimeSnapshot?.selfCheck.status === 'failed' && <InjectionFailure snapshot={task.runtimeSnapshot} />}
       <div data-testid="task-area" className="relative min-h-0 flex-1 bg-(--xterm-bg)">
         {terminals.map(([taskId, ptyId]) => (
-          <TaskTerminal key={ptyId} ptyId={ptyId} readOnly={tasksStore.byId.get(taskId)?.archivedAt != null} visible={navigation.currentViewId === 'task' && task?.id === taskId} />
+          <TaskTerminal key={ptyId} taskId={taskId} ptyId={ptyId} readOnly={tasksStore.byId.get(taskId)?.archivedAt != null} visible={navigation.currentViewId === 'task' && task?.id === taskId} />
         ))}
         {task && !shownPty && <StoppedPanel key={task.id} task={task} />}
         {!task && <div className="absolute inset-0 flex items-center justify-center text-sm text-foreground-muted">{i18n.t('task.none')}</div>}
@@ -145,7 +145,7 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
  * An interactive terminal set up like Yoda's (src/renderer/lib/pty/pty.ts, use-pty.ts; Apache-2.0):
  * same xterm options, font stack and key mapping, so a CLI looks as it does in a real terminal.
  */
-function TaskTerminal({ ptyId, visible, readOnly }: { ptyId: string; visible: boolean; readOnly: boolean }) {
+function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; ptyId: string; visible: boolean; readOnly: boolean }) {
   const { effectiveTheme } = useTheme();
   const { value: terminalSettings } = useAppSettingsKey('terminal');
   const hostRef = useRef<HTMLDivElement>(null);
@@ -159,7 +159,7 @@ function TaskTerminal({ ptyId, visible, readOnly }: { ptyId: string; visible: bo
     if (!term || !host || host.clientWidth === 0 || host.clientHeight === 0) return;
     fitRef.current?.fit();
     recordTerminalSize(term.cols, term.rows);
-    events.emit(ptyResizeEvent, { ptyId, cols: term.cols, rows: term.rows });
+    events.emit(ptyResizeEvent, { taskId, ptyId, cols: term.cols, rows: term.rows });
   };
 
   useEffect(() => {
@@ -188,7 +188,7 @@ function TaskTerminal({ ptyId, visible, readOnly }: { ptyId: string; visible: bo
     term.open(hostRef.current!);
     termRef.current = term;
     fitRef.current = fit;
-    const send = (data: string) => events.emit(ptyInputEvent, { ptyId, data });
+    const send = (data: string) => events.emit(ptyInputEvent, { taskId, ptyId, data });
     term.attachCustomKeyEventHandler((e) => {
       // A dialog over the terminal keeps its keys.
       if (document.querySelector('[role="dialog"]')) return false;
@@ -214,7 +214,7 @@ function TaskTerminal({ ptyId, visible, readOnly }: { ptyId: string; visible: bo
       term.dispose();
       termRef.current = null;
     };
-  }, [ptyId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [taskId, ptyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!visible) return;

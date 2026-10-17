@@ -7,8 +7,6 @@ import {
   menuToggleLeftSidebarEvent,
   ptyDataEvent,
   ptyExitEvent,
-  ptyInputEvent,
-  ptyResizeEvent,
   tasksChangedEvent,
   voiceStatusChangedEvent,
   voiceGlobalErrorEvent,
@@ -17,7 +15,7 @@ import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
 import { buildAppMenu } from './app/menu';
 import { appIcon } from './app/icon';
-import { applyNativeTheme, createMainWindow, getMainWindow, markAppQuitting } from './app/window';
+import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, markAppQuitting } from './app/window';
 import { AiProfileService } from './core/ai/ai-profile-service';
 import { ProfileHealth } from './core/ai/profile-health';
 import { CapabilityService } from './core/capabilities/capability-service';
@@ -28,6 +26,7 @@ import { openDbClient, type DbClient } from './db/client';
 import { runBundledMigrations } from './db/migrations';
 import { runProbes } from './probes';
 import { PtyManager } from './pty-manager';
+import { PtyAccess, registerPtyInput } from './pty-access';
 import { createRpcRouter } from './rpc';
 import { safeStorageCipher } from './safe-storage-cipher';
 import { SecretsStore } from './secrets';
@@ -130,8 +129,15 @@ async function main(): Promise<void> {
 
   ptys.on('data', (ptyId: string, data: string) => events.emit(ptyDataEvent, { ptyId, data }));
   ptys.on('exit', (ptyId: string, code: number) => events.emit(ptyExitEvent, { ptyId, code }));
-  events.on(ptyInputEvent, ({ ptyId, data }) => ptys.write(ptyId, data));
-  events.on(ptyResizeEvent, ({ ptyId, cols, rows }) => ptys.resize(ptyId, cols, rows));
+  const ptyAccess = new PtyAccess({
+    trusted: isMainRenderer,
+    activePty: (id) => tasks.activePty(id),
+    alive: (id) => ptys.has(id),
+    write: (id, data) => ptys.write(id, data),
+    resize: (id, cols, rows) => ptys.resize(id, cols, rows),
+    killTask: (id) => tasks.kill(id),
+  });
+  registerPtyInput(ipcMain, ptyAccess);
 
   const voice = new VoiceService({
     adapter: new TypelessAdapter(app.isPackaged ? join(process.resourcesPath, 'native/smartdd-voice') : join(app.getAppPath(), 'out/native/smartdd-voice')),
@@ -174,6 +180,7 @@ async function main(): Promise<void> {
       tasks,
       capabilities,
       ptys,
+      ptyAccess,
       baseEnv,
       onSettingChanged: (key) => {
         if (key === 'theme') applyNativeTheme(settings.get('theme'));

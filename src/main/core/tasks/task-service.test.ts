@@ -225,6 +225,8 @@ describe('running state', () => {
     const t1 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'a' }).task;
     const t2 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'b' }).task;
     expect(svc.runningCount()).toBe(2);
+    expect(svc.activePty(t1.id)).toBe('pty-1');
+    expect(svc.activePty('unknown')).toBeNull();
     // A running task reopens to the same terminal instead of a second CLI.
     expect(svc.open({ taskId: t1.id }).ptyId).toBe('pty-1');
     expect(ptys.spawned).toHaveLength(2);
@@ -232,10 +234,21 @@ describe('running state', () => {
     const before = changed;
     ptys.emit('exit', 'pty-1', 0);
     expect(svc.get(t1.id).ptyId).toBeNull();
+    expect(svc.activePty(t1.id)).toBeNull();
     expect(svc.get(t2.id).ptyId).toBe('pty-2');
     expect(changed).toBe(before + 1);
     ptys.emit('exit', 'pty-unknown', 0);
     expect(changed).toBe(before + 1);
+  });
+
+  it('revokes input while stop waits for exit, then accepts only the reopened PTY', () => {
+    const created = svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '' });
+    svc.kill(created.task.id);
+    expect(svc.activePty(created.task.id)).toBeNull();
+    ptys.emit('exit', created.ptyId, 0);
+    const reopened = svc.open({ taskId: created.task.id });
+    expect(reopened.ptyId).not.toBe(created.ptyId);
+    expect(svc.activePty(created.task.id)).toBe(reopened.ptyId);
   });
 
   it('refuses to archive a running task; delete kills it and keeps the CLI files', () => {
@@ -244,6 +257,7 @@ describe('running state', () => {
     writeClaudeSession(task.cwd, task.id);
     expect(() => svc.setArchived(task.id, true)).toThrow('正在运行');
     svc.delete(task.id);
+    expect(svc.activePty(task.id)).toBeNull();
     expect(ptys.killed).toEqual(['pty-1']);
     expect(svc.list({ includeArchived: true })).toEqual([]);
     expect(() => svc.get(task.id)).toThrow('任务不存在');

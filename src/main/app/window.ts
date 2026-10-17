@@ -1,10 +1,12 @@
 // Window chrome follows Yoda (Apache-2.0) src/main/app/window.ts.
 import { join } from 'node:path';
-import { BrowserWindow, nativeTheme } from 'electron';
+import { pathToFileURL } from 'node:url';
+import { BrowserWindow, nativeTheme, type IpcMainEvent } from 'electron';
 import type { Theme } from '@shared/app-settings';
 import { appIcon } from './icon';
 
 let mainWindow: BrowserWindow | null = null;
+let mainDocumentURL: string | null = null;
 let appQuitting = false;
 const MAC_TITLEBAR_HEIGHT = 40;
 
@@ -15,6 +17,18 @@ export function markAppQuitting(): void {
 
 export function getMainWindow(): BrowserWindow | null {
   return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+}
+
+/** A renderer navigation must not carry terminal authority to another page. */
+export function isMainRenderer(event: Pick<IpcMainEvent, 'sender' | 'senderFrame'>): boolean {
+  const win = getMainWindow();
+  if (!win || event.sender !== win.webContents || event.sender.isDestroyed() ||
+      !event.senderFrame || event.senderFrame !== event.sender.mainFrame || !mainDocumentURL) return false;
+  try {
+    const current = new URL(event.senderFrame.url);
+    current.hash = '';
+    return current.href === mainDocumentURL;
+  } catch { return false; }
 }
 
 /** Native chrome (menus, dialogs, window background) follows the theme setting. */
@@ -56,6 +70,9 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     },
   });
   mainWindow = win;
+  const documentURL = new URL(process.env.ELECTRON_RENDERER_URL || pathToFileURL(join(__dirname, '../renderer/index.html')).href);
+  documentURL.hash = '';
+  mainDocumentURL = documentURL.href;
 
   // macOS: closing the window hides it (terminals keep running); Cmd+Q is the real quit.
   win.on('close', (event) => {
@@ -64,7 +81,7 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     win.hide();
   });
   win.on('closed', () => {
-    if (mainWindow === win) mainWindow = null;
+    if (mainWindow === win) { mainWindow = null; mainDocumentURL = null; }
   });
   win.once('ready-to-show', () => win.show());
 
