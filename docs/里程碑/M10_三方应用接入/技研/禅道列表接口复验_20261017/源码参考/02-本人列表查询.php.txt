@@ -1,0 +1,107 @@
+PUBLIC SOURCE RESEARCH EXCERPT — NOT RUNNABLE
+Repository: https://github.com/easysoft/zentaopms
+Tag: zentaopms_22.0_20260318
+Commit: 88d6de983014956235e3bf735d225106e38be551
+License: upstream ZPL 1.2 or AGPL 3.0; see LICENSE.*.upstream and COPYING.upstream.
+
+===== UPSTREAM module/bug/model.php L1-L12 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/bug/model.php#L1-L12
+<?php
+declare(strict_types=1);
+/**
+ * The model file of bug module of ZenTaoPMS.
+ *
+ * @copyright   Copyright 2009-2023 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
+ * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
+ * @package     bug
+ * @version     $Id: model.php 5079 2013-07-10 00:44:34Z chencongzhi520@gmail.com $
+ * @link        https://www.zentao.net
+ */
+
+===== UPSTREAM module/bug/model.php L863-L869 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/bug/model.php#L863-L869
+    public function getUserBugs(string $account, string $type = 'assignedTo', string $orderBy = 'id_desc', int $limit = 0, ?object $pager = null, int $executionID = 0, int $queryID = 0): array
+    {
+        if($type != 'bySearch' and !$this->loadModel('common')->checkField(TABLE_BUG, $type)) return array();
+
+        $moduleName = $this->app->rawMethod == 'work' ? 'workBug' : 'contributeBug';
+        $queryName  = $moduleName . 'Query';
+        $formName   = $moduleName . 'Form';
+
+===== UPSTREAM module/bug/model.php L893-L917 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/bug/model.php#L893-L917
+        $orderBy = str_replace('id_', 't1.id_', $orderBy);
+
+        return $this->dao->select("t1.*, IF(`pri` = 0, {$this->config->maxPriValue}, `pri`) AS priOrder, IF(`severity` = 0, {$this->config->maxPriValue}, `severity`) AS severityOrder,t2.name AS productName, t2.shadow")
+            ->from(TABLE_BUG)->alias('t1')
+            ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product=t2.id')
+            ->where('t1.deleted')->eq(0)
+            ->andWhere('t2.deleted')->eq(0)
+            ->beginIF($type == 'bySearch')->andWhere($query)->fi()
+            ->beginIF($executionID)->andWhere('t1.execution')->eq($executionID)->fi()
+            ->beginIF($type != 'closedBy' and $this->app->moduleName == 'block')->andWhere('t1.status')->ne('closed')->fi()
+            ->beginIF($type != 'all' and $type != 'bySearch')->andWhere("t1.`$type`")->eq($account)->fi()
+            ->beginIF($type == 'bySearch' and $moduleName == 'workBug')->andWhere("t1.assignedTo")->eq($account)->fi()
+            ->beginIF($type == 'assignedTo' and $moduleName == 'workBug')->andWhere('t1.status')->ne('closed')->fi()
+            ->beginIF($type == 'bySearch' and $moduleName == 'contributeBug')
+            ->andWhere('t1.openedBy', 1)->eq($account)
+            ->orWhere('t1.closedBy')->eq($account)
+            ->orWhere('t1.resolvedBy')->eq($account)
+            ->orWhere('t1.id')->in(!empty($bugsAssignedByMe) ? array_keys($bugsAssignedByMe) : array())
+            ->markRight(1)
+            ->fi()
+            ->orderBy($orderBy)
+            ->beginIF($limit > 0)->limit($limit)->fi()
+            ->page($pager)
+            ->fetchAll('id', false);
+    }
+
+===== UPSTREAM module/story/model.php L1-L12 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/story/model.php#L1-L12
+<?php
+declare(strict_types=1);
+/**
+ * The model file of story module of ZenTaoPMS.
+ *
+ * @copyright   Copyright 2009-2023 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
+ * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
+ * @package     story
+ * @version     $Id: model.php 5145 2013-07-15 06:47:26Z chencongzhi520@gmail.com $
+ * @link        https://www.zentao.net
+ */
+
+===== UPSTREAM module/story/model.php L3160-L3190 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/story/model.php#L3160-L3190
+    public function getUserStories(string $account, string $type = 'assignedTo', string $orderBy = 'id_desc', ?object $pager = null, string $storyType = 'story', bool $includeLibStories = true, string|int $shadow = 0, int $productID = 0): array
+    {
+        $sql = $this->dao->select("t1.*, t1.`path`, t1.`plan`, IF(t1.`pri` = 0, {$this->config->maxPriValue}, t1.`pri`) as priOrder, t2.name as productTitle, t2.shadow as shadow")->from(TABLE_STORY)->alias('t1')
+            ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id');
+        if($type == 'reviewBy') $sql = $sql->leftJoin(TABLE_STORYREVIEW)->alias('t3')->on('t1.id = t3.story and t1.version = t3.version');
+
+        $stories = $sql->where('t1.deleted')->eq(0)
+            ->andWhere('t2.deleted')->eq('0')
+            ->andWhere('t1.type')->eq($storyType)
+            ->andWhere("FIND_IN_SET('{$this->config->vision}', t1.vision)")
+            ->beginIF($type != 'closedBy' and $this->app->moduleName == 'block')->andWhere('t1.status')->ne('closed')->fi()
+            ->beginIF($type != 'all')
+            ->beginIF($type == 'assignedTo')->andWhere('t1.assignedTo')->eq($account)->fi()
+            ->beginIF($type == 'reviewBy')->andWhere('t3.reviewer')->eq($account)->andWhere('t3.result')->eq('')->andWhere('t1.status')->in('reviewing')->fi()
+            ->beginIF($type == 'openedBy')->andWhere('t1.openedBy')->eq($account)->fi()
+            ->beginIF($type == 'reviewedBy')->andWhere("CONCAT(',', t1.reviewedBy, ',')")->like("%,$account,%")->fi()
+            ->beginIF($type == 'closedBy')->andWhere('t1.closedBy')->eq($account)->fi()
+            ->fi()
+            ->beginIF(!$includeLibStories and $this->config->edition == 'max')->andWhere('t1.lib')->eq('0')->fi()
+            ->beginIF($shadow !== 'all')->andWhere('t2.shadow')->eq((int)$shadow)->fi()
+            ->beginIF($productID)->andWhere('t1.product')->eq((int)$productID)->fi()
+            ->orderBy($orderBy)
+            ->page($pager)
+            ->fetchAll('id', false);
+
+        $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'story', false);
+        $productIdList = array();
+        foreach($stories as $story) $productIdList[$story->product] = $story->product;
+
+        return $this->storyTao->mergePlanTitleAndChildren($productIdList, $stories, $storyType);
+    }

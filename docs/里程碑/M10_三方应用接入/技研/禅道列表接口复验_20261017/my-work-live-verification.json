@@ -1,0 +1,101 @@
+{
+  "schema": "m10-my-work-live-verification-v1",
+  "at": "2026-10-17T08:58:03.409182+00:00",
+  "businessWrites": 0,
+  "credentialsSaved": false,
+  "browserCookieExtracted": false,
+  "route": "GET /api.php/v2/my/work",
+  "passed": true,
+  "checks": {
+    "expectedAccountVerified": true,
+    "bugWorkInventoryMatchesBrowser": true,
+    "threePagePaginationHonored": true,
+    "sortAndRepeatedInventoryAgree": true,
+    "discoveredIDToDetail": true,
+    "storyEmptyInventoryMatchesBrowser": true,
+    "invalidTokenRejected": true
+  },
+  "bugInventory": {
+    "queryContainsKnownIDsOrProductIDs": false,
+    "pages": [
+      {
+        "pageID": 1,
+        "recTotal": 3,
+        "recPerPage": 1,
+        "pageTotal": 3,
+        "returned": 1,
+        "rawCollectionType": "dict"
+      },
+      {
+        "pageID": 2,
+        "recTotal": 3,
+        "recPerPage": 1,
+        "pageTotal": 3,
+        "returned": 1,
+        "rawCollectionType": "dict"
+      },
+      {
+        "pageID": 3,
+        "recTotal": 3,
+        "recPerPage": 1,
+        "pageTotal": 3,
+        "returned": 1,
+        "rawCollectionType": "dict"
+      }
+    ],
+    "returned": 3,
+    "completeForWorkScope": true,
+    "allIDsUnique": true,
+    "matchesCurrentBrowserIDSet": true,
+    "elapsedSeconds": 3.351
+  },
+  "discoveredIDToDetail": {
+    "idMatches": true,
+    "stepsNonempty": true,
+    "historyCount": 6
+  },
+  "stage": "invalid_token_control",
+  "storySchemaObservation": {
+    "collectionKeyPresent": true,
+    "collectionType": "list",
+    "collectionNull": false,
+    "collectionFalse": false,
+    "collectionEmptyString": false,
+    "mode": "story",
+    "type": "assignedTo",
+    "pagerNumericValues": {
+      "offset": 0,
+      "recTotal": 0,
+      "recPerPage": 20,
+      "pageTotal": 0,
+      "pageID": 1
+    }
+  },
+  "storyInventory": {
+    "pages": [
+      {
+        "pageID": 1,
+        "recTotal": 0,
+        "recPerPage": 20,
+        "pageTotal": 0,
+        "returned": 0,
+        "rawCollectionType": "list"
+      }
+    ],
+    "returned": 0,
+    "completeForWorkScope": true,
+    "matchesCurrentBrowserEmptyState": true
+  },
+  "invalidAuthenticationControl": {
+    "requestRejected": true,
+    "httpStatus": 401,
+    "errorType": "ZenTaoAuthenticationError"
+  },
+  "elapsedSeconds": 13.327,
+  "limits": [
+    "Scope is current-user my/work assignedTo as on the native page; Bug excludes closed. Not an all-history archive.",
+    "The independently observed current account has zero assigned Stories; pagination with nonempty Stories and Story resource fidelity remain untested.",
+    "No task transition, source database access, production App integration, or other platform acceptance.",
+    "IDs are compared after automatic discovery; the query contains neither supplied IDs nor product selection."
+  ]
+}

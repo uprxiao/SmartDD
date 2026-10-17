@@ -1,0 +1,185 @@
+PUBLIC SOURCE RESEARCH EXCERPT — NOT RUNNABLE
+Repository: https://github.com/easysoft/zentaopms
+Tag: zentaopms_22.0_20260318
+Commit: 88d6de983014956235e3bf735d225106e38be551
+License: upstream ZPL 1.2 or AGPL 3.0; see LICENSE.*.upstream and COPYING.upstream.
+
+===== UPSTREAM framework/base/router.class.php L1-L15 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/base/router.class.php#L1-L15
+<?php
+declare(strict_types=1);
+/**
+ * 此文件包括ZenTaoPHP框架的三个类：baseRouter, config, lang。
+ * The router, config and lang class file of ZenTaoPHP framework.
+ *
+ * @package framework
+ *
+ * The author disclaims copyright to this source code. In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+
+===== UPSTREAM framework/base/router.class.php L1202-L1243 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/base/router.class.php#L1202-L1243
+    public function startSession()
+    {
+        if(defined('SESSION_STARTED')) return;
+
+        /* API session use tmp/apisession directory. */
+        $apiMode = (defined('RUN_MODE') && RUN_MODE == 'api') && !isset($_GET[$this->config->sessionVar]);
+
+        if(ini_get('session.save_handler') == 'files' || $apiMode)
+        {
+            $savePath = $this->getTmpRoot() . ($apiMode ? 'apisession' : 'session');
+            if(!is_dir($savePath)) mkdir($savePath, 0777, true);
+
+            if(is_writable($savePath))
+            {
+                session_save_path($savePath);
+
+                $ztSessionHandler = new ztSessionHandler();
+                session_set_save_handler($ztSessionHandler, true);
+            }
+        }
+
+        $sessionName = $this->config->sessionVar;
+        session_name($sessionName);
+        session_set_cookie_params(0, $this->config->webRoot, '', $this->config->cookieSecure, true);
+        if(!session_id()) session_start();
+
+        $this->sessionID = isset($ztSessionHandler) ? $ztSessionHandler->getSessionID() : session_id();
+
+        if(isset($_SERVER['HTTP_TOKEN'])) // If request header has token, use it as session for authentication.
+        {
+            helper::restartSession($_SERVER['HTTP_TOKEN']);
+            $this->sessionID = isset($ztSessionHandler) ? $ztSessionHandler->getSessionID() : session_id();
+        }
+        elseif(isset($_GET[$this->config->sessionVar]))
+        {
+            /* 为了避免安全漏洞，必须在从GET参数恢复会话之前记录sessionID，以便在index.php判断session_id() != $app->sessionID后重启会话。*/
+            /* To avoid security issue, we have to record sessionID before restart session from GET param, so that we can restart session in index.php when session_id() != $app->sessionID. */
+            $this->sessionID = $_GET[$this->config->sessionVar];
+            helper::restartSession($_GET[$this->config->sessionVar]);
+        }
+
+        define('SESSION_STARTED', true);
+
+===== UPSTREAM api/v1/entries/tokens.php L1-L12 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/api/v1/entries/tokens.php#L1-L12
+<?php
+/**
+ * The tokens entry point of ZenTaoPMS.
+ *
+ * @copyright   Copyright 2009-2023 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
+ * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
+ * @package     entries
+ * @version     1
+ * @link        https://www.zentao.net
+ */
+class tokensEntry extends baseEntry
+
+===== UPSTREAM api/v1/entries/tokens.php L49-L53 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/api/v1/entries/tokens.php#L49-L53
+            $this->user->login($user, $addAction);
+            return $this->send(201, array('token' => session_id()));
+        }
+
+        $fails = $this->user->failPlus($account);
+
+===== UPSTREAM sdk/php/zentao.php L1-L12 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/sdk/php/zentao.php#L1-L12
+<?php
+/**
+ * This is the PHP-SDK class of ZenTaoPMS.
+ *
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
+ * @author
+ * @package     api
+ * @version     v1.0.0
+ * @link        http://www.zentao.net
+ */
+class zentao
+
+===== UPSTREAM sdk/php/zentao.php L42-L56 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/sdk/php/zentao.php#L42-L56
+    public function login()
+    {
+        /* Get token. */
+        $result = $this->setParams(array('m' => 'api', 'f' => 'getSessionID'))
+            ->setRequestMethod('get')
+            ->sendRequest(array('get' => self::ztURL), true);
+
+        $result          = json_decode($result->data);
+        $this->tokenAuth = $result->sessionName . '=' . $result->sessionID;
+
+        /* User authentication login. */
+        $this->setParams(array('account' => self::ztAccount, 'password' => self::ztPassword))
+            ->setRequestMethod('post')
+            ->sendRequest(array('get' => self::ztURL . '?m=user&f=login&t=json', 'path_info' => self::ztURL . '/user-login.json'));
+    }
+
+===== UPSTREAM module/api/control.php L1-L12 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/api/control.php#L1-L12
+<?php
+declare(strict_types=1);
+/**
+ * The control file of api of ZenTaoPMS.
+ *
+ * @copyright   Copyright 2009-2023 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
+ * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
+ * @package     api
+ * @version     $Id: control.php 5143 2013-07-15 06:11:59Z thanatos thanatos915@163.com $
+ * @link        https://www.zentao.net
+ */
+
+===== UPSTREAM module/api/control.php L923-L945 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/api/control.php#L923-L945
+    public function getModel(string $moduleName, string $methodName, string $params = '')
+    {
+        if(!$this->config->features->apiGetModel) return printf($this->lang->api->error->disabled, '$config->features->apiGetModel');
+
+        $params    = explode(',', $params);
+        $newParams = array_shift($params);
+        foreach($params as $param)
+        {
+            $sign       = strpos($param, '=') !== false ? '&' : ',';
+            $newParams .= $sign . $param;
+        }
+
+        parse_str($newParams, $params);
+        $module = $this->loadModel($moduleName);
+        $result = call_user_func_array(array(&$module, $methodName), $params);
+        if(dao::isError()) return print(json_encode(dao::getError()));
+
+        $output['status'] = $result !== false ? 'success' : 'fail';
+        $output['data']   = json_encode($result);
+        $output['md5']    = md5($output['data']);
+        $this->output     = json_encode($output);
+        print($this->output);
+    }
+
+===== UPSTREAM config/config.php L1-L12 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/config/config.php#L1-L12
+<?php
+/**
+ * ZenTaoPHP的config文件。如果更改配置，不要直接修改该文件，复制到my.php修改相应的值。
+ * The config file of zentaophp.  Don't modify this file directly, copy the item to my.php and change it.
+ *
+ * The author disclaims copyright to this source code.  In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+
+===== UPSTREAM config/config.php L151-L152 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/config/config.php#L151-L152
+$config->features->apiGetModel    = false;
+$config->features->apiSQL         = false;

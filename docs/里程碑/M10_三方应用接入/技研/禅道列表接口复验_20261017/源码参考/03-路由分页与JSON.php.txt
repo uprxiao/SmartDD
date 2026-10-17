@@ -1,0 +1,320 @@
+PUBLIC SOURCE RESEARCH EXCERPT — NOT RUNNABLE
+Repository: https://github.com/easysoft/zentaopms
+Tag: zentaopms_22.0_20260318
+Commit: 88d6de983014956235e3bf735d225106e38be551
+License: upstream ZPL 1.2 or AGPL 3.0; see LICENSE.*.upstream and COPYING.upstream.
+
+===== UPSTREAM framework/base/router.class.php L1-L15 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/base/router.class.php#L1-L15
+<?php
+declare(strict_types=1);
+/**
+ * 此文件包括ZenTaoPHP框架的三个类：baseRouter, config, lang。
+ * The router, config and lang class file of ZenTaoPHP framework.
+ *
+ * @package framework
+ *
+ * The author disclaims copyright to this source code. In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+
+===== UPSTREAM framework/base/router.class.php L2559-L2584 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/base/router.class.php#L2559-L2584
+    public function setParamsByPathInfo(array $defaultParams = array(), string $type = '')
+    {
+        $params = array();
+        if($type != 'fetch')
+        {
+            /* 分割URI。 Spit the URI. */
+            $items     = explode($this->config->requestFix, (string)$this->uri);
+            $itemCount = count($items);
+
+            /**
+             * 前两项为模块名和方法名，参数从下标2开始。
+             * The first two item is moduleName and methodName. So the params should begin at 2.
+             **/
+            for($i = 2; $i < $itemCount; $i ++)
+            {
+                $key = key($defaultParams);     // Get key from the $defaultParams.
+                if(empty($key)) continue;
+
+                $params[$key] = $items[$i];
+                next($defaultParams);
+            }
+        }
+
+        $this->params = $this->mergeParams($defaultParams, $params);
+    }
+
+
+===== UPSTREAM framework/api/router.class.php L1-L14 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/api/router.class.php#L1-L14
+<?php declare(strict_types=1);
+/**
+ * 禅道API的api类。
+ * The api class file of ZenTao API.
+ *
+ * The author disclaims copyright to this source code.  In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+include dirname(__FILE__, 2) . '/router.class.php';
+class api extends router
+
+===== UPSTREAM framework/api/router.class.php L300-L338 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/api/router.class.php#L300-L338
+    public function routeV2($routes)
+    {
+        $this->action = strtolower((string) $_SERVER['REQUEST_METHOD']);
+
+        $methodName = '';
+        if($this->action == 'get') $methodName = $this->parseRouteV2($routes);
+
+        $pathItems  = explode('/', trim($this->path, '/'));
+        $moduleName = $this->singular($pathItems[0]);
+
+        $actionToMethod = array(
+            'get'    => 'browse',
+            'post'   => 'create',
+            'put'    => 'edit',
+            'delete' => 'delete'
+        );
+
+        if(isset($pathItems[1]))
+        {
+            if(is_numeric($pathItems[1]))
+            {
+                if($this->action == 'get')
+                {
+                    $methodName = 'view';
+                }
+                else
+                {
+                    $_GET[$moduleName.'ID'] = $pathItems[1];
+                }
+            }
+            else
+            {
+                $methodName = $pathItems[1];
+            }
+        }
+
+        if(isset($pathItems[2])) $methodName = $pathItems[2];
+        if(!$methodName) $methodName = $actionToMethod[$this->action];
+
+
+===== UPSTREAM framework/api/router.class.php L713-L727 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/api/router.class.php#L713-L727
+        {
+            if(isset($_GET[$key]))
+            {
+                $this->params[$key] = helper::convertType(strip_tags((string) $_GET[$key]), $defaultItem['type']);
+            }
+            else
+            {
+                /* Browse all items in api mode defaultly. */
+                $this->params[$key] = in_array($key, ['browseType', 'status']) ? 'all' : $defaultItem['default'];
+            }
+        }
+
+        if($this->config->framework->filterParam == 2)
+        {
+            $_GET    = validater::filterParam($_GET, 'get');
+
+===== UPSTREAM lib/dao/dao.class.php L1-L14 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/lib/dao/dao.class.php#L1-L14
+<?php
+/**
+ * ZenTaoPHP的dao和sql类。
+ * The dao and sql class file of ZenTaoPHP framework.
+ *
+ * The author disclaims copyright to this source code.  In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+
+helper::import(dirname(__FILE__, 2) . '/base/dao/dao.class.php');
+
+===== UPSTREAM lib/dao/dao.class.php L372-L389 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/lib/dao/dao.class.php#L372-L389
+    public function page($pager, $distinctField = '')
+    {
+        if(!is_object($pager)) return $this;
+
+        /*
+         * 重新计算分页数据，并判断是否需要返回上一页。
+         * Calculate pagination to determine whether to return to the previous page.
+         */
+        $originalPageID = $pager->pageID;
+        $recTotal       = $this->count($distinctField);
+
+        $pager->setRecTotal($recTotal);
+        $pager->setPageTotal();
+        if($originalPageID > ceil(($pager->recTotal - $pager->offset) / $pager->recPerPage)) $pager->setPageID($pager->pageTotal);
+
+        $this->sqlobj->limit($pager->limit());
+        return $this;
+    }
+
+===== UPSTREAM lib/base/pager/pager.class.php L1-L14 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/lib/base/pager/pager.class.php#L1-L14
+<?php
+/**
+ * ZenTaoPHP的分页类。
+ * The pager class file of ZenTaoPHP framework.
+ *
+ * The author disclaims copyright to this source code.  In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+/**
+ * pager类.
+
+===== UPSTREAM lib/base/pager/pager.class.php L176-L213 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/lib/base/pager/pager.class.php#L176-L213
+    public function setRecPerPage($recPerPage)
+    {
+        /* Set the cookie name. */
+        if(!(defined('RUN_MODE') and RUN_MODE == 'api') && $this->app->getViewType() != 'json')
+        {
+            $this->pageCookie = 'pager' . ucfirst($this->app->rawModule) . ucfirst($this->app->rawMethod);
+
+            if(isset($_COOKIE[$this->pageCookie])) $recPerPage = $_COOKIE[$this->pageCookie];
+        }
+
+        $this->recPerPage = ($recPerPage > 0) ? (int)$recPerPage : PAGER::DEFAULT_REC_PER_PAGE;
+    }
+
+    /**
+     * 设置总页数。
+     * Set the pageTotal property.
+     *
+     * @access public
+     * @return void
+     */
+    public function setPageTotal()
+    {
+        $this->pageTotal = ceil($this->recTotal / $this->recPerPage);
+    }
+
+    /**
+     * 设置页码。
+     * Set the page id.
+     *
+     * @param  int $pageID
+     * @access public
+     * @return void
+     */
+    public function setPageID($pageID)
+    {
+        if($pageID > 0 and ($this->pageTotal == 0 or $pageID <= $this->pageTotal))
+        {
+            $this->pageID = $pageID;
+
+===== UPSTREAM framework/base/control.class.php L1-L15 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/base/control.class.php#L1-L15
+<?php
+declare(strict_types=1);
+/**
+ * ZenTaoPHP的baseControl类。
+ * The baseControl class file of ZenTaoPHP framework.
+ *
+ * @package framework
+ *
+ * The author disclaims copyright to this source code.  In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+
+===== UPSTREAM framework/base/control.class.php L687-L705 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/base/control.class.php#L687-L705
+    public function parseJSON(string $moduleName, string $methodName)
+    {
+        $output = array();
+        unset($this->view->app);
+        unset($this->view->config);
+        unset($this->view->lang);
+        unset($this->view->header);
+        unset($this->view->position);
+        unset($this->view->moduleTree);
+        unset($this->view->common);
+        unset($this->view->pager->app);
+        unset($this->view->pager->lang);
+
+        $output['status'] = is_object($this->view) ? 'success' : 'fail';
+        $output['data']   = json_encode($this->view) ? json_encode($this->view) : '';
+        $output['md5']    = md5($output['data']);
+
+        $this->output = json_encode($output);
+    }
+
+===== UPSTREAM framework/api/control.class.php L1-L14 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/api/control.class.php#L1-L14
+<?php declare(strict_types=1);
+/**
+ * ZenTaoPHP的control类。
+ * The control class file of ZenTaoPHP framework.
+ *
+ * The author disclaims copyright to this source code.  In place of
+ * a legal notice, here is a blessing:
+ *
+ *  May you do good and not evil.
+ *  May you find forgiveness for yourself and forgive others.
+ *  May you share freely, never taking more than you give.
+ */
+
+/**
+
+===== UPSTREAM framework/api/control.class.php L80-L104 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/api/control.class.php#L80-L104
+    public function parseJSON(string $moduleName, string $methodName)
+    {
+        header('Content-Type: application/json');
+
+        $this->view->status = is_object($this->view) ? 'success' : 'fail';
+
+        unset($this->view->app);
+        unset($this->view->config);
+        unset($this->view->lang);
+        unset($this->view->header);
+        unset($this->view->position);
+        unset($this->view->moduleTree);
+        unset($this->view->common);
+        unset($this->view->pager->app);
+        unset($this->view->pager->lang);
+
+        $output = $this->view ? json_encode($this->view) : null;
+
+        if($this->app->apiVersion == 'v1')
+        {
+            $output = array();
+
+            $output['status'] = is_object($this->view) ? 'success' : 'fail';
+            $output['data']   = json_encode($this->view) ? json_encode($this->view) : '';
+            $output['md5']    = md5($output['data']);
+
+===== UPSTREAM framework/api/control.class.php L116-L122 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/framework/api/control.class.php#L116-L122
+        else
+        {
+            $this->output = $output;
+        }
+    }
+
+    /**
