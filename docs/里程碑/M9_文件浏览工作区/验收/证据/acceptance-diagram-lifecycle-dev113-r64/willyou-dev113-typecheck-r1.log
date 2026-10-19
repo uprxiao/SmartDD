@@ -1,0 +1,11 @@
+
+> smartdd@0.0.5 typecheck /Users/hx/hx/hxWork/SmartDD
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/renderer/features/files/markdown-refresh-acceptance.test.tsx(131,283): error TS2348: Value of type 'Mock<Procedure | Constructable>' is not callable. Did you mean to include 'new'?
+src/renderer/features/files/markdown/diagrams.test.ts(15,110): error TS2417: Class static side 'typeof (Anonymous class)' incorrectly extends base class static side '{ prototype: URL; canParse(url: string | URL, base?: string | URL | undefined): boolean; createObjectURL(obj: Blob | MediaSource): string; parse(url: string | URL, base?: string | ... 1 more ... | undefined): URL | null; revokeObjectURL(url: string): void; }'.
+  Types of property 'createObjectURL' are incompatible.
+    Type 'Mock<Procedure | Constructable>' is not assignable to type '(obj: Blob | MediaSource) => string'.
+      Type 'MockInstance<Procedure | Constructable> & (new (...args: any[]) => any) & {}' is not assignable to type '(obj: Blob | MediaSource) => string'.
+        Type 'MockInstance<Procedure | Constructable> & (new (...args: any[]) => any) & {}' provides no match for the signature '(obj: Blob | MediaSource): string'.
+ ELIFECYCLE  Command failed with exit code 2.

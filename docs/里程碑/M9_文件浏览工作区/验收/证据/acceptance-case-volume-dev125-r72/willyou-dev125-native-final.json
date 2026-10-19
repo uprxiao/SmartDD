@@ -1,0 +1,918 @@
+{
+  "at": "2026-10-19T05:18:20.078Z",
+  "caseId": "M9-T-M05",
+  "environment": {
+    "at": "2026-10-19T05:18:15.927Z",
+    "base": "/private/tmp/willyou-case-volumes-Rjn0ri",
+    "volumes": [
+      {
+        "kind": "insensitive",
+        "format": "APFS",
+        "sensitive": false,
+        "mount": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive",
+        "image": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive.dmg",
+        "device": "/dev/disk8s1",
+        "mountedDevice": 16777245,
+        "capacityBytes": 67067904,
+        "detached": true,
+        "actualProbe": {
+          "lowerCreate": "EEXIST",
+          "upperInode": "16",
+          "lowerInode": "16",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79"
+        }
+      },
+      {
+        "kind": "sensitive",
+        "format": "Case-sensitive APFS",
+        "sensitive": true,
+        "mount": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive",
+        "image": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive.dmg",
+        "device": "/dev/disk10s1",
+        "mountedDevice": 16777249,
+        "capacityBytes": 67067904,
+        "detached": true,
+        "actualProbe": {
+          "lowerCreate": "created",
+          "upperInode": "16",
+          "lowerInode": "17",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "61413ee5c361db405097a5ead22801f6f5be1a957867c3ae1543ea04ed89c5b3"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "args": [
+          "hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "APFS",
+          "-volname",
+          "WillYou-M05-insensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-attach.plist"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "Case-sensitive APFS",
+          "-volname",
+          "WillYou-M05-sensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-attach.plist"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "detach",
+          "/dev/disk10s1"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "detach",
+          "/dev/disk8s1"
+        ],
+        "code": 0,
+        "stderr": ""
+      }
+    ],
+    "cases": [
+      {
+        "kind": "insensitive",
+        "slot": "i-case-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-case-insensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-case-insensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-i-case-insensitive-root-alias"
+      },
+      {
+        "kind": "sensitive",
+        "slot": "i-case-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-case-sensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-case-sensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-i-case-sensitive-root-alias"
+      },
+      {
+        "kind": "insensitive",
+        "slot": "i-alias-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-i-alias-insensitive-root-alias"
+      },
+      {
+        "kind": "sensitive",
+        "slot": "i-alias-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-i-alias-sensitive-root-alias"
+      },
+      {
+        "kind": "insensitive",
+        "slot": "i-queue-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-queue-insensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-queue-insensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-i-queue-insensitive-root-alias"
+      },
+      {
+        "kind": "sensitive",
+        "slot": "i-queue-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-queue-sensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-queue-sensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-i-queue-sensitive-root-alias"
+      }
+    ],
+    "boundary": "Own two64MiBAPFS/APFSX images only, no user disk formatting/mounting or network. Actual exclusive-create A.txt/a.txt, inode/dev/byte probes decide host semantics; format labels alone are not proof. macOS arm64 I/A only, not X Windows/Linux/Mac x64.",
+    "finishedAt": "2026-10-19T05:18:20.077Z"
+  },
+  "rows": [
+    {
+      "kind": "insensitive",
+      "scenario": "actual case identities, independent vs stale save",
+      "paths": {
+        "kind": "insensitive",
+        "slot": "i-case-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-case-insensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-case-insensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-i-case-insensitive-root-alias"
+      },
+      "upper": {
+        "ref": {
+          "id": "a6b82fc3-9365-46dc-b29e-ceee237a27e7",
+          "lease": "60d4bf3f-ece2-41b4-b5da-09189e1bc677",
+          "generation": 1
+        },
+        "documentKey": "local:16777245:19",
+        "name": "A.txt",
+        "relativePath": "A.txt",
+        "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-case-insensitive/A.txt",
+        "revision": {
+          "size": 38,
+          "inode": "19",
+          "device": "16777245",
+          "changedNs": "1792387098814943855",
+          "modifiedNs": "1792387098814943855",
+          "hash": "860e88587b8ff2e16bc132b26c84981aac54c476397a55de6dd5af23e783fca2"
+        },
+        "writable": true,
+        "content": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        }
+      },
+      "lower": {
+        "ref": {
+          "id": "408a7798-e162-47a3-b2c1-f8756dc5ea78",
+          "lease": "60d4bf3f-ece2-41b4-b5da-09189e1bc677",
+          "generation": 1
+        },
+        "documentKey": "local:16777245:19",
+        "name": "A.txt",
+        "relativePath": "A.txt",
+        "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-case-insensitive/A.txt",
+        "revision": {
+          "size": 38,
+          "inode": "19",
+          "device": "16777245",
+          "changedNs": "1792387098814943855",
+          "modifiedNs": "1792387098814943855",
+          "hash": "860e88587b8ff2e16bc132b26c84981aac54c476397a55de6dd5af23e783fca2"
+        },
+        "writable": true,
+        "content": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        }
+      },
+      "names": [
+        "inner",
+        "link-dir",
+        "A.txt",
+        "link.txt"
+      ],
+      "receipts": [
+        {
+          "revision": {
+            "size": 75,
+            "inode": "24",
+            "device": "16777245",
+            "changedNs": "1792387098956754965",
+            "modifiedNs": "1792387098942382000",
+            "hash": "7aad28d32eeb727fdecc8a2219aaca50ec5846c006c27096499eac3fcebb6948"
+          },
+          "bufferVersion": 1,
+          "opId": "e7d3c470-a8af-4615-b552-6af1a7729816",
+          "state": "saved",
+          "recoveryId": "e7d3c470-a8af-4615-b552-6af1a7729816"
+        },
+        {
+          "opId": "693e1202-c572-49a1-9be4-9a94cdb7c804",
+          "bufferVersion": 1,
+          "state": "conflict",
+          "message": "磁盘路径已指向另一文件；本地修改仍保留"
+        }
+      ],
+      "upperHash": "7aad28d32eeb727fdecc8a2219aaca50ec5846c006c27096499eac3fcebb6948",
+      "lowerHash": "7aad28d32eeb727fdecc8a2219aaca50ec5846c006c27096499eac3fcebb6948",
+      "pass": true
+    },
+    {
+      "kind": "sensitive",
+      "scenario": "actual case identities, independent vs stale save",
+      "paths": {
+        "kind": "sensitive",
+        "slot": "i-case-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-case-sensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-case-sensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-i-case-sensitive-root-alias"
+      },
+      "upper": {
+        "ref": {
+          "id": "68ed7fa6-855c-4777-8952-d0fc01337ebd",
+          "lease": "24c5b605-696e-4288-8fa2-f429dbc4de62",
+          "generation": 1
+        },
+        "documentKey": "local:16777249:20",
+        "name": "A.txt",
+        "relativePath": "A.txt",
+        "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-case-sensitive/A.txt",
+        "revision": {
+          "size": 36,
+          "inode": "20",
+          "device": "16777249",
+          "changedNs": "1792387098977220016",
+          "modifiedNs": "1792387098977220016",
+          "hash": "97d40e18da4cf359f9b98a4d30e9447b289f7168eb3602b62a8cbdb6f990948b"
+        },
+        "writable": true,
+        "content": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        }
+      },
+      "lower": {
+        "ref": {
+          "id": "df59898d-cf3c-427a-8894-292db1d1ea6d",
+          "lease": "24c5b605-696e-4288-8fa2-f429dbc4de62",
+          "generation": 1
+        },
+        "documentKey": "local:16777249:21",
+        "name": "a.txt",
+        "relativePath": "a.txt",
+        "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-case-sensitive/a.txt",
+        "revision": {
+          "size": 36,
+          "inode": "21",
+          "device": "16777249",
+          "changedNs": "1792387098977361308",
+          "modifiedNs": "1792387098977361308",
+          "hash": "48f4f041ad91835b1919592f66ed40ba69ec517b0d2e1b481daaf41f7100e4bc"
+        },
+        "writable": true,
+        "content": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        }
+      },
+      "names": [
+        "inner",
+        "link-dir",
+        "a.txt",
+        "A.txt",
+        "link.txt"
+      ],
+      "receipts": [
+        {
+          "revision": {
+            "size": 71,
+            "inode": "26",
+            "device": "16777249",
+            "changedNs": "1792387099092829101",
+            "modifiedNs": "1792387099077659000",
+            "hash": "e5459fa61f80a4c4f1aff765544a19645ec594ea566de90c64a6cb2a493c3642"
+          },
+          "bufferVersion": 1,
+          "opId": "9b59f5d3-524a-4f2a-a0e4-c47440cf8d2b",
+          "state": "saved",
+          "recoveryId": "9b59f5d3-524a-4f2a-a0e4-c47440cf8d2b"
+        },
+        {
+          "revision": {
+            "size": 71,
+            "inode": "30",
+            "device": "16777249",
+            "changedNs": "1792387099151060374",
+            "modifiedNs": "1792387099137621000",
+            "hash": "ae2b3f638301e53d4ec16bb06345d15bf703f7cf80c9072e576d6df7350c3c90"
+          },
+          "bufferVersion": 1,
+          "opId": "8987f14b-2b26-4aba-bb36-4b9532d1654b",
+          "state": "saved",
+          "recoveryId": "8987f14b-2b26-4aba-bb36-4b9532d1654b"
+        }
+      ],
+      "upperHash": "e5459fa61f80a4c4f1aff765544a19645ec594ea566de90c64a6cb2a493c3642",
+      "lowerHash": "ae2b3f638301e53d4ec16bb06345d15bf703f7cf80c9072e576d6df7350c3c90",
+      "pass": true
+    },
+    {
+      "kind": "insensitive",
+      "scenario": "root/nested/contained aliases",
+      "paths": {
+        "kind": "insensitive",
+        "slot": "i-alias-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-i-alias-insensitive-root-alias"
+      },
+      "roots": [
+        {
+          "lease": "439f26b2-a63c-4516-988e-62dfc329d43e",
+          "generation": 1,
+          "source": "project-directory",
+          "sourceId": "i-alias-insensitive-outer",
+          "label": "outer",
+          "path": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive",
+          "canonicalPath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive",
+          "identity": {
+            "inode": "27",
+            "device": "16777245"
+          }
+        },
+        {
+          "lease": "70e2206f-9037-401f-801b-e0f73cfc8dd9",
+          "generation": 1,
+          "source": "project-directory",
+          "sourceId": "i-alias-insensitive-alias",
+          "label": "alias",
+          "path": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-i-alias-insensitive-root-alias",
+          "canonicalPath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive",
+          "identity": {
+            "inode": "27",
+            "device": "16777245"
+          }
+        },
+        {
+          "lease": "186e5736-35ac-477c-8458-338803e95b69",
+          "generation": 1,
+          "source": "project-directory",
+          "sourceId": "i-alias-insensitive-inner",
+          "label": "inner",
+          "path": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner",
+          "canonicalPath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner",
+          "identity": {
+            "inode": "28",
+            "device": "16777245"
+          }
+        }
+      ],
+      "documents": [
+        {
+          "ref": {
+            "id": "79793ab1-2dc7-40b6-a0e8-fff9a9a399a2",
+            "lease": "439f26b2-a63c-4516-988e-62dfc329d43e",
+            "generation": 1
+          },
+          "documentKey": "local:16777245:30",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner/data.txt",
+          "revision": {
+            "size": 42,
+            "inode": "30",
+            "device": "16777245",
+            "changedNs": "1792387099157679890",
+            "modifiedNs": "1792387099157679890",
+            "hash": "55b79c9ef3fc1b9bbe4ea321e313c7d8015703a5e3f965fe074b5952f8e75d44"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "45c64071-7626-459e-9d06-1c723189bc7d",
+            "lease": "70e2206f-9037-401f-801b-e0f73cfc8dd9",
+            "generation": 1
+          },
+          "documentKey": "local:16777245:30",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner/data.txt",
+          "revision": {
+            "size": 42,
+            "inode": "30",
+            "device": "16777245",
+            "changedNs": "1792387099157679890",
+            "modifiedNs": "1792387099157679890",
+            "hash": "55b79c9ef3fc1b9bbe4ea321e313c7d8015703a5e3f965fe074b5952f8e75d44"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "09613440-7b78-4be9-95df-e211a9109f82",
+            "lease": "186e5736-35ac-477c-8458-338803e95b69",
+            "generation": 1
+          },
+          "documentKey": "local:16777245:30",
+          "name": "data.txt",
+          "relativePath": "data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner/data.txt",
+          "revision": {
+            "size": 42,
+            "inode": "30",
+            "device": "16777245",
+            "changedNs": "1792387099157679890",
+            "modifiedNs": "1792387099157679890",
+            "hash": "55b79c9ef3fc1b9bbe4ea321e313c7d8015703a5e3f965fe074b5952f8e75d44"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "2bfed3ac-021e-4295-8e2b-bf84e815f59a",
+            "lease": "439f26b2-a63c-4516-988e-62dfc329d43e",
+            "generation": 1
+          },
+          "documentKey": "local:16777245:30",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner/data.txt",
+          "revision": {
+            "size": 42,
+            "inode": "30",
+            "device": "16777245",
+            "changedNs": "1792387099157679890",
+            "modifiedNs": "1792387099157679890",
+            "hash": "55b79c9ef3fc1b9bbe4ea321e313c7d8015703a5e3f965fe074b5952f8e75d44"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "ac5ee5b0-31ef-4b78-a9c5-a413bf1926da",
+            "lease": "439f26b2-a63c-4516-988e-62dfc329d43e",
+            "generation": 1
+          },
+          "documentKey": "local:16777245:30",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-alias-insensitive/inner/data.txt",
+          "revision": {
+            "size": 42,
+            "inode": "30",
+            "device": "16777245",
+            "changedNs": "1792387099157679890",
+            "modifiedNs": "1792387099157679890",
+            "hash": "55b79c9ef3fc1b9bbe4ea321e313c7d8015703a5e3f965fe074b5952f8e75d44"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        }
+      ],
+      "pass": true
+    },
+    {
+      "kind": "sensitive",
+      "scenario": "root/nested/contained aliases",
+      "paths": {
+        "kind": "sensitive",
+        "slot": "i-alias-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-i-alias-sensitive-root-alias"
+      },
+      "roots": [
+        {
+          "lease": "405368df-8c86-421c-9472-564a4289f98a",
+          "generation": 1,
+          "source": "project-directory",
+          "sourceId": "i-alias-sensitive-outer",
+          "label": "outer",
+          "path": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive",
+          "canonicalPath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive",
+          "identity": {
+            "inode": "33",
+            "device": "16777249"
+          }
+        },
+        {
+          "lease": "fe3a0382-f96f-48db-98aa-5c66624df27b",
+          "generation": 1,
+          "source": "project-directory",
+          "sourceId": "i-alias-sensitive-alias",
+          "label": "alias",
+          "path": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-i-alias-sensitive-root-alias",
+          "canonicalPath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive",
+          "identity": {
+            "inode": "33",
+            "device": "16777249"
+          }
+        },
+        {
+          "lease": "b6e04142-552e-483f-919e-2a9c285a12e0",
+          "generation": 1,
+          "source": "project-directory",
+          "sourceId": "i-alias-sensitive-inner",
+          "label": "inner",
+          "path": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner",
+          "canonicalPath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner",
+          "identity": {
+            "inode": "34",
+            "device": "16777249"
+          }
+        }
+      ],
+      "documents": [
+        {
+          "ref": {
+            "id": "da889529-9441-47c1-8ebc-988ff4da1614",
+            "lease": "405368df-8c86-421c-9472-564a4289f98a",
+            "generation": 1
+          },
+          "documentKey": "local:16777249:37",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner/data.txt",
+          "revision": {
+            "size": 40,
+            "inode": "37",
+            "device": "16777249",
+            "changedNs": "1792387099233038165",
+            "modifiedNs": "1792387099233038165",
+            "hash": "9a7f36154ba2df33129e76775528a3f559881489f06f80437eb9266344e12bba"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "2cd0f30b-2d5b-44db-a640-94190fa397fd",
+            "lease": "fe3a0382-f96f-48db-98aa-5c66624df27b",
+            "generation": 1
+          },
+          "documentKey": "local:16777249:37",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner/data.txt",
+          "revision": {
+            "size": 40,
+            "inode": "37",
+            "device": "16777249",
+            "changedNs": "1792387099233038165",
+            "modifiedNs": "1792387099233038165",
+            "hash": "9a7f36154ba2df33129e76775528a3f559881489f06f80437eb9266344e12bba"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "773b52cf-2c3e-405e-b58f-42f12c69d71d",
+            "lease": "b6e04142-552e-483f-919e-2a9c285a12e0",
+            "generation": 1
+          },
+          "documentKey": "local:16777249:37",
+          "name": "data.txt",
+          "relativePath": "data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner/data.txt",
+          "revision": {
+            "size": 40,
+            "inode": "37",
+            "device": "16777249",
+            "changedNs": "1792387099233038165",
+            "modifiedNs": "1792387099233038165",
+            "hash": "9a7f36154ba2df33129e76775528a3f559881489f06f80437eb9266344e12bba"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "96bd2f10-db7b-4a10-a798-2846bea712e2",
+            "lease": "405368df-8c86-421c-9472-564a4289f98a",
+            "generation": 1
+          },
+          "documentKey": "local:16777249:37",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner/data.txt",
+          "revision": {
+            "size": 40,
+            "inode": "37",
+            "device": "16777249",
+            "changedNs": "1792387099233038165",
+            "modifiedNs": "1792387099233038165",
+            "hash": "9a7f36154ba2df33129e76775528a3f559881489f06f80437eb9266344e12bba"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        {
+          "ref": {
+            "id": "217dbb28-d028-4a2d-aa5a-d9560e4a3d2c",
+            "lease": "405368df-8c86-421c-9472-564a4289f98a",
+            "generation": 1
+          },
+          "documentKey": "local:16777249:37",
+          "name": "data.txt",
+          "relativePath": "inner/data.txt",
+          "absolutePath": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-alias-sensitive/inner/data.txt",
+          "revision": {
+            "size": 40,
+            "inode": "37",
+            "device": "16777249",
+            "changedNs": "1792387099233038165",
+            "modifiedNs": "1792387099233038165",
+            "hash": "9a7f36154ba2df33129e76775528a3f559881489f06f80437eb9266344e12bba"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        }
+      ],
+      "pass": true
+    },
+    {
+      "kind": "insensitive",
+      "scenario": "actual aliased concurrent save queue",
+      "paths": {
+        "kind": "insensitive",
+        "slot": "i-queue-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-queue-insensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive/i-queue-insensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/insensitive-i-queue-insensitive-root-alias"
+      },
+      "inputs": [
+        {
+          "ref": {
+            "id": "e97814ca-e005-4424-a9e9-e9edee315510",
+            "lease": "683090f1-49f2-4ee4-ae5c-a4cebbf2ddbd",
+            "generation": 1
+          },
+          "opId": "bcfdda3a-0ae7-4c07-875e-543fd5621797",
+          "bufferVersion": 1,
+          "baseHash": "f16b293837c2a4e5b095a30f70b0b8225976606decca09cd47d303778245ab7b",
+          "base64": "QkFTRSBpLXF1ZXVlLWluc2Vuc2l0aXZlIG9uZSDkuK3mlofwn5mCDQpMT0NBTCBpLXF1ZXVlLWluc2Vuc2l0aXZlIG9uZSDkuK3mlofwn5mC"
+        },
+        {
+          "ref": {
+            "id": "4a3fa71a-434b-4241-9603-6c016ee68a60",
+            "lease": "062763a4-4d5e-4342-b140-fdf5460ffa9a",
+            "generation": 1
+          },
+          "opId": "d81879b5-9142-4245-b669-f7ce2dd8c1d9",
+          "bufferVersion": 1,
+          "baseHash": "f16b293837c2a4e5b095a30f70b0b8225976606decca09cd47d303778245ab7b",
+          "base64": "QkFTRSBpLXF1ZXVlLWluc2Vuc2l0aXZlIHR3byDkuK3mlofwn5mCDQpMT0NBTCBpLXF1ZXVlLWluc2Vuc2l0aXZlIHR3byDkuK3mlofwn5mC"
+        }
+      ],
+      "receipts": [
+        {
+          "revision": {
+            "size": 81,
+            "inode": "40",
+            "device": "16777245",
+            "changedNs": "1792387099507966154",
+            "modifiedNs": "1792387099494557000",
+            "hash": "44811953c3f079d984b3f711d4d50f8ec8910f8564b5683b7ded52c733f3d2c6"
+          },
+          "bufferVersion": 1,
+          "opId": "bcfdda3a-0ae7-4c07-875e-543fd5621797",
+          "state": "saved",
+          "recoveryId": "bcfdda3a-0ae7-4c07-875e-543fd5621797"
+        },
+        {
+          "opId": "d81879b5-9142-4245-b669-f7ce2dd8c1d9",
+          "bufferVersion": 1,
+          "state": "conflict",
+          "message": "磁盘路径已指向另一文件；本地修改仍保留"
+        }
+      ],
+      "winner": 0,
+      "retainedDrafts": [
+        {
+          "base64": "QkFTRSBpLXF1ZXVlLWluc2Vuc2l0aXZlIHR3byDkuK3mlofwn5mCDQpMT0NBTCBpLXF1ZXVlLWluc2Vuc2l0aXZlIHR3byDkuK3mlofwn5mC",
+          "baseHash": "f16b293837c2a4e5b095a30f70b0b8225976606decca09cd47d303778245ab7b",
+          "bufferVersion": 1,
+          "hash": "14bc03671fed4bc139e89e53f1c036ffc956ea92fdd4eb925132edde11cd4a32",
+          "encoding": "utf-8"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "kind": "sensitive",
+      "scenario": "actual aliased concurrent save queue",
+      "paths": {
+        "kind": "sensitive",
+        "slot": "i-queue-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-queue-sensitive",
+        "inner": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive/i-queue-sensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-Rjn0ri/sensitive-i-queue-sensitive-root-alias"
+      },
+      "inputs": [
+        {
+          "ref": {
+            "id": "a104e059-dc25-40ba-8684-d20fa30c9a80",
+            "lease": "f2ff42b6-146c-46ec-ae5b-98e80b610b9d",
+            "generation": 1
+          },
+          "opId": "252e353b-cc43-4816-96d4-0d81aeff281e",
+          "bufferVersion": 1,
+          "baseHash": "9eb098156f1980d35cf52a38202039f25e3b585533c15329b18666dbb0f23040",
+          "base64": "QkFTRSBpLXF1ZXVlLXNlbnNpdGl2ZSBvbmUg5Lit5paH8J+Zgg0KTE9DQUwgaS1xdWV1ZS1zZW5zaXRpdmUgb25lIOS4reaWh/CfmYI="
+        },
+        {
+          "ref": {
+            "id": "943310be-0797-40d0-867a-f32864f89604",
+            "lease": "ae72c62d-999f-4d86-b349-0d4e2051c70b",
+            "generation": 1
+          },
+          "opId": "2df3d934-3077-4320-9d7c-7810b9ebf24b",
+          "bufferVersion": 1,
+          "baseHash": "9eb098156f1980d35cf52a38202039f25e3b585533c15329b18666dbb0f23040",
+          "base64": "QkFTRSBpLXF1ZXVlLXNlbnNpdGl2ZSB0d28g5Lit5paH8J+Zgg0KTE9DQUwgaS1xdWV1ZS1zZW5zaXRpdmUgdHdvIOS4reaWh/CfmYI="
+        }
+      ],
+      "receipts": [
+        {
+          "revision": {
+            "size": 77,
+            "inode": "48",
+            "device": "16777249",
+            "changedNs": "1792387099696632924",
+            "modifiedNs": "1792387099683424000",
+            "hash": "f678d6800974c87971f69e865ba76d01ae869d6603396f702a1d82244d551734"
+          },
+          "bufferVersion": 1,
+          "opId": "252e353b-cc43-4816-96d4-0d81aeff281e",
+          "state": "saved",
+          "recoveryId": "252e353b-cc43-4816-96d4-0d81aeff281e"
+        },
+        {
+          "opId": "2df3d934-3077-4320-9d7c-7810b9ebf24b",
+          "bufferVersion": 1,
+          "state": "conflict",
+          "message": "磁盘路径已指向另一文件；本地修改仍保留"
+        }
+      ],
+      "winner": 0,
+      "retainedDrafts": [
+        {
+          "base64": "QkFTRSBpLXF1ZXVlLXNlbnNpdGl2ZSB0d28g5Lit5paH8J+Zgg0KTE9DQUwgaS1xdWV1ZS1zZW5zaXRpdmUgdHdvIOS4reaWh/CfmYI=",
+          "baseHash": "9eb098156f1980d35cf52a38202039f25e3b585533c15329b18666dbb0f23040",
+          "bufferVersion": 1,
+          "hash": "ddeb1226cd6afb6f2b81da47fcd3019b2356f421540594afab46da960c195d66",
+          "encoding": "utf-8"
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "boundary": "I current production SQLite resolver/root/FileService/recovery, actual packaged native on own APFS/APFSX, real exclusive-create case behavior and aliases. No native mock. macOS arm64 only; X Windows/Linux/Mac-other-arch not executed and M05 not formally complete."
+}

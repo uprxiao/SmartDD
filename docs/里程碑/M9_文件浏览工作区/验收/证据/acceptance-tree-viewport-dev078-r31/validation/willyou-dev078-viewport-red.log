@@ -1,0 +1,93 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-viewport-acceptance.test.tsx
+
+[1018/210420.176458:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/210420.549178:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/tree-viewport-acceptance.test.tsx (5 tests | 5 failed) 90ms
+     × B10 preserves viewport, expanded selection and native DOM row keys across unrelated parent renders 24ms
+     × B11 waits for a real visible viewport instead of consuming a clamped zero restore 17ms
+     × B11 waits for delayed real directory rows, and user wheel supersedes a pending restore 16ms
+     × B11 stops on unmount; a late observer cannot scroll a new root and no frame polling is scheduled 16ms
+     × B16 displays the last three sticky ancestors and activates the exact underlying folder 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-viewport-acceptance.test.tsx > tree viewport lifecycle and sticky ancestors > B10 preserves viewport, expanded selection and native DOM row keys across unrelated parent renders
+TypeError: Cannot read properties of null (reading 'lease')
+ ❯ FileWorkspaceStore.directoryKey src/renderer/features/files/workspace-store.ts:562:71
+    560|     this.changed(); if (this.expanded[key].includes(path)) void this.l…
+    561|   }
+    562|   directoryKey(root: FileRoot, path: string): string { return `${root.…
+       |                                                                       ^
+    563|   private cancelDirectory(key: string): void {
+    564|     const request = this.pendingDirectories.get(key); if (!request) re…
+ ❯ FileWorkspaceStore.list src/renderer/features/files/workspace-store.ts:570:22
+ ❯ fixture src/renderer/features/files/tree-viewport-acceptance.test.tsx:30:25
+ ❯ src/renderer/features/files/tree-viewport-acceptance.test.tsx:44:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/renderer/features/files/tree-viewport-acceptance.test.tsx > tree viewport lifecycle and sticky ancestors > B11 waits for a real visible viewport instead of consuming a clamped zero restore
+TypeError: Cannot read properties of null (reading 'lease')
+ ❯ FileWorkspaceStore.directoryKey src/renderer/features/files/workspace-store.ts:562:71
+    560|     this.changed(); if (this.expanded[key].includes(path)) void this.l…
+    561|   }
+    562|   directoryKey(root: FileRoot, path: string): string { return `${root.…
+       |                                                                       ^
+    563|   private cancelDirectory(key: string): void {
+    564|     const request = this.pendingDirectories.get(key); if (!request) re…
+ ❯ FileWorkspaceStore.list src/renderer/features/files/workspace-store.ts:570:22
+ ❯ fixture src/renderer/features/files/tree-viewport-acceptance.test.tsx:30:25
+ ❯ src/renderer/features/files/tree-viewport-acceptance.test.tsx:51:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/renderer/features/files/tree-viewport-acceptance.test.tsx > tree viewport lifecycle and sticky ancestors > B11 waits for delayed real directory rows, and user wheel supersedes a pending restore
+TypeError: Cannot read properties of null (reading 'lease')
+ ❯ fixture src/renderer/features/files/tree-viewport-acceptance.test.tsx:30:98
+
+ ❯ src/renderer/features/files/tree-viewport-acceptance.test.tsx:55:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/renderer/features/files/tree-viewport-acceptance.test.tsx > tree viewport lifecycle and sticky ancestors > B11 stops on unmount; a late observer cannot scroll a new root and no frame polling is scheduled
+TypeError: Cannot read properties of null (reading 'lease')
+ ❯ FileWorkspaceStore.directoryKey src/renderer/features/files/workspace-store.ts:562:71
+    560|     this.changed(); if (this.expanded[key].includes(path)) void this.l…
+    561|   }
+    562|   directoryKey(root: FileRoot, path: string): string { return `${root.…
+       |                                                                       ^
+    563|   private cancelDirectory(key: string): void {
+    564|     const request = this.pendingDirectories.get(key); if (!request) re…
+ ❯ FileWorkspaceStore.list src/renderer/features/files/workspace-store.ts:570:22
+ ❯ fixture src/renderer/features/files/tree-viewport-acceptance.test.tsx:30:25
+ ❯ src/renderer/features/files/tree-viewport-acceptance.test.tsx:60:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/renderer/features/files/tree-viewport-acceptance.test.tsx > tree viewport lifecycle and sticky ancestors > B16 displays the last three sticky ancestors and activates the exact underlying folder
+TypeError: Cannot read properties of null (reading 'lease')
+ ❯ FileWorkspaceStore.directoryKey src/renderer/features/files/workspace-store.ts:562:71
+    560|     this.changed(); if (this.expanded[key].includes(path)) void this.l…
+    561|   }
+    562|   directoryKey(root: FileRoot, path: string): string { return `${root.…
+       |                                                                       ^
+    563|   private cancelDirectory(key: string): void {
+    564|     const request = this.pendingDirectories.get(key); if (!request) re…
+ ❯ FileWorkspaceStore.list src/renderer/features/files/workspace-store.ts:570:22
+ ❯ fixture src/renderer/features/files/tree-viewport-acceptance.test.tsx:30:25
+ ❯ src/renderer/features/files/tree-viewport-acceptance.test.tsx:65:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed (5)
+   Start at  21:04:20
+   Duration  1.65s (transform 575ms, setup 0ms, import 1.08s, tests 90ms, environment 394ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

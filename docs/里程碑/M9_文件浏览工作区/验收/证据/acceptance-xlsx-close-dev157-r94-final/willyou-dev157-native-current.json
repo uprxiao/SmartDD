@@ -1,0 +1,76 @@
+{
+  "at": "2026-10-19T17:25:23.947Z",
+  "caseId": "M9-T-J10",
+  "rows": [
+    {
+      "scenario": "checkpoint-success",
+      "firstClose": "closed",
+      "held": "{\"draftId\":\"7ac9bab8-ad74-4671-a443-dfa199b65c97\",\"hash\":\"3ebf5fe73927239cfe2267bdf133334e97242eb8c5890188660db5835c70f8c7\",\"bufferVersion\":1}",
+      "saveCalls": 1,
+      "checkpointCalls": 2,
+      "finalValue": "latest checkpoint-success",
+      "pass": true,
+      "boundary": "Real WorkspaceStore/FileBuffer/native broker and packaged Worker. Public pauseAutosave isolates close queue; source inputs/outputs/errors untouched, one original result delayed. Failure checkpoint uses actual private recovery-root permission guard, append actual invalid formula, materialize genuine source-parent write denial. Source byte preservation and explicit successful retry verified."
+    },
+    {
+      "scenario": "checkpoint-failure",
+      "firstClose": "blocked",
+      "held": "\"FileError: [UNTRUSTED] Recovery root permissions changed\"",
+      "saveCalls": 1,
+      "checkpointCalls": 3,
+      "finalValue": "latest checkpoint-failure",
+      "pass": true,
+      "boundary": "Real WorkspaceStore/FileBuffer/native broker and packaged Worker. Public pauseAutosave isolates close queue; source inputs/outputs/errors untouched, one original result delayed. Failure checkpoint uses actual private recovery-root permission guard, append actual invalid formula, materialize genuine source-parent write denial. Source byte preservation and explicit successful retry verified."
+    },
+    {
+      "scenario": "append-success",
+      "firstClose": "closed",
+      "held": "{\"state\":{\"version\":1,\"dirty\":true,\"canUndo\":true,\"canRedo\":false,\"workbook\":{\"kind\":\"xlsx\",\"sheets\":[{\"id\":\"1\",\"name\":\"Data\",\"hidden\":\"visible\",\"rows\":3,\"columns\":2,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"2\",\"name\":\"Calc\",\"hidden\":\"visible\",\"rows\":16,\"columns\":8,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"3\",\"name\":\"Spare\",\"hidden\":\"visible\",\"rows\":1,\"columns\":1,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]}],\"date1904\":false,\"signed\":false,\"externalLinks\":0,\"protected\":false,\"normalFont\":{\"family\":\"Calibri\",\"points\":11,\"bold\":false,\"italic\":false},\"fontMetric\":{\"digitWidth\":7,\"measured\":false}}},\"calculation\":{\"state\":\"cached\",\"message\":\"输入已修改，公式结果等待重新计算。\"}}",
+      "saveCalls": 1,
+      "checkpointCalls": 2,
+      "finalValue": "latest append-success",
+      "pass": true,
+      "boundary": "Real WorkspaceStore/FileBuffer/native broker and packaged Worker. Public pauseAutosave isolates close queue; source inputs/outputs/errors untouched, one original result delayed. Failure checkpoint uses actual private recovery-root permission guard, append actual invalid formula, materialize genuine source-parent write denial. Source byte preservation and explicit successful retry verified."
+    },
+    {
+      "scenario": "append-failure",
+      "firstClose": "blocked",
+      "held": "\"FileError: [UNSUPPORTED] 公式校验暂不可用，输入仍保留\"",
+      "saveCalls": 1,
+      "checkpointCalls": 3,
+      "finalValue": "latest append-failure",
+      "pass": true,
+      "boundary": "Real WorkspaceStore/FileBuffer/native broker and packaged Worker. Public pauseAutosave isolates close queue; source inputs/outputs/errors untouched, one original result delayed. Failure checkpoint uses actual private recovery-root permission guard, append actual invalid formula, materialize genuine source-parent write denial. Source byte preservation and explicit successful retry verified."
+    },
+    {
+      "scenario": "materialize-success",
+      "firstClose": "closed",
+      "held": "{\"state\":{\"version\":1,\"dirty\":false,\"canUndo\":true,\"canRedo\":false,\"workbook\":{\"kind\":\"xlsx\",\"sheets\":[{\"id\":\"1\",\"name\":\"Data\",\"hidden\":\"visible\",\"rows\":3,\"columns\":2,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"2\",\"name\":\"Calc\",\"hidden\":\"visible\",\"rows\":16,\"columns\":8,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"3\",\"name\":\"Spare\",\"hidden\":\"visible\",\"rows\":1,\"columns\":1,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]}],\"date1904\":false,\"signed\":false,\"externalLinks\":0,\"protected\":false,\"normalFont\":{\"family\":\"Calibri\",\"points\":11,\"bold\":false,\"italic\":false},\"fontMetric\":{\"digitWidth\":7,\"measured\":false}}},\"calculation\":{\"state\":\"cached\",\"message\":\"输入已修改，公式结果等待重新计算。\"},\"receipt\":{\"revision\":{\"size\":8952,\"inode\":\"50967790\",\"device\":\"16777232\",\"changedNs\":\"1792430722064704896\",\"modifiedNs\":\"1792430722055431000\",\"hash\":\"f3ecd871bf328b13228df73c368cad92f28b896b1ed6ca4bc2fe7c1bcbb28201\"},\"bufferVersion\":3,\"opId\":\"d9f674e0-c16d-485e-a47b-3c9dec1d47a4\",\"state\":\"saved\",\"recoveryId\":\"d9f674e0-c16d-485e-a47b-3c9dec1d47a4\"},\"checkpoint\":{\"draftId\":\"93718132-af91-4968-ae47-49033d9e9458\",\"hash\":\"887df6ea6fb978861f3a3febcdca79f5b0f8439fbc0f141081b21e70bf45736d\",\"bufferVersion\":3}}",
+      "saveCalls": 1,
+      "checkpointCalls": 2,
+      "finalValue": "latest materialize-success",
+      "pass": true,
+      "boundary": "Real WorkspaceStore/FileBuffer/native broker and packaged Worker. Public pauseAutosave isolates close queue; source inputs/outputs/errors untouched, one original result delayed. Failure checkpoint uses actual private recovery-root permission guard, append actual invalid formula, materialize genuine source-parent write denial. Source byte preservation and explicit successful retry verified."
+    },
+    {
+      "scenario": "materialize-failure",
+      "firstClose": "blocked",
+      "held": "{\"state\":{\"version\":1,\"dirty\":true,\"canUndo\":true,\"canRedo\":false,\"workbook\":{\"kind\":\"xlsx\",\"sheets\":[{\"id\":\"1\",\"name\":\"Data\",\"hidden\":\"visible\",\"rows\":3,\"columns\":2,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"2\",\"name\":\"Calc\",\"hidden\":\"visible\",\"rows\":16,\"columns\":8,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"3\",\"name\":\"Spare\",\"hidden\":\"visible\",\"rows\":1,\"columns\":1,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]}],\"date1904\":false,\"signed\":false,\"externalLinks\":0,\"protected\":false,\"normalFont\":{\"family\":\"Calibri\",\"points\":11,\"bold\":false,\"italic\":false},\"fontMetric\":{\"digitWidth\":7,\"measured\":false}}},\"calculation\":{\"state\":\"cached\",\"message\":\"输入已修改，公式结果等待重新计算。\"},\"receipt\":{\"bufferVersion\":3,\"opId\":\"d95aaaba-2ae5-40fd-95ad-d6b61df57482\",\"state\":\"failed\",\"message\":\"create volume transaction: Permission denied\"},\"checkpoint\":{\"draftId\":\"5a66b01a-58f4-4454-985d-ffd96d6201d1\",\"hash\":\"6508cc4794dd70d95fda74fd3f5e72451032c0972e9aa06cf9a4d541281b3a72\",\"bufferVersion\":3}}",
+      "saveCalls": 3,
+      "checkpointCalls": 4,
+      "finalValue": "latest materialize-failure",
+      "pass": true,
+      "boundary": "Real WorkspaceStore/FileBuffer/native broker and packaged Worker. Public pauseAutosave isolates close queue; source inputs/outputs/errors untouched, one original result delayed. Failure checkpoint uses actual private recovery-root permission guard, append actual invalid formula, materialize genuine source-parent write denial. Source byte preservation and explicit successful retry verified."
+    },
+    {
+      "scenario": "clean-range-success",
+      "firstClose": "closed",
+      "held": "{\"state\":{\"version\":1,\"dirty\":true,\"canUndo\":true,\"canRedo\":false,\"workbook\":{\"kind\":\"xlsx\",\"sheets\":[{\"id\":\"1\",\"name\":\"Data\",\"hidden\":\"visible\",\"rows\":3,\"columns\":2,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"2\",\"name\":\"Calc\",\"hidden\":\"visible\",\"rows\":16,\"columns\":8,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]},{\"id\":\"3\",\"name\":\"Spare\",\"hidden\":\"visible\",\"rows\":1,\"columns\":1,\"protected\":false,\"defaultRowHeight\":20,\"defaultColumnWidth\":61,\"rowSizes\":[],\"columnSizes\":[]}],\"date1904\":false,\"signed\":false,\"externalLinks\":0,\"protected\":false,\"normalFont\":{\"family\":\"Calibri\",\"points\":11,\"bold\":false,\"italic\":false},\"fontMetric\":{\"digitWidth\":7,\"measured\":false}}},\"calculation\":{\"state\":\"cached\",\"message\":\"公式显示文件中的缓存。\"}}",
+      "saveCalls": 1,
+      "checkpointCalls": 1,
+      "finalValue": "Label",
+      "pass": true,
+      "boundary": "Real WorkspaceStore/FileBuffer/native broker and packaged Worker. Public pauseAutosave isolates close queue; source inputs/outputs/errors untouched, one original result delayed. Failure checkpoint uses actual private recovery-root permission guard, append actual invalid formula, materialize genuine source-parent write denial. Source byte preservation and explicit successful retry verified."
+    }
+  ]
+}

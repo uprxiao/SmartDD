@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-D08",
+  "originalCaseRow": "| **M9-T-D08 关闭非活动**<br>M9-R04.5、M9-R01.6 | 本期本机 | 组件／集成／安装端到端<br>P+I+A / D01+D04 | 打开A/B/C并激活B；关闭C。 | B保持活动和焦点；C资源释放，不影响终端。<br>依据：L§3 | P06；已有候选页面；本用例全部状态尚未核验 | 未执行 | — |",
+  "requirements": [
+    "M9-R04.5",
+    "M9-R01.6"
+  ],
+  "levelsAndEnvironmentsUnchanged": "组件／集成／安装端到端<br>P+I+A / D01+D04",
+  "stepsUnchanged": "打开A/B/C并激活B；关闭C。",
+  "expectedUnchanged": "B保持活动和焦点；C资源释放，不影响终端。<br>依据：L§3",
+  "status": "pending",
+  "layerResults": {
+    "P": "passed after DEV037 focus repair",
+    "I": "passed",
+    "A": "failed DEV037 on r2; corrected-package and running-terminal recheck pending"
+  },
+  "integrationObservation": {
+    "case": "M9-T-D08",
+    "committed": {
+      "schemaVersion": 1,
+      "routes": [
+        {
+          "source": "project-directory",
+          "sourceId": "fixture-root",
+          "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-tabs-acceptance-Syf5sZ/project",
+          "relativePath": "A.txt",
+          "mode": "document"
+        },
+        {
+          "source": "project-directory",
+          "sourceId": "fixture-root",
+          "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-tabs-acceptance-Syf5sZ/project",
+          "relativePath": "B.txt",
+          "mode": "document"
+        }
+      ],
+      "active": {
+        "source": "project-directory",
+        "sourceId": "fixture-root",
+        "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-tabs-acceptance-Syf5sZ/project",
+        "relativePath": "B.txt",
+        "mode": "document"
+      },
+      "treeSource": "project-directory:fixture-root:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-tabs-acceptance-Syf5sZ/project",
+      "expanded": {},
+      "collapsedRoots": [],
+      "filters": {},
+      "treeWidth": 250
+    },
+    "released": "C.txt",
+    "restoredActive": "B.txt",
+    "files": [
+      {
+        "name": "A.txt",
+        "hash": "fc2f13c48f0aab94ad8374b9a00ebf602eed47c0199ca7bb7d833ba5bfc4d36b",
+        "inode": "44424292"
+      },
+      {
+        "name": "B.txt",
+        "hash": "16b22fe8fa618137bb21c04229af891830321b015da55a49619242064e3f94b6",
+        "inode": "44424293"
+      },
+      {
+        "name": "C.txt",
+        "hash": "cb0b7bc337b973ad09aac77a1eacc51311f28ea32b5613ffece0d57bf06a8a50",
+        "inode": "44424294"
+      }
+    ],
+    "boundary": "DOM focus and terminal isolation require separate P/A observations."
+  },
+  "appObservation": {
+    "package": "r2",
+    "actual": "From B editor close non-active C: B remains active with same content, but focus falls to HTML root. Failed DEV037; not yet retested in corrected App."
+  },
+  "commonEvidence": {
+    "path": "m9-acceptance-tabs-20261018.json",
+    "sha256": "43fde7d32931a75251e9bdb16535578981e2f8bbf6af0a6023f72079e05eab39"
+  },
+  "formalIndexChanged": false,
+  "scopeBoundary": "Evidence applies only to the recorded prototype/code/package/platform baselines. Later workspace broadcast or focus changes require affected regression; no old-package result is silently assigned to a new package.",
+  "remaining": [
+    "Corrected packaged App D08 with preserved focus and active terminal."
+  ]
+}

@@ -1,0 +1,46 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-failure-native-acceptance.test.tsx -t B07 --reporter=default --reporter=json --outputFile=/private/tmp/willyou-tree-focus-deleted-red-tests.json
+
+[1018/133657.980874:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/133658.119292:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests | 1 failed) 4240ms
+     ✓ B06 confines a real permission failure to its node and retries once without duplicating children 185ms
+     × B07 deletes the selected file before the real read and never displays the previous buffer 171ms
+     ✓ B12 restores independent selection, focus, expanded paths, filter and scroll for each real root 153ms
+     ✓ B11 cancels old-root focus callbacks and restores scroll after a delayed remount without stealing new-root focus 44ms
+     ✓ B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position  1859ms
+     ✓ B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position  1826ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B07 deletes the selected file before the real read and never displays the previous buffer
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:56:77
+     54|     expect(store.active?.route.relativePath).toBe('B.txt');expect(stor…
+     55|     const error=store.active!.buffer!.loadError;await act(async()=>{aw…
+     56|     expect(screen.getAllByRole('treeitem').filter(node=>node.tabIndex=…
+       |                                                                             ^
+     57|     await act(async()=>{await store.close(store.activeId!);});expect(s…
+     58|     observations.push({caseId:'M9-T-B07',error,deletedBeforeNativeRead…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  13:36:58
+   Duration  5.30s (transform 361ms, setup 0ms, import 712ms, tests 4.24s, environment 273ms)
+
+JSON report written to /private/tmp/willyou-tree-focus-deleted-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

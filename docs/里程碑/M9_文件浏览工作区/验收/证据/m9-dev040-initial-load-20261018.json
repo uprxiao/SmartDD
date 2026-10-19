@@ -1,0 +1,168 @@
+{
+  "caseId": "M9-T-H22",
+  "defectId": "M9-DEV-040",
+  "status": "fixed-U-I-verified",
+  "formalCasePassed": true,
+  "recordedAt": "2026-10-18T02:29:07.711454+00:00",
+  "requiredLayers": [
+    "U",
+    "I"
+  ],
+  "productionChanges": false,
+  "cause": {
+    "file": "src/renderer/features/files/file-buffer.ts",
+    "line": 225,
+    "detail": "refresh returns during initial loading without retaining a pending change. load later installs its prior read and does not recheck disk."
+  },
+  "preFix": {
+    "result": "0 passed / 3 failed / 0 skipped",
+    "canonicalRun": "pre-fix-r2-tests.json",
+    "observations": "pre-fix-r2-observations.json",
+    "variants": [
+      "ordinary in-place external write",
+      "atomic replacement",
+      "late initial read delivery error after disk notification"
+    ],
+    "actual": "Real disk LATEST; successful first-read branches end with clean ORIGINAL base; late-error branch ends error. refresh API call count remains zero.",
+    "boundary": "r2 delivers a matching synthetic watch event through production store.attach -> receiveWatch -> refreshRoot -> FileBuffer; actual filesystem, FileService and packaged broker. Only first read response delivery is gated. No GUI or native OS-watch event is claimed. r1 used direct private refreshRoot as an initial diagnostic; r2 uses public event subscription."
+  },
+  "sourceBaseline": {
+    "files": {
+      "src/renderer/features/files/file-buffer.ts": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+      "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee"
+    },
+    "archive": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/pre-fix-tested-sources.tar.gz",
+    "sha256": "6cc573b4c31da975780c18afc9f97b278b80a8a6349dadb26dbfc2915fbdd967"
+  },
+  "fix": "Queue initial-load invalidation; on first-read success retry before installing its old base; on late failure retry before leaving a final error; retain instance/disposal guards. Repeated pending notifications coalesce to one next read.",
+  "fixedAt": "2026-10-18T02:31:00.486222+00:00",
+  "productChanges": [
+    "src/renderer/features/files/file-buffer.ts"
+  ],
+  "fixedSourceBaseline": {
+    "files": {
+      "src/renderer/features/files/file-buffer.ts": "e2ccf88c51c71cb8f0ab1d4518a0b5cc52ca9b8657fc4bf7c31bfacb59b52fa1",
+      "src/renderer/features/files/initial-load-acceptance.test.ts": "9917522482ba60a872b825f2c36043487d6f151521957e59dde4a1a9f86bcc52",
+      "src/renderer/features/files/file-buffer.test.ts": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+      "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+      "src/renderer/features/files/workspace-store.test.ts": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "src/shared/file-classification.ts": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+      "vitest.config.ts": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+      "tsconfig.web.json": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70"
+    },
+    "archive": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/fixed-tested-sources.tar.gz",
+    "sha256": "a037590c8721208711644b255515fbd45d32023d05594036b7d2a3eacd5c4c28",
+    "r4Comparison": {
+      "src/renderer/features/files/file-buffer.ts": {
+        "current": "e2ccf88c51c71cb8f0ab1d4518a0b5cc52ca9b8657fc4bf7c31bfacb59b52fa1",
+        "r4": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+        "matches": false
+      },
+      "src/renderer/features/files/initial-load-acceptance.test.ts": {
+        "current": "9917522482ba60a872b825f2c36043487d6f151521957e59dde4a1a9f86bcc52",
+        "r4": null,
+        "matches": false
+      },
+      "src/renderer/features/files/file-buffer.test.ts": {
+        "current": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+        "r4": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+        "matches": true
+      },
+      "src/renderer/features/files/workspace-store.ts": {
+        "current": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "r4": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "matches": true
+      },
+      "src/renderer/features/files/workspace-store.test.ts": {
+        "current": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+        "r4": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+        "matches": true
+      },
+      "src/main/core/files/file-service.ts": {
+        "current": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "r4": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "matches": true
+      },
+      "src/main/core/files/native-broker.ts": {
+        "current": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "r4": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "matches": true
+      },
+      "src/main/core/files/roots.ts": {
+        "current": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "r4": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "matches": true
+      },
+      "src/main/core/files/recovery-store.ts": {
+        "current": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "r4": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "matches": true
+      },
+      "src/shared/files.ts": {
+        "current": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "r4": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "matches": true
+      },
+      "src/shared/file-text.ts": {
+        "current": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+        "r4": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+        "matches": true
+      },
+      "src/shared/file-classification.ts": {
+        "current": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+        "r4": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+        "matches": true
+      },
+      "vitest.config.ts": {
+        "current": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+        "r4": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+        "matches": true
+      },
+      "tsconfig.web.json": {
+        "current": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+        "r4": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+        "matches": true
+      }
+    },
+    "boundary": "file-buffer.ts is the DEV040 source fix after r4; initial-load-acceptance.test.ts is new. The integration tests use the unchanged broker from r4. This is a source-level U/I result, not acceptance of a rebuilt App."
+  },
+  "validation": {
+    "command": "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_H22_EVIDENCE=/private/tmp/willyou-h22-fixed-r1-observations.json pnpm test src/renderer/features/files/initial-load-acceptance.test.ts src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/workspace-store.test.ts --reporter=json --outputFile=/private/tmp/willyou-h22-fixed-r1-tests.json > /private/tmp/willyou-h22-fixed-r1.log 2>&1",
+    "exitCode": 0,
+    "passed": 26,
+    "failed": 0,
+    "pending": 0,
+    "files": {
+      "file-buffer.test.ts": 15,
+      "initial-load-acceptance.test.ts": 5,
+      "workspace-store.test.ts": 6
+    },
+    "report": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/fixed-r1-tests.json",
+    "reportSha256": "44aa298fe533462289f8498060edb4e8615940d1ec7ddc67cd0feb466c464916",
+    "observations": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/fixed-r1-observations.json",
+    "observationsSha256": "ba3fc8901b1e1b127249318d1fcb34824e96b153a8991d6fcb679de1290af9d2",
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json > /private/tmp/willyou-h22-web-typecheck-r1.log 2>&1",
+      "exitCode": 0,
+      "log": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/web-typecheck-r1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "independentReview": {
+    "agent": "/root/acceptance_l16",
+    "result": "No blocking issue found within initial-load scope; verified pending consumption in success/error, instance/disposed guards and stale-base prevention. Read-only review; no duplicate testing."
+  },
+  "prototype": {
+    "changed": false,
+    "reason": "This change concerns ordering of actual FileService IO and watcher invalidation during first load. The approved shared prototype uses synchronous synthetic file content and has no real initial-read delivery boundary. No visual/control behavior changed; no prototype IO acceptance is claimed."
+  }
+}

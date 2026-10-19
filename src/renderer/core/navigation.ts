@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
 
 /** The view registry: every top-level view the main area can show. */
 export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled'] as const;
@@ -17,6 +18,8 @@ class NavigationStore {
   settingsSection: SettingsSectionId = 'general';
   /** ⌘K task search. */
   searchOpen = false;
+  filePanelOpen = typeof localStorage !== 'undefined' && localStorage.getItem('willyou-file-panel-open') === 'true';
+  filePanelWidthPreference = readFilePanelWidthPreference(typeof localStorage === 'undefined' ? null : localStorage.getItem('willyou-file-panel-width'));
   sidebarWidth = typeof localStorage === 'undefined' ? 240 : Math.max(240, Math.min(420, Number(localStorage.getItem('smartdd-sidebar-width')) || 240));
 
   constructor() {
@@ -44,6 +47,19 @@ class NavigationStore {
 
   setSearchOpen(open: boolean): void {
     this.searchOpen = open;
+  }
+  toggleFilePanel(): void {
+    this.filePanelOpen = !this.filePanelOpen;
+    if (typeof localStorage !== 'undefined') localStorage.setItem('willyou-file-panel-open', String(this.filePanelOpen));
+  }
+  setFilePanelWidth(width: number, available: number): void {
+    const preference = normalizedFilePanelWidth(width, available);
+    if (!preference) return;
+    this.filePanelWidthPreference = preference;
+    if (typeof localStorage !== 'undefined') localStorage.setItem('willyou-file-panel-width', String(preference.value));
+  }
+  migrateFilePanelWidth(available: number): void {
+    if (this.filePanelWidthPreference.unit === 'pixels') this.setFilePanelWidth(this.filePanelWidthPreference.value, available);
   }
 
   openSettings(section?: SettingsSectionId): void {

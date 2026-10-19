@@ -1,0 +1,55 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/text-editor.test.tsx --testNamePattern 'large input' --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev103-large-input-unit-red.json
+
+[1019/052152.852957:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/052153.198763:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/text-editor.test.tsx (15 tests | 1 failed | 14 skipped) 62ms
+     × large input replaces the selected range in one lossless editor transaction before native DOM insertion 61ms
+     ↓ M9-T-H02: reflects real undo/redo availability, restores focus and avoids a save after returning to base
+     ↓ disables both directions when the file becomes read-only even with a usable history branch
+     ↓ targets only the current document and retains its own history after a view switch
+     ↓ R13 selects the first actual literal match, wraps navigation and closes/reopens without writing the document
+     ↓ R14 recomputes from dirty editor transactions and undo without replacing the caret or reading the old disk
+     ↓ R19 998 original matches have bounded navigation and an accurate more marker
+     ↓ R19 999 original matches have bounded navigation and an accurate more marker
+     ↓ R19 1000 original matches have bounded navigation and an accurate more marker
+     ↓ R15 clamps positive/negative targets, counts CRLF once and navigates an empty document without editing or history
+     ↓ R16 rejects invalid integers without moving or closing, exposes the error, trims valid input and ignores composing Enter
+     ↓ R17 Escape and close restore the full backwards selection and both scroll axes; Enter retains the target
+     ↓ R17 switching files cancels in the old live view before teardown and never restores its position into the next buffer
+     ↓ never restores an obsolete selection after a real edit or another navigation changed the preview owner
+     ↓ shares one bar with Find and permits navigation in read-only text while composition disables opening
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/text-editor.test.tsx > production text history controls (real CodeMirror; file API isolated) > large input replaces the selected range in one lossless editor transaction before native DOM insertion
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/features/files/text-editor.test.tsx:60:36
+     58|     const event = new InputEvent('beforeinput', { bubbles: true, cance…
+     59|     act(() => current.contentDOM.dispatchEvent(event));
+     60|     expect(event.defaultPrevented).toBe(true); expect(value.buffer.raw…
+       |                                    ^
+     61|     expect(button('撤销').disabled).toBe(false); fireEvent.click(button(…
+     62|     fireEvent.click(button('重做')); expect(value.buffer.raw).toBe(input…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 skipped (15)
+   Start at  05:21:53
+   Duration  1.02s (transform 194ms, setup 0ms, import 559ms, tests 62ms, environment 327ms)
+
+JSON report written to /private/tmp/willyou-dev103-large-input-unit-red.json
+ ELIFECYCLE  Test failed. See above for more details.

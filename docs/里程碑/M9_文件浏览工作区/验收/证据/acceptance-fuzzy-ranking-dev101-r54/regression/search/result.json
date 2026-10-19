@@ -1,0 +1,1786 @@
+{
+  "at": "2026-10-18T20:57:18.022Z",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r54-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scratch": "/private/tmp/willyou-search-race-app-zpMrvt",
+  "userData": "/private/tmp/willyou-search-race-app-zpMrvt/userdata",
+  "asarSha256": "0093818e8e7df707bc5c1904037d0605348201b3f5ab616b98e30925a23eb645",
+  "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+  "before": {
+    "/private/tmp/willyou-search-race-app-zpMrvt/A/a-Only.txt": {
+      "sha256": "902ed6cac258218234187e2f3e4b4b94cd79883298969e460058ffe0377d2c94",
+      "inode": "48316156",
+      "mtimeNs": "1792357038022247832"
+    },
+    "/private/tmp/willyou-search-race-app-zpMrvt/A/ab-Only.txt": {
+      "sha256": "f622ec219cbeb18f9a1b2680fcfe385fcd2ddb9b0f09c0f84b9ceeae20f257b5",
+      "inode": "48316157",
+      "mtimeNs": "1792357038022466291"
+    },
+    "/private/tmp/willyou-search-race-app-zpMrvt/A/abc-A.txt": {
+      "sha256": "f74d4f9f9844ceff5ff3c3f632fbf28697213e2c5a995e3cf881300bbdd35824",
+      "inode": "48316158",
+      "mtimeNs": "1792357038022629125"
+    },
+    "/private/tmp/willyou-search-race-app-zpMrvt/B/abc-B.txt": {
+      "sha256": "d92ab46022513e6c9d5031bb1338e85befa6ca710502e20a48fe8286e137135a",
+      "inode": "48316159",
+      "mtimeNs": "1792357038022788542"
+    }
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-C06",
+      "slots": [
+        {
+          "phase": "C06",
+          "id": "6f945dc2-2abd-4d75-b390-e54e0ef2ee26",
+          "query": "a",
+          "root": {
+            "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+            "generation": 1
+          },
+          "paths": [
+            "a-Only.txt",
+            "ab-Only.txt",
+            "abc-A.txt"
+          ],
+          "sha256": "efc0ae0510a17097fc1aa44fc326b1cacc9672e736228f2ecf550ceac18ab696",
+          "returned": false
+        },
+        {
+          "phase": "C06",
+          "id": "23e74ba3-c91d-4c37-a167-e735978b0ab1",
+          "query": "ab",
+          "root": {
+            "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+            "generation": 1
+          },
+          "paths": [
+            "a-Only.txt",
+            "ab-Only.txt",
+            "abc-A.txt"
+          ],
+          "sha256": "f605b1723cec6747931cf9b23c006e265b84c7e1628f064fb484f974f2c18634",
+          "returned": false
+        },
+        {
+          "phase": "C06",
+          "id": "b5052597-68d8-4c6b-bc44-244bc9ed7e12",
+          "query": "abc",
+          "root": {
+            "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+            "generation": 1
+          },
+          "paths": [
+            "a-Only.txt",
+            "ab-Only.txt",
+            "abc-A.txt"
+          ],
+          "sha256": "431b1bfa68bcaeab77e0d5838fb2f8afdfaf487f5d26bca5c44dd29c270a5f2d",
+          "returned": false
+        }
+      ],
+      "returnOrder": [
+        "b5052597-68d8-4c6b-bc44-244bc9ed7e12",
+        "6f945dc2-2abd-4d75-b390-e54e0ef2ee26",
+        "23e74ba3-c91d-4c37-a167-e735978b0ab1"
+      ],
+      "latest": [
+        "/private/tmp/willyou-search-race-app-zpMrvt/A/abc-A.txt"
+      ],
+      "inputs": [
+        {
+          "value": "a",
+          "at": 336,
+          "trusted": true
+        },
+        {
+          "value": "ab",
+          "at": 408.69999980926514,
+          "trusted": true
+        },
+        {
+          "value": "abc",
+          "at": 477.59999990463257,
+          "trusted": true
+        }
+      ],
+      "intervalBoundary": "Real inputs are at least50ms apart plus native completion/tool overhead; exact50ms clock and same reverse-success sequence covered independently by native I."
+    },
+    {
+      "caseId": "M9-T-C07",
+      "old": {
+        "phase": "C07",
+        "id": "94524009-f498-4849-af8a-5ad3611eb413",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "e7b88082871a7f36665802180748c8726771d3ee17435d0d9c74e7c7fc1ee427",
+        "returned": false
+      },
+      "clearedValue": "",
+      "names": []
+    },
+    {
+      "caseId": "M9-T-C08",
+      "oldRoot": {
+        "phase": "C08-A",
+        "id": "f0e211cc-7ff3-4673-9f44-591079884eb7",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "c6aaf61bd451e8bbdbc74ae64c9206d417a85ef04338e42d9a20c5385c99a13f",
+        "returned": false
+      },
+      "bNames": [
+        "/private/tmp/willyou-search-race-app-zpMrvt/B/abc-B.txt"
+      ],
+      "root": "/private/tmp/willyou-search-race-app-zpMrvt/B"
+    },
+    {
+      "caseId": "M9-T-C16",
+      "cycles": [
+        {
+          "index": 0,
+          "id": "4240423e-9914-4875-b485-875b8d894217",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 1,
+          "id": "f4616a84-e783-4f0c-b71a-cafec179703d",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 2,
+          "id": "aea44dd4-3ec1-47fc-a42f-d4eb66030918",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 3,
+          "id": "9c57af72-b0dd-48ae-826b-707832f29778",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 4,
+          "id": "87aedd13-dd4a-4604-af1e-078646aedb43",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 5,
+          "id": "d10818de-2479-42c9-9f54-382525b5af61",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 6,
+          "id": "979a34a8-5050-4779-9ff3-86f411b9ac46",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 7,
+          "id": "5b1cbe4c-a2c0-4b22-b3f0-94c1c5497900",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 8,
+          "id": "adbe65fa-b72e-464e-bdce-90e745413052",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 9,
+          "id": "11da3843-58a7-40d9-a3a2-fde6fb040e8c",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 10,
+          "id": "2ec1a303-dcaf-4ea3-aa7f-3f59d81aedb4",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 11,
+          "id": "5b4ac568-a004-4379-b0b9-1a2f39d06da8",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 12,
+          "id": "5ef51490-c0fe-4e11-adf0-56d2292708c2",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 13,
+          "id": "2ab23a6a-d063-49b0-99e3-ced4f7ea5cfe",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 14,
+          "id": "d6699f01-c2e6-4ac1-a2b8-332c316bac4c",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 15,
+          "id": "97699827-4254-4ca3-a0d8-08995cd3f9a0",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 16,
+          "id": "1caa9da0-a8b6-43fe-bb07-bf0d8c7f7739",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 17,
+          "id": "7d5e368c-f5cf-4f95-8c6d-2fe747a7d2b5",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 18,
+          "id": "bbe410db-78ee-4fb8-8a25-02a7346ce669",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        },
+        {
+          "index": 19,
+          "id": "d4e7201a-c926-4a07-bd45-e9f51f374ae5",
+          "query": "abc",
+          "root": {
+            "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+            "generation": 1
+          },
+          "originalNativeCompleted": true,
+          "originalCancellation": true
+        }
+      ],
+      "final": {
+        "pending": 0,
+        "listeners": {
+          "destroyed": 2,
+          "did-start-navigation": 1,
+          "render-process-gone": 2
+        },
+        "baseline": {
+          "destroyed": 2,
+          "did-start-navigation": 1,
+          "render-process-gone": 2
+        }
+      },
+      "restoredValue": "abc",
+      "rendererListenerBoundary": "Exact renderer IPC listener attach/detach counts are verified in separate native I. A observes20 original native successes,20 original cancellation calls,zero held deliveries and stable main owner listeners."
+    }
+  ],
+  "status": "passed",
+  "boundary": "A: normal packaged renderer/native/Worker and trusted pointer/text input. Original authenticated startSearchSession handler executes genuine native IO first; only delivery of own successful results is temporarily gated to emulate an uncooperative late provider. cancelSearch calls its original authenticated handler unchanged. Exact result hashes before/after gate preserved, all handlers restored. Setup uses public project/dir IPC only; no fabricated result, source/ASAR/broker/store/style replacement, clipboard, model, terminal or daily data. Actual rapid-input intervals recorded; independent I verifies exact50ms debounce boundaries.",
+  "inputs": [
+    {
+      "value": "a",
+      "at": 336,
+      "trusted": true
+    },
+    {
+      "value": "ab",
+      "at": 408.69999980926514,
+      "trusted": true
+    },
+    {
+      "value": "abc",
+      "at": 477.59999990463257,
+      "trusted": true
+    },
+    {
+      "value": "",
+      "at": 712.8999998569489,
+      "trusted": true
+    },
+    {
+      "value": "abc",
+      "at": 742.1999998092651,
+      "trusted": true
+    },
+    {
+      "value": "",
+      "at": 817.8999998569489,
+      "trusted": true
+    },
+    {
+      "value": "abc",
+      "at": 835.0999999046326,
+      "trusted": true
+    },
+    {
+      "value": "abc",
+      "at": 1002.1999998092651,
+      "trusted": true
+    }
+  ],
+  "after": {
+    "/private/tmp/willyou-search-race-app-zpMrvt/A/a-Only.txt": {
+      "sha256": "902ed6cac258218234187e2f3e4b4b94cd79883298969e460058ffe0377d2c94",
+      "inode": "48316156",
+      "mtimeNs": "1792357038022247832"
+    },
+    "/private/tmp/willyou-search-race-app-zpMrvt/A/ab-Only.txt": {
+      "sha256": "f622ec219cbeb18f9a1b2680fcfe385fcd2ddb9b0f09c0f84b9ceeae20f257b5",
+      "inode": "48316157",
+      "mtimeNs": "1792357038022466291"
+    },
+    "/private/tmp/willyou-search-race-app-zpMrvt/A/abc-A.txt": {
+      "sha256": "f74d4f9f9844ceff5ff3c3f632fbf28697213e2c5a995e3cf881300bbdd35824",
+      "inode": "48316158",
+      "mtimeNs": "1792357038022629125"
+    },
+    "/private/tmp/willyou-search-race-app-zpMrvt/B/abc-B.txt": {
+      "sha256": "d92ab46022513e6c9d5031bb1338e85befa6ca710502e20a48fe8286e137135a",
+      "inode": "48316159",
+      "mtimeNs": "1792357038022788542"
+    }
+  },
+  "trace": {
+    "events": [
+      {
+        "event": "start",
+        "phase": "C06",
+        "id": "6f945dc2-2abd-4d75-b390-e54e0ef2ee26",
+        "query": "a",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "at": 1792357038932
+      },
+      {
+        "event": "native-return",
+        "phase": "C06",
+        "id": "6f945dc2-2abd-4d75-b390-e54e0ef2ee26",
+        "query": "a",
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "efc0ae0510a17097fc1aa44fc326b1cacc9672e736228f2ecf550ceac18ab696",
+        "at": 1792357038940
+      },
+      {
+        "event": "cancel",
+        "id": "6f945dc2-2abd-4d75-b390-e54e0ef2ee26",
+        "phase": "C06",
+        "at": 1792357038952
+      },
+      {
+        "event": "start",
+        "phase": "C06",
+        "id": "23e74ba3-c91d-4c37-a167-e735978b0ab1",
+        "query": "ab",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "at": 1792357039005
+      },
+      {
+        "event": "native-return",
+        "phase": "C06",
+        "id": "23e74ba3-c91d-4c37-a167-e735978b0ab1",
+        "query": "ab",
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "f605b1723cec6747931cf9b23c006e265b84c7e1628f064fb484f974f2c18634",
+        "at": 1792357039014
+      },
+      {
+        "event": "cancel",
+        "id": "23e74ba3-c91d-4c37-a167-e735978b0ab1",
+        "phase": "C06",
+        "at": 1792357039021
+      },
+      {
+        "event": "start",
+        "phase": "C06",
+        "id": "b5052597-68d8-4c6b-bc44-244bc9ed7e12",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "at": 1792357039074
+      },
+      {
+        "event": "native-return",
+        "phase": "C06",
+        "id": "b5052597-68d8-4c6b-bc44-244bc9ed7e12",
+        "query": "abc",
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "431b1bfa68bcaeab77e0d5838fb2f8afdfaf487f5d26bca5c44dd29c270a5f2d",
+        "at": 1792357039084
+      },
+      {
+        "event": "return",
+        "phase": "C06",
+        "id": "b5052597-68d8-4c6b-bc44-244bc9ed7e12",
+        "sha256": "431b1bfa68bcaeab77e0d5838fb2f8afdfaf487f5d26bca5c44dd29c270a5f2d",
+        "at": 1792357039087
+      },
+      {
+        "event": "return",
+        "phase": "C06",
+        "id": "6f945dc2-2abd-4d75-b390-e54e0ef2ee26",
+        "sha256": "efc0ae0510a17097fc1aa44fc326b1cacc9672e736228f2ecf550ceac18ab696",
+        "at": 1792357039196
+      },
+      {
+        "event": "return",
+        "phase": "C06",
+        "id": "23e74ba3-c91d-4c37-a167-e735978b0ab1",
+        "sha256": "f605b1723cec6747931cf9b23c006e265b84c7e1628f064fb484f974f2c18634",
+        "at": 1792357039199
+      },
+      {
+        "event": "cancel",
+        "id": "b5052597-68d8-4c6b-bc44-244bc9ed7e12",
+        "phase": "plain",
+        "at": 1792357039258
+      },
+      {
+        "event": "start",
+        "phase": "C07",
+        "id": "94524009-f498-4849-af8a-5ad3611eb413",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "at": 1792357039340
+      },
+      {
+        "event": "native-return",
+        "phase": "C07",
+        "id": "94524009-f498-4849-af8a-5ad3611eb413",
+        "query": "abc",
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "e7b88082871a7f36665802180748c8726771d3ee17435d0d9c74e7c7fc1ee427",
+        "at": 1792357039346
+      },
+      {
+        "event": "cancel",
+        "id": "94524009-f498-4849-af8a-5ad3611eb413",
+        "phase": "C07",
+        "at": 1792357039362
+      },
+      {
+        "event": "return",
+        "phase": "C07",
+        "id": "94524009-f498-4849-af8a-5ad3611eb413",
+        "sha256": "e7b88082871a7f36665802180748c8726771d3ee17435d0d9c74e7c7fc1ee427",
+        "at": 1792357039365
+      },
+      {
+        "event": "start",
+        "phase": "C08-A",
+        "id": "f0e211cc-7ff3-4673-9f44-591079884eb7",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "at": 1792357039430
+      },
+      {
+        "event": "native-return",
+        "phase": "C08-A",
+        "id": "f0e211cc-7ff3-4673-9f44-591079884eb7",
+        "query": "abc",
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "c6aaf61bd451e8bbdbc74ae64c9206d417a85ef04338e42d9a20c5385c99a13f",
+        "at": 1792357039437
+      },
+      {
+        "event": "cancel",
+        "id": "f0e211cc-7ff3-4673-9f44-591079884eb7",
+        "phase": "C08-A",
+        "at": 1792357039522
+      },
+      {
+        "event": "start",
+        "phase": "plain",
+        "id": "15742718-868f-4dcb-a5d4-8951689aa678",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357039598
+      },
+      {
+        "event": "native-return",
+        "phase": "plain",
+        "id": "15742718-868f-4dcb-a5d4-8951689aa678",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "aa54a8cf7816aca7219eaf92dd22282356663f837457c6c3d78ffb1b5dedf0ac",
+        "at": 1792357039604
+      },
+      {
+        "event": "return",
+        "phase": "plain",
+        "id": "15742718-868f-4dcb-a5d4-8951689aa678",
+        "sha256": "aa54a8cf7816aca7219eaf92dd22282356663f837457c6c3d78ffb1b5dedf0ac",
+        "at": 1792357039604
+      },
+      {
+        "event": "return",
+        "phase": "C08-A",
+        "id": "f0e211cc-7ff3-4673-9f44-591079884eb7",
+        "sha256": "c6aaf61bd451e8bbdbc74ae64c9206d417a85ef04338e42d9a20c5385c99a13f",
+        "at": 1792357039653
+      },
+      {
+        "event": "cancel",
+        "id": "15742718-868f-4dcb-a5d4-8951689aa678",
+        "phase": "plain",
+        "at": 1792357039669
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "4240423e-9914-4875-b485-875b8d894217",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357039738
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "4240423e-9914-4875-b485-875b8d894217",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "811112a11f78fad480a1a21fd0860380ee5b6ba2eebd7a48344932ed111e5b6c",
+        "at": 1792357039744
+      },
+      {
+        "event": "cancel",
+        "id": "4240423e-9914-4875-b485-875b8d894217",
+        "phase": "C16",
+        "at": 1792357039760
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "4240423e-9914-4875-b485-875b8d894217",
+        "sha256": "811112a11f78fad480a1a21fd0860380ee5b6ba2eebd7a48344932ed111e5b6c",
+        "at": 1792357039763
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "f4616a84-e783-4f0c-b71a-cafec179703d",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357039829
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "f4616a84-e783-4f0c-b71a-cafec179703d",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "215a0afa514ab950d5d57c243689fe5a8643a8306518d83c5da59357c8b84e3d",
+        "at": 1792357039835
+      },
+      {
+        "event": "cancel",
+        "id": "f4616a84-e783-4f0c-b71a-cafec179703d",
+        "phase": "C16",
+        "at": 1792357039853
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "f4616a84-e783-4f0c-b71a-cafec179703d",
+        "sha256": "215a0afa514ab950d5d57c243689fe5a8643a8306518d83c5da59357c8b84e3d",
+        "at": 1792357039856
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "aea44dd4-3ec1-47fc-a42f-d4eb66030918",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357039921
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "aea44dd4-3ec1-47fc-a42f-d4eb66030918",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "bed1f0f245b9f4c65ab221afa26dec03bfbd7a4c717bba466c1ec8a7a826b3d6",
+        "at": 1792357039937
+      },
+      {
+        "event": "cancel",
+        "id": "aea44dd4-3ec1-47fc-a42f-d4eb66030918",
+        "phase": "C16",
+        "at": 1792357039945
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "aea44dd4-3ec1-47fc-a42f-d4eb66030918",
+        "sha256": "bed1f0f245b9f4c65ab221afa26dec03bfbd7a4c717bba466c1ec8a7a826b3d6",
+        "at": 1792357039948
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "9c57af72-b0dd-48ae-826b-707832f29778",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040013
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "9c57af72-b0dd-48ae-826b-707832f29778",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "380528742ad8f059cc7771ba323329d74f8bae0738b31c91d4ed236ab9331c30",
+        "at": 1792357040025
+      },
+      {
+        "event": "cancel",
+        "id": "9c57af72-b0dd-48ae-826b-707832f29778",
+        "phase": "C16",
+        "at": 1792357040036
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "9c57af72-b0dd-48ae-826b-707832f29778",
+        "sha256": "380528742ad8f059cc7771ba323329d74f8bae0738b31c91d4ed236ab9331c30",
+        "at": 1792357040040
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "87aedd13-dd4a-4604-af1e-078646aedb43",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040105
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "87aedd13-dd4a-4604-af1e-078646aedb43",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "3689b40f23f6347daa7c9a621e5f60dd24f08e9a44b4ea48d8bc159eeb589abc",
+        "at": 1792357040116
+      },
+      {
+        "event": "cancel",
+        "id": "87aedd13-dd4a-4604-af1e-078646aedb43",
+        "phase": "C16",
+        "at": 1792357040128
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "87aedd13-dd4a-4604-af1e-078646aedb43",
+        "sha256": "3689b40f23f6347daa7c9a621e5f60dd24f08e9a44b4ea48d8bc159eeb589abc",
+        "at": 1792357040132
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "d10818de-2479-42c9-9f54-382525b5af61",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040197
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "d10818de-2479-42c9-9f54-382525b5af61",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b8c43bebd05cd418949150401b52fe01ca3e89e10ba7975df6d823e469cd5176",
+        "at": 1792357040210
+      },
+      {
+        "event": "cancel",
+        "id": "d10818de-2479-42c9-9f54-382525b5af61",
+        "phase": "C16",
+        "at": 1792357040220
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "d10818de-2479-42c9-9f54-382525b5af61",
+        "sha256": "b8c43bebd05cd418949150401b52fe01ca3e89e10ba7975df6d823e469cd5176",
+        "at": 1792357040223
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "979a34a8-5050-4779-9ff3-86f411b9ac46",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040287
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "979a34a8-5050-4779-9ff3-86f411b9ac46",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "3108703bc244371f2165f8a2063a39d80481c2e49a4008a2cf152894a3127fe5",
+        "at": 1792357040298
+      },
+      {
+        "event": "cancel",
+        "id": "979a34a8-5050-4779-9ff3-86f411b9ac46",
+        "phase": "C16",
+        "at": 1792357040311
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "979a34a8-5050-4779-9ff3-86f411b9ac46",
+        "sha256": "3108703bc244371f2165f8a2063a39d80481c2e49a4008a2cf152894a3127fe5",
+        "at": 1792357040314
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "5b1cbe4c-a2c0-4b22-b3f0-94c1c5497900",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040381
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "5b1cbe4c-a2c0-4b22-b3f0-94c1c5497900",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "dd048fb302d18e5a1c40e5f4fcd7349c867f373beeefa9afc95f6e909762d7c0",
+        "at": 1792357040390
+      },
+      {
+        "event": "cancel",
+        "id": "5b1cbe4c-a2c0-4b22-b3f0-94c1c5497900",
+        "phase": "C16",
+        "at": 1792357040402
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "5b1cbe4c-a2c0-4b22-b3f0-94c1c5497900",
+        "sha256": "dd048fb302d18e5a1c40e5f4fcd7349c867f373beeefa9afc95f6e909762d7c0",
+        "at": 1792357040406
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "adbe65fa-b72e-464e-bdce-90e745413052",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040472
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "adbe65fa-b72e-464e-bdce-90e745413052",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "c313d900c73a8c0a38a519c5d27f36a97eda3cb94f7211b2c264b6afaf6b3093",
+        "at": 1792357040483
+      },
+      {
+        "event": "cancel",
+        "id": "adbe65fa-b72e-464e-bdce-90e745413052",
+        "phase": "C16",
+        "at": 1792357040495
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "adbe65fa-b72e-464e-bdce-90e745413052",
+        "sha256": "c313d900c73a8c0a38a519c5d27f36a97eda3cb94f7211b2c264b6afaf6b3093",
+        "at": 1792357040499
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "11da3843-58a7-40d9-a3a2-fde6fb040e8c",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040564
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "11da3843-58a7-40d9-a3a2-fde6fb040e8c",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "37ad4d9d9c9c196175162886aa393e64bbafa91c65cff23de923786363e0b9bb",
+        "at": 1792357040573
+      },
+      {
+        "event": "cancel",
+        "id": "11da3843-58a7-40d9-a3a2-fde6fb040e8c",
+        "phase": "C16",
+        "at": 1792357040586
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "11da3843-58a7-40d9-a3a2-fde6fb040e8c",
+        "sha256": "37ad4d9d9c9c196175162886aa393e64bbafa91c65cff23de923786363e0b9bb",
+        "at": 1792357040589
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "2ec1a303-dcaf-4ea3-aa7f-3f59d81aedb4",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040656
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "2ec1a303-dcaf-4ea3-aa7f-3f59d81aedb4",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "384651a4217964e0d0bba3eedaa06d92cf3cd9593ea41ecfae2dbb1603815b64",
+        "at": 1792357040668
+      },
+      {
+        "event": "cancel",
+        "id": "2ec1a303-dcaf-4ea3-aa7f-3f59d81aedb4",
+        "phase": "C16",
+        "at": 1792357040678
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "2ec1a303-dcaf-4ea3-aa7f-3f59d81aedb4",
+        "sha256": "384651a4217964e0d0bba3eedaa06d92cf3cd9593ea41ecfae2dbb1603815b64",
+        "at": 1792357040681
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "5b4ac568-a004-4379-b0b9-1a2f39d06da8",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040748
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "5b4ac568-a004-4379-b0b9-1a2f39d06da8",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b1b92f9add04fd226c4d66c6525b29b91e588bf35a783f2ae63e0d146015cdfc",
+        "at": 1792357040760
+      },
+      {
+        "event": "cancel",
+        "id": "5b4ac568-a004-4379-b0b9-1a2f39d06da8",
+        "phase": "C16",
+        "at": 1792357040770
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "5b4ac568-a004-4379-b0b9-1a2f39d06da8",
+        "sha256": "b1b92f9add04fd226c4d66c6525b29b91e588bf35a783f2ae63e0d146015cdfc",
+        "at": 1792357040773
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "5ef51490-c0fe-4e11-adf0-56d2292708c2",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040837
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "5ef51490-c0fe-4e11-adf0-56d2292708c2",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b1a8287fb4fd9074bccb449f758c2404810ade3d3ec46bea79ebf4cfb163a44c",
+        "at": 1792357040850
+      },
+      {
+        "event": "cancel",
+        "id": "5ef51490-c0fe-4e11-adf0-56d2292708c2",
+        "phase": "C16",
+        "at": 1792357040861
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "5ef51490-c0fe-4e11-adf0-56d2292708c2",
+        "sha256": "b1a8287fb4fd9074bccb449f758c2404810ade3d3ec46bea79ebf4cfb163a44c",
+        "at": 1792357040865
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "2ab23a6a-d063-49b0-99e3-ced4f7ea5cfe",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357040930
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "2ab23a6a-d063-49b0-99e3-ced4f7ea5cfe",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "a828644b3c2caa02996624c696a4591277860526eeddb0358231c336b3b6fc0e",
+        "at": 1792357040938
+      },
+      {
+        "event": "cancel",
+        "id": "2ab23a6a-d063-49b0-99e3-ced4f7ea5cfe",
+        "phase": "C16",
+        "at": 1792357040952
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "2ab23a6a-d063-49b0-99e3-ced4f7ea5cfe",
+        "sha256": "a828644b3c2caa02996624c696a4591277860526eeddb0358231c336b3b6fc0e",
+        "at": 1792357040955
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "d6699f01-c2e6-4ac1-a2b8-332c316bac4c",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357041022
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "d6699f01-c2e6-4ac1-a2b8-332c316bac4c",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "40867d6716004d92e9f363c26d8dff9eae537819eec4634833b61f6096ca76eb",
+        "at": 1792357041031
+      },
+      {
+        "event": "cancel",
+        "id": "d6699f01-c2e6-4ac1-a2b8-332c316bac4c",
+        "phase": "C16",
+        "at": 1792357041044
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "d6699f01-c2e6-4ac1-a2b8-332c316bac4c",
+        "sha256": "40867d6716004d92e9f363c26d8dff9eae537819eec4634833b61f6096ca76eb",
+        "at": 1792357041048
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "97699827-4254-4ca3-a0d8-08995cd3f9a0",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357041113
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "97699827-4254-4ca3-a0d8-08995cd3f9a0",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "8f70fdb7cd412105cd649712af73f6e60ded6e29d6ed895561b02392623373c5",
+        "at": 1792357041120
+      },
+      {
+        "event": "cancel",
+        "id": "97699827-4254-4ca3-a0d8-08995cd3f9a0",
+        "phase": "C16",
+        "at": 1792357041136
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "97699827-4254-4ca3-a0d8-08995cd3f9a0",
+        "sha256": "8f70fdb7cd412105cd649712af73f6e60ded6e29d6ed895561b02392623373c5",
+        "at": 1792357041139
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "1caa9da0-a8b6-43fe-bb07-bf0d8c7f7739",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357041206
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "1caa9da0-a8b6-43fe-bb07-bf0d8c7f7739",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "beb991b0c9b035dedbe4b9847a8a3f7be82ee9a701451cdf3008c03d010d1ba2",
+        "at": 1792357041215
+      },
+      {
+        "event": "cancel",
+        "id": "1caa9da0-a8b6-43fe-bb07-bf0d8c7f7739",
+        "phase": "C16",
+        "at": 1792357041227
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "1caa9da0-a8b6-43fe-bb07-bf0d8c7f7739",
+        "sha256": "beb991b0c9b035dedbe4b9847a8a3f7be82ee9a701451cdf3008c03d010d1ba2",
+        "at": 1792357041230
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "7d5e368c-f5cf-4f95-8c6d-2fe747a7d2b5",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357041295
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "7d5e368c-f5cf-4f95-8c6d-2fe747a7d2b5",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b4e4ac03374f32d90405dec515ae91312f2c6bedb944b51aa5a8ee85f0bafef5",
+        "at": 1792357041303
+      },
+      {
+        "event": "cancel",
+        "id": "7d5e368c-f5cf-4f95-8c6d-2fe747a7d2b5",
+        "phase": "C16",
+        "at": 1792357041310
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "7d5e368c-f5cf-4f95-8c6d-2fe747a7d2b5",
+        "sha256": "b4e4ac03374f32d90405dec515ae91312f2c6bedb944b51aa5a8ee85f0bafef5",
+        "at": 1792357041313
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "bbe410db-78ee-4fb8-8a25-02a7346ce669",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357041378
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "bbe410db-78ee-4fb8-8a25-02a7346ce669",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "01049f661f502df70ed42c04c3563f9713a312d7230d57056312b60be50cdcd7",
+        "at": 1792357041386
+      },
+      {
+        "event": "cancel",
+        "id": "bbe410db-78ee-4fb8-8a25-02a7346ce669",
+        "phase": "C16",
+        "at": 1792357041394
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "bbe410db-78ee-4fb8-8a25-02a7346ce669",
+        "sha256": "01049f661f502df70ed42c04c3563f9713a312d7230d57056312b60be50cdcd7",
+        "at": 1792357041396
+      },
+      {
+        "event": "start",
+        "phase": "C16",
+        "id": "d4e7201a-c926-4a07-bd45-e9f51f374ae5",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357041462
+      },
+      {
+        "event": "native-return",
+        "phase": "C16",
+        "id": "d4e7201a-c926-4a07-bd45-e9f51f374ae5",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "7b0f36b3122be064551d3ae2fa3b479466f7336761df3fd23c4dac137cb25b4e",
+        "at": 1792357041472
+      },
+      {
+        "event": "cancel",
+        "id": "d4e7201a-c926-4a07-bd45-e9f51f374ae5",
+        "phase": "C16",
+        "at": 1792357041484
+      },
+      {
+        "event": "return",
+        "phase": "C16",
+        "id": "d4e7201a-c926-4a07-bd45-e9f51f374ae5",
+        "sha256": "7b0f36b3122be064551d3ae2fa3b479466f7336761df3fd23c4dac137cb25b4e",
+        "at": 1792357041486
+      },
+      {
+        "event": "start",
+        "phase": "plain",
+        "id": "5a012bc3-0742-4742-883b-7463be685fc6",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "at": 1792357041553
+      },
+      {
+        "event": "native-return",
+        "phase": "plain",
+        "id": "5a012bc3-0742-4742-883b-7463be685fc6",
+        "query": "abc",
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "8a0ae1010f9a45b805b4864bed67efe1200433365a5e08a353df06531806dd78",
+        "at": 1792357041566
+      },
+      {
+        "event": "return",
+        "phase": "plain",
+        "id": "5a012bc3-0742-4742-883b-7463be685fc6",
+        "sha256": "8a0ae1010f9a45b805b4864bed67efe1200433365a5e08a353df06531806dd78",
+        "at": 1792357041566
+      }
+    ],
+    "slots": [
+      {
+        "phase": "C06",
+        "id": "6f945dc2-2abd-4d75-b390-e54e0ef2ee26",
+        "query": "a",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "efc0ae0510a17097fc1aa44fc326b1cacc9672e736228f2ecf550ceac18ab696",
+        "returned": true
+      },
+      {
+        "phase": "C06",
+        "id": "23e74ba3-c91d-4c37-a167-e735978b0ab1",
+        "query": "ab",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "f605b1723cec6747931cf9b23c006e265b84c7e1628f064fb484f974f2c18634",
+        "returned": true
+      },
+      {
+        "phase": "C06",
+        "id": "b5052597-68d8-4c6b-bc44-244bc9ed7e12",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "431b1bfa68bcaeab77e0d5838fb2f8afdfaf487f5d26bca5c44dd29c270a5f2d",
+        "returned": true
+      },
+      {
+        "phase": "C07",
+        "id": "94524009-f498-4849-af8a-5ad3611eb413",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "e7b88082871a7f36665802180748c8726771d3ee17435d0d9c74e7c7fc1ee427",
+        "returned": true
+      },
+      {
+        "phase": "C08-A",
+        "id": "f0e211cc-7ff3-4673-9f44-591079884eb7",
+        "query": "abc",
+        "root": {
+          "lease": "bfcba72c-0ee2-4287-bb3c-5341d9e1d8ed",
+          "generation": 1
+        },
+        "paths": [
+          "a-Only.txt",
+          "ab-Only.txt",
+          "abc-A.txt"
+        ],
+        "sha256": "c6aaf61bd451e8bbdbc74ae64c9206d417a85ef04338e42d9a20c5385c99a13f",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "4240423e-9914-4875-b485-875b8d894217",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "811112a11f78fad480a1a21fd0860380ee5b6ba2eebd7a48344932ed111e5b6c",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "f4616a84-e783-4f0c-b71a-cafec179703d",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "215a0afa514ab950d5d57c243689fe5a8643a8306518d83c5da59357c8b84e3d",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "aea44dd4-3ec1-47fc-a42f-d4eb66030918",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "bed1f0f245b9f4c65ab221afa26dec03bfbd7a4c717bba466c1ec8a7a826b3d6",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "9c57af72-b0dd-48ae-826b-707832f29778",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "380528742ad8f059cc7771ba323329d74f8bae0738b31c91d4ed236ab9331c30",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "87aedd13-dd4a-4604-af1e-078646aedb43",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "3689b40f23f6347daa7c9a621e5f60dd24f08e9a44b4ea48d8bc159eeb589abc",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "d10818de-2479-42c9-9f54-382525b5af61",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b8c43bebd05cd418949150401b52fe01ca3e89e10ba7975df6d823e469cd5176",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "979a34a8-5050-4779-9ff3-86f411b9ac46",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "3108703bc244371f2165f8a2063a39d80481c2e49a4008a2cf152894a3127fe5",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "5b1cbe4c-a2c0-4b22-b3f0-94c1c5497900",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "dd048fb302d18e5a1c40e5f4fcd7349c867f373beeefa9afc95f6e909762d7c0",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "adbe65fa-b72e-464e-bdce-90e745413052",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "c313d900c73a8c0a38a519c5d27f36a97eda3cb94f7211b2c264b6afaf6b3093",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "11da3843-58a7-40d9-a3a2-fde6fb040e8c",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "37ad4d9d9c9c196175162886aa393e64bbafa91c65cff23de923786363e0b9bb",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "2ec1a303-dcaf-4ea3-aa7f-3f59d81aedb4",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "384651a4217964e0d0bba3eedaa06d92cf3cd9593ea41ecfae2dbb1603815b64",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "5b4ac568-a004-4379-b0b9-1a2f39d06da8",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b1b92f9add04fd226c4d66c6525b29b91e588bf35a783f2ae63e0d146015cdfc",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "5ef51490-c0fe-4e11-adf0-56d2292708c2",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b1a8287fb4fd9074bccb449f758c2404810ade3d3ec46bea79ebf4cfb163a44c",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "2ab23a6a-d063-49b0-99e3-ced4f7ea5cfe",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "a828644b3c2caa02996624c696a4591277860526eeddb0358231c336b3b6fc0e",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "d6699f01-c2e6-4ac1-a2b8-332c316bac4c",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "40867d6716004d92e9f363c26d8dff9eae537819eec4634833b61f6096ca76eb",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "97699827-4254-4ca3-a0d8-08995cd3f9a0",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "8f70fdb7cd412105cd649712af73f6e60ded6e29d6ed895561b02392623373c5",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "1caa9da0-a8b6-43fe-bb07-bf0d8c7f7739",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "beb991b0c9b035dedbe4b9847a8a3f7be82ee9a701451cdf3008c03d010d1ba2",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "7d5e368c-f5cf-4f95-8c6d-2fe747a7d2b5",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "b4e4ac03374f32d90405dec515ae91312f2c6bedb944b51aa5a8ee85f0bafef5",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "bbe410db-78ee-4fb8-8a25-02a7346ce669",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "01049f661f502df70ed42c04c3563f9713a312d7230d57056312b60be50cdcd7",
+        "returned": true
+      },
+      {
+        "phase": "C16",
+        "id": "d4e7201a-c926-4a07-bd45-e9f51f374ae5",
+        "query": "abc",
+        "root": {
+          "lease": "d7928acf-bf5c-4912-aa1d-18015221f43c",
+          "generation": 1
+        },
+        "paths": [
+          "abc-B.txt"
+        ],
+        "sha256": "7b0f36b3122be064551d3ae2fa3b479466f7336761df3fd23c4dac137cb25b4e",
+        "returned": true
+      }
+    ],
+    "baseline": {
+      "destroyed": 2,
+      "did-start-navigation": 1,
+      "render-process-gone": 2
+    }
+  },
+  "restoredHandlers": {
+    "start": true,
+    "cancel": true
+  },
+  "finishedAt": "2026-10-18T20:57:21.762Z"
+}

@@ -1,0 +1,52 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/files/window-boundary-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev099-native-red.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/main/core/files/window-boundary-acceptance.test.ts (5 tests | 2 failed) 794ms
+     × L09 move of a root revokes the old generation/watch, retains private draft and cannot save into a same-name replacement 114ms
+     × L09 delete of a root revokes the old generation/watch, retains private draft and cannot save into a same-name replacement 86ms
+     ✓ L10 navigation releases one owner during a real pending native chunk without disturbing the other owner 178ms
+     ✓ L10 destroyed releases one owner during a real pending native chunk without disturbing the other owner 255ms
+     ✓ L14 independent real buffers from one base serialize saves and preserve the losing private draft as an explicit conflict 159ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/files/window-boundary-acceptance.test.ts > L09/L10/L14 original controller, file buffers, native broker and OS watcher > L09 move of a root revokes the old generation/watch, retains private draft and cannot save into a same-name replacement
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/files/window-boundary-acceptance.test.ts:39:116
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/files/window-boundary-acceptance.test.ts > L09/L10/L14 original controller, file buffers, native broker and OS watcher > L09 delete of a root revokes the old generation/watch, retains private draft and cannot save into a same-name replacement
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/files/window-boundary-acceptance.test.ts:39:116
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  03:50:14
+   Duration  1.31s (transform 301ms, setup 0ms, import 450ms, tests 794ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev099-native-red.json
+ ELIFECYCLE  Test failed. See above for more details.

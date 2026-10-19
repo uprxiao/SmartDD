@@ -1,0 +1,257 @@
+{
+  "createdAt": "2026-10-18T07:25:33.668267+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4-P1",
+  "scope": "P09 ChartEx feasibility and wrong-preview guard; no modern chart completion",
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "libreOffice": "26.2.4.2",
+    "libreOfficeBuild": "0229ac93fcf0d7cbc6376066c6f35021cef002dc"
+  },
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-chartex-guard-r1-sources.tar.gz",
+    "sha256": "884309fcc70151a5d3b62179f211eece74673fbbe5c37172861c67e67f25543b",
+    "files": 605,
+    "manifest": "/private/tmp/willyou-m9-chartex-guard-r1-sources.json"
+  },
+  "postSnapshotTestOnlyAddendum": {
+    "source": "src/main/core/files/office/libreoffice-packaged.test.ts",
+    "copy": "/private/tmp/willyou-m9-chartex-guard-packaged-test-r1.ts",
+    "sha256": "e3a7cc30fc9e735570d3539e2523a43723ad0e50030aa604937feac003c401bc",
+    "note": "Added packaged regression after the build snapshot; no product source changed."
+  },
+  "defect": {
+    "id": "M9-DEV-029",
+    "status": "OPEN: actual modern chart rendering unresolved; interim wrong-preview guard passed code and packaged verification; App UI unexecuted",
+    "observed": "All four synthetic ChartEx types exported successfully but produced the same line plot PNG. Official upstream funnel also rendered as lines, with and without image fallback.",
+    "fixedBoundary": "Validated live ChartEx references are reported by the Worker. DOCX and PPTX services stop unsupported preview before native layout; retained PPTX edits/history and source chart/workbook are preserved.",
+    "notCompletion": "Guarding unsupported output is not delivery of the four modern chart types."
+  },
+  "nativeResearch": [
+    {
+      "name": "funnel.pptx",
+      "inputHash": "d0ab4990dc190cb9f49135d0730f00aa7d8f1b747c96ad987a39d457d81ab262",
+      "pages": 1,
+      "hash": "3668a6f6eb947d688279de0838e85293a63c4a59b39ee2e03ca841637ff1d7ce",
+      "text": "Chart Title\n\n\f",
+      "directory": "/private/tmp/willyou-chartex-render-r1",
+      "pngHash": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2",
+      "result": "FAIL: line plot instead of the declared ChartEx type"
+    },
+    {
+      "name": "histogram.pptx",
+      "inputHash": "607fcc3187a9696ed434248c54f0c3be8b8c4fe0c3bd82f790e77d1983cc5f76",
+      "pages": 1,
+      "hash": "c9ce62b605e5cf12b5f490aba864ef2eb958f1a9e00bdef5a51fb2ff582d1f3e",
+      "text": "Chart Title\n\n\f",
+      "directory": "/private/tmp/willyou-chartex-render-r1",
+      "pngHash": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2",
+      "result": "FAIL: line plot instead of the declared ChartEx type"
+    },
+    {
+      "name": "treemap.pptx",
+      "inputHash": "db2d57db7ba54306d032583b565177607d448fd56c8cea54955bde683a5afdbb",
+      "pages": 1,
+      "hash": "8ddaabc579cf92891275d3629a58ed7ffa26fe4cc3cb67f3c186e041d005f844",
+      "text": "Chart Title\n\n\f",
+      "directory": "/private/tmp/willyou-chartex-render-r1",
+      "pngHash": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2",
+      "result": "FAIL: line plot instead of the declared ChartEx type"
+    },
+    {
+      "name": "waterfall.pptx",
+      "inputHash": "75ea8dd906ddade2611b9b098d1fed092ca73f10f36d8e306da79a69a79985cb",
+      "pages": 1,
+      "hash": "11b9ad23e89c4483609a56d93557e1ca1846f82b807d5d26acbae515fb4dbf1b",
+      "text": "Chart Title\n\n\f",
+      "directory": "/private/tmp/willyou-chartex-render-r1",
+      "pngHash": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2",
+      "result": "FAIL: line plot instead of the declared ChartEx type"
+    },
+    {
+      "name": "funnel-upstream-no-fallback.pptx",
+      "inputHash": "62d11dee36d7fcad6696ae6a72a77aa13cb12728b4d2f41f67c10e82d9e1e47b",
+      "pages": 1,
+      "hash": "4fb78e9931e69dbcdb3c62369db0ba1e8595c53a9895e84d0443ff6e052ad32b",
+      "text": "PowerPoint funnel chart\nSeries1\n\nSeries2\n\nSeries3\n\n\f",
+      "directory": "/private/tmp/willyou-chartex-upstream-render-r1",
+      "pngHash": "ba85bd2f30119a4e25cb0af1502714e24f31b612d34ae668106eb951d38e256b",
+      "result": "FAIL: line plot instead of the declared ChartEx type"
+    },
+    {
+      "name": "funnel-upstream.pptx",
+      "inputHash": "8f971346a21010dfdb22799be79bbb883497cc260129cba41d5c9b06967fc3e3",
+      "pages": 1,
+      "hash": "7ef7aaba1953e1375697fa52bac0f382b52b7417ec6c3e9ee3302ffc67f59a61",
+      "text": "PowerPoint funnel chart\nSeries1\n\nSeries2\n\nSeries3\n\n\f",
+      "directory": "/private/tmp/willyou-chartex-upstream-render-r1",
+      "pngHash": "ba85bd2f30119a4e25cb0af1502714e24f31b612d34ae668106eb951d38e256b",
+      "result": "FAIL: line plot instead of the declared ChartEx type"
+    }
+  ],
+  "officialSource": {
+    "fixture": "https://github.com/LibreOffice/core/blob/master/chart2/qa/extras/data/pptx/funnel-pp1.pptx",
+    "fixtureGitBlob": "df34aa1618d0d4900739753f779560b24926197d",
+    "fixtureSHA256": "8f971346a21010dfdb22799be79bbb883497cc260129cba41d5c9b06967fc3e3",
+    "fixedPlotter": "https://github.com/LibreOffice/core/blob/0229ac93fcf0d7cbc6376066c6f35021cef002dc/chart2/source/view/charttypes/VSeriesPlotter.cxx",
+    "newerReleaseLimitation": "https://blog.documentfoundation.org/blog/2026/09/17/libreoffice-26-8-and-interoperability/"
+  },
+  "implementation": [
+    "Worker scans live ChartEx references, including reachable document parts; orphan definitions do not block ordinary chart previews.",
+    "Unknown layout identifiers are mapped to a fixed label, not displayed as source-supplied names.",
+    "Read-only preview and retained editor both refuse the fixed engine fallback. Component feedback does not fabricate a PDF or close the retained document."
+  ],
+  "regression": {
+    "disjointPassed": 357,
+    "disjointBatches": [
+      "regression-r2: main Office + shared geometry (262)",
+      "renderer-r1: renderer Office (95)"
+    ],
+    "optInUnexecutedAtRegression": 55,
+    "note": "Other batches overlap. One later opt-in packaged test was added separately."
+  },
+  "tests": [
+    {
+      "batch": "negative-r1",
+      "path": "/private/tmp/willyou-chartex-guard-negative-r1.json",
+      "sha256": "4e67033b9e064081f2d8759981751355de7b545d21ae5165362be412a5960da3",
+      "passed": 0,
+      "failed": 5,
+      "unselectedOrOptIn": 27
+    },
+    {
+      "batch": "source-r1",
+      "path": "/private/tmp/willyou-chartex-guard-source-r1.json",
+      "sha256": "0ff24caf714105f64b7f24007d75ef6d3f4ac65ef7e7f5e72fa7aa9ac29e66ac",
+      "passed": 47,
+      "failed": 0,
+      "unselectedOrOptIn": 0
+    },
+    {
+      "batch": "regression-r2",
+      "path": "/private/tmp/willyou-chartex-guard-regression-r2.json",
+      "sha256": "b62a37a9a80d27701413b39f9caf5d10678dfc749449c17bb896538ceb6891ec",
+      "passed": 262,
+      "failed": 0,
+      "unselectedOrOptIn": 55
+    },
+    {
+      "batch": "renderer-r1",
+      "path": "/private/tmp/willyou-chartex-guard-renderer-r1.json",
+      "sha256": "eeaf2f25e2308143113ad0cc7f62fba49fe0d6c13306c78f60d5bf0f97cd4058",
+      "passed": 95,
+      "failed": 0,
+      "unselectedOrOptIn": 0
+    }
+  ],
+  "typecheck": {
+    "path": "/private/tmp/willyou-chartex-guard-typecheck-r3.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "result": "PASS"
+  },
+  "build": {
+    "state": "PASS",
+    "path": "/private/tmp/willyou-m9-chartex-guard-r1-build/mac-arm64/WillYou.app",
+    "log": "/private/tmp/willyou-m9-chartex-guard-package-r1.log",
+    "asarSha256": "97b7254f53f3808cd16678cecd981e46d279bdfb105e46a49f037ae3f9da3de6",
+    "logSha256": "fcd00e2205f20d78a5b69a382d8f3398e87a102a5a664487725f9b56153050bc",
+    "nativeSmoke": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "notarized": false,
+    "released": false
+  },
+  "packagedTests": {
+    "state": "PASS",
+    "passed": 2,
+    "failed": 0,
+    "unselected": 7,
+    "report": "/private/tmp/willyou-chartex-guard-packaged-r1.json",
+    "reportSha256": "f50ad5a0b9b1702e1ac2ddd1ea7a439b657f67b2ea0054cfcaa7d5180732d62b",
+    "detail": "/private/tmp/willyou-m9-chartex-guard-packaged-r1-evidence/chartex-guard.json",
+    "detailSha256": "573f1c57098ba8ed99f1677a860542b428ab284521610d2891dc1e227ae8209a",
+    "results": [
+      {
+        "type": "funnel",
+        "sourceHash": "78f1e64e2f14ed3fdd2d219a88e577bc20f1d499b7334b70bc343b81872e5186",
+        "savedHash": "c4f06f33ef266266dbaf49f8c34caf7334345b754d859218b23d1fe0661c3e04",
+        "unsupportedCharts": [
+          "漏斗图"
+        ],
+        "previewRefused": true,
+        "chartAndWorkbookPreserved": true,
+        "reopened": true
+      },
+      {
+        "type": "histogram",
+        "sourceHash": "3953ad1d99e158f2a80436836b5bfd9e50000833180e58263bb5c799b854c06a",
+        "savedHash": "0cb7c59aade9b3c0b9f84d2c181285f59c483e48cc4a3c3d8738bff70a6a46e0",
+        "unsupportedCharts": [
+          "直方图"
+        ],
+        "previewRefused": true,
+        "chartAndWorkbookPreserved": true,
+        "reopened": true
+      },
+      {
+        "type": "waterfall",
+        "sourceHash": "f7fd0ad7d3f5760e4ccc162bcd73d1640d37506a9601481b570e8e93f571ae17",
+        "savedHash": "bbd272fd0b2e3ff5fc01253c3e8d61e6a92e899c5c42558b67a6a7307b832f9b",
+        "unsupportedCharts": [
+          "瀑布图"
+        ],
+        "previewRefused": true,
+        "chartAndWorkbookPreserved": true,
+        "reopened": true
+      },
+      {
+        "type": "treemap",
+        "sourceHash": "ff59156a5ce60e7ae32c3877210b497bdefb8171e0d1f040420637e4c672d538",
+        "savedHash": "10b6fc682d83219d518cb91039cbc4efcf31c59610ed77995b376714519deab6",
+        "unsupportedCharts": [
+          "矩形树图"
+        ],
+        "previewRefused": true,
+        "chartAndWorkbookPreserved": true,
+        "reopened": true
+      }
+    ],
+    "scope": "Real shipped Worker and native helper, source service orchestration tied to build snapshot; not App UI. Four ChartEx preview refusals/notes edits/save/source preservation/reopen, plus existing basic-chart native render/save/reopen/raw-input recovery/undo."
+  },
+  "ui": {
+    "state": "NOT EXECUTED",
+    "reason": "Existing image-r1 App remains pending Mac unlock/file-picker confirmation; no new user reply.",
+    "runningApp": "/private/tmp/willyou-m9-pptx-image-r1-build/mac-arm64/WillYou.app",
+    "doNotShareUserDataConcurrently": true,
+    "fixtures": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/pptx-chartex-ui-r1",
+    "fixtureManifestSha256": "ca9aa3e99a1f470152034cc8a756085e1a3dbdf2a5576c99dbdef1b9b4d6cc77"
+  },
+  "acceptance": {
+    "currentTotal": 419,
+    "passed": 3,
+    "remaining": 416,
+    "ratePercent": 0.72,
+    "futureExcluded": 6,
+    "newFormalPasses": 0
+  },
+  "next": [
+    "When Mac and current image picker are available, finish that pending image case, quit normally and switch to the new package for actual App error-flow retest. Do not run two Apps with the same userdata.",
+    "Develop and independently verify true ChartEx editing and rendering; evaluate a disposable data-driven vector projection while retaining editable ChartEx source. Do not substitute static pictures or renamed basic charts.",
+    "Continue nine-type/count/custom fidelity matrix and remaining Office/terminal/full acceptance."
+  ],
+  "sourceSnapshotVerification": {
+    "productAndBuildFiles": "MATCH",
+    "changedSinceSnapshot": [
+      "src/main/core/files/office/libreoffice-packaged.test.ts"
+    ],
+    "note": "The only change is the subsequent opt-in packaged test, preserved in the test addendum."
+  }
+}

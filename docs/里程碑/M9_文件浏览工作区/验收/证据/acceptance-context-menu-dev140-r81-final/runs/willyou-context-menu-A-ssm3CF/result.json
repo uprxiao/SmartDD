@@ -1,0 +1,217 @@
+{
+  "at": "2026-10-19T11:51:14.911Z",
+  "caseId": "M9-T-E13",
+  "layer": "A",
+  "scratch": "/private/tmp/willyou-context-menu-A-ssm3CF",
+  "root": "/private/tmp/willyou-context-menu-A-ssm3CF/project",
+  "userData": "/private/tmp/willyou-context-menu-A-ssm3CF/userdata",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r81-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "e90396c7a0769770d9057d56311a2af8c8dcb9a4ed36006f2b0e4699372e5e02",
+  "before": {
+    "plain.txt": {
+      "sha256": "964d48ea3f270cd7ecedb69982c2fb2cac33791155f187955978340fee0c874a",
+      "inode": "50432561",
+      "mtimeNs": "1792410674910855413",
+      "ctimeNs": "1792410674910855413"
+    },
+    "pixel.png": {
+      "sha256": "bdc3831e6e477c4df83a1ee849c8c06e512b5d2d0fc78ce9a1dae146aa9e0be7",
+      "inode": "50432562",
+      "mtimeNs": "1792410674911076033",
+      "ctimeNs": "1792410674911076033"
+    },
+    "blob.bin": {
+      "sha256": "ac77a89a5e70ee9cd5c87425f7b748e87a09fa3ac3f95e8ae68a4e88425e41db",
+      "inode": "50432563",
+      "mtimeNs": "1792410674911204364",
+      "ctimeNs": "1792410674911204364"
+    }
+  },
+  "checks": [
+    {
+      "theme": "light",
+      "scenario": "tree directory right click has no file context menu and leaves active source",
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "tree file offers file actions, no breadcrumb-only copy contents/reveal",
+      "items": [
+        {
+          "text": "正在读取可用应用…",
+          "disabled": true
+        },
+        {
+          "text": "打开方式",
+          "disabled": false
+        },
+        {
+          "text": "另存副本…",
+          "disabled": false
+        },
+        {
+          "text": "复制完整路径",
+          "disabled": false
+        },
+        {
+          "text": "复制相对路径",
+          "disabled": false
+        },
+        {
+          "text": "添加到终端引用",
+          "disabled": false
+        }
+      ],
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "breadcrumb directory exposes path/reveal, no save/content/task-file actions",
+      "items": [
+        {
+          "text": "正在读取可用应用…",
+          "disabled": true
+        },
+        {
+          "text": "打开方式",
+          "disabled": false
+        },
+        {
+          "text": "复制完整路径",
+          "disabled": false
+        },
+        {
+          "text": "复制相对路径",
+          "disabled": false
+        },
+        {
+          "text": "在 Finder 中显示",
+          "disabled": false
+        }
+      ],
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "breadcrumb plain.txt file actions gated by actual type",
+      "items": [
+        {
+          "text": "正在读取可用应用…",
+          "disabled": true
+        },
+        {
+          "text": "打开方式",
+          "disabled": false
+        },
+        {
+          "text": "另存副本…",
+          "disabled": false
+        },
+        {
+          "text": "复制完整路径",
+          "disabled": false
+        },
+        {
+          "text": "复制相对路径",
+          "disabled": false
+        },
+        {
+          "text": "添加到终端引用",
+          "disabled": false
+        },
+        {
+          "text": "复制文件内容",
+          "disabled": false
+        },
+        {
+          "text": "在 Finder 中显示",
+          "disabled": false
+        }
+      ],
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "breadcrumb pixel.png file actions gated by actual type",
+      "items": [
+        {
+          "text": "正在读取可用应用…",
+          "disabled": true
+        },
+        {
+          "text": "打开方式",
+          "disabled": false
+        },
+        {
+          "text": "另存副本…",
+          "disabled": false
+        },
+        {
+          "text": "复制完整路径",
+          "disabled": false
+        },
+        {
+          "text": "复制相对路径",
+          "disabled": false
+        },
+        {
+          "text": "添加到终端引用",
+          "disabled": false
+        },
+        {
+          "text": "在 Finder 中显示",
+          "disabled": false
+        }
+      ],
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "breadcrumb blob.bin file actions gated by actual type",
+      "items": [
+        {
+          "text": "正在读取可用应用…",
+          "disabled": true
+        },
+        {
+          "text": "打开方式",
+          "disabled": false
+        },
+        {
+          "text": "另存副本…",
+          "disabled": false
+        },
+        {
+          "text": "复制完整路径",
+          "disabled": false
+        },
+        {
+          "text": "复制相对路径",
+          "disabled": false
+        },
+        {
+          "text": "添加到终端引用",
+          "disabled": false
+        },
+        {
+          "text": "在 Finder 中显示",
+          "disabled": false
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "status": "failed",
+  "boundary": "Normal unchanged packaged A, original native/auth/file-service. Only inspect applicable menu entries, never invoke clipboard/save-copy/reveal/openExternal/web/terminal actions; actual file/classification/native integration separately verified.",
+  "pid": 22625,
+  "runtime": {
+    "packaged": true,
+    "userData": "/private/tmp/willyou-context-menu-A-ssm3CF/userdata",
+    "executable": "/private/tmp/willyou-m9-acceptance-batch-r81-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+  },
+  "failedStage": "dark:tree-directory",
+  "error": "Error: Error: Missing [role=treeitem][title=\"/private/tmp/willyou-context-menu-A-ssm3CF/project/子目录 space 🙂\"]\n    at <anonymous>:1:144\n    at <anonymous>:1:385",
+  "stack": "Error: Error: Missing [role=treeitem][title=\"/private/tmp/willyou-context-menu-A-ssm3CF/project/子目录 space 🙂\"]\n    at <anonymous>:1:144\n    at <anonymous>:1:385\n    at Object.evaluate (file:///Users/hx/hx/hxWork/SmartDD/scripts/lib/electron-harness.mjs:61:42)\n    at async right (file:///Users/hx/hx/hxWork/SmartDD/scripts/files/context-menu-ui.mjs:12:40)\n    at async file:///Users/hx/hx/hxWork/SmartDD/scripts/files/context-menu-ui.mjs:24:63",
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 context menu origin\n设置\n首页\n›\nM9 context menu origin\n文件\nM9 context menu origin\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 context menu origin\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/19/2026, 7:51:15 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nplain.txt\nSynthetic static viewers\n›\n子目录 space 🙂\n›\nplain.txt\n打开\n正在读取文件…\nproject\n正在读取…\n0.0 KiB",
+  "finishedAt": "2026-10-19T11:51:17.937Z"
+}

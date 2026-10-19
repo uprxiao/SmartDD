@@ -1,0 +1,137 @@
+{
+  "caseId": "M9-T-H24",
+  "at": "2026-10-18T02:46:49.749Z",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+  "boundary": "Production store+buffer+FileService/recovery+packaged broker; real checkpoint/write/conflict and independent disk checks. Only native save dispatch timing is gated. No mocked successful save, UI or physical IME claim.",
+  "rows": [
+    {
+      "scenario": "new active native save before old switch continuation",
+      "input": "keep latest input",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "whileSecondPending": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# Second\n",
+        "aDisk": "# First\n",
+        "aDirty": true,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "newerSaved": true,
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# Second\n",
+        "aDisk": "# Second\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 8,
+            "inode": "44548946",
+            "device": "16777232",
+            "changedNs": "1792291608626744768",
+            "modifiedNs": "1792291608608401000",
+            "hash": "9deb94158e91742ee59a098729128779da85eef76b28890b6c0cb64401537a29"
+          },
+          "bufferVersion": 1,
+          "opId": "4511e9aa-ae19-4df7-8430-5134b0ad5657",
+          "state": "saved",
+          "recoveryId": "4511e9aa-ae19-4df7-8430-5134b0ad5657"
+        },
+        {
+          "revision": {
+            "size": 9,
+            "inode": "44549003",
+            "device": "16777232",
+            "changedNs": "1792291609058967872",
+            "modifiedNs": "1792291609050321000",
+            "hash": "797e649f79050c5aae111c0f55d82376a57d7b3a227af67be93c3158c2e1999f"
+          },
+          "bufferVersion": 2,
+          "opId": "6b6d9e74-bf17-456c-9719-1fb54b868c0b",
+          "state": "saved",
+          "recoveryId": "6b6d9e74-bf17-456c-9719-1fb54b868c0b"
+        }
+      ],
+      "nativeSaves": 2
+    },
+    {
+      "scenario": "new active native save before old switch continuation",
+      "input": "return to current base",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "whileSecondPending": {
+        "active": "a.md",
+        "aMode": "source",
+        "aRouteMode": "source",
+        "aRaw": "# First\n",
+        "aDisk": "# First\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "newerSaved": false,
+      "final": {
+        "active": "a.md",
+        "aMode": "source",
+        "aRouteMode": "source",
+        "aRaw": "# First\n",
+        "aDisk": "# Second\n",
+        "aDirty": true,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 8,
+            "inode": "44549031",
+            "device": "16777232",
+            "changedNs": "1792291609430619810",
+            "modifiedNs": "1792291609422268000",
+            "hash": "9deb94158e91742ee59a098729128779da85eef76b28890b6c0cb64401537a29"
+          },
+          "bufferVersion": 1,
+          "opId": "c05e5dea-459c-400b-9790-859404ea80c0",
+          "state": "saved",
+          "recoveryId": "c05e5dea-459c-400b-9790-859404ea80c0"
+        },
+        {
+          "revision": {
+            "size": 9,
+            "inode": "44549047",
+            "device": "16777232",
+            "changedNs": "1792291609682140042",
+            "modifiedNs": "1792291609671489000",
+            "hash": "797e649f79050c5aae111c0f55d82376a57d7b3a227af67be93c3158c2e1999f"
+          },
+          "bufferVersion": 2,
+          "opId": "756edb25-b623-4c49-9543-e439d6553e8f",
+          "state": "saved",
+          "recoveryId": "756edb25-b623-4c49-9543-e439d6553e8f"
+        }
+      ],
+      "nativeSaves": 2
+    }
+  ]
+}

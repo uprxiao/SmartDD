@@ -140,6 +140,12 @@ def derive(data):
     return data
 
 
+def execution_summary(data):
+    current = [case for case in data['cases'] if case['scope'] == 'm9-local']
+    passed = sum(case['status'] == '通过' for case in current)
+    return f'本期{len(current)}条，正式通过{passed}条，尚未完整通过{len(current) - passed}条；仅对各证据指定构建与平台有效'
+
+
 def render_cases(data):
     preamble = CASES.read_text().split('## 3. ', 1)[0].rstrip()
     preamble = re.sub(r'版本：R3(?:\.\d+)?-20261017', '版本：' + data['version'], preamble)
@@ -147,12 +153,11 @@ def render_cases(data):
     preamble = preamble.replace('任务引用/选择编辑', '任务上下文交接/独立磁盘同步')
     preamble = preamble.replace('R3补32条技术闸门/缺陷回归/业务接入，共417条/23组',
                                 'R3补32条技术闸门/缺陷回归/业务接入，R3.2新增Y33–Y40共8条文件拖入终端用例，共425条/23组')
-    preamble = preamble.replace(
-        '| R | Codex指定版本/build/ASAR hash；独立临时项目和合成fixture；记录locale/feature flag可见状态 | 参考运行事实，仅做只读观察或已授权隔离样本操作；不能证明SmartDD |',
-        '| R | 已归档Codex版本/build/ASAR hash及参考资料；仅引用既有证据，保留其locale/feature flag已知或未知边界 | 历史参考证据标签；当前禁止新增Codex操作或查看，不能证明WillYou |')
-    reference_rule = ('**当前参考约束：用户已要求不再操作或查看 Codex。** 含 `R` 的用例保留既有编号及历史参考分支；'
-                      '“观察/取证/参考录屏”等旧步骤不构成重新执行授权，也不能用原型结果补造参考证据。'
-                      '只使用已归档的允许资料；未知参考状态明确保留未核对，WillYou 的 P/U/I/A/X 分支可按各阶段授权独立推进。')
+    preamble = re.sub(r'^\| R \| .*$', '| R | 已归档Codex版本/build/ASAR hash、用户截图及允许的静态参考；保留locale/feature flag已知或未知边界 | 参考证据不能证明WillYou；工具安全拒绝不可绕过 |', preamble, flags=re.M)
+    preamble = re.sub(r'\*\*本文是可执行用例设计，所有用例均未执行，证据栏为空。\*\*[^\n]*', '**本文同时维护可执行用例和实际结果。** 正式开发已获授权，当前状态按逐条JSON及证据填写；原型/单测不能代替打包App。具体时间、构建、环境、缺陷和复验见[执行与缺陷记录](执行与缺陷记录.md)。', preamble)
+    preamble = re.sub(r'\n\n\*\*当前参考约束：[^\n]*', '', preamble)
+    reference_rule = ('**当前参考约束：沿用用户最新截图及已允许的只读参考核查。** 旧禁止要求已更新，但历史CUA工具安全拒绝不能绕过；'
+                      '未获得的动态/像素证据继续标记未核对，不用原型结果补造。WillYou的P/U/I/A/X分支按既有授权推进。')
     if reference_rule not in preamble:
         preamble += '\n\n' + reference_rule
     drop_fixture = ('| D17 | 文件拖放：可信根内真实txt/md/docx/pdf/png/jpg及任意后缀文件，绝对路径含中文、空格、emoji、引号、括号、分号、反引号和$()；'
@@ -165,7 +170,7 @@ def render_cases(data):
     if paragraph not in preamble:
         preamble += '\n\n' + paragraph
     scope_summary = data['scope_summary']
-    scope_rule = (f'**R3.3范围：D01、D07均已确认，当前无待用户产品选择。** 总账{scope_summary["total"]}条保留原编号与未执行事实；'
+    scope_rule = (f'**R3.3范围：D01、D07均已确认，当前无待用户产品选择。** 总账{scope_summary["total"]}条保留原编号与执行事实；'
                   f'本期本机适用{scope_summary["current"]}条（含{scope_summary["current_with_deferred_parameters"]}条混合用例的本机分支），'
                   f'{scope_summary["future_only"]}条纯远程功能及混合行的远程参数留后续、未安排M，不计本期通过，也不阻塞本期准出。'
                   '本期包含非本地来源拒绝/身份隔离；OS已解析且位于已授权root内的落地文件路径按本机路径处理，不新增网络连接、挂载或下载。'
@@ -185,12 +190,12 @@ def render_cases(data):
             values = [f'**{c["id"]} {c["title"]}**<br>' + '、'.join(c['requirements']), scope_caption(c),
                       c['level'] + '<br>' + '+'.join(c['environments']) + ' / ' + '+'.join(c['data']),
                       c['steps'], c['expected'] + '<br>依据：' + c['source'],
-                      '/'.join(c['prototype_pages']) + '；' + c['prototype_status'] + decision,
-                      c['status'], '；'.join(map(str, c['evidence'])) if c['evidence'] else '—']
+                      '/'.join(c['prototype_pages']) + '；' + c['prototype_status'] + decision + ('<br>实际：' + c['actual_result'] if c['actual_result'] else '') + ('<br>缺陷：' + '；'.join(map(str, c['defects'])) if c['defects'] else ''),
+                      c['status'], '；'.join(f'[记录]({item})' for item in c['evidence']) if c['evidence'] else '—']
             lines.append('| ' + ' | '.join(cell(v) for v in values) + ' |')
         lines += ['']
     lines += ['## 覆盖统计与准出', '',
-              f'当前共 **{len(data["cases"])} 条用例／{len(data["groups"])} 组**。保留原417个稳定编号，R3.2新增Y33–Y40共8条文件拖入终端用例；上下文投递与右侧独立磁盘同步分开，不附加CLI审批/自动还原；R3.1的保存/Office判据及子需求映射继续保留。正式用例仍全部未执行；参数化行须拆成子结果。统计为设计关联数量，不是通过率，也不证明子需求的所有分支均已覆盖。', '',
+              f'当前共 **{len(data["cases"])} 条用例／{len(data["groups"])} 组**。保留原417个稳定编号，R3.2新增Y33–Y40共8条文件拖入终端用例；上下文投递与右侧独立磁盘同步分开，不附加CLI审批/自动还原；R3.1的保存/Office判据及子需求映射继续保留。{execution_summary(data)}；参数化行须拆成子结果。关联数量不证明子需求的所有分支均已覆盖。', '',
               f'R3.3本期适用 **{scope_summary["current"]} 条**，纯后续 **{scope_summary["future_only"]} 条**；混合行只按本期分支验收，后续参数另记。102项总账关联保留，本期有{len(data["current_coverage"])}个子需求关联；R08.12远程能力不计本期准出，R08.9只验拒绝非本地来源。', '',
               '| 父需求 | 总账关联用例数 |', '| --- | --- |']
     lines += [f'| {key} | {len(ids)} |' for key, ids in data['parent_coverage'].items()]
@@ -205,14 +210,14 @@ def render_mapping(data):
              f'依据需求修订：**{data["version"]}**。本次是一致性整理；没有执行或改写任何正式验收结果。', '',
              f'保留原417个稳定用例，R3.2新增Y33–Y40共8条，当前{len(data["cases"])}条；将实际步骤/预期关联到具体子需求和既有 P01–P18 页面。JSON 是唯一逐条维护来源；本文件与测试用例由 `维护用例索引.py --write` 生成。不得通过整组挂全部子需求或重复编号提高覆盖数字。', '',
              f'- {len(data["cases"])} 条用例／{len(data["groups"])} 组；{len(data["coverage"])} 个子需求有至少一条设计关联。',
-             '- 全部正式用例仍未执行，实际结果为空，证据数组为空。',
+             '- ' + execution_summary(data) + '。逐条实际结果和证据见测试用例。',
              '- “有设计关联”不等于“所有分支完整覆盖”，也不等于原型已实现或验收通过。',
              '- `prototype` 保留原 PS 逻辑状态，`prototype_pages` 指向真实页面入口；未实现/未核验状态通过状态和备注明确列出。',
              '- R3 局部浏览器/隔离实验保持在原执行记录，未迁成正式用例通过。', '',
              '## 本期与后续适用范围', '',
              data['scope_basis'], '',
              '| 分类 | 条数 | 用例／执行边界 |', '| --- | --- | --- |',
-             f'| 本期本机适用总数 | {summary["current"]} | 包括下列本机、拒绝非本地及混合用例的本机分支；全部未执行 |',
+             f'| 本期本机适用总数 | {summary["current"]} | 包括下列本机、拒绝非本地及混合用例的本机分支；依逐条状态验收 |',
              f'| 本机步骤，无远程成功参数 | {summary["current_local_only"]} | 依本机可信根与本期已确认能力执行；其他平台仍按原环境分别验证 |',
              f'| 本期拒绝／隔离非本地来源 | {summary["current_nonlocal_rejection"]} | ' + '、'.join(summary['nonlocal_rejection_case_ids']) + '；不连接远程服务 |',
              f'| 本期用例含后续远程参数 | {summary["current_with_deferred_parameters"]} | ' + '、'.join(summary['mixed_case_ids']) + '；本期只验本机分支，远程参数后续 |',

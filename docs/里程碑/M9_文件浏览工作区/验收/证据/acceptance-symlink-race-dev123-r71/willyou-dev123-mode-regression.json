@@ -1,0 +1,378 @@
+{
+  "caseId": "M9-T-H24",
+  "at": "2026-10-19T04:41:02.638Z",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r70-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+  "boundary": "Production store+buffer+FileService/recovery+packaged broker; real checkpoint/write/conflict and independent disk checks. Only native save dispatch timing is gated. No mocked successful save, UI or physical IME claim.",
+  "rows": [
+    {
+      "scenario": "current intent control",
+      "outcome": "success",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "source",
+        "aRouteMode": "source",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "49405013",
+            "device": "16777232",
+            "changedNs": "1792384860380032897",
+            "modifiedNs": "1792384860365867000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "af1dd95a-c7c7-4193-93d2-9b096e40fb6d",
+          "state": "saved",
+          "recoveryId": "af1dd95a-c7c7-4193-93d2-9b096e40fb6d"
+        }
+      ],
+      "nativeSaves": 1,
+      "transactions": [
+        "af1dd95a-c7c7-4193-93d2-9b096e40fb6d"
+      ]
+    },
+    {
+      "scenario": "current intent control",
+      "outcome": "conflict",
+      "result": {
+        "status": "rejected",
+        "message": "Error: The file identity or revision changed after save preflight"
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# External\n",
+        "aDirty": true,
+        "aConflict": true,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "bufferVersion": 1,
+          "opId": "2d9f58f3-fcd3-4594-bb4f-703ef4d212e3",
+          "state": "conflict",
+          "message": "The file identity or revision changed after save preflight"
+        }
+      ],
+      "nativeSaves": 1,
+      "transactions": []
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "other tab",
+      "outcome": "success",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "b.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "49405130",
+            "device": "16777232",
+            "changedNs": "1792384860848294112",
+            "modifiedNs": "1792384860838266000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "557fcffa-3663-40a1-8eef-9ab3df83caf0",
+          "state": "saved",
+          "recoveryId": "557fcffa-3663-40a1-8eef-9ab3df83caf0"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "other tab",
+      "outcome": "conflict",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "b.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# External\n",
+        "aDirty": true,
+        "aConflict": true,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "bufferVersion": 1,
+          "opId": "0f5c52f5-d368-4884-bb95-10f43a1db71d",
+          "state": "conflict",
+          "message": "The file identity or revision changed after save preflight"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "away then back",
+      "outcome": "success",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "49405207",
+            "device": "16777232",
+            "changedNs": "1792384861280400374",
+            "modifiedNs": "1792384861271591000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "03a72f62-246e-4e85-b6e9-8c0ecc281ca7",
+          "state": "saved",
+          "recoveryId": "03a72f62-246e-4e85-b6e9-8c0ecc281ca7"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "away then back",
+      "outcome": "conflict",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# External\n",
+        "aDirty": true,
+        "aConflict": true,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "bufferVersion": 1,
+          "opId": "844a36c9-9ad8-45ed-94ee-aa98b86a0ad2",
+          "state": "conflict",
+          "message": "The file identity or revision changed after save preflight"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "new mode intent supersedes old pending mode",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "49405258",
+            "device": "16777232",
+            "changedNs": "1792384861759303373",
+            "modifiedNs": "1792384861739707000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "5531b9ca-6026-4780-98d7-dfe3d503ad31",
+          "state": "saved",
+          "recoveryId": "5531b9ca-6026-4780-98d7-dfe3d503ad31"
+        }
+      ]
+    },
+    {
+      "scenario": "new active native save before old switch continuation",
+      "input": "keep latest input",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "whileSecondPending": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# Second\n",
+        "aDisk": "# First\n",
+        "aDirty": true,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "newerSaved": true,
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# Second\n",
+        "aDisk": "# Second\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 8,
+            "inode": "49405304",
+            "device": "16777232",
+            "changedNs": "1792384862035470201",
+            "modifiedNs": "1792384862025616000",
+            "hash": "9deb94158e91742ee59a098729128779da85eef76b28890b6c0cb64401537a29"
+          },
+          "bufferVersion": 1,
+          "opId": "9b740bda-ec85-4c64-a0c4-b38760317fce",
+          "state": "saved",
+          "recoveryId": "9b740bda-ec85-4c64-a0c4-b38760317fce"
+        },
+        {
+          "revision": {
+            "size": 9,
+            "inode": "49405329",
+            "device": "16777232",
+            "changedNs": "1792384862181159974",
+            "modifiedNs": "1792384862172723000",
+            "hash": "797e649f79050c5aae111c0f55d82376a57d7b3a227af67be93c3158c2e1999f"
+          },
+          "bufferVersion": 2,
+          "opId": "339303c3-9e33-45fa-990c-3e09ab0e8717",
+          "state": "saved",
+          "recoveryId": "339303c3-9e33-45fa-990c-3e09ab0e8717"
+        }
+      ],
+      "nativeSaves": 2
+    },
+    {
+      "scenario": "new active native save before old switch continuation",
+      "input": "return to current base",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "whileSecondPending": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# First\n",
+        "aDisk": "# First\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "newerSaved": false,
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# First\n",
+        "aDisk": "# Second\n",
+        "aDirty": true,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 8,
+            "inode": "49405370",
+            "device": "16777232",
+            "changedNs": "1792384862433897351",
+            "modifiedNs": "1792384862423644000",
+            "hash": "9deb94158e91742ee59a098729128779da85eef76b28890b6c0cb64401537a29"
+          },
+          "bufferVersion": 1,
+          "opId": "2d248806-293d-44b8-8a31-15f1e8446541",
+          "state": "saved",
+          "recoveryId": "2d248806-293d-44b8-8a31-15f1e8446541"
+        },
+        {
+          "revision": {
+            "size": 9,
+            "inode": "49405396",
+            "device": "16777232",
+            "changedNs": "1792384862590353493",
+            "modifiedNs": "1792384862581875000",
+            "hash": "797e649f79050c5aae111c0f55d82376a57d7b3a227af67be93c3158c2e1999f"
+          },
+          "bufferVersion": 2,
+          "opId": "635a9829-e6ad-41cc-955a-05f946bfd1a0",
+          "state": "saved",
+          "recoveryId": "635a9829-e6ad-41cc-955a-05f946bfd1a0"
+        }
+      ],
+      "nativeSaves": 2
+    }
+  ]
+}

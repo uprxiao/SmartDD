@@ -1,0 +1,283 @@
+{
+  "caseIds": [
+    "M9-T-F14",
+    "M9-T-F15"
+  ],
+  "at": "2026-10-19T05:02:45.888Z",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r72-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "81fcc9dc55b069070d48e33007a09b2cc461fbf2e3ffaed011ac14198a9ffb99",
+  "projectPath": "/private/tmp/willyou-pdf-formats-x1vg6h6n/project",
+  "before": {
+    "normal.pdf": {
+      "sha256": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+      "inode": "49547754",
+      "mtimeNs": "1792386116936426151",
+      "ctimeNs": "1792386116936426151"
+    },
+    "encrypted.pdf": {
+      "sha256": "c412661ad81258c5110672fe6d2f5be6ab780c22cf58aef95e1abb3e9daef73b",
+      "inode": "49547755",
+      "mtimeNs": "1792386116936752903",
+      "ctimeNs": "1792386116936752903"
+    },
+    "garbage.pdf": {
+      "sha256": "de7ef6753f04ce592af55b7c15e1f03cf28d454d4e82a3b7537a9b3d13eeeaac",
+      "inode": "49547756",
+      "mtimeNs": "1792386116936976362",
+      "ctimeNs": "1792386116936976362"
+    },
+    "truncated.pdf": {
+      "sha256": "9ffb22240a4a4f96e9850b632d5186c36723d473e5beca98a0c7245622ea8ee4",
+      "inode": "49547757",
+      "mtimeNs": "1792386116937200029",
+      "ctimeNs": "1792386116937200029"
+    },
+    "invalid.pdf": {
+      "sha256": "c6b7375f3b4a2cffb0025329ca4cd63f5f303fcd0fd32668a5b6ce2c62335d55",
+      "inode": "49547758",
+      "mtimeNs": "1792386116937294404",
+      "ctimeNs": "1792386116937294404"
+    },
+    "cjk-missing-font.pdf": {
+      "sha256": "f207815b5822d29cf7bbfd1d2f3259c9e168f8514844090f33afe56e03eca920",
+      "inode": "49547759",
+      "mtimeNs": "1792386116937508405",
+      "ctimeNs": "1792386116937508405"
+    },
+    "rotated.pdf": {
+      "sha256": "ff2afde88842a2ac022a38b49e2a390706c78915e65505a613459e7e184c4568",
+      "inode": "49547760",
+      "mtimeNs": "1792386116937606822",
+      "ctimeNs": "1792386116937606822"
+    },
+    "forms.pdf": {
+      "sha256": "d7d27b05a1847382e5464caf24f93e6ef11772220d9ff4529d82151d972f7919",
+      "inode": "49547761",
+      "mtimeNs": "1792386116937703406",
+      "ctimeNs": "1792386116937703406"
+    },
+    "scripts.pdf": {
+      "sha256": "ea2eaa95c2c64519c59e0585282ba7966aa3932499e5d9f98741daa578cc85e3",
+      "inode": "49547762",
+      "mtimeNs": "1792386116937783781",
+      "ctimeNs": "1792386116937783781"
+    },
+    "missing-mixed-fonts.pdf": {
+      "sha256": "48d5d9c8632b5572e66490b8f8423abfd5771a4304c3a1e57a3c43310f85673d",
+      "inode": "49547763",
+      "mtimeNs": "1792386116938673784",
+      "ctimeNs": "1792386116938673784"
+    }
+  },
+  "checks": [
+    {
+      "file": "encrypted.pdf",
+      "kind": "password",
+      "missingPassword": true,
+      "cancel": "已取消输入密码。需要密码才能打开此 PDF。重试",
+      "wrongPassword": true,
+      "render": {
+        "canvas": [
+          285,
+          369
+        ],
+        "inkPixels": 2335,
+        "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "garbage.pdf",
+      "kind": "invalid",
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试"
+    },
+    {
+      "file": "truncated.pdf",
+      "kind": "invalid",
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试"
+    },
+    {
+      "file": "invalid.pdf",
+      "kind": "invalid",
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试"
+    },
+    {
+      "file": "cjk-missing-font.pdf",
+      "kind": "cjk",
+      "render": {
+        "canvas": [
+          309,
+          437
+        ],
+        "inkPixels": 456,
+        "text": "文件工作区 中文测试",
+        "fonts": [
+          "monospace"
+        ]
+      }
+    },
+    {
+      "file": "rotated.pdf",
+      "kind": "rotated",
+      "render": {
+        "canvas": [
+          316,
+          244
+        ],
+        "inkPixels": 476,
+        "text": "WillYou complex PDF fixture",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "forms.pdf",
+      "kind": "forms",
+      "render": {
+        "canvas": [
+          310,
+          401
+        ],
+        "inkPixels": 936,
+        "text": "WillYou complex PDF fixture",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "scripts.pdf",
+      "kind": "scripts",
+      "render": {
+        "canvas": [
+          310,
+          401
+        ],
+        "inkPixels": 724,
+        "text": "WillYou complex PDF fixture",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "missing-mixed-fonts.pdf",
+      "kind": "missing-mixed",
+      "render": {
+        "canvas": [
+          309,
+          437
+        ],
+        "inkPixels": 17472,
+        "text": "文件工作区 缺失字体混排验收WillYou MISSING_FONT Latin 12345不同字号与中文回退",
+        "fonts": [
+          "monospace",
+          "serif"
+        ]
+      },
+      "fontBoundary": "Font substitution is measured on this Mac only; no signature/form editing or cross-platform glyph-equivalence claim."
+    }
+  ],
+  "caseResults": {
+    "F15": "passed",
+    "F14": "passed"
+  },
+  "status": "passed",
+  "navigation": {
+    "page": "第 3 / 3 页",
+    "zoom": "150% ",
+    "selectedText": "文件浏览工作区"
+  },
+  "restored": {
+    "page": "第 3 / 3 页",
+    "zoom": "150% "
+  },
+  "persisted": {
+    "source": "project-directory",
+    "sourceId": "4f102c5b-f3ff-4f6f-ab47-e88ee656e21a",
+    "sourcePath": "/private/tmp/willyou-pdf-formats-x1vg6h6n/project",
+    "relativePath": "normal.pdf",
+    "mode": "document",
+    "pdf": {
+      "page": 3,
+      "zoom": 150
+    }
+  },
+  "reloadedPanelInitiallyVisible": true,
+  "reloaded": {
+    "page": "第 3 / 3 页",
+    "zoom": "150% "
+  },
+  "after": {
+    "normal.pdf": {
+      "sha256": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+      "inode": "49547754",
+      "mtimeNs": "1792386116936426151",
+      "ctimeNs": "1792386116936426151"
+    },
+    "encrypted.pdf": {
+      "sha256": "c412661ad81258c5110672fe6d2f5be6ab780c22cf58aef95e1abb3e9daef73b",
+      "inode": "49547755",
+      "mtimeNs": "1792386116936752903",
+      "ctimeNs": "1792386116936752903"
+    },
+    "garbage.pdf": {
+      "sha256": "de7ef6753f04ce592af55b7c15e1f03cf28d454d4e82a3b7537a9b3d13eeeaac",
+      "inode": "49547756",
+      "mtimeNs": "1792386116936976362",
+      "ctimeNs": "1792386116936976362"
+    },
+    "truncated.pdf": {
+      "sha256": "9ffb22240a4a4f96e9850b632d5186c36723d473e5beca98a0c7245622ea8ee4",
+      "inode": "49547757",
+      "mtimeNs": "1792386116937200029",
+      "ctimeNs": "1792386116937200029"
+    },
+    "invalid.pdf": {
+      "sha256": "c6b7375f3b4a2cffb0025329ca4cd63f5f303fcd0fd32668a5b6ce2c62335d55",
+      "inode": "49547758",
+      "mtimeNs": "1792386116937294404",
+      "ctimeNs": "1792386116937294404"
+    },
+    "cjk-missing-font.pdf": {
+      "sha256": "f207815b5822d29cf7bbfd1d2f3259c9e168f8514844090f33afe56e03eca920",
+      "inode": "49547759",
+      "mtimeNs": "1792386116937508405",
+      "ctimeNs": "1792386116937508405"
+    },
+    "rotated.pdf": {
+      "sha256": "ff2afde88842a2ac022a38b49e2a390706c78915e65505a613459e7e184c4568",
+      "inode": "49547760",
+      "mtimeNs": "1792386116937606822",
+      "ctimeNs": "1792386116937606822"
+    },
+    "forms.pdf": {
+      "sha256": "d7d27b05a1847382e5464caf24f93e6ef11772220d9ff4529d82151d972f7919",
+      "inode": "49547761",
+      "mtimeNs": "1792386116937703406",
+      "ctimeNs": "1792386116937703406"
+    },
+    "scripts.pdf": {
+      "sha256": "ea2eaa95c2c64519c59e0585282ba7966aa3932499e5d9f98741daa578cc85e3",
+      "inode": "49547762",
+      "mtimeNs": "1792386116937783781",
+      "ctimeNs": "1792386116937783781"
+    },
+    "missing-mixed-fonts.pdf": {
+      "sha256": "48d5d9c8632b5572e66490b8f8423abfd5771a4304c3a1e57a3c43310f85673d",
+      "inode": "49547763",
+      "mtimeNs": "1792386116938673784",
+      "ctimeNs": "1792386116938673784"
+    }
+  },
+  "boundary": "Actual packaged PDF.js Worker over native revision-bound file bytes. Selection uses renderer native mouse; no clipboard. Missing fonts substitute on this Mac, not font-fidelity or signature/form-editing support. Download/native save, full P/R/V matrices and cross-platform results remain separate.",
+  "syntheticPasswordScan": {
+    "checkedOwnedUserDataFiles": 50,
+    "matchedPaths": [],
+    "boundary": "Raw bytes in this isolated userData and App log after exit; no claim about process memory or other user data."
+  },
+  "finishedAt": "2026-10-19T05:02:52.476Z"
+}

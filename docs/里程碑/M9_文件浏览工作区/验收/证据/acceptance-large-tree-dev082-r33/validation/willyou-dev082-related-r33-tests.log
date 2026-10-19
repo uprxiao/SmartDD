@@ -1,0 +1,55 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/external-tree-refresh-acceptance.test.tsx src/renderer/features/files/tree-depth-acceptance.test.tsx src/renderer/features/files/tree-policy-acceptance.test.tsx src/renderer/features/files/tree-viewport-acceptance.test.tsx src/renderer/features/files/tree-reveal-acceptance.test.tsx src/renderer/features/files/name-filter-view.test.tsx src/renderer/features/files/workspace-tree-native-acceptance.test.tsx src/renderer/features/files/workspace-tree-acceptance.test.tsx src/renderer/features/files/directory-race-acceptance.test.ts src/renderer/features/files/nested-root-acceptance.test.ts src/renderer/features/files/search-history-acceptance.test.tsx src/renderer/features/files/workspace-panel-focus.test.tsx src/renderer/features/files/workspace-persistence-panel.test.tsx src/renderer/features/files/workspace-store.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev082-related-r33-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/renderer/features/files/directory-race-acceptance.test.ts (6 tests) 1299ms
+     ✓ B02 cancels an unconfirmed collapsed request, reopens fresh and ignores inverse old delivery  654ms
+ ✓ src/renderer/features/files/nested-root-acceptance.test.ts (3 tests) 1358ms
+     ✓ A13 displays the longest ancestor, preserves a containing tree, and never confuses /a with /abc  694ms
+     ✓ D21 reuses one dirty buffer/history and rebases identity after save through both nested aliases  519ms
+ ✓ src/renderer/features/files/workspace-panel-focus.test.tsx (7 tests) 1761ms
+     ✓ keeps pointer-initiated failed switching in the original editor, mode and selection  458ms
+     ✓ does not steal focus from outside the workspace when closing inactive C with the mouse  355ms
+ ✓ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx (4 tests) 1341ms
+     ✓ B01 lists only root then levels one/two; pending requests and collapsed cache are reused  535ms
+     ✓ B04 ordinary native tree includes dotfiles, hidden child and node_modules child  330ms
+     ✓ B18 real first single A preview, first double B pinned once, directory only toggles  361ms
+ ✓ src/renderer/features/files/tree-reveal-acceptance.test.tsx (6 tests) 1848ms
+     ✓ B09 opens a real search row, expands ancestors, selects and reveals the file without focusing the tree  668ms
+ ✓ src/renderer/features/files/tree-depth-acceptance.test.tsx (2 tests) 2132ms
+     ✓ walks20 real directories and preserves the complete spaced Unicode route through refresh and reopen  2014ms
+ ✓ src/renderer/features/files/workspace-store.test.ts (13 tests) 37ms
+ ✓ src/renderer/features/files/name-filter-view.test.tsx (4 tests) 233ms
+ ✓ src/renderer/features/files/workspace-tree-acceptance.test.tsx (3 tests) 489ms
+ ✓ src/renderer/features/files/tree-viewport-acceptance.test.tsx (9 tests) 3140ms
+     ✓ B10 preserves viewport, expanded selection and native DOM row keys across unrelated parent renders  933ms
+     ✓ B11 waits for a real visible viewport instead of consuming a clamped zero restore  305ms
+     ✓ B16 displays the last three sticky ancestors and activates the exact underlying folder  354ms
+     ✓ B16 restores a focused folder removed by native refresh; later user focus wins (false)  307ms
+     ✓ B16 restores a focused folder removed by native refresh; later user focus wins (true)  309ms
+ ✓ src/renderer/features/files/workspace-persistence-panel.test.tsx (2 tests) 484ms
+     ✓ shows explicit layout overwrite and reread actions; a clean reread adopts latest routes  410ms
+ ✓ src/renderer/features/files/tree-policy-acceptance.test.tsx (2 tests) 414ms
+ ✓ src/renderer/features/files/search-history-acceptance.test.tsx (10 tests) 3683ms
+     ✓ R07: retains 30 unique queries and 20 masks, newest first, across dialog restart  1215ms
+     ✓ R07: scopes do not leak histories and only the newest 20 survive a 21st scope and restart  1351ms
+ ✓ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (22 tests) 5948ms
+     ✓ B08 'ordinary writer' / 'native watch' updates create/delete/rename and marks the old document missing  749ms
+     ✓ B08 'ordinary writer' / 'explicit refresh' updates create/delete/rename and marks the old document missing  398ms
+     ✓ B08 'ordinary writer' / 'resume scan' updates create/delete/rename and marks the old document missing  305ms
+     ✓ B08 'CLI process' / 'native watch' updates create/delete/rename and marks the old document missing  343ms
+     ✓ B08 'CLI process' / 'explicit refresh' updates create/delete/rename and marks the old document missing  322ms
+     ✓ B08 'CLI process' / 'resume scan' updates create/delete/rename and marks the old document missing  409ms
+     ✓ B08 'ordinary writer' / 'refresh' cannot redirect a missing dirty document to a new same-name same-bytes file  367ms
+     ✓ B08 'ordinary writer' / 'read' cannot redirect a missing dirty document to a new same-name same-bytes file  308ms
+     ✓ L06 observes another process changing the file immediately after an acknowledged local save  305ms
+
+ Test Files  14 passed (14)
+      Tests  93 passed (93)
+   Start at  22:26:04
+   Duration  8.07s (transform 6.54s, setup 0ms, import 16.03s, tests 24.17s, environment 6.22s)
+
+JSON report written to /private/tmp/willyou-dev082-related-r33-tests.json

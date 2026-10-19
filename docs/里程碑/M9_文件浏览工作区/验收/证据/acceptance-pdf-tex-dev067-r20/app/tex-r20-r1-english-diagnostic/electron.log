@@ -1,0 +1,85 @@
+
+DevTools listening on ws://127.0.0.1:56372/devtools/browser/e25a8bc9-5e9b-4645-bfc8-937e1826edb3
+[db] applied migrations: 0000_init, 0001_projects, 0002_tasks, 0003_ai_profile_check, 0004_capabilities, 0005_project_transfer
+Error occurred in handler for 'files.languageOpen': FileError: [UNTRUSTED] 文件引用已失效或不属于当前窗口
+    at FileService.requireIssuedDocument (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:21052:122)
+    at FileService.requireDocument (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:21047:29)
+    at FileService.documentRequest (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:21075:29)
+    at async FileService.refresh (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:20865:20)
+    at async FileService.lspSource (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:20626:18)
+    at async FileLanguageService.open (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:16815:22)
+    at async Session.<anonymous> (node:electron/js2c/browser_init:2:118661) {
+  code: 'UNTRUSTED'
+}
+Error occurred in handler for 'files.compileTex': FileError: [INVALID_INPUT] TeX 编译失败；源码保留，未采用残留产物
+note: "version 2" Tectonic command-line interface activated
+note: using only cached resource files
+note: generating format "latex"
+note: Running TeX ...
+error: missing-package.tex:1: ! LaTeX Error: File `willyoumissingpackagef16.sty' not found.
+note: Writing `<编译快照>/out/missing-package.log` (830 B)
+error: something bad happened inside XeTeX; its output follows:
+
+===============================================================================
+(missing-package.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2022-02-24> (article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(size10.clo))
+! ! LaTeX Error: File `willyoumissingpackagef16.sty' not found..
+\@missingfileerror ...or: File `#1.#2' not found.}
+                                                  
+l.1 ...\usepackage{willyoumissingpackagef16}\begin
+                                                  {document}MUST_NOT_RENDER\...
+No pages of output.
+Transcript written on missing-package.log.
+===============================================================================
+error: the XeTeX engine had an unrecoverable error
+caused by: halted on potentially-recoverable error as specified
+
+    at /private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:19869:48
+    at async FileTexService.open (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:19851:14)
+    at async Session.<anonymous> (node:electron/js2c/browser_init:2:118661) {
+  code: 'INVALID_INPUT'
+}
+Error occurred in handler for 'files.languageOpen': FileError: [UNTRUSTED] 文件引用已失效或不属于当前窗口
+    at FileService.requireIssuedDocument (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:21052:122)
+    at FileService.requireDocument (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:21047:29)
+    at FileService.documentRequest (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:21075:29)
+    at async FileService.refresh (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:20865:20)
+    at async FileService.lspSource (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:20626:18)
+    at async FileLanguageService.open (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:16815:22)
+    at async Session.<anonymous> (node:electron/js2c/browser_init:2:118661) {
+  code: 'UNTRUSTED'
+}
+Error occurred in handler for 'files.compileTex': FileError: [INVALID_INPUT] TeX 编译失败；源码保留，未采用残留产物
+note: "version 2" Tectonic command-line interface activated
+note: using only cached resource files
+note: generating format "latex"
+note: Running TeX ...
+warning: did not produce "no-pages.xdv"; this may mean that your document is empty
+note: Rerunning TeX because "no-pages.aux" changed ...
+note: Running xdvipdfmx ...
+warning: did not produce "no-pages.xdv"; this may mean that your document is empty
+note: Writing `<编译快照>/out/no-pages.log` (2.0166015625 KiB)
+error: something bad happened inside xdvipdfmx; its output follows:
+
+===============================================================================
+(no-pages.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2022-02-24> (article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(size10.clo)) (l3backend-xetex.def) (no-pages.aux) (ts1cmr.fd) (no-pages.aux) )
+
+No pages of output.
+Transcript written on no-pages.log.
+===============================================================================
+error: the xdvipdfmx engine had an unrecoverable error
+caused by: cannot open "no-pages.xdv"
+
+    at /private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:19869:48
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async FileTexService.open (/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:19851:14)
+    at async Session.<anonymous> (node:electron/js2c/browser_init:2:118661) {
+  code: 'INVALID_INPUT'
+}

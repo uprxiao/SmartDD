@@ -1,0 +1,47 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/shared/file-name-results.test.ts src/renderer/features/files/name-limit-native-acceptance.test.ts src/renderer/features/files/name-search-acceptance.test.tsx src/renderer/features/files/search-session-acceptance.test.tsx src/renderer/features/files/search-race-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev104-code-source-green.json
+
+[1019/053451.120068:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/053451.279477:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/053451.279748:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/053451.280602:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/053451.286613:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/053451.289264:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/shared/file-name-results.test.ts (4 tests) 13ms
+ ✓ src/renderer/features/files/name-search-acceptance.test.tsx (6 tests) 1775ms
+   ✓ C18 binds name results to the current query before debounce and rejects an old delayed success  482ms
+   ✓ C18 binds content results to the current query before debounce and rejects an old delayed success  467ms
+     ✓ C18 binds real native successes to the current query and ignores a delayed previous success  546ms
+ ✓ src/renderer/features/files/search-race-acceptance.test.tsx (6 tests) 1936ms
+     ✓ C16 twenty real pending mount/unmount cycles leave zero jobs,processes or renderer IPC listeners  1297ms
+ ✓ src/renderer/features/files/name-limit-native-acceptance.test.ts (3 tests) 2323ms
+     ✓ 4999 physical files preserve total, limit and recoverable complete candidates  765ms
+     ✓ 5000 physical files preserve total, limit and recoverable complete candidates  812ms
+     ✓ 5001 physical files preserve total, limit and recoverable complete candidates  741ms
+ ✓ src/renderer/features/files/search-session-acceptance.test.tsx (16 tests) 5968ms
+     ✓ C10: real search with legacy host=false selects its supported endpoint and caches only capability  878ms
+     ✓ C10: real search with legacy host=true selects its supported endpoint and caches only capability  450ms
+     ✓ C10: real 'PERMISSION' on legacy=false remains an error without extra retries  381ms
+     ✓ C10: real 'IO' on legacy=false remains an error without extra retries  375ms
+     ✓ C10: real 'PERMISSION' on legacy=true remains an error without extra retries  391ms
+     ✓ C10: real 'IO' on legacy=true remains an error without extra retries  368ms
+     ✓ C10: clear while the absent-session response is pending never starts fallback  321ms
+     ✓ C10: unmount while the absent-session response is pending never starts fallback  320ms
+     ✓ C11: 'name' / 'clear' while 'start pending'  313ms
+     ✓ C11: 'name' / 'clear' while 'success reply pending'  313ms
+     ✓ C11: 'name' / 'unmount' while 'start pending'  304ms
+     ✓ C11: 'name' / 'unmount' while 'success reply pending'  320ms
+     ✓ C11: 'content' / 'clear' while 'success reply pending'  311ms
+     ✓ C11: 'content' / 'unmount' while 'start pending'  301ms
+     ✓ C11: 'content' / 'unmount' while 'success reply pending'  321ms
+
+ Test Files  5 passed (5)
+      Tests  35 passed (35)
+   Start at  05:34:51
+   Duration  7.41s (transform 2.17s, setup 0ms, import 3.42s, tests 12.02s, environment 1.49s)
+
+JSON report written to /private/tmp/willyou-dev104-code-source-green.json

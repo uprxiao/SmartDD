@@ -1,0 +1,141 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/files/native-broker.test.ts -t 'protected canonical ancestor|rechecks protected root ancestors' --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev082-list-safety-red-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/main/core/files/native-broker.test.ts (56 tests | 2 failed | 54 skipped) 2993ms
+     ↓ persists and recovers an Office draft beyond the text budget without weakening text limits
+     ↓ maps HTML resources through the real root FD, denies foreign owners and escaping links, and revokes on source changes
+     ↓ classifies only the authorized revision sample and preserves the complete original bytes
+     ↓ enforces the media budget in native IO and both transport capabilities at 128MiB -1/equal/+1
+     ↓ invalidates media streams on replacement, cross-window access, document close and root replacement
+     ↓ reads real Git states/attributes within a nested root without writing the index
+     ↓ returns exact real blame lines and rejects modified contents or a replaced root
+     ↓ keeps hostile filter/fsmonitor helpers from running and makes their failure explicit
+     ↓ binds Git queries to the owning scope and does not expose arbitrary commands
+     ↓ supports worktree metadata outside the file root and reports a non-Git directory
+     ↓ creates an exact independent copy and preserves an existing destination in its journal
+     ↓ rejects source aliases, symlink destinations and modified source bytes without writing a copy
+     ↓ does not clobber a destination created between the native dialog and atomic creation
+     ↓ preserves a post-install external writer and reports the copy as a conflict
+     ↓ rejects replaced save-dialog parents and changed overwrite targets
+     ↓ binds copy dialogs to the owning document and protects their transaction after restart
+     ↓ blocks a copy destination after a killed transaction at copy-prepared and restart
+     ↓ blocks a copy destination after a killed transaction at copy-installed and restart
+     ↓ decodes oversized embedded rasters into bounded previews in the native child
+     ↓ binds image decoding and cancellable resource requests to the owning document
+     ↓ returns exact bytes and a stable content revision
+     ↓ resolves document-local references within the same trusted root
+     ↓ lists dotfiles and normally excluded search directories without reading special files
+     ↓ resolves only contained symbolic links, including nested relative aliases
+     ↓ rejects root replacement and bounded reads before returning content
+     ↓ filters internal identities through aliases but keeps user lookalikes
+     × rejects listing an alias below a protected canonical ancestor rather than returning a false empty directory 527ms
+     × rechecks protected root ancestors after a directory list even when the root inode and source path survive 14ms
+     ↓ saves exact bytes while retaining the independent draft and both inodes
+     ↓ refuses an already changed base without creating a transaction
+     ↓ rejects a same-content replacement after main preflight without creating a transaction
+     ↓ accepts the exact preflight revision and replays its receipt after later external changes
+     ↓ preserves changes made to the old open fd during exchange and never swaps back
+     ↓ preserves a third writer at the target path after exchange
+     ↓ retains independently recoverable versions after SIGKILL at prepared
+     ↓ retains independently recoverable versions after SIGKILL at swapped
+     ↓ aborts a pending operation and waits for process termination
+     ↓ refuses symlinked recovery objects and preexisting transaction directories
+     ↓ binds leases and document handles to the issuing frame and generation
+     ↓ keeps task cwd independent of later project directory edits and rejects non-local sources
+     ↓ invalidates a registered symlink root when its target changes
+     ↓ gives aliases one physical document key and serializes competing window saves
+     ↓ recovers idempotent receipts after restart without overwriting a newer disk file
+     ↓ isolates corrupt recovery journals including FIFO while still reporting healthy records
+     ↓ rejects recovery quotas before changing disk and accounts for concurrent reservations
+     ↓ persists evolving drafts independently, retains mixed bytes and restores after restart
+     ↓ does not let an old save acknowledgement resolve newer input or another window draft
+     ↓ keeps private drafts writable after the source lease is revoked but closes the capability with its document
+     ↓ refuses read-only writes and invalidates resource chunks on a disk revision change
+     ↓ allows retry after a real parent-permission failure, including an app restart
+     ↓ shares real native directory subscriptions and observes replacements after one consumer leaves
+     ↓ releases a native subscription that finishes after disposal and advertises polling on failure
+     ↓ enumerates unexpanded real directories with fixed exclusions and no symlink traversal
+     ↓ streams literal Unicode matches with original UTF-16 offsets and masks that cannot reinclude exclusions
+     ↓ reports invalid/binary/oversized files separately and terminates at 100 matching lines
+     ↓ rejects overlong result frames and search aliases replaced after enumeration
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/files/native-broker.test.ts > native file boundary (real macOS filesystem) > rejects listing an alias below a protected canonical ancestor rather than returning a false empty directory
+AssertionError: promise resolved "{ entries: [], …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "entries": [],
++   "identity": {
++     "device": "16777232",
++     "inode": "46922419",
++   },
++   "relativePath": "private/inner",
+  }
+
+ ❯ src/main/core/files/native-broker.test.ts:324:157
+    322|     writeFileSync(join(privateDir, 'inner', 'draft'), 'Private synthet…
+    323|     symlinkSync('private/inner', join(project, 'inner-alias'));
+    324|     await expect(broker.request({ operation: 'list', root: descriptor(…
+       |                                                                                                                                                             ^
+    325|   });
+    326|   it('rechecks protected root ancestors after a directory list even wh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/files/native-broker.test.ts > native file boundary (real macOS filesystem) > rechecks protected root ancestors after a directory list even when the root inode and source path survive
+AssertionError: promise resolved "{ …(3) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "entries": [
++     {
++       "identity": {
++         "device": "16777232",
++         "inode": "46922431",
++       },
++       "kind": "file",
++       "name": "file.txt",
++       "relativePath": "file.txt",
++       "size": 23,
++       "symbolicLink": false,
++     },
++   ],
++   "identity": {
++     "device": "16777232",
++     "inode": "46922429",
++   },
++   "relativePath": "",
+  }
+
+ ❯ src/main/core/files/native-broker.test.ts:336:7
+    334|         expect(descriptor(root).identity).toEqual(originalRoot.identit…
+    335|       },
+    336|     })).rejects.toThrow('INTERNAL_OBJECT');
+       |       ^
+    337|   });
+    338|   it('saves exact bytes while retaining the independent draft and both…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 54 skipped (56)
+   Start at  22:20:57
+   Duration  3.55s (transform 316ms, setup 0ms, import 476ms, tests 2.99s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev082-list-safety-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,338 @@
+{
+  "schema": "m9-regression-audit/v1",
+  "completedAt": "2026-10-18T05:17:57.103312+00:00",
+  "branch": "feature/0.0.1",
+  "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "requirements": "R3.4 / R3.4-P1",
+  "result": {
+    "uniqueTests": 1497,
+    "latestCounts": {
+      "passed": 1495,
+      "skipped": 2
+    },
+    "method": "Latest result by test file + full test name across baseline and targeted re-runs; not a single monolithic all-green pnpm test run. Required affected layers rerun after DEV054.",
+    "reports": [
+      {
+        "report": "willyou-m9-autonomous-regression-r2.json",
+        "passed": 1210,
+        "failed": 2,
+        "skipped": 279
+      },
+      {
+        "report": "willyou-m9-autonomous-integration.json",
+        "passed": 265,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "report": "willyou-m9-autonomous-engines.json",
+        "passed": 68,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "report": "willyou-y11-target-r2.json",
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "report": "willyou-office-replay-final.json",
+        "passed": 73,
+        "failed": 1,
+        "skipped": 0
+      },
+      {
+        "report": "willyou-office-replay-final2.json",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "report": "willyou-j07.json",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "report": "willyou-m9-autonomous-routing.json",
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "report": "willyou-r8-packaged-office.json",
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "remainingSkipped": "Two opt-in installed CLI probes outside this M9 file batch. No external model/service invocation."
+  },
+  "formalAcceptance": {
+    "passed": 63,
+    "total": 419,
+    "percent": 15.04,
+    "remaining": 356,
+    "futureExcluded": 6,
+    "source": "验收/用例覆盖索引.json",
+    "notAddedFromCodeTestCounts": true
+  },
+  "failureHistory": [
+    "Initial sandbox full run: 1182 passed /24 failed /285 skipped; includes genuine checkbox dependency regression, missing keepLocal opt-in guard and sandbox loopback/Git/watcher failures.",
+    "Normal macOS full retry: 1210 passed /2 failed /279 skipped. Two failures were missing Python drivers on test PATH; reused existing /private/tmp/willyou-89de9af-python virtualenv. The 265-pass integration batch includes the 8-test resource suite.",
+    "keepLocal acceptance now explicitly gated by actual App prerequisite; separate native 3/3 passed. This is not physical IME acceptance.",
+    "DEV053 checkbox regression corrected and included in normal full retry. DEV054 real save replay failures repaired and affected tests rerun. All original failures retained.",
+    "First current build under filesystem sandbox failed vendor codesign verification; normal macOS retry succeeded. No signature checks disabled. r8 unified build succeeded.",
+    "First ASAR inspection could not resolve a non-direct @electron/asar dependency; actual packaged Electron read its ASAR directly and confirmed DEV054 compiled guard. No dependency installed."
+  ],
+  "efficiency": {
+    "integrationFiles": 31,
+    "integrationPassed": 265,
+    "integrationElapsedSeconds": 60.6,
+    "engineFiles": 4,
+    "enginePassed": 68,
+    "strategy": "Bounded parallel batches; existing test package/native runtimes; only affected reruns after changes; one consolidated new App build.",
+    "engineSampling": "Sample showed active file/hash validation, evidence files advanced through chart/table tests. No hung loop inferred or killed."
+  },
+  "package": {
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r8-build/mac-arm64/WillYou.app",
+    "asar": "/private/tmp/willyou-m9-acceptance-batch-r8-build/mac-arm64/WillYou.app/Contents/Resources/app.asar",
+    "asarSha256": "7b018969f08e5f9db6357483acb3278b8ba1366d22c5dddb1fe13a184aaeb0c4",
+    "asarBytes": 82240204,
+    "broker": "/private/tmp/willyou-m9-acceptance-batch-r8-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "sourceSnapshot": "willyou-m9-acceptance-batch-r8-sources.tar.gz",
+    "sourceSha256": "5d272e22dc5f20ae7a13a40c983c191266c35df93e6ad3e9f5f542a150491471",
+    "sourceFiles": 831,
+    "baseline": "89de9af4b631abdef5673ce8949fb02a32f6fcad + uncommitted workspace",
+    "includedFixes": [
+      "DEV052",
+      "DEV053",
+      "DEV054"
+    ],
+    "buildExit": 0,
+    "nativeChecks": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "postSnapshotChanges": {
+      "files": [
+        "src/main/core/files/office/save-replay-acceptance.test.ts",
+        "src/main/core/files/office/shared-string-acceptance.test.ts",
+        "src/main/core/files/office/targeted-patch-acceptance.test.ts"
+      ],
+      "scope": "test harness only: allow actual packaged Workers instead of compiling source; no production source changes"
+    },
+    "GUIStarted": false,
+    "packagedWorkerRegression": {
+      "passed": 7,
+      "failed": 0,
+      "report": "willyou-r8-packaged-office.json",
+      "scope": "actual r8 packaged XLSX/PPTX Workers and broker, current source FileService integration; not App GUI"
+    },
+    "compiledEntryInspection": "willyou-r8-js-inspection.json"
+  },
+  "artifacts": {
+    "willyou-m9-autonomous-routing-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-routing-matrix.json",
+      "sha256": "bab33acb9fa1a6fa239e6ed5646196903b42f7f87c316cd8346da69306e9e115",
+      "bytes": 7972
+    },
+    "willyou-m9-autonomous-final2-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-final2-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-m9-autonomous-engines.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-engines.log",
+      "sha256": "f3e3d8d2467be212b05cb8d6434891cb85f058f13be1cb606bd6862130e5ad7c",
+      "bytes": 434
+    },
+    "willyou-m9-autonomous-engines.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-engines.json",
+      "sha256": "dd5f9790fbed929c24b3c70179b68a13fb9c8805f57ec6079aa49abc28f6dc6d",
+      "bytes": 31584
+    },
+    "willyou-m9-autonomous-regression-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-regression-r2.log",
+      "sha256": "bc0c75242754446e8713cdc3ca08ea67cb6b9662fb3daa83e7935f1cbc8b61e7",
+      "bytes": 298
+    },
+    "willyou-m9-autonomous-integration-command.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-integration-command.json",
+      "sha256": "3e4592d015508fb2f7c2a362fce6c8824d0b26173f87802f6c78ec115ace7ee7",
+      "bytes": 4356
+    },
+    "willyou-m9-autonomous-integration.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-integration.json",
+      "sha256": "e735fce501c02d072dd9930b26d621fcdc377501e7cd64931fe20d1ac7fd7a90",
+      "bytes": 114344
+    },
+    "willyou-m9-autonomous-final-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-final-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-m9-autonomous-regression-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-regression-r2.json",
+      "sha256": "fee9429404829a364783f4ee49d511f986692c80c68723639c0bfb820c2e0819",
+      "bytes": 592670
+    },
+    "willyou-m9-autonomous-integration.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-integration.log",
+      "sha256": "a1c96df9e6693b00f05577c92b0bac28ff8d5a3747f8bc466d18cf8f07a3de12",
+      "bytes": 2113
+    },
+    "willyou-m9-autonomous-batches.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-batches.py",
+      "sha256": "75133863bfbaf8fe9046a54e2b9ffca3fec79d9b9f9652aecd7d4e4032542909",
+      "bytes": 2488
+    },
+    "willyou-m9-autonomous-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-regression.log",
+      "sha256": "1df65d59d22c95c037da9f142433f9be2779cb6eb7389b83d1375a8efdaf47bb",
+      "bytes": 22294
+    },
+    "willyou-m9-autonomous-engines-command.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-engines-command.json",
+      "sha256": "90cd0d443c5d835981a61870d3c6199470db1db8309225f39a2b03b3d079b604",
+      "bytes": 2967
+    },
+    "willyou-m9-autonomous-routing.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-routing.log",
+      "sha256": "984a69536a0ebaffc19457a820b3a160df40232196b99cdb86b547c7d679dd9c",
+      "bytes": 509
+    },
+    "willyou-m9-autonomous-routing.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-routing.json",
+      "sha256": "cd5caafe287437681ff26e55b92023c4eb8675693894215eb814a1166073a89c",
+      "bytes": 1902
+    },
+    "willyou-m9-autonomous-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-autonomous-regression.json",
+      "sha256": "e58f4bfe8edfeda71ac01c98dec22341cb8aed282b2ed89697e87ea4f0987a0f",
+      "bytes": 617832
+    },
+    "willyou-keep-local-autonomous.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-keep-local-autonomous.log",
+      "sha256": "7c48240db98a88e76b228ea9caa5f414167a95d27a2088371099fa1a65ab127c",
+      "bytes": 521
+    },
+    "willyou-keep-local-autonomous.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-keep-local-autonomous.json",
+      "sha256": "d0ee51fd016655382d3daace5826f681a990164f030f57bf08824ebc2660bbf8",
+      "bytes": 1834
+    },
+    "willyou-keep-local-autonomous-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-keep-local-autonomous-matrix.json",
+      "sha256": "33fba37af19a8d2b059df581ded38df1d02e2fd47f3e75e32119504180da42ab",
+      "bytes": 2294
+    },
+    "willyou-m9-dev052-053-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-dev052-053-build.log",
+      "sha256": "1d8764e7572f92e57a8d32b8f270d1b5d19fb856f638e52948cad47f4a422b5e",
+      "bytes": 4871
+    },
+    "willyou-m9-dev052-053-build-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-dev052-053-build-r2.log",
+      "sha256": "d52e7238bd515c8ecd816c466093057ecb4f24a5ee8178ac64fad2265da767ae",
+      "bytes": 16031
+    },
+    "willyou-m9-acceptance-batch-r8-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-acceptance-batch-r8-build.log",
+      "sha256": "96e651bb5e8b87049f064c95ccb5920ba048289864c060d1b56bfa3d01e7d46e",
+      "bytes": 18909
+    },
+    "willyou-m9-acceptance-batch-r8-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-acceptance-batch-r8-sources.tar.gz",
+      "sha256": "5d272e22dc5f20ae7a13a40c983c191266c35df93e6ad3e9f5f542a150491471",
+      "bytes": 11395423
+    },
+    "willyou-m9-acceptance-batch-r8-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-acceptance-batch-r8-sources.json",
+      "sha256": "cf927345c0f74eeced6f8482c828d63bf139ed75991867425b49e621b02ed509",
+      "bytes": 97249
+    },
+    "willyou-r8-replay-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-r8-replay-matrix.json",
+      "sha256": "b3b66ed1c5803b45fb7552aa7c0ac8035e1c317a045579e79886273c7171abac",
+      "bytes": 1869
+    },
+    "willyou-r8-packaged-office.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-r8-packaged-office.json",
+      "sha256": "69b92a4a9adabc08013145a4d8807fea9e418ad37c7777502bd2988d9a67b896",
+      "bytes": 4066
+    },
+    "willyou-r8-js-inspection.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-r8-js-inspection.json",
+      "sha256": "ba8cca0303e663007deeff54a3845c2a72ac5f26a5b0c081d4fa43c7d62b49ba",
+      "bytes": 581
+    },
+    "willyou-r8-target-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-r8-target-matrix.json",
+      "sha256": "ab2e99d4815c2abefd6845214ad6bf8e482828bbda3074598684c2e607cac7eb",
+      "bytes": 850
+    },
+    "willyou-r8-shared-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-r8-shared-matrix.json",
+      "sha256": "9b3724b04be3c42f2e6d979aa9e7a4dcf0219ba69b58cf70036c0cff6a795320",
+      "bytes": 962
+    },
+    "willyou-r8-packaged-office.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-r8-packaged-office.log",
+      "sha256": "f4a9fdefdafb7064199d25ebaf687efe89e57e51571ebadb1e6e59b83fef2b10",
+      "bytes": 872
+    },
+    "willyou-m9-r8-tests-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-r8-tests-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-m9-batch-r8-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-batch-r8-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-m9-engine-hot-worker.sample.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-engine-hot-worker.sample.txt",
+      "sha256": "2a44d160cbaf52c8bf6b1edf0fd8e0155b46b60be12b849efc652ef7743659dc",
+      "bytes": 359943
+    },
+    "willyou-m9-engine-hot-worker-sample.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-m9-engine-hot-worker-sample.log",
+      "sha256": "c823d7d98afd4fb44996a84e26c5a11a95152b58028adcac47724cb8121e0da9",
+      "bytes": 227
+    },
+    "packaged-worker-tests.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/packaged-worker-tests.tar.gz",
+      "sha256": "793f1a10df18a478de14cfa2fe7caaec2a39dc4132cc002626c8d84ce80a56a2"
+    },
+    "willyou-y11-target-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-y11-target-r2.json",
+      "sha256": "34448688c9468289093c94c6a7e0d3170a4059b053c0201059bd4f572a35a197"
+    },
+    "willyou-office-replay-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-office-replay-final.json",
+      "sha256": "7883f40b8e9071b2a967a001a6e230654eb0dee016667df162a3d3ce974eaeda"
+    },
+    "willyou-office-replay-final2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-office-replay-final2.json",
+      "sha256": "e702a75d288eb3d414bc2f97024de2d4e1cf603ef855f763be6b4f4edb538812"
+    },
+    "willyou-j07.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/autonomous-regression-r8/willyou-j07.json",
+      "sha256": "8047bdadc7ed3113f0f304c064e7ac40f170cc7f2be019d24b2f7c31af2ac307"
+    }
+  },
+  "boundaries": [
+    "No new physical App UI/IME/mouse evidence while user away; no repeated unlock/approval requests.",
+    "r8 GUI not started; r6 existing test window untouched.",
+    "No AIS source modifications, installed driver changes, release, merge, push or tag.",
+    "M9 remains in development. J08 failure/retry matrix, F30 provider handoff, H20 decision and Windows X layer remain; 352 incomplete cases still require App layer."
+  ]
+}

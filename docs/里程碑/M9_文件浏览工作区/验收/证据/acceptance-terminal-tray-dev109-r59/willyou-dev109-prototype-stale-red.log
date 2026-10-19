@@ -1,0 +1,44 @@
+✔ sanitizer keeps tab/newline and text, removes ESC, C0, DEL, C1 and bidi controls (0.771625ms)
+✔ sanitizer leaves normal Chinese, emoji and symbols untouched and replaces lone surrogates (0.106625ms)
+✔ an escape sequence cannot terminate the bracketed paste early (0.078792ms)
+✔ bracketed paste keeps line breaks; plain mode collapses them so it can never submit; no trailing CR in either (0.078083ms)
+✔ reference normalisation rejects traversal, drive paths, bad kinds and ranges (0.145291ms)
+✔ reference formatting: plain and @ styles, comment quoting, indented selected text, truncation and size cap (0.254042ms)
+✔ staleness: revision or text hash change is stale, missing blocks, unknown stays fresh (0.056625ms)
+✔ selection truncation never splits the emoji crossing UTF-16 position 4000 (0.097792ms)
+✔ terminal insertion validates ownership, running state, size, emptiness and reports sanitising (0.112875ms)
+✔ selection line ranges use 1-based lines and ignore a trailing newline (0.388541ms)
+✔ text fingerprint is stable, 8 hex chars, and sensitive to content (0.0825ms)
+✔ tray validates the aggregate including separators, reports the exact total and rejects missing sources (1.331125ms)
+✖ a captured initial revision zero becomes stale after an edit (0.467ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41.63025
+
+✖ failing tests:
+
+test at prototypes/m6-codex/tests/file-reference-tray.test.mjs:18:1
+✖ a captured initial revision zero becomes stale after an edit (0.467ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'fresh' !== 'stale'
+  
+      at TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/file-reference-tray.test.mjs:19:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'fresh',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

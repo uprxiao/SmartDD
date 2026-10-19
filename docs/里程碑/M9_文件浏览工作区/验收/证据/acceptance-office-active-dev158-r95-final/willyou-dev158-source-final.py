@@ -1,0 +1,9 @@
+from pathlib import Path
+import datetime,hashlib,json,tarfile
+root=Path.cwd();h=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest();parentp=Path('/private/tmp/willyou-dev157-source-delta.json');parent=json.loads(parentp.read_text());prepath=Path('/private/tmp/willyou-dev158-r95-prebuild-source.json');pre=json.loads(prepath.read_text());files={p:h(root/p)for p in pre['files']};assert files==pre['files'];changed={p:v for p,v in files.items()if p in parent['files']and v!=parent['files'][p]};added={p:v for p,v in files.items()if p not in parent['files']};assert len(files)==1340 and len(changed)==3 and len(added)==5
+out=Path('/private/tmp/willyou-dev158-source-delta.tar.gz')
+with tarfile.open(out,'w:gz')as t:
+ for p in sorted(changed|added):t.add(root/p,arcname=p,recursive=False)
+with tarfile.open(pre['tar'],'r:gz')as t:
+ for p,digest in files.items():assert hashlib.sha256(t.extractfile(p).read()).hexdigest()==digest
+report={'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'parent':str(parentp),'parentSha256':h(parentp),'fileCount':len(files),'files':files,'changedParentFiles':changed,'newFiles':added,'postBuildChanges':{},'tar':str(out),'tarSha256':h(out),'fullPrebuild':pre['tar'],'fullPrebuildSha256':h(pre['tar']),'boundary':'All1340 engineering inputs exactly match BEFORE r95 build, full snapshot independently extracted/hashed; 8-file delta from DEV157 includes PPT buffer production+5 race tests, common guide and five verification files. DEV159 private probes/evidence outside engineering inputs; not production changes. No release.'};p=Path('/private/tmp/willyou-dev158-source-delta.json');p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n');print(json.dumps({'status':'passed','inputs':len(files),'changed':list(changed),'added':list(added),'sha256':h(p)}))

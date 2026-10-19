@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-F28",
+  "originalCaseRow": "| **M9-T-F28 MCP viewer最长匹配**<br>M9-R06.15 | 本期本机 | 单元／集成／安装端到端<br>U+I / D11 | 注册.foo与.bar.foo测试viewer，设preferred/explicit不存在项。 | 启用时最长后缀、显式无匹配null等优先级正确；宿主无该能力时保留明确差异与fallback。<br>依据：V F22/R10 | P17；扩展 viewer 示例；真实宿主未实现；工程依赖：D05/D03 | 未执行 | — |",
+  "levelsAndEnvironmentsUnchanged": "单元／集成／安装端到端<br>U+I / D11",
+  "stepsUnchanged": "注册.foo与.bar.foo测试viewer，设preferred/explicit不存在项。",
+  "expectedUnchanged": "启用时最长后缀、显式无匹配null等优先级正确；宿主无该能力时保留明确差异与fallback。<br>依据：V F22/R10",
+  "status": "pending",
+  "layerResults": {
+    "U": "no-host-fallback-passed",
+    "I": "no-host-fallback-passed"
+  },
+  "actual": "No production viewer registry. .foo/.bar.foo and uppercase text load literally/editably; corresponding NUL-containing files remain binary/uneditable; preferred/explicit request fields rejected. Actual registration/priority/null-result steps remain unimplemented under stronger R06.18/D05.",
+  "commonEvidence": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-registry-20261018.json",
+    "sha256": "ed2548352ef8d5d4590c4169dfd0101b9120e208c85c7b8ec636b26f4fe2058c"
+  },
+  "defects": [],
+  "remaining": [
+    "Implement approved explicit adapter manifest, isolated host/session resources and lifecycle per R06.18; then actual .foo/.bar.foo registration and missing preferred/explicit selection matrix."
+  ],
+  "noScopeOrDenominatorChange": true
+}

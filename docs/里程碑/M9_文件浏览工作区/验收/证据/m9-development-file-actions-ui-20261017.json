@@ -1,0 +1,141 @@
+{
+  "kind": "development-native-ui",
+  "recordedAt": "2026-10-17T21:21:07.786716+08:00",
+  "requirement": "M9 R3.4 / R3.4-P1 R05.3–R05.6; E05–E09/E13/E14 partial development coverage",
+  "platform": "macOS 26.6.1 arm64",
+  "branch": "feature/0.0.1",
+  "baseline": "89de9af4b631abdef5673ce8949fb02a32f6fcad + uncommitted M9 work",
+  "builds": [
+    {
+      "id": "actions-r1",
+      "path": "/private/tmp/willyou-m9-actions-build/mac-arm64/WillYou.app",
+      "asarSHA256": "7649ecc6049296a1d7f2a964073cabf132fa40719039a108f7090d92d7056270"
+    },
+    {
+      "id": "actions-r2",
+      "path": "/private/tmp/willyou-m9-actions-r2-build/mac-arm64/WillYou.app",
+      "asarSHA256": "f8b2294be1fa60a04014f217baa3cfffa4db84bb11d4affe72c52ab832cbbdf9"
+    },
+    {
+      "id": "actions-r3",
+      "path": "/private/tmp/willyou-m9-actions-r3-build/mac-arm64/WillYou.app",
+      "asarSHA256": "21cf4368adf1d7ac29ecc6844dc5a7c1133804737c320c2d10bc384232ab4cdc"
+    }
+  ],
+  "checks": [
+    {
+      "id": "ACT-DEV-01",
+      "build": "actions-r1",
+      "state": "passed",
+      "actual": "真实TS与TXT文件分别读取系统注册的应用列表；TS显示Code/QuickTime/mpv，TXT显示TextEdit等实际候选。不是硬编码模拟应用。"
+    },
+    {
+      "id": "ACT-DEV-02",
+      "build": "actions-r1",
+      "state": "passed",
+      "actual": "CUA点击TextEdit打开hello.txt；WillYou收到系统成功回执；另用CUA读取TextEdit实际hello.txt窗口、完整隔离路径及149字节对应文本。未改文件。"
+    },
+    {
+      "id": "ACT-DEV-03",
+      "build": "actions-r1",
+      "state": "passed",
+      "actual": "从文件路径右键菜单执行在Finder中显示；CUA核对Finder project窗口选中hello.txt，完整URL与149字节大小正确。只验证文件分支，根目录/已删除分支另验。"
+    },
+    {
+      "id": "ACT-DEV-04",
+      "build": "actions-r1",
+      "state": "passed",
+      "actual": "系统另存对话框取消后原标签和内容保留，没有在隔离输出目录创建文件。"
+    },
+    {
+      "id": "ACT-DEV-05",
+      "build": "actions-r1",
+      "state": "failed",
+      "defect": "M9-DEV-005",
+      "actual": "原生NSSavePanel保存和新建文件夹按钮禁用，编辑名称与切到两个可写测试目录均未恢复。"
+    },
+    {
+      "id": "ACT-DEV-05-R1",
+      "build": "actions-r2",
+      "state": "passed",
+      "defect": "M9-DEV-005",
+      "actual": "改为明确的绝对副本建议路径、所有文件类型与保存按钮标签；原生保存/新建文件夹可用。CUA保存hello 副本.txt；原件与副本均149字节、哈希一致、inode不同。没有单独证明哪一个旧参数触发系统禁用。",
+      "sha256": "31689a3f5c6db0f8c920b531a6d50677dceca654efd1e712ada2e2ebcbcc875c",
+      "sourceInode": 42486979,
+      "copyInode": 42585478
+    },
+    {
+      "id": "ACT-DEV-06",
+      "build": "actions-r2",
+      "state": "passed",
+      "actual": "CUA原生另存到/private/tmp/willyou-m9-action-export/hello copy 中文🙂.txt；成功回执与独立读盘一致，原件/副本同哈希。"
+    },
+    {
+      "id": "ACT-DEV-07",
+      "build": "actions-r2",
+      "state": "passed",
+      "actual": "将隔离副本改成EXTERNAL DESTINATION VERSION后，从真实另存面板再次选择同一路径，macOS显示Replace确认；确认后副本恢复源文件字节，原目标版本保存在已登记的事务candidate。",
+      "sourceAndCopySHA256": "31689a3f5c6db0f8c920b531a6d50677dceca654efd1e712ada2e2ebcbcc875c",
+      "previousDestinationSHA256": "bbd7541db127d8c13b6fd3735de074f3a9564f3456fc78be6ebe8d73cdce18b7",
+      "recoveryId": "30e2362e-6e17-4322-9efd-c0ae8f62c1b8"
+    },
+    {
+      "id": "ACT-DEV-08",
+      "build": "actions-r2",
+      "state": "passed",
+      "actual": "真实菜单勾选记住并选择TextEdit，隔离SQLite的fileOpener保存/System/Applications/TextEdit.app及com.apple.TextEdit；切换TS显示首选不可用但可选Code；不勾记住的一次性Code打开收到系统回执，SQLite偏好仍为TextEdit。Code页面内容未另行核对，TextEdit实际页面已在ACT-DEV-02核对。"
+    },
+    {
+      "id": "ACT-DEV-09",
+      "build": "actions-r1/actions-r2",
+      "state": "failed",
+      "defect": "M9-DEV-006",
+      "actual": "应用名称/操作正常，但图标使用data URL被主页面既有img-src CSP阻止。源码已改Blob URL并释放；待新包实际视觉复验。"
+    },
+    {
+      "id": "ACT-DEV-09-R1",
+      "build": "actions-r3",
+      "state": "passed",
+      "defect": "M9-DEV-006",
+      "actual": "CUA直接核对新包截图：工具栏及打开方式菜单中TextEdit等真实应用图标可见。Blob URL遵循原有CSP，无新增data:许可。"
+    },
+    {
+      "id": "ACT-DEV-10",
+      "build": "actions-r3",
+      "state": "passed",
+      "actual": "重启新包后TextEdit偏好仍显示于打开按钮和候选勾选；记住选择的应用本次复选框仍默认未勾。"
+    }
+  ],
+  "tests": [
+    {
+      "command": "pnpm test src/main/core/files/native-broker.test.ts src/main/core/files/actions.test.ts src/main/core/files/controller.test.ts src/main/core/settings/settings-service.test.ts",
+      "result": "53 passed before extra controller case",
+      "log": "/private/tmp/willyou-m9-actions-electron-tests.log"
+    },
+    {
+      "command": "pnpm test src/main/core/files/controller.test.ts src/main/core/files/actions.test.ts",
+      "result": "5 passed with cancel/native destination/invalidated owner coverage",
+      "log": "/private/tmp/willyou-m9-actions-r2-tests.log"
+    },
+    {
+      "command": "pnpm test src/main/core/files/native-broker.test.ts src/main/core/files/actions.test.ts src/main/core/files/controller.test.ts src/main/core/settings/settings-service.test.ts",
+      "result": "56 passed, including process interruption before/after copy installation and restart duplicate-overwrite protection",
+      "log": "/private/tmp/willyou-m9-actions-final-tests.log"
+    }
+  ],
+  "nativeSmoke": "actions-r1/r2/r3 sqlite, pty, voiceBridge, fileBroker, fileWatcher passed",
+  "limits": [
+    "开发阶段真实App操作，不替代419条正式全部验收。",
+    "截图与AX留于会话工具结果，未声明另有本地PNG。",
+    "根目录揭示、完整错误/恢复矩阵、Git、终端引用、所有上下文入口及最终包回归仍待继续。",
+    "外部应用首次CUA连接分别等待约568秒和767秒；无安全拒绝，没有绕过工具。",
+    "当前UI文案Finder仅对应已支持的macOS本机broker；不宣称Windows/Linux通过。"
+  ],
+  "validationNotes": [
+    "最终类型检查通过：/private/tmp/willyou-m9-actions-final-typecheck.log。",
+    "r3早期测试与打包重建原生模块并发，导致9项SQLite绑定缺失；停止并发后同组56项通过。旧日志保留于/private/tmp/willyou-m9-actions-r3-tests.log。",
+    "早期直接vitest使用Node ABI而非Electron runner的失败已记录；正式复验使用pnpm test。",
+    "图标Blob输入的类型标注在打包后由Uint8Array收窄为Uint8Array<ArrayBuffer>，仅类型变更，运行代码不变。",
+    "真实截图另发现菜单受M6全局样式影响而稍透明；已限文件区修改，下一Git包继续视觉复验。"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-19T04:45:38.522Z",
+  "sourceApp": "/private/tmp/willyou-m9-acceptance-batch-r71-build/mac-arm64/WillYou.app",
+  "sourceHashes": {
+    "asarSha256": "bc780a776e2eaddbd90f9ed6bcb0f0bdb3d16a1edb1224670e2479d2ef67d204",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+  },
+  "scratch": "/private/tmp/willyou-symlink-race-app-5LzOj7",
+  "late": true,
+  "status": "failed",
+  "checks": [],
+  "boundary": "A fault build: original packaged ASAR, private COW App clone; same native source with only the existing test-stop guard augmented by a private read-only marker. Real native pauses after the final path guard and before exchange; passive original spawn/stdout observation, then actual parent moved outside and replaced by outside symlink. No auth/request/response substitution.",
+  "limitations": "Own temporary userData/projects and outside canaries only. Real UI tree navigation/input/Ctrl-S/retry; read-only CM/disk/draft checks. No store/editor/DOM-value injection, clipboard, model, external service/App, live Codex, physical IME or system-wide CAS claim.",
+  "failedStage": "setup",
+  "error": "Error: Command failed: xcrun clang++ -std=c++17 -fobjc-arc -O1 -Wno-deprecated-declarations -DWILLYOU_FILE_BROKER_TEST=1 -framework Foundation -framework AppKit -framework ImageIO -framework CoreGraphics -framework CoreText /private/tmp/willyou-symlink-race-app-5LzOj7/broker-test.mm -o /private/tmp/willyou-symlink-race-app-5LzOj7/willyou-files-test\n/private/tmp/willyou-symlink-race-app-5LzOj7/broker-test.mm:725:10: fatal error: 'desktop-actions.inc.mm' file not found\n  725 | #include \"desktop-actions.inc.mm\"\n      |          ^~~~~~~~~~~~~~~~~~~~~~~~\n1 error generated.\n",
+  "stack": "Error: Command failed: xcrun clang++ -std=c++17 -fobjc-arc -O1 -Wno-deprecated-declarations -DWILLYOU_FILE_BROKER_TEST=1 -framework Foundation -framework AppKit -framework ImageIO -framework CoreGraphics -framework CoreText /private/tmp/willyou-symlink-race-app-5LzOj7/broker-test.mm -o /private/tmp/willyou-symlink-race-app-5LzOj7/willyou-files-test\n/private/tmp/willyou-symlink-race-app-5LzOj7/broker-test.mm:725:10: fatal error: 'desktop-actions.inc.mm' file not found\n  725 | #include \"desktop-actions.inc.mm\"\n      |          ^~~~~~~~~~~~~~~~~~~~~~~~\n1 error generated.\n\n    at genericNodeError (node:internal/errors:999:15)\n    at wrappedFn (node:internal/errors:544:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at prepareLate (file:///Users/hx/hx/hxWork/SmartDD/scripts/files/symlink-race-ui.mjs:30:35)\n    at async file:///Users/hx/hx/hxWork/SmartDD/scripts/files/symlink-race-ui.mjs:37:10",
+  "sourceHashesAfter": {
+    "asarSha256": "bc780a776e2eaddbd90f9ed6bcb0f0bdb3d16a1edb1224670e2479d2ef67d204",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+  },
+  "finishedAt": "2026-10-19T04:45:39.266Z"
+}

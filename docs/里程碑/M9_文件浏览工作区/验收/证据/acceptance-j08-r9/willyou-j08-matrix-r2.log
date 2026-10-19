@@ -1,0 +1,58 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/office/session-state-acceptance.test.tsx src/renderer/features/files/office/buffer.test.ts src/renderer/features/files/office/preview.test.tsx src/renderer/features/files/office/pptx-buffer.test.ts src/renderer/features/files/office/xlsx-materialization-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-j08-matrix-r2-tests.json
+
+[1018/132903.421684:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/132903.544430:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/132903.544439:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/132903.545532:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/132903.549912:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/132903.557371:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/renderer/features/files/office/buffer.test.ts (18 tests) 68ms
+ ✓ src/renderer/features/files/office/pptx-buffer.test.ts (19 tests) 168ms
+ ✓ src/renderer/features/files/office/xlsx-materialization-acceptance.test.ts (1 test) 526ms
+     ✓ serializes two edits, checkpoints the current model at 500ms and publishes exactly those bytes on save  459ms
+ ✓ src/renderer/features/files/office/preview.test.tsx (26 tests) 4290ms
+     ✓ inserts actual controls for the selected cells through the inspector and removes the whole closure on undo  375ms
+     ✓ applies a dynamic threshold through the inspector, retains base fill and restores the condition through undo  316ms
+ ❯ src/renderer/features/files/office/session-state-acceptance.test.tsx (13 tests | 1 failed) 13428ms
+     ✓ retries a transient checkpoint after exactly 1000ms: before-write  438ms
+     ✓ retries a transient checkpoint after exactly 1000ms: lost-receipt  375ms
+     ✓ retains an unapplied update and durable raw input when append/edit fails, then explicitly recovers once  343ms
+     ✓ preserves the model and draft when materialization reports stale  329ms
+     ✓ preserves the model and draft when materialization reports too-large  337ms
+     × degrades a disconnected native subscription to snapshots, detects a real external XLSX change and retains local edits 10129ms
+     ✓ pauses failed cached-mode autosaves after real permission removal while retaining edits for explicit retry  455ms
+     ✓ exposes starting then live cached fallback, and a fresh source reload without writing the original 157ms
+     ✓ blocks manual edits for a genuinely read-only source and refuses the corresponding service mutation 71ms
+     ✓ keeps a live model, local candidate and unchanged source when checkpoint persistence fails, then recovers  314ms
+     ✓ retains local dirty content and a distinct conflict problem after an actual external source change 224ms
+     ✓ retains the source and visible unsupported error with no writable model 29ms
+     ✓ retains the source and visible too-large error with no writable model 153ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/office/session-state-acceptance.test.tsx > J08 production XLSX failure matrix > degrades a disconnected native subscription to snapshots, detects a real external XLSX change and retains local edits
+Error: J06 real IO did not settle
+ ❯ until src/renderer/features/files/office/session-state-acceptance.test.tsx:26:136
+     24| vi.mock('@renderer/lib/ipc', () => ({ rpc: { files: api } }));
+     25| const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).…
+     26| const until = async (condition: () => boolean) => { const end = Date.n…
+       |                                                                                                                                        ^
+     27| let work = '', worker = '', fixtureIndex = 0; const rows: unknown[] = …
+     28| class FaultBroker extends NativeFileBroker {
+ ❯ src/renderer/features/files/office/session-state-acceptance.test.tsx:113:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 76 passed (77)
+   Start at  13:29:03
+   Duration  14.47s (transform 1.49s, setup 0ms, import 2.52s, tests 18.48s, environment 665ms)
+
+JSON report written to /private/tmp/willyou-j08-matrix-r2-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

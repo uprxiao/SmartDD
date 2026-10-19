@@ -1,0 +1,24 @@
+// Small metadata only: no full-source JSON/hash/clones on the measured UI thread.
+function install({workerName,faultUrl}){
+ if(globalThis.__markdownParseObservation)throw Error('Parse observer already installed');
+ const Base=globalThis.Worker,s={Base,workerName,faultUrl,rows:[],objects:[],held:[],longTasks:[],mode:'normal',timeOrigin:performance.timeOrigin};globalThis.__markdownParseObservation=s;const meta=new WeakMap();
+ s.performance=new PerformanceObserver(list=>{for(const x of list.getEntries())s.longTasks.push({startTime:x.startTime,duration:x.duration,name:x.name})});s.performance.observe({type:'longtask',buffered:true});
+ class ObservedWorker extends Base{
+  constructor(...args){const url=String(args[0]),markdown=url.endsWith('/'+workerName),actual=markdown&&s.mode==='throw'?faultUrl:url;super(...(actual!==url?[actual,...args.slice(1)]:args));const row={index:s.rows.length,url,actualUrl:actual,markdown,createdAt:performance.now(),jobs:[],messages:[],errors:[],terminate:[]},entry={ref:new WeakRef(this),row};s.rows.push(row);s.objects.push(entry);meta.set(this,row);
+   entry.message=event=>{const data=event.data,m={at:performance.now(),trusted:event.isTrusted,type:data?.type,id:data?.id,rev:data?.rev,indexLength:data?.index?.length,indexFirst:data?.index?.[0],indexLast:data?.index?.at?.(-3),itemCount:data?.items?.length,htmlUnits:data?.items?.reduce((n,x)=>n+(x.html?.length??0),0),ranges:data?.items?.map(x=>[x.from,x.to]),failure:data?.error};row.messages.push(m);if(markdown&&data?.type==='window')requestAnimationFrame(()=>requestAnimationFrame(()=>m.paintAt=performance.now()));};
+   entry.error=event=>row.errors.push({at:performance.now(),trusted:event.isTrusted,message:event.message,filename:event.filename,type:event.type});this.addEventListener('message',entry.message);this.addEventListener('error',entry.error);
+  }
+  postMessage(...args){const row=meta.get(this),data=args[0];if(!row)return super.postMessage(...args);const job={at:performance.now(),id:data?.id,rev:data?.rev,type:data?.type,sourceLength:typeof data?.source==='string'?data.source.length:undefined,start:data?.start};row.jobs.push(job);
+   if(row.markdown&&data?.type==='parse'&&s.mode==='cancel'){const button=document.querySelector('.fw-tab [role=tab][aria-selected=true]')?.closest('.fw-tab')?.querySelector('.fw-tab-close'),box=button?.getBoundingClientRect();if(box&&typeof globalThis.__markdownCancelStarted==='function')globalThis.__markdownCancelStarted(JSON.stringify({worker:row.index,id:data.id,at:performance.now(),x:box.x+box.width/2,y:box.y+box.height/2}));}
+   const deliver=()=>{job.deliveredAt=performance.now();const actualArgs=row.markdown&&data?.type==='window'&&s.mode==='invalid-window'?[{...data,start:-1},...args.slice(1)]:args;if(actualArgs!==args)job.explicitFault='negative window index to original renderer';return super.postMessage(...actualArgs);};
+   if(row.markdown&&data?.type==='parse'&&s.mode==='hold'){const held={worker:row.index,id:data.id,at:performance.now(),waiting:true};held.release=()=>{if(!held.waiting)return;held.waiting=false;if(row.terminate.length){held.cancelled=true;return;}deliver()};s.held.push(held);return;}return deliver();
+  }
+  terminate(...args){const row=meta.get(this);if(row){row.terminate.push(performance.now());for(const held of s.held)if(held.worker===row.index&&held.waiting){held.waiting=false;held.cancelled=true;}}return super.terminate(...args);}
+ }
+ globalThis.Worker=ObservedWorker;return true;
+}
+export const installMarkdownParseObserver=(app,options)=>app.evaluate('('+install.toString()+')('+JSON.stringify(options)+')');
+export const observeMarkdownParsing=app=>app.evaluate("(()=>{const s=globalThis.__markdownParseObservation;for(const x of s.performance.takeRecords())s.longTasks.push({startTime:x.startTime,duration:x.duration,name:x.name});return{rows:s.rows,longTasks:s.longTasks,held:s.held.map(({release,...x})=>x),mode:s.mode,timeOrigin:s.timeOrigin}})()");
+export const setMarkdownParseMode=(app,mode)=>app.evaluate('globalThis.__markdownParseObservation.mode='+JSON.stringify(mode)+';true');
+export const releaseMarkdownParses=app=>app.evaluate('globalThis.__markdownParseObservation.held.forEach(x=>x.release());true');
+export const restoreMarkdownParseObserver=app=>app.evaluate("(()=>{const s=globalThis.__markdownParseObservation;s.held.forEach(x=>x.release());s.performance.disconnect();for(const x of s.objects){const worker=x.ref.deref();if(worker){worker.removeEventListener('message',x.message);worker.removeEventListener('error',x.error)}}globalThis.Worker=s.Base;const result={constructor:globalThis.Worker===s.Base,allMarkdownWorkersTerminated:s.rows.filter(x=>x.markdown).every(x=>x.terminate.length>0),allSlotsReleased:s.held.every(x=>!x.waiting)};delete globalThis.__markdownParseObservation;return result})()");

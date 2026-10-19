@@ -1,0 +1,27 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/draft-restoration-acceptance.test.ts src/renderer/features/files/text-buffer-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev102-regressions.json
+
+[1019/051153.096037:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/051153.485980:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/051153.485975:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/051153.486818:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/renderer/features/files/file-buffer.test.ts (27 tests) 26ms
+ ✓ src/renderer/features/files/draft-restoration-acceptance.test.ts (5 tests) 884ms
+ ✓ src/renderer/features/files/text-buffer-acceptance.test.ts (10 tests) 3403ms
+     ✓ M9-T-H04 resets 3000ms autosave on repeated edits and never overlaps a suspended real save  439ms
+     ✓ M9-T-H07 merges concurrent save requests behind one real write and commits the newer buffer against its returned revision  331ms
+     ✓ M9-DEV-034 preserves rebased durable input when checkpoint v2 arrives after the newer checkpoint  524ms
+     ✓ M9-DEV-034 preserves rebased durable input when checkpoint v3 arrives after the newer checkpoint  598ms
+     ✓ M9-DEV-035 retains the new durable draft when an old clean cleanup resumes before its checkpoint  346ms
+     ✓ M9-DEV-035 retains the new durable draft when an old clean cleanup resumes after its checkpoint  360ms
+
+ Test Files  3 passed (3)
+      Tests  42 passed (42)
+   Start at  05:11:53
+   Duration  4.21s (transform 1.10s, setup 0ms, import 1.69s, tests 4.31s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev102-regressions.json

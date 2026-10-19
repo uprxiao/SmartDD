@@ -1,0 +1,176 @@
+{
+  "schema": "m9-development-fix/v1",
+  "id": "M9-DEV-057",
+  "completedAt": "2026-10-18T05:39:29.627352+00:00",
+  "baseline": "R3.4-P1 / R02.2 / R02.5 / R02.6 / R08.7",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad + archived workspace",
+  "relatedCases": [
+    "M9-T-B07",
+    "M9-T-B11",
+    "M9-T-B12"
+  ],
+  "formalCasesPassed": false,
+  "problems": [
+    "Switching roots resets selected/focused paths, contrary to R02.2 and the existing prototype root-state behavior.",
+    "An old-root keyboard RAF callback focuses a same-named item in the new root after switching.",
+    "Deleting the focused file leaves all tree items with tabindex=-1."
+  ],
+  "fix": [
+    "Retain selection and focus in the workspace session per issued root lease; restore on root switch/remount without changing durable schema or file identities.",
+    "Cancel focus RAF on root change/unmount and validate its epoch/root ownership before focusing a connected button. Restore scroll in layout effect, reset shift anchor at root switch as in prototype.",
+    "Provide the first navigable tree item as keyboard entry when the stored focused path is absent."
+  ],
+  "validation": {
+    "initialRootStateRed": {
+      "failed": 2,
+      "passed": 0,
+      "notSelected": 4,
+      "report": "willyou-tree-state-red-tests.json"
+    },
+    "deletedFocusRed": {
+      "failed": 1,
+      "passed": 5,
+      "report": "willyou-tree-focus-deleted-red-tests.json"
+    },
+    "finalRegression": {
+      "passed": 25,
+      "failed": 0,
+      "report": "willyou-dev057-final-tests.json"
+    },
+    "matrix": "willyou-dev057-final-matrix.json",
+    "typecheck": 0,
+    "build": 0
+  },
+  "prototype": "Read-only source comparison: FileWorkspace.jsx already stores selected/focused/expanded/query/scroll per root via rootStates. Production bug repaired to that reviewed behavior; no new layout or prototype design change. Full P/A not executed.",
+  "aggregateLatestCodeResults": {
+    "uniqueTests": 1518,
+    "passed": 1516,
+    "skipped": 2,
+    "basis": "Prior full baseline plus affected reruns; not a new full-suite run."
+  },
+  "turnTestsDeduplicated": {
+    "passed": 109
+  },
+  "package": {
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r10-build/mac-arm64/WillYou.app",
+    "asarSha256": "3b121de69a491e617d747e0da0f634011d9040a73c0227dfd3ebde2e32923ede",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "sourceSnapshot": "willyou-m9-acceptance-batch-r10-sources.tar.gz",
+    "sourceSnapshotSha256": "d83b2059941b129f8c3e97e8c99145022fe24d634d8d4851ce16fe26aaa3c95e",
+    "sourceFiles": 834,
+    "sourceChangesAfterSnapshot": [],
+    "buildExit": 0,
+    "typecheckExit": 0,
+    "nativeChecks": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "compiledEntryInspection": "willyou-r10-js-inspection.json",
+    "officeEvidenceReuse": "Office Worker/PPTX Worker and broker hashes equal r9; Office sources unchanged. Retain the r9 20-test evidence, do not label it a new r10 execution.",
+    "includedFixes": [
+      "DEV052",
+      "DEV053",
+      "DEV054",
+      "DEV055",
+      "DEV056",
+      "DEV057"
+    ],
+    "GUIStarted": false
+  },
+  "sourceHashes": {
+    "src/renderer/features/files/workspace-tree.tsx": "cc327182de2ea122b5fd411c8c5e9f40ddf8fb4d5ce6f0c678d753a70ca046a0",
+    "src/renderer/features/files/workspace-store.ts": "834bfbc584afc1daaae791ab71b5fb2dca7789798ea3164410cbc581f168a9bb",
+    "src/renderer/features/files/tree-failure-native-acceptance.test.tsx": "c7795ec67f3c99c8c22e042fa0efc2b984ba5b3714f5381fdf388372600956c8",
+    "prototypes/m6-codex/src/FileWorkspace.jsx": "d2682767ba4559abd0c1097d8fba0cfd2e9d492e20fd5342310312967a08dffe",
+    "prototypes/m6-codex/src/FileWorkspaceTree.jsx": "4973374ee361d5d97b7f9b841fa8de4aef4f8cc1b1130ae622ac755685813e18"
+  },
+  "boundaries": [
+    "Production React tree/store plus actual native roots/files, deterministic delayed callback injection in jsdom. No native App mouse/keyboard or full pixel acceptance.",
+    "B11 and B12 are still incomplete P/I/A formal cases. B07 source deletion handling stays verified at scoped I; full App error state/focus remains to test.",
+    "B13 rerun has three extra fixture directories: first/middle/tail DOM count is 19/24/20; timing and Node heap are diagnostic only (GC can make deltas negative).",
+    "r10 not started; existing r6 GUI/userData kept untouched. No merge, commit, tag, push or release."
+  ],
+  "artifacts": {
+    "willyou-dev057-final-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-dev057-final-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev057-final-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-dev057-final-matrix.json",
+      "sha256": "b0e29ba86fc5a2ed54efdd519f44d7a381008435db3a1bca8c3058ef22f0bf0e"
+    },
+    "willyou-dev057-final-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-dev057-final-tests.json",
+      "sha256": "bc10872acefa501b56f63730093c46325ad7978f209794785e72836d2df0e53a"
+    },
+    "willyou-dev057-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-dev057-final.log",
+      "sha256": "70000ba9a706676615afb22c358eb8791a98414cb611d3d4100a7c92eda1852c"
+    },
+    "willyou-dev057-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-dev057-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-tree-state-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-tree-state-green.log",
+      "sha256": "27ebe334905c04da8283ae55aab3ffb19acd00b1ba24b432ad2b3b9f794df3bb"
+    },
+    "willyou-tree-state-red-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-tree-state-red-tests.json",
+      "sha256": "810de6bd14ea5d743617d3d48a4cb65831315596ca45fea3f74985169d489ddb"
+    },
+    "willyou-tree-state-green-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-tree-state-green-tests.json",
+      "sha256": "6378a241cac4061849b51e06fcfbbf2f69c605c85679229f957c1d2ecdbf9ea4"
+    },
+    "willyou-tree-state-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-tree-state-green.json",
+      "sha256": "fe04450dd0cd6613d210bd97d3f2ea8826139ab3444ddc34180aed60dd4de04f"
+    },
+    "willyou-tree-state-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-tree-state-red.log",
+      "sha256": "919daa2ca3285cfe999ed95d69db00fc37ea1fab35c5717e5c1bd46a64cc6625"
+    },
+    "willyou-tree-focus-deleted-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-tree-focus-deleted-red.log",
+      "sha256": "322a605c7b81b584f0255c4b871c9ec4cd930454c1017a0e06ad6f23d7216cc2"
+    },
+    "willyou-tree-focus-deleted-red-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-tree-focus-deleted-red-tests.json",
+      "sha256": "ec620613600561a6faf7e30e3eea7002f7f46019376fb1f18faef7525238d06b"
+    },
+    "willyou-m9-r10-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-m9-r10-package.log",
+      "sha256": "f996a92144d50438d8abeabdd13ab57a393fb994756887a59cf632fbd1c7ee89"
+    },
+    "willyou-r10-js-inspection.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-r10-js-inspection.json",
+      "sha256": "325336cc0b88914252c2db041fe3860c4678aba361d2f30e5d708997739cc0c1"
+    },
+    "willyou-m9-acceptance-batch-r10-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-m9-acceptance-batch-r10-sources.tar.gz",
+      "sha256": "d83b2059941b129f8c3e97e8c99145022fe24d634d8d4851ce16fe26aaa3c95e"
+    },
+    "willyou-m9-acceptance-batch-r10-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/willyou-m9-acceptance-batch-r10-sources.json",
+      "sha256": "991157a47a3cc03c18a64fdb5d73db959c5489daa85803b13af4b4e3fa5a7dc8"
+    },
+    "latest-result-per-test.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/latest-result-per-test.json",
+      "sha256": "9d51f5bd47338e35bca389504f46b6d70532751fa95759b2711aa853f13bc7c4"
+    },
+    "turn-result-per-test.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/turn-result-per-test.json",
+      "sha256": "fc74778b9411a8b679dd2464b7b0304e3b6db51c6fe7d6dbc31697355b76cf40"
+    },
+    "package.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-tree-root-state/package.json",
+      "sha256": "a4423267c4783621d20a062302f375e7cab6cb110695196db4252f8302b0d55c"
+    }
+  }
+}

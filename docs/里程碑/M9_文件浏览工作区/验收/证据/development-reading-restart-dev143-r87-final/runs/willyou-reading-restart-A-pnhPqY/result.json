@@ -1,0 +1,162 @@
+{
+  "at": "2026-10-19T12:40:08.876Z",
+  "caseId": "M9-T-D19",
+  "layer": "A",
+  "scratch": "/private/tmp/willyou-reading-restart-A-pnhPqY",
+  "root": "/private/tmp/willyou-reading-restart-A-pnhPqY/project",
+  "userData": "/private/tmp/willyou-reading-restart-A-pnhPqY/userdata",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r83-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "21e81d1439177e17b25180a7b9572478097b4f8dbf88309224ed9a93aa2728fd",
+  "before": {
+    "A.md": {
+      "sha256": "b897edbf762b988f7bc112005c3297e0fab3ce78631f4795f5d9c86629405709",
+      "inode": "50521569",
+      "mtimeNs": "1792413608875906899",
+      "ctimeNs": "1792413608875906899"
+    },
+    "B.md": {
+      "sha256": "ba4405a1ee4b00defa14553b744b0edb4dd2cc9dcf4fcefbcad17b7115a5e565",
+      "inode": "50521570",
+      "mtimeNs": "1792413608876298858",
+      "ctimeNs": "1792413608876298858"
+    }
+  },
+  "checks": [
+    {
+      "theme": "light",
+      "scenario": "independent source A line200 and rich B selection/scroll survive switching",
+      "a": {
+        "top": 4418,
+        "left": 160,
+        "anchor": 44712,
+        "yMargin": 2,
+        "selection": {
+          "anchor": 40276,
+          "head": 40276
+        },
+        "mode": "source",
+        "docLength": 142091
+      },
+      "b": {
+        "top": 8352,
+        "left": 0,
+        "anchor": 26292,
+        "yMargin": -33.25,
+        "selection": {
+          "anchor": 26076,
+          "head": 26076
+        },
+        "mode": "document",
+        "docLength": 142091
+      },
+      "pass": true
+    }
+  ],
+  "exits": [
+    {
+      "tag": "light-before-restart",
+      "pid": 78909,
+      "code": 0,
+      "signal": null
+    }
+  ],
+  "boundary": "Normal packaged App and original UI. Own real source/Markdown, actual Tab/keyboard GoToLine and wheel/pointer selection, read-only model and original SQLite RPC. New process/same profile restart; no driver state/selection/scroll mutation or fabricated IO. Changed source test updates only own bytes after closing App. No daily paths/models/PTY/clipboard/external apps.",
+  "instances": [
+    78909,
+    78982
+  ],
+  "checkpoint": {
+    "state": {
+      "schemaVersion": 1,
+      "routes": [
+        {
+          "source": "project-directory",
+          "sourceId": "875f9074-3a12-4ec5-a5bc-eb421eee7590",
+          "sourcePath": "/private/tmp/willyou-reading-restart-A-pnhPqY/project",
+          "relativePath": "A.md",
+          "mode": "source"
+        },
+        {
+          "source": "project-directory",
+          "sourceId": "875f9074-3a12-4ec5-a5bc-eb421eee7590",
+          "sourcePath": "/private/tmp/willyou-reading-restart-A-pnhPqY/project",
+          "relativePath": "B.md",
+          "mode": "document"
+        }
+      ],
+      "active": {
+        "source": "project-directory",
+        "sourceId": "875f9074-3a12-4ec5-a5bc-eb421eee7590",
+        "sourcePath": "/private/tmp/willyou-reading-restart-A-pnhPqY/project",
+        "relativePath": "B.md",
+        "mode": "document"
+      },
+      "treeSource": "project-directory:875f9074-3a12-4ec5-a5bc-eb421eee7590:/private/tmp/willyou-reading-restart-A-pnhPqY/project",
+      "expanded": {
+        "project-directory:875f9074-3a12-4ec5-a5bc-eb421eee7590:/private/tmp/willyou-reading-restart-A-pnhPqY/project": []
+      },
+      "collapsedRoots": [],
+      "filters": {},
+      "treeWidth": 250,
+      "treeVisible": true
+    },
+    "revision": 1792413611561
+  },
+  "pendingRestart": {
+    "theme": "light",
+    "a": {
+      "top": 4418,
+      "left": 160,
+      "anchor": 44712,
+      "yMargin": 2,
+      "selection": {
+        "anchor": 40276,
+        "head": 40276
+      },
+      "mode": "source",
+      "docLength": 142091
+    },
+    "b": {
+      "top": 8352,
+      "left": 0,
+      "anchor": 26292,
+      "yMargin": -33.25,
+      "selection": {
+        "anchor": 26076,
+        "head": 26076
+      },
+      "mode": "document",
+      "docLength": 142091
+    },
+    "afterB": {
+      "top": 0,
+      "left": 0,
+      "anchor": 0,
+      "yMargin": 0,
+      "selection": {
+        "anchor": 0,
+        "head": 0
+      },
+      "mode": "document",
+      "docLength": 142091
+    }
+  },
+  "status": "failed",
+  "failedStage": "light:restart",
+  "error": "AssertionError [ERR_ASSERTION]: selection restored\n+ actual - expected\n\n  {\n+   anchor: 0,\n+   head: 0\n-   anchor: 26076,\n-   head: 26076\n  }\n",
+  "stack": "AssertionError [ERR_ASSERTION]: selection restored\n+ actual - expected\n\n  {\n+   anchor: 0,\n+   head: 0\n-   anchor: 26076,\n-   head: 26076\n  }\n\n    at same (file:///Users/hx/hx/hxWork/SmartDD/scripts/files/reading-restart-ui.mjs:16:95)\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/files/reading-restart-ui.mjs:18:1212",
+  "actual": {
+    "top": 0,
+    "left": 0,
+    "anchor": 0,
+    "yMargin": 0,
+    "selection": {
+      "anchor": 0,
+      "head": 0
+    },
+    "mode": "document",
+    "docLength": 142091
+  },
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 Reading Restart\n设置\n首页\n›\nM9 Reading Restart\n文件\nM9 Reading Restart\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 Reading Restart\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/19/2026, 8:40:09 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nA.md\nB.md\nSynthetic static viewers\n›\nB.md\n打开\nB.md heading 1\n\nLine 2 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 3 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 4 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 5 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 6 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 7 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 8 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 9 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 10 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 11 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 12 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text\n\nB.md heading 13\n\nLine 14 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 15 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 16 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 17 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 18 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 19 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 20 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 21 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 22 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 23 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 24 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text\n\nB.md heading 25\n\nLine 26 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 27 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 28 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 29 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 30 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 31 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 32 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 33 B.md 中文🙂 long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text Line 34 B.md 中文🙂 long text long text long text long text long tex",
+  "finishedAt": "2026-10-19T12:40:13.357Z"
+}

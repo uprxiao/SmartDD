@@ -1,0 +1,123 @@
+{
+  "startedAt": "2026-10-18T03:21:52.734Z",
+  "layer": "I: actual native file broker + registered sandboxed stdio MCP + public App SDK + production bridge + Electron WebContentsView; no packaged App GUI",
+  "versions": {
+    "node": "24.19.0",
+    "acorn": "8.17.0",
+    "ada": "3.4.4",
+    "amaro": "1.1.10",
+    "ares": "1.34.6",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "146",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.69.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.4",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.3",
+    "tz": "2025c",
+    "undici": "7.29.0",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "14.8.178.38-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "42.11.14",
+    "chrome": "148.0.7778.280"
+  },
+  "cases": [
+    {
+      "name": "Actual registered MCP SDK handshake, input-before-result, native byte read, bounded tool and forbidden capabilities",
+      "startedAt": "2026-10-18T03:21:52.840Z",
+      "pass": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'function'\n- 'undefined'\n\n    at /Users/hx/hx/hxWork/SmartDD/scripts/files/mcp-ui/run.cjs:34:285\n    at async test (/Users/hx/hx/hxWork/SmartDD/scripts/files/mcp-ui/run.cjs:16:122)\n    at async /Users/hx/hx/hxWork/SmartDD/scripts/files/mcp-ui/run.cjs:20:2",
+      "finishedAt": "2026-10-18T03:21:54.626Z"
+    },
+    {
+      "name": "Close-before-open and immediate close cancel late initialization without resurrecting a native view",
+      "startedAt": "2026-10-18T03:21:54.626Z",
+      "observed": {
+        "children": 0
+      },
+      "pass": true,
+      "finishedAt": "2026-10-18T03:21:54.781Z"
+    },
+    {
+      "name": "Delayed real session cleanup remains a serial barrier across B cancelled while waiting and C reopening",
+      "startedAt": "2026-10-18T03:21:54.781Z",
+      "observed": {
+        "sequence": [
+          "start1",
+          "end1",
+          "start2",
+          "end2"
+        ],
+        "blockedBeforeRelease": true,
+        "childrenAfterReopen": 1,
+        "childrenAfterClose": 0
+      },
+      "pass": true,
+      "finishedAt": "2026-10-18T03:21:55.247Z"
+    },
+    {
+      "name": "Owner changes reuse cleared isolated session, cookie state is removed, hidden geometry clamps and source abort destroys view",
+      "startedAt": "2026-10-18T03:21:55.247Z",
+      "observed": {
+        "owners": 6,
+        "pooledSessions": 1,
+        "sourceAbortChildren": 0
+      },
+      "pass": true,
+      "finishedAt": "2026-10-18T03:21:55.909Z"
+    },
+    {
+      "name": "Untrusted IPC flood exceeds actual per-second budget and removes its native view",
+      "startedAt": "2026-10-18T03:21:55.909Z",
+      "observed": {
+        "forwarded": 200,
+        "error": "扩展界面消息过多，已停止",
+        "children": 0
+      },
+      "pass": true,
+      "finishedAt": "2026-10-18T03:21:56.290Z"
+    },
+    {
+      "name": "Silent application hits real 15-second initialization deadline and can subsequently reopen",
+      "startedAt": "2026-10-18T03:21:56.290Z",
+      "observed": {
+        "elapsed": 15019,
+        "error": "扩展界面初始化超过15秒",
+        "children": 0
+      },
+      "pass": true,
+      "finishedAt": "2026-10-18T03:22:11.432Z"
+    },
+    {
+      "name": "Infinite untrusted script is terminated by isolated-world heartbeat and leaves parent alive",
+      "startedAt": "2026-10-18T03:21:56.318Z",
+      "observed": {
+        "elapsed": 7145,
+        "error": "扩展界面连续5秒无响应",
+        "parentAlive": true,
+        "children": 0
+      },
+      "pass": true,
+      "finishedAt": "2026-10-18T03:22:03.597Z"
+    }
+  ],
+  "broker": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c"
+  },
+  "pass": false,
+  "finishedAt": "2026-10-18T03:22:11.432Z"
+}

@@ -1,0 +1,32 @@
+import{searchWithSessionFallback}from'./search-protocol';
+import{searchPriorityFolders}from'@shared/file-search-priority.mjs';
+// @vitest-environment jsdom
+import{randomUUID}from'node:crypto';
+import{act,cleanup,renderHook,waitFor}from'@testing-library/react';
+import{afterEach,describe,expect,it,vi}from'vitest';
+import{fileSearchSchema,type FileRoot,type FileSearchRequest}from'@shared/files';
+import{FileSearchService}from'@main/core/files/search-service';
+import type{FileRootsService}from'@main/core/files/roots';
+import type{FileRecoveryStore}from'@main/core/files/recovery-store';
+import type{NativeFileBroker}from'@main/core/files/native-broker';
+import{useFileSearch}from'./file-search';
+const calls=vi.hoisted(()=>({start:vi.fn(),cancel:vi.fn(async()=>undefined)}));
+vi.mock('@renderer/lib/ipc',()=>({rpc:{files:{startSearchSession:calls.start,search:calls.start,cancelSearch:calls.cancel}},events:{on:()=>()=>undefined}}));
+const root:FileRoot={lease:randomUUID(),generation:4,source:'project-directory',sourceId:'issued',label:'Owned',path:'/synthetic/owned',canonicalPath:'/synthetic/owned',identity:{device:'1',inode:'2'}};
+const base=()=>({id:randomUUID(),kind:'content'as const,root:{lease:root.lease,generation:root.generation},query:'body-only-token',mask:'*.ts'});
+const complete=()=>{const value=base();return{...value,roots:[value.root],fileMask:value.mask,priorityFolders:['src/feature','src']}};
+afterEach(()=>{cleanup();vi.clearAllMocks();vi.useRealTimers()});
+describe('R02 complete workspace search request and constrained priority',()=>{
+ it('missing-session legacy host receives only its original strict wire fields, never unknown aliases',async()=>{const request=complete(),search=vi.fn(async(input:FileSearchRequest)=>({id:input.id,kind:input.kind,paths:[],rows:[],limited:false,searched:0,skipped:0,issues:[]}));const result=await searchWithSessionFallback({startSearchSession:async()=>{throw Error("No handler registered for 'files.startSearchSession'")},search},request,{session:'unknown'},()=>true);expect(result?.id).toBe(request.id);expect(search).toHaveBeenCalledWith({id:request.id,root:request.root,kind:request.kind,query:request.query,mask:request.mask})});
+
+ it('derives nearest active-file ancestors only from valid root-relative source paths',()=>{expect(searchPriorityFolders('src/中文🙂/active.txt')).toEqual(['src/中文🙂','src']);for(const path of[null,undefined,'active.txt','/outside/a.txt','../outside/a.txt','src//a.txt'])expect(searchPriorityFolders(path)).toEqual([])});
+ it.each([64,65])('bounds caller priority metadata to %i folders',count=>{expect(fileSearchSchema.safeParse({...complete(),priorityFolders:Array.from({length:count},(_,i)=>'folder'+i)}).success).toBe(count<=64)});
+ it('canonical fileMask retains the same UTF16 boundary as the visible mask',()=>{for(const length of[255,256,257]){const mask='x'.repeat(length);expect(fileSearchSchema.safeParse({...complete(),mask,fileMask:mask}).success).toBe(length<=256)}});
+
+ it('content hook sends issued roots, exact body query/fileMask and priorityFolders without replacing legacy root/mask',async()=>{calls.start.mockImplementation(async(input:FileSearchRequest)=>({id:input.id,kind:input.kind,paths:[],rows:[],limited:false,searched:0,skipped:0,issues:[]}));renderHook(()=>useFileSearch(root,'content','body-only-token','*.ts',true,['src/feature','src']));await waitFor(()=>expect(calls.start).toHaveBeenCalledOnce());expect(calls.start.mock.calls[0][0]).toMatchObject({...complete(),id:expect.any(String)});});
+ it('accepts full canonical fields while retaining the original root/mask callers',()=>{expect(fileSearchSchema.safeParse(complete()).success).toBe(true);expect(fileSearchSchema.safeParse(base()).success).toBe(true)});
+ it.each(['root-mismatch','second-root','mask-mismatch','unknown-key'])('rejects ambiguous authority or mask aliases: %s',kind=>{const input:any=complete();if(kind==='root-mismatch')input.roots=[{lease:randomUUID(),generation:4}];if(kind==='second-root')input.roots.push({lease:randomUUID(),generation:4});if(kind==='mask-mismatch')input.fileMask='*.txt';if(kind==='unknown-key')input.absoluteRoot='/outside';expect(fileSearchSchema.safeParse(input).success).toBe(false)});
+ it.each(['/outside','../outside','src/../outside','bad\0folder'])('rejects non-root-relative priority hint %s before native dispatch',folder=>{expect(fileSearchSchema.safeParse({...complete(),priorityFolders:[folder]}).success).toBe(false)});
+ it('stable priority uses complete path segments and cannot reintroduce candidates excluded by walk/mask',async()=>{const paths=['a.ts','src-extra/no.ts','src/other.ts','src/feature/hit.ts','src/feature/nested/hit.ts','src/feature/readme.txt'],original=[...paths],inputs:Record<string,unknown>[]=[];const lease={lease:root.lease,generation:root.generation,descriptor:{},abort:new AbortController()};const roots={require:vi.fn(()=>lease),observeFailure:vi.fn(async()=>false)};const broker={request:vi.fn(async(input:Record<string,unknown>)=>{inputs.push(input);return input.operation==='walk'?{paths,skipped:0,issues:[]}:{rows:[],limited:false,searched:0,skipped:0,issues:[]}})};const recovery={ready:async()=>undefined,protectedIdentities:()=>[]};const service=new FileSearchService(roots as unknown as FileRootsService,broker as unknown as NativeFileBroker,recovery as unknown as FileRecoveryStore);await service.search('owner',complete()as FileSearchRequest,()=>{});expect(inputs.find(x=>x.operation==='search')!.paths).toEqual(['src/feature/hit.ts','src/feature/nested/hit.ts','src/other.ts','a.ts','src-extra/no.ts']);expect(paths).toEqual(original);expect(inputs.find(x=>x.operation==='search')!.root).toBe(lease.descriptor);expect(service.activeRequests).toBe(0)});
+ it('obsolete content request is cancelled when priority scope changes even if query and root are unchanged',async()=>{calls.start.mockImplementation(async(input:FileSearchRequest)=>({id:input.id,kind:input.kind,paths:[],rows:[],limited:false,searched:0,skipped:0,issues:[]}));const hook=renderHook(({folders})=>useFileSearch(root,'content','body-only-token','*.ts',true,folders),{initialProps:{folders:['a']}});await waitFor(()=>expect(calls.start).toHaveBeenCalledOnce());const first=calls.start.mock.calls[0][0];await act(async()=>hook.rerender({folders:['b']}));await waitFor(()=>expect(calls.start).toHaveBeenCalledTimes(2));expect(calls.cancel).toHaveBeenCalledWith(first.id);expect(calls.start.mock.calls[1][0].priorityFolders).toEqual(['b'])});
+});

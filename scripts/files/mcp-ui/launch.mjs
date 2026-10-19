@@ -1,0 +1,20 @@
+// Hidden, self-contained Electron integration. No user App, CDP or global input.
+import {createRequire} from 'node:module';
+import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,realpathSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {resolve,join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {spawn} from 'node:child_process';
+const root=resolve(fileURLToPath(new URL('../../../',import.meta.url))),require=createRequire(join(root,'package.json'));
+const {buildSync}=createRequire(require.resolve('vite'))('esbuild');
+const base=realpathSync(process.argv[2]||mkdtempSync(join(tmpdir(),'willyou-mcp-ui-')));mkdirSync(join(base,'main'),{recursive:true});mkdirSync(join(base,'preload'),{recursive:true});
+const sources=['src/main/core/files/mcp/ui-view.ts','src/main/core/files/mcp/ui-document.ts','src/preload/m9-mcp-ui.ts','src/renderer/features/files/mcp/bridge.ts','src/main/core/files/mcp/service.ts','src/main/core/files/mcp/policy.ts','src/main/core/files/mcp/stdio-provider.ts','src/main/core/files/file-service.ts','src/main/core/files/roots.ts','src/main/core/files/native-broker.ts','src/shared/file-viewer.ts'];
+const hashes=()=>Object.fromEntries(sources.map(p=>[p,createHash('sha256').update(readFileSync(join(root,p))).digest('hex')]));writeFileSync(join(base,'source-before.json'),JSON.stringify(hashes(),null,2));
+const common={bundle:true,nodePaths:[join(root,'node_modules')],alias:{'@shared':join(root,'src/shared'),'@main':join(root,'src/main'),'@renderer':join(root,'src/renderer'),'@parcel/watcher':require.resolve('@parcel/watcher')}};
+buildSync({...common,entryPoints:[join(root,'src/preload/m9-mcp-ui.ts')],outfile:join(base,'preload/m9-mcp-ui.js'),platform:'node',format:'cjs',external:['electron']});
+buildSync({...common,stdin:{contents:`export {FileMcpUiService} from '${root}/src/main/core/files/mcp/ui-view';export {createViewerAppBridge} from '${root}/src/renderer/features/files/mcp/bridge';export {FileService} from '${root}/src/main/core/files/file-service';export {FileRootsService} from '${root}/src/main/core/files/roots';export {FileRecoveryStore} from '${root}/src/main/core/files/recovery-store';export {NativeFileBroker} from '${root}/src/main/core/files/native-broker';`,resolveDir:root,loader:'ts'},outfile:join(base,'main/production.cjs'),platform:'node',format:'cjs',external:['electron','better-sqlite3',require.resolve('@parcel/watcher')]});
+const js=buildSync({...common,entryPoints:[join(root,'scripts/files/mcp-ui/app-fixture.js')],platform:'browser',format:'iife',write:false}).outputFiles[0].text;
+writeFileSync(join(base,'app.html'),'<!doctype html><body>Isolated SDK fixture<script>'+js.replaceAll('</script','<\\/script')+'</script>');
+const env={...process.env,SMARTDD_MCP_UI_BASE:base,SMARTDD_MCP_UI_ROOT:root};for(const k of Object.keys(env))if(/^(ELECTRON_RUN_AS_NODE|ANTHROPIC_|OPENAI_|CLAUDECODE|CLAUDE_CODE_)/.test(k))delete env[k];
+const child=spawn(require('electron'),[join(root,'scripts/files/mcp-ui/run.cjs')],{env,stdio:'inherit'});child.on('exit',code=>{writeFileSync(join(base,'source-after.json'),JSON.stringify(hashes(),null,2));process.exitCode=code??1;console.log('MCP UI evidence:',base)});

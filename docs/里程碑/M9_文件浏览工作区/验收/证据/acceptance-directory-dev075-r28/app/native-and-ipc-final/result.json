@@ -1,0 +1,815 @@
+{
+  "at": "2026-10-18T12:04:17.910Z",
+  "scratch": "/private/tmp/willyou-directory-race-app-0QptY2",
+  "original": "/private/tmp/willyou-m9-acceptance-batch-r28-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "executable": "/private/tmp/willyou-directory-race-app-0QptY2/Delayed WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "0f1d3d8c7ace2a1d04da31a583428b9054deb25450cd8fececed4a25ac00e4ec",
+  "normalAsarSha256": "0f1d3d8c7ace2a1d04da31a583428b9054deb25450cd8fececed4a25ac00e4ec",
+  "nativeBroker": "/private/tmp/willyou-m9-acceptance-batch-r28-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "nativeSha256": "26f9843f533cc3b0bd4e5d886956eeb5ff767fd0999fae27e509e89bb8053db7",
+  "wrapperSha256": "3f22eef6887d96f02039d94e0d896cf28a96083b45dedfbdea1b3a4789a08602",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "before": {
+    "/private/tmp/willyou-directory-race-app-0QptY2/A/a.txt": {
+      "hash": "ef6051f467a3cb7dd260788e10e0b3bbf09e85b41b95b0c0a4cc151dc760c42c",
+      "inode": "46219227",
+      "mtimeNs": "1792325055650184578"
+    },
+    "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/old.txt": {
+      "hash": "f36d03ff4b92621bd0d6d9c37d7d04141abcfee1fdba15834c83066791868544",
+      "inode": "46219228",
+      "mtimeNs": "1792325055650387620"
+    },
+    "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse/old.txt": {
+      "hash": "d947dc4f1d076da69a4e47fea623503ebe7b9662cb3cf83d9256b48e61659a8d",
+      "inode": "46219229",
+      "mtimeNs": "1792325055650513412"
+    },
+    "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt": {
+      "hash": "8ee9324ed29e7c6211a01797324c088383a6f16458bb21c86822aca3cc71ee34",
+      "inode": "46219230",
+      "mtimeNs": "1792325055650620329"
+    }
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-B02",
+      "nativeOld": {
+        "atMs": 1792325063422.1592,
+        "pid": 7802,
+        "nativePid": 7806,
+        "nativeExit": 0,
+        "outputSha256": "0d65334648c6b0a53dc9c515376697b113f0220fa25d7bc5cfff3600b232f81c",
+        "requestId": "b91b2325-555b-477a-94c2-45fd1342d4c5",
+        "operation": "list",
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "relativePath": "slow"
+      },
+      "expanded": {
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "rows": [
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse",
+            "expanded": "false"
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow",
+            "expanded": "true"
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/fresh.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/old.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/a.txt",
+            "expanded": null
+          }
+        ],
+        "loading": false,
+        "alerts": []
+      },
+      "cacheReopened": {
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "rows": [
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse",
+            "expanded": "false"
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow",
+            "expanded": "true"
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/fresh.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/old.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/a.txt",
+            "expanded": null
+          }
+        ],
+        "loading": false,
+        "alerts": []
+      },
+      "cancelledNativeRequest": {
+        "atMs": 1792325063483.2717,
+        "event": "cancelled",
+        "operation": "list",
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "relativePath": "slow",
+        "requestId": "b91b2325-555b-477a-94c2-45fd1342d4c5",
+        "label": "slow",
+        "pid": 7802
+      }
+    },
+    {
+      "caseId": "M9-T-B02",
+      "scenario": "already-completed-native-response-transport",
+      "transport": {
+        "electron": "42.11.14",
+        "channel": "files.list",
+        "senderId": 1,
+        "mode": "Only transport delivery gated after original trusted handler/real native IO completes"
+      },
+      "slots": [
+        {
+          "requestId": "4d7a7ed8-da8c-4d38-81b2-656750fb73ed",
+          "entries": [
+            "old.txt"
+          ],
+          "atMs": 1792325064337
+        },
+        {
+          "requestId": "b19e26b4-b131-41e9-a8e8-204a3aa80c42",
+          "entries": [
+            "fresh.txt",
+            "old.txt"
+          ],
+          "atMs": 1792325064658
+        }
+      ],
+      "events": [
+        {
+          "event": "release",
+          "requestId": "b19e26b4-b131-41e9-a8e8-204a3aa80c42",
+          "atMs": 1792325064681
+        },
+        {
+          "event": "return-real-result",
+          "requestId": "b19e26b4-b131-41e9-a8e8-204a3aa80c42",
+          "atMs": 1792325064681
+        },
+        {
+          "event": "release",
+          "requestId": "4d7a7ed8-da8c-4d38-81b2-656750fb73ed",
+          "atMs": 1792325064686
+        },
+        {
+          "event": "return-real-result",
+          "requestId": "4d7a7ed8-da8c-4d38-81b2-656750fb73ed",
+          "atMs": 1792325064686
+        }
+      ],
+      "beforeOldIpc": {
+        "atMs": 1792325064684,
+        "ui": {
+          "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+          "rows": [
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse",
+              "expanded": "true"
+            },
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse/fresh.txt",
+              "expanded": null
+            },
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse/old.txt",
+              "expanded": null
+            },
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow",
+              "expanded": "true"
+            },
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/fresh.txt",
+              "expanded": null
+            },
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/old.txt",
+              "expanded": null
+            },
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/a.txt",
+              "expanded": null
+            }
+          ],
+          "loading": false,
+          "alerts": []
+        }
+      },
+      "afterOldIpc": {
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "rows": [
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse",
+            "expanded": "true"
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse/fresh.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse/old.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow",
+            "expanded": "true"
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/fresh.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/old.txt",
+            "expanded": null
+          },
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/A/a.txt",
+            "expanded": null
+          }
+        ],
+        "loading": false,
+        "alerts": []
+      }
+    },
+    {
+      "caseId": "M9-T-A12",
+      "scenario": "read",
+      "oldRead": {
+        "atMs": 1792325065016.944,
+        "pid": 7887,
+        "nativePid": 7893,
+        "nativeExit": 0,
+        "outputSha256": "77c135651999fe34c0443cfa18cd74c9d3aa54cb7320b092bf2e81d144d96f06",
+        "requestId": null,
+        "operation": "read",
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "relativePath": "a.txt"
+      },
+      "beforeReadRelease": {
+        "atMs": 1792325065798,
+        "ui": {
+          "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+          "active": "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt",
+          "text": "Root B real bytes 中文🙂\n",
+          "rows": [
+            {
+              "path": "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt",
+              "expanded": null
+            }
+          ],
+          "loading": false,
+          "alerts": []
+        }
+      },
+      "readDelivered": {
+        "atMs": 1792325065839.416,
+        "event": "delivered",
+        "operation": "read",
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "relativePath": "a.txt",
+        "requestId": null,
+        "label": "readA",
+        "pid": 7887,
+        "outputSha256": "77c135651999fe34c0443cfa18cd74c9d3aa54cb7320b092bf2e81d144d96f06",
+        "nativeExit": 0
+      },
+      "afterReadRelease": {
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+        "active": "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt",
+        "text": "Root B real bytes 中文🙂\n",
+        "rows": [
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt",
+            "expanded": null
+          }
+        ],
+        "loading": false,
+        "alerts": []
+      },
+      "pinnedASeparateBuffer": true
+    },
+    {
+      "caseId": "M9-T-A12",
+      "scenario": "list",
+      "oldList": {
+        "atMs": 1792325066686.764,
+        "pid": 7987,
+        "nativePid": 7993,
+        "nativeExit": 0,
+        "outputSha256": "54d6c6a2ee296a5967aceffc3fdd307c9202a51d1525f52f35b5e1efe2783623",
+        "requestId": "3851059d-01f4-4941-83bb-e6890deaeb2a",
+        "operation": "list",
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "relativePath": ""
+      },
+      "afterList": {
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+        "active": "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt",
+        "text": "Root B real bytes 中文🙂\n",
+        "rows": [
+          {
+            "path": "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt",
+            "expanded": null
+          }
+        ],
+        "loading": false,
+        "alerts": []
+      },
+      "cancelledNativeRequest": {
+        "atMs": 1792325066814.824,
+        "event": "cancelled",
+        "operation": "list",
+        "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+        "relativePath": "",
+        "requestId": "3851059d-01f4-4941-83bb-e6890deaeb2a",
+        "label": "rootA",
+        "pid": 7987
+      }
+    }
+  ],
+  "status": "passed",
+  "boundary": "A: actual packaged renderer pointer/root/menu/tree/tab controls. Private COW App has identical ASAR; wrapper delays exact real native output for own synthetic paths, never fabricates a result. Public IPC only creates isolated project/directories and reads final snapshots. Real watcher stays active; UI list requestId distinguishes watcher IO. A separate exact reverse-directory scenario gates delivery after the original authenticated files.list handler finishes actual native IO, then restores it; no entry/receipt/authorization replacement. Read A is pinned, so its own buffer may complete in background without changing active B. No tasks/model/clipboard/daily resources.",
+  "snapshot": {
+    "state": {
+      "schemaVersion": 1,
+      "routes": [
+        {
+          "source": "project-directory",
+          "sourceId": "6794b39b-9139-4295-b13d-b773a0f20ab4",
+          "sourcePath": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+          "relativePath": "a.txt",
+          "mode": "document"
+        },
+        {
+          "source": "project-directory",
+          "sourceId": "88383909-ea35-40ce-b741-5164000360ab",
+          "sourcePath": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+          "relativePath": "b.txt",
+          "mode": "document"
+        }
+      ],
+      "active": {
+        "source": "project-directory",
+        "sourceId": "88383909-ea35-40ce-b741-5164000360ab",
+        "sourcePath": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+        "relativePath": "b.txt",
+        "mode": "document"
+      },
+      "treeSource": "project-directory:88383909-ea35-40ce-b741-5164000360ab:/private/tmp/willyou-directory-race-app-0QptY2/B",
+      "expanded": {
+        "project-directory:6794b39b-9139-4295-b13d-b773a0f20ab4:/private/tmp/willyou-directory-race-app-0QptY2/A": [
+          "slow",
+          "reverse"
+        ]
+      },
+      "collapsedRoots": [],
+      "filters": {},
+      "treeWidth": 250
+    },
+    "revision": 1792325066818
+  },
+  "after": {
+    "/private/tmp/willyou-directory-race-app-0QptY2/A/a.txt": {
+      "hash": "ef6051f467a3cb7dd260788e10e0b3bbf09e85b41b95b0c0a4cc151dc760c42c",
+      "inode": "46219227",
+      "mtimeNs": "1792325055650184578"
+    },
+    "/private/tmp/willyou-directory-race-app-0QptY2/A/slow/old.txt": {
+      "hash": "f36d03ff4b92621bd0d6d9c37d7d04141abcfee1fdba15834c83066791868544",
+      "inode": "46219228",
+      "mtimeNs": "1792325055650387620"
+    },
+    "/private/tmp/willyou-directory-race-app-0QptY2/A/reverse/old.txt": {
+      "hash": "d947dc4f1d076da69a4e47fea623503ebe7b9662cb3cf83d9256b48e61659a8d",
+      "inode": "46219229",
+      "mtimeNs": "1792325055650513412"
+    },
+    "/private/tmp/willyou-directory-race-app-0QptY2/B/b.txt": {
+      "hash": "8ee9324ed29e7c6211a01797324c088383a6f16458bb21c86822aca3cc71ee34",
+      "inode": "46219230",
+      "mtimeNs": "1792325055650620329"
+    }
+  },
+  "freshFixture": {
+    "hash": "d537d31f786d708f4986471cf31086a8a1a70e926d8fa64cd384ebc18825a786",
+    "inode": "46239309",
+    "mtimeNs": "1792325063588673125"
+  },
+  "freshTransportFixture": {
+    "hash": "d1e47d9f84027ae11dd9d5e08b11565b06297b328cfca30cb9c475c96816027d",
+    "inode": "46239313",
+    "mtimeNs": "1792325064479242735"
+  },
+  "native": [
+    {
+      "atMs": 1792325063288.141,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "d114ae92-7175-4c77-ae4c-d21d5b67e336",
+      "label": null,
+      "pid": 7795,
+      "outputSha256": "1d5996e049b8641d5b4a3ac80124f4aaa704765cf6c34992ec51754722b764be",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325063422.292,
+      "event": "waiting",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "b91b2325-555b-477a-94c2-45fd1342d4c5",
+      "label": "slow",
+      "pid": 7802,
+      "outputSha256": "0d65334648c6b0a53dc9c515376697b113f0220fa25d7bc5cfff3600b232f81c",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325063422.592,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "24e5536e-eff0-4f89-9810-e7716b7c4d7c",
+      "label": null,
+      "pid": 7801,
+      "outputSha256": "1d5996e049b8641d5b4a3ac80124f4aaa704765cf6c34992ec51754722b764be",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325063483.2717,
+      "event": "cancelled",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "b91b2325-555b-477a-94c2-45fd1342d4c5",
+      "label": "slow",
+      "pid": 7802
+    },
+    {
+      "atMs": 1792325063568.964,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "bcbab700-7b16-4798-b554-77187bcf565a",
+      "label": null,
+      "pid": 7809,
+      "outputSha256": "1d5996e049b8641d5b4a3ac80124f4aaa704765cf6c34992ec51754722b764be",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325063680.919,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "edd9d228-2689-4d2d-825d-93377049c6e0",
+      "label": null,
+      "pid": 7815,
+      "outputSha256": "87837b8cede1296c902ac1075b89773ca978cad6ec0e33e3929d6d6dc62fc314",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325063680.9119,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "2071e663-f942-4596-9020-4f8340bf543f",
+      "label": null,
+      "pid": 7816,
+      "outputSha256": "8014fdd88c20b01bc083f70fd715b344b6bd8f013d7d3152f7017aadc2d26038",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325063989.127,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "746bcc62-f9a9-448f-a631-7099a55e3516",
+      "label": null,
+      "pid": 7828,
+      "outputSha256": "87837b8cede1296c902ac1075b89773ca978cad6ec0e33e3929d6d6dc62fc314",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064111.662,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "60d2e072-7460-4330-a148-61bc52852333",
+      "label": null,
+      "pid": 7833,
+      "outputSha256": "87837b8cede1296c902ac1075b89773ca978cad6ec0e33e3929d6d6dc62fc314",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064111.659,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "77bb7c2c-8316-4e58-a53c-db53664f26c1",
+      "label": null,
+      "pid": 7834,
+      "outputSha256": "8014fdd88c20b01bc083f70fd715b344b6bd8f013d7d3152f7017aadc2d26038",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064249.397,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "46de1b8b-823d-4de6-9460-f5cdf0a87aaf",
+      "label": null,
+      "pid": 7843,
+      "outputSha256": "87837b8cede1296c902ac1075b89773ca978cad6ec0e33e3929d6d6dc62fc314",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064334.704,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "reverse",
+      "requestId": "4d7a7ed8-da8c-4d38-81b2-656750fb73ed",
+      "label": null,
+      "pid": 7849,
+      "outputSha256": "6d38211bd28f2a70be338f21b849fb0bc456181619e5c12bc311e0de1a71eeba",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064334.781,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "6f46584e-35b2-4527-aa13-55f79951e229",
+      "label": null,
+      "pid": 7848,
+      "outputSha256": "8014fdd88c20b01bc083f70fd715b344b6bd8f013d7d3152f7017aadc2d26038",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064462.8347,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "ea6c6b28-3f19-448b-8a27-d9d787fb6eb0",
+      "label": null,
+      "pid": 7856,
+      "outputSha256": "8014fdd88c20b01bc083f70fd715b344b6bd8f013d7d3152f7017aadc2d26038",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064462.882,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "d94b46b0-4dee-4742-9380-0e2ee6b32059",
+      "label": null,
+      "pid": 7855,
+      "outputSha256": "87837b8cede1296c902ac1075b89773ca978cad6ec0e33e3929d6d6dc62fc314",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064570.4092,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "c4c442e1-bb35-4fa0-a8fb-92d388354285",
+      "label": null,
+      "pid": 7866,
+      "outputSha256": "54d6c6a2ee296a5967aceffc3fdd307c9202a51d1525f52f35b5e1efe2783623",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064655.424,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "reverse",
+      "requestId": "b19e26b4-b131-41e9-a8e8-204a3aa80c42",
+      "label": null,
+      "pid": 7872,
+      "outputSha256": "26d47c76458c5de258c5517ea025b2da8f324259919b9813273ea0384428d7fb",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325064655.44,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "080e4184-5457-4e39-92a5-4a6e79f111fc",
+      "label": null,
+      "pid": 7871,
+      "outputSha256": "8014fdd88c20b01bc083f70fd715b344b6bd8f013d7d3152f7017aadc2d26038",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325065017.083,
+      "event": "waiting",
+      "operation": "read",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "a.txt",
+      "requestId": null,
+      "label": "readA",
+      "pid": 7887,
+      "outputSha256": "77c135651999fe34c0443cfa18cd74c9d3aa54cb7320b092bf2e81d144d96f06",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325065266.6052,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+      "relativePath": "",
+      "requestId": "f28e8a5c-a58f-443a-a608-68cb00f4437c",
+      "label": null,
+      "pid": 7904,
+      "outputSha256": "c68bf64751cdc1eefeb7b627237d034e9fc43a805acf3d29e0e8e8e2730dad08",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325065588.2502,
+      "event": "delivered",
+      "operation": "read",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+      "relativePath": "b.txt",
+      "requestId": null,
+      "label": null,
+      "pid": 7918,
+      "outputSha256": "004c9ea2d9615ffb6772f71802c2d931876e72efb6dc36dd35a61e59cba6d9cf",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325065677.742,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+      "relativePath": "",
+      "requestId": "9550f174-0a00-4fd6-b624-601ed4b47db9",
+      "label": null,
+      "pid": 7924,
+      "outputSha256": "c68bf64751cdc1eefeb7b627237d034e9fc43a805acf3d29e0e8e8e2730dad08",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325065712.137,
+      "event": "delivered",
+      "operation": "read",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+      "relativePath": "b.txt",
+      "requestId": null,
+      "label": null,
+      "pid": 7926,
+      "outputSha256": "004c9ea2d9615ffb6772f71802c2d931876e72efb6dc36dd35a61e59cba6d9cf",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325065839.416,
+      "event": "delivered",
+      "operation": "read",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "a.txt",
+      "requestId": null,
+      "label": "readA",
+      "pid": 7887,
+      "outputSha256": "77c135651999fe34c0443cfa18cd74c9d3aa54cb7320b092bf2e81d144d96f06",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325065948.317,
+      "event": "delivered",
+      "operation": "read",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "a.txt",
+      "requestId": null,
+      "label": null,
+      "pid": 7939,
+      "outputSha256": "77c135651999fe34c0443cfa18cd74c9d3aa54cb7320b092bf2e81d144d96f06",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325066470.274,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "e6631eea-1833-41f8-8e5f-b1cf51e10d05",
+      "label": null,
+      "pid": 7970,
+      "outputSha256": "54d6c6a2ee296a5967aceffc3fdd307c9202a51d1525f52f35b5e1efe2783623",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325066514.7651,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "reverse",
+      "requestId": "873458ec-520e-46b9-ad68-04337f320b75",
+      "label": null,
+      "pid": 7974,
+      "outputSha256": "26d47c76458c5de258c5517ea025b2da8f324259919b9813273ea0384428d7fb",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325066514.833,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "b94bd90f-b282-42d7-bfba-b8edf90d47f1",
+      "label": null,
+      "pid": 7973,
+      "outputSha256": "8014fdd88c20b01bc083f70fd715b344b6bd8f013d7d3152f7017aadc2d26038",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325066686.896,
+      "event": "waiting",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "3851059d-01f4-4941-83bb-e6890deaeb2a",
+      "label": "rootA",
+      "pid": 7987,
+      "outputSha256": "54d6c6a2ee296a5967aceffc3fdd307c9202a51d1525f52f35b5e1efe2783623",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325066709.196,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "slow",
+      "requestId": "077b959b-08a8-4c2e-b047-5f65975aebab",
+      "label": null,
+      "pid": 7989,
+      "outputSha256": "8014fdd88c20b01bc083f70fd715b344b6bd8f013d7d3152f7017aadc2d26038",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325066755.508,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "reverse",
+      "requestId": "59698df6-cbf2-4bde-b13c-5f7574df068f",
+      "label": null,
+      "pid": 7992,
+      "outputSha256": "26d47c76458c5de258c5517ea025b2da8f324259919b9813273ea0384428d7fb",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325066814.824,
+      "event": "cancelled",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/A",
+      "relativePath": "",
+      "requestId": "3851059d-01f4-4941-83bb-e6890deaeb2a",
+      "label": "rootA",
+      "pid": 7987
+    },
+    {
+      "atMs": 1792325066998.5093,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+      "relativePath": "",
+      "requestId": "47dee2d5-e071-4f47-889e-32e60dc427fb",
+      "label": null,
+      "pid": 8007,
+      "outputSha256": "c68bf64751cdc1eefeb7b627237d034e9fc43a805acf3d29e0e8e8e2730dad08",
+      "nativeExit": 0
+    },
+    {
+      "atMs": 1792325067177.9412,
+      "event": "delivered",
+      "operation": "list",
+      "root": "/private/tmp/willyou-directory-race-app-0QptY2/B",
+      "relativePath": "",
+      "requestId": "b6dd0087-1c1b-4329-81bd-16b252342888",
+      "label": null,
+      "pid": 8014,
+      "outputSha256": "c68bf64751cdc1eefeb7b627237d034e9fc43a805acf3d29e0e8e8e2730dad08",
+      "nativeExit": 0
+    }
+  ],
+  "finishedAt": "2026-10-18T12:04:27.419Z"
+}

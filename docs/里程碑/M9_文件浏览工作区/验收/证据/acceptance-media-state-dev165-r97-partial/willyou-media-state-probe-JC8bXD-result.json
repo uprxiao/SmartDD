@@ -1,0 +1,573 @@
+{
+  "at": "2026-10-19T19:34:55.322Z",
+  "purpose": "T19 genuine native duration reachability; exploratory, not formal pass",
+  "scratch": "/private/tmp/willyou-media-state-probe-JC8bXD",
+  "manifest": "/private/tmp/willyou-media-state-he3axxd_/fixtures.json",
+  "fixture": {
+    "at": "2026-10-19T19:34:04.843479+00:00",
+    "project": "/private/tmp/willyou-media-state-he3axxd_/project",
+    "cases": [
+      {
+        "name": "broken.wav",
+        "size": 50,
+        "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+      },
+      {
+        "name": "live-webm.opus",
+        "size": 1866,
+        "sha256": "00c3e1077d3d7fd0b7e009d61e74eff752a21e8e99d45d983908738118e6d844"
+      },
+      {
+        "name": "no-eos.opus",
+        "size": 847,
+        "sha256": "398b14f1e60cd3fad342dfe06dfd9ef53544dc89622241c13a5afa612379d4eb"
+      },
+      {
+        "name": "normal.opus",
+        "size": 847,
+        "sha256": "3c2bf2d650ff2aefb7f976aa7a74eebcbd5a3488795a2b99b8c920bf3d23cda9"
+      },
+      {
+        "name": "normal.wav",
+        "size": 288078,
+        "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+      },
+      {
+        "name": "unknown-granule.opus",
+        "size": 847,
+        "sha256": "4d18fe5119684fd6d22d41d9f679eca550db6a22d1cbebfdb7d93a865c1c06c4"
+      },
+      {
+        "name": "zero.wav",
+        "size": 44,
+        "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+      }
+    ],
+    "commands": [
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "pcm_s16le",
+          "/private/tmp/willyou-media-state-he3axxd_/project/normal.wav"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "webm",
+          "-live",
+          "1",
+          "/private/tmp/willyou-media-state-he3axxd_/project/live-webm.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "ogg",
+          "/private/tmp/willyou-media-state-he3axxd_/project/normal.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      }
+    ],
+    "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+    "boundary": "All silent generated media. live-webm.opus deliberately declares an Opus extension over a live WebM container to explore decoder handling, not a valid Ogg-format conformance claim. Ogg no-EOS/unknown granule fixtures retain complete packets and recomputed page CRC; decoder duration/outcome measured, not assumed."
+  },
+  "asarSha256": "db7c8b7c51f6e1f84a5b24eab91d5e2cb53a317cfe31068178066f54d0658344",
+  "before": {
+    "broken.wav": {
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "inode": "51176750",
+      "mtimeNs": "1792438444842932764"
+    },
+    "live-webm.opus": {
+      "sha256": "00c3e1077d3d7fd0b7e009d61e74eff752a21e8e99d45d983908738118e6d844",
+      "inode": "51176746",
+      "mtimeNs": "1792438444817647028"
+    },
+    "no-eos.opus": {
+      "sha256": "398b14f1e60cd3fad342dfe06dfd9ef53544dc89622241c13a5afa612379d4eb",
+      "inode": "51176748",
+      "mtimeNs": "1792438444842719223"
+    },
+    "normal.opus": {
+      "sha256": "3c2bf2d650ff2aefb7f976aa7a74eebcbd5a3488795a2b99b8c920bf3d23cda9",
+      "inode": "51176747",
+      "mtimeNs": "1792438444841485473"
+    },
+    "normal.wav": {
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "inode": "51176744",
+      "mtimeNs": "1792438444790874875"
+    },
+    "unknown-granule.opus": {
+      "sha256": "4d18fe5119684fd6d22d41d9f679eca550db6a22d1cbebfdb7d93a865c1c06c4",
+      "inode": "51176749",
+      "mtimeNs": "1792438444842859014"
+    },
+    "zero.wav": {
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0",
+      "inode": "51176745",
+      "mtimeNs": "1792438444792385375"
+    }
+  },
+  "checks": [
+    {
+      "item": {
+        "name": "broken.wav",
+        "size": 50,
+        "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+      },
+      "state": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "src": null,
+        "transport": "protocol",
+        "seekDisabled": true,
+        "seekMax": "0",
+        "time": "0:00 / 0:00",
+        "error": "无法播放此媒体，文件格式或编码不受支持重新读取",
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 469.60000014305115,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "error",
+          "at": 516.3000001907349,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": {
+            "code": 4,
+            "message": ""
+          }
+        },
+        {
+          "type": "emptied",
+          "at": 517.1000001430511,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "live-webm.opus",
+        "size": 1866,
+        "sha256": "00c3e1077d3d7fd0b7e009d61e74eff752a21e8e99d45d983908738118e6d844"
+      },
+      "state": {
+        "duration": "Infinity",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/0db61e611a025a90471cdd83d87f556e6872e7630cfd9369dcfde73e19f00cd9",
+        "transport": "protocol",
+        "seekDisabled": true,
+        "seekMax": "0",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 749.1000001430511,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 772.4000000953674,
+          "tag": "AUDIO",
+          "duration": "Infinity",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 772.6000001430511,
+          "tag": "AUDIO",
+          "duration": "Infinity",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 772.7000000476837,
+          "tag": "AUDIO",
+          "duration": "Infinity",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "no-eos.opus",
+        "size": 847,
+        "sha256": "398b14f1e60cd3fad342dfe06dfd9ef53544dc89622241c13a5afa612379d4eb"
+      },
+      "state": {
+        "duration": "3.0065",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/dc605743e6b1a602a1e35b7d91b537e9153ff00cadc92293bd4317fcfb1dd22e",
+        "transport": "protocol",
+        "seekDisabled": false,
+        "seekMax": "3.0065",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 1022.2000000476837,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 1038.8000001907349,
+          "tag": "AUDIO",
+          "duration": "3.0065",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 1038.9000000953674,
+          "tag": "AUDIO",
+          "duration": "3.0065",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 1038.9000000953674,
+          "tag": "AUDIO",
+          "duration": "3.0065",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "normal.opus",
+        "size": 847,
+        "sha256": "3c2bf2d650ff2aefb7f976aa7a74eebcbd5a3488795a2b99b8c920bf3d23cda9"
+      },
+      "state": {
+        "duration": "3.0065",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/5cbacab5dd0185e52adc1de0bcf8cc270e45f089e9fc8731a1c8ed1346f2e56e",
+        "transport": "protocol",
+        "seekDisabled": false,
+        "seekMax": "3.0065",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 1295,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 1313.9000000953674,
+          "tag": "AUDIO",
+          "duration": "3.0065",
+          "readyState": 1,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 1314.1000001430511,
+          "tag": "AUDIO",
+          "duration": "3.0065",
+          "readyState": 1,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 1314.7000000476837,
+          "tag": "AUDIO",
+          "duration": "3.0065",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "normal.wav",
+        "size": 288078,
+        "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+      },
+      "state": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/99597b5e7e8aade3f3f7c57f05dc2833f515ce97d25deb02efba31052c9068b0",
+        "transport": "protocol",
+        "seekDisabled": false,
+        "seekMax": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 1564.7000000476837,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 1592,
+          "tag": "AUDIO",
+          "duration": "3",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 1592.1000001430511,
+          "tag": "AUDIO",
+          "duration": "3",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 1592.4000000953674,
+          "tag": "AUDIO",
+          "duration": "3",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "unknown-granule.opus",
+        "size": 847,
+        "sha256": "4d18fe5119684fd6d22d41d9f679eca550db6a22d1cbebfdb7d93a865c1c06c4"
+      },
+      "state": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/703c0d13de7fa68d82ffecc5e2d4af5de6b33fd562986b9b6c88f1b526d91982",
+        "transport": "protocol",
+        "seekDisabled": false,
+        "seekMax": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 1812.3000001907349,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 1832.8000001907349,
+          "tag": "AUDIO",
+          "duration": "3",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 1832.9000000953674,
+          "tag": "AUDIO",
+          "duration": "3",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 1833,
+          "tag": "AUDIO",
+          "duration": "3",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "zero.wav",
+        "size": 44,
+        "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+      },
+      "state": {
+        "duration": "Infinity",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/bf0db5780482b7f8f02827b08451de7c2a600631ea4bc943c0266772d4f41744",
+        "transport": "protocol",
+        "seekDisabled": true,
+        "seekMax": "0",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 2060.7000000476837,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 2089.2000000476837,
+          "tag": "AUDIO",
+          "duration": "Infinity",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 2089.2000000476837,
+          "tag": "AUDIO",
+          "duration": "Infinity",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 2089.300000190735,
+          "tag": "AUDIO",
+          "duration": "Infinity",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "status": "completed exploration",
+  "pid": 42869,
+  "after": {
+    "broken.wav": {
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "inode": "51176750",
+      "mtimeNs": "1792438444842932764"
+    },
+    "live-webm.opus": {
+      "sha256": "00c3e1077d3d7fd0b7e009d61e74eff752a21e8e99d45d983908738118e6d844",
+      "inode": "51176746",
+      "mtimeNs": "1792438444817647028"
+    },
+    "no-eos.opus": {
+      "sha256": "398b14f1e60cd3fad342dfe06dfd9ef53544dc89622241c13a5afa612379d4eb",
+      "inode": "51176748",
+      "mtimeNs": "1792438444842719223"
+    },
+    "normal.opus": {
+      "sha256": "3c2bf2d650ff2aefb7f976aa7a74eebcbd5a3488795a2b99b8c920bf3d23cda9",
+      "inode": "51176747",
+      "mtimeNs": "1792438444841485473"
+    },
+    "normal.wav": {
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "inode": "51176744",
+      "mtimeNs": "1792438444790874875"
+    },
+    "unknown-granule.opus": {
+      "sha256": "4d18fe5119684fd6d22d41d9f679eca550db6a22d1cbebfdb7d93a865c1c06c4",
+      "inode": "51176749",
+      "mtimeNs": "1792438444842859014"
+    },
+    "zero.wav": {
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0",
+      "inode": "51176745",
+      "mtimeNs": "1792438444792385375"
+    }
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 42869,
+    "code": 0,
+    "signal": null
+  },
+  "finishedAt": "2026-10-19T19:34:58.310Z"
+}

@@ -1,14 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Copy, Download, Play } from 'lucide-react';
 import { notebookFixture, notebookFrameDocument, parseNotebook } from './file-artifact-model.mjs';
 import { renderMarkdownReadOnly } from './file-markdown-model.mjs';
 import { highlightCode } from './file-highlight.mjs';
 import './file-artifact.css';
+import 'katex/dist/katex.min.css';
+import { createMarkdownMathBudget, createMarkdownMathSession, hydrateMarkdownMath } from '../../../src/shared/markdown-math-session.mjs';
 
 // 只读 Markdown：与文档同一 markdown-it 管线（html 关闭、链接不导航、图片白名单）。
 function StaticMarkdown({ text }) {
   const html = useMemo(() => renderMarkdownReadOnly(text), [text]);
-  return <div className="fa-static-markdown" onClick={event => { const link = event.target.closest('a'); if (link) event.preventDefault(); }} dangerouslySetInnerHTML={{ __html: html }} />;
+  const root = useRef(null);
+  useEffect(() => { const math = createMarkdownMathSession(), abort = new AbortController(), release = hydrateMarkdownMath(root.current, math, abort.signal, { budget: createMarkdownMathBudget(html.length), overflow: () => { root.current.textContent = text; } }); return () => { abort.abort(); release(); math.dispose(); }; }, [html, text]);
+  return <div ref={root} className="fa-static-markdown" onClick={event => { const link = event.target.closest('a'); if (link) event.preventDefault(); }} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 function CodeBlock({ source, label, copy = true, language }) {
   const [copied, setCopied] = useState(false), [failed, setFailed] = useState(false);

@@ -1,0 +1,253 @@
+{
+  "cases": [
+    "M9-T-R03",
+    "M9-T-R07"
+  ],
+  "startedAt": "2026-10-18T14:04:28.570Z",
+  "observations": [
+    {
+      "case": "M9-T-R03",
+      "sample": "a/al/alpha, each 49ms then final +1ms",
+      "callsAtFinal49": 0,
+      "callsAt50": 1,
+      "requestedQuery": "alpha",
+      "nativeRows": [
+        {
+          "revision": {
+            "size": 32,
+            "inode": "46809973",
+            "device": "16777232",
+            "changedNs": "1792332268573443126",
+            "modifiedNs": "1792332268573443126",
+            "hash": "78eec8e7f1dd7bec3cce51d0df94365b5daeea1c0305642b150df941498df144"
+          },
+          "ranges": [
+            {
+              "to": 5,
+              "from": 0
+            }
+          ],
+          "rangesTruncated": false,
+          "rawOffset": 0,
+          "text": "alpha needle",
+          "relativePath": "needle.txt",
+          "line": 1
+        }
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-R03",
+      "sample": "empty/whitespace/pre-debounce clear + completed native success held before renderer receipt",
+      "totalSearchCalls": 1,
+      "cancelId": "58fb990a-4e02-45ab-950c-30847a87e945",
+      "lateRows": [
+        {
+          "revision": {
+            "size": 32,
+            "inode": "46809991",
+            "device": "16777232",
+            "changedNs": "1792332268673539032",
+            "modifiedNs": "1792332268673539032",
+            "hash": "78eec8e7f1dd7bec3cce51d0df94365b5daeea1c0305642b150df941498df144"
+          },
+          "ranges": [
+            {
+              "to": 4,
+              "from": 0
+            }
+          ],
+          "rangesTruncated": false,
+          "rawOffset": 13,
+          "text": "beta needle 中文",
+          "relativePath": "needle.txt",
+          "line": 2
+        }
+      ],
+      "finalPhase": "idle",
+      "resources": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "31 queries / 21 masks / duplicates / dialog restart",
+      "saved": {
+        "query": [
+          "query-29",
+          "query-30",
+          "query-28",
+          "query-27",
+          "query-26",
+          "query-25",
+          "query-24",
+          "query-23",
+          "query-22",
+          "query-21",
+          "query-20",
+          "query-19",
+          "query-18",
+          "query-17",
+          "query-16",
+          "query-15",
+          "query-14",
+          "query-13",
+          "query-12",
+          "query-11",
+          "query-10",
+          "query-9",
+          "query-8",
+          "query-7",
+          "query-6",
+          "query-5",
+          "query-4",
+          "query-3",
+          "query-2",
+          "query-1"
+        ],
+        "mask": [
+          "*.type19",
+          "*.type20",
+          "*.type18",
+          "*.type17",
+          "*.type16",
+          "*.type15",
+          "*.type14",
+          "*.type13",
+          "*.type12",
+          "*.type11",
+          "*.type10",
+          "*.type9",
+          "*.type8",
+          "*.type7",
+          "*.type6",
+          "*.type5",
+          "*.type4",
+          "*.type3",
+          "*.type2",
+          "*.type1"
+        ]
+      },
+      "restoredFirstQuery": "query-29",
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "mask whitespace normalization",
+      "actual": [
+        "*.ts"
+      ],
+      "expected": [
+        "*.ts"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "21 authorized local project/root scopes; reopen newest",
+      "storedScopeCount": 20,
+      "oldestRetained": false,
+      "newestQuery": [
+        "private-project-20"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "opening old scope does not promote; remembering does",
+      "readOnlyOldestEvicted": true,
+      "explicitlyRememberedRetained": true,
+      "nextOldestEvicted": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "invalid JSON -> normal query/mask -> dialog restart",
+      "actual": {
+        "query": [
+          "recovered"
+        ],
+        "mask": [
+          "*.txt"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "legacy masks normalized when loaded and saved",
+      "options": [
+        "*.ts",
+        "*.js"
+      ],
+      "after": {
+        "query": [
+          "new",
+          "old"
+        ],
+        "mask": [
+          "*.ts",
+          "*.js"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "live A→B project change while Alt history navigation active",
+      "afterSwitch": "",
+      "afterHistoryUp": "",
+      "firstSaved": {
+        "query": [
+          "A history"
+        ],
+        "mask": []
+      },
+      "secondSaved": {
+        "query": [
+          "B history"
+        ],
+        "mask": []
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "live A→B root change while Alt history navigation active",
+      "afterSwitch": "",
+      "afterHistoryUp": "",
+      "firstSaved": {
+        "query": [
+          "A history"
+        ],
+        "mask": []
+      },
+      "secondSaved": {
+        "query": [
+          "B history"
+        ],
+        "mask": []
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "corrupt MRU index / 21 legacy records / unrelated storage",
+      "storedScopeCount": 20,
+      "currentScopeFirst": true,
+      "unrelated": "KEEP",
+      "pass": true
+    }
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r32-build/mac-arm64/WillYou.app",
+    "asarSha256": "5d58fef09a8c23fcc24e34f8d9225c7826bfa9aa7f1fc585ddd0c16842e1d929",
+    "brokerSha256": "26f9843f533cc3b0bd4e5d886956eeb5ff767fd0999fae27e509e89bb8053db7",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "finishedAt": "2026-10-18T14:04:30.249Z"
+}

@@ -1,0 +1,170 @@
+{
+  "at": "2026-10-19T13:27:47.168194+00:00",
+  "projectPath": "/private/tmp/willyou-media-limit-_uznhlfb/project",
+  "limit": 134217728,
+  "source": "Own synthetic silent WAV, silent AAC/H264 test pattern MP4; sparse padding counts toward real FD size; no user media/network",
+  "ffmpegCommand": [
+    "/opt/homebrew/bin/ffmpeg",
+    "-nostdin",
+    "-hide_banner",
+    "-loglevel",
+    "error",
+    "-f",
+    "lavfi",
+    "-i",
+    "testsrc2=size=64x48:rate=8",
+    "-f",
+    "lavfi",
+    "-i",
+    "anullsrc=r=48000:cl=mono",
+    "-t",
+    "1",
+    "-map",
+    "0:v:0",
+    "-map",
+    "1:a:0",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "ultrafast",
+    "-pix_fmt",
+    "yuv420p",
+    "-c:a",
+    "aac",
+    "-movflags",
+    "+faststart",
+    "/private/tmp/willyou-media-limit-_uznhlfb/base.mp4"
+  ],
+  "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+  "cases": [
+    {
+      "name": "audio-below.wav",
+      "kind": "audio",
+      "size": 134217727,
+      "delta": -1,
+      "sha256": "f18038ef801a1a91746bb8264254afd67e703289ad9c876f7fc5243a1deedec1",
+      "streams": [
+        {
+          "codec_name": "pcm_s16le",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1,
+          "duration": "1.000000"
+        }
+      ],
+      "probeDuration": 1.0,
+      "padding": "WAV JUNK plus one unreferenced trailer byte for odd total; RIFF core remains even-sized"
+    },
+    {
+      "name": "audio-equal.wav",
+      "kind": "audio",
+      "size": 134217728,
+      "delta": 0,
+      "sha256": "50750a15412c6515932c329e9382ac476e7b9f6588fcf482b56a90501ab585c7",
+      "streams": [
+        {
+          "codec_name": "pcm_s16le",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1,
+          "duration": "1.000000"
+        }
+      ],
+      "probeDuration": 1.0,
+      "padding": "WAV JUNK plus one unreferenced trailer byte for odd total; RIFF core remains even-sized"
+    },
+    {
+      "name": "audio-above.wav",
+      "kind": "audio",
+      "size": 134217729,
+      "delta": 1,
+      "sha256": "dbb5017d40c80ef989d30dc6670bce8ef41437da57c3785952c5003e04c6b5af",
+      "streams": [
+        {
+          "codec_name": "pcm_s16le",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1,
+          "duration": "1.000000"
+        }
+      ],
+      "probeDuration": 1.0,
+      "padding": "WAV JUNK plus one unreferenced trailer byte for odd total; RIFF core remains even-sized"
+    },
+    {
+      "name": "video-below.mp4",
+      "kind": "video",
+      "size": 134217727,
+      "delta": -1,
+      "sha256": "02cc606e524bf8bdaf4b52cce527cdac75f3e563dcc7304f6ffbf80942ab686c",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 64,
+          "height": 48,
+          "duration": "1.000000"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1,
+          "duration": "1.000000"
+        }
+      ],
+      "probeDuration": 1.0,
+      "padding": "MP4 free box"
+    },
+    {
+      "name": "video-equal.mp4",
+      "kind": "video",
+      "size": 134217728,
+      "delta": 0,
+      "sha256": "2ba8ded4bb7a1f40b051e42f3032f2308f7ff29d9fb2e2db11354d4e95a01b96",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 64,
+          "height": 48,
+          "duration": "1.000000"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1,
+          "duration": "1.000000"
+        }
+      ],
+      "probeDuration": 1.0,
+      "padding": "MP4 free box"
+    },
+    {
+      "name": "video-above.mp4",
+      "kind": "video",
+      "size": 134217729,
+      "delta": 1,
+      "sha256": "08b9467089015b5d8eebaf2b63df23b4ed064a60845ae22800efffa39dadffa5",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 64,
+          "height": 48,
+          "duration": "1.000000"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1,
+          "duration": "1.000000"
+        }
+      ],
+      "probeDuration": 1.0,
+      "padding": "MP4 free box"
+    }
+  ]
+}

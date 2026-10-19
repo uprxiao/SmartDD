@@ -1,0 +1,100 @@
+SmartDD
+
+本项目部分代码参照或改编自 Yoda（https://github.com/lovstudio/yoda），
+Yoda 以 Apache License 2.0 授权：http://www.apache.org/licenses/LICENSE-2.0
+
+参照或改编的部分：
+
+- src/shared/ipc/rpc.ts、src/shared/ipc/events.ts —— 类型化 RPC 与事件通道
+- src/main/core/settings/* —— 设置服务（差量存储、zod 校验、按 key 串行写）
+- src/main/db/migrations.ts —— 打包迁移的执行方式
+- src/main/app/window.ts、src/main/app/menu.ts —— 窗口参数与应用菜单
+- src/main/app/icon.ts、src/main/index.ts 的图标加载 —— 参照 Yoda 的 ?asset 导入与开发模式 Dock 图标设置
+- src/renderer/lib/layout/workspace.tsx —— 可调整的工作区布局
+- src/renderer/index.css —— ylight / ydark 主题变量与配色
+- src/renderer/lib/ui/* —— 基础 UI 组件（button、resizable、select、toggle、
+  toggle-group、input、label、separator、switch、tooltip、sonner、dialog、
+  badge、textarea、checkbox、menu、popover）
+- src/renderer/utils/utils.ts —— cn 工具函数
+- src/renderer/views/task-chrome.tsx、src/renderer/lib/layout/sidebar-tasks.tsx、
+  src/renderer/lib/layout/left-sidebar.tsx —— 任务页顶栏（任务标签）、底栏与侧栏样式
+- src/renderer/utils/relative-time.ts —— 侧栏紧凑相对时间格式
+- src/renderer/core/terminal-keys.ts、src/renderer/views/task-view.tsx —— 终端按键映射、
+  字体栈与 xterm 参数（pty-keybindings.ts、pty.ts、use-pty.ts）
+- src/renderer/assets/runners/claude.png、openai.svg —— 运行器图标（原样复制）
+- .github/actions/setup-build/action.yml、.github/workflows/* —— 构建环境、分平台
+  打包、标签发版与草稿汇集后公开的流程（已按 SmartDD 精简与适配）
+- electron-builder.config.cjs、build/entitlements.mac.plist、scripts/release/build.mjs
+  —— 安装包配置、Mac 权限、显式重建原生模块（release/build.ts、rebuild-native.ts）
+
+本轮构建流程参考本地 Yoda 提交 960fd3224508edc52fb7e99d9e8f8cf1723ad683。
+Yoda 的版权与 Apache-2.0 许可全文保存在 licenses/Yoda-Apache-2.0.txt。
+
+以上文件在原代码基础上有修改。
+
+SmartDD 蚂蚁举重应用图标由本项目根据用户提供的主题生成，非 Yoda 或运行器品牌图标。
+
+M7 Typeless integration references Yoda (LovStudio, Apache-2.0):
+- src/main/core/app/voice-input.ts and voice-input-shortcut.ts
+- src/renderer/features/tasks/home-composer/composer-prompt-input.tsx
+SmartDD adapts the macOS key-code map and local Typeless settings detection.
+The CoreGraphics key bridge, transactional global shortcut service, and M7 UI
+are SmartDD implementations. No Yoda audio service or Typeless private API is used.
+
+M9 file workspace:
+- The file tree symbols are from @pierre/trees 1.0.0-beta.6, Apache-2.0,
+  commit 548416a7ec3ff3ff553636af60a31d1b21eca873. The unmodified sprite,
+  source manifest and upstream notices are copied from the reviewed prototype.
+  See licenses/M9-tree-icons/ for the license and provenance.
+- CodeMirror, Markdown, math/diagram and PDF engines and their installed runtime
+  dependencies are recorded in licenses/M9/manifest.json with upstream notices.
+- The production PDF text-layer styling adapts pdfjs-dist 5.4.296 (Apache-2.0).
+- Notebook HTML and SVG parsing uses parse5 8.0.1 (MIT) and saxes 6.0.0 (ISC), with
+  entities/xmlchars dependencies; licenses and hashes are in licenses/M9/.
+  Its CMaps, standard fonts and image decoder assets are bundled unchanged under
+  out/renderer/pdf-assets, including their embedded licenses and notices.
+- CSV/TSV field decoding uses Papa Parse 5.5.3 (MIT); its upstream license is
+  retained in licenses/M9/. Source editing does not serialize through the parser.
+- HTML document resource discovery uses parse5-sax-parser 8.0.0, PostCSS 8.5.30,
+  postcss-value-parser 4.2.0 and es-module-lexer 2.3.2 (MIT), without evaluating
+  project scripts. Upstream notices and dependency hashes are in licenses/M9/.
+- TeX compilation uses Tectonic 0.17.0 and the pinned WillYou TeX v33 resource
+  selection. Original resources are unchanged; selection and ZIP packaging are
+  WillYou's work. The engine, original source archive, font/macro notices and
+  per-file provenance accompany the offline bundle in native/tex/licenses/.
+  This collection has multiple licenses; it is not uniformly MIT.
+- pdf-lib 1.17.1 (MIT) is used in an isolated worker solely to add an empty content
+  stream to blank PDF image pages in private TeX snapshots. Original project
+  files are not rewritten. Its runtime notices are retained in licenses/M9/.
+- Office ZIP processing uses yauzl 3.4.0 (MIT) and yazl 3.3.1 (MIT); their notices
+  and dependency hashes are retained in licenses/M9/. Calculation uses the fixed
+  Eclipse Temurin JRE 21.0.12.1+1 and Apache POI 5.5.1 with its 13 dependency JARs.
+  Original JRE legal texts accompany native/office/jre/legal; POI notices, POMs,
+  source URLs and checksums accompany native/office/licenses. These components
+  retain their respective licenses. The WillYou Java helper is project code.
+  Eclipse ECJ 3.43.0 is a build-only compiler and is not shipped in the runtime.
+- Spreadsheet display number formats use SheetJS SSF 0.11.2 (Apache-2.0).
+  Original cell storage is retained; the formatter is not a workbook writer or
+  formula evaluator. Its upstream notice is retained in licenses/M9/.
+- DOCX/PPTX layout uses the complete, unmodified LibreOffice 26.2.4.2 bundle
+  (build 0229ac93fcf0d7cbc6376066c6f35021cef002dc), retaining its vendor signatures,
+  component licenses and notices in native/libreoffice/LibreOffice.app/Contents/Resources/.
+  The official download URLs and per-file checksums accompany resources.json.
+  LibreOffice and its components retain their respective licenses, including
+  MPL-2.0; corresponding source is available at
+  https://downloadarchive.documentfoundation.org/libreoffice/old/26.2.4.2/src/.
+  WillYou's private-profile rendering boundary is project code. No LibreOffice
+  source or binary is modified, and rendered PDFs do not replace source files.
+- File identity/authorization, native macOS save/recovery broker, source/EOL
+  mapping and production state/lifecycle code are WillYou implementations.
+  They reuse this repository's reviewed M9 prototype and P1 experiments.
+  No private Codex implementation, font or toolbar icon is distributed.
+
+- Code syntax highlighting uses Shiki 3.20.0 (MIT) with its public JavaScript
+  regex engine and unmodified TextMate grammars from tm-grammars 1.26.0. Individual
+  grammars retain their respective upstream licenses; the complete pinned
+  grammar NOTICE and dependency licenses are in licenses/M9/code-highlighting/.
+  Shared code, Markdown and Notebook token colors adapt @pierre/theme 2.0.0
+  (Apache-2.0, including its retained Primer MIT notice): three decorator rules
+  are omitted and the remaining palette is independently adjusted to observed
+  reference color facts. No private Codex code or grammar asset is distributed.

@@ -1,0 +1,26 @@
+import{afterAll,describe,expect,it,vi}from'vitest';
+import{readFileSync,writeFileSync,mkdtempSync,rmSync}from'node:fs';
+import{join}from'node:path';
+import{createHash}from'node:crypto';
+import{createRequire}from'node:module';
+import{FileService}from'@main/core/files/file-service';
+import{FileRootsService}from'@main/core/files/roots';
+import{FileRecoveryStore}from'@main/core/files/recovery-store';
+import{NativeFileBroker}from'@main/core/files/native-broker';
+import{readFileResource}from'./resource';
+import{pdfRenderPlan,resolveDestinationPage,clampPdfZoom,fitWidthZoom}from'./pdf/model';
+vi.mock('electron',()=>({BrowserWindow:{},dialog:{},shell:{}}));
+const rows:unknown[]=[],sha=(v:Uint8Array)=>createHash('sha256').update(v).digest('hex');
+afterAll(()=>{if(process.env.SMARTDD_PDF_RENDER_EVIDENCE)writeFileSync(process.env.SMARTDD_PDF_RENDER_EVIDENCE,JSON.stringify({layer:'I: real Swift FileService/revision/chunk reader + actual PDF.js legacy parser. Node fake-worker, actual raster/links/viewport separately P/A.',rows},null,2)+'\n')});
+describe.skipIf(!process.env.SMARTDD_PDF_RENDER_PROJECT||!process.env.SMARTDD_FILES_NATIVE_PATH)('Y14/Y17 real PDF metadata and native source',()=>{
+ it.each(['normal.pdf','scripts.pdf','square.pdf','tall.pdf'])('%s preserves exact bytes and parses actual text/annotations/page geometry',async name=>{
+  const rootPath=process.env.SMARTDD_PDF_RENDER_PROJECT!,base=mkdtempSync('/private/tmp/willyou-pdf-rendering-I-'),broker=new NativeFileBroker(process.env.SMARTDD_FILES_NATIVE_PATH!),resolver={sources:()=>[{kind:'project-directory'as const,id:'root',projectId:'pdf',path:rootPath,label:'PDFs'}]},files=new FileService(new FileRootsService(resolver,broker),broker,new FileRecoveryStore(broker,base,resolver));let task:import('pdfjs-dist').PDFDocumentLoadingTask|undefined;
+  try{const root=(await files.openScope('pdf',{kind:'project',projectId:'pdf'})).roots[0],file=await files.open('pdf',{lease:root.lease,generation:root.generation,relativePath:name}),bytes=await readFileResource(file,{chunk:(ref,offset,size,digest,id)=>files.chunk('pdf',ref,offset,size,digest,id)},new AbortController().signal);expect(sha(bytes)).toBe(sha(readFileSync(join(rootPath,name))));const pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs'),dir=join(createRequire(import.meta.url).resolve('pdfjs-dist/package.json'),'..');task=pdfjs.getDocument({data:bytes,isEvalSupported:false,verbosity:0,cMapUrl:join(dir,'cmaps')+'/',cMapPacked:true,standardFontDataUrl:join(dir,'standard_fonts')+'/'});const doc=await task.promise,outline=await doc.getOutline(),actions=await doc.getJSActions(),pages=[];
+   for(let n=1;n<=doc.numPages;n++){const p=await doc.getPage(n),v=p.getViewport({scale:1}),text=(await p.getTextContent()).items.flatMap(x=>'str'in x?[x.str]:[]).join(''),annotations=await p.getAnnotations();pages.push({number:n,width:v.width,height:v.height,text,links:annotations.filter(x=>x.subtype==='Link').map(x=>({url:x.url,dest:x.dest}))});}
+   if(name==='normal.pdf'){const controls=[];for(const preset of[25,50,100,150,200]){const zoom=clampPdfZoom(preset),viewport=(await doc.getPage(1)).getViewport({scale:zoom/100*96/72}),plan=pdfRenderPlan(pages[0],zoom,1);expect(zoom).toBe(preset===25?30:preset);expect(plan.cssWidth).toBeCloseTo(viewport.width,8);expect(plan.cssHeight).toBeCloseTo(viewport.height,8);controls.push({preset,zoom,canvas:[plan.canvasWidth,plan.canvasHeight],css:[plan.cssWidth,plan.cssHeight]});}const fits=[180,480,1200,5000].map(available=>{const value=fitWidthZoom(pages[0].width,available),expected=Math.max(30,Math.min(100,Math.floor(available/(pages[0].width*96/72)*100)));expect(value).toBe(expected);return{available,value};});rows.push({caseIds:['M9-T-T03','M9-T-T04'],kind:'actual native bytes/PDF.js geometry to original control/render plan',controls,fits,normalSourceSha256:file.revision.hash});expect(doc.numPages).toBe(3);expect(pages.every(p=>p.text.length>0)).toBe(true);expect(pages[0].text).toContain('文件浏览工作区');expect(outline?.length).toBeGreaterThan(0);expect(pages[0].links.some(x=>x.url)).toBe(true);const dest=pages[0].links.find(x=>x.dest)?.dest;expect(await resolveDestinationPage(dest,doc)).toBe(2);}
+   if(name==='scripts.pdf'){expect(actions&&Object.keys(actions).length).toBeGreaterThan(0);}
+   if(name==='square.pdf'||name==='tall.pdf'){expect(pages[0].height).toBe(14400);expect(pages[0].width).toBe(name==='square.pdf'?14400:12);expect(doc.numPages).toBe(5);for(const dpr of[1,2])for(const zoom of[50,150]){const plan=pdfRenderPlan(pages[0],zoom,dpr);expect(plan.canvasWidth*plan.canvasHeight).toBeLessThanOrEqual(16777216);expect(Math.max(plan.canvasWidth,plan.canvasHeight)).toBeLessThanOrEqual(16384);expect(plan.downscaled).toBe(plan.cssWidth*plan.cssHeight*dpr*dpr>16777216||Math.max(plan.cssWidth,plan.cssHeight)*dpr>16384);}}
+   const resolvedOutline=[];const queue=[...(outline??[])];for(const item of queue){if(item.items)queue.push(...item.items);const page=await resolveDestinationPage(item.dest,doc);if(page!==null)resolvedOutline.push({page:page+1,title:item.title});}rows.push({name,sha256:file.revision.hash,version:pdfjs.version,pages,outline,resolvedOutline,actions,pass:true});
+  }finally{await task?.destroy();files.closeOwner('pdf');await files.watcher.dispose();broker.dispose();rmSync(base,{recursive:true,force:true});}
+ });
+});

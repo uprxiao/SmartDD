@@ -1,0 +1,83 @@
+{
+  "schema": "m9-acceptance-case/v1",
+  "caseId": "M9-T-H20",
+  "title": "冲突只读resolution例外",
+  "capturedAt": "2026-10-18T03:23:30.340075+00:00",
+  "status": "blocked-product-decision",
+  "formalCasePassed": false,
+  "requiredLayers": [
+    "U",
+    "I"
+  ],
+  "layers": {
+    "U": {
+      "status": "pending"
+    },
+    "I": {
+      "status": "pending"
+    }
+  },
+  "caseBaseline": {
+    "id": "M9-T-H20",
+    "requirements": [
+      "M9-R07.1",
+      "M9-R07.6"
+    ],
+    "steps": "冲突结果超editLimit但不超hardLimit；明确选择resolve。",
+    "expected": "一般编辑仍禁用；若批准maySaveReadOnlyReviewResolution，只对该明确结果允许一次受控写；不开放任意大文件编辑。",
+    "source": "V S16",
+    "scope": "m9-local"
+  },
+  "decisionRequired": {
+    "type": "明确的产品决定",
+    "question": "是否批准对超 10 MiB、但不超 20 MiB 的特定冲突 resolution 提供一次受控写回；如批准，需定义唯一结果的绑定、授权入口、失效条件与重复提交处理。",
+    "reason": "正式用例使用“若批准 maySaveReadOnlyReviewResolution”；现行 R07.1/R07.6 规定只读保护和冲突决策，未定义此一次例外契约。S16 是参考事实，不能直接当作已批准业务规则。",
+    "coordination": "2026-10-18 根代理明确要求保留待用户回来集中确认，勿放宽 10 MiB 保护。该项不是系统权限、锁屏或电脑操作工具阻塞。"
+  },
+  "staticFindings": [
+    {
+      "path": "src/shared/files.ts",
+      "finding": "FILE_LIMITS.editableText = 10 MiB；readableText = 20 MiB。"
+    },
+    {
+      "path": "src/shared/file-text.ts",
+      "finding": "decodeFileText 对 10–20 MiB UTF-8 文本返回 editable:false；encodeFileText 的 save 上限仍为 10 MiB，checkpoint 上限 20 MiB。"
+    },
+    {
+      "path": "src/renderer/features/files/file-buffer.ts",
+      "finding": "editable 仍受解码结果及 file.writable 约束；keepLocal 获取新 revision 后调用普通 save，没有一次只读 resolution 授权标识。"
+    },
+    {
+      "path": "src/renderer/features/files/workspace-panel.tsx",
+      "finding": "冲突操作为保留我的修改、使用磁盘版本、继续编辑；未发现一次大文件 resolution 授权入口。"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/调研/M9_文件类型与编辑状态全集.md",
+      "finding": "S16 记录参考 maySaveReadOnlyReviewResolution 行为，属于参考证据，不替代本产品授权决定。"
+    }
+  ],
+  "execution": {
+    "testsRun": false,
+    "productChanged": false,
+    "indexChanged": false,
+    "result": "仅完成原用例、需求和代码的只读审计；未执行 H20 的 resolve 例外用例，未记为通过或豁免。"
+  },
+  "limits": [
+    "不新增 P/A 门槛；正式层级保持 U+I。",
+    "一般大文件只读保护保留；未创建绕过该保护的测试专用授权。",
+    "后续确认后按明确结果绑定和真实 FileService/native broker 执行完整 U/I，独立检查一般编辑仍禁用。"
+  ],
+  "baseline": {
+    "branch": "feature/0.0.1",
+    "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+    "sources": {
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "src/renderer/features/files/file-buffer.ts": "9387ce199b3cc07d9708da37f38dac9da3ed37687b12cd8e2cf27ff0ba7171e5",
+      "src/renderer/features/files/workspace-panel.tsx": "b4d2dfa1f6e08f851027fa79243482492ed639254abc24708526da8aa4913eef",
+      "docs/里程碑/M9_文件浏览工作区/需求.md": "10b74851a524d8bad0a5305ddc0d12c0312080888a9f2717c01f4f1531f6e041",
+      "docs/里程碑/M9_文件浏览工作区/调研/M9_文件类型与编辑状态全集.md": "07127ed2672a4f755fa0cff5bb4a55bbb03ec029363592ad775e8734cee430d6"
+    },
+    "captureBoundary": "只读审计后的当前工作区哈希，不声称运行过测试或匹配全部 r6 构建输入。"
+  }
+}

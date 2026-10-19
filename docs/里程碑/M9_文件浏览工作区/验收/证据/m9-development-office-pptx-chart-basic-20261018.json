@@ -1,0 +1,287 @@
+{
+  "createdAt": "2026-10-18T07:09:16+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4-P1",
+  "scope": "P09 insertion/type changes for five basic chart types plus prior values/options; partial W16/W26/Y12/Y13",
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-pptx-chart-basic-r1-sources.tar.gz",
+    "sha256": "c7b6fda7887b11f3bbb1951dc7f888c5a4990e40945f85d6fafde85b64ddf9ca",
+    "files": 601,
+    "manifest": "/private/tmp/willyou-m9-pptx-chart-basic-r1-sources.json"
+  },
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "libreOffice": "26.2.4.2"
+  },
+  "implementation": [
+    "Real OOXML bar/line/pie/area/scatter with embedded numeric workbook: initial values 3/5/2 and actual X values 1/2/3.",
+    "Copy-on-write conversion preserves numeric references and other objects; text categories are refused for scatter instead of invented numeric conversion.",
+    "Unknown type-specific series/axis/style settings refused without altering source.",
+    "Namespace bindings preserved for replaced plot, data and new sibling axes.",
+    "Insertion selects new object and opens approved chart type/data/options fields.",
+    "Explicit line visibility, non-smooth line and independent scatter markers after M9-DEV-028."
+  ],
+  "tests": [
+    {
+      "batch": "source-r1",
+      "note": "Model/insertion/type/source tests; product typecheck initially failed separately.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-source-r1.json",
+      "sha256": "afc3d034a43bd01ba521a2e33af2e6af09b3702cb6c93e0f54b56258ef1b309d",
+      "passed": 49,
+      "failed": 0,
+      "unselectedOrOptIn": 0
+    },
+    {
+      "batch": "source-r2",
+      "note": "Integrated insert/type UI test added; later mock type narrowing fixed.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-source-r2.json",
+      "sha256": "e982a3f314fc123066f19da68d1b8de7e43014d2843bcc2e5c3e4fc8087346ac",
+      "passed": 50,
+      "failed": 0,
+      "unselectedOrOptIn": 0
+    },
+    {
+      "batch": "source-r3",
+      "note": "Final targeted regressions with explicit line/marker defaults.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-source-r3.json",
+      "sha256": "43d67e93bd97f7bc5f2ef7757e2cbf6d93441a0309689eb1b91e33630f47e5c0",
+      "passed": 51,
+      "failed": 0,
+      "unselectedOrOptIn": 0
+    },
+    {
+      "batch": "regression-r1",
+      "note": "Before M9-DEV-028 fix.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-regression-r1.json",
+      "sha256": "966bfec9da21c7ecd0eaffc52b12b1b1ff63a04d0c9ab16b29d284a94f91ee8b",
+      "passed": 349,
+      "failed": 0,
+      "unselectedOrOptIn": 54
+    },
+    {
+      "batch": "regression-r2",
+      "note": "After fix; 54 opt-in unexecuted. A packaged-only test was added later and is run separately.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-regression-r2.json",
+      "sha256": "4313f6407d455afce6bad4fe94311ee7837b60fcf367b1fdd749bc48e304ae72",
+      "passed": 349,
+      "failed": 0,
+      "unselectedOrOptIn": 54
+    },
+    {
+      "batch": "native-r1",
+      "note": "Runner passed data/save/undo checks, but visual review FAILED: smooth line and connected scatter. Does not count as complete native visual pass.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r1.json",
+      "sha256": "c9776eed3c19eb0c49e05ff5ef70165e50353dd45f9ceaac759748e53102a069",
+      "passed": 1,
+      "failed": 0,
+      "unselectedOrOptIn": 21
+    },
+    {
+      "batch": "native-r2",
+      "note": "Geometry fixed in viewed images; narrow exact-color detector missed valid light-blue scatter markers and failed.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r2.json",
+      "sha256": "101c9484ec11c76592dbe0ecfaad5e63dcbbb5d9314d20606439d91941fc42c6",
+      "passed": 0,
+      "failed": 1,
+      "unselectedOrOptIn": 21
+    },
+    {
+      "batch": "native-r3",
+      "note": "Theme-blue detector plus unchanged strict geometry assertions: line deviation <3px; zero pixels between scatter markers; save/independent read/reopen and 12 undos.",
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3.json",
+      "sha256": "36aa47429c5280e05241a9cc9f5fda7ae199996733d4d576954873100ef41318",
+      "passed": 1,
+      "failed": 0,
+      "unselectedOrOptIn": 21
+    }
+  ],
+  "typecheck": {
+    "path": "/private/tmp/willyou-m9-pptx-chart-basic-typecheck-r5.log",
+    "status": "passed",
+    "initialFailures": [
+      "r1 ReadableStream.destroy type needed Node Readable",
+      "r2 mocked chart optional fields required narrowing; r3/r4/r5 passed"
+    ]
+  },
+  "defects": [
+    {
+      "id": "M9-DEV-028",
+      "original": "Native visual review found curved line and connected scatter despite green data checks.",
+      "negative": {
+        "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r1-evidence/visual-failure.json",
+        "sha256": "9c5c42a562fdff0ae9af99f68dd1328ddba484d8ee8c4d1621518e6ee7091972"
+      },
+      "fix": "Explicit series smooth=0 and scatter noFill line plus circle markers; non-default custom appearance still refused for type conversion.",
+      "retest": "r3: line midpoint deviation 0.5px, scatter inter-marker pixels 0, all five non-empty native visuals; 12 undo steps restore every original part.",
+      "status": "Code/native geometry and shipped Worker/source settings retested; real App remains pending."
+    }
+  ],
+  "nativeResult": {
+    "savedHash": "6759ccedf741f35958adcc053c57c8cc311a47a0a157c1530ff5d7c55f09b2ab",
+    "pdfHash": "78bb022ffaee1e0980196af5b14f869257d76d4a5eece2867753a0dcabb7a19b",
+    "independent": {
+      "charts": [
+        {
+          "type": "bar",
+          "values": [
+            3,
+            5,
+            2
+          ],
+          "chart": "ppt/charts/willyou-chart-1.xml",
+          "workbook": "ppt/embeddings/willyou-chart-1.xlsx"
+        },
+        {
+          "type": "line",
+          "values": [
+            3,
+            5,
+            2
+          ],
+          "chart": "ppt/charts/willyou-chart-2.xml",
+          "workbook": "ppt/embeddings/willyou-copy-1.xlsx"
+        },
+        {
+          "type": "pie",
+          "values": [
+            3,
+            5,
+            2
+          ],
+          "chart": "ppt/charts/willyou-chart-3.xml",
+          "workbook": "ppt/embeddings/willyou-copy-2.xlsx"
+        },
+        {
+          "type": "area",
+          "values": [
+            3,
+            5,
+            2
+          ],
+          "chart": "ppt/charts/willyou-chart-4.xml",
+          "workbook": "ppt/embeddings/willyou-copy-3.xlsx"
+        },
+        {
+          "type": "scatter",
+          "values": [
+            6,
+            2,
+            4
+          ],
+          "chart": "ppt/charts/willyou-chart-6.xml",
+          "workbook": "ppt/embeddings/willyou-chart-data-1.xlsx"
+        }
+      ],
+      "changed": [
+        "[Content_Types].xml",
+        "ppt/presentation.xml",
+        "ppt/_rels/presentation.xml.rels"
+      ],
+      "originalPartsPreserved": true
+    },
+    "visualChecks": [
+      {
+        "colored": 20185
+      },
+      {
+        "colored": 952,
+        "lineMidpointDeviation": 0.5
+      },
+      {
+        "colored": 10401
+      },
+      {
+        "colored": 57454
+      },
+      {
+        "colored": 122,
+        "pixelsBetweenScatterMarkers": 0
+      }
+    ],
+    "undoSteps": 12,
+    "undoRestoredAllOriginalParts": true
+  },
+  "nativeArtifacts": [
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-chart-1.png",
+      "sha256": "121ed86b3f935b5ad22211a6ea50c0af8c542924bb5bfe6a5c9673d7c9a55466"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-chart-2.png",
+      "sha256": "5b128a070141ce772439fb730f1e34c5752e748f0915d3539161a90dede334ac"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-chart-3.png",
+      "sha256": "9c8e3ab9635b2c520b96c29057f21fe376fe32a3af5ca20ab97051a99e171d9d"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-chart-4.png",
+      "sha256": "314e94dc932d5dadb06dbe29d5753c473f3a1a9d3835e26f317d8eef47cf558d"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-chart-5.png",
+      "sha256": "4cddc5fba6341d28553008a5d35a55e83910156fe9fe7845da00a1bc1a248e84"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-charts.json",
+      "sha256": "7a88327ec38835b6168e42d836ebe5d910238818d2094846cdaf734d19d60776"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-charts.pdf",
+      "sha256": "78bb022ffaee1e0980196af5b14f869257d76d4a5eece2867753a0dcabb7a19b"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-chart-basic-native-r3-evidence/basic-charts.pptx",
+      "sha256": "6759ccedf741f35958adcc053c57c8cc311a47a0a157c1530ff5d7c55f09b2ab"
+    }
+  ],
+  "visualInspection": "Viewed all five r1 renders and identified DEV-028; viewed r2 line/scatter fixes; r3 checks actual geometry and data. These are native pipeline renders, not App screenshots.",
+  "build": {
+    "app": "/private/tmp/willyou-m9-pptx-chart-basic-r1-build/mac-arm64/WillYou.app",
+    "status": "built; native smoke passed",
+    "log": "/private/tmp/willyou-m9-pptx-chart-basic-package-r1.log",
+    "exit": 0,
+    "asarSHA256": "6742a29200ac9ffa25739ed0c9d57e2c5d3a3c48bffb09e987995bfa9b92517a",
+    "nativeSmoke": [
+      "SQLite",
+      "PTY",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ],
+    "signing": "Local ad-hoc test package; not notarized/released",
+    "sourceSnapshotMatch": true
+  },
+  "actualApp": {
+    "status": "not executed; Mac explicitly reported locked on latest CUA read.",
+    "runningApp": "image-r1 remains open; native chooser awaits manual unlock and red.png selection.",
+    "userQuestion": "Unlock and double-click red.png; do not repeatedly retry UI while this remains pending.",
+    "fixtureDirectory": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/pptx-chart-ui-r1"
+  },
+  "remaining": [
+    "Four modern chart types (histogram/waterfall/funnel/treemap) require ChartEx adapter/native verification.",
+    "Same-length limitation, multi-series/complex dependencies and custom styles continue.",
+    "Actual App workflows; full themes/IME/pixels and formal case matrix."
+  ],
+  "formalAcceptance": {
+    "passed": 3,
+    "current": 419,
+    "excludedFuture": 6,
+    "ratePercent": 0.72
+  },
+  "packagedTest": {
+    "status": "passed",
+    "passed": 1,
+    "failed": 0,
+    "notSelected": 7,
+    "report": "/private/tmp/willyou-m9-pptx-chart-basic-packaged-r1.json",
+    "reportSHA256": "f3e643526732bf4989ed8bc114ed52e4ca1aa2d2c081a19dfc166dd82a374863",
+    "log": "/private/tmp/willyou-m9-pptx-chart-basic-packaged-r1.log",
+    "scope": "Actual shipped Worker/helper: insert bar, convert to scatter, values 8/2/6, axes/grid/legend, native render, independent ZIP/XML/embedded values, reopen, V4 raw chart input recovery, five undos restoring all original parts.",
+    "boundary": "Not App UI; temporary packaged-test candidate/PDF were removed by test cleanup; report retained. Native-r3 source-run artifacts are separately preserved."
+  }
+}

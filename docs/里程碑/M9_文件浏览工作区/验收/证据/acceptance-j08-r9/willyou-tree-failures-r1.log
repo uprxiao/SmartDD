@@ -1,0 +1,44 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-failure-native-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-tree-failures-r1-tests.json
+
+[1018/133214.863614:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/133215.183964:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (4 tests | 1 failed) 4286ms
+     ✓ B06 confines a real permission failure to its node and retries once without duplicating children 191ms
+     × B07 deletes the selected file before the real read and never displays the previous buffer 170ms
+     ✓ B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position  1947ms
+     ✓ B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position  1976ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B07 deletes the selected file before the real read and never displays the previous buffer
+AssertionError: expected null to be undefined
+
+- Expected:
+undefined
+
++ Received:
+null
+
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:54:84
+     52|     expect(store.active?.route.relativePath).toBe('B.txt');expect(stor…
+     53|     const error=store.active!.buffer!.loadError;await act(async()=>{aw…
+     54|     await act(async()=>{await store.close(store.activeId!);});expect(s…
+       |                                                                                    ^
+     55|     observations.push({caseId:'M9-T-B07',error,deletedBeforeNativeRead…
+     56|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  13:32:15
+   Duration  5.63s (transform 436ms, setup 0ms, import 930ms, tests 4.29s, environment 343ms)
+
+JSON report written to /private/tmp/willyou-tree-failures-r1-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

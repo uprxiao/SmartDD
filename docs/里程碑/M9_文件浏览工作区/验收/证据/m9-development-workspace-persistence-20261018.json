@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "time": "2026-10-18T01:19:23.174989+08:00",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirements": [
+    "R04.2",
+    "R04.7",
+    "R07.10",
+    "R08.6"
+  ],
+  "defect": "M9-DEV-013",
+  "layer": "unit/integration plus actual packaged App CUA crash restoration",
+  "sourceHashes": {
+    "src/shared/file-workspace.ts": "38943cbc479ea5a33a993243eeb8a45f9bdd9dbdfb7b575fc8ac43cded741815",
+    "src/main/core/files/workspace-persistence.ts": "c186ad074f6ff2edb3c7b7d99054bdff66df2b244f121859c799e849b69d14f9",
+    "src/main/core/files/controller.ts": "234207dda31b2c017c93162ba283544e2652a619f786d4cde6692f2ca71b0a1e",
+    "src/main/rpc.ts": "c534b932b8faae4081ec2a1338f7ed6f2b40e8ba0f90111d3fcf70bccdc5dfd3",
+    "src/renderer/features/files/workspace-store.ts": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+    "src/renderer/features/files/workspace-panel.tsx": "c3532fb6106b5301fe92a9da05a8435426d844af7fbbe925b75852d02295cdff",
+    "src/renderer/features/files/file-buffer.ts": "9038b7fb9ba6162ed3ec43df07a3665c488e64eb2606598b14be015eff828b72",
+    "src/renderer/features/files/office/buffer.ts": "5246b06ae07e64bfcaf7742e55c7f18610b9b15bb8bd3701c056237f7a86f77d",
+    "src/main/core/files/workspace-persistence.test.ts": "e1e68c57d836fdf7d83ba05340c49434fe859080dc2a6f22f4c242dd38cfbed6",
+    "src/main/core/files/controller.test.ts": "1b3f085ee3e9228c361ead0e9c679ef05c380492e44dd9217c8ce86944f2e706",
+    "src/renderer/features/files/workspace-store.test.ts": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+    "src/renderer/features/files/office/buffer.test.ts": "835e536368b8b1b63bc1d0a3f1dc90e3f5dd87f9c5e3fac2dc8f90d8157ebd8a"
+  },
+  "package": {
+    "path": "/private/tmp/willyou-m9-routes-r1-build/mac-arm64/WillYou.app",
+    "asarSHA256": "edc5dbb0eb0f6bf96340952126f2e5bb60b05c766e87077a6932bd2820ee64e7",
+    "buildLog": "/private/tmp/willyou-m9-routes-r1-package.log",
+    "nativeSmoke": "passed",
+    "platform": "macOS arm64"
+  },
+  "runs": [
+    {
+      "log": "/private/tmp/willyou-m9-routes-r1-tests.log",
+      "result": "29 passed, 1 failed; independent database assertion compared JSON key order, corrected to parsed object equality"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-routes-r2-tests.log",
+      "result": "32 passed, 5 files"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-routes-r3-tests.log",
+      "result": "33 passed, 5 files"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-routes-r3-typecheck.log",
+      "result": "failed on mock callback type inference; explicit test parameter types added"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-routes-r4-typecheck.log",
+      "result": "passed"
+    }
+  ],
+  "appChecks": {
+    "method": "CUA native AX and keyboard, owned verified test App SIGKILL, read-only synthetic SQLite and recovery audit",
+    "passed": [
+      "Old 8 pinned tabs migrated and restored with office-draft.xlsx active",
+      "Opening route-draft.xlsx leaves preview out of committed routes",
+      "Entering = and immediate Cmd+S pins route; SQLite independent read sees 9 routes and route-draft.xlsx active",
+      "Independent checkpoint journal exists and original source hash unchanged",
+      "After verified PID 20650 SIGKILL and same package/userData restart, entering project automatically restores 9 tabs in order with route-draft.xlsx selected",
+      "Automatically restored route offers checkpoint; Restore draft returns = in formula bar and dirty marker, without manually searching/reopening the file"
+    ],
+    "pending": [],
+    "fixtureSHA256": "56c0ccd354d6a02153f3d7e850da3999f89d5cbfdee8801f602b15fe73a1e100",
+    "checkpointId": "34c2b72b-acfd-4989-a968-8a41baf72158",
+    "checkpointSHA256": "8db1e1c120c5f9c0e77479df48042c2402dbe139e23a9e96ad535eb5222040ce"
+  },
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "unchanged": true
+  },
+  "status": "M9-DEV-013 closed for original crash reproduction",
+  "limitations": [
+    "Process SIGKILL and restart verified; no power-loss/disk-full claim",
+    "Full D14/D15/D16/D17/D23/D24/H30 acceptance matrix remains; layout visibility and missing-route retry require further implementation/verification",
+    "Physical system IME not exercised"
+  ]
+}

@@ -6,7 +6,7 @@ module.exports = {
   productName: 'WillYou',
   directories: { output: 'release' },
   artifactName: 'WillYou-${version}-${os}-${arch}.${ext}',
-  files: ['out/**', 'NOTICE', 'licenses/**'],
+  files: ['out/**', '!out/native/**', 'NOTICE', 'licenses/**'],
   asarUnpack: ['node_modules/better-sqlite3/**', 'node_modules/node-pty/**', '**/*.node'],
   // Rebuild these two modules explicitly, using the target Electron ABI.
   npmRebuild: false,
@@ -15,8 +15,18 @@ module.exports = {
   afterPack: require('./scripts/release/mac-bundle-metadata.cjs'),
   mac: {
     icon: 'build/icons/icon.icns',
-    extraResources: [{ from: 'out/native/smartdd-voice', to: 'native/smartdd-voice' }],
-    binaries: ['Contents/Resources/native/smartdd-voice'],
+    extraResources: [
+      { from: 'out/native/smartdd-voice', to: 'native/smartdd-voice' },
+      { from: 'out/native/willyou-files', to: 'native/willyou-files' },
+      { from: 'out/native/tex', to: 'native/tex' },
+      { from: 'out/native/office', to: 'native/office' },
+      { from: 'out/native/libreoffice', to: 'native/libreoffice' },
+    ],
+    binaries: ['Contents/Resources/native/smartdd-voice', 'Contents/Resources/native/willyou-files', 'Contents/Resources/native/tex/tectonic', 'Contents/Resources/native/office/jre/bin/java'],
+    // Preserve the complete vendor-signed LibreOffice bundle, including its
+    // nested launch constraints. The enclosing WillYou signature still seals
+    // this resource, and runtime verification checks both seals and file hashes.
+    signIgnore: ['[/\\\\]native[/\\\\]libreoffice[/\\\\]LibreOffice\\.app(?:[/\\\\]|$)'],
     target: [{ target: 'dmg', arch: ['arm64', 'x64'] }],
     category: 'public.app-category.developer-tools',
     hardenedRuntime: true,

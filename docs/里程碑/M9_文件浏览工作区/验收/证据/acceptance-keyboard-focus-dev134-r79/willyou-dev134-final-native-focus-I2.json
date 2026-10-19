@@ -1,0 +1,197 @@
+{
+  "at": "2026-10-19T09:24:05.932Z",
+  "caseId": "M9-T-B22",
+  "layer": "I: production tree/store/FileService + real packaged native filesystem; component user-event inputs and jsdom geometry, no actual App claim. Open observations are passive calls into the original native service, no result replacement.",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r77-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "observations": [
+    {
+      "scenario": "range, Meta/Control click, Meta/Control Space and empty selection",
+      "range": {
+        "selected": [
+          "A.txt",
+          "B.txt",
+          "C.txt"
+        ],
+        "focused": "A.txt",
+        "active": "A.txt",
+        "opens": [
+          "C.txt",
+          "A.txt"
+        ]
+      },
+      "toggledFirst": {
+        "selected": [
+          "B.txt",
+          "C.txt"
+        ],
+        "focused": "A.txt",
+        "active": "B.txt",
+        "opens": [
+          "C.txt",
+          "A.txt",
+          "B.txt"
+        ]
+      },
+      "empty": {
+        "selected": [],
+        "focused": "B.txt",
+        "active": "B.txt",
+        "opens": [
+          "C.txt",
+          "A.txt",
+          "B.txt"
+        ]
+      },
+      "final": {
+        "selected": [],
+        "focused": "B.txt",
+        "active": "B.txt",
+        "opens": [
+          "C.txt",
+          "A.txt",
+          "B.txt"
+        ]
+      },
+      "sourceUnchanged": {
+        "A.txt": {
+          "hash": "ab2093f3aa5682668b14616fd38630c331b68df5615f61c9c84a1aa4b147554e",
+          "inode": "50101548",
+          "mtimeNs": "1792401844129137963"
+        },
+        "B.txt": {
+          "hash": "77dbda02971c5de22853eaef97d6609c6ff26e20d6acc4a94b3ce0c8ff10fd7d",
+          "inode": "50101549",
+          "mtimeNs": "1792401844129214629"
+        },
+        "C.txt": {
+          "hash": "2d2bd035676cdaf0d4cb13b2c2423fd034d8d6cc9a4a7005fccf3bf84ef57bac",
+          "inode": "50101550",
+          "mtimeNs": "1792401844129271171"
+        },
+        "folder/child.txt": {
+          "hash": "83f96c8853ce7cb71e6931a6edbacbd11f8a977a4765df30970aba845af60b53",
+          "inode": "50101551",
+          "mtimeNs": "1792401844129324963"
+        }
+      }
+    },
+    {
+      "scenario": "Shift arrow, visible select-all, native Space activation",
+      "range": {
+        "selected": [
+          "A.txt",
+          "B.txt"
+        ],
+        "focused": "A.txt",
+        "active": "A.txt",
+        "opens": [
+          "B.txt",
+          "A.txt"
+        ]
+      },
+      "final": {
+        "selected": [
+          "folder",
+          "child.txt",
+          "A.txt",
+          "B.txt",
+          "C.txt"
+        ],
+        "focused": "folder",
+        "active": "folder/child.txt",
+        "opens": [
+          "B.txt",
+          "A.txt",
+          "B.txt",
+          "folder/child.txt"
+        ]
+      },
+      "sourceUnchanged": {
+        "A.txt": {
+          "hash": "ab2093f3aa5682668b14616fd38630c331b68df5615f61c9c84a1aa4b147554e",
+          "inode": "50101558",
+          "mtimeNs": "1792401844561828589"
+        },
+        "B.txt": {
+          "hash": "77dbda02971c5de22853eaef97d6609c6ff26e20d6acc4a94b3ce0c8ff10fd7d",
+          "inode": "50101559",
+          "mtimeNs": "1792401844561900881"
+        },
+        "C.txt": {
+          "hash": "2d2bd035676cdaf0d4cb13b2c2423fd034d8d6cc9a4a7005fccf3bf84ef57bac",
+          "inode": "50101560",
+          "mtimeNs": "1792401844561950839"
+        },
+        "folder/child.txt": {
+          "hash": "83f96c8853ce7cb71e6931a6edbacbd11f8a977a4765df30970aba845af60b53",
+          "inode": "50101561",
+          "mtimeNs": "1792401844562001548"
+        }
+      }
+    },
+    {
+      "scenario": "native refresh crosses pending keyboard focus",
+      "frameDeliveredWhileRowsUnavailable": true,
+      "originalNativeListResultHeldOnlyAfterIO": true,
+      "final": {
+        "selected": [
+          "A.txt",
+          "B.txt"
+        ],
+        "focused": "A.txt",
+        "active": "A.txt",
+        "opens": [
+          "B.txt",
+          "A.txt"
+        ]
+      },
+      "sourceUnchanged": {
+        "A.txt": {
+          "hash": "ab2093f3aa5682668b14616fd38630c331b68df5615f61c9c84a1aa4b147554e",
+          "inode": "50101568",
+          "mtimeNs": "1792401845022793686"
+        },
+        "B.txt": {
+          "hash": "77dbda02971c5de22853eaef97d6609c6ff26e20d6acc4a94b3ce0c8ff10fd7d",
+          "inode": "50101569",
+          "mtimeNs": "1792401845022948936"
+        },
+        "C.txt": {
+          "hash": "2d2bd035676cdaf0d4cb13b2c2423fd034d8d6cc9a4a7005fccf3bf84ef57bac",
+          "inode": "50101570",
+          "mtimeNs": "1792401845023060895"
+        },
+        "folder/child.txt": {
+          "hash": "83f96c8853ce7cb71e6931a6edbacbd11f8a977a4765df30970aba845af60b53",
+          "inode": "50101571",
+          "mtimeNs": "1792401845023141979"
+        }
+      }
+    },
+    {
+      "scenario": "Y20 real native refresh retains owned tree focus and accepts next Shift arrow before original IO reply release",
+      "final": {
+        "selected": [
+          "A.txt",
+          "B.txt"
+        ],
+        "focused": "A.txt",
+        "active": "A.txt",
+        "opens": [
+          "B.txt",
+          "A.txt"
+        ]
+      }
+    },
+    {
+      "scenario": "Y20 native refresh never restores over explicit outside focus choice"
+    },
+    {
+      "scenario": "Y20 deliberately late prior focus frame cannot supersede a newer key received by the owned loading tree"
+    },
+    {
+      "scenario": "Y20 End received during actual native refresh reveals and focuses distant fresh row",
+      "scrollTop": 588
+    }
+  ]
+}

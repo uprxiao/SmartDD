@@ -1,6 +1,6 @@
 import { createVoiceController } from './core/voice/controller';
 import type { VoiceService } from './core/voice/voice-service';
-import { app, BrowserWindow, dialog, shell } from 'electron';
+import { app, BrowserWindow, dialog, shell, type IpcMainInvokeEvent } from 'electron';
 import type { AppSettingsKey } from '@shared/app-settings';
 import { createRPCController, createRPCRouter } from '@shared/ipc/rpc';
 import { createAiProfileController } from './core/ai/controller';
@@ -20,8 +20,14 @@ import type { PtyManager } from './pty-manager';
 import { createPtyController, type PtyAccess } from './pty-access';
 import { createTransferController } from './core/projects/transfer-controller';
 import type { ProjectTransferService } from './core/projects/transfer-service';
+import { createFileController } from './core/files/controller';
+import type { FileService } from './core/files/file-service';
+import { FileWorkspacePersistence } from './core/files/workspace-persistence';
+import { FileTerminalService } from './core/files/terminal-context';
 
 export interface RpcDeps {
+  files: FileService;
+  trustedRenderer: (event: IpcMainInvokeEvent) => boolean;
   projectTransfer: ProjectTransferService;
   voice: VoiceService;
   client: DbClient;
@@ -40,6 +46,11 @@ export interface RpcDeps {
 
 export function createRpcRouter(d: RpcDeps) {
   return createRPCRouter({
+    files: createFileController(d.files, d.trustedRenderer, new FileWorkspacePersistence(d.client.db), new FileTerminalService({
+      access: d.ptyAccess, roots: d.files.roots, taskProject: (taskId) => d.tasks.get(taskId).projectId,
+      source: (owner, target, identity) => d.files.terminalSource(owner, target, identity),
+      bracketedPaste: (ptyId) => d.ptys.bracketedPaste(ptyId), write: (ptyId, data) => d.ptys.writeControlled(ptyId, data),
+    })),
     app: createRPCController({
       getInfo: () => ({
         version: app.getVersion(),

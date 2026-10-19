@@ -1,7 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { directoryChildren, treeKeyboardIntent, searchTreeRows, migratePrototypeSaved, openDocument, readRootView, updateRootView } from '../src/file-workspace-model.mjs';
-import { workspaceScope, initialWorkspace, openFile, closeFile, restoreFile, fileKey, treeRows, FILES, searchFiles, serializeWorkspaceStore, documentKey, fileScenario, setFileScenario, editDraft, commitDraft, acceptDisk, captureSelection, selectionIsCurrent, applyExternalFileChange, queueSyntheticFile, refreshSyntheticDirectory, artifactModel, updateArtifactCell, updateArtifactSlide } from '../src/file-workspace-model.mjs';
+import { workspaceScope, initialWorkspace, openFile, closeFile, restoreFile, fileKey, treeRows, FILES, searchFiles, serializeWorkspaceStore, documentKey, fileScenario, setFileScenario, editDraft, commitDraft, acceptDisk, continueConflict, captureSelection, selectionIsCurrent, applyExternalFileChange, queueSyntheticFile, refreshSyntheticDirectory, artifactModel, updateArtifactCell, updateArtifactSlide } from '../src/file-workspace-model.mjs';
+test('H18 continuing a conflict retains local source against the selected disk baseline', () => {
+  const initial=initialWorkspace(),key=initial.active;
+  const dirty=editDraft(initial,key,'LOCAL','BASE'),conflict=setFileScenario(dirty,key,'conflict','DISK');
+  const next=continueConflict(conflict,key);
+  assert.equal(next.drafts[key].text,'LOCAL');assert.equal(next.drafts[key].base,'DISK');assert.equal(fileScenario(next,key),'ready');
+  assert.equal(conflict.drafts[key].base,'BASE');assert.equal(continueConflict(initial,key),initial);
+});
+test('H18 a new external revision after continuation creates another conflict', () => {
+  const roots=[{id:'main',path:'/project',hostId:'local'}],scope='test',initial=initialWorkspace(),key=initial.active;
+  const state=continueConflict(setFileScenario(editDraft(initial,key,'LOCAL','BASE'),key,'conflict','DISK'),key);
+  const changed=applyExternalFileChange({[scope]:state},scope,roots,key,'NEW DISK');
+  assert.equal(fileScenario(changed[scope],key),'conflict');assert.equal(changed[scope].drafts[key].text,'LOCAL');assert.equal(changed[scope].drafts[key].base,'DISK');
+});
 test('preview replacement retains fixed tabs and activates the latest file', () => {
   let s = openFile(initialWorkspace(), 'main', 'src/main.ts');
   s = openFile(s, 'main', 'package.json');

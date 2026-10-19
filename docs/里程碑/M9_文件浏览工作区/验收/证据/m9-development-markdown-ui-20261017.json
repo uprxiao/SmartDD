@@ -1,0 +1,51 @@
+{
+  "recordedAt": "2026-10-17T19:07:13.345709+08:00",
+  "scope": "Packaged native UI development checks, not the 419-case final acceptance",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS 26.6.1 arm64",
+  "bundle": "/private/tmp/willyou-m9-markdown-build/mac-arm64/WillYou.app",
+  "appAsarSha256": "c8658c176c4f81e081f9aed0f829d4b59004024d979e3caba38361d055b116aa",
+  "method": "CUA attached to this exact packaged App; actual AX clicks/keyboard and screenshot; filesystem checks read the isolated fixture after UI saves",
+  "checks": [
+    {
+      "id": "DEV-MD-01",
+      "steps": "Open workspace.md in actual project tree; enter file fullscreen",
+      "actual": "Heading, bold, list, checkbox, table, quote, KaTeX formula, Mermaid diagram and trusted local SVG appear; authored script markup is escaped",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-MD-02",
+      "steps": "Click unchecked task checkbox, switch to source mode",
+      "actual": "Dirty/checked state appears, saved source contains - [x]",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-MD-03",
+      "steps": "In source mode use Cmd+Z then Cmd+S, return to document mode",
+      "actual": "Checkbox change is undone across modes; disk is - [ ]; BOM and CRLF preserved",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-MD-04",
+      "steps": "Click local Open text link in document",
+      "actual": "Actual hello.txt opens and reuses existing tab",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-IME-01",
+      "steps": "Focus actual hello.txt editor and inject z h o n g with selected Pinyin source",
+      "actual": "Literal zhong observed; no composition candidate evidence. Mac lock interrupted the attempt. Subsequent CUA documentation/connection calls timed out during automatic review, including retries after explicit user permission.",
+      "status": "pending"
+    }
+  ],
+  "fixtureSha256": "df8d8a015b6b80f358fc7f9e6df41f3972732a486a3b1e15df47c8dc84744eba",
+  "bom": true,
+  "allNewlinesCRLF": true,
+  "evidence": "CUA AX snapshots and actual screenshot in current task conversation. No separate screenshot file was archived for this group.",
+  "limits": [
+    "The later Markdown widget liveness/image-load measure patch is newer than this package and needs a new package retest.",
+    "This package predates all production PDF changes.",
+    "Physical system IME, full pixel parity, all failure/large-document cases and final formal acceptance remain pending."
+  ]
+}

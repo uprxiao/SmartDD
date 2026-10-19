@@ -1,0 +1,339 @@
+{
+  "id": "M9-DEV-045",
+  "at": "2026-10-18T11:11:55.715565+08:00",
+  "status": "implementation-ready; targeted U/I and prototype model passed; packaged App acceptance pending",
+  "requirements": {
+    "revision": "R3.4-20261017",
+    "ids": [
+      "R05.7",
+      "R05.8",
+      "R05.10",
+      "R05.11",
+      "R05.12",
+      "R05.14",
+      "R07.14",
+      "R07.19"
+    ],
+    "implementationPlan": "I07 terminal handoff subset only; excludes LSP/MCP and actual image attachment",
+    "authorisation": "Root delegated confirmed-scope implementation; user authorised M9 development/testing. No model calls."
+  },
+  "environment": {
+    "branch": "feature/0.0.1",
+    "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "electron": "42.11.14",
+    "workspace": "uncommitted shared workspace; source manifest is authoritative",
+    "nativeBroker": {
+      "app": "/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app",
+      "appAsarSha256": "4ed97c8632b87fcd9e2b351b5e11412a0a6feb46bfd1298cd7f2e118e0f01468",
+      "executable": "/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "scope": "existing packaged native broker + current production TypeScript services, not the old package JS UI"
+    }
+  },
+  "sources": {
+    "manifest": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/tested-sources.json",
+      "sha256": "e6fa90ac62e1042a246cecf8e3e4f3719f930b5fcc5ced0015030c57f86ecf3a"
+    },
+    "archive": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/tested-sources.tar.gz",
+      "sha256": "80f7f8d907b653b78e4faeee64f57b71c660697c72ef09744c41c93ff75af89b"
+    },
+    "count": 46,
+    "note": "Uncommitted shared workspace; captured after final tests during root r6 freeze. Other agents own MCP/refresh hunks in shared files; all preserved. This is not an assertion of pre/post test hash equality."
+  },
+  "verification": {
+    "final": {
+      "command": "SMARTDD_TERMINAL_APP=<r5 app> SMARTDD_TERMINAL_EVIDENCE=/private/tmp/willyou-dev045-native-matrix-final.json pnpm test src/shared/file-terminal.test.ts src/main/terminal-modes.test.ts src/main/core/files/terminal-context-acceptance.test.ts src/renderer/features/files/terminal-context/store.test.ts src/renderer/features/files/terminal-context/components.test.tsx src/main/core/tasks/task-service.test.ts --reporter=json --outputFile=/private/tmp/willyou-dev045-final-tests.json",
+      "exitCode": 0,
+      "passed": 54,
+      "failed": 0,
+      "skipped": 0,
+      "result": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-final-tests.json",
+        "sha256": "3747f6f07d0201d06136726fd1fddc1cf48efaf1b9946f7e2b79de2bb740011b"
+      },
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-final-tests.log",
+        "sha256": "394a3c9a0d3fbfd92e78d4115d7ed0334a566feb50510151888daaa35052ee2a"
+      },
+      "files": [
+        {
+          "path": "src/main/terminal-modes.test.ts",
+          "count": 3,
+          "status": "passed"
+        },
+        {
+          "path": "src/shared/file-terminal.test.ts",
+          "count": 4,
+          "status": "passed"
+        },
+        {
+          "path": "src/main/core/files/terminal-context-acceptance.test.ts",
+          "count": 9,
+          "status": "passed"
+        },
+        {
+          "path": "src/main/core/tasks/task-service.test.ts",
+          "count": 25,
+          "status": "passed"
+        },
+        {
+          "path": "src/renderer/features/files/terminal-context/components.test.tsx",
+          "count": 4,
+          "status": "passed"
+        },
+        {
+          "path": "src/renderer/features/files/terminal-context/store.test.ts",
+          "count": 9,
+          "status": "passed"
+        }
+      ]
+    },
+    "nativeMatrix": {
+      "result": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-native-matrix-final.json",
+        "sha256": "614edb2a367108515cc63e88165c33d6f23362d6576f44847c9fb84d96dbe928"
+      },
+      "observations": [
+        {
+          "scenario": "exact path special characters / duplicate Promise / changed replay / two explicit operations",
+          "sourceSha256": "6497d082a2d4e989d991983dde2184a3cc37fcdd107e10de9b5c686c2c6dcd24",
+          "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-terminal-context-cZtMRA/project/中文 空格🙂'\"();`$().txt",
+          "writeCount": 2,
+          "pass": true
+        },
+        {
+          "scenario": "write exception after possible partial acceptance is cached unknown",
+          "writeAttempts": 1,
+          "duplicateRetries": 0,
+          "pass": true
+        },
+        {
+          "scenario": "trusted sender + ownership rejection matrix",
+          "rejected": [
+            "foreign-window",
+            "subframe",
+            "destroyed",
+            "untrusted-document",
+            "wrong-task",
+            "old-pty",
+            "dead-pty",
+            "navigated-document"
+          ],
+          "writes": 0,
+          "pass": true
+        },
+        {
+          "scenario": "identity substitution / missing / directory / empty / aggregate limit / revoked root",
+          "pass": true,
+          "writes": 0
+        },
+        {
+          "scenario": "late validation after explicit context replacement",
+          "writes": 0,
+          "pass": true
+        },
+        {
+          "scenario": "real raw PTY sanitized CJK bytes",
+          "bracketed": false,
+          "characters": 7909,
+          "bytes": 19740,
+          "receivedSha256": "6a7348594b2fbe80d3740eaf7cb242552777db0f9a4a40a5470cfba22d216ac4",
+          "expectedSha256": "6a7348594b2fbe80d3740eaf7cb242552777db0f9a4a40a5470cfba22d216ac4",
+          "removed": 5,
+          "replaced": 1,
+          "sourceUnchanged": true,
+          "pass": true
+        },
+        {
+          "scenario": "real raw PTY sanitized CJK bytes",
+          "bracketed": true,
+          "characters": 7909,
+          "bytes": 19753,
+          "receivedSha256": "1c56768428f5f1bc21ddbb759e0547588e5e59660cf8691a3b022038aebc1b2a",
+          "expectedSha256": "1c56768428f5f1bc21ddbb759e0547588e5e59660cf8691a3b022038aebc1b2a",
+          "removed": 5,
+          "replaced": 1,
+          "sourceUnchanged": true,
+          "pass": true
+        },
+        {
+          "scenario": "real zsh input remains unsubmitted",
+          "bracketed": true,
+          "canaryCreated": false,
+          "linesSubmitted": 0,
+          "processAlive": true,
+          "controlledWriteCount": 1,
+          "payloadSha256": "8339315c952392e1bcef84b6b080ec4ae2a120f8667f16781edbff11a72a1347",
+          "pass": true
+        },
+        {
+          "scenario": "real sh input remains unsubmitted",
+          "bracketed": false,
+          "canaryCreated": false,
+          "linesSubmitted": 0,
+          "processAlive": true,
+          "controlledWriteCount": 1,
+          "payloadSha256": "d57092b430c1904020fb173bb3b2b4ab95913ff605534b590f2d0f7e801124c6",
+          "pass": true
+        }
+      ],
+      "scope": "production scoped RPC handlers / FileService / packaged native broker; real PTY in designated rows; synthetic Electron sender metadata, no App GUI or model calls"
+    },
+    "prototypeModels": {
+      "passed": 18,
+      "failed": 0,
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-prototype-model-r1.log",
+        "sha256": "d8e2729436b0f0f7822f69dbe6749bf44fa87f50157b8b3d6af30718bb03f1d8"
+      },
+      "scope": "reference/drag pure models; UTF-16 truncation corrected. No new browser DOM/visual assertion."
+    },
+    "reusedCurrentBatchRegressions": [
+      {
+        "suite": "original PtyAccess keyboard/CJK/control/resize/kill ownership",
+        "passed": 7,
+        "sourceResult": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-payload-tests-r1.json",
+          "sha256": "d6f5b628013db4e722b6323b293e5ca51a674c1f68b749ae44f61c93c3a7e151"
+        }
+      },
+      {
+        "suite": "original TextEditor",
+        "passed": 3,
+        "sourceResult": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-renderer-tests-r1.json",
+          "sha256": "7dd657b3696444538841f887846f2aee010753fa803a7bc3843c6757f4ef50b1"
+        },
+        "scope": "Only three TextEditor rows reused; five panel rows in same old report failed before unrelated MCP harness adaptation."
+      },
+      {
+        "suite": "panel focus/pending/persistence after MCP harness adapters",
+        "passed": 7,
+        "sourceResult": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev043-panel-regression-r1.json",
+          "sha256": "dfbc56f9d3898b7e7499c7c2c6b172098ac8a844a4dbb8d4c48ccdb5b85dff3b"
+        },
+        "owner": "acceptance_l16"
+      }
+    ],
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-final-typecheck.log",
+        "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+      }
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    "independentReview": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-independent-review.json",
+      "sha256": "3333e4f2cb6df9f1dacfad70dbb5ae6441d8b3973277f78b4b28acf73885d2f9"
+    }
+  },
+  "defectAndCorrections": [
+    {
+      "finding": "Production controlled context RPC/reference tray/real file drag bridge absent before implementation",
+      "source": "read-only approved-scope audit, /private/tmp/willyou-dev045-plan.md",
+      "resolution": "Dedicated main-bound pipeline and explicit UI now implemented; no standalone raw ptyInput shortcut"
+    },
+    {
+      "finding": "RPC transport rejection after possible native write could incorrectly allow retry",
+      "source": "final code review, not a retained pre-fix executed assertion",
+      "resolution": "Structured pre-write failed vs post-write unknown; duplicate unknown cached; dispatched rejection/mismatched operationId unknown; final tests passed"
+    },
+    {
+      "finding": "Initial component selection fixture used absolute offsets 6..22 crossing lines but expected line 2",
+      "classification": "test harness expectation, no production defect inferred",
+      "retainedFailure": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-ui-tests-r1.json",
+        "sha256": "0cad45271c478891d1fb2cbe643537c289dc64616768bca3e7c2b4e39e4659e8"
+      },
+      "retest": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-ui-tests-r2.json",
+        "sha256": "d6d3f16470f99a6a6889ec0bb61e37c8810daf8c51ec0af4f65b4441c4f29b69"
+      },
+      "finalCrossViewAndParser": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-ui-tests-r3.json",
+        "sha256": "3788057d503f06114efd5a30838649cbf96e7a51db994b252cdbab70dbe92707"
+      }
+    },
+    {
+      "finding": "Concurrent MCP introduction required QueryClient in previously unrelated panel harness",
+      "classification": "harness boundary; owned/fixed by acceptance_l16; production provider not bypassed",
+      "retainedFailure": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-renderer-tests-r1.json",
+        "sha256": "7dd657b3696444538841f887846f2aee010753fa803a7bc3843c6757f4ef50b1"
+      },
+      "retest": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev043-panel-regression-r1.json",
+        "sha256": "dfbc56f9d3898b7e7499c7c2c6b172098ac8a844a4dbb8d4c48ccdb5b85dff3b"
+      }
+    },
+    {
+      "finding": "A diagnostic command mistakenly passed an extra -- separator to test runner, broadening collection",
+      "classification": "tool command mistake; stopped its own Vitest process; no useful result counted",
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-receipt-failure.log",
+        "sha256": "43013ed50047bb6ae9c0254988f64e3654a59f290a27d25be65e2a481c94443d"
+      },
+      "resolution": "Final 54 tests explicitly named without extra separator, exit0"
+    }
+  ],
+  "caseCoverage": {
+    "M9-T-Y27": {
+      "requiredLayer": "I",
+      "status": "complete-I candidate for root audit/index",
+      "steps": [
+        "Registered production files RPC handlers + FileService + native broker: correct ownership writes once; foreign sender/subframe/destroyed/navigated, wrong task, old/dead/nonexistent PTY, revoked root/source, directory, missing/replaced inode, empty refs/oversize body refused with zero side effects.",
+        "Same PtyAccess used for controlled context and existing keyboard/resize/kill; current original seven ownership tests passed, task stop/reopen lifecycle in 25 current TaskService tests passed; no raw ptyInput reuse.",
+        "Actual parser output mode, real raw PTY CJK/emoji exact bytes, zsh bracketed and sh plain no submission, main sanitation and bounds tested."
+      ],
+      "boundary": "Sender/frame metadata is synthetic at registered main RPC handlers; real Electron window provenance probe PA01–PA06 is historical supporting evidence only, not rerun. No packaged GUI claim."
+    },
+    "E12/Y23-Y26/Y33-Y40": {
+      "status": "partial; required A/full matrices remain",
+      "covered": "shared format limits, actual EditorView selection/menu/tray, transport/late/cancellation/drag token states, trusted native path and actual PTY subset",
+      "remaining": [
+        "packaged App menus/tray/focus/drag/visual states",
+        "full file-kind/source matrices and live scope switching",
+        "Y25 installed real CLI/TUI designated scenarios",
+        "Y34 voice follow-on/manual Enter",
+        "complete current required P/A evidence, not inferred from model tests"
+      ]
+    },
+    "Y28": {
+      "status": "not completed by this batch",
+      "note": "independent disk behavior retained; full CLI write/create/delete + dirty conflict scenario belongs separate acceptance"
+    },
+    "V05/V06/Y29/Y30": {
+      "status": "outside this owned subset",
+      "note": "No image attachment/model handoff or LSP claim; MCP owned by separate agent"
+    }
+  },
+  "guiHandoff": {
+    "fixtures": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-gui-fixtures.json",
+      "sha256": "0348b9a1c92593b028ac06f41723561cd27c638c9a767a600d11bf962080b005"
+    },
+    "receiver": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-gui-receiver.py",
+      "sha256": "eb5032186ff6bad441fda05603ded9fb80f676c03fc47ba753403e6675bb04ba"
+    },
+    "runner": "/usr/bin/python3 /private/tmp/willyou-dev045-gui-receiver.py; optional --plain; new isolated profile/task only",
+    "logs": "/private/tmp/willyou-dev045-gui/receiver-<pid>.{bin,json}",
+    "meaning": "Receiver records input only, never executes commands or model/network calls. UI acceptance not yet performed by this agent."
+  },
+  "remaining": [
+    "Root r6 build/source verification and true App acceptance",
+    "No full I07 completion or all Codex visual states claim",
+    "No cross-platform acceptance or release"
+  ],
+  "implementationNote": "docs/里程碑/M9_文件浏览工作区/技研/DEV045_终端上下文实现与验证.md"
+}

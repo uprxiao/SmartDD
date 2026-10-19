@@ -1,0 +1,83 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/content-search-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev097-controls-red.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx (10 tests | 3 failed) 1570ms
+     ✓ R05 real 99 rows have exact UI/native cap and no101st streamed row 170ms
+     ✓ R05 real 100 rows have exact UI/native cap and no101st streamed row 111ms
+     ✓ R05 real 101 rows have exact UI/native cap and no101st streamed row 106ms
+     ✓ R06 same basenames in unexpanded CJK directories open by click/Enter at exact emoji/BOM/CRLF-aware source range 242ms
+     ✓ R12 native permission issues and outside symlinks are bounded; changed/deleted hits are revalidated instead of locating obsolete bytes  354ms
+     ✓ R12 real files changed/deleted/replaced by an outside symlink after native enumeration are read afresh or reported, never searched through the alias 102ms
+     ✓ R05 a genuine current-session row delivered after the authoritative native result never duplicates its completed UI rows 108ms
+     × R04 actual native match/done/error states mark busy and wait exactly500ms before the loading indicator 27ms
+     × R09 plain arrows traverse results then history and restore the unsent draft before Enter opens; Escape closes 243ms
+     × R10 mask history arrows stay outside result navigation and Enter remembers only the chosen mask then focuses query 105ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/content-search-acceptance.test.tsx > R05/R06/R12 content dialog→registered RPC→native filesystem > R04 actual native match/done/error states mark busy and wait exactly500ms before the loading indicator
+AssertionError: expected null to be 'false' // Object.is equality
+
+- Expected:
+"false"
+
++ Received:
+null
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx:73:116
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/features/files/content-search-acceptance.test.tsx > R05/R06/R12 content dialog→registered RPC→native filesystem > R09 plain arrows traverse results then history and restore the unsent draft before Enter opens; Escape closes
+AssertionError: expected '定位Token' to be 'history-two' // Object.is equality
+
+Expected: "history-two"
+Received: "定位Token"
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx:85:117
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/features/files/content-search-acceptance.test.tsx > R05/R06/R12 content dialog→registered RPC→native filesystem > R10 mask history arrows stay outside result navigation and Enter remembers only the chosen mask then focuses query
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 2 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      KeyboardEvent {
+        "isTrusted": false,
+      },
+    ]
+
+  2nd vi.fn() call:
+
+    Array [
+      KeyboardEvent {
+        "isTrusted": false,
+      },
+    ]
+
+
+Number of calls: 2
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx:92:222
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 7 passed (10)
+   Start at  03:21:37
+   Duration  2.71s (transform 411ms, setup 0ms, import 768ms, tests 1.57s, environment 299ms)
+
+JSON report written to /private/tmp/willyou-dev097-controls-red.json
+ ELIFECYCLE  Test failed. See above for more details.

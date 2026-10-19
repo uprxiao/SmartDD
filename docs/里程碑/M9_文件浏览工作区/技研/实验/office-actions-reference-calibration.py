@@ -21,7 +21,7 @@ with tempfile.TemporaryDirectory(prefix='m9-ref-calibration-') as temp:
                 except Exception:time.sleep(.1)
             if context is None:raise RuntimeError('UNO timeout')
             desktop=context.ServiceManager.createInstanceWithContext('com.sun.star.frame.Desktop',context)
-            doc=desktop.loadComponentFromURL('private:factory/scalc','_blank',0,(prop('Hidden',True),prop('MacroExecutionMode',4),prop('UpdateDocMode',0)))
+            doc=desktop.loadComponentFromURL('private:factory/scalc','_blank',0,(prop('Hidden',True),prop('MacroExecutionMode',0),prop('UpdateDocMode',0)))
             data=doc.Sheets.getByIndex(0);data.Name='Data';data.getCellRangeByName('B2').Value=3;data.getCellRangeByName('B3').Value=4
             doc.Sheets.insertNewByName('Calc',1);calc=doc.Sheets.getByName('Calc');calc.getCellRangeByName('B2').Formula='=Data.B2+Data.B3';calc.getCellRangeByName('B3').Formula='=SUM(Data.B2:B3)'
             doc.calculateAll();report['beforeValues']=[calc.getCellRangeByName(c).Value for c in ['B2','B3']]
@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='m9-ref-calibration-') as temp:
                 ns={'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
                 report['serializedCells']=[{'cell':c.get('r'),'formula':c.findtext('s:f',namespaces=ns),'value':c.findtext('s:v',namespaces=ns),'type':c.get('t')} for c in ET.fromstring(z.read('xl/worksheets/sheet1.xml')).findall('.//s:c',ns)]
                 report['serializedWorksheetXml']=z.read('xl/worksheets/sheet1.xml').decode()
-            doc=desktop.loadComponentFromURL(out.as_uri(),'_blank',0,(prop('Hidden',True),prop('MacroExecutionMode',4),prop('UpdateDocMode',0)))
+            doc=desktop.loadComponentFromURL(out.as_uri(),'_blank',0,(prop('Hidden',True),prop('MacroExecutionMode',0),prop('UpdateDocMode',0)))
             calc=doc.Sheets.getByName('Calc')
             report['selfReopenBeforeCalculate']=[{'formula':calc.getCellRangeByName(c).Formula,'error':calc.getCellRangeByName(c).Error,'string':calc.getCellRangeByName(c).String} for c in ['B2','B3']]
             doc.calculateAll()

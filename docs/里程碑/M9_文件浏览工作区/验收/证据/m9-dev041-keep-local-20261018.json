@@ -1,0 +1,196 @@
+{
+  "defect": "M9-DEV-041",
+  "kind": "additional reproduction after r5 package freeze",
+  "status": "fixed in source; r5 package does not contain this two-guard change",
+  "time": "2026-10-18T02:51:20.826747+00:00",
+  "requirement": [
+    "M9-R07.5",
+    "M9-R07.6",
+    "M9-R07.4"
+  ],
+  "level": "U/I: actual EditorView DOM composition and FileBuffer -> production FileService -> r5 packaged native broker; synthetic events, no physical IME or App GUI claim",
+  "failure": {
+    "startedAt": "2026-10-18T02:47:38.570Z",
+    "observations": [
+      {
+        "scenario": "interrupted candidate -> external conflict -> public keepLocal",
+        "before": {
+          "conflict": true,
+          "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+          "version": 1,
+          "reads": 2,
+          "source": "# External disk\n",
+          "raw": "# 未确认候选\n中文\n",
+          "interrupted": true
+        },
+        "after": {
+          "conflict": false,
+          "baseHash": "62403dd7cbb268a5bc930607cea3edbb2a91545e7e13007111e25ca7e906f57c",
+          "version": 2,
+          "reads": 3,
+          "source": "# External disk\n",
+          "raw": "# 未确认候选\n中文\n",
+          "interrupted": true
+        },
+        "result": false,
+        "saveCalls": 0
+      }
+    ],
+    "package": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app",
+      "asarSha256": "3cf835c4c77c583ea698174b527dbe1a54e47d6f0e8f1b5df813a2af05271bc0",
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "finishedAt": "2026-10-18T02:47:38.846Z"
+  },
+  "final": {
+    "startedAt": "2026-10-18T02:50:12.450Z",
+    "observations": [
+      {
+        "scenario": "interrupted candidate -> external conflict -> public keepLocal",
+        "before": {
+          "conflict": true,
+          "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+          "version": 1,
+          "reads": 2,
+          "source": "# External disk\n",
+          "raw": "# 未确认候选\n中文\n",
+          "interrupted": true
+        },
+        "after": {
+          "conflict": true,
+          "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+          "version": 1,
+          "reads": 2,
+          "source": "# External disk\n",
+          "raw": "# 未确认候选\n中文\n",
+          "interrupted": true
+        },
+        "result": false,
+        "saveCalls": 0
+      },
+      {
+        "scenario": "pending before keepLocal",
+        "before": {
+          "conflict": true,
+          "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+          "version": 1,
+          "reads": 2,
+          "raw": "# Local confirmed\n"
+        },
+        "after": {
+          "conflict": true,
+          "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+          "version": 1,
+          "reads": 2,
+          "raw": "# Local confirmed\n"
+        },
+        "result": false,
+        "saveCalls": 0
+      },
+      {
+        "scenario": "composition begins during disk read",
+        "before": {
+          "conflict": true,
+          "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+          "version": 2,
+          "raw": "# 新候选\n",
+          "source": "# External disk\n"
+        },
+        "after": {
+          "conflict": true,
+          "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+          "version": 2,
+          "raw": "# 新候选\n",
+          "source": "# External disk\n"
+        },
+        "result": false,
+        "saveCalls": 0
+      }
+    ],
+    "package": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app",
+      "asarSha256": "4ed97c8632b87fcd9e2b351b5e11412a0a6feb46bfd1298cd7f2e118e0f01468",
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "finishedAt": "2026-10-18T02:50:13.522Z"
+  },
+  "tests": {
+    "newRealIntegration": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "necessaryOriginalRegression": {
+      "passed": 3,
+      "failed": 0,
+      "filteredNotExecuted": 12
+    }
+  },
+  "fix": "keepLocal refuses unsettled/interrupted input before reading and again after asynchronous disk read, preserving conflict, original baseHash, raw candidate and version on refusal; no source writes",
+  "sourceFiles": [
+    {
+      "path": "src/renderer/features/files/file-buffer.ts",
+      "sha256": "82beb688f587f37954e0e9511d343ddef03b6e8f38483cb5a4327ab30f689d0d"
+    },
+    {
+      "path": "src/renderer/features/files/keep-local-input-acceptance.test.tsx",
+      "sha256": "139fb681adbc8c3768794d10c48295f96b88758226bd66fa59720a660e441c64"
+    }
+  ],
+  "sourceArchive": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/tested-sources.tar.gz",
+    "sha256": "bcd5dfbde120e546e13ca320d176a33d28beca227462a5698a52fe14c48caace"
+  },
+  "rawFiles": [
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/regression-tests.json",
+      "sha256": "32e6f78038c16b3740e2e36eb781f0b66121e5100c508a54a0188a3dda7233a8"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/regression.log",
+      "sha256": "86f312bf328bfb1f197f71017608c99880c9d892ab360779bc50aa84d101018d"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/result-fixed.json",
+      "sha256": "9c38b6c3c1dc75953d181344de487906096a300b5ecc6e3d3d6b9be0b19cb25f"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/result.json",
+      "sha256": "f721c22be91c06ac97a09caa26cefec0ae07d39e90456a74fe22d3adebc2e566"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/test-fixed.log",
+      "sha256": "75a3f061abb811aec2060b5db4d4a6c52cebab1a264a6222b6efd314b1890fce"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/test.log",
+      "sha256": "0ee99d14c1e9ce559342ee99b7507141df0b7e95ea76ff4901684573de28fbdb"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/tested-sources.tar.gz",
+      "sha256": "bcd5dfbde120e546e13ca320d176a33d28beca227462a5698a52fe14c48caace"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/tests-fixed.json",
+      "sha256": "dd69b6435cf3d14ea41e68d6eca9e03bc8c71b9a4b9b414f35ba187c52823a6c"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/tests.json",
+      "sha256": "8ae4813917f4d455ef1c7e46f3ff45415f0801398a7696dbe4964977aa27a8ec"
+    }
+  ],
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exitCode": 0,
+    "sharedWith": "DEV043/H24",
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-input-pending/keep-local/typecheck.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "boundary": "Full shared check after owned keepLocal source/test freeze; subsequent DEV045 additions require their own checks."
+  },
+  "packageBoundary": "r5 supplied native broker only; live source includes fix, installed renderer JS does not. Next unified package + affected UI checks owned by root."
+}

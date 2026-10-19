@@ -37,6 +37,7 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
     await new Promise((resolve, reject) => { ws.addEventListener('open', resolve, { once: true }); ws.addEventListener('error', reject, { once: true }); });
     let seq = 0;
     const pending = new Map();
+    const cdpListeners = new Map();
     const rendererErrors = [];
     ws.addEventListener('message', ({ data }) => {
       const message = JSON.parse(data);
@@ -47,6 +48,7 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
         message.error ? request.reject(new Error(message.error.message)) : request.resolve(message.result);
       }
       if (message.method === 'Runtime.exceptionThrown') rendererErrors.push(message.params.exceptionDetails.text);
+      for (const listener of cdpListeners.get(message.method) ?? []) listener(message.params);
     });
     const cdp = (method, params = {}, timeoutMs = 25_000) => new Promise((resolve, reject) => {
       const id = ++seq;
@@ -92,6 +94,25 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
     };
     return {
       cdp, evaluate, mainEvaluate, waitFor, invoke, rendererErrors,
+      onCDP: (method, listener) => {
+        const listeners = cdpListeners.get(method) ?? new Set();
+        listeners.add(listener); cdpListeners.set(method, listeners);
+        return () => { listeners.delete(listener); if (!listeners.size) cdpListeners.delete(method); };
+      },
+      processId: child.pid,
+      waitForExit: (timeoutMs = 15_000) => new Promise((resolve, reject) => {
+        const result = () => ({ pid: child.pid, code: child.exitCode, signal: child.signalCode });
+        if (child.exitCode !== null || child.signalCode !== null) { resolve(result()); return; }
+        const onExit = () => { clearTimeout(timer); resolve(result()); };
+        const timer = setTimeout(() => { child.off('exit', onExit); reject(new Error('Isolated App did not finish its normal exit')); }, timeoutMs);
+        child.once('exit', onExit);
+      }),
+      crash: async () => {
+        assert(child.exitCode === null && child.signalCode === null, 'Test App is already stopped');
+        const exited = new Promise(resolve => child.once('exit', (code, signal) => resolve({ pid: child.pid, code, signal })));
+        assert(child.kill('SIGKILL'), 'Could not stop this isolated test App');
+        return await Promise.race([exited, pause(3000).then(() => { throw new Error('Test App crash did not finish'); })]);
+      },
       output: (ptyId) => evaluate(`window.__m5.output[${JSON.stringify(ptyId)}] || ''`),
       input: (ptyId, data) => evaluate(`window.electronAPI.eventSend('pty:input', ${JSON.stringify({ ptyId, data })})`),
       screenshot: async (path) => { const { data } = await cdp('Page.captureScreenshot', { format: 'png' }); await writeFile(path, Buffer.from(data, 'base64'), { mode: 0o600 }); },
@@ -99,11 +120,12 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
       close: async () => {
         for (const item of pending.values()) { clearTimeout(item.timer); item.reject(new Error('Electron test closed')); }
         pending.clear(); ws.close();
-        if (child.exitCode === null) {
+        cdpListeners.clear();
+        if (child.exitCode === null && child.signalCode === null) {
           const done = new Promise((r) => child.once('exit', r));
           child.kill('SIGTERM');
           await Promise.race([done, pause(3000)]);
-          if (child.exitCode === null) child.kill('SIGKILL');
+          if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
         }
       },
     };

@@ -1,0 +1,233 @@
+{
+  "at": "2026-10-18T10:45:48.832Z",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r25-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scratch": "/private/tmp/willyou-root-scope-ui-PnI29Z",
+  "userData": "/private/tmp/willyou-root-scope-ui-PnI29Z/userdata",
+  "asarSha256": "c253644ad70e3a3eb5eba972d72bf49e0678d3bcdb663675539c03288d937eb2",
+  "brokerSha256": "26f9843f533cc3b0bd4e5d886956eeb5ff767fd0999fae27e509e89bb8053db7",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0",
+    "uid": 501
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-A01",
+      "first": {
+        "tabs": [
+          {
+            "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirA/a.txt",
+            "name": "a.txt",
+            "selected": "true"
+          }
+        ],
+        "text": "Root A content 中文🙂\n",
+        "breadcrumb": "Root A\n›\na.txt",
+        "root": "dirA · Root A",
+        "alerts": [],
+        "treeRows": 1
+      },
+      "menu": [
+        {
+          "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirA",
+          "text": "dirA · Root A",
+          "selected": true
+        },
+        {
+          "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirB",
+          "text": "dirB · Root B",
+          "selected": false
+        }
+      ],
+      "second": {
+        "tabs": [
+          {
+            "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirA/a.txt",
+            "name": "a.txt",
+            "selected": "false"
+          },
+          {
+            "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirB/a.txt",
+            "name": "a.txt",
+            "selected": "true"
+          }
+        ],
+        "text": "Root B content 中文🙂\n",
+        "breadcrumb": "Root B\n›\na.txt",
+        "root": "dirB · Root B",
+        "alerts": [],
+        "treeRows": 1
+      },
+      "independentFiles": [
+        {
+          "text": "Root A content 中文🙂\n",
+          "sha256": "b0b489a011061bc828ea7389282fe2ed20fe443f2deadf1413ed72e064aaf898",
+          "inode": "46034438",
+          "mtimeNs": "1792320348831994411"
+        },
+        {
+          "text": "Root B content 中文🙂\n",
+          "sha256": "0969de6726fd4d2513a859ba3ab3008c8278fc795f453b336375f3551f34ed82",
+          "inode": "46034439",
+          "mtimeNs": "1792320348832128994"
+        }
+      ],
+      "returnedToEachTab": true
+    },
+    {
+      "caseId": "M9-T-A05",
+      "scenario": "M9 file root",
+      "ui": {
+        "tabs": [],
+        "breadcrumb": "本机文件",
+        "alerts": [
+          "File root：[IO] inspect root: Not a directory\n重试目录"
+        ],
+        "empty": "没有可用的本机目录",
+        "treeRows": 0
+      },
+      "noFallbackToPriorProjectOrHome": true
+    },
+    {
+      "caseId": "M9-T-A05",
+      "scenario": "M9 missing root",
+      "ui": {
+        "tabs": [],
+        "breadcrumb": "本机文件",
+        "alerts": [
+          "Missing root：[MISSING] resolve root: No such file or directory\n重试目录"
+        ],
+        "empty": "没有可用的本机目录",
+        "treeRows": 0
+      },
+      "noFallbackToPriorProjectOrHome": true
+    },
+    {
+      "caseId": "M9-T-A06",
+      "unreadable": {
+        "tabs": [],
+        "breadcrumb": "本机文件",
+        "alerts": [
+          "Permission root：[PERMISSION] inspect root: Permission denied\n重试目录"
+        ],
+        "empty": "没有可用的本机目录",
+        "treeRows": 0
+      },
+      "restored": {
+        "tabs": [
+          {
+            "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/locked-root/a.txt",
+            "name": "a.txt",
+            "selected": "true"
+          }
+        ],
+        "text": "Permission restored content 中文🙂\n",
+        "breadcrumb": "Permission root\n›\na.txt",
+        "alerts": [],
+        "treeRows": 1
+      },
+      "actualPermissionModes": [
+        "000",
+        "700"
+      ],
+      "sameNonRootUid": 501
+    }
+  ],
+  "before": {
+    "/private/tmp/willyou-root-scope-ui-PnI29Z/dirA/a.txt": {
+      "text": "Root A content 中文🙂\n",
+      "sha256": "b0b489a011061bc828ea7389282fe2ed20fe443f2deadf1413ed72e064aaf898",
+      "inode": "46034438",
+      "mtimeNs": "1792320348831994411"
+    },
+    "/private/tmp/willyou-root-scope-ui-PnI29Z/dirB/a.txt": {
+      "text": "Root B content 中文🙂\n",
+      "sha256": "0969de6726fd4d2513a859ba3ab3008c8278fc795f453b336375f3551f34ed82",
+      "inode": "46034439",
+      "mtimeNs": "1792320348832128994"
+    },
+    "/private/tmp/willyou-root-scope-ui-PnI29Z/locked-root/a.txt": {
+      "text": "Permission restored content 中文🙂\n",
+      "sha256": "827d7bf48cf16eb58ac8cd3933a298c1e42a7eeca77a778a4c0452c5c287f8ee",
+      "inode": "46034440",
+      "mtimeNs": "1792320348832252620"
+    }
+  },
+  "status": "passed",
+  "boundary": "A: real packaged renderer pointer/keyboard, actual project scopes/root menu/invalid-root errors/native permission removal and retry. I: synthetic project registration through public IPC before UI scope opens and read-only workspace snapshot after flows. No mocked root receipts, CLI/model/clipboard or daily resources.",
+  "projectReturned": {
+    "tabs": [
+      {
+        "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirA/a.txt",
+        "name": "a.txt",
+        "selected": "false"
+      },
+      {
+        "title": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirB/a.txt",
+        "name": "a.txt",
+        "selected": "true"
+      }
+    ],
+    "text": "Root B content 中文🙂\n",
+    "breadcrumb": "Root B\n›\na.txt",
+    "root": "dirB · Root B",
+    "alerts": [],
+    "treeRows": 1
+  },
+  "workspace": {
+    "state": {
+      "schemaVersion": 1,
+      "routes": [
+        {
+          "source": "project-directory",
+          "sourceId": "2d2b9dd8-d8e4-49ec-a3a5-9a43748844e9",
+          "sourcePath": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirA",
+          "relativePath": "a.txt",
+          "mode": "document"
+        },
+        {
+          "source": "project-directory",
+          "sourceId": "d5a04249-3d8b-46be-a93b-0e3e4cc5f7d4",
+          "sourcePath": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirB",
+          "relativePath": "a.txt",
+          "mode": "document"
+        }
+      ],
+      "active": {
+        "source": "project-directory",
+        "sourceId": "d5a04249-3d8b-46be-a93b-0e3e4cc5f7d4",
+        "sourcePath": "/private/tmp/willyou-root-scope-ui-PnI29Z/dirB",
+        "relativePath": "a.txt",
+        "mode": "document"
+      },
+      "treeSource": "project-directory:d5a04249-3d8b-46be-a93b-0e3e4cc5f7d4:/private/tmp/willyou-root-scope-ui-PnI29Z/dirB",
+      "expanded": {},
+      "collapsedRoots": [],
+      "filters": {},
+      "treeWidth": 250
+    },
+    "revision": 1792320350218
+  },
+  "after": {
+    "/private/tmp/willyou-root-scope-ui-PnI29Z/dirA/a.txt": {
+      "text": "Root A content 中文🙂\n",
+      "sha256": "b0b489a011061bc828ea7389282fe2ed20fe443f2deadf1413ed72e064aaf898",
+      "inode": "46034438",
+      "mtimeNs": "1792320348831994411"
+    },
+    "/private/tmp/willyou-root-scope-ui-PnI29Z/dirB/a.txt": {
+      "text": "Root B content 中文🙂\n",
+      "sha256": "0969de6726fd4d2513a859ba3ab3008c8278fc795f453b336375f3551f34ed82",
+      "inode": "46034439",
+      "mtimeNs": "1792320348832128994"
+    },
+    "/private/tmp/willyou-root-scope-ui-PnI29Z/locked-root/a.txt": {
+      "text": "Permission restored content 中文🙂\n",
+      "sha256": "827d7bf48cf16eb58ac8cd3933a298c1e42a7eeca77a778a4c0452c5c287f8ee",
+      "inode": "46034440",
+      "mtimeNs": "1792320348832252620"
+    }
+  },
+  "finishedAt": "2026-10-18T10:45:51.487Z"
+}

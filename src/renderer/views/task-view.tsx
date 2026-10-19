@@ -13,6 +13,7 @@ import { attachPty } from '@renderer/core/pty-buffer';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { buildTerminalFontFamily, terminalKeyAction } from '@renderer/core/terminal-keys';
 import { recordTerminalFont, recordTerminalSize } from '@renderer/core/terminal-size';
+import { createTerminalFitScheduler, type TerminalFitScheduler } from '@renderer/core/terminal-fit';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
 import { ProfileHealthMark } from '@renderer/lib/profile-health';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
@@ -25,6 +26,7 @@ import { cssVar } from '@renderer/utils/cssVars';
 import { cn } from '@renderer/utils/utils';
 import { InjectionFailure } from './capabilities';
 import { ArchivedTaskNotice } from './task-archive';
+import { FILE_TERMINAL_DRAG_TYPE, currentFileTerminal, dropFileToTerminal, registerFileTerminal } from '@renderer/features/files/terminal-context/store';
 
 function xtermTheme() {
   return {
@@ -150,16 +152,13 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
   const { value: terminalSettings } = useAppSettingsKey('terminal');
   const hostRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
-  const fitRef = useRef<FitAddon | null>(null);
+  const fitSync = useRef<TerminalFitScheduler | null>(null), visibleRef = useRef(visible);
+  visibleRef.current = visible;
+  const [fileDropNotice, setFileDropNotice] = useState(''), [fileDropHover, setFileDropHover] = useState(false);
+  const [terminalExited, setTerminalExited] = useState(false);
 
   const fitAndSync = () => {
-    const term = termRef.current;
-    const host = hostRef.current;
-    // Hidden hosts measure 0×0; fitting then would shrink the PTY to nothing.
-    if (!term || !host || host.clientWidth === 0 || host.clientHeight === 0) return;
-    fitRef.current?.fit();
-    recordTerminalSize(term.cols, term.rows);
-    events.emit(ptyResizeEvent, { taskId, ptyId, cols: term.cols, rows: term.rows });
+    fitSync.current?.request();
   };
 
   useEffect(() => {
@@ -187,7 +186,21 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
     term.unicode.activeVersion = '11';
     term.open(hostRef.current!);
     termRef.current = term;
-    fitRef.current = fit;
+    const sync = createTerminalFitScheduler({
+      ready: () => visibleRef.current && document.visibilityState === 'visible' && termRef.current === term && !!hostRef.current?.isConnected && hostRef.current.clientWidth > 0 && hostRef.current.clientHeight > 0,
+      measure: () => {
+        fit.fit();
+        // Keep the estimate for a newly spawned PTY current even when this
+        // visible terminal's cell dimensions need no second native resize.
+        recordTerminalSize(term.cols, term.rows);
+        return { cols: term.cols, rows: term.rows };
+      },
+      send: size => events.emit(ptyResizeEvent, { taskId, ptyId, ...size }),
+      requestFrame: callback => requestAnimationFrame(callback), cancelFrame: id => cancelAnimationFrame(id),
+    });
+    fitSync.current = sync;
+    const visibility = () => sync.request();
+    document.addEventListener('visibilitychange', visibility);
     const send = (data: string) => events.emit(ptyInputEvent, { taskId, ptyId, data });
     term.attachCustomKeyEventHandler((e) => {
       // A dialog over the terminal keeps its keys.
@@ -203,12 +216,15 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
     const offInput = term.onData(send);
     const detach = attachPty(ptyId, {
       data: (d) => term.write(d),
-      exit: (code) => term.write(`\r\n[${i18n.t('task.exited', { code })}]\r\n`),
+      exit: (code) => { setTerminalExited(true); term.write(`\r\n[${i18n.t('task.exited', { code })}]\r\n`); },
     });
-    const ro = new ResizeObserver(() => fitAndSync());
+    const ro = new ResizeObserver(() => sync.request());
     ro.observe(hostRef.current!);
     return () => {
       ro.disconnect();
+      document.removeEventListener('visibilitychange', visibility);
+      sync.dispose();
+      if (fitSync.current === sync) fitSync.current = null;
       detach();
       offInput.dispose();
       term.dispose();
@@ -219,8 +235,20 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
   useEffect(() => {
     if (!visible) return;
     fitAndSync();
-    if (!readOnly) termRef.current?.focus();
+    // Showing a terminal is also a layout update. Keep an existing file,
+    // editable control or popup owner; explicit task navigation still focuses
+    // the terminal when no such control owns the user's next characters.
+    const active = document.activeElement;
+    const popup = document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"]');
+    const protectedFocus = active?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [data-testid="file-workspace"]');
+    if (!readOnly && !popup && (!protectedFocus || hostRef.current?.contains(active))) termRef.current?.focus();
   }, [visible, readOnly]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    setFileDropNotice(''); setFileDropHover(false);
+    if (!visible || readOnly || terminalExited) return;
+    return registerFileTerminal({ taskId, ptyId, focus: () => termRef.current?.focus() });
+  }, [taskId, ptyId, visible, readOnly, terminalExited]);
 
   useEffect(() => {
     if (termRef.current) termRef.current.options.disableStdin = readOnly;
@@ -242,8 +270,12 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
   }, [terminalSettings]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div data-testid="task-terminal" data-pty={ptyId} className={cn('absolute inset-0 p-2', !visible && 'invisible')}>
+    <div data-testid="task-terminal" data-pty={ptyId} className={cn('absolute inset-0 p-2', !visible && 'invisible', fileDropHover && 'ring-1 ring-inset ring-(--accent)')}
+      onDragOver={event => { if (!visible || readOnly || !event.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) return; event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setFileDropHover(true); }}
+      onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFileDropHover(false); }}
+      onDrop={event => { if (!visible || readOnly || !event.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) return; event.preventDefault(); event.stopPropagation(); setFileDropHover(false); const target = currentFileTerminal(); void dropFileToTerminal(event.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE), { taskId, ptyId }, notice => { if (currentFileTerminal() === target) setFileDropNotice(notice); }); }}>
       <div ref={hostRef} className="h-full w-full" />
+      {fileDropNotice && <div role="status" className="absolute bottom-2 left-2 right-2 rounded border border-border bg-background px-3 py-2 text-xs text-foreground-muted">{fileDropNotice}</div>}
     </div>
   );
 }

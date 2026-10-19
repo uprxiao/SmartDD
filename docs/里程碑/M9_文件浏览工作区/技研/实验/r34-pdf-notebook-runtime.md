@@ -62,3 +62,23 @@ node 'docs/里程碑/M9_文件浏览工作区/验收/证据/r34-pdf-runtime-chec
 浏览器探针前提：共享 Vite 原型已在127.0.0.1:4176启动；本轮隔离 Playwright 位于 `/private/tmp/m9-qa/node_modules`；Chrome 为本机应用。脚本不接管已有浏览器，结束关闭自己创建的浏览器。生成器位于 `prototypes/m6-codex/tests/fixtures/r34-pdf/generate.py`，需要本机 pypdf，夹具 manifest 带哈希。
 
 剩余验证：安装包协议/CSP下 worker、CMap及字体资源路径；真正 Electron 跨标签/任务切换与真实终端交接；全部约定加密/旋转/表单/JavaScript PDF变体；Safari/Firefox及目标操作系统；完整进程与GPU资源成本；长期大文件循环；真实源文件权限与内容更新。正式测试用例的实际结果、状态、证据与适用性均未由本实验改写。
+# 2026-10-18 DEV061 生产 HTML 输出图片修复
+
+R3.4-P1 / R06.11，G05真实r13验收发现：白名单PNG已完成本机解码并生成`blob:file:`，但不带`allow-same-origin`的opaque srcdoc无法读取该主页面blob。实际frame中的图片`naturalWidth=0`；先前只检查srcdoc属性和可见安全文字的子流程不能证明图片显示。
+
+HTML输出专用路径改为传入已限额raster PNG或已清理SVG的base64图像data URL；普通Notebook图像和Markdown图片仍使用原有host blob路径。`frameDocument`只接受宿主生成map内的png/jpeg/svg图像base64 URL，拒绝远程URL、blob和data:text/html。图片CSP同步为`img-src data:`；空sandbox、无脚本/连接/frame/object/form、无Node/IPC及父页面隔离保持。原HTML的img src仍先由Worker白名单抽取，不将原始任意URL直接放入宿主map。并发图片/iframe槽位、取消及像素限制沿用原方案。
+
+r14真实复验发现srcdoc还继承顶层renderer CSP：仅修改frame策略后，实际data PNG仍`complete=true/naturalWidth=0`。r15同时在顶层`img-src`许可data图像；脚本、连接、媒体及原生策略均未扩大。r13 blob与r14 data两次失败均保留独立frame实际值及截图，不用单测通过替代实际解码。
+
+真实r13红测、编码映射单测先红后绿、11项Notebook相关测试及类型检查已通过；r15图片/隔离实际复验已通过：1×1 PNG实际解码，真实OOPIF默认页面中的electronAPI/require/process均undefined、父页面访问被拒，请求哨兵0；[完整证据](../../验收/证据/m9-acceptance-notebook-dev061-r15-20261018.json)。此处为范围内图片显示缺陷修复，不新增viewer入口或放宽脚本/网络权限；完整尺寸/内存和其他Notebook用例仍按各条独立验收。
+
+
+## 2026-10-18 DEV062 空态与折叠恢复
+
+R06.11 / T33、T35。真实r15与原型对照发现完整source只有空白时仍显示代码框，以及等待外层收起后内层Code/Raw output展开状态丢失。生产Worker计算完整source的sourceEmpty，UI不从部分chunk或总长度猜空态；原文保留，另测2万空格前缀后仍有真实代码。每Notebook保存轻量details键，保持原型native details恢复语义，外层关闭仍卸载重DOM并释放视图资源，来源/版本变更清空。原型产品组件未变，仅新增隔离验收支架。
+
+r16实际15项细项及26项受影响App、14项代码/原生/组件测试、类型/构建与6项原生smoke通过；[完整证据](../../验收/证据/m9-acceptance-notebook-details-dev062-r16-20261018.json)。系统剪贴板T34因自动审批拒绝尚未执行，不以数据分块检查替代；受限候选待用户明确许可。
+
+## 2026-10-18 DEV063 顶部下载接线与异常隔离
+
+R06.11 / T32：普通本机Notebook/PDF缺onDownload，现复用既有native saveCopy，不增加renderer任意目标写入接口；附件继续只用host显式回调，无回调不造假能力。Notebook下载失败独立显示错误，不销毁已解析cell，重试清错误。r16实际缺按钮红测、r17两组顶栏/生产panel集成及受影响41项Notebook App回归通过；真实原生保存与最终副本字节尚因电脑工具断连待验，T32不计通过。[完整边界](../../验收/证据/m9-acceptance-formats-dev063-dev064-r17-20261018.json)。

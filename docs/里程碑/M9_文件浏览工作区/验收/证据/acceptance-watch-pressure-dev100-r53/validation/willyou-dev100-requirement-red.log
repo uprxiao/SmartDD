@@ -1,0 +1,56 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/watch-pressure-unit.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev100-requirement-red.json
+
+[1019/042526.888642:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/042527.009915:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/watch-pressure-unit.test.ts (3 tests | 2 failed) 8ms
+     × L05 coalesces ten thousand invalidation hints into one bounded fresh snapshot and declares resync 5ms
+     × L08 advertises polling after a callback error, preserves snapshot truth and retries native only after backoff 1ms
+     ✓ L08 a fresh store ignores old lease/watch delivery but accepts a genuine current membership refresh 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/watch-pressure-unit.test.ts > L05/L08 invalidation pressure and reconnect guards > L05 coalesces ten thousand invalidation hints into one bounded fresh snapshot and declares resync
+AssertionError: expected { …(8) } to match object { coverage: 'poll', …(1) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "coverage": "poll",
++   "coverage": "native",
+    "resyncRequired": true,
+  }
+
+ ❯ src/renderer/features/files/watch-pressure-unit.test.ts:30:30
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/files/watch-pressure-unit.test.ts > L05/L08 invalidation pressure and reconnect guards > L08 advertises polling after a callback error, preserves snapshot truth and retries native only after backoff
+AssertionError: expected [ { …(8) }, { …(8) }, { …(8) }, …(9) ] to have a length of 11 but got 12
+
+- Expected
++ Received
+
+- 11
++ 12
+
+ ❯ src/renderer/features/files/watch-pressure-unit.test.ts:39:240
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  04:25:26
+   Duration  214ms (transform 88ms, setup 0ms, import 141ms, tests 8ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev100-requirement-red.json
+ ELIFECYCLE  Test failed. See above for more details.

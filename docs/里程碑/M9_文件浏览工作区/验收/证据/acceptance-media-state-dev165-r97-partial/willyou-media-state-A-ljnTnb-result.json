@@ -1,0 +1,2837 @@
+{
+  "at": "2026-10-19T19:38:04.830Z",
+  "caseId": "M9-T-T19",
+  "scope": "functional partial; native duration=0 remains unproven",
+  "scratch": "/private/tmp/willyou-media-state-A-ljnTnb",
+  "project": "/private/tmp/willyou-media-state-A-ljnTnb/project",
+  "manifest": "/private/tmp/willyou-media-state-dbcsc9ws/fixtures.json",
+  "asarSha256": "db7c8b7c51f6e1f84a5b24eab91d5e2cb53a317cfe31068178066f54d0658344",
+  "before": {
+    "good.wav": {
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "inode": "51180226",
+      "mtimeNs": "1792438684826813893"
+    },
+    "infinite.wav": {
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0",
+      "inode": "51180227",
+      "mtimeNs": "1792438684828727934"
+    },
+    "bad.wav": {
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "inode": "51180228",
+      "mtimeNs": "1792438684830324683"
+    },
+    "other.txt": {
+      "sha256": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304",
+      "inode": "51180229",
+      "mtimeNs": "1792438684830592266"
+    }
+  },
+  "checks": [
+    {
+      "theme": "light",
+      "scenario": "genuine source delayed then normal silent playback",
+      "held": {
+        "id": 0,
+        "rowIndex": 1,
+        "kind": "short-delay",
+        "waiting": true
+      },
+      "loading": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": true
+      },
+      "normal": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": true,
+        "position": 0,
+        "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a",
+        "seekDisabled": false,
+        "max": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "playing": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": false,
+        "position": 0.140622,
+        "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a",
+        "seekDisabled": false,
+        "max": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "releasedId": "bd49a077-36d6-4b8c-bd27-6d9fb6c6f5e9",
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "trusted native Infinity normalizes display/seek",
+      "state": {
+        "duration": "Infinity",
+        "readyState": 4,
+        "paused": true,
+        "position": 0,
+        "src": "willyou-media://local/51539416d09af749850d9353fe7200026b6f7e9c16cfe9eb6718dc6a23cb893e",
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": false
+      },
+      "releasedId": "b3e2ca60-4c93-4ba4-873a-9f7d9dfb07d1",
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "real NaN decoder error and explicit failed retry terminal",
+      "failed": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": "无法播放此媒体，文件格式或编码不受支持重新读取",
+        "loading": false
+      },
+      "retried": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": "无法播放此媒体，文件格式或编码不受支持重新读取",
+        "loading": false
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "actual corrected source reopens finite and enables seeking",
+      "state": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": true,
+        "position": 0,
+        "src": "willyou-media://local/210a2a3a0cbab9cbe5fafbe6275b138aea9a64227d3f732baf934b9b67604a37",
+        "seekDisabled": false,
+        "max": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "explicitWriterHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "restoredSourceHash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "real15s deadline releases source, late original success cannot revive closed player",
+      "deadline": {
+        "id": 1,
+        "rowIndex": 22,
+        "kind": "deadline",
+        "waiting": true
+      },
+      "state": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": "媒体加载超时，请重新读取重新读取",
+        "loading": false
+      },
+      "releasedId": "b23d5889-7b61-4103-b207-b762854591e1",
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "genuine source delayed then normal silent playback",
+      "held": {
+        "id": 2,
+        "rowIndex": 30,
+        "kind": "short-delay",
+        "waiting": true
+      },
+      "loading": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": true
+      },
+      "normal": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": true,
+        "position": 0,
+        "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592",
+        "seekDisabled": false,
+        "max": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "playing": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": false,
+        "position": 0.13144,
+        "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592",
+        "seekDisabled": false,
+        "max": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "releasedId": "3ef76668-2c26-4ce9-ab84-4dfcc2b8042e",
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "trusted native Infinity normalizes display/seek",
+      "state": {
+        "duration": "Infinity",
+        "readyState": 4,
+        "paused": true,
+        "position": 0,
+        "src": "willyou-media://local/c7de664264e926fe496f1f2c24d1e8679ed0bf18cbe42462aa5aa6a69d6f5968",
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": false
+      },
+      "releasedId": "e5fabc6b-651a-45cf-8e64-f5dfbb3af7db",
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "real NaN decoder error and explicit failed retry terminal",
+      "failed": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": "无法播放此媒体，文件格式或编码不受支持重新读取",
+        "loading": false
+      },
+      "retried": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": "无法播放此媒体，文件格式或编码不受支持重新读取",
+        "loading": false
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "actual corrected source reopens finite and enables seeking",
+      "state": {
+        "duration": "3",
+        "readyState": 4,
+        "paused": true,
+        "position": 0,
+        "src": "willyou-media://local/4e8036961597fa646eb1c8c79cfdd894d02cf47ee0895ed4e486adb6bbfeefa2",
+        "seekDisabled": false,
+        "max": "3",
+        "time": "0:00 / 0:03",
+        "error": null,
+        "loading": false
+      },
+      "explicitWriterHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "restoredSourceHash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "real15s deadline releases source, late original success cannot revive closed player",
+      "deadline": {
+        "id": 3,
+        "rowIndex": 51,
+        "kind": "deadline",
+        "waiting": true
+      },
+      "state": {
+        "duration": "NaN",
+        "readyState": 0,
+        "paused": true,
+        "position": 0,
+        "src": null,
+        "seekDisabled": true,
+        "max": "0",
+        "time": "0:00 / 0:00",
+        "error": "媒体加载超时，请重新读取重新读取",
+        "loading": false
+      },
+      "releasedId": "931e205e-4c50-40a6-b3de-87a2a02b23b6",
+      "pass": true
+    }
+  ],
+  "status": "passed selected functional checks; T19 not complete without native0 branch",
+  "boundary": "Actual normal r97 native source/decoder. Passive trusted native metadata events; hold original successfulopenMedia result after real IO for loading/timeout, release exactsame reply, no false IO or DOM/store/duration values. Native Infinity from valid zero-data WAV header, NaN from deliberately broken WAV; no native0 claim. Independent bad.wav correction/restoration writes explicitly separated from App IO. Silent generated bytes only, no user media/model/clipboard/externalapp.",
+  "pid": 45296,
+  "rpc": {
+    "rows": [
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "good.wav"
+          }
+        ],
+        "inputHash": "00397bb41da13645ada82461abe87bb0485de7946e36fd0dde992d93dca77fd2",
+        "at": 1792438686835,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "8ded652d-646b-445d-bdfd-c9444be7a173",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "251afaca80bd3a97a329748e505000c55480ce14899c6729905d9c4f635ce434",
+        "currentFrame": true,
+        "after": "251afaca80bd3a97a329748e505000c55480ce14899c6729905d9c4f635ce434",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "bd49a077-36d6-4b8c-bd27-6d9fb6c6f5e9",
+            "ref": {
+              "id": "8ded652d-646b-445d-bdfd-c9444be7a173",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          }
+        ],
+        "inputHash": "5a558009719ae5ffd3e948ea37e1b097ebfe2c612c0f65510ab043bba6f50a9a",
+        "at": 1792438686859,
+        "output": {
+          "id": "bd49a077-36d6-4b8c-bd27-6d9fb6c6f5e9",
+          "transport": "protocol",
+          "url": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a",
+          "mime": "audio/wav",
+          "size": 288078,
+          "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+        },
+        "before": "e3c835df141edbc3ac65123fbb70dbe1de5599055eb8dc88157fecc8d79536e9",
+        "originalAt": 1792438686873,
+        "after": "e3c835df141edbc3ac65123fbb70dbe1de5599055eb8dc88157fecc8d79536e9",
+        "deliveredAt": 1792438686954,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "8ded652d-646b-445d-bdfd-c9444be7a173",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "1f6857b27225261a72cb75310c861390dc290549cb3972aa201d0fe948a7226c",
+        "at": 1792438686866,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "8ded652d-646b-445d-bdfd-c9444be7a173",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "251afaca80bd3a97a329748e505000c55480ce14899c6729905d9c4f635ce434",
+        "currentFrame": true,
+        "after": "251afaca80bd3a97a329748e505000c55480ce14899c6729905d9c4f635ce434",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "bd49a077-36d6-4b8c-bd27-6d9fb6c6f5e9"
+        ],
+        "inputHash": "d718d68f98b8ecc1b681ede387d6f92a98fcd9ba59b52181a72c5fb02ee6c1d9",
+        "at": 1792438689680,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438689681,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438689681,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "bd49a077-36d6-4b8c-bd27-6d9fb6c6f5e9",
+          0,
+          16
+        ],
+        "inputHash": "8583a6d419797598ff94602930eb7064e32d06f7346b9f9de5166301769455fe",
+        "at": 1792438689694,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "infinite.wav"
+          }
+        ],
+        "inputHash": "fafb5d33f781b89fb18b0e18afe0164c641c8e13b376898c59449588f34c9d95",
+        "at": 1792438689808,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "e48c3f7d-99b6-414a-83e1-a2d141ad97de",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180227",
+          "name": "infinite.wav",
+          "relativePath": "infinite.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/infinite.wav",
+          "revision": {
+            "size": 44,
+            "inode": "51180227",
+            "device": "16777232",
+            "changedNs": "1792438684828727934",
+            "modifiedNs": "1792438684828727934",
+            "hash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "d9938de1524e0f16e3ba20e447abf087bec2043e8c50c5e8ba91d54a939c01ec",
+        "currentFrame": true,
+        "after": "d9938de1524e0f16e3ba20e447abf087bec2043e8c50c5e8ba91d54a939c01ec",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "b3e2ca60-4c93-4ba4-873a-9f7d9dfb07d1",
+            "ref": {
+              "id": "e48c3f7d-99b6-414a-83e1-a2d141ad97de",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+          }
+        ],
+        "inputHash": "d6708b4fee4aeed1b91962a36fa85f31a3e4df718d46e4fa713835919c06aa8e",
+        "at": 1792438689826,
+        "output": {
+          "id": "b3e2ca60-4c93-4ba4-873a-9f7d9dfb07d1",
+          "transport": "protocol",
+          "url": "willyou-media://local/51539416d09af749850d9353fe7200026b6f7e9c16cfe9eb6718dc6a23cb893e",
+          "mime": "audio/wav",
+          "size": 44,
+          "hash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+        },
+        "before": "8c3bf1f22e0681e97fb8866b0da6747e34e293bec31f542e0d696b83cff9e653",
+        "originalAt": 1792438689842,
+        "after": "8c3bf1f22e0681e97fb8866b0da6747e34e293bec31f542e0d696b83cff9e653",
+        "deliveredAt": 1792438689842,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "e48c3f7d-99b6-414a-83e1-a2d141ad97de",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "f58d2b6810f46d74961bc22704c30c92c4d12c4aab58ccc94efc44e7ae263c68",
+        "at": 1792438689827,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "e48c3f7d-99b6-414a-83e1-a2d141ad97de",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180227",
+          "name": "infinite.wav",
+          "relativePath": "infinite.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/infinite.wav",
+          "revision": {
+            "size": 44,
+            "inode": "51180227",
+            "device": "16777232",
+            "changedNs": "1792438684828727934",
+            "modifiedNs": "1792438684828727934",
+            "hash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "d9938de1524e0f16e3ba20e447abf087bec2043e8c50c5e8ba91d54a939c01ec",
+        "currentFrame": true,
+        "after": "d9938de1524e0f16e3ba20e447abf087bec2043e8c50c5e8ba91d54a939c01ec",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "b3e2ca60-4c93-4ba4-873a-9f7d9dfb07d1"
+        ],
+        "inputHash": "7b6a6feacc1c509a25d55f7a57ad889a9dcfa4d23544303279878ce352a0e07a",
+        "at": 1792438689958,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438689958,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438689958,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "b3e2ca60-4c93-4ba4-873a-9f7d9dfb07d1",
+          0,
+          16
+        ],
+        "inputHash": "ebbe629c9d5ce933ba8dc77145a7dcd9159f1b2fbf037a02630129f4c3975051",
+        "at": 1792438689966,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "bad.wav"
+          }
+        ],
+        "inputHash": "b55757a3cd2e3a22a21002cad644750daf66d20e55a8b7012c35a59117367635",
+        "at": 1792438690083,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "04e0d74d-68a0-419c-b2ee-d16b58911907",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 50,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438684830324683",
+            "modifiedNs": "1792438684830324683",
+            "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "0968fd3984cb4f56b486054a5200b285a1de0516809e6c42a54521b7668c2d07",
+        "currentFrame": true,
+        "after": "0968fd3984cb4f56b486054a5200b285a1de0516809e6c42a54521b7668c2d07",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "93e044a0-3ffb-4cc1-ba88-70fc12439e64",
+            "ref": {
+              "id": "04e0d74d-68a0-419c-b2ee-d16b58911907",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          }
+        ],
+        "inputHash": "f610463407451101f0adfcf50f39948fdc240e215407e7263caa6cd4928ffc5b",
+        "at": 1792438690099,
+        "output": {
+          "id": "93e044a0-3ffb-4cc1-ba88-70fc12439e64",
+          "transport": "protocol",
+          "url": "willyou-media://local/4a2deeebe1afaa519eae4c2ae89f4303d8aae3bca9f06fa6e4b9bfd3964ec236",
+          "mime": "audio/wav",
+          "size": 50,
+          "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+        },
+        "before": "2958c244d9d1d2a686b7cdbfcf3d02fdce64c9e616d003dc48d57492ab97bc33",
+        "originalAt": 1792438690111,
+        "after": "2958c244d9d1d2a686b7cdbfcf3d02fdce64c9e616d003dc48d57492ab97bc33",
+        "deliveredAt": 1792438690111,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "04e0d74d-68a0-419c-b2ee-d16b58911907",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "4036aa5bd9a9a60eb3b8a8baf47790ef0aed14a2eb87967f3a5ce06a72f7bd3a",
+        "at": 1792438690102,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "04e0d74d-68a0-419c-b2ee-d16b58911907",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 50,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438684830324683",
+            "modifiedNs": "1792438684830324683",
+            "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "0968fd3984cb4f56b486054a5200b285a1de0516809e6c42a54521b7668c2d07",
+        "currentFrame": true,
+        "after": "0968fd3984cb4f56b486054a5200b285a1de0516809e6c42a54521b7668c2d07",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "93e044a0-3ffb-4cc1-ba88-70fc12439e64"
+        ],
+        "inputHash": "d2d16ebdf5c84fd5ec693a119b089acbf30a79a26666d0c3b35f3815c524a0a3",
+        "at": 1792438690153,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438690153,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438690153,
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "107f8e64-b25e-4a76-8d69-deaf1d1533f9",
+            "ref": {
+              "id": "04e0d74d-68a0-419c-b2ee-d16b58911907",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          }
+        ],
+        "inputHash": "349ae7900934852e7d57065fcdcb3b1678eb0d02215e005ab8f50c4e0c057c1a",
+        "at": 1792438690206,
+        "output": {
+          "id": "107f8e64-b25e-4a76-8d69-deaf1d1533f9",
+          "transport": "protocol",
+          "url": "willyou-media://local/332dbd777552acb4679e34ee3f93c55b3cec7a3261756445f625663eae579b90",
+          "mime": "audio/wav",
+          "size": 50,
+          "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+        },
+        "before": "dff010270cbeae15b6001631c4303f17c6245445d67c070c86a8faf75b9cbf51",
+        "originalAt": 1792438690214,
+        "after": "dff010270cbeae15b6001631c4303f17c6245445d67c070c86a8faf75b9cbf51",
+        "deliveredAt": 1792438690214,
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "107f8e64-b25e-4a76-8d69-deaf1d1533f9"
+        ],
+        "inputHash": "aabd3f22b80ad76fca81fa1b6d7b605b4e3a7b362f34510e2090a5626a646e40",
+        "at": 1792438690230,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438690230,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438690230,
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "bad.wav"
+          }
+        ],
+        "inputHash": "b55757a3cd2e3a22a21002cad644750daf66d20e55a8b7012c35a59117367635",
+        "at": 1792438690399,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "d6024d30-2e26-40a1-83f1-c379cbdd04de",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438690286265048",
+            "modifiedNs": "1792438690286265048",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "ebdb505f089a6fa3556962b30d6a8871d600ba9a5ba1c94c5336d5d24d3782d7",
+        "currentFrame": true,
+        "after": "ebdb505f089a6fa3556962b30d6a8871d600ba9a5ba1c94c5336d5d24d3782d7",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "e6f6b60d-643e-44d0-aaad-5b4238d4dc5c",
+            "ref": {
+              "id": "d6024d30-2e26-40a1-83f1-c379cbdd04de",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          }
+        ],
+        "inputHash": "8b181408d8d21cbff0a5a9da3022391a86bd55634749073c803a879e5c4da085",
+        "at": 1792438690413,
+        "output": {
+          "id": "e6f6b60d-643e-44d0-aaad-5b4238d4dc5c",
+          "transport": "protocol",
+          "url": "willyou-media://local/210a2a3a0cbab9cbe5fafbe6275b138aea9a64227d3f732baf934b9b67604a37",
+          "mime": "audio/wav",
+          "size": 288078,
+          "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+        },
+        "before": "4d29e45e5b06ac16ce591b9a1eb2adab8cec88baa9b2cbe95d6ecd6cb9a67e56",
+        "originalAt": 1792438690423,
+        "after": "4d29e45e5b06ac16ce591b9a1eb2adab8cec88baa9b2cbe95d6ecd6cb9a67e56",
+        "deliveredAt": 1792438690423,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "d6024d30-2e26-40a1-83f1-c379cbdd04de",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "cdece7206a44b67098a3f4dc68a58ca425ae26d94265d471ce48ec59da67862d",
+        "at": 1792438690413,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "d6024d30-2e26-40a1-83f1-c379cbdd04de",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438690286265048",
+            "modifiedNs": "1792438690286265048",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "ebdb505f089a6fa3556962b30d6a8871d600ba9a5ba1c94c5336d5d24d3782d7",
+        "currentFrame": true,
+        "after": "ebdb505f089a6fa3556962b30d6a8871d600ba9a5ba1c94c5336d5d24d3782d7",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "e6f6b60d-643e-44d0-aaad-5b4238d4dc5c"
+        ],
+        "inputHash": "85c8fb2ee9a87164ebeaf4b69b9d2432ad366d4ce5dbd3e74f0b1330bbf593b2",
+        "at": 1792438690532,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438690532,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438690532,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "e6f6b60d-643e-44d0-aaad-5b4238d4dc5c",
+          0,
+          16
+        ],
+        "inputHash": "ce7a930bd92d172df194c09eb2dd2b83853bf6a57a315ec2066a01144fdf1d51",
+        "at": 1792438690538,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "good.wav"
+          }
+        ],
+        "inputHash": "00397bb41da13645ada82461abe87bb0485de7946e36fd0dde992d93dca77fd2",
+        "at": 1792438690648,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "09e6dc27-559b-4f08-bdc8-b748c58c5a00",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "ba721f1856d1e709c9e992d614498095107295541f43b1db935b1999abeb14a2",
+        "currentFrame": true,
+        "after": "ba721f1856d1e709c9e992d614498095107295541f43b1db935b1999abeb14a2",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "b23d5889-7b61-4103-b207-b762854591e1",
+            "ref": {
+              "id": "09e6dc27-559b-4f08-bdc8-b748c58c5a00",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          }
+        ],
+        "inputHash": "5524e7451b76589bf3467881313135995cf842aaa3f4ba7c08b79b5012cc26ba",
+        "at": 1792438690660,
+        "output": {
+          "id": "b23d5889-7b61-4103-b207-b762854591e1",
+          "transport": "protocol",
+          "url": "willyou-media://local/7fdf90baaf89a2c43ffcf916dde632415fad89ccf70b1c5697f41bebf85b74e0",
+          "mime": "audio/wav",
+          "size": 288078,
+          "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+        },
+        "before": "f9dca73057712083d2682d959142b707ebe7452c3be050630edc59f8a0f64ee5",
+        "originalAt": 1792438690671,
+        "after": "f9dca73057712083d2682d959142b707ebe7452c3be050630edc59f8a0f64ee5",
+        "deliveredAt": 1792438705967,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "09e6dc27-559b-4f08-bdc8-b748c58c5a00",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "4f3fc39e8792e0fb40a401d5423b844b2b56ef88dca867b8050aa467211aad4b",
+        "at": 1792438690661,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "09e6dc27-559b-4f08-bdc8-b748c58c5a00",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "ba721f1856d1e709c9e992d614498095107295541f43b1db935b1999abeb14a2",
+        "currentFrame": true,
+        "after": "ba721f1856d1e709c9e992d614498095107295541f43b1db935b1999abeb14a2",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "b23d5889-7b61-4103-b207-b762854591e1"
+        ],
+        "inputHash": "f76a3df2d44d1f2baa2468a2704c8a203f98c08e38d8fbf20a377fd9ebb1e0e5",
+        "at": 1792438705659,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438705659,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438705659,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "b23d5889-7b61-4103-b207-b762854591e1",
+          0,
+          16
+        ],
+        "inputHash": "344a532eb1e58aa563174171014b0d56e1fe4c35df07bafc353241cf8ca3a949",
+        "at": 1792438705723,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "other.txt"
+          }
+        ],
+        "inputHash": "5efcd92c6dd14e1ea53aaa5f39a277f7b29e72ab8aaa6bd105ceb7f386640a31",
+        "at": 1792438705858,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "c7b18632-650d-4f25-8a94-ee6c8b9747c0",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180229",
+          "name": "other.txt",
+          "relativePath": "other.txt",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/other.txt",
+          "revision": {
+            "size": 23,
+            "inode": "51180229",
+            "device": "16777232",
+            "changedNs": "1792438684830592266",
+            "modifiedNs": "1792438684830592266",
+            "hash": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "d70c81541eb4ff4e84c67823e23046efdcfcdaf634285f3d202b653f21c6f10a",
+        "currentFrame": true,
+        "after": "d70c81541eb4ff4e84c67823e23046efdcfcdaf634285f3d202b653f21c6f10a",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "c7b18632-650d-4f25-8a94-ee6c8b9747c0",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "d30bba6b53ed6d67b5e44c304b3cc1863fc1093f5d84a55a0ce3cb2fff5a4499",
+        "at": 1792438705877,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "c7b18632-650d-4f25-8a94-ee6c8b9747c0",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:51180229",
+            "name": "other.txt",
+            "relativePath": "other.txt",
+            "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/other.txt",
+            "revision": {
+              "size": 23,
+              "inode": "51180229",
+              "device": "16777232",
+              "changedNs": "1792438684830592266",
+              "modifiedNs": "1792438684830592266",
+              "hash": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "T1RIRVIgU09VUkNFIFVOQ0hBTkdFRAo="
+        },
+        "before": "ee208632d47e7bfe2d6fac94eac2b91d5ddd92583b31f0831fcf5fc351f9ddd5",
+        "currentFrame": true,
+        "after": "ee208632d47e7bfe2d6fac94eac2b91d5ddd92583b31f0831fcf5fc351f9ddd5",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "c7b18632-650d-4f25-8a94-ee6c8b9747c0",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "d30bba6b53ed6d67b5e44c304b3cc1863fc1093f5d84a55a0ce3cb2fff5a4499",
+        "at": 1792438705893,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "c7b18632-650d-4f25-8a94-ee6c8b9747c0",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:51180229",
+            "name": "other.txt",
+            "relativePath": "other.txt",
+            "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/other.txt",
+            "revision": {
+              "size": 23,
+              "inode": "51180229",
+              "device": "16777232",
+              "changedNs": "1792438684830592266",
+              "modifiedNs": "1792438684830592266",
+              "hash": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "T1RIRVIgU09VUkNFIFVOQ0hBTkdFRAo="
+        },
+        "before": "ee208632d47e7bfe2d6fac94eac2b91d5ddd92583b31f0831fcf5fc351f9ddd5",
+        "currentFrame": true,
+        "after": "ee208632d47e7bfe2d6fac94eac2b91d5ddd92583b31f0831fcf5fc351f9ddd5",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "good.wav"
+          }
+        ],
+        "inputHash": "00397bb41da13645ada82461abe87bb0485de7946e36fd0dde992d93dca77fd2",
+        "at": 1792438706123,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "5432b135-2024-458c-ac10-1312c6e4b35f",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "06f730d7dbed82b0b246bb8d7ba864faa7f66156a070ef85065c507dba183e54",
+        "currentFrame": true,
+        "after": "06f730d7dbed82b0b246bb8d7ba864faa7f66156a070ef85065c507dba183e54",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "3ef76668-2c26-4ce9-ab84-4dfcc2b8042e",
+            "ref": {
+              "id": "5432b135-2024-458c-ac10-1312c6e4b35f",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          }
+        ],
+        "inputHash": "8d401ab1adb05ed00611978df76b168856bd6b1e17f6914114b466b946f2a9df",
+        "at": 1792438706137,
+        "output": {
+          "id": "3ef76668-2c26-4ce9-ab84-4dfcc2b8042e",
+          "transport": "protocol",
+          "url": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592",
+          "mime": "audio/wav",
+          "size": 288078,
+          "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+        },
+        "before": "840d96260506239bfb3788388f4b6eeb9881113b9efb24f5bebb6adfbcb2a99e",
+        "originalAt": 1792438706150,
+        "after": "840d96260506239bfb3788388f4b6eeb9881113b9efb24f5bebb6adfbcb2a99e",
+        "deliveredAt": 1792438706232,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "5432b135-2024-458c-ac10-1312c6e4b35f",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "5911ba31890fb9351ff8586600a632247be947e3d3c67a103395f5e240284c13",
+        "at": 1792438706140,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "5432b135-2024-458c-ac10-1312c6e4b35f",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "06f730d7dbed82b0b246bb8d7ba864faa7f66156a070ef85065c507dba183e54",
+        "currentFrame": true,
+        "after": "06f730d7dbed82b0b246bb8d7ba864faa7f66156a070ef85065c507dba183e54",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "3ef76668-2c26-4ce9-ab84-4dfcc2b8042e"
+        ],
+        "inputHash": "f7f451bdbdf208a50e6591e17d13b45e872c7240b9638e3b1416c092bf7e87dc",
+        "at": 1792438706586,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438706586,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438706586,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "3ef76668-2c26-4ce9-ab84-4dfcc2b8042e",
+          0,
+          16
+        ],
+        "inputHash": "ebd3d7693d858c9fddaacd30f9fc0041eca6eeeba7450a260121b7f880cdb65b",
+        "at": 1792438706595,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "infinite.wav"
+          }
+        ],
+        "inputHash": "fafb5d33f781b89fb18b0e18afe0164c641c8e13b376898c59449588f34c9d95",
+        "at": 1792438706716,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "38e239d1-34c5-4e02-b81b-7d1591aa8d68",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180227",
+          "name": "infinite.wav",
+          "relativePath": "infinite.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/infinite.wav",
+          "revision": {
+            "size": 44,
+            "inode": "51180227",
+            "device": "16777232",
+            "changedNs": "1792438684828727934",
+            "modifiedNs": "1792438684828727934",
+            "hash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "32a1f4f1601a32076cb2bf1ab9fe112fa63ab59e9ef3d1552cabc79bc065db20",
+        "currentFrame": true,
+        "after": "32a1f4f1601a32076cb2bf1ab9fe112fa63ab59e9ef3d1552cabc79bc065db20",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "e5fabc6b-651a-45cf-8e64-f5dfbb3af7db",
+            "ref": {
+              "id": "38e239d1-34c5-4e02-b81b-7d1591aa8d68",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+          }
+        ],
+        "inputHash": "84160a6d199da07145ac296a9ffa6a861688267b9a66dda542eedec5c21f7b51",
+        "at": 1792438706732,
+        "output": {
+          "id": "e5fabc6b-651a-45cf-8e64-f5dfbb3af7db",
+          "transport": "protocol",
+          "url": "willyou-media://local/c7de664264e926fe496f1f2c24d1e8679ed0bf18cbe42462aa5aa6a69d6f5968",
+          "mime": "audio/wav",
+          "size": 44,
+          "hash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+        },
+        "before": "796ac73ed08e2ca6ef960595752b78509a4e5f3c760bd20370dbc2592909dd10",
+        "originalAt": 1792438706749,
+        "after": "796ac73ed08e2ca6ef960595752b78509a4e5f3c760bd20370dbc2592909dd10",
+        "deliveredAt": 1792438706749,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "38e239d1-34c5-4e02-b81b-7d1591aa8d68",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "b1e6d779cf9a81028ef8e16f64e21116920071443f6c5405c8cbf50db6b72158",
+        "at": 1792438706732,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "38e239d1-34c5-4e02-b81b-7d1591aa8d68",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180227",
+          "name": "infinite.wav",
+          "relativePath": "infinite.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/infinite.wav",
+          "revision": {
+            "size": 44,
+            "inode": "51180227",
+            "device": "16777232",
+            "changedNs": "1792438684828727934",
+            "modifiedNs": "1792438684828727934",
+            "hash": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "32a1f4f1601a32076cb2bf1ab9fe112fa63ab59e9ef3d1552cabc79bc065db20",
+        "currentFrame": true,
+        "after": "32a1f4f1601a32076cb2bf1ab9fe112fa63ab59e9ef3d1552cabc79bc065db20",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "e5fabc6b-651a-45cf-8e64-f5dfbb3af7db"
+        ],
+        "inputHash": "74ab623ff0d10bf88c272eaf707367c746971ed2df51331c15eb265c38374352",
+        "at": 1792438706848,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438706848,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438706848,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "e5fabc6b-651a-45cf-8e64-f5dfbb3af7db",
+          0,
+          16
+        ],
+        "inputHash": "6cf2c544f43f7672f63ad7c57c3127408e3058c6f62fd34a16ffa59048046157",
+        "at": 1792438706854,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "bad.wav"
+          }
+        ],
+        "inputHash": "b55757a3cd2e3a22a21002cad644750daf66d20e55a8b7012c35a59117367635",
+        "at": 1792438706965,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "01eb5b1f-3daa-4461-9338-60d0b937f4e4",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 50,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438690539725204",
+            "modifiedNs": "1792438690539725204",
+            "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "d8088367364e16e963514b9c82d8f1dd709286104ec1b723209a07f38db3f8c7",
+        "currentFrame": true,
+        "after": "d8088367364e16e963514b9c82d8f1dd709286104ec1b723209a07f38db3f8c7",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "2b59136a-e5db-4b21-8930-2c39271dfc16",
+            "ref": {
+              "id": "01eb5b1f-3daa-4461-9338-60d0b937f4e4",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          }
+        ],
+        "inputHash": "0646e40545c7e6d5e09fa7a9bfe7ce773cdb9755aececb61e9f8e4d8e4947786",
+        "at": 1792438706980,
+        "output": {
+          "id": "2b59136a-e5db-4b21-8930-2c39271dfc16",
+          "transport": "protocol",
+          "url": "willyou-media://local/383ffa59ae36839ebdd4d9228271c3c7a7010f9586961bd619758e31a0acb865",
+          "mime": "audio/wav",
+          "size": 50,
+          "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+        },
+        "before": "85a7608ce589ad8be2c92d950f4b5f785957017f293c579e0089291ed1d5a551",
+        "originalAt": 1792438706996,
+        "after": "85a7608ce589ad8be2c92d950f4b5f785957017f293c579e0089291ed1d5a551",
+        "deliveredAt": 1792438706996,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "01eb5b1f-3daa-4461-9338-60d0b937f4e4",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "875f73a5d9774fd328f72f4a0f8e14370d6e1554e468f598c975a401baca99c8",
+        "at": 1792438706981,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "01eb5b1f-3daa-4461-9338-60d0b937f4e4",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 50,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438690539725204",
+            "modifiedNs": "1792438690539725204",
+            "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "d8088367364e16e963514b9c82d8f1dd709286104ec1b723209a07f38db3f8c7",
+        "currentFrame": true,
+        "after": "d8088367364e16e963514b9c82d8f1dd709286104ec1b723209a07f38db3f8c7",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "2b59136a-e5db-4b21-8930-2c39271dfc16"
+        ],
+        "inputHash": "1e0ad2bb5390c2462db8ac9c2c287c00ad63b7346f2f61d8b3462c4c229280da",
+        "at": 1792438707019,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438707019,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438707019,
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "30a4fbbe-e7e1-4ea9-ad31-10b0714fcdbf",
+            "ref": {
+              "id": "01eb5b1f-3daa-4461-9338-60d0b937f4e4",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+          }
+        ],
+        "inputHash": "fc33680408547fd78a88420e43e88f8e069859f9e6af4cd7e558880a31ff98a7",
+        "at": 1792438707081,
+        "output": {
+          "id": "30a4fbbe-e7e1-4ea9-ad31-10b0714fcdbf",
+          "transport": "protocol",
+          "url": "willyou-media://local/a8591bb3cd5286eb5cafb7a17abfbc934c37c2b13c571772e05f110a66ebbf53",
+          "mime": "audio/wav",
+          "size": 50,
+          "hash": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+        },
+        "before": "cea971c8ea2b803576b16f216d7f7f4f6926d572d8ef9cef96fe39296bc13c56",
+        "originalAt": 1792438707088,
+        "after": "cea971c8ea2b803576b16f216d7f7f4f6926d572d8ef9cef96fe39296bc13c56",
+        "deliveredAt": 1792438707088,
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "30a4fbbe-e7e1-4ea9-ad31-10b0714fcdbf"
+        ],
+        "inputHash": "a0539230f4a5d294bddb626bd5e24df6e22c50f851fb120ee5d3f926c8032dde",
+        "at": 1792438707104,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438707104,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438707105,
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "bad.wav"
+          }
+        ],
+        "inputHash": "b55757a3cd2e3a22a21002cad644750daf66d20e55a8b7012c35a59117367635",
+        "at": 1792438707274,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "239d25f2-46f6-45db-a293-531b7ea9a251",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438707160719163",
+            "modifiedNs": "1792438707160719163",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "176af375f57c955e0a93545820e5ee893fbbb9d4aab03edc025473c3ae34c7ca",
+        "currentFrame": true,
+        "after": "176af375f57c955e0a93545820e5ee893fbbb9d4aab03edc025473c3ae34c7ca",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "e878003b-7ba2-4b00-b581-e00773ffde6f",
+            "ref": {
+              "id": "239d25f2-46f6-45db-a293-531b7ea9a251",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          }
+        ],
+        "inputHash": "8d94ce5bc7e2f789f585460654c1b9e95ef7e6ef63c768e4d81a09a611e2ce47",
+        "at": 1792438707288,
+        "output": {
+          "id": "e878003b-7ba2-4b00-b581-e00773ffde6f",
+          "transport": "protocol",
+          "url": "willyou-media://local/4e8036961597fa646eb1c8c79cfdd894d02cf47ee0895ed4e486adb6bbfeefa2",
+          "mime": "audio/wav",
+          "size": 288078,
+          "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+        },
+        "before": "12faef917fb533ab79bce563de197da33a111a914dbb8c2d56bede22e6195955",
+        "originalAt": 1792438707305,
+        "after": "12faef917fb533ab79bce563de197da33a111a914dbb8c2d56bede22e6195955",
+        "deliveredAt": 1792438707305,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "239d25f2-46f6-45db-a293-531b7ea9a251",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "31aa7bf22b7e95d67ce24b57c7d8d8868d17278a9a3c4fc9b5ca588cc3d47c82",
+        "at": 1792438707288,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "239d25f2-46f6-45db-a293-531b7ea9a251",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180228",
+          "name": "bad.wav",
+          "relativePath": "bad.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/bad.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180228",
+            "device": "16777232",
+            "changedNs": "1792438707160719163",
+            "modifiedNs": "1792438707160719163",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "176af375f57c955e0a93545820e5ee893fbbb9d4aab03edc025473c3ae34c7ca",
+        "currentFrame": true,
+        "after": "176af375f57c955e0a93545820e5ee893fbbb9d4aab03edc025473c3ae34c7ca",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "e878003b-7ba2-4b00-b581-e00773ffde6f"
+        ],
+        "inputHash": "8be7ee60ed3b92355490477df28356c9669ef16b913f7b72b22484f2b6fa0113",
+        "at": 1792438707391,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438707391,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438707391,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "e878003b-7ba2-4b00-b581-e00773ffde6f",
+          0,
+          16
+        ],
+        "inputHash": "774c2b39474d14c730ca748ec1a7842ba821d5a94cca095a5e32519e924ab35c",
+        "at": 1792438707398,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "good.wav"
+          }
+        ],
+        "inputHash": "00397bb41da13645ada82461abe87bb0485de7946e36fd0dde992d93dca77fd2",
+        "at": 1792438707514,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "a47579ee-eabd-47f4-9b9b-a2089c57ad3b",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "16c14f1040e6703bfe9df597748261d4f61d40a9d6aa500daaa546a11af32d7e",
+        "currentFrame": true,
+        "after": "16c14f1040e6703bfe9df597748261d4f61d40a9d6aa500daaa546a11af32d7e",
+        "delivered": true
+      },
+      {
+        "method": "openMedia",
+        "args": [
+          {
+            "id": "931e205e-4c50-40a6-b3de-87a2a02b23b6",
+            "ref": {
+              "id": "a47579ee-eabd-47f4-9b9b-a2089c57ad3b",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "baseHash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          }
+        ],
+        "inputHash": "bc97bac8bec855b00009962abb32bbaa08821f666633df4bae226e85c1d6d1af",
+        "at": 1792438707528,
+        "output": {
+          "id": "931e205e-4c50-40a6-b3de-87a2a02b23b6",
+          "transport": "protocol",
+          "url": "willyou-media://local/bc4a2024fac476ef000b356bcaa7a32833adb560df7343f3b5341f891628f002",
+          "mime": "audio/wav",
+          "size": 288078,
+          "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+        },
+        "before": "fe1fb6b24e12248b9cd6cdf02f084608c4319a3befd5e5eeddb22b2a59cc5206",
+        "originalAt": 1792438707544,
+        "after": "fe1fb6b24e12248b9cd6cdf02f084608c4319a3befd5e5eeddb22b2a59cc5206",
+        "deliveredAt": 1792438722837,
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "a47579ee-eabd-47f4-9b9b-a2089c57ad3b",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "19b784c8706d1dca85b8b1f8c0f27ce7ed99811b38972b4fde6c09b5184bc990",
+        "at": 1792438707529,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "a47579ee-eabd-47f4-9b9b-a2089c57ad3b",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180226",
+          "name": "good.wav",
+          "relativePath": "good.wav",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/good.wav",
+          "revision": {
+            "size": 288078,
+            "inode": "51180226",
+            "device": "16777232",
+            "changedNs": "1792438684826813893",
+            "modifiedNs": "1792438684826813893",
+            "hash": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+          },
+          "writable": true,
+          "content": {
+            "kind": "audio",
+            "mime": "audio/wav",
+            "format": "wav",
+            "basis": "extension"
+          }
+        },
+        "before": "16c14f1040e6703bfe9df597748261d4f61d40a9d6aa500daaa546a11af32d7e",
+        "currentFrame": true,
+        "after": "16c14f1040e6703bfe9df597748261d4f61d40a9d6aa500daaa546a11af32d7e",
+        "delivered": true
+      },
+      {
+        "method": "releaseMedia",
+        "args": [
+          "931e205e-4c50-40a6-b3de-87a2a02b23b6"
+        ],
+        "inputHash": "12ce3955e851d1de907c06ffe95e0efc481d62b2af1756ee54ce8b69c194e3c2",
+        "at": 1792438722527,
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalAt": 1792438722528,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "deliveredAt": 1792438722528,
+        "delivered": true
+      },
+      {
+        "method": "mediaChunk",
+        "args": [
+          "931e205e-4c50-40a6-b3de-87a2a02b23b6",
+          0,
+          16
+        ],
+        "inputHash": "04466e1c323689359ee5754f06b1f7151a0407329d6ea146bf5c85e4b0eff867",
+        "at": 1792438722598,
+        "error": "FileError: [UNTRUSTED] 媒体引用已失效或不属于当前窗口"
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1,
+            "relativePath": "other.txt"
+          }
+        ],
+        "inputHash": "5efcd92c6dd14e1ea53aaa5f39a277f7b29e72ab8aaa6bd105ceb7f386640a31",
+        "at": 1792438722727,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "b3af0e2e-6dc6-4a4c-97cc-8bd475dc024b",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:51180229",
+          "name": "other.txt",
+          "relativePath": "other.txt",
+          "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/other.txt",
+          "revision": {
+            "size": 23,
+            "inode": "51180229",
+            "device": "16777232",
+            "changedNs": "1792438684830592266",
+            "modifiedNs": "1792438684830592266",
+            "hash": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "dc319836c1b447441de1c16cc3edb42c532dbdc86932716ea438904d92f249e8",
+        "currentFrame": true,
+        "after": "dc319836c1b447441de1c16cc3edb42c532dbdc86932716ea438904d92f249e8",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "b3af0e2e-6dc6-4a4c-97cc-8bd475dc024b",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "167690fd7f119160ec43b326dda98eb7d35ca54a3886a8cfebb5db70c6834188",
+        "at": 1792438722739,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "b3af0e2e-6dc6-4a4c-97cc-8bd475dc024b",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:51180229",
+            "name": "other.txt",
+            "relativePath": "other.txt",
+            "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/other.txt",
+            "revision": {
+              "size": 23,
+              "inode": "51180229",
+              "device": "16777232",
+              "changedNs": "1792438684830592266",
+              "modifiedNs": "1792438684830592266",
+              "hash": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "T1RIRVIgU09VUkNFIFVOQ0hBTkdFRAo="
+        },
+        "before": "1b6bd88e61a0f96a0cfc4a1d7d45b80885023cc3031affbf80eb41b11d440d40",
+        "currentFrame": true,
+        "after": "1b6bd88e61a0f96a0cfc4a1d7d45b80885023cc3031affbf80eb41b11d440d40",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "b3af0e2e-6dc6-4a4c-97cc-8bd475dc024b",
+            "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+            "generation": 1
+          }
+        ],
+        "inputHash": "167690fd7f119160ec43b326dda98eb7d35ca54a3886a8cfebb5db70c6834188",
+        "at": 1792438722753,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "b3af0e2e-6dc6-4a4c-97cc-8bd475dc024b",
+              "lease": "8c85bd2f-61ba-49d2-9b52-e71f1dc8cab1",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:51180229",
+            "name": "other.txt",
+            "relativePath": "other.txt",
+            "absolutePath": "/private/tmp/willyou-media-state-A-ljnTnb/project/other.txt",
+            "revision": {
+              "size": 23,
+              "inode": "51180229",
+              "device": "16777232",
+              "changedNs": "1792438684830592266",
+              "modifiedNs": "1792438684830592266",
+              "hash": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "T1RIRVIgU09VUkNFIFVOQ0hBTkdFRAo="
+        },
+        "before": "1b6bd88e61a0f96a0cfc4a1d7d45b80885023cc3031affbf80eb41b11d440d40",
+        "currentFrame": true,
+        "after": "1b6bd88e61a0f96a0cfc4a1d7d45b80885023cc3031affbf80eb41b11d440d40",
+        "delivered": true
+      }
+    ],
+    "reads": [],
+    "opens": [],
+    "readErrors": [],
+    "saves": []
+  },
+  "slots": [
+    {
+      "id": 0,
+      "rowIndex": 1,
+      "kind": "short-delay",
+      "waiting": false
+    },
+    {
+      "id": 1,
+      "rowIndex": 22,
+      "kind": "deadline",
+      "waiting": false
+    },
+    {
+      "id": 2,
+      "rowIndex": 30,
+      "kind": "short-delay",
+      "waiting": false
+    },
+    {
+      "id": 3,
+      "rowIndex": 51,
+      "kind": "deadline",
+      "waiting": false
+    }
+  ],
+  "events": [
+    {
+      "phase": "light:delayed-source",
+      "type": "emptied",
+      "trusted": true,
+      "at": 703,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 703,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "durationchange",
+      "trusted": true,
+      "at": 748.7999999523163,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "loadedmetadata",
+      "trusted": true,
+      "at": 749.0999999046326,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "canplay",
+      "trusted": true,
+      "at": 749.4000000953674,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "play",
+      "trusted": true,
+      "at": 818.7000000476837,
+      "duration": "3",
+      "readyState": 4,
+      "paused": false,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3203.7000000476837,
+      "duration": "3",
+      "readyState": 4,
+      "paused": false,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3402,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:delayed-source",
+      "type": "pause",
+      "trusted": true,
+      "at": 3402.2000000476837,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/a62e76e0b481df7b68ec57e40a2b224a3c6637407d3161660144a531863ad81a"
+    },
+    {
+      "phase": "light:native-infinity",
+      "type": "emptied",
+      "trusted": true,
+      "at": 3591.7000000476837,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/51539416d09af749850d9353fe7200026b6f7e9c16cfe9eb6718dc6a23cb893e"
+    },
+    {
+      "phase": "light:native-infinity",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3591.7000000476837,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/51539416d09af749850d9353fe7200026b6f7e9c16cfe9eb6718dc6a23cb893e"
+    },
+    {
+      "phase": "light:native-infinity",
+      "type": "durationchange",
+      "trusted": true,
+      "at": 3616,
+      "duration": "Infinity",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/51539416d09af749850d9353fe7200026b6f7e9c16cfe9eb6718dc6a23cb893e"
+    },
+    {
+      "phase": "light:native-infinity",
+      "type": "loadedmetadata",
+      "trusted": true,
+      "at": 3616,
+      "duration": "Infinity",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/51539416d09af749850d9353fe7200026b6f7e9c16cfe9eb6718dc6a23cb893e"
+    },
+    {
+      "phase": "light:native-infinity",
+      "type": "canplay",
+      "trusted": true,
+      "at": 3616.0999999046326,
+      "duration": "Infinity",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/51539416d09af749850d9353fe7200026b6f7e9c16cfe9eb6718dc6a23cb893e"
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 3859.9000000953674,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/4a2deeebe1afaa519eae4c2ae89f4303d8aae3bca9f06fa6e4b9bfd3964ec236"
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3860,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/4a2deeebe1afaa519eae4c2ae89f4303d8aae3bca9f06fa6e4b9bfd3964ec236"
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "error",
+      "trusted": true,
+      "at": 3901.0999999046326,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/4a2deeebe1afaa519eae4c2ae89f4303d8aae3bca9f06fa6e4b9bfd3964ec236"
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 3901.4000000953674,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3901.4000000953674,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 3961,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3961,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 3962.0999999046326,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/332dbd777552acb4679e34ee3f93c55b3cec7a3261756445f625663eae579b90"
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3962.0999999046326,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/332dbd777552acb4679e34ee3f93c55b3cec7a3261756445f625663eae579b90"
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "error",
+      "trusted": true,
+      "at": 3977.9000000953674,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/332dbd777552acb4679e34ee3f93c55b3cec7a3261756445f625663eae579b90"
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 3978.2999999523163,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "light:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 3978.2999999523163,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "light:source-recovery",
+      "type": "emptied",
+      "trusted": true,
+      "at": 4171.400000095367,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/210a2a3a0cbab9cbe5fafbe6275b138aea9a64227d3f732baf934b9b67604a37"
+    },
+    {
+      "phase": "light:source-recovery",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 4171.400000095367,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/210a2a3a0cbab9cbe5fafbe6275b138aea9a64227d3f732baf934b9b67604a37"
+    },
+    {
+      "phase": "light:source-recovery",
+      "type": "durationchange",
+      "trusted": true,
+      "at": 4197,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/210a2a3a0cbab9cbe5fafbe6275b138aea9a64227d3f732baf934b9b67604a37"
+    },
+    {
+      "phase": "light:source-recovery",
+      "type": "loadedmetadata",
+      "trusted": true,
+      "at": 4197.099999904633,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/210a2a3a0cbab9cbe5fafbe6275b138aea9a64227d3f732baf934b9b67604a37"
+    },
+    {
+      "phase": "light:source-recovery",
+      "type": "canplay",
+      "trusted": true,
+      "at": 4197.299999952316,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/210a2a3a0cbab9cbe5fafbe6275b138aea9a64227d3f732baf934b9b67604a37"
+    },
+    {
+      "phase": "light:loading-timeout",
+      "type": "emptied",
+      "trusted": true,
+      "at": 19407.599999904633,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "light:loading-timeout",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 19407.599999904633,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "emptied",
+      "trusted": true,
+      "at": 19980.799999952316,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 19980.900000095367,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "durationchange",
+      "trusted": true,
+      "at": 20002.200000047684,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "loadedmetadata",
+      "trusted": true,
+      "at": 20002.200000047684,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "canplay",
+      "trusted": true,
+      "at": 20002.299999952316,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "play",
+      "trusted": true,
+      "at": 20101.099999904633,
+      "duration": "3",
+      "readyState": 4,
+      "paused": false,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 20318.599999904633,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:delayed-source",
+      "type": "pause",
+      "trusted": true,
+      "at": 20318.700000047684,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/da7cb150a22cc49f8f4e0c5db0f205f59e6f44e10e0027a106216eb6b861a592"
+    },
+    {
+      "phase": "dark:native-infinity",
+      "type": "emptied",
+      "trusted": true,
+      "at": 20497.400000095367,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/c7de664264e926fe496f1f2c24d1e8679ed0bf18cbe42462aa5aa6a69d6f5968"
+    },
+    {
+      "phase": "dark:native-infinity",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 20497.400000095367,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/c7de664264e926fe496f1f2c24d1e8679ed0bf18cbe42462aa5aa6a69d6f5968"
+    },
+    {
+      "phase": "dark:native-infinity",
+      "type": "durationchange",
+      "trusted": true,
+      "at": 20520.799999952316,
+      "duration": "Infinity",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/c7de664264e926fe496f1f2c24d1e8679ed0bf18cbe42462aa5aa6a69d6f5968"
+    },
+    {
+      "phase": "dark:native-infinity",
+      "type": "loadedmetadata",
+      "trusted": true,
+      "at": 20520.900000095367,
+      "duration": "Infinity",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/c7de664264e926fe496f1f2c24d1e8679ed0bf18cbe42462aa5aa6a69d6f5968"
+    },
+    {
+      "phase": "dark:native-infinity",
+      "type": "canplay",
+      "trusted": true,
+      "at": 20521,
+      "duration": "Infinity",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/c7de664264e926fe496f1f2c24d1e8679ed0bf18cbe42462aa5aa6a69d6f5968"
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 20746.200000047684,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/383ffa59ae36839ebdd4d9228271c3c7a7010f9586961bd619758e31a0acb865"
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 20746.200000047684,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/383ffa59ae36839ebdd4d9228271c3c7a7010f9586961bd619758e31a0acb865"
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "error",
+      "trusted": true,
+      "at": 20767.299999952316,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/383ffa59ae36839ebdd4d9228271c3c7a7010f9586961bd619758e31a0acb865"
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 20767.5,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 20767.599999904633,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 20837.700000047684,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/a8591bb3cd5286eb5cafb7a17abfbc934c37c2b13c571772e05f110a66ebbf53"
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 20837.700000047684,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/a8591bb3cd5286eb5cafb7a17abfbc934c37c2b13c571772e05f110a66ebbf53"
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "error",
+      "trusted": true,
+      "at": 20852.400000095367,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/a8591bb3cd5286eb5cafb7a17abfbc934c37c2b13c571772e05f110a66ebbf53"
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "emptied",
+      "trusted": true,
+      "at": 20852.700000047684,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "dark:decoder-failure",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 20852.700000047684,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "dark:source-recovery",
+      "type": "emptied",
+      "trusted": true,
+      "at": 21053.599999904633,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/4e8036961597fa646eb1c8c79cfdd894d02cf47ee0895ed4e486adb6bbfeefa2"
+    },
+    {
+      "phase": "dark:source-recovery",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 21053.700000047684,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": "willyou-media://local/4e8036961597fa646eb1c8c79cfdd894d02cf47ee0895ed4e486adb6bbfeefa2"
+    },
+    {
+      "phase": "dark:source-recovery",
+      "type": "durationchange",
+      "trusted": true,
+      "at": 21076.099999904633,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/4e8036961597fa646eb1c8c79cfdd894d02cf47ee0895ed4e486adb6bbfeefa2"
+    },
+    {
+      "phase": "dark:source-recovery",
+      "type": "loadedmetadata",
+      "trusted": true,
+      "at": 21076.200000047684,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/4e8036961597fa646eb1c8c79cfdd894d02cf47ee0895ed4e486adb6bbfeefa2"
+    },
+    {
+      "phase": "dark:source-recovery",
+      "type": "canplay",
+      "trusted": true,
+      "at": 21076.299999952316,
+      "duration": "3",
+      "readyState": 4,
+      "paused": true,
+      "src": "willyou-media://local/4e8036961597fa646eb1c8c79cfdd894d02cf47ee0895ed4e486adb6bbfeefa2"
+    },
+    {
+      "phase": "dark:loading-timeout",
+      "type": "emptied",
+      "trusted": true,
+      "at": 36275.799999952316,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    },
+    {
+      "phase": "dark:loading-timeout",
+      "type": "timeupdate",
+      "trusted": true,
+      "at": 36275.799999952316,
+      "duration": "NaN",
+      "readyState": 0,
+      "paused": true,
+      "src": null
+    }
+  ],
+  "after": {
+    "good.wav": {
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "inode": "51180226",
+      "mtimeNs": "1792438684826813893"
+    },
+    "infinite.wav": {
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0",
+      "inode": "51180227",
+      "mtimeNs": "1792438684828727934"
+    },
+    "bad.wav": {
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "inode": "51180228",
+      "mtimeNs": "1792438707399272952"
+    },
+    "other.txt": {
+      "sha256": "254cb34259866c777de7840469dfe1983ef163b5f0f958a60f166cc9c6df6304",
+      "inode": "51180229",
+      "mtimeNs": "1792438684830592266"
+    }
+  },
+  "rpcRestored": {
+    "files.open": true,
+    "files.read": true,
+    "files.refresh": true,
+    "files.save": true,
+    "files.checkpoint": true,
+    "files.openMedia": true,
+    "files.mediaChunk": true,
+    "files.releaseMedia": true
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 45296,
+    "code": 0,
+    "signal": null
+  },
+  "finishedAt": "2026-10-19T19:38:43.170Z"
+}

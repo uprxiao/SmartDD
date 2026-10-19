@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-18T03:05:00.930309+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requiredLayers": [
+    "U",
+    "I",
+    "A"
+  ],
+  "status": "passed",
+  "formalCasePassed": true,
+  "layers": {
+    "U": {
+      "status": "passed"
+    },
+    "I": {
+      "status": "passed",
+      "chain": "Production FileWorkspaceStore/FileBuffer or FileTextEditor/EditorView -> actual FileService/recovery -> r5 packaged native broker -> independent filesystem checks. Watch branches use actual macOS FSEvents; event transport/native loading boundaries are bridged."
+    },
+    "A": {
+      "status": "passed",
+      "at": "2026-10-18T11:19:33.699901+08:00",
+      "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-r6-h13-app-20261018.json",
+      "sha256": "86867b11448a438f577be5760ab57465238536f80ea64cb60ff4c9bde262b91d",
+      "packageAsarSha256": "b4210c34e41672c1b18a9998aba20f0e886fcdf9651dc0ab417729ea12540903",
+      "actual": "Original D=L steps now clean automatically; undo/redo retained, own checkpoint resolved, independent source bytes exact."
+    }
+  },
+  "environment": {
+    "os": "macOS 26.6.1",
+    "arch": "arm64",
+    "node": "26.5.0",
+    "pnpm": "10.27.0",
+    "brokerPackage": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/broker-package-r5.json",
+      "sha256": "049ade22ef55166dde89c0a307517306498ce63c1be775b56dae7deb5afe1987"
+    }
+  },
+  "batchValidation": {
+    "tests": {
+      "total": 53,
+      "passed": 53,
+      "failed": 0,
+      "skipped": 0,
+      "report": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-final.json",
+        "sha256": "3e8088112fc6a280849370672715303542367a01f1a40129f9ebd408c65a1fe5"
+      },
+      "caseTests": 28,
+      "necessaryRegressionTests": 25
+    },
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+      "exitCode": 0,
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/typecheck-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "diffCheckExitCode": 0,
+    "command": "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_TEXT_DISK_APP=/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app SMARTDD_TEXT_DISK_EVIDENCE=/private/tmp/willyou-text-disk-acceptance/matrix-final.json SMARTDD_READONLY_EVIDENCE=/private/tmp/willyou-text-disk-acceptance/readonly-matrix-final.json pnpm test src/renderer/features/files/text-disk-acceptance.test.ts src/renderer/features/files/readonly-text-acceptance.test.tsx src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/text-buffer-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-text-disk-acceptance/tests-final.json",
+    "execution": "outside outer filesystem sandbox only for known native FSEvents restriction; isolated /tmp fixtures only"
+  },
+  "sourceBaseline": {
+    "manifest": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/source-manifest-final.json",
+      "sha256": "bd0aa6abc5b0e5c6ca33f9e37dc0bffe985a38c4050132eaa5190c193cd80946"
+    },
+    "archive": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/sources-final.tar.gz",
+      "sha256": "dbee770b7698af45744d5725692dce6f11eaa48535da7af3e70ed73881194ec2"
+    },
+    "files": {
+      "src/renderer/features/files/workspace-store.ts": "f461daf6697d988682c416d10290cfaceef3e4e641c67137f5c430489ba4971a",
+      "src/renderer/features/files/file-buffer.ts": "9387ce199b3cc07d9708da37f38dac9da3ed37687b12cd8e2cf27ff0ba7171e5",
+      "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+      "src/main/core/files/file-service.ts": "a64221c26fb5ce95cea35de83101fec66f520e95286b434a31c6d27c22bf3f7d",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "src/shared/file-workspace.ts": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+      "native/files/broker.mm": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "vitest.config.ts": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+      "tsconfig.web.json": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+      "src/renderer/features/files/text-disk-acceptance.test.ts": "e02c638b0840e60b074ff4aec0515c7738093c57ba8b1a0f82690e81d4f6b61f",
+      "src/main/core/files/watch-service.ts": "7b3581d3be24d7d4e1131dac2b1691d774a041272965891359543313ad89928b",
+      "src/renderer/features/files/readonly-text-acceptance.test.tsx": "7c3f53bd7bb62f6e38b35ca700a564f7f0bbcc507a3e1be75e730cd33def7d0b",
+      "src/renderer/features/files/file-buffer.test.ts": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+      "src/renderer/features/files/text-buffer-acceptance.test.ts": "c850d06e86d55204ed8b7840029fc964594b19314a73ac1be02071da63cc7a43",
+      "src/renderer/features/files/text-editor.tsx": "a96ff7385064a79e736013197e222dab3b35affe0cab11fa63032c2820d4565f"
+    },
+    "unchangedAfterRun": {
+      "src/renderer/features/files/workspace-store.ts": true,
+      "src/renderer/features/files/file-buffer.ts": true,
+      "src/renderer/features/files/editor-source.ts": true,
+      "src/main/core/files/file-service.ts": true,
+      "src/main/core/files/native-broker.ts": true,
+      "src/main/core/files/roots.ts": true,
+      "src/main/core/files/recovery-store.ts": true,
+      "src/shared/files.ts": true,
+      "src/shared/file-text.ts": true,
+      "src/shared/file-workspace.ts": true,
+      "native/files/broker.mm": true,
+      "vitest.config.ts": true,
+      "tsconfig.web.json": true,
+      "src/renderer/features/files/text-disk-acceptance.test.ts": true,
+      "src/main/core/files/watch-service.ts": true,
+      "src/renderer/features/files/readonly-text-acceptance.test.tsx": true,
+      "src/renderer/features/files/file-buffer.test.ts": true,
+      "src/renderer/features/files/text-buffer-acceptance.test.ts": true,
+      "src/renderer/features/files/text-editor.tsx": true
+    },
+    "note": "Includes DEV047 and additive readonly inputSettled getter requested for DEV045; final combined run starts after both changes. R5 provides native broker only and does not contain DEV047."
+  },
+  "artifacts": {
+    "tests-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-r1.json",
+      "sha256": "56c1ca9792c789d53c81bcd2ad7a8368889ed6b77262999716e8adf0175c9524"
+    },
+    "matrix-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/matrix-final.json",
+      "sha256": "64a91dbd821fe8ee5443579eac80b596f144534bbb2d6cb58d2d28d104d025ff"
+    },
+    "typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/typecheck-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "matrix-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/matrix-r1.json",
+      "sha256": "560408df14246dde23cfacafc3ca2f49972ebd3c96f3b8f9b410e7a0bc534108"
+    },
+    "regression-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/regression-r2.log",
+      "sha256": "6091fdf8ea76d6d0975c0c94e6ffbd862883a539d11248516548a1fbb23f7059"
+    },
+    "sources-final.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/sources-final.tar.gz",
+      "sha256": "dbee770b7698af45744d5725692dce6f11eaa48535da7af3e70ed73881194ec2"
+    },
+    "readonly-tests-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-tests-r1.json",
+      "sha256": "2171782c38de03bcfbce30c4d28c1898a259cef71706ff66231d908dca30068f"
+    },
+    "readonly-matrix-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-matrix-final.json",
+      "sha256": "3bf0c36520512ae42f60c3cfd44412126a7dd0bd7c14781bf20ef7c53477f2de"
+    },
+    "regression-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/regression-r2.json",
+      "sha256": "cf2a2a04f03b753fb263f881e7ba3079d29e847f83579dde5f8a1adda3c5747c"
+    },
+    "tests-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-final.json",
+      "sha256": "3e8088112fc6a280849370672715303542367a01f1a40129f9ebd408c65a1fe5"
+    },
+    "dev047-independent-review.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/dev047-independent-review.json",
+      "sha256": "421f6604d8841e4a023d437ca4d97953abc6fc1c77b6ba2f7eeed92a2ac70e05"
+    },
+    "post-test-source-check.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/post-test-source-check.json",
+      "sha256": "1b37e89627b7e3058d102e163099cf5f183c8c5995c5edea76bdf8ee7ceeba22"
+    },
+    "sources-r1.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/sources-r1.tar.gz",
+      "sha256": "aa122ac46ef35c9e7ada0141dd2cfb1e77e23533791ec516a0821c7c10b9adb6"
+    },
+    "source-manifest-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/source-manifest-r1.json",
+      "sha256": "e52e0af34a5d0fdadab7417b158c0ac54088869cde8eeb116798c91e82a9970a"
+    },
+    "readonly-tests-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-tests-r3.json",
+      "sha256": "134b4e2c46e25faafeff093b3668a4174a21f260647bd6a123708aa241315e1f"
+    },
+    "tests-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-r1.log",
+      "sha256": "5c4111949245578850dbc089ecabbcc925b5b3dc0bffa8182867f67df2c16f78"
+    },
+    "readonly-tests-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-tests-r2.json",
+      "sha256": "7a20d54e32d07908f99daaef3d9c6a70b01b54dc56cc1fcf24dabb11d9f88f52"
+    },
+    "tests-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-r2.log",
+      "sha256": "8025bcd1dc8048ceb667f0cb148848894cf02e7927e5a957f1ce81a6778344ac"
+    },
+    "tests-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-final.log",
+      "sha256": "f7041e012d0420b480ca176cbd120f36b52fb78d5e85edba2e5a1abdb786ee0f"
+    },
+    "matrix-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/matrix-r2.json",
+      "sha256": "c4b3454f0072b3534ea0b5e36d70a95fbfdb916264211c3c73405b234fa8a452"
+    },
+    "source-manifest-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/source-manifest-final.json",
+      "sha256": "bd0aa6abc5b0e5c6ca33f9e37dc0bffe985a38c4050132eaa5190c193cd80946"
+    },
+    "broker-package-r5.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/broker-package-r5.json",
+      "sha256": "049ade22ef55166dde89c0a307517306498ce63c1be775b56dae7deb5afe1987"
+    },
+    "typecheck-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/typecheck-r2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "readonly-tests-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-tests-r1.log",
+      "sha256": "77e96d9e1b0da73bc26be2889346e47ecbd4b82bd3a3b0e40b2ec75ef85e0d02"
+    },
+    "tests-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-r2.json",
+      "sha256": "3bb3485dee26a152e788d3c1ea6ef431e142594b0ba1d8ec070acc0cd91700f5"
+    },
+    "readonly-tests-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-tests-r2.log",
+      "sha256": "1a172aea2174ae99c72b61d57ebe9261a83aa0072f08c9edb2290c249beda54d"
+    },
+    "readonly-matrix-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-matrix-r3.json",
+      "sha256": "e357390c3bd700741e887443cd373a4a8453d9374a3284de5a9e6f39303cb4f3"
+    },
+    "readonly-tests-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/readonly-tests-r3.log",
+      "sha256": "324ca731e4b81e982e8018e9c3f8fd46eb5e90c29a7227e7ce1449c8d9a51417"
+    }
+  },
+  "boundaries": [
+    "Fake timers control 500ms/3000ms and watch debounce; actual filesystem IO, receipts, bytes/revisions/mtime/inodes and FSEvents remain real.",
+    "Synthetic DOM events prove production EditorView behavior in jsdom and are not physical keyboard/system IME or installed App proof.",
+    "No native save is mocked as successful. Protected unknown/recovery receipt cases are explicitly U guards with synthetic receipt state; their real checkpoint storage remains preserved.",
+    "H11 first two diagnostic failures used unwired low-level CodeMirror insertNewline/insertTab helpers. Production defaultKeymap uses insertNewlineAndIndent; corrected harness then passed actual mutation/paste/save checks. These harness failures are retained, not labeled a product defect."
+  ],
+  "caseId": "M9-T-H13",
+  "case": {
+    "requirements": [
+      "M9-R07.5"
+    ],
+    "tests": 15,
+    "steps": "本地修改L后外部把磁盘写成同L，再通知。",
+    "expected": "更新base=D并clean；不要求无意义选择。",
+    "actual": "Four original failures now pass (ordinary/CLI × native watch/refresh). Exact raw+BOM adopts authoritative revision while preserving actual EditorState/selection/history. Real own durable checkpoint resolved; undo dirty/redo clean and later native save verified. BOM mismatch, protected unknown/recovery U receipts, pending/composing/interrupted input, newer version during read, new save conflict invalidating old read retain protection. No automatic source write merely from matching external bytes."
+  },
+  "initialFailure": {
+    "schemaVersion": 1,
+    "caseId": "M9-T-H13",
+    "defect": "M9-DEV-047",
+    "status": "failed",
+    "formalCasePassed": false,
+    "at": "2026-10-18T02:57:53.727513+00:00",
+    "branch": "feature/0.0.1",
+    "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+    "requiredLayers": [
+      "U",
+      "I",
+      "A"
+    ],
+    "steps": "本地修改L后外部把磁盘写成同L，再通知。",
+    "expected": "更新base=D并clean；不要求无意义选择。",
+    "actual": "Real FileWorkspaceStore/FileBuffer/FileService/recovery/r5 native broker with ordinary writer and independent CLI, explicit refresh and actual native FSEvents. All four D=L branches retain old baseHash, dirty=true and conflict=true despite disk bytes exactly equal to local. Disk is preserved and no source write occurs after 4000ms.",
+    "layers": {
+      "U": "failed",
+      "I": "failed",
+      "A": "pending-root-new-package"
+    },
+    "batch": {
+      "passed": 11,
+      "failed": 4,
+      "skipped": 0,
+      "passedCases": {
+        "H10": 3,
+        "H12": 4,
+        "H16": 4
+      }
+    },
+    "artifacts": {
+      "tests-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-r1.json",
+        "sha256": "56c1ca9792c789d53c81bcd2ad7a8368889ed6b77262999716e8adf0175c9524"
+      },
+      "matrix-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/matrix-r1.json",
+        "sha256": "560408df14246dde23cfacafc3ca2f49972ebd3c96f3b8f9b410e7a0bc534108"
+      },
+      "sources-r1.tar.gz": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/sources-r1.tar.gz",
+        "sha256": "aa122ac46ef35c9e7ada0141dd2cfb1e77e23533791ec516a0821c7c10b9adb6"
+      },
+      "source-manifest-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/source-manifest-r1.json",
+        "sha256": "e52e0af34a5d0fdadab7417b158c0ac54088869cde8eeb116798c91e82a9970a"
+      },
+      "tests-r1.log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-text-disk/tests-r1.log",
+        "sha256": "5c4111949245578850dbc089ecabbcc925b5b3dc0bffa8182867f67df2c16f78"
+      }
+    },
+    "sourceUnchangedAfterRun": {
+      "src/renderer/features/files/workspace-store.ts": true,
+      "src/renderer/features/files/file-buffer.ts": true,
+      "src/renderer/features/files/editor-source.ts": true,
+      "src/main/core/files/file-service.ts": true,
+      "src/main/core/files/native-broker.ts": true,
+      "src/main/core/files/roots.ts": true,
+      "src/main/core/files/recovery-store.ts": true,
+      "src/shared/files.ts": true,
+      "src/shared/file-text.ts": true,
+      "src/shared/file-workspace.ts": true,
+      "native/files/broker.mm": true,
+      "vitest.config.ts": true,
+      "tsconfig.web.json": true,
+      "src/renderer/features/files/text-disk-acceptance.test.ts": true,
+      "src/main/core/files/watch-service.ts": true
+    },
+    "boundaries": [
+      "Actual filesystem data/revisions/mtime/inodes and actual macOS FSEvents. Event transport and native package loading are bridged; fake timers control debounce/500ms/3000ms.",
+      "No actual App GUI or physical IME claim. H10/H12/H16 remain partial until their required A evidence is merged by root.",
+      "Only isolated temporary files are written. No production changes before this failure capture."
+    ]
+  },
+  "defect": "M9-DEV-047"
+}

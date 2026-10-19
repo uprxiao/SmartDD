@@ -1,0 +1,123 @@
+{
+  "kind": "packaged-app-git-validation",
+  "recordedAt": "2026-10-17T21:42:36.464392+08:00",
+  "branch": "feature/0.0.1",
+  "baseline": "89de9af4b631abdef5673ce8949fb02a32f6fcad + uncommitted M9 work",
+  "requirements": "R3.4/R3.4-P1 R02.8/R05.5/R05.8/R09",
+  "environment": "macOS 26.6.1 arm64; Electron 42.11.14; Apple Git 2.50.1; App 0.0.5",
+  "builds": [
+    {
+      "id": "git-r1",
+      "path": "/private/tmp/willyou-m9-git-build/mac-arm64/WillYou.app",
+      "asarSHA256": "d79f3d21188e675383ba4c8c32939cb5c509157f6b439c52f7973f166366f4ee"
+    },
+    {
+      "id": "git-r2",
+      "path": "/private/tmp/willyou-m9-git-r2-build/mac-arm64/WillYou.app",
+      "asarSHA256": "6d966ad56b2553ffcd1979a791de80c4abe9474a61eaee5a17739855488c70b2"
+    }
+  ],
+  "fixture": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+  "fixtureSHA256": {
+    "git-reference.ts": "51a2307c37e48bde46d909e770b69e1db3067e69f1bc1c4fea68be013209d0ee",
+    "git-long.ts": "610b9e31ce5ae65e6648e3ebfa3d675f2ce271e3ea710bea1eff5ff0a3792168",
+    "git-generated.ts": "849f81c210ed4122408aae42abaed4b80b70618b1c4217a9f30abe3759b27dba",
+    "git-manual.ts": "37e723dfad6b4f2519d00e215dc70460a344481825cac5f3e4cb08c9b22a3b53",
+    ".gitattributes": "33d814924d286685cf8f23dc701e358a3d36de22098518c56af457d55304ce1d",
+    ".git/index": "a5b6be11bca089152f26daa6c318657b4746fa636e00dab7257ab1cb04bd8b7e"
+  },
+  "checks": [
+    {
+      "id": "GIT-UI-01",
+      "state": "passed",
+      "actual": "CUA真实树显示git-added.ts为A、新增；git-generated.ts/git-manual.ts为M；git-new 中文🙂.txt为U；变化列表另显示git-deleted.txt为D。未调用产品Git写操作。"
+    },
+    {
+      "id": "M9-T-S02",
+      "state": "passed",
+      "build": "git-r1",
+      "actual": "真实变化列表33项，generated属性true文件git-generated.ts、false文件git-manual.ts及未知未跟踪文件并存。勾选筛除生成文件后32项，计数1，generated行消失、manual与未知行保留；返回普通树仍有git-generated.ts。AIS非Git根无该筛选入口。原文件字节与构造内容相同。",
+      "layers": [
+        "unit parser",
+        "real native Git integration",
+        "packaged App via CUA"
+      ]
+    },
+    {
+      "id": "GIT-UI-03",
+      "state": "passed",
+      "actual": "真实git-reference.ts显示14行作者M9 本机验收；点击作者显示实际提交说明M9 synthetic Git reference、日期、短SHA ceefa9f和GitHub链接。合成remote不触发网页外开。"
+    },
+    {
+      "id": "GIT-UI-04",
+      "state": "passed",
+      "actual": "从App编辑追加注释：未保存期间立即清除旧作者并提示；自动保存后提示文件与已提交版本不符。Cmd+Z/Cmd+S后恢复作者，独立读盘与HEAD原bytes相同。"
+    },
+    {
+      "id": "GIT-UI-05",
+      "state": "passed-with-limits",
+      "actual": "真实git-long.ts 1200行，从首屏Cmd+End到末行，截图显示1164–1200行对应作者；点击底部作者出现M9 long blame fixture、ed003d6。该次CUA返回一次noWindowsAvailable，但进程仍运行，下一次读取显示正确弹层；没有重启或绕过。作者栏初始AX隐藏已发现并修复待r2复验。"
+    },
+    {
+      "id": "GIT-UI-06",
+      "state": "passed",
+      "actual": "AIS项目pom.xml仍可读取；行归属菜单禁用且提示当前目录不在Git工作树中；变化页明确同一原因，无generated筛选。AIS仅只读。"
+    },
+    {
+      "id": "GIT-UI-07",
+      "state": "passed",
+      "actual": "真实文件菜单截图显示不透明深色背景，后方目录文本不再透出。"
+    },
+    {
+      "id": "GIT-UI-08",
+      "build": "git-r2",
+      "state": "passed",
+      "actual": "开启行归属后，尚未点击作者按钮，AX即列出14行作者。点击详情显示ceefa9f，Escape关闭并保持作者焦点。"
+    },
+    {
+      "id": "GIT-UI-09",
+      "build": "git-r2",
+      "state": "passed-with-limits",
+      "actual": "从筛选框Tab进入列表，Down定位下一项，End滚动并聚焦末项workspace.md，Home返回.hidden。直接点击行打开另一文件后焦点会返回HTML内容，未把鼠标打开后的焦点保持计为通过。"
+    },
+    {
+      "id": "GIT-UI-10",
+      "build": "git-r2",
+      "state": "passed",
+      "actual": "generated筛选再次从33项变32，manual与未知中文文件保留；浅色截图检查代码作者栏、状态颜色、文件菜单不透底。仅核对上述状态，不代表与Codex全像素一致。"
+    }
+  ],
+  "tests": [
+    {
+      "log": "/private/tmp/willyou-m9-git-native-tests.log",
+      "result": "first: 43 passed/4 failed; /dev/null write access, exact identity shape and strict root input corrected"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-git-native-tests-r2.log",
+      "result": "47 passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-git-service-tests.log",
+      "result": "15 passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-git-r2-tests.log",
+      "result": "62 passed (4 files), including native scope/ownership/worktree/hostile-helper/read-only-index tests"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-git-r2-typecheck-final.log",
+      "result": "passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-git-r2-typecheck-final2.log",
+      "result": "passed, including changes-list keyboard addition"
+    }
+  ],
+  "limits": [
+    "仅M9-T-S02按完整本期步骤计本包通过；其它观察记录为开发验证，不能将419条整体计通过。",
+    "截图与AX在会话工具结果；未声称存在本地截图文件。",
+    "Mac结果不证明其它平台；未执行所有Git失败/取消/长期与全视觉矩阵。",
+    "S02最终交付包如影响此功能须复验。",
+    "git-r2已完成作者AX、Tab进入列表的方向/Home/End及浅色菜单复验；鼠标打开后的列表焦点保持仍需处理。"
+  ]
+}

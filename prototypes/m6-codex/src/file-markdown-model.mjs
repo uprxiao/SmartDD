@@ -1,19 +1,21 @@
 // Markdown interaction model. markdown-it supplies the CommonMark tokens and line maps; source text stays authoritative
 // and each top-level block keeps exact UTF-16 offsets, so an edit replaces only that block's bytes.
 import MarkdownIt from 'markdown-it';
-import texmath from 'markdown-it-texmath';
-import katex from 'katex';
+import { installDollarMath } from '../../../src/shared/markdown-dollar-math.mjs';
 import yaml from 'js-yaml';
 import { highlightCode } from './file-highlight.mjs';
 import { installInlineSourceTracking, attachInlineSource, sourceAttrs, lineSourceMap } from './file-markdown-source.mjs';
+import { installImageReferenceWindow, boundedImageReferences } from '../../../src/shared/markdown-reference-window.mjs';
 
 const SAFE_IMAGES = new Set(['/assets/app-icon.png', '/assets/m9-image-fixture.svg']);
-export const safeImageSrc = raw => SAFE_IMAGES.has(raw) || /^data:image\/(?:png|jpe?g|gif|webp);/i.test(raw) ? raw : '/assets/app-icon.png';
+const TINY_FIXTURE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aDeUAAAAASUVORK5CYII=';
+export const safeImageSrc = raw => raw === 'tiny.png' || raw === 'tiny2.png' ? TINY_FIXTURE : SAFE_IMAGES.has(raw) || /^data:image\/(?:png|jpe?g|gif|webp);/i.test(raw) ? raw : '/assets/app-icon.png';
 
 // markdown-it percent-encodes non-ASCII targets; the model keeps the author's text (e.g. 需求.md) for path resolution.
 const decodeRef = value => { try { return decodeURI(value); } catch { return value; } };
 const md = new MarkdownIt({ html: false, linkify: false, typographer: false });
-md.use(texmath, { engine: katex, delimiters: 'dollars', katexOptions: { throwOnError: false, strict: 'ignore', trust: false } });
+installDollarMath(md);
+installImageReferenceWindow(md);
 installInlineSourceTracking(md);
 md.core.ruler.after('inline', 'source_positions', state => {
   if (typeof state.env.originalSource === 'string') attachInlineSource(state.tokens, state.env.originalSource, state.env.lineBase || 0);
@@ -90,7 +92,7 @@ export function parseMarkdown(text) {
     let j = 1; while (j < lines.length && !/^(?:---|\.\.\.)[ \t]*(?:\r\n|\r|\n)?$/.test(lines[j])) j++;
     if (j < lines.length) { push('frontmatter', 0, j + 1); base = j + 1; }
   }
-  const env = { lineBase: base, originalSource: text }, tokens = md.parse(lines.slice(base).join(''), env);
+  const env = { lineBase: base, originalSource: text, imageReferences: boundedImageReferences(md, text, starts[base]) }, tokens = md.parse(lines.slice(base).join(''), env);
   let cursor = base;
   for (let t = 0; t < tokens.length;) {
     const tok = tokens[t]; let end = t;
@@ -106,12 +108,21 @@ export function parseMarkdown(text) {
   return { blocks, env };
 }
 // 只读场景（Notebook 等）：整段 Markdown 渲染为安全 HTML（原始 HTML 已转义，链接 href 改为 #，图片只允许白名单来源）。
-export const renderMarkdownReadOnly = text => md.render(text, { lineBase: 0, readOnly: true });
+export const renderMarkdownReadOnly = (text, mathRender) => md.render(text, { lineBase: 0, readOnly: true, mathRender });
 export const markdownBlocks = text => parseMarkdown(text).blocks;
 export const renderMarkdownBlock = (block, env) => {
   if (block.type === 'math') block.tokens[0].meta = { ...block.tokens[0].meta, source: { from: block.from, to: block.to, mode: 'atomic' } };
   return md.renderer.render(block.tokens, md.options, env);
 };
+export function markdownMathRanges(block, env) {
+  const ranges = [];
+  for (const token of block.tokens ?? []) for (const child of token.type === 'inline' ? token.children ?? [] : [token]) {
+    const range = child.meta?.mathRange;
+    if (!range || !child.type.startsWith('math_')) continue;
+    ranges.push({ ...range, code: child.content, html: md.renderer.render([child], md.options, env) });
+  }
+  return ranges;
+}
 export function completeFence(raw, markup = '```') {
   const lines = raw.replace(/\r\n?/g, '\n').replace(/\n$/, '').split('\n');
   if (lines.length < 2) return false;
@@ -158,17 +169,7 @@ export function resolveMarkdownPath(currentPath, href) {
   }
   return parts.join('/');
 }
-export function imageMenuActions({ src = '', displaySrc = '', localPath, host = 'local', originHost = 'local', animated = false, canSelect = true, canCopy = true, clipboard = true }) {
-  const address = [src, displaySrc].find(s => /^https?:\/\//i.test(s));
-  return [
-    { id: 'open', label: '在新标签打开图片' },
-    ...(address ? [{ id: 'address', label: '复制图片地址', value: address }] : []),
-    ...(!animated && canSelect ? [{ id: 'reference', label: '添加到当前任务' }] : []),
-    ...(!animated && canCopy && clipboard ? [{ id: 'copy', label: '复制图片' }] : []),
-    ...(localPath?.startsWith('/') && host === 'local' && originHost === host ? [{ id: 'reveal', label: '在文件管理器中显示' }] : []),
-    { id: 'download', label: '下载副本' }
-  ];
-}
+export { imageMenuActions } from '../../../src/shared/image-menu-policy.mjs';
 export const IMAGE_ZOOM_STEPS = [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500];
 export const fitImage = (width, height, viewportWidth, viewportHeight) => Math.min(1, Math.max(.01, Math.min(viewportWidth / width, viewportHeight / height)));
 export function stepImageZoom(current, direction, fit = 1) {

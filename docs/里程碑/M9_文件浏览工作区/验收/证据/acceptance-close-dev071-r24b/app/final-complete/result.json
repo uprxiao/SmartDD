@@ -1,0 +1,1631 @@
+{
+  "startedAt": "2026-10-18T10:31:44.440Z",
+  "originalExecutable": "/private/tmp/willyou-m9-acceptance-batch-r24-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "executable": "/private/tmp/willyou-close-recovery-sZhTUN/Fault WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "7999c793b20d3ac766fe5ed096db0fa23e17f50fc4efa4ad77a5605693f10a0c",
+  "normalBrokerSha256": "26f9843f533cc3b0bd4e5d886956eeb5ff767fd0999fae27e509e89bb8053db7",
+  "faultWrapperSha256": "ab7d82abda784812993a7da607f0746efe5e9f5300d1691b5fca7e35d5e3b178",
+  "testBroker": "/private/tmp/willyou-test-file-broker-DgQIfD/willyou-files-test",
+  "testBrokerSha256": "f0306c9dad2f033fbfb7bb829e2daacc17f0ff1844a605f02b939103224c52e9",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-close-recovery-sZhTUN",
+  "projectPath": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+  "userData": "/private/tmp/willyou-close-recovery-sZhTUN/userdata",
+  "checks": [
+    {
+      "caseId": "M9-T-H27",
+      "scenario": "precommit failure; continue then explicit discard",
+      "before": {
+        "text": "Original disk 中文🙂\n",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946354",
+        "mtimeNs": "1792319501828037768",
+        "ctimeNs": "1792319501828037768"
+      },
+      "after": {
+        "text": "Original disk 中文🙂\n",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946354",
+        "mtimeNs": "1792319501828037768",
+        "ctimeNs": "1792319510381440654"
+      },
+      "ordinaryDraftResolved": true,
+      "nativeSaveOperations": 0
+    },
+    {
+      "caseId": "M9-T-H27",
+      "scenario": "actual native IO failure before exchange; ordinary draft resolved, no implicit retry after discard",
+      "sourceBeforeAndAfter": {
+        "text": "Original disk 中文🙂\n",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946355",
+        "mtimeNs": "1792319501828204935",
+        "ctimeNs": "1792319501828204935"
+      },
+      "saveOperationsBeforeAndAfterDiscard": [
+        "70d6884d-77b2-4e78-81a3-01dd27207496",
+        "4ef36cc2-ed48-41d2-b1ff-4a2d716591ba",
+        "1bdbcd8f-6e2b-4058-8328-3cc9f857bf54"
+      ],
+      "journals": [
+        {
+          "baseRevision": {
+            "changedNs": "1792319501828204935",
+            "device": "16777232",
+            "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+            "inode": "45946355",
+            "modifiedNs": "1792319501828204935",
+            "size": 25
+          },
+          "bufferVersion": 1,
+          "bytes": 65613,
+          "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "candidateIdentity": {
+            "device": "16777232",
+            "inode": "45969514"
+          },
+          "createdAt": 1792319517191,
+          "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "45969511"
+          },
+          "draftLeaf": "draft",
+          "exchanged": false,
+          "fingerprint": "868409395e85c51fd5e3b664ecaa04147da2ee95a9f527c15cd77ab6110b10b0",
+          "materializedLeaf": "materialized",
+          "opId": "1bdbcd8f-6e2b-4058-8328-3cc9f857bf54",
+          "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+          "receipt": {
+            "bufferVersion": 1,
+            "message": "Injected I/O failure",
+            "opId": "1bdbcd8f-6e2b-4058-8328-3cc9f857bf54",
+            "state": "failed"
+          },
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "45969509"
+          },
+          "relativePath": "failed-io-before.txt",
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "45946352"
+            },
+            "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+            "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+            }
+          },
+          "stagingLeaf": "candidate",
+          "state": "failed",
+          "targetParentIdentity": {
+            "device": "16777232",
+            "inode": "45946352"
+          },
+          "transactionIdentity": {
+            "device": "16777232",
+            "inode": "45969512"
+          },
+          "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-1bdbcd8f-6e2b-4058-8328-3cc9f857bf54",
+          "volumeId": "16777232"
+        },
+        {
+          "baseRevision": {
+            "changedNs": "1792319501828204935",
+            "device": "16777232",
+            "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+            "inode": "45946355",
+            "modifiedNs": "1792319501828204935",
+            "size": 25
+          },
+          "bufferVersion": 1,
+          "bytes": 65613,
+          "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "candidateIdentity": {
+            "device": "16777232",
+            "inode": "45969504"
+          },
+          "createdAt": 1792319516662,
+          "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "45969501"
+          },
+          "draftLeaf": "draft",
+          "exchanged": false,
+          "fingerprint": "868409395e85c51fd5e3b664ecaa04147da2ee95a9f527c15cd77ab6110b10b0",
+          "materializedLeaf": "materialized",
+          "opId": "4ef36cc2-ed48-41d2-b1ff-4a2d716591ba",
+          "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+          "receipt": {
+            "bufferVersion": 1,
+            "message": "Injected I/O failure",
+            "opId": "4ef36cc2-ed48-41d2-b1ff-4a2d716591ba",
+            "state": "failed"
+          },
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "45969499"
+          },
+          "relativePath": "failed-io-before.txt",
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "45946352"
+            },
+            "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+            "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+            }
+          },
+          "stagingLeaf": "candidate",
+          "state": "failed",
+          "targetParentIdentity": {
+            "device": "16777232",
+            "inode": "45946352"
+          },
+          "transactionIdentity": {
+            "device": "16777232",
+            "inode": "45969502"
+          },
+          "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-4ef36cc2-ed48-41d2-b1ff-4a2d716591ba",
+          "volumeId": "16777232"
+        },
+        {
+          "baseHash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+          "bom": false,
+          "bufferVersion": 1,
+          "bytes": 65614,
+          "createdAt": 1792319515851,
+          "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "45969485"
+          },
+          "draftLeaf": "draft-c3195fb3-9660-41e3-8a55-21574681ed4b",
+          "encoding": "utf-8",
+          "fingerprint": "9bf117b6c5e0115fa5402643c51350bfc30501566cd850f16f20d92bcddca9af",
+          "kind": "checkpoint",
+          "opId": "64383f57-658d-4c65-b06e-617df17773db",
+          "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "45969483"
+          },
+          "relativePath": "failed-io-before.txt",
+          "resolvedAt": 1792319517328,
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "45946352"
+            },
+            "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+            "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+            }
+          },
+          "state": "resolved",
+          "updatedAt": 1792319515851
+        },
+        {
+          "baseRevision": {
+            "changedNs": "1792319501828204935",
+            "device": "16777232",
+            "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+            "inode": "45946355",
+            "modifiedNs": "1792319501828204935",
+            "size": 25
+          },
+          "bufferVersion": 1,
+          "bytes": 65613,
+          "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "candidateIdentity": {
+            "device": "16777232",
+            "inode": "45969493"
+          },
+          "createdAt": 1792319516380,
+          "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "45969490"
+          },
+          "draftLeaf": "draft",
+          "exchanged": false,
+          "fingerprint": "868409395e85c51fd5e3b664ecaa04147da2ee95a9f527c15cd77ab6110b10b0",
+          "materializedLeaf": "materialized",
+          "opId": "70d6884d-77b2-4e78-81a3-01dd27207496",
+          "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+          "receipt": {
+            "bufferVersion": 1,
+            "message": "Injected I/O failure",
+            "opId": "70d6884d-77b2-4e78-81a3-01dd27207496",
+            "state": "failed"
+          },
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "45969488"
+          },
+          "relativePath": "failed-io-before.txt",
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "45946352"
+            },
+            "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+            "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+            }
+          },
+          "stagingLeaf": "candidate",
+          "state": "failed",
+          "targetParentIdentity": {
+            "device": "16777232",
+            "inode": "45946352"
+          },
+          "transactionIdentity": {
+            "device": "16777232",
+            "inode": "45969491"
+          },
+          "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-70d6884d-77b2-4e78-81a3-01dd27207496",
+          "volumeId": "16777232"
+        }
+      ]
+    },
+    {
+      "caseId": "M9-T-H27",
+      "scenario": "unknown after exchange; explicit discard and actual recovery entry",
+      "journal": {
+        "baseRevision": {
+          "changedNs": "1792319501828326269",
+          "device": "16777232",
+          "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+          "inode": "45946357",
+          "modifiedNs": "1792319501828326269",
+          "size": 25
+        },
+        "bufferVersion": 1,
+        "bytes": 65613,
+        "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "candidateIdentity": {
+          "device": "16777232",
+          "inode": "45969586"
+        },
+        "createdAt": 1792319522108,
+        "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "draftIdentity": {
+          "device": "16777232",
+          "inode": "45969583"
+        },
+        "draftLeaf": "draft",
+        "exchanged": true,
+        "fingerprint": "e94e78a719b75160939479a2f3b0a1f117e5e47671368a594c34ecd8f6fe1c7d",
+        "materializedLeaf": "materialized",
+        "opId": "80bf5ac0-2136-46ca-acab-bde4ed04620b",
+        "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+        "receipt": {
+          "bufferVersion": 1,
+          "message": "Injected I/O failure",
+          "opId": "80bf5ac0-2136-46ca-acab-bde4ed04620b",
+          "recoveryId": "80bf5ac0-2136-46ca-acab-bde4ed04620b",
+          "state": "unknown"
+        },
+        "recordIdentity": {
+          "device": "16777232",
+          "inode": "45969581"
+        },
+        "relativePath": "unknown-after.txt",
+        "root": {
+          "identity": {
+            "device": "16777232",
+            "inode": "45946352"
+          },
+          "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+          "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+        },
+        "schemaVersion": 1,
+        "source": {
+          "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+          "kind": "project-directory",
+          "scope": {
+            "kind": "project",
+            "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+          }
+        },
+        "stagingLeaf": "candidate",
+        "state": "unknown",
+        "targetParentIdentity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "transactionIdentity": {
+          "device": "16777232",
+          "inode": "45969584"
+        },
+        "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-80bf5ac0-2136-46ca-acab-bde4ed04620b",
+        "volumeId": "16777232"
+      },
+      "versionsBeforeAndAfter": {
+        "current": {
+          "text": "Edited locally 中文🙂\n",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969586",
+          "mtimeNs": "1792319522131434000",
+          "ctimeNs": "1792319522139585361"
+        },
+        "displaced": {
+          "text": "Original disk 中文🙂\n",
+          "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+          "inode": "45946357",
+          "mtimeNs": "1792319501828326269",
+          "ctimeNs": "1792319522139585403"
+        },
+        "draft": {
+          "text": "Edited locally 中文🙂\n",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969583",
+          "mtimeNs": "1792319522116446193",
+          "ctimeNs": "1792319522116446193"
+        },
+        "materialized": {
+          "text": "Edited locally 中文🙂\n",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969586",
+          "mtimeNs": "1792319522131434000",
+          "ctimeNs": "1792319522139585361"
+        },
+        "journal": {
+          "text": "{\"baseRevision\":{\"changedNs\":\"1792319501828326269\",\"device\":\"16777232\",\"hash\":\"f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817\",\"inode\":\"45946357\",\"modifiedNs\":\"1792319501828326269\",\"size\":25},\"bufferVersion\":1,\"bytes\":65613,\"candidateHash\":\"7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"45969586\"},\"createdAt\":1792319522108,\"draftHash\":\"7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"45969583\"},\"draftLeaf\":\"draft\",\"exchanged\":true,\"fingerprint\":\"e94e78a719b75160939479a2f3b0a1f117e5e47671368a594c34ecd8f6fe1c7d\",\"materializedLeaf\":\"materialized\",\"opId\":\"80bf5ac0-2136-46ca-acab-bde4ed04620b\",\"projectKey\":\"35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6\",\"receipt\":{\"bufferVersion\":1,\"message\":\"Injected I\\/O failure\",\"opId\":\"80bf5ac0-2136-46ca-acab-bde4ed04620b\",\"recoveryId\":\"80bf5ac0-2136-46ca-acab-bde4ed04620b\",\"state\":\"unknown\"},\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"45969581\"},\"relativePath\":\"unknown-after.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"45946352\"},\"path\":\"\\/private\\/tmp\\/willyou-close-recovery-sZhTUN\\/project\",\"sourcePath\":\"\\/private\\/tmp\\/willyou-close-recovery-sZhTUN\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"4a196f03-0a79-4596-9943-eb968ec7967c\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"dda5f577-38c6-4be9-85e3-99ce495306cd\"}},\"stagingLeaf\":\"candidate\",\"state\":\"unknown\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"45946352\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"45969584\"},\"transactionLeaf\":\".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-80bf5ac0-2136-46ca-acab-bde4ed04620b\",\"volumeId\":\"16777232\"}",
+          "hash": "f9028ca488818b9ab3b0b2c53cbebf0acfbe298165b000ff2eb8974f313bf686",
+          "inode": "45969590",
+          "mtimeNs": "1792319522139718445",
+          "ctimeNs": "1792319522144179994"
+        }
+      },
+      "ui": {
+        "state": "保存结果待核对 · 只读",
+        "materials": [
+          {
+            "kind": "current",
+            "text": "Edited locally 中文🙂\n",
+            "summary": "当前磁盘版本26 字节"
+          },
+          {
+            "kind": "displaced",
+            "text": "Original disk 中文🙂\n",
+            "summary": "交换前的磁盘版本25 字节"
+          },
+          {
+            "kind": "draft",
+            "text": "Edited locally 中文🙂\n",
+            "summary": "独立保存的本地草稿26 字节"
+          },
+          {
+            "kind": "materialized",
+            "text": "Edited locally 中文🙂\n",
+            "summary": "本次保存的候选版本26 字节"
+          }
+        ]
+      },
+      "saveOperations": [
+        "80bf5ac0-2136-46ca-acab-bde4ed04620b"
+      ],
+      "noRetryAfterDiscard": true
+    },
+    {
+      "caseId": "M9-T-H27",
+      "scenario": "conflict after exchange; explicit discard and actual recovery entry",
+      "journal": {
+        "baseRevision": {
+          "changedNs": "1792319501828597019",
+          "device": "16777232",
+          "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+          "inode": "45946358",
+          "modifiedNs": "1792319501828597019",
+          "size": 25
+        },
+        "bufferVersion": 1,
+        "bytes": 65613,
+        "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "candidateIdentity": {
+          "device": "16777232",
+          "inode": "45969621"
+        },
+        "createdAt": 1792319529046,
+        "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "draftIdentity": {
+          "device": "16777232",
+          "inode": "45969618"
+        },
+        "draftLeaf": "draft",
+        "exchanged": true,
+        "fingerprint": "ae62ef2225eeb555a37d56f97a2b0dcb56fc0c3121c0160a2766d921fd4d4ba7",
+        "materializedLeaf": "materialized",
+        "opId": "857b1fb8-8b61-4f0f-83a4-4780649925b7",
+        "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+        "receipt": {
+          "bufferVersion": 1,
+          "message": "Displaced file contains a concurrent external edit",
+          "opId": "857b1fb8-8b61-4f0f-83a4-4780649925b7",
+          "recoveryId": "857b1fb8-8b61-4f0f-83a4-4780649925b7",
+          "state": "conflict"
+        },
+        "recordIdentity": {
+          "device": "16777232",
+          "inode": "45969616"
+        },
+        "relativePath": "conflict-after.txt",
+        "root": {
+          "identity": {
+            "device": "16777232",
+            "inode": "45946352"
+          },
+          "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+          "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+        },
+        "schemaVersion": 1,
+        "source": {
+          "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+          "kind": "project-directory",
+          "scope": {
+            "kind": "project",
+            "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+          }
+        },
+        "stagingLeaf": "candidate",
+        "state": "conflict",
+        "targetParentIdentity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "transactionIdentity": {
+          "device": "16777232",
+          "inode": "45969619"
+        },
+        "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-857b1fb8-8b61-4f0f-83a4-4780649925b7",
+        "volumeId": "16777232"
+      },
+      "versionsBeforeAndAfter": {
+        "current": {
+          "text": "Edited locally 中文🙂\n",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969621",
+          "mtimeNs": "1792319529065567000",
+          "ctimeNs": "1792319529073826263"
+        },
+        "displaced": {
+          "text": "External concurrent edit through held original FD 中文🙂\n",
+          "hash": "49c1cbfd4fda2f2737d1736d816eaeb7a2c9ed3b92a5d88b745df2d582186a0c",
+          "inode": "45946358",
+          "mtimeNs": "1792319529074046597",
+          "ctimeNs": "1792319529074046597"
+        },
+        "draft": {
+          "text": "Edited locally 中文🙂\n",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969618",
+          "mtimeNs": "1792319529054020060",
+          "ctimeNs": "1792319529054020060"
+        },
+        "materialized": {
+          "text": "Edited locally 中文🙂\n",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969621",
+          "mtimeNs": "1792319529065567000",
+          "ctimeNs": "1792319529073826263"
+        },
+        "journal": {
+          "text": "{\"baseRevision\":{\"changedNs\":\"1792319501828597019\",\"device\":\"16777232\",\"hash\":\"f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817\",\"inode\":\"45946358\",\"modifiedNs\":\"1792319501828597019\",\"size\":25},\"bufferVersion\":1,\"bytes\":65613,\"candidateHash\":\"7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"45969621\"},\"createdAt\":1792319529046,\"draftHash\":\"7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"45969618\"},\"draftLeaf\":\"draft\",\"exchanged\":true,\"fingerprint\":\"ae62ef2225eeb555a37d56f97a2b0dcb56fc0c3121c0160a2766d921fd4d4ba7\",\"materializedLeaf\":\"materialized\",\"opId\":\"857b1fb8-8b61-4f0f-83a4-4780649925b7\",\"projectKey\":\"35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6\",\"receipt\":{\"bufferVersion\":1,\"message\":\"Displaced file contains a concurrent external edit\",\"opId\":\"857b1fb8-8b61-4f0f-83a4-4780649925b7\",\"recoveryId\":\"857b1fb8-8b61-4f0f-83a4-4780649925b7\",\"state\":\"conflict\"},\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"45969616\"},\"relativePath\":\"conflict-after.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"45946352\"},\"path\":\"\\/private\\/tmp\\/willyou-close-recovery-sZhTUN\\/project\",\"sourcePath\":\"\\/private\\/tmp\\/willyou-close-recovery-sZhTUN\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"4a196f03-0a79-4596-9943-eb968ec7967c\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"dda5f577-38c6-4be9-85e3-99ce495306cd\"}},\"stagingLeaf\":\"candidate\",\"state\":\"conflict\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"45946352\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"45969619\"},\"transactionLeaf\":\".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-857b1fb8-8b61-4f0f-83a4-4780649925b7\",\"volumeId\":\"16777232\"}",
+          "hash": "98b9212fc0592113beeba70eabb2ec4a80a113576cb06b97ebb6c7bb674fcbae",
+          "inode": "45969625",
+          "mtimeNs": "1792319529074338097",
+          "ctimeNs": "1792319529078374313"
+        }
+      },
+      "ui": {
+        "state": "保存冲突 · 只读",
+        "materials": [
+          {
+            "kind": "current",
+            "text": "Edited locally 中文🙂\n",
+            "summary": "当前磁盘版本26 字节"
+          },
+          {
+            "kind": "displaced",
+            "text": "External concurrent edit through held original FD 中文🙂\n",
+            "summary": "交换前的磁盘版本61 字节"
+          },
+          {
+            "kind": "draft",
+            "text": "Edited locally 中文🙂\n",
+            "summary": "独立保存的本地草稿26 字节"
+          },
+          {
+            "kind": "materialized",
+            "text": "Edited locally 中文🙂\n",
+            "summary": "本次保存的候选版本26 字节"
+          }
+        ]
+      },
+      "saveOperations": [
+        "857b1fb8-8b61-4f0f-83a4-4780649925b7"
+      ],
+      "noRetryAfterDiscard": true
+    },
+    {
+      "caseId": "M9-T-H08",
+      "scenario": "real input B while native save A is suspended; only A acknowledged before B autosaves",
+      "firstSaved": {
+        "text": "Edited locally 中文🙂\n",
+        "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "inode": "45969643",
+        "mtimeNs": "1792319535916523000",
+        "ctimeNs": "1792319535985281998"
+      },
+      "newerInputRemainedDirty": true,
+      "finalDisk": {
+        "text": "Newer input while an older save is pending 中文🙂\n",
+        "hash": "05d2582c3b81cb9dacd59cd0f2ceaf80c13b3d8733f2f9a43ced061bf8684e6d",
+        "inode": "45969662",
+        "mtimeNs": "1792319539704394000",
+        "ctimeNs": "1792319539714086536"
+      },
+      "saveOperations": [
+        "7308c061-82ad-44fc-8b1e-d579817c9ddc",
+        "2f4ae545-1b10-4f23-a678-1d18b0e52eb4"
+      ]
+    },
+    {
+      "caseId": "M9-T-H28",
+      "scenario": "actual pane unmount waits delayed native write; reopen retains snapshot",
+      "independentDisk": {
+        "text": "Edited locally 中文🙂\n",
+        "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "inode": "45969677",
+        "mtimeNs": "1792319541266037000",
+        "ctimeNs": "1792319541698526276"
+      },
+      "saveOperations": [
+        "ae7f9a9e-1981-4d25-9c5b-c52827967d32"
+      ]
+    },
+    {
+      "caseId": "M9-T-H28",
+      "scenario": "normal App quit waits native save and only then exits",
+      "trigger": "electron.app.quit requested",
+      "exited": {
+        "pid": 83924,
+        "code": 0,
+        "signal": null
+      },
+      "independentDisk": {
+        "text": "Edited locally 中文🙂\n",
+        "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "inode": "45969711",
+        "mtimeNs": "1792319547085712000",
+        "ctimeNs": "1792319547544739839"
+      },
+      "sourceStayedOldWhileWaiting": true,
+      "rootInertAndOverlayObserved": true,
+      "cleanSourceSaveOperations": 0,
+      "ordinaryDraftsResolved": true
+    }
+  ],
+  "status": "passed",
+  "boundary": "A: actual packaged App pointer/keyboard editing, close/discard/recovery menu, hide/reopen and real normal quit coordinator. A private COW clone has unchanged ASAR and a wrapper forwarding real native IO; exact synthetic save filenames alone enable original native test hooks. I: setup via public project IPC; main inspector only triggers electron.app.quit (no mocked coordinator acknowledgement; no physical CmdQ claim). No model, clipboard, global focus/IME or other Apps.",
+  "finalJournals": [
+    {
+      "baseHash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+      "bom": false,
+      "bufferVersion": 1,
+      "bytes": 65614,
+      "createdAt": 1792319521607,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969579"
+      },
+      "draftLeaf": "draft-1de076a7-ffb4-440c-8e70-696b0faad48b",
+      "encoding": "utf-8",
+      "fingerprint": "1a955062ea3df6ceef5372077f9863291ab7d4f36bff7f422d9fea6c87db965b",
+      "kind": "checkpoint",
+      "opId": "0430f883-8b7f-45c5-8b12-2db1e0190548",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969577"
+      },
+      "relativePath": "unknown-after.txt",
+      "resolvedAt": 1792319522467,
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "state": "resolved",
+      "updatedAt": 1792319521607
+    },
+    {
+      "baseHash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+      "bom": false,
+      "bufferVersion": 1,
+      "bytes": 65614,
+      "createdAt": 1792319528469,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969614"
+      },
+      "draftLeaf": "draft-306b47c8-b3ea-452b-b71f-3bb3bb9f11fc",
+      "encoding": "utf-8",
+      "fingerprint": "a865b0534ef0134e8a0f897f247ceda5b85c9fa053eb14cd6f1f331fb5476161",
+      "kind": "checkpoint",
+      "opId": "10ab5422-0cdd-4f6a-9dd2-8be6271edc43",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969612"
+      },
+      "relativePath": "conflict-after.txt",
+      "resolvedAt": 1792319529549,
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "state": "resolved",
+      "updatedAt": 1792319528469
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501828204935",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946355",
+        "modifiedNs": "1792319501828204935",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969514"
+      },
+      "createdAt": 1792319517191,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969511"
+      },
+      "draftLeaf": "draft",
+      "exchanged": false,
+      "fingerprint": "868409395e85c51fd5e3b664ecaa04147da2ee95a9f527c15cd77ab6110b10b0",
+      "materializedLeaf": "materialized",
+      "opId": "1bdbcd8f-6e2b-4058-8328-3cc9f857bf54",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "message": "Injected I/O failure",
+        "opId": "1bdbcd8f-6e2b-4058-8328-3cc9f857bf54",
+        "state": "failed"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969509"
+      },
+      "relativePath": "failed-io-before.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "failed",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969512"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-1bdbcd8f-6e2b-4058-8328-3cc9f857bf54",
+      "volumeId": "16777232"
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319535985281998",
+        "device": "16777232",
+        "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "inode": "45969643",
+        "modifiedNs": "1792319535916523000",
+        "size": 26
+      },
+      "bufferVersion": 3,
+      "bytes": 65670,
+      "candidateHash": "05d2582c3b81cb9dacd59cd0f2ceaf80c13b3d8733f2f9a43ced061bf8684e6d",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969662"
+      },
+      "createdAt": 1792319539678,
+      "displacedIdentity": {
+        "device": "16777232",
+        "inode": "45969643"
+      },
+      "draftHash": "05d2582c3b81cb9dacd59cd0f2ceaf80c13b3d8733f2f9a43ced061bf8684e6d",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969659"
+      },
+      "draftLeaf": "draft",
+      "exchanged": true,
+      "fingerprint": "ee9ec144ce80191dc3d8ed4a0d8f9bf9e30ab12cc7205e9f566b890235cae6ee",
+      "materializedLeaf": "materialized",
+      "opId": "2f4ae545-1b10-4f23-a678-1d18b0e52eb4",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 3,
+        "opId": "2f4ae545-1b10-4f23-a678-1d18b0e52eb4",
+        "recoveryId": "2f4ae545-1b10-4f23-a678-1d18b0e52eb4",
+        "revision": {
+          "changedNs": "1792319539714086536",
+          "device": "16777232",
+          "hash": "05d2582c3b81cb9dacd59cd0f2ceaf80c13b3d8733f2f9a43ced061bf8684e6d",
+          "inode": "45969662",
+          "modifiedNs": "1792319539704394000",
+          "size": 54
+        },
+        "state": "saved"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969657"
+      },
+      "relativePath": "while-save.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "saved",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969660"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-2f4ae545-1b10-4f23-a678-1d18b0e52eb4",
+      "volumeId": "16777232"
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501828204935",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946355",
+        "modifiedNs": "1792319501828204935",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969504"
+      },
+      "createdAt": 1792319516662,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969501"
+      },
+      "draftLeaf": "draft",
+      "exchanged": false,
+      "fingerprint": "868409395e85c51fd5e3b664ecaa04147da2ee95a9f527c15cd77ab6110b10b0",
+      "materializedLeaf": "materialized",
+      "opId": "4ef36cc2-ed48-41d2-b1ff-4a2d716591ba",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "message": "Injected I/O failure",
+        "opId": "4ef36cc2-ed48-41d2-b1ff-4a2d716591ba",
+        "state": "failed"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969499"
+      },
+      "relativePath": "failed-io-before.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "failed",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969502"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-4ef36cc2-ed48-41d2-b1ff-4a2d716591ba",
+      "volumeId": "16777232"
+    },
+    {
+      "baseHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "bom": false,
+      "bufferVersion": 3,
+      "bytes": 65698,
+      "createdAt": 1792319535401,
+      "draftHash": "05d2582c3b81cb9dacd59cd0f2ceaf80c13b3d8733f2f9a43ced061bf8684e6d",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969653"
+      },
+      "draftLeaf": "draft-a337890b-21e8-4be3-94d8-7b56fd5f4c6b",
+      "encoding": "utf-8",
+      "fingerprint": "950607fa93e52f957f748ff3a073b3b15406417df7ea6af316d7a8e217bc75ff",
+      "kind": "checkpoint",
+      "opId": "56e9d85c-4fc5-4307-97e4-484fcd3e4c93",
+      "previousDraft": {
+        "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+        "identity": {
+          "device": "16777232",
+          "inode": "45969635"
+        },
+        "leaf": "draft-44088d3a-b6fe-427e-9485-f03551b3bf36"
+      },
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969633"
+      },
+      "relativePath": "while-save.txt",
+      "resolvedAt": 1792319541935,
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "state": "resolved",
+      "updatedAt": 1792319536570
+    },
+    {
+      "baseHash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+      "bom": false,
+      "bufferVersion": 1,
+      "bytes": 65614,
+      "createdAt": 1792319515851,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969485"
+      },
+      "draftLeaf": "draft-c3195fb3-9660-41e3-8a55-21574681ed4b",
+      "encoding": "utf-8",
+      "fingerprint": "9bf117b6c5e0115fa5402643c51350bfc30501566cd850f16f20d92bcddca9af",
+      "kind": "checkpoint",
+      "opId": "64383f57-658d-4c65-b06e-617df17773db",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969483"
+      },
+      "relativePath": "failed-io-before.txt",
+      "resolvedAt": 1792319517328,
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "state": "resolved",
+      "updatedAt": 1792319515851
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501832600651",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946361",
+        "modifiedNs": "1792319501832600651",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969711"
+      },
+      "createdAt": 1792319547064,
+      "displacedIdentity": {
+        "device": "16777232",
+        "inode": "45946361"
+      },
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969708"
+      },
+      "draftLeaf": "draft",
+      "exchanged": true,
+      "fingerprint": "1ec872628af5cfdc94cc4592afe5bf6bcd895483e86bd555e681485fe6ff7c8f",
+      "materializedLeaf": "materialized",
+      "opId": "6907706c-5645-410c-93fd-e5a537410755",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "opId": "6907706c-5645-410c-93fd-e5a537410755",
+        "recoveryId": "6907706c-5645-410c-93fd-e5a537410755",
+        "revision": {
+          "changedNs": "1792319547544739839",
+          "device": "16777232",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969711",
+          "modifiedNs": "1792319547085712000",
+          "size": 26
+        },
+        "state": "saved"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969706"
+      },
+      "relativePath": "quit.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "saved",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969709"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-6907706c-5645-410c-93fd-e5a537410755",
+      "volumeId": "16777232"
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501828204935",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946355",
+        "modifiedNs": "1792319501828204935",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969493"
+      },
+      "createdAt": 1792319516380,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969490"
+      },
+      "draftLeaf": "draft",
+      "exchanged": false,
+      "fingerprint": "868409395e85c51fd5e3b664ecaa04147da2ee95a9f527c15cd77ab6110b10b0",
+      "materializedLeaf": "materialized",
+      "opId": "70d6884d-77b2-4e78-81a3-01dd27207496",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "message": "Injected I/O failure",
+        "opId": "70d6884d-77b2-4e78-81a3-01dd27207496",
+        "state": "failed"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969488"
+      },
+      "relativePath": "failed-io-before.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "failed",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969491"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-70d6884d-77b2-4e78-81a3-01dd27207496",
+      "volumeId": "16777232"
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501832350859",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946359",
+        "modifiedNs": "1792319501832350859",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969643"
+      },
+      "createdAt": 1792319535896,
+      "displacedIdentity": {
+        "device": "16777232",
+        "inode": "45946359"
+      },
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969640"
+      },
+      "draftLeaf": "draft",
+      "exchanged": true,
+      "fingerprint": "f3f4c01ff33042dbdea8a7eaa47360c9f26f7d372aac940919509472aa469daa",
+      "materializedLeaf": "materialized",
+      "opId": "7308c061-82ad-44fc-8b1e-d579817c9ddc",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "opId": "7308c061-82ad-44fc-8b1e-d579817c9ddc",
+        "recoveryId": "7308c061-82ad-44fc-8b1e-d579817c9ddc",
+        "revision": {
+          "changedNs": "1792319535985281998",
+          "device": "16777232",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969643",
+          "modifiedNs": "1792319535916523000",
+          "size": 26
+        },
+        "state": "saved"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969638"
+      },
+      "relativePath": "while-save.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "saved",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969641"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-7308c061-82ad-44fc-8b1e-d579817c9ddc",
+      "volumeId": "16777232"
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501828326269",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946357",
+        "modifiedNs": "1792319501828326269",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969586"
+      },
+      "createdAt": 1792319522108,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969583"
+      },
+      "draftLeaf": "draft",
+      "exchanged": true,
+      "fingerprint": "e94e78a719b75160939479a2f3b0a1f117e5e47671368a594c34ecd8f6fe1c7d",
+      "materializedLeaf": "materialized",
+      "opId": "80bf5ac0-2136-46ca-acab-bde4ed04620b",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "message": "Injected I/O failure",
+        "opId": "80bf5ac0-2136-46ca-acab-bde4ed04620b",
+        "recoveryId": "80bf5ac0-2136-46ca-acab-bde4ed04620b",
+        "state": "unknown"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969581"
+      },
+      "relativePath": "unknown-after.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "unknown",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969584"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-80bf5ac0-2136-46ca-acab-bde4ed04620b",
+      "volumeId": "16777232"
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501828597019",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946358",
+        "modifiedNs": "1792319501828597019",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969621"
+      },
+      "createdAt": 1792319529046,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969618"
+      },
+      "draftLeaf": "draft",
+      "exchanged": true,
+      "fingerprint": "ae62ef2225eeb555a37d56f97a2b0dcb56fc0c3121c0160a2766d921fd4d4ba7",
+      "materializedLeaf": "materialized",
+      "opId": "857b1fb8-8b61-4f0f-83a4-4780649925b7",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "message": "Displaced file contains a concurrent external edit",
+        "opId": "857b1fb8-8b61-4f0f-83a4-4780649925b7",
+        "recoveryId": "857b1fb8-8b61-4f0f-83a4-4780649925b7",
+        "state": "conflict"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969616"
+      },
+      "relativePath": "conflict-after.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "conflict",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969619"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-857b1fb8-8b61-4f0f-83a4-4780649925b7",
+      "volumeId": "16777232"
+    },
+    {
+      "baseHash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+      "bom": false,
+      "bufferVersion": 1,
+      "bytes": 65614,
+      "createdAt": 1792319546471,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969701"
+      },
+      "draftLeaf": "draft-6a617440-4d05-41e1-922d-43cc7bb29562",
+      "encoding": "utf-8",
+      "fingerprint": "8e228904cc7a7156498885dd35467fcdd03c9ff819c37e1a5ef21a1d674dd19b",
+      "kind": "checkpoint",
+      "opId": "a27ab0f1-5d86-4b7b-a206-b2ecead0fdfb",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969699"
+      },
+      "relativePath": "quit.txt",
+      "resolvedAt": 1792319547649,
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "state": "resolved",
+      "updatedAt": 1792319546471
+    },
+    {
+      "baseRevision": {
+        "changedNs": "1792319501832473318",
+        "device": "16777232",
+        "hash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+        "inode": "45946360",
+        "modifiedNs": "1792319501832473318",
+        "size": 25
+      },
+      "bufferVersion": 1,
+      "bytes": 65613,
+      "candidateHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "candidateIdentity": {
+        "device": "16777232",
+        "inode": "45969677"
+      },
+      "createdAt": 1792319541244,
+      "displacedIdentity": {
+        "device": "16777232",
+        "inode": "45946360"
+      },
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969674"
+      },
+      "draftLeaf": "draft",
+      "exchanged": true,
+      "fingerprint": "6d3c283788fd1c5efbe1daf9810c4e74e5a96b2d7362b6f6578d4ddac5e9e855",
+      "materializedLeaf": "materialized",
+      "opId": "ae7f9a9e-1981-4d25-9c5b-c52827967d32",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "receipt": {
+        "bufferVersion": 1,
+        "opId": "ae7f9a9e-1981-4d25-9c5b-c52827967d32",
+        "recoveryId": "ae7f9a9e-1981-4d25-9c5b-c52827967d32",
+        "revision": {
+          "changedNs": "1792319541698526276",
+          "device": "16777232",
+          "hash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+          "inode": "45969677",
+          "modifiedNs": "1792319541266037000",
+          "size": 26
+        },
+        "state": "saved"
+      },
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969672"
+      },
+      "relativePath": "unmount.txt",
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "stagingLeaf": "candidate",
+      "state": "saved",
+      "targetParentIdentity": {
+        "device": "16777232",
+        "inode": "45946352"
+      },
+      "transactionIdentity": {
+        "device": "16777232",
+        "inode": "45969675"
+      },
+      "transactionLeaf": ".willyou-recovery-9c85c2e0-588a-4f3e-a657-53535a3dd95e-ae7f9a9e-1981-4d25-9c5b-c52827967d32",
+      "volumeId": "16777232"
+    },
+    {
+      "baseHash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+      "bom": false,
+      "bufferVersion": 1,
+      "bytes": 65614,
+      "createdAt": 1792319510501,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45966495"
+      },
+      "draftLeaf": "draft-bb20c671-29da-44d5-8c31-f2e46f6e08e8",
+      "encoding": "utf-8",
+      "fingerprint": "58728a035db574222d7a6b20bfe4c43fb6fda06a848c4e5a8ae4b7e267922819",
+      "kind": "checkpoint",
+      "opId": "b0e04a8d-6bcd-4c64-8179-9b4b3db0c76d",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45966493"
+      },
+      "relativePath": "failed-before.txt",
+      "resolvedAt": 1792319511589,
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "state": "resolved",
+      "updatedAt": 1792319510501
+    },
+    {
+      "baseHash": "f409c45c905cc390ec20ed3e8a0f358c894404944f61a25d78b0bbe2d4038817",
+      "bom": false,
+      "bufferVersion": 1,
+      "bytes": 65614,
+      "createdAt": 1792319540755,
+      "draftHash": "7ac6576fafc89fde29fc2e45362845b3bc54b5399ce4a9d6d0f01a70eca5e169",
+      "draftIdentity": {
+        "device": "16777232",
+        "inode": "45969670"
+      },
+      "draftLeaf": "draft-26fdb1ac-279b-479a-86e1-3bfc7624b4ea",
+      "encoding": "utf-8",
+      "fingerprint": "c597ed7f50f142d5bfd5625a9c8564a95dd07b2e0ed1cdf1fa5f543c7affbf17",
+      "kind": "checkpoint",
+      "opId": "d4898ea1-0932-439f-a7d3-d31e954945c4",
+      "projectKey": "35381407265b50c20e46a4f393dc2f487c6e478858a6f0bbb76a254888335bb6",
+      "recordIdentity": {
+        "device": "16777232",
+        "inode": "45969668"
+      },
+      "relativePath": "unmount.txt",
+      "resolvedAt": 1792319542405,
+      "root": {
+        "identity": {
+          "device": "16777232",
+          "inode": "45946352"
+        },
+        "path": "/private/tmp/willyou-close-recovery-sZhTUN/project",
+        "sourcePath": "/private/tmp/willyou-close-recovery-sZhTUN/project"
+      },
+      "schemaVersion": 1,
+      "source": {
+        "id": "4a196f03-0a79-4596-9943-eb968ec7967c",
+        "kind": "project-directory",
+        "scope": {
+          "kind": "project",
+          "projectId": "dda5f577-38c6-4be9-85e3-99ce495306cd"
+        }
+      },
+      "state": "resolved",
+      "updatedAt": 1792319540755
+    }
+  ],
+  "finishedAt": "2026-10-18T10:32:28.378Z"
+}

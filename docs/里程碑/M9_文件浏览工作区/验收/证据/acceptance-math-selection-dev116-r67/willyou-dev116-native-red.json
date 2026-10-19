@@ -1,0 +1,418 @@
+{
+  "caseIds": [
+    "M9-T-H14",
+    "M9-T-H17",
+    "M9-T-X01",
+    "M9-T-X02",
+    "M9-T-X04",
+    "M9-T-X05",
+    "M9-T-X06",
+    "M9-T-X08",
+    "M9-T-X09",
+    "M9-T-X10",
+    "M9-T-X11",
+    "M9-T-X12"
+  ],
+  "startedAt": "2026-10-19T01:11:03.331Z",
+  "rows": [],
+  "worker": {
+    "source": "src/renderer/features/files/markdown/worker.ts",
+    "bundleSha256": "1bcb7f77b7ed6193ec36a607998e16c2b1efd17102c97e9b2820300a00355412",
+    "mathSource": "src/shared/markdown-math-worker.mjs",
+    "mathBundleSha256": "f1ab9163b5a5873824c7629cc4941f3c9c0e57988fe4765b6c9c58b495e7530b",
+    "transport": "Node worker_threads; both production worker sources bundled unmodified"
+  },
+  "nativePackage": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r66-build/mac-arm64/WillYou.app",
+    "asarSha256": "a13d0d70f7ff74d30c3b38d9275ae3f23565936b3a03ab4a221a8d2be2c09d07",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherVersion": "2.5.6"
+  },
+  "workerMessages": [
+    {
+      "direction": "request",
+      "data": {
+        "id": 1,
+        "rev": 0,
+        "type": "parse",
+        "source": "# Prefix\r\n\r\n中文😀 $a^2$ 与 $b_1$\r\n\r\n$$\r\nc+d\r\n$$\r\n\r\nTail\r\n"
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "result",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "id": 2,
+        "rev": 0,
+        "type": "window",
+        "start": 0,
+        "readOnly": false
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "window",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 1,
+        "formulas": [
+          {
+            "source": "a^2",
+            "displayMode": false
+          },
+          {
+            "source": "b_1",
+            "displayMode": false
+          }
+        ],
+        "baseNodes": 18,
+        "baseUnits": 566
+      }
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 2,
+        "formulas": [
+          {
+            "source": "\nc+d\n",
+            "displayMode": true
+          }
+        ],
+        "baseNodes": 8,
+        "baseUnits": 207
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 1,
+        "result": {
+          "html": [
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8141em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8141em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span>",
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msub><mi>b</mi><mn>1</mn></msub></mrow><annotation encoding=\"application/x-tex\">b_1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8444em;vertical-align:-0.15em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3011em;\"><span style=\"top:-2.55em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"><span></span></span></span></span></span></span></span></span></span>"
+          ],
+          "nodes": 114,
+          "units": 2269,
+          "overflow": false
+        }
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 2,
+        "result": {
+          "html": [
+            "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>c</mi><mo>+</mo><mi>d</mi></mrow><annotation encoding=\"application/x-tex\">\nc+d\n</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">d</span></span></span></span></span>"
+          ],
+          "nodes": 48,
+          "units": 953,
+          "overflow": false
+        }
+      }
+    },
+    {
+      "direction": "request",
+      "data": {
+        "id": 1,
+        "rev": 0,
+        "type": "parse",
+        "source": "# Prefix\r\n\r\n  ## 中文😀 $a^2$ 与 $b_1$\r\n\r\n$$\r\nc+d\r\n$$\r\n\r\nTail\r\n"
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "result",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "id": 2,
+        "rev": 0,
+        "type": "window",
+        "start": 0,
+        "readOnly": false
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "window",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 1,
+        "formulas": [
+          {
+            "source": "a^2",
+            "displayMode": false
+          },
+          {
+            "source": "b_1",
+            "displayMode": false
+          }
+        ],
+        "baseNodes": 18,
+        "baseUnits": 568
+      }
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 2,
+        "formulas": [
+          {
+            "source": "\nc+d\n",
+            "displayMode": true
+          }
+        ],
+        "baseNodes": 8,
+        "baseUnits": 207
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 1,
+        "result": {
+          "html": [
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8141em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8141em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span>",
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msub><mi>b</mi><mn>1</mn></msub></mrow><annotation encoding=\"application/x-tex\">b_1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8444em;vertical-align:-0.15em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3011em;\"><span style=\"top:-2.55em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"><span></span></span></span></span></span></span></span></span></span>"
+          ],
+          "nodes": 114,
+          "units": 2271,
+          "overflow": false
+        }
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 2,
+        "result": {
+          "html": [
+            "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>c</mi><mo>+</mo><mi>d</mi></mrow><annotation encoding=\"application/x-tex\">\nc+d\n</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">d</span></span></span></span></span>"
+          ],
+          "nodes": 48,
+          "units": 953,
+          "overflow": false
+        }
+      }
+    },
+    {
+      "direction": "request",
+      "data": {
+        "id": 1,
+        "rev": 0,
+        "type": "parse",
+        "source": "# Prefix\r\n\r\n> 中文😀 $a^2$ 与 $b_1$\r\n\r\n$$\r\nc+d\r\n$$\r\n\r\nTail\r\n"
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "result",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "id": 2,
+        "rev": 0,
+        "type": "window",
+        "start": 0,
+        "readOnly": false
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "window",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 1,
+        "formulas": [
+          {
+            "source": "a^2",
+            "displayMode": false
+          },
+          {
+            "source": "b_1",
+            "displayMode": false
+          }
+        ],
+        "baseNodes": 20,
+        "baseUnits": 593
+      }
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 2,
+        "formulas": [
+          {
+            "source": "\nc+d\n",
+            "displayMode": true
+          }
+        ],
+        "baseNodes": 8,
+        "baseUnits": 207
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 1,
+        "result": {
+          "html": [
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8141em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8141em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span>",
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msub><mi>b</mi><mn>1</mn></msub></mrow><annotation encoding=\"application/x-tex\">b_1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8444em;vertical-align:-0.15em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3011em;\"><span style=\"top:-2.55em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"><span></span></span></span></span></span></span></span></span></span>"
+          ],
+          "nodes": 116,
+          "units": 2296,
+          "overflow": false
+        }
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 2,
+        "result": {
+          "html": [
+            "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>c</mi><mo>+</mo><mi>d</mi></mrow><annotation encoding=\"application/x-tex\">\nc+d\n</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">d</span></span></span></span></span>"
+          ],
+          "nodes": 48,
+          "units": 953,
+          "overflow": false
+        }
+      }
+    },
+    {
+      "direction": "request",
+      "data": {
+        "id": 1,
+        "rev": 0,
+        "type": "parse",
+        "source": "# Prefix\r\n\r\n- 中文😀 $a^2$ 与 $b_1$\r\n\r\n$$\r\nc+d\r\n$$\r\n\r\nTail\r\n"
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "result",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "id": 2,
+        "rev": 0,
+        "type": "window",
+        "start": 0,
+        "readOnly": false
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "window",
+      "rev": 0
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 1,
+        "formulas": [
+          {
+            "source": "a^2",
+            "displayMode": false
+          },
+          {
+            "source": "b_1",
+            "displayMode": false
+          }
+        ],
+        "baseNodes": 20,
+        "baseUnits": 579
+      }
+    },
+    {
+      "direction": "request",
+      "data": {
+        "type": "render-math",
+        "id": 2,
+        "formulas": [
+          {
+            "source": "\nc+d\n",
+            "displayMode": true
+          }
+        ],
+        "baseNodes": 8,
+        "baseUnits": 207
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 1,
+        "result": {
+          "html": [
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8141em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8141em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span>",
+            "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msub><mi>b</mi><mn>1</mn></msub></mrow><annotation encoding=\"application/x-tex\">b_1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8444em;vertical-align:-0.15em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3011em;\"><span style=\"top:-2.55em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"><span></span></span></span></span></span></span></span></span></span>"
+          ],
+          "nodes": 116,
+          "units": 2282,
+          "overflow": false
+        }
+      }
+    },
+    {
+      "direction": "reply",
+      "type": "math-result",
+      "mathResult": {
+        "type": "math-result",
+        "id": 2,
+        "result": {
+          "html": [
+            "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>c</mi><mo>+</mo><mi>d</mi></mrow><annotation encoding=\"application/x-tex\">\nc+d\n</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">d</span></span></span></span></span>"
+          ],
+          "nodes": 48,
+          "units": 953,
+          "overflow": false
+        }
+      }
+    }
+  ],
+  "finishedAt": "2026-10-19T01:11:04.550Z"
+}

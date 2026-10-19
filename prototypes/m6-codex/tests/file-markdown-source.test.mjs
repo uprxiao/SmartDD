@@ -45,7 +45,7 @@ test('cross-block endpoint range includes source markup and validates document b
 });
 test('highlighted fences use existing language aliases and escape unknown code safely',()=>{
  const code=parseMarkdown('```ts\r\nconst 名 = "<script>";\r\n```\r\n').blocks[0], out=highlightedCode(code);
- assert.equal(out.language,'typescript');assert.match(out.html,/hljs-keyword/);assert.ok(!out.html.includes('<script>'));
+ assert.equal(out.language,'typescript');assert.match(out.html,/fw-code-token/);assert.ok(!out.html.includes('<script>'));
  const at=out.code.indexOf('名');assert.deepEqual(sourcePoint({from:code.from,to:code.to,mode:'atomic',renderedOffset:at,runs:out.map.runs}),{offset:code.raw.indexOf('名'),exact:true});
  const unknown=highlightedCode(parseMarkdown('```unknown\n<img src=x onerror=bad>\n```').blocks[0]);assert.equal(unknown.language,null);assert.match(unknown.html,/&lt;img/);
 });

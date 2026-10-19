@@ -1,0 +1,46 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/office/buffer.test.ts
+
+[1018/132716.841021:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/132717.202928:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/office/buffer.test.ts (18 tests | 2 failed) 63ms
+     × retries a transient checkpoint once at 1000ms and cancels it on close 5ms
+     × bounds checkpoint retries for IO and leaves pending input intact 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/office/buffer.test.ts > Office buffer save/close and pending input > retries a transient checkpoint once at 1000ms and cancels it on close
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/renderer/features/files/office/buffer.test.ts:30:71
+     28|     await vi.advanceTimersByTimeAsync(500);expect(api.checkpointOffice…
+     29|     await vi.advanceTimersByTimeAsync(999);expect(api.checkpointOffice…
+     30|     await vi.advanceTimersByTimeAsync(1);expect(api.checkpointOffice).…
+       |                                                                       ^
+     31|     expect(api.checkpointOffice.mock.calls[1][0]).toEqual(api.checkpoi…
+     32|     api.checkpointOffice.mockRejectedValueOnce(new Error('[IO] interru…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/files/office/buffer.test.ts > Office buffer save/close and pending input > bounds checkpoint retries for IO and leaves pending input intact
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/renderer/features/files/office/buffer.test.ts:42:34
+     40|     buffer.office!.setPending({sheetId:'1',row:0,column:0,text:'uncomm…
+     41|     await vi.advanceTimersByTimeAsync(2499);
+     42|     expect(api.checkpointOffice).toHaveBeenCalledTimes(code==='IO'?2:1…
+       |                                  ^
+     43|     expect(buffer.office!.busy).toBe(false);expect(buffer.office!.pend…
+     44|     // The one scheduled autosave may attempt a checkpoint, but must t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 16 passed (18)
+   Start at  13:27:17
+   Duration  748ms (transform 86ms, setup 0ms, import 162ms, tests 63ms, environment 417ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

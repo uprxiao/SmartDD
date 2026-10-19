@@ -26,3 +26,55 @@
 .fw-refs li button{display:inline-flex;border:0;background:none;color:var(--secondary);cursor:pointer;padding:0}
 .fw-refs-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fw-refs-actions button{padding:3px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer}.fw-refs-actions button:disabled{opacity:.5;cursor:not-allowed}
 .fw-refs-preview pre{margin:2px 0 0;padding:6px 8px;max-height:140px;overflow:auto;background:var(--bg);border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;font:12px var(--mono)}
+
+/* 2026-10-17 user reference: same file header and code metrics as production. */
+.fw-tabs{height:40px}.fw-tab{height:30px;border:1px solid transparent;border-radius:7px}.fw-tab>button:first-child{font-size:12px;gap:6px}.fw-toolbar{min-height:44px;height:44px;padding:6px 8px}.fw-breadcrumb{height:30px;font-size:12px;border-color:transparent;box-shadow:none;background:var(--surface)}.fw-editor{padding-top:0}
+:root[data-theme="dark"] .fw-tabs{background:#282828}:root[data-theme="dark"] .fw-tab.selected{background:#353535;border-color:#494949}:root[data-theme="dark"] .fw-breadcrumb{background:#2d2d2d}
+
+/* Root row and breadcrumb dimensions shared with the current reference. */
+.fw-tree-region:has(>.fw-root-folder){display:flex;flex-direction:column}
+.fw-tree-region:has(>.fw-root-folder)>.fw-tree-scroll{height:auto;flex:1;min-height:0}
+.fw-tree-region:has(>.fw-root-folder)>.fw-sticky-folders{top:28px}
+.fw-root-folder{flex-shrink:0;padding-left:3px;border-radius:0;font-size:12px}
+.fw-tree-scroll[hidden]{display:none!important}
+.fw-breadcrumb>span{gap:2px;flex-shrink:0}
+.fw-crumb-chevron{font-size:16px;line-height:16px;color:var(--muted);padding:0 3px}
+
+/* 2026-10-17: shared split open button dimensions, real provider is in App. */
+.file-workspace .fw-open-button{height:32px;border-radius:18px;display:flex;align-items:center;flex-shrink:0;background:var(--surface);border:1px solid var(--border);font-size:12px;line-height:18px;color:var(--text)}
+.fw-open-button>button{display:flex;align-items:center;gap:6px;height:30px;padding:0 2px 0 10px;border-radius:18px 0 0 18px;white-space:nowrap}
+.fw-open-button>button:last-child{padding:0 7px 0 3px;border-radius:0 18px 18px 0}
+.fw-open-button>button:hover{background:var(--hover)}
+.fw-open-button>button:disabled{opacity:.55}
+
+/* M9 production-aligned Git design state; data remains synthetic. */
+.fw-prototype-blame{flex:0 0 10ch;width:10ch;overflow:hidden;font:var(--fw-code-size)/var(--fw-code-line) var(--fw-code-font);color:var(--muted)}
+.fw-prototype-blame>button{display:block;width:10ch;height:var(--fw-code-line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:5px;font:inherit}.fw-prototype-blame>button:hover,.fw-prototype-blame>button:focus-visible{text-decoration:underline;color:var(--text)}
+.fw-prototype-blame-card{position:fixed;z-index:70;width:32ch;max-width:42vw;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);box-shadow:var(--shadow);font:12px/1.5 -apple-system,BlinkMacSystemFont,sans-serif}.fw-prototype-blame-card>div{display:flex;justify-content:space-between}.fw-prototype-blame-card p{margin:6px 0}.fw-prototype-blame-card small{font-size:11px;color:var(--muted)}
+
+/* DEV074: outer ratio preference, separate from the scoped inner tree width. */
+.m9-active>.file-workspace:not(.fw-full){flex:0 0 var(--prototype-file-width,57%);width:var(--prototype-file-width,57%);min-width:0}
+.m9-active .task-window-header{right:calc(var(--prototype-file-width,57%) + 4px)}
+.m9-panel-resizer{flex:0 0 4px;cursor:col-resize;touch-action:none;position:relative;z-index:7;margin-right:-4px}
+.m9-panel-resizer:hover,.m9-panel-resizer:focus-visible{background:var(--accent);outline:none}
+
+/* Preserve intrinsic names and deep indentation; the tree viewport clips/pans. */
+.fw-tree-scroll .fw-tree-virtual-row{min-width:max-content}
+.fw-tree-scroll .fw-tree-virtual-row>.fw-tree-name{min-width:max-content;flex-shrink:0;overflow:visible;text-overflow:clip}
+
+/* C13 shares the App search-status spacing and type scale. */
+.fw-name-limit{display:flex;flex-wrap:wrap;gap:5px;padding:10px 5px;font-size:12px;color:var(--secondary);flex-shrink:0}
+
+/* Reviewed media speed radio states and volume-zero icon, DEV177. */
+.fw-media:not(.fw-media-expanded):not(.fw-media-pip){position:relative}
+.fw-media .fw-media-options{position:absolute;right:20px;bottom:60px;z-index:8;display:flex;flex-direction:column;align-items:stretch;gap:0;min-width:180px;max-height:60vh;overflow:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow)}
+.fw-media-speed-label{padding:6px 10px;color:var(--secondary);font-size:11px}
+.fw-media-options [role=group]{display:flex;flex-direction:column}
+.fw-media-options .fw-media-speed{display:flex;align-items:center;gap:8px;padding:6px 10px;min-height:30px;text-align:left;border-radius:6px;font-size:12px}
+.fw-media-options .fw-media-speed:hover,.fw-media-options .fw-media-speed:focus-visible{background:var(--hover)}
+.fw-media-check{display:inline-flex;width:14px}
+
+/* Ordinary tree images: no embedded-image gallery controls. */
+.fw-ordinary-image { min-height:0; overflow:hidden; justify-content:center; }
+.fw-ordinary-image img { width:100%; height:100%; min-height:0; max-width:100%; max-height:100%; object-fit:contain; }
+.fw-svg-image img { background:#fff; padding:16px; }

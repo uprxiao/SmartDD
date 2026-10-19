@@ -1,0 +1,27 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/office/session-state-acceptance.test.tsx src/main/core/files/office/save-replay-acceptance.test.ts src/main/core/files/office/targeted-patch-acceptance.test.ts src/main/core/files/office/shared-string-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-j08-r9-packaged-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/core/files/office/save-replay-acceptance.test.ts (2 tests) 678ms
+     ✓ returns the original xlsx receipt without another native write and rejects changed intent  351ms
+ ✓ src/main/core/files/office/targeted-patch-acceptance.test.ts (3 tests) 652ms
+     ✓ rejects unsafe selection without writing and retains an exact target (duplicate identity=false)  459ms
+ ✓ src/main/core/files/office/shared-string-acceptance.test.ts (2 tests) 780ms
+     ✓ preserves all other cells with 1 references and reopens the saved copy independently  444ms
+     ✓ preserves all other cells with 3 references and reopens the saved copy independently  333ms
+ ✓ src/renderer/features/files/office/session-state-acceptance.test.tsx (13 tests) 3059ms
+     ✓ retries a transient checkpoint after exactly 1000ms: before-write  399ms
+     ✓ retries a transient checkpoint after exactly 1000ms: lost-receipt  308ms
+     ✓ preserves the model and draft when materialization reports too-large  302ms
+     ✓ pauses failed cached-mode autosaves after real permission removal while retaining edits for explicit retry  405ms
+     ✓ keeps a live model, local candidate and unchanged source when checkpoint persistence fails, then recovers  330ms
+
+ Test Files  4 passed (4)
+      Tests  20 passed (20)
+   Start at  13:32:38
+   Duration  3.98s (transform 1.43s, setup 0ms, import 2.32s, tests 5.17s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-j08-r9-packaged-tests.json

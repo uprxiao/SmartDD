@@ -1,0 +1,129 @@
+{
+  "at": "2026-10-18T16:36:54.826Z",
+  "scratch": "/private/tmp/willyou-search-failure-app-7W71XJ",
+  "root": "/private/tmp/willyou-search-failure-app-7W71XJ/project",
+  "checks": [
+    {
+      "caseId": "M9-T-C15",
+      "action": "delete",
+      "selected": "/private/tmp/willyou-search-failure-app-7W71XJ/project/victim-delete.txt",
+      "want": "/private/tmp/willyou-search-failure-app-7W71XJ/project/victim-delete.txt",
+      "listed": [
+        "/private/tmp/willyou-search-failure-app-7W71XJ/project/victim-delete.txt",
+        "/private/tmp/willyou-search-failure-app-7W71XJ/project/victim-rename.txt"
+      ],
+      "error": "Error invoking remote method 'files.open': FileError: [MISSING] stat component: No such file or directory重试",
+      "editor": null
+    },
+    {
+      "caseId": "M9-T-C15",
+      "action": "rename",
+      "selected": "/private/tmp/willyou-search-failure-app-7W71XJ/project/victim-rename.txt",
+      "want": "/private/tmp/willyou-search-failure-app-7W71XJ/project/victim-rename.txt",
+      "listed": [
+        "/private/tmp/willyou-search-failure-app-7W71XJ/project/victim-rename.txt"
+      ],
+      "error": "Error invoking remote method 'files.open': FileError: [MISSING] stat component: No such file or directory重试",
+      "editor": null
+    },
+    {
+      "caseId": "M9-T-C15",
+      "action": "renamed-path-recovery",
+      "text": "RENAME target original\n"
+    },
+    {
+      "caseId": "M9-T-C12",
+      "state": "empty",
+      "text": "没有匹配文件"
+    },
+    {
+      "caseId": "M9-T-C12",
+      "state": "permission-and-retry",
+      "error": "[PERMISSION] open root: Permission denied重试",
+      "paths": [
+        "/private/tmp/willyou-search-failure-app-7W71XJ/project/TimeoutMatch.txt"
+      ]
+    },
+    {
+      "caseId": "M9-T-C12",
+      "state": "timeout-and-retry",
+      "error": "[TIMEOUT] 文件操作超时；保存结果须重新核对，不能自动重试重试",
+      "elapsedMs": 15106,
+      "waiting": {
+        "event": "waiting",
+        "atMs": 1792341425068.898,
+        "pid": 19057,
+        "held": true,
+        "outputSha256": "177aa13c33f6ae55ee3bde0446a09841e2505ee7d633dd6a24f68c65601f0184",
+        "nativeExit": 0
+      },
+      "cancelled": {
+        "event": "cancelled",
+        "atMs": 1792341439977.3901,
+        "pid": 19057,
+        "held": true,
+        "signal": 15
+      },
+      "paths": [
+        "/private/tmp/willyou-search-failure-app-7W71XJ/project/TimeoutMatch.txt"
+      ]
+    }
+  ],
+  "before": {
+    "sentinel.txt": {
+      "sha256": "4468edd9ddbe90c9f9464f21c4193fec166cea42bc3446e424a378ed6d60101d",
+      "ino": 47543272,
+      "size": 25,
+      "mtimeMs": 1792341414825.9978
+    },
+    "victim-delete.txt": {
+      "sha256": "45d4e1bb424a26abb3837b0339824d4081990862251e08c8281bb9820db594b5",
+      "ino": 47543273,
+      "size": 23,
+      "mtimeMs": 1792341414826.1833
+    },
+    "victim-rename.txt": {
+      "sha256": "901beefc0b2aea6e0e09ed9f45319728c4139eb7c4f094c213a71c0bed86d482",
+      "ino": 47543274,
+      "size": 23,
+      "mtimeMs": 1792341414826.3008
+    },
+    "TimeoutMatch.txt": {
+      "sha256": "73f04bcd808761af8b7fe8f2f6f89407a2b8ba91da6822fe5b930012cea965d9",
+      "ino": 47543275,
+      "size": 26,
+      "mtimeMs": 1792341414826.4272
+    }
+  },
+  "boundary": "C15 uses unchanged packaged App/native. C12 uses COW App with identical ASAR and transparent broker wrapper; only one genuine walk success is withheld to exercise unchanged 15s main timeout. Permissions are real chmod on this synthetic root. No daily data, terminal tasks, clipboard or model.",
+  "faultCopy": {
+    "bundle": "/private/tmp/willyou-m9-acceptance-batch-r39-build/mac-arm64/WillYou.app",
+    "clone": "/private/tmp/willyou-search-failure-app-7W71XJ/Timeout WillYou.app",
+    "asarSha256": "0113265c1f84a4bf444bdfb8761260cae33fc33d94bb90191d9aed7220db78b9",
+    "originalAsarSha256": "0113265c1f84a4bf444bdfb8761260cae33fc33d94bb90191d9aed7220db78b9",
+    "originalBrokerSha256": "cae73e3859bdf342971ad9bcfcb148b8485064d564546bea7227fb9610b712cb",
+    "wrapperSha256": "66b576219e79f30eb92c1cbd4561594038d0fcd40b2c9696e96f7d274be0638a"
+  },
+  "after": {
+    "sentinel": {
+      "sha256": "4468edd9ddbe90c9f9464f21c4193fec166cea42bc3446e424a378ed6d60101d",
+      "ino": 47543272,
+      "size": 25,
+      "mtimeMs": 1792341414825.9978
+    },
+    "timeout": {
+      "sha256": "73f04bcd808761af8b7fe8f2f6f89407a2b8ba91da6822fe5b930012cea965d9",
+      "ino": 47543275,
+      "size": 26,
+      "mtimeMs": 1792341414826.4272
+    },
+    "renamed": {
+      "sha256": "901beefc0b2aea6e0e09ed9f45319728c4139eb7c4f094c213a71c0bed86d482",
+      "ino": 47543274,
+      "size": 23,
+      "mtimeMs": 1792341414826.3008
+    }
+  },
+  "status": "passed",
+  "finishedAt": "2026-10-18T16:37:20.330Z"
+}

@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-H21",
+  "title": "外改请求乱序",
+  "requirements": [
+    "M9-R07.5",
+    "M9-R08.2"
+  ],
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "environmentsUnchanged": [
+    "U",
+    "I"
+  ],
+  "levelUnchanged": "单元／集成／安装端到端",
+  "stepsUnchanged": "连续两次外改读取r1/r2，r2先完成，r1后完成。",
+  "expectedUnchanged": "revision/abort保护；r1不覆盖r2；已释放tab不更新。",
+  "explicitUIResult": "passed (U+I; U means unit, I means integration)",
+  "formalIndexChanged": false,
+  "actual": {
+    "summary": "在stat(refresh)与read两个真实结果边界分别重排r1/r2；r2先完成，r1迟到成功或注入delivery错误，另各覆盖tab dispose后到达，共8种组合。r2文本/hash/inode与通知数均保持，磁盘最新内容不改，无保存事务。",
+    "checks": [
+      "Delayed stat success",
+      "Delayed stat error",
+      "Delayed read success",
+      "Delayed read error",
+      "Each of the four also delivered after dispose",
+      "Real external atomic replacements produce different inodes",
+      "No late notifications or stale errors; latest base/revision retained; zero writes"
+    ]
+  },
+  "observations": [
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "refresh",
+      "lateResult": "real earlier snapshot",
+      "disposedBeforeDelivery": false,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401931"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401932"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401932",
+          "device": "16777232",
+          "changedNs": "1792288410591177498",
+          "modifiedNs": "1792288410590911082",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    },
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "refresh",
+      "lateResult": "real earlier snapshot",
+      "disposedBeforeDelivery": true,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401940"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401941"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401941",
+          "device": "16777232",
+          "changedNs": "1792288410696240971",
+          "modifiedNs": "1792288410696107137",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    },
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "refresh",
+      "lateResult": "delivery error",
+      "disposedBeforeDelivery": false,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401950"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401951"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401951",
+          "device": "16777232",
+          "changedNs": "1792288410814794095",
+          "modifiedNs": "1792288410814660803",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    },
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "refresh",
+      "lateResult": "delivery error",
+      "disposedBeforeDelivery": true,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401958"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401959"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401959",
+          "device": "16777232",
+          "changedNs": "1792288410958187568",
+          "modifiedNs": "1792288410957760360",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    },
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "read",
+      "lateResult": "real earlier snapshot",
+      "disposedBeforeDelivery": false,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401967"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401968"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401968",
+          "device": "16777232",
+          "changedNs": "1792288411101792708",
+          "modifiedNs": "1792288411101657333",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    },
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "read",
+      "lateResult": "real earlier snapshot",
+      "disposedBeforeDelivery": true,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401975"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401976"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401976",
+          "device": "16777232",
+          "changedNs": "1792288411268896989",
+          "modifiedNs": "1792288411268659406",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    },
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "read",
+      "lateResult": "delivery error",
+      "disposedBeforeDelivery": false,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401984"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401985"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401985",
+          "device": "16777232",
+          "changedNs": "1792288411446773300",
+          "modifiedNs": "1792288411446635384",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    },
+    {
+      "case": "M9-T-H21",
+      "delayedStage": "read",
+      "lateResult": "delivery error",
+      "disposedBeforeDelivery": true,
+      "oldVersion": {
+        "hash": "e33ea88bbdb6a8de06dceede172d49c03c5e0c8dd8aec44e465126271416a5fc",
+        "inode": "44401994"
+      },
+      "latestVersion": {
+        "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "inode": "44401995"
+      },
+      "final": {
+        "raw": "EXTERNAL R2 中文\n",
+        "baseHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+        "revision": {
+          "size": 19,
+          "inode": "44401995",
+          "device": "16777232",
+          "changedNs": "1792288411567326423",
+          "modifiedNs": "1792288411567070381",
+          "hash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4"
+        },
+        "error": ""
+      },
+      "diskHash": "95907d0a244abf6d16f49656f66fec55b35d13a5bc894f28d78306084773e9a4",
+      "notificationsAfterLateDelivery": 0
+    }
+  ],
+  "commonEvidence": {
+    "path": "m9-acceptance-text-buffer-20261018.json",
+    "sha256": "507932db029a1f75ef34aee2393fa13b4036cf4e3ada591b56974a3d58275aba"
+  },
+  "remaining": [
+    "Root combined package must include M9-DEV-034 and M9-DEV-035 corrections; no new App build is claimed here.",
+    "Run affected real App H02/D14 regressions against that combined package before final delivery association."
+  ],
+  "defects": [],
+  "statusBoundary": "Specified U+I steps complete against current source plus unchanged packaged native helper. App delivery validation remains separately pending; no existing package result is silently carried over.",
+  "deliveryFollowup": {
+    "status": "passed",
+    "package": "acceptance-batch-r2",
+    "appRegressionEvidence": "m9-acceptance-r2-app-regression-20261018.json",
+    "note": "原记录remaining为当时状态；统一r2含修复，H02/D14影响范围已完成真实App复验。"
+  }
+}

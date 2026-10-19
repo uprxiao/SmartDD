@@ -1,0 +1,38 @@
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { FileService } from '@main/core/files/file-service';
+import { FileRootsService } from '@main/core/files/roots';
+import { FileRecoveryStore } from '@main/core/files/recovery-store';
+import { NativeFileBroker } from '@main/core/files/native-broker';
+import { FileBuffer } from './file-buffer';
+import { createSaveFailureFixture } from '../../../../scripts/files/text-save-failure-fixture.mjs';
+const sha=(x:Uint8Array|string)=>createHash('sha256').update(x).digest('hex');
+const B='Base 中文🙂\r\n',L='Local '+'中文🙂'.repeat(2048)+'\r\n';
+let environment:Awaited<ReturnType<typeof createSaveFailureFixture>>;
+const rows:unknown[]=[],cleanups:(()=>Promise<void>)[]=[];
+const until=async(fn:()=>boolean)=>{const end=Date.now()+6000;while(!fn()){if(Date.now()>end)throw new Error('Native failure IO did not settle');await delay(5);}};
+const disk=(path:string)=>{const s=statSync(path,{bigint:true}),bytes=readFileSync(path);return{hash:sha(bytes),inode:String(s.ino),mtimeNs:String(s.mtimeNs),bytes:bytes.toString('base64')};};
+describe.skipIf(process.platform!=='darwin'||!process.env.SMARTDD_SAVE_FAILURE_APP)('H09 genuine native save failures',()=>{
+ beforeAll(async()=>{environment=await createSaveFailureFixture(join(process.env.SMARTDD_SAVE_FAILURE_APP!,'Contents/Resources/native/willyou-files'));},60000);
+ afterEach(async()=>{for(const close of cleanups.splice(0))await close();vi.useRealTimers();});
+ afterAll(async()=>{if(environment){await environment.close();if(process.env.SMARTDD_SAVE_FAILURE_EVIDENCE)writeFileSync(process.env.SMARTDD_SAVE_FAILURE_EVIDENCE,JSON.stringify({at:new Date().toISOString(),caseId:'M9-T-H09',environment:environment.evidence,rows,nativeRelay:await environment.observations(),boundary:'I real source/FileBuffer/FileService/recovery/native binary/OS volume and errno; fake timers only. Transparent relay applies4096-byte RLIMIT_FSIZE to original save subprocess for genuine EFBIG; no protocol substitution. Not actual UI or whole-system disk exhaustion.'},null,2)+'\n');}});
+ it.each(['permission','disk-full','generic'] as const)('%s preserves source/draft, clears old error on edit and retries successfully',async mode=>{
+  await environment.clear();const name=mode+'.txt',path=join(environment.project,name),userdata=join(environment.base,'userdata-'+mode);mkdirSync(userdata);writeFileSync(path,B);
+  const broker=new NativeFileBroker(environment.wrapper),resolver={sources:()=>[{kind:'project-directory' as const,id:'root',path:environment.project,label:'H09 own volume',projectId:mode}]};
+  const service=new FileService(new FileRootsService(resolver,broker),broker,new FileRecoveryStore(broker,userdata,resolver));
+  const root=(await service.openScope('h09',{kind:'project',projectId:mode})).roots[0],file=await service.open('h09',{lease:root.lease,generation:root.generation,relativePath:name});
+  const api={read:(ref:typeof file.ref)=>service.read('h09',ref),refresh:(ref:typeof file.ref)=>service.refresh('h09',ref),save:(input:Parameters<FileService['save']>[1])=>service.save('h09',input),checkpoint:(input:Parameters<FileService['checkpoint']>[1])=>service.checkpoint('h09',input),drafts:async(ref:typeof file.ref)=>service.drafts('h09',ref),readDraft:(ref:typeof file.ref,id:string)=>service.readDraft('h09',ref,id),resolveDraft:(input:Parameters<FileService['resolveDraft']>[1])=>service.resolveDraft('h09',input),closeDocument:async(ref:typeof file.ref)=>service.closeDocument('h09',ref)};
+  const buffer=new FileBuffer(file,api,()=>{});await buffer.load();
+  cleanups.push(async()=>{buffer.dispose();await environment.clear();await until(()=>broker.activeProcesses===0);service.closeOwner('h09');await service.watcher.dispose();broker.dispose();});
+  vi.useFakeTimers({toFake:['setTimeout','clearTimeout']});
+  const edit=(text:string)=>{const tr=buffer.editor!.update({changes:{from:0,to:buffer.editor!.doc.length,insert:text},userEvent:'input.type'});buffer.acceptTransactions(tr.state,[tr]);};
+  const before=disk(path);edit(L);const fault=await environment.activate(mode);expect(await buffer.save()).toBe(false);await until(()=>broker.activeProcesses===0);
+  const error=buffer.saveError;expect(error).toMatch(mode==='permission'?/denied|permission/i:mode==='disk-full'?/space/i:/File too large/i);expect(buffer.raw).toBe(L);expect(buffer.dirty).toBe(true);expect(buffer.conflict).toBe(false);expect(disk(path)).toEqual(before);
+  const draft=await service.readDraft('h09',buffer.file.ref,buffer.draftId);expect(draft.baseHash).toBe(sha(B));expect(Buffer.from(draft.base64,'base64').toString()).toBe(L);
+  edit(L+'Retried\r\n');expect(buffer.saveError).toBe('');expect(buffer.dirty).toBe(true);await environment.clear();expect(await buffer.save()).toBe(true);await until(()=>broker.activeProcesses===0);expect(readFileSync(path,'utf8')).toBe(L+'Retried\r\n');expect(buffer.dirty).toBe(false);expect(service.drafts('h09',buffer.file.ref)).toEqual([]);
+  rows.push({mode,fault,before,failedError:error,retainedDraft:draft,after:disk(path),dirtyAfterSuccess:buffer.dirty,actualNativeRelay:(await environment.observations()).filter(row=>row.relativePath===name)});
+ },25000);
+});

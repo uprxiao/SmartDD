@@ -1,0 +1,454 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-E07",
+  "caseTitle": "在文件管理器显示",
+  "requirements": [
+    "M9-R05.5"
+  ],
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "prototype": "P07",
+  "status": "passed",
+  "recordedAt": "2026-10-18T01:49:23.250904+00:00",
+  "conclusion": "E07 必需 P/I/A 三层均已完成：指定 chart-resize-r1 App/Finder 验证普通文件、项目根目录及已删除文件；服务与包内原生失败边界 9/9；独立原型实际 DOM 验证对应父目录/定位和 missing 不兜底。此前仅 I/A 的通过结论已按分层补正，本条现在在已验包范围完整通过。",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "workingTree": "M9 development workspace; no commit, release, or application rebuild performed by this evidence task.",
+  "environment": {
+    "platform": "Darwin",
+    "macOS": "26.6.1",
+    "arch": "arm64",
+    "userData": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/userdata",
+    "projectRoot": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+    "fixturePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/accept-reveal.txt",
+    "fixtureBytes": 18,
+    "fixtureSha256": "8d084912ec8798699e8acb65b104f2888527e3a8f4f6caeea7f895e0b37f3658",
+    "fixtureContent": "Reveal acceptance\n",
+    "dataBoundary": "Existing isolated UI test project/userdata; only the newly created acceptance fixture was deleted after backup."
+  },
+  "acceptedBuild": {
+    "appPath": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+    "appAsarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+    "nativeExecutablePath": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "nativeExecutableSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "sourceSnapshotPath": "/private/tmp/willyou-m9-chart-resize-r1-sources.tar.gz",
+    "sourceSnapshotSha256": "703ba5102105a2cd339ba585f92ca108e31720668c8aa7dce4c113ba192e56a9",
+    "sourceSnapshotFileCount": 620
+  },
+  "relatedSourceHashes": {
+    "src/main/core/files/actions.ts": {
+      "sha256": "e3a4cd8adcab11f4c95bcead9e35f9c84ae7a19a70d119fb4be4aef00d8013aa",
+      "packagedSourceSha256": "e3a4cd8adcab11f4c95bcead9e35f9c84ae7a19a70d119fb4be4aef00d8013aa",
+      "matchesPackagedSource": true
+    },
+    "src/main/core/files/file-service.ts": {
+      "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "packagedSourceSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "matchesPackagedSource": true
+    },
+    "src/main/core/files/controller.ts": {
+      "sha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+      "packagedSourceSha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+      "matchesPackagedSource": true
+    },
+    "src/main/core/files/roots.ts": {
+      "sha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "packagedSourceSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "matchesPackagedSource": true
+    },
+    "src/main/core/files/native-broker.ts": {
+      "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "packagedSourceSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "matchesPackagedSource": true
+    },
+    "src/main/core/files/recovery-store.ts": {
+      "sha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "packagedSourceSha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "matchesPackagedSource": true
+    },
+    "src/shared/files.ts": {
+      "sha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "packagedSourceSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "matchesPackagedSource": true
+    },
+    "native/files/broker.mm": {
+      "sha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "packagedSourceSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "matchesPackagedSource": true
+    },
+    "native/files/desktop-actions.inc.mm": {
+      "sha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+      "packagedSourceSha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+      "matchesPackagedSource": true
+    },
+    "src/renderer/features/files/workspace-panel.tsx": {
+      "sha256": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+      "packagedSourceSha256": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+      "matchesPackagedSource": true
+    },
+    "src/renderer/features/files/file-actions.tsx": {
+      "sha256": "09a2855d986b64048cd0ee4be862711235d97c0b88e11214817884e8c3224c19",
+      "packagedSourceSha256": "09a2855d986b64048cd0ee4be862711235d97c0b88e11214817884e8c3224c19",
+      "matchesPackagedSource": true
+    },
+    "src/renderer/features/files/workspace-store.ts": {
+      "sha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+      "packagedSourceSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+      "matchesPackagedSource": true
+    },
+    "src/renderer/features/files/file-buffer.ts": {
+      "sha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+      "packagedSourceSha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+      "matchesPackagedSource": true
+    }
+  },
+  "appObservationProvenance": {
+    "observer": "Root agent /root",
+    "method": "Real packaged App and Finder operated/observed with CUA; root supplied the observations to the evidence-writing agent.",
+    "timeEvidence": "The fixture-deletion timestamp is retained below; individual UI step timestamps were not supplied.",
+    "screenshotsArchived": false,
+    "rawAccessibilitySnapshotsArchived": false,
+    "note": "The following steps are a root observation record, not fabricated screenshots or verbatim accessibility dumps."
+  },
+  "appSteps": [
+    {
+      "step": 1,
+      "precondition": "acceptance-batch-r1/accept-reveal.txt exists in the isolated project.",
+      "action": "Open accept-reveal.txt in WillYou, open its file menu, select 在 Finder 中显示.",
+      "expected": "Finder opens the correct parent directory and selects the exact file.",
+      "actual": {
+        "finderWindow": "acceptance-batch-r1",
+        "selectedName": "accept-reveal.txt",
+        "selectedPath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/accept-reveal.txt",
+        "selectedBytes": 18
+      },
+      "status": "通过"
+    },
+    {
+      "step": 2,
+      "action": "Right-click breadcrumb root 本机测试目录 and select 在 Finder 中显示.",
+      "expected": "Finder opens the root parent and selects the exact project root.",
+      "actual": {
+        "finderWindow": "willyou-m9-ui-4nPmew",
+        "selectedName": "project",
+        "selectedPath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/"
+      },
+      "status": "通过"
+    },
+    {
+      "step": 3,
+      "precondition": "Keep accept-reveal.txt open; preserve its backup, then delete only the new fixture externally.",
+      "action": "Invoke the open file tab menu 在 Finder 中显示 again after deletion.",
+      "expected": "A clear missing-target error; no fallback/default location or unexpected Finder navigation.",
+      "actual": {
+        "tabRetainedText": "Reveal acceptance",
+        "tabState": "MISSING",
+        "errorObservedByRoot": "Error invoking remote method 'files.reveal': FileError: [MISSING] stat component: No such file or directory",
+        "finderWindowAfter": "willyou-m9-ui-4nPmew",
+        "finderSelectionAfter": "project",
+        "finderSelectedPathAfter": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/",
+        "finderNavigationChanged": false
+      },
+      "status": "通过"
+    }
+  ],
+  "fixtureRemoval": {
+    "record": {
+      "time": "2026-10-18T09:34:02.583338+08:00",
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/accept-reveal.txt",
+      "backup": "/private/tmp/willyou-e07-removed-fixture.txt",
+      "sha256": "8d084912ec8798699e8acb65b104f2888527e3a8f4f6caeea7f895e0b37f3658",
+      "existsAfter": false
+    },
+    "recordPath": "/private/tmp/willyou-e07-removal.json",
+    "recordSha256": "7ab546a4de684cf45dc3a64d437119172cad8ce3569cc5e4b3b4881c3d7a5ad9",
+    "backupVerifiedSha256": "8d084912ec8798699e8acb65b104f2888527e3a8f4f6caeea7f895e0b37f3658",
+    "backupVerifiedBytes": 18
+  },
+  "layerTests": {
+    "levels": [
+      "Service unit tests with mocked native side-effect boundary",
+      "Production packaged native broker on real macOS filesystem for deleted targets"
+    ],
+    "reportPath": "/private/tmp/willyou-e07-layer.json",
+    "reportSha256": "31ad8f0acac63f7b5268c4d2854e23bb095ce28805ee5e0f392584a6ddafebbf",
+    "testFile": "src/main/core/files/actions.test.ts",
+    "testFileSha256": "3674c598926d871e5bc7460e12b26557aed9877f9f9ff6a6986c4512cfaca221",
+    "command": "SMARTDD_M9_FILE_BROKER='/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files' pnpm test src/main/core/files/actions.test.ts --reporter=json --outputFile=/private/tmp/willyou-e07-layer.json",
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "scope": "6 new E07 checks plus 3 existing file-action regressions. All nine are supporting checks and count as one formal E07 case, not nine formal cases.",
+    "results": [
+      {
+        "name": "native file action authority and preference uses opaque owner-bound app choices and remembers only after explicit successful opening",
+        "status": "passed",
+        "durationMs": 5.290375000000012
+      },
+      {
+        "name": "native file action authority and preference keeps missing preferences explicit, preserves them on failure, and revokes closed owners",
+        "status": "passed",
+        "durationMs": 0.5105000000000075
+      },
+      {
+        "name": "native file action authority and preference rejects revoked sources before dispatching another native side effect",
+        "status": "passed",
+        "durationMs": 0.3530410000000188
+      },
+      {
+        "name": "native file action authority and preference M9-T-E07 routes 'ordinary file' to its exact native reveal target",
+        "status": "passed",
+        "durationMs": 0.4409169999999847
+      },
+      {
+        "name": "native file action authority and preference M9-T-E07 routes 'nested directory' to its exact native reveal target",
+        "status": "passed",
+        "durationMs": 0.2412920000000156
+      },
+      {
+        "name": "native file action authority and preference M9-T-E07 routes 'project root' to its exact native reveal target",
+        "status": "passed",
+        "durationMs": 0.17037500000000705
+      },
+      {
+        "name": "native file action authority and preference M9-T-E07 propagates missing target without retrying a parent, root, application or default path",
+        "status": "passed",
+        "durationMs": 0.3230000000000075
+      },
+      {
+        "name": "native file action authority and preference M9-T-E07 rejects a closed source before dispatching reveal",
+        "status": "passed",
+        "durationMs": 0.12016700000000924
+      },
+      {
+        "name": "M9-T-E07 packaged native missing-target boundary (no Finder dispatch) rejects a deleted regular file and deleted directory with MISSING, preserving unrelated bytes",
+        "status": "passed",
+        "durationMs": 18.516958999999986
+      }
+    ]
+  },
+  "failureHistory": [],
+  "limits": [
+    "No screenshot or raw AX snapshot was archived for these three real App interactions.",
+    "Only macOS arm64 and the explicitly hashed chart-resize-r1 App are accepted here.",
+    "No newer package or changed build inherits this acceptance automatically; root is responsible for affected regression checks.",
+    "Production missing-target error code is MISSING; NOT_FOUND is not a declared FileError code.",
+    "The evidence-writing agent did not alter the formal coverage index or milestone documents.",
+    "A subsequent current file-buffer.ts save-race fix differs from this accepted package; see finalSourceRecheck. Original relatedSourceHashes report the earlier check and are not a claim that the whole current worktree matches."
+  ],
+  "recordHistory": [
+    {
+      "recordedAt": "2026-10-18T01:35:03.102948+00:00",
+      "status": "通过",
+      "conclusion": "指定 chart-resize-r1 打包 App 的普通文件、项目根目录及已删除文件三条真实界面路径均通过；相关服务层与包内原生失败边界 9/9 通过。仅本用例，不代表 M9 或其他平台完成。",
+      "formalCasePassed": false,
+      "note": "Initial status 通过 covered only I/A. It is not historical P completion. Root kept the formal index pending; all required layers become complete only with the separate P run appended now."
+    }
+  ],
+  "formalCasePassed": true,
+  "prototypeEvidence": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-prototype-actions-20261018.json",
+    "sha256": "58a7d03691a8a08017ad03a03af2dc687832d237569804b87d6beca5afcb9ec6",
+    "caseObservationKey": "observations.M9-T-E07",
+    "sourceArchivePath": "/private/tmp/willyou-m9-prototype-actions-r1-sources.tar.gz",
+    "sourceArchiveSha256": "29af43f413a27d0705765d9857a4dab75c6a8eb1f4289ce5675687e3431a2564",
+    "executedLayer": "P",
+    "scope": "Actual Chrome DOM actions on synthetic fixtures; does not replace packaged App or real external applications.",
+    "caseResult": {
+      "status": "passed",
+      "level": "P",
+      "steps": [
+        {
+          "action": "For AGENTS.md, open 文件查看选项 and click 在 Finder 中显示.",
+          "actual": {
+            "status": "文件管理器（模拟）：显示 /workspace/SmartDD；定位 AGENTS.md。未启动 Finder。",
+            "tabs": [
+              "AGENTS.md"
+            ]
+          }
+        },
+        {
+          "action": "Click root WillYou breadcrumb, then 在文件管理器中显示.",
+          "actual": {
+            "status": "文件管理器（模拟）：显示 /workspace；定位 SmartDD（目录）。未启动 Finder。"
+          }
+        },
+        {
+          "action": "Set 文件状态场景 to 已删除, then invoke 在 Finder 中显示 again.",
+          "actual": {
+            "fileRegion": "文件不存在；文件可能已移动或删除。现有草稿会保留。",
+            "status": "文件不存在，未打开文件管理器（模拟）。",
+            "tabs": [
+              "AGENTS.md"
+            ],
+            "fallbackPathProduced": false
+          }
+        },
+        {
+          "action": "Return scenario to 正常.",
+          "actual": {
+            "normalFileBodyRestored": true
+          }
+        }
+      ],
+      "assertion": "Synthetic file/root reveal reports the exact parent and selection. Missing file reports failure with no fallback target. No Finder process is invoked from P."
+    }
+  },
+  "caseDefinitionAtExecution": {
+    "id": "M9-T-E07",
+    "group": "E",
+    "title": "在文件管理器显示",
+    "requirements": [
+      "M9-R05.5"
+    ],
+    "level": "组件／集成／安装端到端",
+    "environments": [
+      "P",
+      "I",
+      "A"
+    ],
+    "data": [
+      "D01",
+      "D04"
+    ],
+    "steps": "选择普通文件与根目录，触发reveal；删除文件后再触发。",
+    "expected": "显示正确父目录并定位文件；missing失败不打开任意默认路径。",
+    "source": "T opener",
+    "prototype": "PS-toolbar",
+    "basis": "参考事实＋迁移设计",
+    "status": "待补验",
+    "evidence": [
+      "证据/m9-acceptance-e07-20261018.json"
+    ],
+    "actual_result": "本批实际App及服务证据已归档；独立原型P最终基线正在补验，未计完整通过。",
+    "defects": [],
+    "legacy_parent_requirements": [
+      "M9-R05",
+      "M9-R09"
+    ],
+    "prototype_pages": [
+      "P07"
+    ],
+    "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+    "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R05.5"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "layerCoverage": {
+    "P": {
+      "status": "passed",
+      "required": true,
+      "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-prototype-actions-20261018.json",
+      "sha256": "58a7d03691a8a08017ad03a03af2dc687832d237569804b87d6beca5afcb9ec6",
+      "caseObservationKey": "observations.M9-T-E07"
+    },
+    "I": {
+      "status": "passed",
+      "required": true,
+      "evidence": "Real App RPC/native chain, actions.test.ts exact-target dispatch checks, and packaged native broker deleted file/directory MISSING checks."
+    },
+    "A": {
+      "status": "passed",
+      "required": true,
+      "evidence": "Root CUA observation of packaged WillYou plus Finder for ordinary file, project root and externally deleted fixture; see appSteps."
+    }
+  },
+  "completionAudit": {
+    "correctParentAndExactSelection": true,
+    "rootDirectoryRevealedInParent": true,
+    "missingTargetExplicitWithoutFallbackNavigation": true,
+    "relatedSourcesMatchAtOriginalCheck": true,
+    "allRequiredLayersComplete": true,
+    "remainingRequiredSteps": []
+  },
+  "finalSourceRecheck": {
+    "checkedAt": "2026-10-18T01:49:23.250904+00:00",
+    "relatedProductionFiles": {
+      "src/main/core/files/actions.ts": {
+        "currentSha256": "e3a4cd8adcab11f4c95bcead9e35f9c84ae7a19a70d119fb4be4aef00d8013aa",
+        "acceptedSnapshotSha256": "e3a4cd8adcab11f4c95bcead9e35f9c84ae7a19a70d119fb4be4aef00d8013aa",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/main/core/files/file-service.ts": {
+        "currentSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "acceptedSnapshotSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/main/core/files/controller.ts": {
+        "currentSha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+        "acceptedSnapshotSha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/main/core/files/roots.ts": {
+        "currentSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "acceptedSnapshotSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/main/core/files/native-broker.ts": {
+        "currentSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "acceptedSnapshotSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/main/core/files/recovery-store.ts": {
+        "currentSha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "acceptedSnapshotSha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/shared/files.ts": {
+        "currentSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "acceptedSnapshotSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "matchesAcceptedSnapshot": true
+      },
+      "native/files/broker.mm": {
+        "currentSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+        "acceptedSnapshotSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+        "matchesAcceptedSnapshot": true
+      },
+      "native/files/desktop-actions.inc.mm": {
+        "currentSha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+        "acceptedSnapshotSha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/renderer/features/files/workspace-panel.tsx": {
+        "currentSha256": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+        "acceptedSnapshotSha256": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/renderer/features/files/file-actions.tsx": {
+        "currentSha256": "09a2855d986b64048cd0ee4be862711235d97c0b88e11214817884e8c3224c19",
+        "acceptedSnapshotSha256": "09a2855d986b64048cd0ee4be862711235d97c0b88e11214817884e8c3224c19",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/renderer/features/files/workspace-store.ts": {
+        "currentSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+        "acceptedSnapshotSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+        "matchesAcceptedSnapshot": true
+      },
+      "src/renderer/features/files/file-buffer.ts": {
+        "currentSha256": "137bf399d969f769c6723b07a0bf743fb0b9659c921293d5bbfe22442c581354",
+        "acceptedSnapshotSha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+        "matchesAcceptedSnapshot": false
+      }
+    },
+    "allCurrentProductionFilesMatchAcceptedSnapshot": false,
+    "changedFiles": [
+      "src/renderer/features/files/file-buffer.ts"
+    ],
+    "diff": "--- accepted chart-resize-r1 source\n+++ current workspace\n@@ -195,6 +195,10 @@\n         }\n         this.file = { ...this.file, revision: receipt.revision, documentKey: `local:${receipt.revision.device}:${receipt.revision.inode}` };\n         this.baseRaw = snapshot.raw; this.baseBom = snapshot.bom; this.baseHash = receipt.revision.hash; this.savedVersion = snapshot.version; this.writeRequired = false;\n+        // Newer input may already have a durable checkpoint against the old\n+        // base. Rebasing that input is a new draft state even when its bytes\n+        // stay the same; never reuse its version with a different baseHash.\n+        if (this.version !== snapshot.version && this.dirty) this.version++;\n         // A newer editor transaction stays dirty. Only the acknowledged snapshot\n         // is eligible to resolve its independent checkpoint.\n         try { await this.api.resolveDraft({ ref: this.file.ref, draftId: this.draftId, bufferVersion: snapshot.version, hash: receipt.revision.hash, action: 'saved', saveOpId: opId }); }\n",
+    "changeAttribution": "Root confirms the current file-buffer.ts change belongs to the concurrent H04 save-race M9-DEV-034 fix; increment version after an in-flight save rebases a newer dirty draft.",
+    "acceptanceBoundary": "E06/E07 performed no document content edit/save. Their actual external open/reveal and unchanged bytes results remain evidence for the explicitly hashed chart-resize-r1 package. This record does not claim the current buffer or any newer package was accepted. Root handles affected new-package H02/D14/F10 regressions.",
+    "prototypeSnapshotFileCount": 324,
+    "prototypeAllStillMatch": true
+  }
+}

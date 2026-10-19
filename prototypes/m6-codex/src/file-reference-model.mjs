@@ -50,7 +50,7 @@ export function formatReference(ref, { style = 'plain', includeText = false, sel
   if (comment) parts.push(comment.split('\n').map(l => '> ' + l).join('\n'));
   let truncated = false, text = '';
   if (includeText && selectedText) {
-    text = selectedText; if (text.length > REF_LIMITS.maxSelectedChars) { text = text.slice(0, REF_LIMITS.maxSelectedChars); truncated = true; }
+    text = selectedText; if (text.length > REF_LIMITS.maxSelectedChars) { let end = REF_LIMITS.maxSelectedChars; if (/[\uD800-\uDBFF]/.test(text[end - 1]) && /[\uDC00-\uDFFF]/.test(text[end])) end--; text = text.slice(0, end); truncated = true; }
     const lines = text.split('\n'); if (lines.length > REF_LIMITS.maxLines) { text = lines.slice(0, REF_LIMITS.maxLines).join('\n'); truncated = true; }
     parts.push(text.split('\n').map(l => '    ' + l).join('\n') + (truncated ? '\n    …（已截断）' : '')); // 缩进引用，避免与围栏代码块冲突
   }
@@ -62,9 +62,22 @@ export function formatReference(ref, { style = 'plain', includeText = false, sel
 // 引用是否仍然指向同一内容。revision 变化只是提示，不阻止发送；文件缺失才阻止。
 export function referenceStaleness(ref, current) {
   if (!current || current.missing) return 'missing';
-  if (ref.revision && current.revision && ref.revision !== current.revision) return 'stale';
+  if (ref.revision !== undefined && current.revision !== undefined && ref.revision !== current.revision) return 'stale';
   if (ref.selectedTextHash && current.selectedTextHash && ref.selectedTextHash !== current.selectedTextHash) return 'stale';
   return 'fresh';
+}
+
+// Per-reference limits do not cover separators or the aggregate tray size.
+export function formatReferenceTray(items, options = {}, currentSource) {
+  if (currentSource && items.some(item => referenceStaleness(item.ref, currentSource(item)) === 'missing')) return { ok: false, error: 'missing-source' };
+  const parts = [];
+  for (const item of items) {
+    const value = formatReference(item.ref, { ...options, includeText: options.includeText && item.ref.kind !== 'file', selectedText: item.selectedText });
+    if (!value.ok) return value;
+    parts.push(value.text);
+  }
+  const text = parts.join('\n\n');
+  return text.length > REF_LIMITS.maxTotalChars ? { ok: false, error: 'too-large', length: text.length } : { ok: true, text };
 }
 
 // 受控插入：给主进程“终端插入”RPC 用的校验。ptyId 必须属于运行中的任务；不是通用的 PTY 写入。

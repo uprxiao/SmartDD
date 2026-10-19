@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-H24",
+  "requirements": [
+    "M9-R07.8",
+    "M9-R08.2"
+  ],
+  "requiredLayers": [
+    "U",
+    "I"
+  ],
+  "status": "fixed-and-retested",
+  "formalCasePassed": true,
+  "defect": "M9-DEV-044",
+  "recordedAt": "2026-10-18T02:47:26.234784+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "caseDefinition": {
+    "steps": "While a mode switch waits for the current save, switch tabs or replace the active save.",
+    "expected": "Cancel the old switch request; an old Promise must not change the new mode/file or publish a stale mode-switch error."
+  },
+  "actual": {
+    "initialRun": {
+      "passed": 3,
+      "failed": 5,
+      "skipped": 0,
+      "scenarios": [
+        "Current unchanged intent: real successful save changes mode; real native precommit conflict retains mode and rejects.",
+        "Navigation to B or away/back to A while saving: old success incorrectly changes A mode; old conflict incorrectly rejects the obsolete mode request.",
+        "New explicit request to remain document is overwritten by the older source-mode request.",
+        "Replacing the awaited operation with another real save while local remains dirty is already guarded."
+      ]
+    },
+    "activeSaveRefinement": {
+      "passed": 1,
+      "failed": 1,
+      "unselected": 7,
+      "scenario": "After First is saved, begin a second real native save of Second, then return local input to current base First while the new save remains pending. The old mode-switch continuation sees dirty=false and incorrectly changes to source despite the active-save replacement.",
+      "observed": "Disk First/local First/dirty=false while second save is gated; after actual second write disk Second/local First/dirty=true. Both native writes return saved; no fake successful save receipt."
+    }
+  },
+  "layers": {
+    "U": {
+      "status": "failed",
+      "scope": "Production FileWorkspaceStore request/selection/mode guards with controlled timing."
+    },
+    "I": {
+      "status": "failed",
+      "chain": "Production store -> FileBuffer -> FileService/recovery -> packaged native broker -> independent file reads; gate delays actual native save dispatch, which executes normally after release."
+    }
+  },
+  "failureSourceBaseline": {
+    "files": {
+      "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+      "src/renderer/features/files/file-buffer.ts": "150945a0f8413580cfa306b966e135d5a8fca66660ada839254e95b7304eb053",
+      "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "src/shared/file-workspace.ts": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+      "native/files/broker.mm": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88"
+    },
+    "sourceUnchangedThroughLatestReproduction": {
+      "src/renderer/features/files/workspace-store.ts": true,
+      "src/renderer/features/files/file-buffer.ts": true,
+      "src/renderer/features/files/editor-source.ts": true,
+      "src/main/core/files/file-service.ts": true,
+      "src/main/core/files/native-broker.ts": true,
+      "src/main/core/files/roots.ts": true,
+      "src/main/core/files/recovery-store.ts": true,
+      "src/shared/files.ts": true,
+      "src/shared/file-text.ts": true,
+      "src/shared/file-workspace.ts": true,
+      "native/files/broker.mm": true
+    },
+    "artifacts": {
+      "failing-sources-r1.tar.gz": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/failing-sources-r1.tar.gz",
+        "sha256": "93c983e2ef9d4c1e9fdd0008dbf321fae51b2c123d08452efc70e0cd3f303047"
+      },
+      "failing-source-manifest-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/failing-source-manifest-r1.json",
+        "sha256": "50ece48f84359dbeb2be3480a01c86170a4f1dc8295e2f53d0ac7783d8fadb63"
+      },
+      "prepared-mode-switch.test.ts": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/prepared-mode-switch.test.ts",
+        "sha256": "4b4b8717a9d0c75dce995ea2428d7b1dd4c088dab3817b5e2ff6668fbf514495"
+      },
+      "temporary-vitest-config.mts": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/temporary-vitest-config.mts",
+        "sha256": "6d4ae96fdf41254c500864292aa2dc9fff0c4bf9917f544c7ba6b56b32b277b2"
+      },
+      "tests-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/tests-r1.json",
+        "sha256": "d5e98dc383a49971db69c54d28d7499c4fe2f7669ae3dcce8d47454134caa3c5"
+      },
+      "tests-r1.log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/tests-r1.log",
+        "sha256": "903d6dc8550cbd655ade39adfb57c883492b247646c43642f0c320eaa2823d0b"
+      },
+      "matrix-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/matrix-r1.json",
+        "sha256": "d7438b256dd77558f1acf7334c811fbb4d8bc741a3ba4d8565f63c1460f8849f"
+      },
+      "tests-active-save-r2.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/tests-active-save-r2.json",
+        "sha256": "1538a313a13b574873f8d4551dfd2cb473232a164a666cff7226e09d5182208e"
+      },
+      "tests-active-save-r2.log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/tests-active-save-r2.log",
+        "sha256": "e5e21e0ae4724cab2e6d52017773148b662b77086265b8dc356c9631b9a1c380"
+      },
+      "matrix-active-save-r2.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/matrix-active-save-r2.json",
+        "sha256": "dcbcb763bfc24cf382a9a56f9a1d72adfe85842b940cda6159e6c123836383bd"
+      }
+    }
+  },
+  "plan": "After root releases the r5 source freeze, add a mode-request generation captured with the tab/buffer, selected intent, initial mode and input version. Recheck cancellation before reporting save failure or changing mode; a new explicit same-mode request invalidates older work. Do not cancel already-started actual writes. Also reject continuation while a replacement save is active.",
+  "boundaries": [
+    "Only temporary isolated Markdown fixtures were edited; no actual App UI, user project, model or external service was used.",
+    "Production src/prototype/dependencies remain unchanged during r5 freeze.",
+    "The prototype mode-save path currently commits synchronously and has no delayed-save response boundary. No new UI layout is needed for the production request guard; asynchronous cancellation evidence belongs to U/I.",
+    "R4 provides only native broker executable; current workspace store/buffer under test include later input-safety changes.",
+    "No formal pass is claimed until the real failed cases and related regression are rerun after the fix."
+  ],
+  "recordType": "development defect reproduction",
+  "caseEvidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-h24-20261018.json",
+  "completedAt": "2026-10-18T02:53:34.851910+00:00",
+  "resolution": {
+    "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-h24-20261018.json",
+    "evidenceSha256": "87c2e93b90c72472a550c4fd188e9d93b9d7b438a97ffe82ad5f27d6c3511dd3",
+    "fix": {
+      "productionFile": "src/renderer/features/files/workspace-store.ts",
+      "behavior": "Guard deferred mode changes by mode-request generation, selection intent and active identity, original tab/buffer/mode/editor version and replacement saving state. Same-mode explicit intent also supersedes older requests. Only a current request publishes save failure. Started actual native writes continue normally.",
+      "independentReview": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/independent-review.json",
+        "sha256": "0f17293c891f861adc14e9c7964fce9d3a0c62c0151960617e75c6011d1f5617"
+      },
+      "diff": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/dev044.patch",
+        "sha256": "c0449dcd88bf793167759d036db690e344a0f2a96e761ee45e2d863518da1c1a"
+      }
+    },
+    "finalAcceptance": {
+      "finalAcceptance": {
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "report": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/tests-final-r4.json",
+          "sha256": "cdb39298ce7309b323141772dd074ce59d8f654e08a750a191030908a82be79e"
+        },
+        "observations": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/matrix-final-r4.json",
+          "sha256": "21420811b76e85cf55a069a3ca721b624a8ec254cb9104a66ae87992014d9016"
+        }
+      },
+      "necessaryRegressions": {
+        "passedUnique": 7,
+        "failed": 0,
+        "details": [
+          "6 existing workspace-store tests in first-fix run passed; keepLocal was not exercised by these tests.",
+          "1 existing lifecycle SVG source-mode/background-tab case passed; 9 unselected lifecycle cases are not counted."
+        ]
+      },
+      "distinctTestsPassed": 16,
+      "commands": [
+        {
+          "command": "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_H24_EVIDENCE=/private/tmp/willyou-h24-matrix-final-r4.json pnpm test src/renderer/features/files/mode-switch-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-h24-tests-final-r4.json",
+          "exitCode": 0
+        },
+        {
+          "command": "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_H24_EVIDENCE=/private/tmp/willyou-h24-matrix-final.json pnpm test src/renderer/features/files/mode-switch-acceptance.test.ts src/renderer/features/files/workspace-store.test.ts --reporter=json --outputFile=/private/tmp/willyou-h24-tests-final.json",
+          "exitCode": 0,
+          "note": "15/15; 9 H24 cases repeated after harness type correction and concurrent keepLocal guard stabilization; counted once."
+        },
+        {
+          "command": "SMARTDD_LIFECYCLE_APP=/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app pnpm test src/renderer/features/files/lifecycle-persistence-acceptance.test.ts -t 'keeps a chosen active file' --reporter=json --outputFile=/private/tmp/willyou-h24-lifecycle-regression.json",
+          "exitCode": 0,
+          "selectedPassed": 1,
+          "unselected": 9
+        }
+      ]
+    },
+    "finalSourceBaseline": {
+      "manifest": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/tested-source-manifest-final.json",
+        "sha256": "cae291de0fb76f662e9774654281afe673af3c28e12c537e35a97baec8e6d038"
+      },
+      "archive": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/tested-sources-final.tar.gz",
+        "sha256": "1a912aae14c76193a59de276168146096e68026628e3ded872279a0a3a5c4a39"
+      },
+      "files": {
+        "src/renderer/features/files/workspace-store.ts": "f461daf6697d988682c416d10290cfaceef3e4e641c67137f5c430489ba4971a",
+        "src/renderer/features/files/file-buffer.ts": "82beb688f587f37954e0e9511d343ddef03b6e8f38483cb5a4327ab30f689d0d",
+        "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+        "src/main/core/files/file-service.ts": "4b3f61c5bb46ca838ecc0caca8cb65befed7657d9d2ea1945a31b9f56c66f38e",
+        "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+        "src/shared/file-workspace.ts": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+        "native/files/broker.mm": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+        "src/renderer/features/files/mode-switch-acceptance.test.ts": "e56a0c23ddf58a7d4f3ec16e2e44eeec0c649b7bafe78d5b3c1217ad59b75d92",
+        "src/renderer/features/files/workspace-store.test.ts": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+        "src/renderer/features/files/lifecycle-persistence-acceptance.test.ts": "f6e7d57150efbd4a04b773574da3d122571b786d303da1c1ccbd60db5dd28467",
+        "vitest.config.ts": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+        "tsconfig.web.json": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70"
+      },
+      "verifiedAfterTests": {
+        "src/renderer/features/files/workspace-store.ts": true,
+        "src/renderer/features/files/file-buffer.ts": true,
+        "src/renderer/features/files/editor-source.ts": true,
+        "src/main/core/files/file-service.ts": true,
+        "src/main/core/files/native-broker.ts": true,
+        "src/main/core/files/roots.ts": true,
+        "src/main/core/files/recovery-store.ts": true,
+        "src/shared/files.ts": true,
+        "src/shared/file-text.ts": true,
+        "src/shared/file-workspace.ts": true,
+        "native/files/broker.mm": true,
+        "src/renderer/features/files/mode-switch-acceptance.test.ts": true,
+        "src/renderer/features/files/workspace-store.test.ts": true,
+        "src/renderer/features/files/lifecycle-persistence-acceptance.test.ts": true,
+        "vitest.config.ts": true,
+        "tsconfig.web.json": true
+      },
+      "note": "Final H24 rerun includes DEV041 keepLocal guards (buffer 82beb688…). No source changed across this run. R5 package supplies native broker only; store fix is not in R5 App."
+    },
+    "validation": {
+      "fullTypecheck": {
+        "command": "pnpm typecheck",
+        "exitCode": 0,
+        "runner": "/root/acceptance_l16 shared validation, reused rather than rerun",
+        "log": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mode-switch/typecheck-final-shared.log",
+          "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+        }
+      },
+      "earlierTypecheckFailures": [
+        "New harness initially returned synchronous service.drafts through a Promise-only track adapter; corrected by an async adapter and final 9-case rerun.",
+        "Concurrent MCP apps typing issue remained in next web check, corrected by owner before shared full typecheck exit0."
+      ],
+      "diffCheck": {
+        "exitCode": 0,
+        "scope": "workspace-store.ts, mode-switch-acceptance.test.ts and formal H24 index/table"
+      },
+      "indexMaintenance": {
+        "writeExitCode": 0,
+        "checkExitCode": 0,
+        "note": "H24 formally marked failed as root requested while final acceptance evidence was being assembled. Root owns final pass index update."
+      }
+    }
+  }
+}

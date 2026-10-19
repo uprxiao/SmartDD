@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "time": "2026-10-18T01:29:20.807423+08:00",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirements": [
+    "R06.8",
+    "R07.1",
+    "R07.2",
+    "R07.6",
+    "R07.10",
+    "R07.12"
+  ],
+  "layer": "production code, component/model tests, packaged native smoke; actual inline App UI pending",
+  "sourceHashes": {
+    "src/renderer/features/files/office/preview.tsx": "a1a2b5732e84497dda55381ffcdfd3d067ee78310d70075e382909d9cf8c0342",
+    "src/renderer/features/files/office/style.css": "d5826db5ffeaa92f0cc200224f727c7687d2adaa06a473a1676ac2a50e4ccd6d",
+    "src/renderer/features/files/office/buffer.ts": "1fb5833cb8ac1deec6cd4b9eba8929ef75d80c8b7adbe7b73a417a745790ce84",
+    "src/renderer/features/files/office/preview.test.tsx": "ce7e08c06d51ca3d74c8309ebe9bcb81e053007fba9e1479f23cb5b88dad8b82",
+    "src/renderer/features/files/office/buffer.test.ts": "e29e4763876052105859ff432f00a744dfd7c8fd070621ba12abf48067a2bd99"
+  },
+  "package": {
+    "path": "/private/tmp/willyou-m9-office-inline-r1-build/mac-arm64/WillYou.app",
+    "asarSHA256": "20b85698b4e8aca6f3ef9f2174134ce150c77890cc5bdf58d610d046367bf2e3",
+    "buildLog": "/private/tmp/willyou-m9-office-inline-r1-package.log",
+    "nativeSmoke": "passed",
+    "platform": "macOS arm64"
+  },
+  "runs": [
+    {
+      "log": "/private/tmp/willyou-m9-office-inline-r1-tests.log",
+      "result": "16 passed, 2 failed; component assertions queried virtual cells before their async window arrived; corrected readiness predicate"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-inline-r1-typecheck.log",
+      "result": "mock callback inference failed; id annotated as string"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-inline-r2-tests.log",
+      "result": "17 passed, 1 failed; full-text mock exceeded chunk length contract; corrected fake full-text read"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-inline-r2-typecheck.log",
+      "result": "passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-inline-r3-tests.log",
+      "result": "18 passed, 3 files"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-inline-r3-typecheck.log",
+      "result": "passed"
+    }
+  ],
+  "implemented": [
+    "double-click/F2/Enter/type/paste inline cell input",
+    "Enter/Tab/Shift+Tab move after flush, Escape cancels pending input",
+    "composition guard does not commit candidate keys",
+    "input baseline version preserves typing pre-save value after same focused input was saved",
+    "late cell read and blur cannot override a newer editor"
+  ],
+  "appChecks": {
+    "status": "pending",
+    "reason": "Mac explicitly locked; existing unlock request pending"
+  },
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "unchanged": true
+  },
+  "limitations": [
+    "No physical system IME evidence in this batch",
+    "Range selection and structural/format operations remain to implement",
+    "No full Codex visual parity claim"
+  ]
+}

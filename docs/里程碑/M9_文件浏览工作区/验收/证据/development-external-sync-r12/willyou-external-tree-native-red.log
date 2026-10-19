@@ -1,0 +1,44 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/external-tree-refresh-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-external-tree-native-red-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (10 tests | 2 failed) 2047ms
+     ✓ B08 'ordinary writer' / 'native watch' updates create/delete/rename and marks the old document missing 215ms
+     ✓ B08 'ordinary writer' / 'explicit refresh' updates create/delete/rename and marks the old document missing 129ms
+     ✓ B08 'ordinary writer' / 'resume scan' updates create/delete/rename and marks the old document missing 129ms
+     ✓ B08 'CLI process' / 'native watch' updates create/delete/rename and marks the old document missing 216ms
+     ✓ B08 'CLI process' / 'explicit refresh' updates create/delete/rename and marks the old document missing 163ms
+     ✓ B08 'CLI process' / 'resume scan' updates create/delete/rename and marks the old document missing 164ms
+     × B08 ordinary writer cannot redirect a missing dirty document to a new same-name same-bytes file 207ms
+     × B08 CLI process cannot redirect a missing dirty document to a new same-name same-bytes file 289ms
+     ✓ L06 observes another process changing the file immediately after an acknowledged local save  375ms
+     ✓ L07 rescans changes made after the initial list/read but before native subscription starts 159ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 ordinary writer cannot redirect a missing dirty document to a new same-name same-bytes file
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 CLI process cannot redirect a missing dirty document to a new same-name same-bytes file
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:108:21
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 8 passed (10)
+   Start at  13:46:47
+   Duration  2.87s (transform 347ms, setup 0ms, import 602ms, tests 2.05s, environment 159ms)
+
+JSON report written to /private/tmp/willyou-external-tree-native-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

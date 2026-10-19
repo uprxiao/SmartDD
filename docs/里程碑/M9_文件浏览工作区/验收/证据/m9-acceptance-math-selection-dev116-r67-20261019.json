@@ -1,0 +1,753 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-MATH-SELECTION-DEV116-R67",
+  "at": "2026-10-19T01:26:03.661253+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-one-case",
+  "revision": "R3.4-20261017 / R3.4-P1; R06.2/R07.15/R01.6 unchanged",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "macOS": "26.6.1",
+  "architecture": "arm64",
+  "fullCasesPassed": [
+    "M9-T-X07"
+  ],
+  "regressionCases": [
+    "M9-T-X01",
+    "M9-T-X02",
+    "M9-T-X04",
+    "M9-T-X05",
+    "M9-T-X06",
+    "M9-T-X08",
+    "M9-T-X09",
+    "M9-T-X10",
+    "M9-T-X11",
+    "M9-T-X12",
+    "M9-T-H14",
+    "M9-T-H17"
+  ],
+  "productionChanges": [
+    "src/renderer/features/files/markdown/editor.ts",
+    "src/renderer/features/files/markdown/file-markdown-model.mjs",
+    "src/renderer/features/files/markdown/file-markdown-source.mjs",
+    "src/renderer/features/files/markdown/model.d.mts",
+    "src/renderer/features/files/markdown/model.mjs",
+    "src/renderer/features/files/markdown/style.css",
+    "src/shared/markdown-dollar-math.mjs",
+    "src/shared/markdown-math-fragments.d.mts",
+    "src/shared/markdown-math-fragments.mjs"
+  ],
+  "prototypeChanges": [
+    "prototypes/m6-codex/src/FileMarkdown.jsx",
+    "prototypes/m6-codex/src/file-markdown-model.mjs",
+    "prototypes/m6-codex/src/file-markdown-source.mjs",
+    "prototypes/m6-codex/src/file-markdown.css",
+    "prototypes/m6-codex/vite.config.mjs",
+    "prototypes/m6-codex/tests/math-selection-harness.jsx",
+    "prototypes/m6-codex/tests/math-selection-runtime.html"
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-116-01",
+      "state": "fixed-and-r67-retested",
+      "problem": "Mathematical mousedown selected the whole block start; all sibling math disappeared.",
+      "fix": "Exact parser contentEnd, node-level mathematical source decorations, focus/blur restoration and coalesced real engine groups."
+    },
+    {
+      "id": "M9-DEV-116-02",
+      "state": "fixed-and-r67-retested",
+      "problem": "Nested block math had no source wrapper, so prototype source editing portal could not mount.",
+      "fix": "Attach the actual raw parser range for nested block tokens and mirror the source map in production and prototype."
+    }
+  ],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r67-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "82ca180748d5523f795e8054fc748a75e9d7f76c886fd05076e19e259a138f0b",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 82
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-markdown-events-dev115-r66-20261019.json",
+    "sha256": "887386e0d81a241948d13eb3e54fe231c82201fcd210c8906e813efa0d6c6378",
+    "all90ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "buildFiles": 1116,
+    "testedFiles": 1116,
+    "buildSha256": "85987dd7c85b08e80466b611ec4d42b3cc419ad793086288964112c54f80018b",
+    "finalTestedSha256": "85987dd7c85b08e80466b611ec4d42b3cc419ad793086288964112c54f80018b",
+    "postBuildProductionChanges": [],
+    "postBuildExternalChanges": [],
+    "postBuildNewFiles": []
+  },
+  "verification": {
+    "codePassedDeduplicated": 204,
+    "newUniqueCodeTests": 16,
+    "newTestsByBoundary": {
+      "U": 8,
+      "I": 8
+    },
+    "currentSkipped": 0,
+    "prototypeModelsPassed": 241,
+    "prototypeSitesPassed": 4,
+    "prototypeActualUiChecks": 16,
+    "actualUiChecks": 16,
+    "actualEventRegressionUiChecks": 10,
+    "actualMathRegressionUiChecks": 13,
+    "nativeWorkerInstances": 50,
+    "originalFileRpcRows": 99,
+    "intentionalPrivateFixtureSaves": 16,
+    "completedBatchNormalQuits": [
+      {
+        "pid": 34790,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 37267,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 37777,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 38032,
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "prototypeNormalQuit": {
+      "pid": 25070,
+      "code": 0,
+      "signal": null
+    },
+    "codeExit": 0,
+    "typecheckExit": 0,
+    "prototypeBuildExit": 0,
+    "packageExit": 0,
+    "unhandledErrors": 0,
+    "formalPassed": 225,
+    "formalTotal": 419,
+    "formalRemaining": 194,
+    "unexecuted": 192,
+    "blocked": 2,
+    "appRemaining": 191
+  },
+  "boundaries": [
+    "A actual packaged App, real native file service and mathematical Worker/KaTeX; mouse/keyboard only writes. Read-only CM and DOM metadata observation. System theme emulation through Chromium prefers-color-scheme, no DOM/Store/editor value injection, clipboard, models, external apps or Codex.",
+    "P synthetic React StrictMode FileMarkdown, real mouse/keyboard and source callbacks; no actual file business or CM equivalence claim.",
+    "R retained M04 facts and confirmed scope; no new Codex runtime/source/full pixel claim. X03 prose/heading/strong/link/image/entity granularity remains open.",
+    "Native I adapts only Worker/IPC transport and jsdom geometry/focus; U coalescing fake session is not real-engine acceptance. Native broker/watcher bytes match the new actual App.",
+    "Actual mouse/keyboard/save/reopen results and native Worker/RPC forwarding are separate from synthetic P. A theme uses prefers-color-scheme environment emulation. KaTeX font faces actually loaded without error in P and A.",
+    "Mathematical lifecycle A13 retains existing explicit fault boundaries and old driver scope text; independent new A16 provides X07 proof. Related204 is not a fresh repository-wide test suite. No new security/CLI/platform/physical IME claim.",
+    "No release. All419 must still pass; system/manual/reference/platform and unclassified extra scrolling observations remain open."
+  ],
+  "artifacts": {
+    "willyou-dev116-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-app-r1.log",
+      "sha256": "fc2751e3bcd79961827f5774e4103e078ddfe697caf026907012c7c0d0c807d1"
+    },
+    "willyou-dev116-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-archive.py",
+      "sha256": "a411804f8d6b061273a2529a77bea24996cc80e5573c7c90dfa9f5dbaefc32ca"
+    },
+    "willyou-dev116-build-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-build-snapshot.py",
+      "sha256": "82e152bffd187f7a261103c7214d0ec0b34e6d7ec7a37e747789330e9e8b1d50"
+    },
+    "willyou-dev116-code-candidate.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-code-candidate.json",
+      "sha256": "34122b3a1c2df673e55cdd6eac9715e21e9e5adbace01ec9a2ef72ecd5856363"
+    },
+    "willyou-dev116-code-candidate.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-code-candidate.log",
+      "sha256": "853957a29da73959e95d5adac83b0d1b8481e33ad2543c5186c90e06f5126e15"
+    },
+    "willyou-dev116-code-final-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-code-final-r2.json",
+      "sha256": "73d48fece60370a044f5ebf8111b9829143ee8283331ecbccb71a1e1ca821cbc"
+    },
+    "willyou-dev116-code-final-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-code-final-r2.log",
+      "sha256": "5c323dcae7bbf771a8045153e7b0383f4b890bb38ffdf0d00d289009b4cbbd32"
+    },
+    "willyou-dev116-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-code-final.json",
+      "sha256": "fb995ac95d6bf483d435b537e011e29c8c2c8f4a20f612cbeaad038e0093ff33"
+    },
+    "willyou-dev116-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-code-final.log",
+      "sha256": "d0c0e6a7bf6dbf22ffefbefdb76f7775f80401396cb68a017020e6567d936b02"
+    },
+    "willyou-dev116-events-regression-app.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-events-regression-app.log",
+      "sha256": "63a2c3165eb81c105aad4bef7d96de7b50bb8872f22affec1669d15af41fe220"
+    },
+    "willyou-dev116-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-index-before.json",
+      "sha256": "d8fe9f71a00f68214b2e8eccb757457c852ed36ec850710004a37621042a56f8"
+    },
+    "willyou-dev116-math-regression-app.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-math-regression-app.log",
+      "sha256": "33f2ce0fe766823bd0c71de6e6d65939c8045bbd667778d463c6126639184d2f"
+    },
+    "willyou-dev116-native-candidate.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-native-candidate.json",
+      "sha256": "de4b1b8ea521824fb54bc122570f5bf846227d5d6e98a0fb7719e16b39653f3b"
+    },
+    "willyou-dev116-native-final-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-native-final-r2.json",
+      "sha256": "2b38e853b0b070113fea8e8a71207848219d0c3f138724ee8bee0ea6e305bfbb"
+    },
+    "willyou-dev116-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-native-final.json",
+      "sha256": "c8e49d6bc90b9acc73b3529e60911b155138a53363b0947a799fdb5f6b40e743"
+    },
+    "willyou-dev116-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-native-r1.json",
+      "sha256": "60d7d8fbbe968bf17682bb63cf1aa738093b969a7a63a7f21562bd10e4ca2af1"
+    },
+    "willyou-dev116-native-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-native-r2.json",
+      "sha256": "732279b81ed6cfb1280a1d09e556f346a56a51a620d1a521814acb21dcdcfe76"
+    },
+    "willyou-dev116-native-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-native-red.json",
+      "sha256": "9b99d62996c54f207423d3bb4700da78e648b1bcdacdd16031b943d11415bb7a"
+    },
+    "willyou-dev116-package-hashes-partial.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-package-hashes-partial.json",
+      "sha256": "154c1402c94c28ce69d1bf327b8e327af54760b172690555b2811176812a3279"
+    },
+    "willyou-dev116-package-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-package-hashes.json",
+      "sha256": "72b91c38e82d12944a90e3cba5ba6cf0826149ba7778f55e0cc51be0ef01fa84"
+    },
+    "willyou-dev116-package-r67.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-package-r67.log",
+      "sha256": "7b31fbcc342d2d099ad680be825d67b3fbc8e0b824c6cf3411f5058098cff351"
+    },
+    "willyou-dev116-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-process-audit.json",
+      "sha256": "ea4cfd357a990882232d563fe5401d40030326356f8be3904cdeea5245a5b4d9"
+    },
+    "willyou-dev116-process-audit.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-process-audit.log",
+      "sha256": "1d827b51bf92d49a4e96309589190badb6109021d6b35478ffe41748f9975637"
+    },
+    "willyou-dev116-process-audit.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-process-audit.py",
+      "sha256": "7fbdbcd13d49a005702ce9a246f6795114822e07f6501b9689dc115599ab6688"
+    },
+    "willyou-dev116-prototype-build-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-build-final.log",
+      "sha256": "89f6c0d14da4746a686a6f76ff1e1a6bcc9bacf983e6b411e4632c045d7ff4a2"
+    },
+    "willyou-dev116-prototype-build-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-build-r1.log",
+      "sha256": "d6ee6adac17867c14a2afddf57faffacbaf367851f02219ced704588e55ede3c"
+    },
+    "willyou-dev116-prototype-build-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-build-r2.log",
+      "sha256": "8dcca803a8e0c092a9c5374ff14783805fa39d8cc549c932741817a93b7284fd"
+    },
+    "willyou-dev116-prototype-models-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-models-final.log",
+      "sha256": "efcce97bca9e25b53a39f4d507b4a2f18825fdaf79f0e3098e8b2f5abb0c442f"
+    },
+    "willyou-dev116-prototype-models.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-models.log",
+      "sha256": "f68693b504cf4fcec96a4e33f02c83f399d64f3ce28abb54dc880f73e561ae01"
+    },
+    "willyou-dev116-prototype-ui-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-ui-final.log",
+      "sha256": "c3e9ef34c19d85242b3a98b73e352d916a1a48e482d5cee5b3655d8056289cf1"
+    },
+    "willyou-dev116-prototype-ui-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-ui-r1.log",
+      "sha256": "8e7b75570bc92eabb14d2864a1fc1d07f3ddce33cf025de0d38abb51d3498e34"
+    },
+    "willyou-dev116-prototype-ui-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-ui-r2.log",
+      "sha256": "42bfd72910c14f0f93201e71fe83ecec9e5611aa175a285781cfd764d06357bb"
+    },
+    "willyou-dev116-prototype-ui-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-prototype-ui-r3.log",
+      "sha256": "8cd03a6bb1adfc5e0e9bc346672d458a5c98b3f02d17e65b5eb9fa1659f19174"
+    },
+    "willyou-dev116-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-r1.json",
+      "sha256": "76efa39a5ea4b66c2e87fd4e707011dbb65374066ed251caadbf162d12371a81"
+    },
+    "willyou-dev116-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-r1.log",
+      "sha256": "24ebaf345a0e9a14e73d4403633e24669eece52f593d2ab7f82f506e6cf34d27"
+    },
+    "willyou-dev116-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-r2.json",
+      "sha256": "e20a29b068e44f7fb83ca631862769836f32e44c57a7669bc1208e663353a484"
+    },
+    "willyou-dev116-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-r2.log",
+      "sha256": "b66af7b776bb42572e95f4d485e15c1f970a682e37b8caa2bc57aa29a188858a"
+    },
+    "willyou-dev116-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-red.json",
+      "sha256": "443accb1cd291dd715da105823d3d41344c7be38e3b48da742c8363d53bd8601"
+    },
+    "willyou-dev116-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-red.log",
+      "sha256": "57d44c89fa820483a9278de2f74bea884ded7ee0291c43588372092364c6ff0a"
+    },
+    "willyou-dev116-runtime-r67.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-runtime-r67.json",
+      "sha256": "e6cdeac8cdbfa227bb04abd2e2278aadbf96f48c9a12af9b7b16b991692e1a22"
+    },
+    "willyou-dev116-sites-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-sites-final.log",
+      "sha256": "9af9a38d8bb2914ae23e1642ed3b87a7953093adac7554fd43e63b62bc06619f"
+    },
+    "willyou-dev116-sites-prepare-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-sites-prepare-final.log",
+      "sha256": "b20a681cac5bceaeaf037571701267999bfc75ce61e60510f556c2656fafc5ba"
+    },
+    "willyou-dev116-sites-prepare.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-sites-prepare.log",
+      "sha256": "b20a681cac5bceaeaf037571701267999bfc75ce61e60510f556c2656fafc5ba"
+    },
+    "willyou-dev116-sites.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-sites.log",
+      "sha256": "56fe30599b1586503d930b162a6b9c00821422d479343f2872193436fed1bce5"
+    },
+    "willyou-dev116-tested-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-tested-snapshot.py",
+      "sha256": "aded6cc616a292212aea57d3f1f3b4cb9ba321198e1d067e5f3d23de12e47917"
+    },
+    "willyou-dev116-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev116-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-typecheck-r1.log",
+      "sha256": "050f81ffb62f5c7b5f3818491ffc23948c37383cfbf1f1fc02a939cbdc38513a"
+    },
+    "willyou-dev116-typecheck-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-typecheck-r2.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev116-verify-runtime-r67.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-verify-runtime-r67.cjs",
+      "sha256": "06bfb108eef995639a50ba6e9258c2cd6589ff1649acbbc76189c4de09f6460c"
+    },
+    "willyou-dev116-vite-stop.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-vite-stop.json",
+      "sha256": "311220e8eadb88a5e5cafb4f2b92e496af81c8433c0c4a7ee0ebce7132201e05"
+    },
+    "willyou-dev116-vite.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-vite.log",
+      "sha256": "98de71fc37bbeaf87f8fedac210877ae3aa3389fd6d8e36df1bf742eb08725f0"
+    },
+    "willyou-dev116-watch-hash-r67.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-watch-hash-r67.cjs",
+      "sha256": "f322ad2f78a8aff68a3f56627dca12f4cc69fcb5cf1130c19ce0f4bdc92661cd"
+    },
+    "willyou-dev116-watcher-r67.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-dev116-watcher-r67.json",
+      "sha256": "2387f8ef86905d2d4b0de55b22f615d87d3a88150418aa50cf5ca01f186cfa54"
+    },
+    "willyou-m9-acceptance-batch-r67-build-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-m9-acceptance-batch-r67-build-sources.json",
+      "sha256": "b792e8fec29f8d61b8b59f29a3f9aa4f8ceca6f22f66fb4084c660aa79bb167d"
+    },
+    "willyou-m9-acceptance-batch-r67-build-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-m9-acceptance-batch-r67-build-sources.tar.gz",
+      "sha256": "85987dd7c85b08e80466b611ec4d42b3cc419ad793086288964112c54f80018b"
+    },
+    "willyou-m9-acceptance-batch-r67-dev116-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-m9-acceptance-batch-r67-dev116-tested-sources.json",
+      "sha256": "d1ad134f0c9fee972b7a41ab58c0700c9f45a76bdd45d4772495ecc37dd9e7e6"
+    },
+    "willyou-m9-acceptance-batch-r67-dev116-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/willyou-m9-acceptance-batch-r67-dev116-tested-sources.tar.gz",
+      "sha256": "85987dd7c85b08e80466b611ec4d42b3cc419ad793086288964112c54f80018b"
+    },
+    "runs/willyou-math-selection-prototype-dLGlRB/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-dLGlRB/failure-electron.log",
+      "sha256": "9203db4eb80c08c064b8e0cfaa97b1fca9557a06ec914216aad08259c857d938"
+    },
+    "runs/willyou-math-selection-prototype-dLGlRB/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-dLGlRB/failure.png",
+      "sha256": "112c14b15a4706492d0380834dd13a37d780009b4c4d108bc88cb428d833e4fc"
+    },
+    "runs/willyou-math-selection-prototype-dLGlRB/light-heading.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-dLGlRB/light-heading.png",
+      "sha256": "71030bda15e5b69e5e70b1da9baab8787f8121ef44e8c7d9fa8eab9783ba6a7d"
+    },
+    "runs/willyou-math-selection-prototype-dLGlRB/light-list.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-dLGlRB/light-list.png",
+      "sha256": "83d42c736794c21d927375bcdfd8836d38dd4d95e6397771a49a6439b4e8832a"
+    },
+    "runs/willyou-math-selection-prototype-dLGlRB/light-paragraph.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-dLGlRB/light-paragraph.png",
+      "sha256": "2b41c6b88ffa8a48ba8db9e55acb93ebe9ae7573cb92d9f3c40435ebb31616d4"
+    },
+    "runs/willyou-math-selection-prototype-dLGlRB/light-quote.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-dLGlRB/light-quote.png",
+      "sha256": "4d3db79540f776cfabe6843ae4f173231a0090309e4de184e2493ed3f135543b"
+    },
+    "runs/willyou-math-selection-prototype-dLGlRB/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-dLGlRB/result.json",
+      "sha256": "4cc2e75b6108e996e0ac415ad74f225550c3c8b7595d28cd2a2753f63141078e"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/failure-electron.log",
+      "sha256": "da53aee6c4b17f3efc9c756927868501618db373601537799ceeed2b7fe1ae91"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/failure.png",
+      "sha256": "e20d77db129d696b59b2465bfad5fa5bcad316d04c13d1f0052c8a9b50e4a880"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/light-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/light-block.png",
+      "sha256": "992467716c3e06d4ed0cffdd2a692c4f465b27fafb06678a1981b7bbcae1f7ac"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/light-heading.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/light-heading.png",
+      "sha256": "b64c5d5669b2d28e1ceb5d620bf378e6d7c2fadeeef436ee95b557f0ee127e97"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/light-list.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/light-list.png",
+      "sha256": "b86fdd33cf306877105ffcbb537691708d9203c287e91822667ac86bc6ddfd42"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/light-paragraph.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/light-paragraph.png",
+      "sha256": "11c4561cc5eea48eed96535285e5d8972071a8507bbc260129396ad563ced648"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/light-quote.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/light-quote.png",
+      "sha256": "0d9405c701e86e6962a7856a807f0f8e6bbc193fa7207ca8eb60c5e05978a8c0"
+    },
+    "runs/willyou-math-selection-prototype-laaNIn/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-laaNIn/result.json",
+      "sha256": "35e9845faec98d4c93e038a2ee407ff5c4f12e29c9344499d10a0a232979a0dc"
+    },
+    "runs/willyou-math-selection-prototype-zobNmV/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-zobNmV/electron.log",
+      "sha256": "75f17c347cda7ac5ed7638e475ea16d875c8c1170c9bf5f3fc7e1be887b0c446"
+    },
+    "runs/willyou-math-selection-prototype-zobNmV/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-zobNmV/result.json",
+      "sha256": "2ec599c85d45b70a62d02434459446609bb33251f2f80ebc2bec0a05b4dfc6ae"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-block.png",
+      "sha256": "a25c1da00cc8f70b4c4c853376ceae9f100661e56a32aaeb43f7f37e89ae63d4"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-eqno.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-eqno.png",
+      "sha256": "55963e48f5aea6e9b73e1ea0c9bb39e07bbb2a3a2a40622d6a8b98c1ba778bbc"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-heading.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-heading.png",
+      "sha256": "77a0a5a653565fe7a55df4065c7070c9070568038d1268168c365f0c98706a32"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-list-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-list-block.png",
+      "sha256": "1940cf6ff604a1b605285a35624446a917210bde54c858d6b49e964eeb0c6a9a"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-list.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-list.png",
+      "sha256": "663f074daa5f8021adef7bfb73495a79cf5167cc220f73f897a1c8743433a7de"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-paragraph-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-paragraph-source-selection.png",
+      "sha256": "1c1db4ea6e520804b05c7cab8f4e144bfe758f71d8b3c99fb6f956d3fae34f9a"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-paragraph.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-paragraph.png",
+      "sha256": "bc6cd9a53ccf94dd510e91169d1d59824f457dab3d8ea41c384585c83426b6da"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-quote-block-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-quote-block-source-selection.png",
+      "sha256": "7d93c26d52352412ed3f2639456bc8c1b2e90ffe6f2cdbd40c382d94d6a83a49"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-quote-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-quote-block.png",
+      "sha256": "931a7bb5427015488ca96208b24a06fed2ad6972185e9d27acd12c371340f705"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/dark-quote.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/dark-quote.png",
+      "sha256": "8470425c3acfb4eda3cb8e21aaca62d81addc7e47da8b4b6b654cea278948959"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/electron.log",
+      "sha256": "6aa82a9b4f17a7798122880faca407b8b0b5b781d24318021a34e181971cffe4"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-block.png",
+      "sha256": "992467716c3e06d4ed0cffdd2a692c4f465b27fafb06678a1981b7bbcae1f7ac"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-eqno.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-eqno.png",
+      "sha256": "0c057e13c66fb26ff36ea27e76841346a5916d91d9b515111d277fea328a1325"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-heading.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-heading.png",
+      "sha256": "b64c5d5669b2d28e1ceb5d620bf378e6d7c2fadeeef436ee95b557f0ee127e97"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-list-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-list-block.png",
+      "sha256": "02b03d22c6611201dfdc1681a4bde80f5fcdb289b8cc96a9eb8ec7797e8525f5"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-list.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-list.png",
+      "sha256": "b86fdd33cf306877105ffcbb537691708d9203c287e91822667ac86bc6ddfd42"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-paragraph-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-paragraph-source-selection.png",
+      "sha256": "bf66e16ccb48f8405842eec4226dc40bdec575d338da1c4671d3b800ac62e0eb"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-paragraph.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-paragraph.png",
+      "sha256": "11c4561cc5eea48eed96535285e5d8972071a8507bbc260129396ad563ced648"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-quote-block-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-quote-block-source-selection.png",
+      "sha256": "ce4ce8893d0665592d77fa8f651851e287b7a3ad761f7a312c74ec75da74e987"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-quote-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-quote-block.png",
+      "sha256": "08cfb8c67994f66e8ddf3e9e7abc99376787189d498d004b1b5e8b8769a8de14"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/light-quote.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/light-quote.png",
+      "sha256": "0d9405c701e86e6962a7856a807f0f8e6bbc193fa7207ca8eb60c5e05978a8c0"
+    },
+    "runs/willyou-math-selection-prototype-HpjUwe/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-prototype-HpjUwe/result.json",
+      "sha256": "c46b433432a90e20832fdb6fbde8e8895add2c4e0d0a4c55cc9b7aef468ad94c"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-block.png",
+      "sha256": "ec03685d84d4068f683d77f4861bf22ba5298f43ae255e3695d48bcaec7bdbf3"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-eqno.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-eqno.png",
+      "sha256": "033fb713aff7db0b89af25ab834121f7d56977df51bcd8050478192ec3c1d25e"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-heading.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-heading.png",
+      "sha256": "a904f8d6a5dad9d1412d398258491e2f259f86fe021264f60b85f8ef246cb3e8"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-list-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-list-block.png",
+      "sha256": "df4ad8d88cedeb247492c29971d7b4a10d49c5935781d1949d881639ffa9946e"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-list.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-list.png",
+      "sha256": "36ec3cf495a577c333601b74833e3d4667094c09823ec0f321a891641148c2b0"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-paragraph-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-paragraph-source-selection.png",
+      "sha256": "ca03032523aee20e502412e253c439c95c1dbb06b4809dde2e3d0c12695f3c7e"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-paragraph.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-paragraph.png",
+      "sha256": "0bff7d1b6e252f7e59933b8586fe86f545fc94e1356a84705877674e92a296ff"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-quote-block-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-quote-block-source-selection.png",
+      "sha256": "69609be5e5da62c973ec79cf47cb400cd32d75b0976a8550e23800d8647216d6"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-quote-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-quote-block.png",
+      "sha256": "96644074045638bb73c2ebef33396522ffd6203078353fd9243255a59e9ccac7"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/dark-quote.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/dark-quote.png",
+      "sha256": "77517449e747c23e1706641cb54cc54e45f8e925e8905ed3880258474c333b66"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/electron.log",
+      "sha256": "fa2aad96260aa3d4ca6cc6f0fc9340590bd9aea8619f81df5dd328603c52ded7"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-block.png",
+      "sha256": "bbc520e17af9c769d66aba2ffbd4043d071c558b589e143a6f8c7ed9ee429fef"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-eqno.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-eqno.png",
+      "sha256": "37e5d472c9c6faa12c08c067bae10dd67dfb7189f70b98ea4868416076b86888"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-heading.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-heading.png",
+      "sha256": "2a3f3e35738f59b282b3b317b4775dbea23ba6afb2cb887daa4ba0d40346eed3"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-list-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-list-block.png",
+      "sha256": "73456b3435e48aceb2381b0bd6d1291cc46e30b5e05199bd89f35f5f60e9ba78"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-list.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-list.png",
+      "sha256": "5f5134057359d2c96ccf3d02f10f532820b361068ff0044d9b81160e0bcddd78"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-paragraph-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-paragraph-source-selection.png",
+      "sha256": "8b3c045c781f19deba5f1a34f5ab9790fef7a5beb78842c4c87e0a78fa1464b6"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-paragraph.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-paragraph.png",
+      "sha256": "56e9f66a94f26b2dca2c8fef20b31b063553c33da3ea771c211faa6bf681126c"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-quote-block-source-selection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-quote-block-source-selection.png",
+      "sha256": "2a631c9a371719e82a7b0cdc8088082583b6eb2e34bcb879a19cf01fc8766cd1"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-quote-block.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-quote-block.png",
+      "sha256": "887566be43e1d0cffd1aee1be96a65aa0711d5ddd663a8df7357d0d4128143e0"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/light-quote.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/light-quote.png",
+      "sha256": "ebe5c843eabe7481c421431770b860a0b13f77dcb57969757da4fa28a887c303"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-block.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-block.md",
+      "sha256": "8b6ba17205d532a39d6c2af19c81432d6c4fb6724bcac102b575a73f63ce2a20"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-eqno.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-eqno.md",
+      "sha256": "8b6ba17205d532a39d6c2af19c81432d6c4fb6724bcac102b575a73f63ce2a20"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-heading.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-heading.md",
+      "sha256": "4c8298697656f793638775ead8d1e01323869504cdbc4131ddda81efcccaeea5"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-list-block.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-list-block.md",
+      "sha256": "08b099abb8c70dd304b1627b5265eb91164f2593d38b2deb8a32212e7eb62c54"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-list.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-list.md",
+      "sha256": "884693be2814bb6c7f311e81894ec451836d96760351692603909f9cd51282bb"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-paragraph.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-paragraph.md",
+      "sha256": "994b5dc9e489d6aa45699f44d16f27c60aa8ee4bb04ccbcdb82a8b12086f0a89"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-quote-block.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-quote-block.md",
+      "sha256": "7824ab56b389050963f104de8ac6f6c017ee54b9fd92d0e37ba45bc4a389fcb7"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/dark-quote.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/dark-quote.md",
+      "sha256": "028fb80abc246727cc6bde77a8eb7b25355a00eb00614b2a22ce989eaf97a5cf"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-block.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-block.md",
+      "sha256": "8b6ba17205d532a39d6c2af19c81432d6c4fb6724bcac102b575a73f63ce2a20"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-eqno.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-eqno.md",
+      "sha256": "8b6ba17205d532a39d6c2af19c81432d6c4fb6724bcac102b575a73f63ce2a20"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-heading.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-heading.md",
+      "sha256": "4c8298697656f793638775ead8d1e01323869504cdbc4131ddda81efcccaeea5"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-list-block.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-list-block.md",
+      "sha256": "08b099abb8c70dd304b1627b5265eb91164f2593d38b2deb8a32212e7eb62c54"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-list.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-list.md",
+      "sha256": "884693be2814bb6c7f311e81894ec451836d96760351692603909f9cd51282bb"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-paragraph.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-paragraph.md",
+      "sha256": "994b5dc9e489d6aa45699f44d16f27c60aa8ee4bb04ccbcdb82a8b12086f0a89"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-quote-block.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-quote-block.md",
+      "sha256": "7824ab56b389050963f104de8ac6f6c017ee54b9fd92d0e37ba45bc4a389fcb7"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/project/light-quote.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/project/light-quote.md",
+      "sha256": "028fb80abc246727cc6bde77a8eb7b25355a00eb00614b2a22ce989eaf97a5cf"
+    },
+    "runs/willyou-math-selection-app-uDWPvG/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-selection-app-uDWPvG/result.json",
+      "sha256": "bf81199df485ac9b57cf2b4bb22c93ce867aac101eae8090b6c89ceeb6b57e62"
+    },
+    "runs/willyou-markdown-events-app-X9yLDF/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-markdown-events-app-X9yLDF/electron.log",
+      "sha256": "493bd9cee4abc15191105e285261bf8e52a25dc59e2ccb4951f73da7d9e2a6f7"
+    },
+    "runs/willyou-markdown-events-app-X9yLDF/final-events.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-markdown-events-app-X9yLDF/final-events.png",
+      "sha256": "733795cd5dbd6ea6cc1346288781615aca6536a7b771cf76d9824b2b06a42fae"
+    },
+    "runs/willyou-markdown-events-app-X9yLDF/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-markdown-events-app-X9yLDF/result.json",
+      "sha256": "9757e149f86e99e3c10255e47616d78ed0191cd083740ec108e0dd4b31345e23"
+    },
+    "runs/willyou-math-lazy-app-EAOJQd/actual-math-recovery.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-lazy-app-EAOJQd/actual-math-recovery.png",
+      "sha256": "fd61c0008a0bc3a94d46a191311dcd02a1aea26f78636b79fac9c5e71aa7af45"
+    },
+    "runs/willyou-math-lazy-app-EAOJQd/budget-full-source.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-lazy-app-EAOJQd/budget-full-source.png",
+      "sha256": "c7e2b9e8175fe7bc3731bbd1316df92c8a869409505c953ec81eb0b3ab804087"
+    },
+    "runs/willyou-math-lazy-app-EAOJQd/cold-errors-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-lazy-app-EAOJQd/cold-errors-electron.log",
+      "sha256": "8aaf2c8fd0726b5133042a76174415a8c8ff51e18c4415ea0f0d210385ceb040"
+    },
+    "runs/willyou-math-lazy-app-EAOJQd/native-error-readable.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-lazy-app-EAOJQd/native-error-readable.png",
+      "sha256": "3214f4827823cc3a4df3c0a3ca2a087fdb7379805c6f27fbe6b431df9e7604a8"
+    },
+    "runs/willyou-math-lazy-app-EAOJQd/normal-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-lazy-app-EAOJQd/normal-electron.log",
+      "sha256": "4c3b5b7993ba20a2abb331d08979a03e7268cbf356cfdec26e8ef65f83c45ace"
+    },
+    "runs/willyou-math-lazy-app-EAOJQd/notebook-real-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-lazy-app-EAOJQd/notebook-real-math.png",
+      "sha256": "3bb5f3be6b9eb5acfbcc695e11a550474e03bec5f99d253a7aa06c52419e55f5"
+    },
+    "runs/willyou-math-lazy-app-EAOJQd/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/runs/willyou-math-lazy-app-EAOJQd/result.json",
+      "sha256": "79eafd3c7f6086dae5b636a0bc8baea9424b39457ab680db781ca83b3ef71184"
+    },
+    "reference/M9_Markdown与交互补充.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/reference/M9_Markdown与交互补充.md",
+      "sha256": "3b74b6499f87ee2acf898e9fa784dccc3bcff912fcada8115993f4f60715421c"
+    },
+    "reference/证据/m9-markdown-source-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/reference/证据/m9-markdown-source-r2.json",
+      "sha256": "683f6acf17548183b1f2a617f1db9a6ece5c79710567865c690134aaccda327b"
+    },
+    "failure-history.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-selection-dev116-r67/failure-history.txt",
+      "sha256": "b702daff85bdbbc37ad241bc92c6901980c2a67be4feff195225f863502bf19c"
+    }
+  }
+}

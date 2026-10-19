@@ -1,6 +1,8 @@
+import { prioritizeSearchPaths } from '../../../src/shared/file-search-priority.mjs';
 // Synthetic, local-only adapters. No filesystem, application launch or native search.
-import { rankFileCandidates } from './file-fuzzy-model.mjs';
+import { rankNameCandidates } from '../../../src/renderer/features/files/name-search-session.mjs';
 import { fuzzyScore, SEARCH_EXCLUDES } from './file-workspace-model.mjs';
+export { nearestTreeScroll } from '../../../src/shared/file-tree-scroll.mjs';
 
 export const TREE_ROW_HEIGHT = 28;
 export function largeDirectoryFixture(groups = 24, perGroup = 250) {
@@ -52,12 +54,6 @@ export function stickyTreeAncestors(rows, scrollTop, max = 3) {
   if (!first) return [];
   return rows.filter((row, i) => row.folder && first.path.startsWith(row.path + '/') && i * TREE_ROW_HEIGHT < scrollTop).slice(-max);
 }
-export function nearestTreeScroll(index, scrollTop, height, stickyHeight = 0) {
-  const top = Math.max(0, index) * TREE_ROW_HEIGHT, bottom = top + TREE_ROW_HEIGHT;
-  if (top < scrollTop + stickyHeight) return Math.max(0, top - stickyHeight);
-  if (bottom > scrollTop + height) return Math.max(0, bottom - height);
-  return scrollTop;
-}
 export function latestRequestGate() {
   let current = null, serial = 0;
   return {
@@ -92,10 +88,12 @@ export function createFixtureFileProvider(files, { emptyDirs = [], delay = 60, f
       if (!index.has(path)) throw new Error('示例目录不存在。');
       return index.get(path);
     },
-    async names(query, { signal, mode = 'ready' } = {}) {
+    async names(query, { signal, mode = 'ready', onUpdate } = {}) {
       requests.push({ type: 'names', query });
       await waitForFixture(mode === 'slow' ? 750 : delay, signal);
       if (mode === 'error') throw new Error('示例候选服务失败；输入已保留。');
+      if (mode === 'permission') throw new Error('[PERMISSION] 示例目录权限不足；输入已保留，可重试。');
+      if (mode === 'timeout') throw new Error('[TIMEOUT] 示例搜索超时；输入已保留，可重试。');
       const needle = query.trim().replaceAll('*', ''), candidates = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -103,18 +101,19 @@ export function createFixtureFileProvider(files, { emptyDirs = [], delay = 60, f
         if (i % 200 === 199) await waitForFixture(0, signal);
       }
       if (signal?.aborted) throw abortError();
-      return rankFileCandidates(query, candidates);
+      return rankNameCandidates(query, candidates, onUpdate);
     },
-    async content(query, mask, { signal, onChunk = () => {}, mode = 'ready' } = {}) {
-      requests.push({ type: 'content', query, mask });
+    async content(query, mask, { signal, onChunk = () => {}, mode = 'ready', priorityFolders = [] } = {}) {
+      requests.push({ type: 'content', query, mask, priorityFolders });
       await waitForFixture(mode === 'slow' ? 750 : delay, signal);
       if (mode === 'error') throw new Error('示例全文搜索失败；请重试。');
       const trimmed = mask.trim(), negate = trimmed.startsWith('!'), raw = negate ? trimmed.slice(1) : trimmed;
       const escaped = raw.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*\*/g, '\u0000').replace(/\*/g, '[^/]*').replace(/\?/g, '.').replace(/\u0000/g, '.*');
       const pattern = raw ? new RegExp('(?:^|/)' + escaped + '$', 'i') : null;
       const hits = [], needle = query.toLowerCase(); let batch = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      const byPath = new Map(files.map(file => [file.path, file])), ordered = prioritizeSearchPaths(files.filter(file => !file.path.split('/').some(part => SEARCH_EXCLUDES.has(part))).map(file => file.path), priorityFolders);
+      for (let i = 0; i < ordered.length; i++) {
+        const file = byPath.get(ordered[i]);
         if (!pattern || (negate ? !pattern.test(file.path) : pattern.test(file.path))) {
           const lines = (file.text || '').split('\n');
           for (let j = 0; j < lines.length; j++) {

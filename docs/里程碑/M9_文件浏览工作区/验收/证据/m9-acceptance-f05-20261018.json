@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-F05",
+  "originalCaseRow": "| **M9-T-F05 完整语言注册表**<br>M9-R06.1 | 本期本机 | 单元／集成／安装端到端<br>U+I / D05 | 按m9-viewers-source.json的345映射生成纯UTF-8样本，逐个调用classifier。 | 记录每个filename→languageId；覆盖无扩展、复合后缀、大小写；任何与基线差异有映射说明；不把识别等同编译。<br>依据：V F02 | P08；已有候选页面；本用例全部状态尚未核验 | 未执行 | — |",
+  "levelsAndEnvironmentsUnchanged": "单元／集成／安装端到端<br>U+I / D05",
+  "stepsUnchanged": "按m9-viewers-source.json的345映射生成纯UTF-8样本，逐个调用classifier。",
+  "expectedUnchanged": "记录每个filename→languageId；覆盖无扩展、复合后缀、大小写；任何与基线差异有映射说明；不把识别等同编译。<br>依据：V F02",
+  "status": "failed",
+  "layerResults": {
+    "U": "matrix-executed-capability-gap",
+    "I": "real-IO-passed-capability-gap"
+  },
+  "actual": "345 real samples checked; 43 same languageId, 34 different ID, 266 no syntax grammar, 2 approved artifact overrides. User-required full highlighter parity is not met.",
+  "commonEvidence": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-registry-20261018.json",
+    "sha256": "ed2548352ef8d5d4590c4169dfd0101b9120e208c85c7b8ec636b26f4fe2058c"
+  },
+  "defects": [
+    "M9-DEV-038"
+  ],
+  "remaining": [
+    "Implement/reconcile baseline 345 mappings and missing grammars, including exact filename/compound suffix/case collision behavior.",
+    "Verify actual syntax roles/theme tokenization across code/Markdown/Notebook/prototype; 43 matching IDs are not pixel parity.",
+    "Re-run registry + worker/editor regressions then affected App dark/light/selection/IME/save workflows."
+  ],
+  "noScopeOrDenominatorChange": true
+}

@@ -1,0 +1,24 @@
+{
+  "id": "M9-DEV082-B13-BUDGET-E1",
+  "frozenAt": "2026-10-18T14:13:41.528831+00:00",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "caseId": "M9-T-B13",
+  "counts": [
+    10000,
+    10001
+  ],
+  "platform": "macOS arm64",
+  "maxNativeIntegratedListMs": 1000,
+  "maxAppExpandReadyMs": 2000,
+  "maxScrollSettleMs": 1000,
+  "maxRenderedTreeItems": 100,
+  "maxTreeHeapDeltaBytes": 67108864,
+  "maxCompleteFlowHeapDeltaBytes": 134217728,
+  "basis": [
+    "The predevelopment06 table sets a local root-list feasibility check below1000ms for its6000-file fixture. This is a new pre-execution E1 engineering budget for the B13 10000/10001 fixture, not a retroactive claim that the old measurement covered10000.",
+    "The App bound adds1000ms for pointer/IPC/render and bounded state polling. Native-I/jsdom aggregate is checked separately, never substituted for App latency.",
+    "100 DOM items is an independent upper budget for the approximately900px test window, rather than asserting the exact implementation formula. All entries still must be present and tail readable.",
+    "64MiB is the initial directory-tree incremental JS heap budget;128MiB includes first editor load/tail selection. Record raw no-forced-GC samples and actual viewport. No cold-cache, long-term leak or all-device SLA claim."
+  ],
+  "changePolicy": "Retain E1 and any failures. Do not silently loosen thresholds or count truncation as complete; investigate or document a justified follow-up budget separately."
+}

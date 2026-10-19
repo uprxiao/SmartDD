@@ -1,0 +1,1078 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-FORMATS-DEV063-DEV064-R17",
+  "at": "2026-10-18T07:39:17.722556+00:00",
+  "status": "passed-four-cases-with-one-pending",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS arm64",
+  "app": {
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r17-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "ee29f0038b8f835a3143ffbdf77fed6305fef7d812bd68ec0da1e34d2603d3c3",
+    "brokerSha256": "81205d4eb75670835a23652a936a3cdd07fcf3e8e8d2f65eb7afa2c546af4676"
+  },
+  "cases": {
+    "M9-T-F11": {
+      "U": "fixed-oracle classification over nine SVG/signature/prefix samples",
+      "I": "real native sampled content, exact revision-checked bytes and source identity",
+      "A": "all nine actual App branches, including XML/comment/case/whitespace, 512-byte edge/after/split, pure text SVG explicit error/source fallback, PNG magic before SVG extension. SVG rendered as image resource."
+    },
+    "M9-T-F12": {
+      "I": "18 actual encoded/corrupt fixtures through native service; independent installed encoders and ffprobe dimension/frame-count oracle",
+      "A": "avif/bmp/gif/ico/jpeg/jpg/png/webp all actually decoded with correct dimensions, every corrupt sample explicit failure+retry, GIF two displayed compositor frames and PNG alpha0/255 verified"
+    },
+    "M9-T-F13": {
+      "I": "both tif/tiff including forged image/tiff descriptor upper rejection, real native sample reading/copy/application-grant isolation",
+      "A": "four real TIFF suffix samples show explicit unsupported view without image/editor and expose controlled external/copy actions"
+    },
+    "M9-T-F25": {
+      "I": "all ten unsupported extensions stay unsupported regardless misleading ASCII content; real app discovery, owner/unlisted app rejection, exact controlled native copies",
+      "A": "all ten actual unsupported views and native discovered Open With menus; save-copy entries present. Explicit boundary: no claim that external Office apps decoded the fixtures; they are fallback dispatch tests."
+    }
+  },
+  "notCounted": {
+    "M9-T-T32": {
+      "status": "blocked",
+      "done": "R/static D18 reviewed; two actual P header states; production panel tests, r16 missing-download red and r17 two header greens. Native save-copy entry now wired for ordinary Notebook/PDF; attachment callback ownership retained; download error no longer destroys Notebook preview.",
+      "remaining": "Actual native save dialog and downloaded byte comparison plus unresolved prototype download result; CUA connection unavailable, user away so defer without repeated unlock requests."
+    },
+    "M9-T-T34": "System clipboard approval remains pending; no clipboard action or bypass this batch."
+  },
+  "defects": {
+    "M9-DEV-063": {
+      "state": "implemented-header-retested-native-save-pending",
+      "problem": "Ordinary Notebook did not receive onDownload, so approved top download action was absent in actual r16. Download callback errors also replaced the Notebook view.",
+      "fix": "Reuse native saveFileCopy for ordinary file download, keep attachment host callback optional and separate download error state; four production panel/Notebook tests passed.",
+      "boundary": "T32 not fully passed until real native save verified."
+    },
+    "M9-DEV-064": {
+      "state": "fixed-retested",
+      "problem": "A forged lower image/tiff hint bypassed the unsupported suffix at the renderer boundary. Code red reproduced.",
+      "fix": "FileBuffer.content preserves explicit unsupported extension verdict before lower content hint; native/file-buffer/unit and actual TIFF view checks passed."
+    }
+  },
+  "verification": {
+    "newFullCases": 4,
+    "formalPassed": 90,
+    "formalTotal": 419,
+    "codePassed": 41,
+    "codeFailed": 0,
+    "codeSkipped": 0,
+    "cumulativeCodeUnion": 1560,
+    "externalCliOptInNotSelected": 2,
+    "appNewFullCaseChecks": 41,
+    "appPartialHeaderChecks": 2,
+    "appNotebookAffectedRegressionChecks": 41,
+    "appTotalChecks": 84,
+    "packageNativeChecks": 6,
+    "types": "passed, including post-build test files",
+    "inputSourceHashesMatched": 864,
+    "compiledRuntimeFilesMatched": 81
+  },
+  "boundaries": [
+    "All actual App runs use isolated synthetic local projects and fresh scoped userdata; no model/CLI/task created.",
+    "SVG and unsupported format tests inspect actual rendering and native discovery/copy authority. Unsupported format fixtures intentionally include misleading/non-decoder data; no unsupported decoder or every external application internal behavior claimed.",
+    "P/R are separate from actual packaged App. T32 remains incomplete; no whole-theme/pixel equivalence claimed.",
+    "Original denied clipboard operation was not retried or bypassed. Old r6 pending input, r4 and AIS directory untouched.",
+    "No release/tag/push/merge/commit."
+  ],
+  "artifacts": {
+    "app/r16-header-red/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r16-header-red/driver.log",
+      "sha256": "7cddc9dc8b2d0139d785125fc385d0c0b3ea9f76954339a0f828dc05a5b220e0"
+    },
+    "app/r16-header-red/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r16-header-red/electron.log",
+      "sha256": "ecf9009c58db6b0c251e38586e85f3fea9dcb7df49cc96465c80c41d7462f8fb"
+    },
+    "app/r16-header-red/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r16-header-red/failure.png",
+      "sha256": "38c717c925ee2fa4037a5101fc7859ccc37827803f99dd0e2d15aebb4459bf45"
+    },
+    "app/r16-header-red/metadata-title.ipynb.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r16-header-red/metadata-title.ipynb.png",
+      "sha256": "38c717c925ee2fa4037a5101fc7859ccc37827803f99dd0e2d15aebb4459bf45"
+    },
+    "app/r16-header-red/project/filename-fallback.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r16-header-red/project/filename-fallback.ipynb",
+      "sha256": "aef69ad720ee0f98ea81dafd4219e43d1803491bedcbbdcd277bb3daf2218c01"
+    },
+    "app/r16-header-red/project/metadata-title.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r16-header-red/project/metadata-title.ipynb",
+      "sha256": "9d0ed112988b6c3358550e2221b971b6b758ab5f4284c70f6ef807f58c53ca4d"
+    },
+    "app/r16-header-red/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r16-header-red/result.json",
+      "sha256": "2f58303c4b31b9266cf4290e86f25f4b6e369ddd24bf5573edc6339bd5c4e28f"
+    },
+    "app/r17-header-partial/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-header-partial/driver.log",
+      "sha256": "6e6e927608bcfd00fc3ac18ca6571bfe0480301aa4a860d36c93427f38c7f3c3"
+    },
+    "app/r17-header-partial/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-header-partial/electron.log",
+      "sha256": "38d6bed3805c5882f3ce4f65d0b13e4881115710e3b73f2ce11e273e808a0ed5"
+    },
+    "app/r17-header-partial/filename-fallback.ipynb.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-header-partial/filename-fallback.ipynb.png",
+      "sha256": "a3c96644b889965d68233b3d9c816707a9b1fdebd3f76f2cafa0ce59c31ab52b"
+    },
+    "app/r17-header-partial/metadata-title.ipynb.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-header-partial/metadata-title.ipynb.png",
+      "sha256": "f8ba2e1bd23522ccd6d76f20df4da80f51ed0b4539a641d9eee87586ab455fd6"
+    },
+    "app/r17-header-partial/project/filename-fallback.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-header-partial/project/filename-fallback.ipynb",
+      "sha256": "aef69ad720ee0f98ea81dafd4219e43d1803491bedcbbdcd277bb3daf2218c01"
+    },
+    "app/r17-header-partial/project/metadata-title.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-header-partial/project/metadata-title.ipynb",
+      "sha256": "9d0ed112988b6c3358550e2221b971b6b758ab5f4284c70f6ef807f58c53ca4d"
+    },
+    "app/r17-header-partial/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-header-partial/result.json",
+      "sha256": "f81e3351dd49242a52654db07ae1cada84213b3636176d5fad3e60aa4613150b"
+    },
+    "app/r17-format-boundaries/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/driver.log",
+      "sha256": "fa16bf50af74dcde6834d630398e4399ce2cd654ba07d1dedc88bc447c24677e"
+    },
+    "app/r17-format-boundaries/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/electron.log",
+      "sha256": "63df6e5ce43dcd5bdf2ba80bdbe2e1e4b812b2d97cc472245c1bc6fa6a74ef3e"
+    },
+    "app/r17-format-boundaries/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/fixtures.json",
+      "sha256": "6d3f821b38444bfa63b050748e37781b93783785cfad1f09ccaf3c49ccdae47d"
+    },
+    "app/r17-format-boundaries/little-endian.tif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/little-endian.tif.png",
+      "sha256": "138e85bea9b02a26ff4afc6fed0508212fee9f2684c277384ef36b9f4858baf7"
+    },
+    "app/r17-format-boundaries/little-endian.tiff.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/little-endian.tiff.png",
+      "sha256": "1fb3f54dd8ebfda66950eb1e74656df129e570d79591cec9832f9825e1db3520"
+    },
+    "app/r17-format-boundaries/plain-text.svg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/plain-text.svg.png",
+      "sha256": "4d326ed0a2dbd0655e43f2b595bbea7d7c95644147555d67f5d74a4ee5a719b4"
+    },
+    "app/r17-format-boundaries/png-signature.svg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/png-signature.svg.png",
+      "sha256": "9d22e84cd15d4043c0e9328b68fc3df054ab374936299649c28562d27e3d4d8b"
+    },
+    "app/r17-format-boundaries/project/little-endian.tif": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/little-endian.tif",
+      "sha256": "5b8de6f08055194ef790df081c2b76fa7920469750fd5ff47e6a209a7b3c716a"
+    },
+    "app/r17-format-boundaries/project/little-endian.tiff": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/little-endian.tiff",
+      "sha256": "5b8de6f08055194ef790df081c2b76fa7920469750fd5ff47e6a209a7b3c716a"
+    },
+    "app/r17-format-boundaries/project/plain-text.svg": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/plain-text.svg",
+      "sha256": "05fc0dd3bfa2a0bacc849c6451b502e61df8655b45754b857b33809ceb4f287a"
+    },
+    "app/r17-format-boundaries/project/png-signature.svg": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/png-signature.svg",
+      "sha256": "f9dd0ec8dca9a5ae418cddadc6618d2b0385b7c626ba962290d8dcbe6e5b64f4"
+    },
+    "app/r17-format-boundaries/project/svg-after-512.unknown": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/svg-after-512.unknown",
+      "sha256": "f9eaf7e2d4f1b98065be763699661ec9229b48ba2169ea920a60442b6436c90d"
+    },
+    "app/r17-format-boundaries/project/svg-comment.unknown": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/svg-comment.unknown",
+      "sha256": "326d010d80f987279621c2f5ca83b70a9e62385861f8fe3c19b94ced914b534a"
+    },
+    "app/r17-format-boundaries/project/svg-last-prefix-byte.unknown": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/svg-last-prefix-byte.unknown",
+      "sha256": "c1b49d025180b752cff551a0b33276222ba97fba68a6ba3745a4972758885342"
+    },
+    "app/r17-format-boundaries/project/svg-split-prefix.unknown": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/svg-split-prefix.unknown",
+      "sha256": "8dca16483f2eced1f2fbf23cfae0b94d2d2d9b3d1063b492150ad415d13dff03"
+    },
+    "app/r17-format-boundaries/project/svg-uppercase-whitespace.unknown": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/svg-uppercase-whitespace.unknown",
+      "sha256": "2132145eae53d106228c70fb556b4f21fd6a2bdd89235656a05ba5c8eba147c9"
+    },
+    "app/r17-format-boundaries/project/svg-within-512.unknown": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/svg-within-512.unknown",
+      "sha256": "59b001117e3fd1cffb18c1161ca6e17111acb3372f597a9590e30c46a94d3dbc"
+    },
+    "app/r17-format-boundaries/project/svg-xml.unknown": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/svg-xml.unknown",
+      "sha256": "bc0e51ab9eb473427c853eb7297330e2f5d068a68a4f8bdb606d86bb0360b782"
+    },
+    "app/r17-format-boundaries/project/text-forged-image.tif": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/text-forged-image.tif",
+      "sha256": "42bb5111fed06b81d82dabbc791ce5514e339c03356f845c456e1e907b59831f"
+    },
+    "app/r17-format-boundaries/project/text-forged-image.tiff": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/text-forged-image.tiff",
+      "sha256": "42bb5111fed06b81d82dabbc791ce5514e339c03356f845c456e1e907b59831f"
+    },
+    "app/r17-format-boundaries/project/unsupported.doc": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.doc",
+      "sha256": "83a3be4467315133bcff68f3e3b284d587a531fffd912c09cf3cf744b3a392cb"
+    },
+    "app/r17-format-boundaries/project/unsupported.key": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.key",
+      "sha256": "6342991d2ea8a395fba342b90a2bc5bc73572368f53538b34c76e91c75db763b"
+    },
+    "app/r17-format-boundaries/project/unsupported.numbers": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.numbers",
+      "sha256": "2bba259047b00f4072e6687d03ea160973fe6280aa89c96bb0ceed602bba021c"
+    },
+    "app/r17-format-boundaries/project/unsupported.odp": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.odp",
+      "sha256": "7d40f5f7433b5ccbd12aae5fb9147312661c06b1527efbd3eb4ff24b32f1c833"
+    },
+    "app/r17-format-boundaries/project/unsupported.ods": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.ods",
+      "sha256": "0cd3ca7be85bb73c8b86e26e01c6873f39f5a2f189bd10c323e17528d051a4e4"
+    },
+    "app/r17-format-boundaries/project/unsupported.odt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.odt",
+      "sha256": "205113338c4ae64598efe1aa51b175338c90c8c3016e7a123b1e15a88f052efb"
+    },
+    "app/r17-format-boundaries/project/unsupported.pages": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.pages",
+      "sha256": "a93d87e88b3869c12d8e957f425d1bf338acec579d73f32f96d2afeb38f9234c"
+    },
+    "app/r17-format-boundaries/project/unsupported.ppt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.ppt",
+      "sha256": "34d82735bb3fc7c630f97d3ef7ed9604b6f7c58b18969bca53e13dba9228a786"
+    },
+    "app/r17-format-boundaries/project/unsupported.rtf": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.rtf",
+      "sha256": "aac65167f7018f6548250d04b632b26a20859c3eac8196561e9b6d8cde628865"
+    },
+    "app/r17-format-boundaries/project/unsupported.xls": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/project/unsupported.xls",
+      "sha256": "9b31b1129166c25280f0f9da2f1fdfbaeda0a795ef262004e55a9ef565f2489b"
+    },
+    "app/r17-format-boundaries/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/result.json",
+      "sha256": "71034c8c30bc993e8c98b62e5289b97fdebae76ed67665f236a6e4198cf9f63f"
+    },
+    "app/r17-format-boundaries/svg-after-512.unknown.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/svg-after-512.unknown.png",
+      "sha256": "c5525f97925715839c345edcaa9a800ec659bbae13a41420783b681ea75d55e7"
+    },
+    "app/r17-format-boundaries/svg-comment.unknown.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/svg-comment.unknown.png",
+      "sha256": "4a35fe61b8e5ac97142e39ac39f541e9d2047da6b7a0d9cafcc9e0ad421ee1bf"
+    },
+    "app/r17-format-boundaries/svg-last-prefix-byte.unknown.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/svg-last-prefix-byte.unknown.png",
+      "sha256": "8f419092d2e537092eacc923c28f9e264be8940af57d9cbf3f0a6c25f208b5fc"
+    },
+    "app/r17-format-boundaries/svg-split-prefix.unknown.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/svg-split-prefix.unknown.png",
+      "sha256": "ce7a747d583f5774998c433c1931c92825acd3a8fb37ea953424845d94c402a4"
+    },
+    "app/r17-format-boundaries/svg-uppercase-whitespace.unknown.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/svg-uppercase-whitespace.unknown.png",
+      "sha256": "a0c72197b344e3317f9c2ce6c293987fa201faa4e3a0ccc8a5851af7939e8c15"
+    },
+    "app/r17-format-boundaries/svg-within-512.unknown.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/svg-within-512.unknown.png",
+      "sha256": "6b048d4ad656dba19df71380094b5bbdb4a137783c08ba37f4e927848b5648a6"
+    },
+    "app/r17-format-boundaries/svg-xml.unknown.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/svg-xml.unknown.png",
+      "sha256": "a49ca4f63e4339fabd6befa1a2bec321e62ced79e170ae4f114480fe09b672fc"
+    },
+    "app/r17-format-boundaries/text-forged-image.tif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/text-forged-image.tif.png",
+      "sha256": "e6b4fa2fa3d287f86a82bcc593bcd55445be6183e80ca27bd1957da8d92a9413"
+    },
+    "app/r17-format-boundaries/text-forged-image.tiff.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/text-forged-image.tiff.png",
+      "sha256": "ae706c5b671f3c20528388dde1bbb6bbc25c79bbe68911b4f255195d50429088"
+    },
+    "app/r17-format-boundaries/unsupported.doc.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.doc.png",
+      "sha256": "3acb75ed9de56bc944ae3f7724b45a2313624b0bb7520e0c100374718c96c6d0"
+    },
+    "app/r17-format-boundaries/unsupported.key.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.key.png",
+      "sha256": "0c353a464b43f21f41398e309f98fc0f8925f562835870da6c30890366d0c08a"
+    },
+    "app/r17-format-boundaries/unsupported.numbers.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.numbers.png",
+      "sha256": "6bfa252734881e2bda9dfd1d56f8619d0d01038468aedca4b02ce835ad3e60e5"
+    },
+    "app/r17-format-boundaries/unsupported.odp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.odp.png",
+      "sha256": "ee67d378b18b254b3bc0e93c5a2d6779cd5b5ef7711fae962a011584ddb081d7"
+    },
+    "app/r17-format-boundaries/unsupported.ods.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.ods.png",
+      "sha256": "5ca6def03daf1a5e160116ab77b5c70b9a84952c7e6ff206b69b237d1ca99dd4"
+    },
+    "app/r17-format-boundaries/unsupported.odt.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.odt.png",
+      "sha256": "7c474cc6daab243f484ebce5abb82c8cf75dc2801ceb6d5d06d0d2e3db53bf62"
+    },
+    "app/r17-format-boundaries/unsupported.pages.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.pages.png",
+      "sha256": "e7fbf6e1e1f5cce58626c4479bf1353eb34939d700f39c81289e4613a6fef27b"
+    },
+    "app/r17-format-boundaries/unsupported.ppt.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.ppt.png",
+      "sha256": "b8dffe832909135a4c3d585a6436de0878108a955ee178e933e7591aa3d0293d"
+    },
+    "app/r17-format-boundaries/unsupported.rtf.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.rtf.png",
+      "sha256": "deb5575c21acce09854cc53fd1fa51b887f5990d86dfdfd87a2294da845d8f2a"
+    },
+    "app/r17-format-boundaries/unsupported.xls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-format-boundaries/unsupported.xls.png",
+      "sha256": "9a86cbedba6447cac8b7d1bca107074d7956359f2afa544951934d744da33e29"
+    },
+    "app/r17-notebook-details/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/driver.log",
+      "sha256": "282f6637040c2b4d80127c8710a9a5f57736b0c42e9fba42a8f1840f94f0bd8b"
+    },
+    "app/r17-notebook-details/details-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/details-final.png",
+      "sha256": "5b02cea128eda81c7898f4b67a3de387dbc7720079b0f4ea19ce60b15507b600"
+    },
+    "app/r17-notebook-details/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/electron.log",
+      "sha256": "b8725783bbb8ac9b84975efb2cc260434e625bf1fe126323dd7cf96eb1196f49"
+    },
+    "app/r17-notebook-details/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/fixtures.json",
+      "sha256": "cc4ad641b653fc89a664847a9145ead00e67e09124b0aac9b26b3214c0ad55f1"
+    },
+    "app/r17-notebook-details/output-size.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/output-size.png",
+      "sha256": "d7f6c3a3cb6e6fa73632dba6ffbdf43d101734fb4fd11e2880addcf2ea174b41"
+    },
+    "app/r17-notebook-details/project/copy-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/copy-code.ipynb",
+      "sha256": "1fef12b13ad72ee50f725fb70c749f7e0fcff33bf8faff762c9bc3ba88908726"
+    },
+    "app/r17-notebook-details/project/copy-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/copy-raw.ipynb",
+      "sha256": "372c0f06f8900c9b2be3b6fc1eb4e8992073f6608ad6a442280e4b0bdaf05fa3"
+    },
+    "app/r17-notebook-details/project/fold-empty-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-empty-0.ipynb",
+      "sha256": "9b6d82dbf9e80b808fd43b47dcbd1d3a723ab62f4a2bf67e9eb386d6ca481016"
+    },
+    "app/r17-notebook-details/project/fold-empty-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-empty-1.ipynb",
+      "sha256": "4f9c20b72c16cda126883e1336a7bdbedc8c869d6eaad2dc6d4c0fe9593c3268"
+    },
+    "app/r17-notebook-details/project/fold-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-markdown.ipynb",
+      "sha256": "46aa1a825ba3bcffa12070c82ff4673ef7bcdb45a68d15b5d4b3db92b07895e9"
+    },
+    "app/r17-notebook-details/project/fold-missing-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-missing-0.ipynb",
+      "sha256": "63600f33cbf48df295f3f646db459972064ef3dfb30bcd6a81cbaa1e54dc7130"
+    },
+    "app/r17-notebook-details/project/fold-missing-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-missing-1.ipynb",
+      "sha256": "de587b70161bd2faad268394ad899951bfd57db09fdad3f3d098c3474fe8b143"
+    },
+    "app/r17-notebook-details/project/fold-present-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-present-0.ipynb",
+      "sha256": "ca209fca649281f255050950efef56c9b018c5aae494ea96341fea346ee8d349"
+    },
+    "app/r17-notebook-details/project/fold-present-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-present-1.ipynb",
+      "sha256": "5bdcc4a505d6e4810fd00f91c0932df089adff9a79ba077e80bcb9951d871043"
+    },
+    "app/r17-notebook-details/project/fold-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-raw.ipynb",
+      "sha256": "89815c81686950fc1966a0e9403d776dd5c8d0fa3e3e55969eb04e561b714c33"
+    },
+    "app/r17-notebook-details/project/fold-space-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-space-0.ipynb",
+      "sha256": "da4e2708588cd56c89ae23798b7b2be2bdeddec87bf522c556554ecb18a5cd5d"
+    },
+    "app/r17-notebook-details/project/fold-space-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/fold-space-1.ipynb",
+      "sha256": "49f948fe3fdc180d4e8cd8fd623897ff42d629a62bb3fd960a160de83002a8ec"
+    },
+    "app/r17-notebook-details/project/output-details.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/output-details.ipynb",
+      "sha256": "b4eba9ff83ed7a9b8fd28f4de029d110a4c0b1b4185e603d4a2e48c69276c523"
+    },
+    "app/r17-notebook-details/project/source-empty-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/source-empty-0.ipynb",
+      "sha256": "3b64cdefb315becd91f21c70314b82b80d250ff9dbcd8ffd9dc0bc2f5030fdf7"
+    },
+    "app/r17-notebook-details/project/source-empty-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/source-empty-1.ipynb",
+      "sha256": "7172a01afffd058e18568cb1ec289b113e7815cbf361faa64ba592e996829325"
+    },
+    "app/r17-notebook-details/project/source-whitespace-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/source-whitespace-0.ipynb",
+      "sha256": "c05b7585a2a695f4f0d12babbf525c3e5b369424c758710668eb23b0bceef0cc"
+    },
+    "app/r17-notebook-details/project/source-whitespace-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/project/source-whitespace-1.ipynb",
+      "sha256": "62cb82037698c5d6a038b897c9f52b17957d2e4c09a0766a4c725e9195d43fc0"
+    },
+    "app/r17-notebook-details/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-details/result.json",
+      "sha256": "a2e08231fed8fd431b86b13d703c4b3aa8b2d8c91e267f237b4c1ec46202fed7"
+    },
+    "app/r17-notebook-content/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/driver.log",
+      "sha256": "6c14534c522e9df0f351d0debf1bdee674eb1c367e8376f898c5ca409a066fd7"
+    },
+    "app/r17-notebook-content/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/electron.log",
+      "sha256": "5e853d03091f7a3e873b2cad44b5a5f85e4f984977cbbc79a874010fad7456c0"
+    },
+    "app/r17-notebook-content/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/fixtures.json",
+      "sha256": "5d365d177d2984f97213cbf509f9b1c1aec1e610d26a7cbf108857e5304e452d"
+    },
+    "app/r17-notebook-content/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/html-sandbox-safe-output.png",
+      "sha256": "dbac1dde4a48c2ae426ac8292919444ce20a54e17e372c47608207395b67c169"
+    },
+    "app/r17-notebook-content/notebook-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/notebook-final.png",
+      "sha256": "e9b19885981dac37f22a9a21c7ee9df5a7cba74244613b0117fb3cdbe7fa49ff"
+    },
+    "app/r17-notebook-content/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r17-notebook-content/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r17-notebook-content/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/cell-code.ipynb",
+      "sha256": "f3fef8530812443f3ec98f0e2b67152b66e750ef375b7357d99d2f5945331e81"
+    },
+    "app/r17-notebook-content/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r17-notebook-content/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r17-notebook-content/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r17-notebook-content/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r17-notebook-content/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r17-notebook-content/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r17-notebook-content/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r17-notebook-content/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/html-sandbox.ipynb",
+      "sha256": "d24062020f2ac8066b39c8d924601c1f961dbaf72cef8e4bc8b9693c0c3c8909"
+    },
+    "app/r17-notebook-content/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r17-notebook-content/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r17-notebook-content/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r17-notebook-content/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r17-notebook-content/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r17-notebook-content/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r17-notebook-content/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r17-notebook-content/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r17-notebook-content/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r17-notebook-content/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r17-notebook-content/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r17-notebook-content/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r17-notebook-content/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/result.json",
+      "sha256": "ab2952780e88ce1dcd49ab47848041d662bd6b7d97f14084f5ea79cdcc8ffa1c"
+    },
+    "app/r17-notebook-content/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-notebook-content/streams-error-details.png",
+      "sha256": "6584206bfabe54a3c0ec2a54358a0ac7dafa407697aae57e85bf5a2fff190b4c"
+    },
+    "app/r17-raster-final/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/driver.log",
+      "sha256": "cb8fa9f8518aa39a33e661395ff491a62eb757bc2440983fce669ca569ea2fcb"
+    },
+    "app/r17-raster-final/animated.gif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animated.gif.png",
+      "sha256": "59a005e827abc6a71f26aa07414672de4ae88150bb95df199b6ea446124c9415"
+    },
+    "app/r17-raster-final/animation-frame-0.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-0.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/animation-frame-1.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-1.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/animation-frame-10.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-10.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-11.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-11.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-12.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-12.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/animation-frame-13.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-13.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/animation-frame-14.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-14.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-15.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-15.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-2.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-2.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-3.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-3.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-4.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-4.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/animation-frame-5.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-5.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/animation-frame-6.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-6.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-7.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-7.png",
+      "sha256": "eaf7e58e50180ef0173a5ca03dca711d93a2efb290fa0f388b7eb1a26c4c54d4"
+    },
+    "app/r17-raster-final/animation-frame-8.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-8.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/animation-frame-9.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/animation-frame-9.png",
+      "sha256": "399aa55048757a04763ee48c165f2032dad4c113f4424cbff0f700cd958a8a2f"
+    },
+    "app/r17-raster-final/broken.avif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.avif.png",
+      "sha256": "dd0230a191d9a0e2e6663ad0b90b1219a120f1d8321742fd1dd3054fa6eeb8db"
+    },
+    "app/r17-raster-final/broken.bmp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.bmp.png",
+      "sha256": "cef35025df83ccdb05b88199bc552ae988c7a7f66282dfe5a2848432d111f109"
+    },
+    "app/r17-raster-final/broken.gif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.gif.png",
+      "sha256": "215c5c3ffe2bacc1c0636a028aa18f928a57d97aee713949d0f3b643f22e4f74"
+    },
+    "app/r17-raster-final/broken.ico.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.ico.png",
+      "sha256": "f11aa280ba1742031d66571bd3852cfb92d287b28afe1d1a7b0f4f7a694fdc76"
+    },
+    "app/r17-raster-final/broken.jpeg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.jpeg.png",
+      "sha256": "36ceea83a7df81a53aa8bd906f0e58f3f3b9974ce77467e974204b12e2ced462"
+    },
+    "app/r17-raster-final/broken.jpg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.jpg.png",
+      "sha256": "b98d408182c96daed9c7d45709c3ae29881550895f6434816229579d2473b397"
+    },
+    "app/r17-raster-final/broken.png.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.png.png",
+      "sha256": "9752ff69c7693d81be97c49478cd4cb37f1cde2eb204b847870e37f6d1e2fc3f"
+    },
+    "app/r17-raster-final/broken.webp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/broken.webp.png",
+      "sha256": "9d1166b169dcb4888cbc9a3dc42913ad00d0bfc566bc4c711c86ee7853590269"
+    },
+    "app/r17-raster-final/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/electron.log",
+      "sha256": "0026aaebfd6332a3fe64c0d912792684cb78feba1cec039c82adac92ee732bde"
+    },
+    "app/r17-raster-final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/result.json",
+      "sha256": "68d4bef060ffe8af6ef43be7ca74de72d9d9c89590dc51c5eed16306c2c1feb8"
+    },
+    "app/r17-raster-final/transparent.png.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/transparent.png.png",
+      "sha256": "c58c270554e2456eea13cb97aad98ea99f7e8ffa94dc118d2923af9a9754ff1a"
+    },
+    "app/r17-raster-final/valid.avif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.avif.png",
+      "sha256": "c3f040bc08c5600b55ed53ae7b713acc55d12e98ded3ada36e14673ad9aaaffb"
+    },
+    "app/r17-raster-final/valid.bmp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.bmp.png",
+      "sha256": "047e463747d6b7497846d25afe6098d57c856286f71358dedea9dfc2970b9ba3"
+    },
+    "app/r17-raster-final/valid.gif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.gif.png",
+      "sha256": "0060a02bad8800fb274b2a34635754c0765b0684e3aad72a6909c0079ef1266d"
+    },
+    "app/r17-raster-final/valid.ico.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.ico.png",
+      "sha256": "e1ed75aa5933aadeff693186b8ad411c62692f3ba4c952017ec92740982daafb"
+    },
+    "app/r17-raster-final/valid.jpeg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.jpeg.png",
+      "sha256": "23703d5f03a839f3e16cc4ef86e8bc957852cc1b0a9b2c6511b2d8db7ce9a866"
+    },
+    "app/r17-raster-final/valid.jpg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.jpg.png",
+      "sha256": "8294f652d7a03434af9990a65e5f3e48d2d4c57650f514d6ec6232bfa033edf4"
+    },
+    "app/r17-raster-final/valid.png.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.png.png",
+      "sha256": "8b3fcbe802df0f222ab63157149853f1d2ae41bb28d5ae26900204a6e1a31e77"
+    },
+    "app/r17-raster-final/valid.webp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/app/r17-raster-final/valid.webp.png",
+      "sha256": "eb5072448d7b306e0113d78929dcc668ab6949eb61644351d8dba13fe02fff9b"
+    },
+    "raster-fixtures-and-failed-oracles/broken.avif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.avif.png",
+      "sha256": "c1d8dc3cb03c6bf22e6a82cf15656446f4526281014092d31a13f8db6f083802"
+    },
+    "raster-fixtures-and-failed-oracles/broken.bmp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.bmp.png",
+      "sha256": "ea4eb3a86a6a0e393d002923b86fbd9fac494668c49f8da1bc3152eb3ddb4de1"
+    },
+    "raster-fixtures-and-failed-oracles/broken.gif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.gif.png",
+      "sha256": "41a1641dd281a773005a51f4c0e25281a4a65da45f1b5dc6837432f7902aa1a7"
+    },
+    "raster-fixtures-and-failed-oracles/broken.ico.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.ico.png",
+      "sha256": "d914c07487116382602722c4e9a9bddc4e1b4fc0caa32f8365c7f0931b19fabb"
+    },
+    "raster-fixtures-and-failed-oracles/broken.jpeg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.jpeg.png",
+      "sha256": "91406f61e5be9578b29b63a9f5df6400b9b7d27a1413dfe9f8f7accc1dfe7fbf"
+    },
+    "raster-fixtures-and-failed-oracles/broken.jpg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.jpg.png",
+      "sha256": "d5ae28a0fac513b8db5ab6e99cbbd685050a466ebcb152f4d874f502e0b32a79"
+    },
+    "raster-fixtures-and-failed-oracles/broken.png.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.png.png",
+      "sha256": "a8eaec59313940dc2a618da516c7e7d362319ad211c4affd77d190dd9b2b9b93"
+    },
+    "raster-fixtures-and-failed-oracles/broken.webp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/broken.webp.png",
+      "sha256": "9349d994082c2847ffbd63d2c36fda5ae2b0dd88444459c3b78e1774ba32b84a"
+    },
+    "raster-fixtures-and-failed-oracles/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/electron.log",
+      "sha256": "e103705d699b56e09e2c81ed653b83a474abe2f1a4cb01a3cd3d834d8f456a87"
+    },
+    "raster-fixtures-and-failed-oracles/encoder-inputs/alpha.rgba": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/encoder-inputs/alpha.rgba",
+      "sha256": "014fe13eb4b5d6684eb64afe4d582b770acdcf3b1221af21e46d94aab026c420"
+    },
+    "raster-fixtures-and-failed-oracles/encoder-inputs/avif.ppm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/encoder-inputs/avif.ppm",
+      "sha256": "76d17a1a95be299f07a9c36ffa1b88358f0f9b5376404cc1f8f88164e5ef5a6c"
+    },
+    "raster-fixtures-and-failed-oracles/encoder-inputs/frame-0.ppm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/encoder-inputs/frame-0.ppm",
+      "sha256": "0c367428c1ccaebbb875cba34c0348e4bfdb6dc3bc7154bc6eb08c3ca54e3330"
+    },
+    "raster-fixtures-and-failed-oracles/encoder-inputs/frame-1.ppm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/encoder-inputs/frame-1.ppm",
+      "sha256": "70f977efb0bab8a4139cea5054b2d60e077fe1f4adc0d6f5369eab9ccfbcdf1a"
+    },
+    "raster-fixtures-and-failed-oracles/encoder-inputs/icon.ppm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/encoder-inputs/icon.ppm",
+      "sha256": "4a60bb59331ca2c8c53b3aa4da067f40012fdc2e431b68c9896adc825195ef22"
+    },
+    "raster-fixtures-and-failed-oracles/encoder-inputs/source.ppm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/encoder-inputs/source.ppm",
+      "sha256": "e0d890745c72a08bb6f8a3b4f1c71c22a0a1168ddc2db8804b49a5e0d9e24131"
+    },
+    "raster-fixtures-and-failed-oracles/encoders.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/encoders.log",
+      "sha256": "f9c89f5a8a6c2b24fe2fa1814817e42e68a62b2e981e88dff7a4c5769abfdd83"
+    },
+    "raster-fixtures-and-failed-oracles/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/failure.png",
+      "sha256": "3bedd5b180713e917a1b0d9362c34ac6484a3deb55941a4bceeda1dd8752f391"
+    },
+    "raster-fixtures-and-failed-oracles/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/fixtures.json",
+      "sha256": "4aa98bd8d9d31b936fb4cdba60713151494efbdd19d0a588a3e1015a4112eb52"
+    },
+    "raster-fixtures-and-failed-oracles/invalid-canvas-oracle/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/invalid-canvas-oracle/electron.log",
+      "sha256": "e103705d699b56e09e2c81ed653b83a474abe2f1a4cb01a3cd3d834d8f456a87"
+    },
+    "raster-fixtures-and-failed-oracles/invalid-canvas-oracle/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/invalid-canvas-oracle/failure.png",
+      "sha256": "3bedd5b180713e917a1b0d9362c34ac6484a3deb55941a4bceeda1dd8752f391"
+    },
+    "raster-fixtures-and-failed-oracles/invalid-canvas-oracle/raster-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/invalid-canvas-oracle/raster-ui.mjs",
+      "sha256": "22b4edd23ef8dfad4298db40f695d7ee3c65212919c1884030e4addad48797c6"
+    },
+    "raster-fixtures-and-failed-oracles/invalid-canvas-oracle/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/invalid-canvas-oracle/result.json",
+      "sha256": "ff81025e61a9a4265734d6a79d84956ea17ecf07bdce19eb0c303f60dcce1d59"
+    },
+    "raster-fixtures-and-failed-oracles/project/animated.gif": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/animated.gif",
+      "sha256": "5f1338d93143120ce0a94ce091edf2c1dce0cf84bd9f9a12694c704a002ac3e7"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.avif": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.avif",
+      "sha256": "370deb42727fe2583f2e984c59d3b953d921f74081921402d71ecb04a15beece"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.bmp": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.bmp",
+      "sha256": "22c61cae09763307b728156d43889bf58b9c2ff015a689052cd2b5c1e0e3902c"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.gif": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.gif",
+      "sha256": "107ff1474481e7c0b9805835dc743909df9ac8351123c49374974487f6fcb844"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.ico": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.ico",
+      "sha256": "44ffee3b52f1754b88582769e94c0029d26aac7e22539a904bd724c0aad76e90"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.jpeg": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.jpeg",
+      "sha256": "0afa868514a1106e5bab98a9e59655e6b638adb4cec67b4ac5a521cf098b3999"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.jpg": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.jpg",
+      "sha256": "530828112a733c99244662c1eccbeb7f9b7c6db57fde6c09fa0932e94d1e1959"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.png",
+      "sha256": "a2525417d75df3929aa5185ba5619610e9c39869e5214f529302830a0eba810d"
+    },
+    "raster-fixtures-and-failed-oracles/project/broken.webp": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/broken.webp",
+      "sha256": "72c3186f6a32ed412c3931538ddde06b9bde7f30ea821fcff0d6857648ae7c84"
+    },
+    "raster-fixtures-and-failed-oracles/project/transparent.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/transparent.png",
+      "sha256": "2d7fc0f456ad0990d93bdd5b6c9f230622ac06bca73ffd558a2a838e20231cae"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.avif": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.avif",
+      "sha256": "c7d21f0a64ee37e3329e32f2a186dbd72ab449bc663cb7524bcf5601d0a78726"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.bmp": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.bmp",
+      "sha256": "52feb8d56395c64876575ca54e11f5aac11899d076344aa7b7aa1ff7fcff9ea2"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.gif": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.gif",
+      "sha256": "6f2ed6c54f16365c8e4e0e2bbe2cfb64effaf8b0257ff1dcfeb3abbc79815bdf"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.ico": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.ico",
+      "sha256": "89615ed39a7fbb0c3abac66243009c117205f2ebada3076110e8ce55f60f14b4"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.jpeg": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.jpeg",
+      "sha256": "1a8f576e39894c8e1a326eb898627d55708c71d42e4a89865f93693e13b7b4e7"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.jpg": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.jpg",
+      "sha256": "1a8f576e39894c8e1a326eb898627d55708c71d42e4a89865f93693e13b7b4e7"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.png",
+      "sha256": "a7530722de77ac6eb3e23e8feff91c6a1350efe6c7b6415e40f69d3c5c43a37a"
+    },
+    "raster-fixtures-and-failed-oracles/project/valid.webp": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/project/valid.webp",
+      "sha256": "274355a2757b1427f1a8c8b085ff8a24a2d772c7086fa4eab56ec7d35494188f"
+    },
+    "raster-fixtures-and-failed-oracles/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/result.json",
+      "sha256": "c8573597890e737fb92feda82c4f4c81266f05a6a58603d026d0b90a6852e4ab"
+    },
+    "raster-fixtures-and-failed-oracles/valid.avif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.avif.png",
+      "sha256": "001a89e136caa67d94ab5018572deeb145c36a9711c8ff47867b5b087415bb9a"
+    },
+    "raster-fixtures-and-failed-oracles/valid.bmp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.bmp.png",
+      "sha256": "7b06ee3609b7f53c2b96b57a81c74e4b8df0c3dbe8bc4ea4adddf668ffe1e593"
+    },
+    "raster-fixtures-and-failed-oracles/valid.gif.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.gif.png",
+      "sha256": "8df5203fbf4deae26ae1f4b954159d1109c890c0a5b92bd6dfa0419c5cb407c3"
+    },
+    "raster-fixtures-and-failed-oracles/valid.ico.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.ico.png",
+      "sha256": "4779d59ae029eb5f426276ef2fc4aacb71d7afa86c84c7330786558f3bdfbcb2"
+    },
+    "raster-fixtures-and-failed-oracles/valid.jpeg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.jpeg.png",
+      "sha256": "1ffbf59a86c53b8d34b4d59703e5a88ff599385fb5739a43d7aa6d937404db24"
+    },
+    "raster-fixtures-and-failed-oracles/valid.jpg.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.jpg.png",
+      "sha256": "af77325f406927331a763ab96b535435d3993115b29d477754bb41b457c6569c"
+    },
+    "raster-fixtures-and-failed-oracles/valid.png.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.png.png",
+      "sha256": "b683f4a265fce09739d7ff439136becdaa346a156621ded74b258e75292e4402"
+    },
+    "raster-fixtures-and-failed-oracles/valid.webp.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-fixtures-and-failed-oracles/valid.webp.png",
+      "sha256": "6dedb58c1ad9885c96298cf850e54ac5a831fb87acfd928cd041d4d41cf20227"
+    },
+    "validation/willyou-dev063-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-red.json",
+      "sha256": "197a47e6d60790834d13cf7aeb977934580f88930b529d6af5acd93d1c9fbcfc"
+    },
+    "validation/willyou-dev063-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-red.log",
+      "sha256": "a5c3ffec3a2ac4be8cc9409b98f220d8fcf5490f5819afc86b6776ef672314c3"
+    },
+    "validation/willyou-dev063-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-green.json",
+      "sha256": "88f27f6eeb7a62fa21858bd46955af6421c10a2a15fc4b4f124a8876bc3f425a"
+    },
+    "validation/willyou-dev063-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-green.log",
+      "sha256": "1131145ae6549cba4ec1282760a851561393fac6fce6e8ba431865d82c85e2c1"
+    },
+    "validation/willyou-dev063-final-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-final-tests.json",
+      "sha256": "c2d914d740be9bf0bdb01b5f0188bb047d4d6b0141952523e61656a5006162e4"
+    },
+    "validation/willyou-dev063-final-tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-final-tests.log",
+      "sha256": "587f46d44a8f885610190017eae2ba23f2c5f0931d665bf636d4aff6a9c0dc60"
+    },
+    "validation/willyou-dev064-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev064-red.json",
+      "sha256": "52949926cd86be76160775ea22b937a0c97c5b9ed95250ecaf2795d689affd91"
+    },
+    "validation/willyou-dev064-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev064-red.log",
+      "sha256": "ba5809898732b6b28131c862ebed8de13ecd60874a1dfbeb18d9d7d974b291e4"
+    },
+    "validation/willyou-dev064-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev064-green.json",
+      "sha256": "969bd4e99937557a610ee8219bdc304a697f2af17f24ab569079dbd71b2c151d"
+    },
+    "validation/willyou-dev064-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev064-green.log",
+      "sha256": "a1c275501cc94e3642d66e14e343dbf24b8213ada87f3c49107bb4a11c5c2b7e"
+    },
+    "validation/willyou-format-boundary-native.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-format-boundary-native.json",
+      "sha256": "728ec6d06220ffb8d068bcf5d4ef807b5ff2773b922366837555ed04cca80f1f"
+    },
+    "validation/willyou-raster-r17-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-raster-r17-tests.json",
+      "sha256": "bd06af4acefd33eb2bad98d49d8c48f0a8f22dd941ae02bc9ac48798e12676cf"
+    },
+    "validation/willyou-raster-r17-tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-raster-r17-tests.log",
+      "sha256": "e18261fdcc73212a14947b01c63d5fb25aa621dca23f7829f8861196c41c1aa0"
+    },
+    "validation/willyou-raster-r17-native.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-raster-r17-native.json",
+      "sha256": "6bc4528c69a66520b1c9152e60a0cbe3603fe23cbee383d36a917a08a5ebe3c4"
+    },
+    "validation/willyou-raster-fixture-generator.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-raster-fixture-generator.log",
+      "sha256": "a73833d9488efd1cc93732efe9e198237f36f9d141dc6db46a2adf8fbea195da"
+    },
+    "validation/willyou-raster-r17-ui-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-raster-r17-ui-r1.log",
+      "sha256": "7a2261d24d66348ba289bf1f6894fcfdf520160a7f299525ffe21bb937ae7c3a"
+    },
+    "validation/willyou-raster-r17-ui-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-raster-r17-ui-r2.log",
+      "sha256": "3f7850e64dda9de6f98824543b12478d780c2dd31b4abfcf66fba935843af107"
+    },
+    "validation/willyou-dev063-064-types.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-064-types.log",
+      "sha256": "af861ab8448280f94ae93d4b8c17a4840c4d7b8c39294953d63f7bacb8652313"
+    },
+    "validation/willyou-dev063-064-types-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-064-types-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-dev063-064-types-final2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-dev063-064-types-final2.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-r17-types-post-fixtures.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-r17-types-post-fixtures.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-m9-acceptance-batch-r17-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-m9-acceptance-batch-r17-build.log",
+      "sha256": "5002ef224e5db5aa531ebaabbee33df3b93b4629fc2d003a4216a2d85a092741"
+    },
+    "validation/willyou-m9-acceptance-batch-r17-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-m9-acceptance-batch-r17-sources.json",
+      "sha256": "91430fa363c4e3c1c63af3d217b76a57aa9d79618770b8f1d3002c3d5de3ce6f"
+    },
+    "validation/willyou-m9-acceptance-batch-r17-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-m9-acceptance-batch-r17-sources.tar.gz",
+      "sha256": "c8c3f37a64a47d61435428f83c690b3810a3315d3f5e42fcb6cc2c53143dc991"
+    },
+    "validation/willyou-r17-runtime-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-r17-runtime-verification.json",
+      "sha256": "7957f2d114195006b428f585100785e25de6ce7e3ff6a2a3ab72c2dcba9bd55f"
+    },
+    "validation/willyou-verify-r17-runtime.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/validation/willyou-verify-r17-runtime.cjs",
+      "sha256": "86e478626239d2cf8e3ce1b7145cff4b400bd99aeb9384672c44272c229afefa"
+    },
+    "sources/scripts/files/notebook-header-fixtures.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/scripts/files/notebook-header-fixtures.mjs",
+      "sha256": "6a538d1bcb1aa3bdd61c81321c8d0f0dde5ee365ea46baa0ef981a2810037e04"
+    },
+    "sources/scripts/files/notebook-header-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/scripts/files/notebook-header-ui.mjs",
+      "sha256": "a322ad91573b7f98cd1404fbc02ff51a7137dbdd847f59819648d3b385ac9554"
+    },
+    "sources/scripts/files/format-boundary-fixtures.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/scripts/files/format-boundary-fixtures.mjs",
+      "sha256": "fef4eeaa7197170dbb3bea81ab121acca5c7c0420302721626a47455c674ac4a"
+    },
+    "sources/scripts/files/format-boundaries-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/scripts/files/format-boundaries-ui.mjs",
+      "sha256": "4597f28893a1bf7d1028adb0ad858cdb0e583e0918c2921797e25a460c22276f"
+    },
+    "sources/scripts/files/raster-fixtures.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/scripts/files/raster-fixtures.py",
+      "sha256": "af892ea7190f9180b6876eec9a1d8afaafa002dba60bcff5986f23b03370ddf8"
+    },
+    "sources/scripts/files/raster-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/scripts/files/raster-ui.mjs",
+      "sha256": "2b5483c1cf238d2f1ad6c11892603e2fbdf5efe4aa9cea1d9247867caa15008a"
+    },
+    "sources/scripts/files/png-first-pixel.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/scripts/files/png-first-pixel.mjs",
+      "sha256": "6c34f4371b6213f73404a4de235d45490d27d851b637026ca10578e262be8aa9"
+    },
+    "sources/src/renderer/features/files/notebook-download-panel.test.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/src/renderer/features/files/notebook-download-panel.test.tsx",
+      "sha256": "b83f711bd40647842847b8ace36601952bdac66c0373709dec5f6ecf83c9195c"
+    },
+    "sources/src/renderer/features/files/format-boundary-acceptance.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/src/renderer/features/files/format-boundary-acceptance.test.ts",
+      "sha256": "4c982e5574bd14838c202871192860da78a7a612d5dbd5a7e1102d4e8058b620"
+    },
+    "sources/src/renderer/features/files/raster-acceptance.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/src/renderer/features/files/raster-acceptance.test.ts",
+      "sha256": "b055e7bb11e3c3c9ebda571c9e0e584d855d7bf744fd3abbf9cbef1153c9396f"
+    },
+    "sources/src/renderer/features/files/file-buffer.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/src/renderer/features/files/file-buffer.ts",
+      "sha256": "48124ca3246751e1862c9b52f411bd6914937429b52a62807417c748c64e5190"
+    },
+    "sources/src/renderer/features/files/workspace-panel.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/src/renderer/features/files/workspace-panel.tsx",
+      "sha256": "dc2430e1ffaba4ffc6fb9521f4f15fdbbafce9db477f82d347a70636a8d1d8a0"
+    },
+    "sources/src/renderer/features/files/notebook/preview.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/src/renderer/features/files/notebook/preview.tsx",
+      "sha256": "699d9c153669a9a80404afaa3b9a5a49ad6212191b3758d7a1d5340912dec080"
+    },
+    "sources/prototypes/m6-codex/tests/notebook-header-runtime.html": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/prototypes/m6-codex/tests/notebook-header-runtime.html",
+      "sha256": "b96e481170ac8b5213215d315c29aab1512c952739060f83c7246e5b16989489"
+    },
+    "sources/prototypes/m6-codex/tests/notebook-header-harness.jsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/sources/prototypes/m6-codex/tests/notebook-header-harness.jsx",
+      "sha256": "30e55ba497a4ca2f7f6969c19d56ec5f47392a9bbd3efeaa227d1481896917b3"
+    },
+    "source-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/source-verification.json",
+      "sha256": "b0f1e6c8b2e402e51ef92e7b02921f403fb175578d3cfc4442570f180e262284"
+    },
+    "reference/docs/里程碑/M9_文件浏览工作区/调研/M9_文件类型与编辑状态全集.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/reference/docs/里程碑/M9_文件浏览工作区/调研/M9_文件类型与编辑状态全集.md",
+      "sha256": "07127ed2672a4f755fa0cff5bb4a55bbb03ec029363592ad775e8734cee430d6"
+    },
+    "reference/FileNotebookPreview.jsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/reference/FileNotebookPreview.jsx",
+      "sha256": "81b1c1909acbbba5d97e1128fb23f78658bf885b6d0abc4d459f04051fff9133"
+    },
+    "prototype-header-partial.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/prototype-header-partial.json",
+      "sha256": "151136efb9819af9885464a7483d4162516474350ea2579886a42f3dcecd496e"
+    },
+    "raster-test-oracle-correction.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-formats-dev063-dev064-r17/raster-test-oracle-correction.json",
+      "sha256": "ae3837ed336ffb2b6f8a086fa9246bd006ef3481896e79f87c1f856117f2d80b"
+    }
+  }
+}

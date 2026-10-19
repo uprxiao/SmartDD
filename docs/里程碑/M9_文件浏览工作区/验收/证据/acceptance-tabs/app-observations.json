@@ -1,0 +1,81 @@
+{
+  "kind": "Root agent actual packaged App CUA observations, supplied through collaboration; not performed by integration-test helper",
+  "fixtureRoot": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-tabs-r2",
+  "fixtureMap": {
+    "A": "tab-A.txt",
+    "B": "tab-B.txt",
+    "C": "tab-C.txt"
+  },
+  "packages": {
+    "r1": {
+      "appPath": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278"
+    },
+    "r2": {
+      "appPath": "/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app",
+      "asarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6"
+    }
+  },
+  "observations": {
+    "M9-T-D01": {
+      "package": "r1",
+      "actual": "Tree single-click A then B: same preview slot changes A→B; editor shows Tab A baseline then Tab B baseline."
+    },
+    "M9-T-D02": {
+      "package": "r1",
+      "actual": "Single-click A; double-click loaded A; single-click B. A remains pinned plus one B preview; no duplicate A."
+    },
+    "M9-T-D03": {
+      "package": "r1",
+      "actual": "Single-click already pinned A in tree; single-click C. A remains and C replaces preview B."
+    },
+    "restart": {
+      "package": "r2",
+      "actual": "After restart fixed A/C/B routes and contents restore correctly."
+    },
+    "M9-T-D09": {
+      "package": "r2",
+      "actual": "Reopen C to obtain A/B/C order. Activate B then close B: right-adjacent C selected, Tab C baseline in editor, B removed; active route valid."
+    },
+    "M9-T-D08": {
+      "package": "r2",
+      "actual": "From B editor close non-active C: B remains active with same content, but focus falls to HTML root. Failed DEV037; not yet retested in corrected App."
+    }
+  },
+  "readOnlyVerification": {
+    "before": {
+      "path": "acceptance-tabs/app-fixtures-before.json",
+      "sha256": "b2f763a1912e0850d939790d16dc1eb8c2bb9d96d8ac34d6696b06c317f29632"
+    },
+    "after": {
+      "path": "acceptance-tabs/app-fixtures-after-clean-preview.json",
+      "sha256": "c040c82593108e0e39707ddefd4a2ead51d1aef3f00647349bc9c6cbc98b9c2f"
+    },
+    "comparison": {
+      "tab-A.txt": {
+        "sha256Unchanged": true,
+        "mtimeNsUnchanged": true,
+        "beforeSize": 15,
+        "afterUtf8Bytes": 15
+      },
+      "tab-B.txt": {
+        "sha256Unchanged": true,
+        "mtimeNsUnchanged": true,
+        "beforeSize": 15,
+        "afterUtf8Bytes": 15
+      },
+      "tab-C.txt": {
+        "sha256Unchanged": true,
+        "mtimeNsUnchanged": true,
+        "beforeSize": 15,
+        "afterUtf8Bytes": 15
+      }
+    },
+    "boundary": "Snapshots cover the original clean/preview interval. Later intentional edits to C during D14 are separate and are not included in this unchanged-byte claim. No inode was captured in these two App snapshots."
+  },
+  "limitations": [
+    "No running App terminal in these observations; no claim of uninterrupted PTY output.",
+    "D08 must be repeated against next corrected package with a running terminal.",
+    "No saved App screenshot or raw AX record supplied for these observations."
+  ]
+}

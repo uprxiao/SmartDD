@@ -1,0 +1,66 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/name-limit-native-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev104-native-red.json
+
+[1019/053412.899058:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/053413.282316:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/name-limit-native-acceptance.test.ts (3 tests | 3 failed) 1700ms
+     × 4999 physical files preserve total, limit and recoverable complete candidates 585ms
+     × 5000 physical files preserve total, limit and recoverable complete candidates 533ms
+     × 5001 physical files preserve total, limit and recoverable complete candidates 579ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/name-limit-native-acceptance.test.ts > C13 actual native enumeration and original compiled Worker limits > 4999 physical files preserve total, limit and recoverable complete candidates
+AssertionError: expected undefined to be 4999 // Object.is equality
+
+- Expected:
+4999
+
++ Received:
+undefined
+
+ ❯ src/renderer/features/files/name-limit-native-acceptance.test.ts:33:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/features/files/name-limit-native-acceptance.test.ts > C13 actual native enumeration and original compiled Worker limits > 5000 physical files preserve total, limit and recoverable complete candidates
+AssertionError: expected undefined to be 5000 // Object.is equality
+
+- Expected:
+5000
+
++ Received:
+undefined
+
+ ❯ src/renderer/features/files/name-limit-native-acceptance.test.ts:33:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/features/files/name-limit-native-acceptance.test.ts > C13 actual native enumeration and original compiled Worker limits > 5001 physical files preserve total, limit and recoverable complete candidates
+AssertionError: expected undefined to be 5001 // Object.is equality
+
+- Expected:
+5001
+
++ Received:
+undefined
+
+ ❯ src/renderer/features/files/name-limit-native-acceptance.test.ts:33:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  05:34:13
+   Duration  2.58s (transform 534ms, setup 0ms, import 776ms, tests 1.70s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev104-native-red.json
+ ELIFECYCLE  Test failed. See above for more details.

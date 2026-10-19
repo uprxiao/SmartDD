@@ -18,7 +18,7 @@ with tempfile.TemporaryDirectory(prefix='predev-office-checkbox-') as td:
    try:ctx=resolver.resolve(f'uno:pipe,name={pipe};urp;StarOffice.ComponentContext');break
    except Exception:time.sleep(.1)
   if ctx is None:raise RuntimeError('UNO timeout')
-  desktop=ctx.ServiceManager.createInstanceWithContext('com.sun.star.frame.Desktop',ctx);options=(prop('Hidden',True),prop('MacroExecutionMode',4),prop('UpdateDocMode',0))
+  desktop=ctx.ServiceManager.createInstanceWithContext('com.sun.star.frame.Desktop',ctx);options=(prop('Hidden',True),prop('MacroExecutionMode',0),prop('UpdateDocMode',0))
   doc=desktop.loadComponentFromURL('private:factory/scalc','_blank',0,options);sh=doc.Sheets.getByIndex(0);sh.Name='Checkbox';sh.getCellRangeByName('A1').String='CHECKBOX_FIXTURE'
   page=sh.DrawPage;form=doc.createInstance('com.sun.star.form.component.Form');page.Forms.insertByName('M9Form',form)
   model=doc.createInstance('com.sun.star.form.component.CheckBox');model.Name='M9_Checkbox';model.Label='M9 checkbox';model.TriState=False;form.insertByName('M9_Checkbox',model)

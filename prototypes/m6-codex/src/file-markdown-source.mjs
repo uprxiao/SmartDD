@@ -1,3 +1,4 @@
+// Reused from the reviewed SmartDD M9 prototype; production source mapping.
 // Source positions come from parser consumption and original source lines, never DOM text search.
 // markdown-it is pinned at 14.1.0; deliberately preserve individual text tokens and their ranges.
 export function installInlineSourceTracking(md) {
@@ -29,6 +30,10 @@ export function installInlineSourceTracking(md) {
       if (ok && !silent) {
         let markerOffset = from;
         for (const token of state.tokens.slice(first)) {
+          if (token.type === 'link_open' && !token.meta?.linkSource) {
+            const end = name === 'link' ? md.helpers.parseLinkLabel(state, from, true) : name === 'autolink' ? state.pos - 1 : -1;
+            if (end >= from) token.meta = { ...token.meta, linkSource: { from: from + 1, to: end } };
+          }
           if (token.meta?.inlineSource) continue;
           const marker = token.type === 'text' && /^[*_~]$/.test(token.content);
           token.meta = { ...token.meta, inlineSource: { from: marker ? markerOffset++ : from, to: marker ? markerOffset : state.pos, mode: marker ? 'linear' : 'atomic' } };
@@ -68,6 +73,26 @@ export function attachInlineSource(tokens, original, lineBase = 0) {
   const lines = rawLines(original), starts = []; let offset = 0;
   for (const line of lines) { starts.push(offset); offset += line.length; } starts.push(offset);
   let row = null, rowCells = [], cellIndex = 0;
+  // Block parser offsets refer to its newline-normalized body. Inline offsets
+  // refer to their own content (which may omit quote/list prefixes). Preserve
+  // both maps; delimiter ends must never be guessed from rendered glyphs.
+  const normalizedStarts = []; let normalized = 0;
+  for (const line of lines.slice(lineBase)) { normalizedStarts.push(normalized); normalized += line.replace(/\r\n?|\n/g, '\n').length; }
+  normalizedStarts.push(normalized);
+  const blockPoint = point => {
+    let lo = 0, hi = normalizedStarts.length - 1;
+    while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); if (normalizedStarts[mid] <= point) lo = mid; else hi = mid - 1; }
+    return (starts[lineBase + lo] ?? original.length) + point - normalizedStarts[lo];
+  };
+  const attachMath = (token, point) => {
+    const range = token.meta?.mathSource;
+    if (!range) return;
+    const from = point(range.from), to = point(range.to), contentEnd = point(range.contentEnd);
+    if ([from, to, contentEnd].every(Number.isInteger) && from >= 0 && from < contentEnd && contentEnd < to && to <= original.length) {
+      token.meta.mathRange = { ...range, from, to, contentEnd };
+      if (range.block) token.meta.source = { from, to, mode: 'atomic' };
+    }
+  };
   const tableCells = line => {
     const cells = []; let start = 0;
     for (let i = 0; i < line.length; i++) {
@@ -81,6 +106,7 @@ export function attachInlineSource(tokens, original, lineBase = 0) {
     return cells.map(cell => ({ from: cell.from + cell.raw.length - cell.raw.trimStart().length, raw: cell.raw.trim() }));
   };
   for (const token of tokens) {
+    if (token.block && token.type.startsWith('math_')) attachMath(token, blockPoint);
     if (token.type === 'tr_open') { row = token.map?.[0]; rowCells = tableCells(lines[lineBase + row] || ''); cellIndex = 0; }
     if (token.type === 'tr_close') row = null;
     if (token.type !== 'inline') continue;
@@ -97,6 +123,9 @@ export function attachInlineSource(tokens, original, lineBase = 0) {
       if (!range || !map || map.points[range.from] === undefined || map.points[range.to] === undefined) continue;
       const from = map.points[range.from], to = map.points[range.to];
       child.meta = { ...child.meta, source: { from, to, mode: range.mode === 'linear' && original.slice(from, to) === child.content ? 'linear' : 'atomic' } };
+      attachMath(child, point => map.points[point]);
+      const label = child.meta.linkSource;
+      if (label && map.points[label.from] !== undefined && map.points[label.to] !== undefined) child.meta.linkRange = { from: map.points[label.from], to: map.points[label.to] };
     }
   }
 }

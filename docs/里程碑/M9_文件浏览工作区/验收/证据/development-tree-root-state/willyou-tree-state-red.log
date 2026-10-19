@@ -1,0 +1,89 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-failure-native-acceptance.test.tsx -t 'B11|B12' --reporter=default --reporter=json --outputFile=/private/tmp/willyou-tree-state-red-tests.json
+
+[1018/133557.263805:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/133557.594676:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests | 2 failed | 4 skipped) 260ms
+     ↓ B06 confines a real permission failure to its node and retries once without duplicating children
+     ↓ B07 deletes the selected file before the real read and never displays the previous buffer
+     × B12 restores independent selection, focus, expanded paths, filter and scroll for each real root 218ms
+     × B11 cancels old-root focus callbacks and restores scroll after a delayed remount without stealing new-root focus 41ms
+     ↓ B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position
+     ↓ B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B12 restores independent selection, focus, expanded paths, filter and scroll for each real root
+AssertionError: expected [ 'false', 'false' ] to deeply equal [ 'true', 'true' ]
+
+- Expected
++ Received
+
+  [
+-   "true",
+-   "true",
++   "false",
++   "false",
+  ]
+
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:71:108
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B11 cancels old-root focus callbacks and restores scroll after a delayed remount without stealing new-root focus
+AssertionError: expected <button role="treeitem" …(7)>…(3)</button> to be <button role="treeitem" …(7)>…(3)</button> // Object.is equality
+
+- Expected
++ Received
+
+@@ -2,13 +2,13 @@
+    aria-level="1"
+    aria-selected="false"
+    class="fw-tree-row fw-tree-virtual-row  select-none"
+    draggable="true"
+    role="treeitem"
+-   style="top: 84px; padding-left: 3px;"
+-   tabindex="-1"
+-   title="/private/tmp/willyou-tree-failures-axbR40/second/A.txt"
++   style="top: 112px; padding-left: 3px;"
++   tabindex="0"
++   title="/private/tmp/willyou-tree-failures-axbR40/second/B.txt"
+  >
+    <span
+      class="fw-tree-spacer"
+    />
+    <svg
+@@ -22,8 +22,8 @@
+      <use
+        href="/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"
+      />
+    </svg>
+    <span>
+-     A.txt
++     B.txt
+    </span>
+  </button>
+
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:81:36
+     79|     const old=screen.getByRole('treeitem',{name:'A.txt'});fireEvent.fo…
+     80|     await act(async()=>{store.selectRoot(b);await store.list(b,'');});…
+     81|     expect(document.activeElement).toBe(fresh);expect(cancel).toHaveBe…
+       |                                    ^
+     82|     fireEvent.scroll(screen.getByRole('tree'),{target:{scrollTop:28}})…
+     83|     const callbacksBefore=callbacks.length;render(<Tree store={store}/…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 skipped (6)
+   Start at  13:35:57
+   Duration  1.48s (transform 375ms, setup 0ms, import 827ms, tests 260ms, environment 320ms)
+
+JSON report written to /private/tmp/willyou-tree-state-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

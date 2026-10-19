@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-CONTENT-DISK-DEV105-R57",
+  "at": "2026-10-18T22:02:30.624226+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-two-cases",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "fullCasesPassed": [
+    "M9-T-R11",
+    "M9-T-S09"
+  ],
+  "regressionCasesPassed": [
+    "M9-T-C10",
+    "M9-T-C11",
+    "M9-T-L10",
+    "M9-T-L14"
+  ],
+  "defects": [],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r57-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "bb37b6ef8e6b7ffee77b4a849e144326789ab493967753192ecf508406e4c944",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 81
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-name-limit-dev104-r57-20261019.json",
+    "sha256": "99223e507a21fbb989e058cee7042b737b5334454c39f73aa3236a10c4df21e0",
+    "all105ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "files": 1046,
+    "finalTestedSha256": "abd2736e77ac866035cfdfac4baeccffae1bbc18857c520f001b4c150ce0c8d8",
+    "previousSha256": "61f5a658b5ff1a599661820130068fcd140255c062ce9dd1f34497c60695080a",
+    "changedFromPrevious": [
+      "scripts/lib/file-rpc-observer.mjs",
+      "src/renderer/features/files/file-buffer.test.ts",
+      "src/renderer/features/files/search-session-acceptance.test.tsx",
+      "src/renderer/features/files/text-disk-acceptance.test.ts"
+    ],
+    "addedFiles": [
+      "scripts/files/content-cancel-ui.mjs",
+      "scripts/files/terminal-disk-read-ui.mjs",
+      "scripts/lib/content-search-observer.mjs",
+      "scripts/lib/task-file-fixture.mjs",
+      "src/renderer/features/files/content-cancel-state.test.tsx"
+    ],
+    "productionChanges": [],
+    "prototypeChanges": [],
+    "reusedBuildBecauseRuntimeInputsUnchanged": true
+  },
+  "verification": {
+    "codePassedDeduplicated": 104,
+    "newUniqueCodeTests": 21,
+    "newTestsByBoundary": {
+      "R11_U": 3,
+      "R11_I": 6,
+      "S09_U": 2,
+      "S09_I": 10
+    },
+    "cumulativeCodeUnion": 1974,
+    "externalCliOptInNotSelected": 2,
+    "actualNewChecks": 37,
+    "actualRegressionChecks": 2,
+    "actualUiTotalChecks": 39,
+    "nativeOriginalSearchRowsAndCancel": true,
+    "diskStateTriggerWriterMatrix": 32,
+    "latePhysicalReplacementReplies": 2,
+    "deferredOriginalWatchPackets": 16,
+    "codeExit": 0,
+    "typecheckExit": 0,
+    "runtimeAssetsVerified": 81,
+    "nativeChecksReusedFromDEV104": 6,
+    "unhandledErrors": 0,
+    "formalPassed": 205,
+    "formalTotal": 419,
+    "formalRemaining": 214,
+    "unexecuted": 212,
+    "blocked": 2,
+    "appRemaining": 211
+  },
+  "boundaries": [
+    "A: packaged App, original native content stream and completion held unchanged; first original match delivered before real dialog close, then actual task/root navigation, then new real search, then remaining old original notifications/completion. Modal requires close before sidebar/root actions; direct task/root lifecycle is additionally verified in I. Isolated Python PTYs only, no model, commands, clipboard, Store or editor injection.",
+    "A uses actual packaged App tree/tab/menu pointer input and reads actual CodeMirror document only. Ordinary writer uses fs, CLI writer is separate python3, neither uses task input. PTYs are genuine input-only Python foreground processes: busy means sustained genuine output, not model computation. No-current-terminal is project file workspace; no handoff records are created. For reactivate/refresh, delay only original own files:watch delivery to prove direct reads without notifications, then deliver unchanged originals. Stale success/open/error gates delay originals unchanged; actual chmod000 causes PERMISSION, physical replacement creates new inode. No model, clipboard, Store/editor injection, custom App success/error packets or daily paths.",
+    "R11 A requires closing real modal before task/root click; direct scope lifecycle + real abort is I. Streaming original native operation already completed when success held, not a claim active OS read remains running. I start-pending boundary verifies cancellation of live native request signal.",
+    "Busy state is genuine own foreground PTY output, no model work. No-current-terminal is project view with authorized files and no task handoff. Stopped task confirms native ptyId null and actual exit output; browsed without resume.",
+    "Sixteen original watch notifications withheld only during reactivate/refresh; original channel, payload hashes and restoration verified. Two late-read cases physically replace inode, close and explicitly reopen before delivering original success or actual chmod000 PERMISSION.",
+    "Original r57 build six native smokes reused; current runtime81 hashes reverified, all production inputs unchanged, final1046-source tar/hash recoverable. No test-only mutation packaged.",
+    "No prototype UI change; only existing authorized flows tested, P/V/reference/physicalIME and all other unexecuted cases remain separate. Failures/partial results retained, no source replacement or daily AIS usage."
+  ],
+  "artifacts": {
+    "runs/willyou-dev105-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-archive.py",
+      "sha256": "a2eaac96366dade4f153a8bd0eaf0cc5e5b1092cbb4506bebc25bec8659b1535"
+    },
+    "runs/willyou-dev105-code-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-code-r2.json",
+      "sha256": "2df98e0cf2aa119d2a3e8ab559c0a8af0b1da819737920a7d1ed0d88670c2ff7"
+    },
+    "runs/willyou-dev105-code-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-code-r2.log",
+      "sha256": "d2d61e2e43c9af8003a58e27b5970343eb58cd6398ba04124e7ee9f1897d2672"
+    },
+    "runs/willyou-dev105-code-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-code-r3.json",
+      "sha256": "5faa8bd73e16ab5e564c9d5d13f8c36445da9805eb267cda6f70f13b9ff178d3"
+    },
+    "runs/willyou-dev105-code-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-code-r3.log",
+      "sha256": "63300d01ad5d0abadb6f6a2755b1f26ee1226df81a6c5726de25a4510a9b6da7"
+    },
+    "runs/willyou-dev105-content-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-content-app-r1.log",
+      "sha256": "46c5dde5a646d518a051e7b646880506656c960f0a5a59c9781f82b488f5587b"
+    },
+    "runs/willyou-dev105-content-app-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-content-app-r2.log",
+      "sha256": "2ab7d1150156c06f30a01d077a9f6302325414e7426e9b442752fc2c86f03bb8"
+    },
+    "runs/willyou-dev105-disk-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-app-r1.log",
+      "sha256": "bd6deb80a65ead224cf52ba4929cd5b7a5dac57bc70359271979ec694cf367bd"
+    },
+    "runs/willyou-dev105-disk-app-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-app-r2.log",
+      "sha256": "cd531e6e803407d076a587e29d3aac39c8ee584bc3531786ce217d57368f589e"
+    },
+    "runs/willyou-dev105-disk-app-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-app-r3.log",
+      "sha256": "05e19ee8a400375d93bf54b2dcb8e7cea69586e2db99d0c2a45e1c5c15e1a4e2"
+    },
+    "runs/willyou-dev105-disk-app-r4-debug.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-app-r4-debug.log",
+      "sha256": "b7181b0743df7aefccee0df3a4d5e4a1a66ae89bb74b0a5cc6aeaefee76a3468"
+    },
+    "runs/willyou-dev105-disk-app-r5.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-app-r5.log",
+      "sha256": "a39e9ac0c87da603356dab2ee95fc619627ba856546262fc78f68172f62bea40"
+    },
+    "runs/willyou-dev105-disk-app-r6.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-app-r6.log",
+      "sha256": "9fad0850f6c037775aa7a2921e9eea7197fff458dbc474ccd7712c30b6c1c5d2"
+    },
+    "runs/willyou-dev105-disk-native-evidence-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-native-evidence-r1.json",
+      "sha256": "75f861e50d13bfa93c19740447bb107178bb76a06db67e12694ddc062dce9c87"
+    },
+    "runs/willyou-dev105-disk-native-evidence-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-disk-native-evidence-r3.json",
+      "sha256": "cc3e7543ffbdf6c574780e8f8c6fc4ec30be72ab5543f1f5943d41483700ac1e"
+    },
+    "runs/willyou-dev105-final-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-final-snapshot.py",
+      "sha256": "61432ec578c6e427d3aa4fdceea2eb89af9e67d69e97bbd2e1bfb4c60e4834f9"
+    },
+    "runs/willyou-dev105-runtime-r57.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-runtime-r57.json",
+      "sha256": "33debaa53247651ed29459a595e5b798b9a6fc05859c303ba1aab5174ca982ab"
+    },
+    "runs/willyou-dev105-search-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-search-code-r1.json",
+      "sha256": "b709cfce477056a8a4ef08ddd84ab27ff6569d45f4049f509908adf3b51581b1"
+    },
+    "runs/willyou-dev105-search-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-search-code-r1.log",
+      "sha256": "9eac389eb603e0fbe24f13e6cecf7c84cdba76dcb317aa60cc9c981034353962"
+    },
+    "runs/willyou-dev105-search-native-evidence-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-search-native-evidence-r1.json",
+      "sha256": "f5a9ca38870c9fe5c837a42c8ffff7fc005b5375ebdd31324a8508de6f408c72"
+    },
+    "runs/willyou-dev105-search-native-evidence-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-search-native-evidence-r2.json",
+      "sha256": "a290a1175d23d36fef5611492375487678932ec20d583b1f0b7b7feb4381b655"
+    },
+    "runs/willyou-dev105-search-native-evidence-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-search-native-evidence-r3.json",
+      "sha256": "8244c4d0154d487b9f05a5a20cca689f86d975a273f73c6ff44826ad049697dd"
+    },
+    "runs/willyou-dev105-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "runs/willyou-dev105-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-typecheck-r1.log",
+      "sha256": "cdc8e53abf9458932f9ee2518d357c47f18917bb72ed38ed04566586c8ae4e73"
+    },
+    "runs/willyou-dev105-typecheck-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-typecheck-r2.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "runs/willyou-dev105-window-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/runs/willyou-dev105-window-regression.log",
+      "sha256": "90c1f76dfda2c5c4d2326cfbe1aaeef9d8de9296ba4e773d5a0d6c6a14f83ad9"
+    },
+    "source-final/manifest.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/source-final/manifest.json",
+      "sha256": "a4cbca6023ac4676a8298c80aac062fe3dc009ce667a82770bc681cdaee8bc84"
+    },
+    "source-final/sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/source-final/sources.tar.gz",
+      "sha256": "abd2736e77ac866035cfdfac4baeccffae1bbc18857c520f001b4c150ce0c8d8"
+    },
+    "sources/scripts/lib/file-rpc-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/scripts/lib/file-rpc-observer.mjs",
+      "sha256": "4fc6993dcc409f55b3df1202c3a456b6f6c5d094e31c87a613a6724e17d3e43e"
+    },
+    "sources/src/renderer/features/files/file-buffer.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/src/renderer/features/files/file-buffer.test.ts",
+      "sha256": "84e504b98dec32fe79def3af5416e75215dd1d87ba32d910d6e768be29835fa5"
+    },
+    "sources/src/renderer/features/files/search-session-acceptance.test.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/src/renderer/features/files/search-session-acceptance.test.tsx",
+      "sha256": "0855fef28a7e0db1df0b6508509fea52638caca22b5fcbaa42caec039d55b5f6"
+    },
+    "sources/src/renderer/features/files/text-disk-acceptance.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/src/renderer/features/files/text-disk-acceptance.test.ts",
+      "sha256": "32b80b3bcc84f10c9aa64440924519741f99cf4d107b7ce24138cf0fb9e1bdee"
+    },
+    "sources/scripts/files/content-cancel-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/scripts/files/content-cancel-ui.mjs",
+      "sha256": "3db912be602c33bffe3ab5c9f00266be5ea5b45f1c89517a32610af779bfb7d7"
+    },
+    "sources/scripts/files/terminal-disk-read-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/scripts/files/terminal-disk-read-ui.mjs",
+      "sha256": "43d04dcac808f2e9a2a0e944403188821dc04e6c7f8981a94622082fc8bc758f"
+    },
+    "sources/scripts/lib/content-search-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/scripts/lib/content-search-observer.mjs",
+      "sha256": "b1d6a280d2015b2aeba40ac8ee9208067fb03c1d44d1109060c7bfd6350cc153"
+    },
+    "sources/scripts/lib/task-file-fixture.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/scripts/lib/task-file-fixture.mjs",
+      "sha256": "9b785bbfe1e8b3b377499bc32146e38f779330cbe6d01e3c351328ac684df2a8"
+    },
+    "sources/src/renderer/features/files/content-cancel-state.test.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/sources/src/renderer/features/files/content-cancel-state.test.tsx",
+      "sha256": "aef3333c9390515673fdfec27e38f4f63a7d52048a09967ece1528a1282779a3"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/close-fresh-after-late.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/close-fresh-after-late.png",
+      "sha256": "652233bf74de3af4bf795ba9b38294cb3f576a72d320d1fb4078c3fefb9598fb"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/close-partial.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/close-partial.png",
+      "sha256": "d6d322953e0613166040a04736e72122cc396d0e54bfa43b06ae982c5e48c374"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/electron.log",
+      "sha256": "4b231b761621358d8a3434abff2c16b1e42c3a156f7c73240f9b730e373ce30e"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/result.json",
+      "sha256": "2b6dfe4ab84d425eb5c95bad238611db7c3fd584c5f5408f4e0b4a9eb9addaf5"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/root-fresh-after-late.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/root-fresh-after-late.png",
+      "sha256": "9012b22962076fd3c18e4e2cecf032bbda40a8275af5d60610e65e3a1e64e2f7"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/root-partial.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/root-partial.png",
+      "sha256": "60c7a73268d9e7512f91295bf0b3875497b8477a5fc6cda717cc262cafeb7d07"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/task-fresh-after-late.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/task-fresh-after-late.png",
+      "sha256": "b21e04287266156e8e81b17b7a20b10ad1351410a6e6265316762262fe082c37"
+    },
+    "apps/willyou-content-cancel-app-eELRxb/task-partial.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-content-cancel-app-eELRxb/task-partial.png",
+      "sha256": "60c7a73268d9e7512f91295bf0b3875497b8477a5fc6cda717cc262cafeb7d07"
+    },
+    "fixtures/willyou-content-cancel-app-eELRxb.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-content-cancel-app-eELRxb.tar.gz",
+      "sha256": "625d13896eab40c640ad9bdb1ef87dbf8ed00468842c5e2fe19f328d786e155d"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/electron.log",
+      "sha256": "6804d006c03d1005e4b39609e40d666d177159703f21bbcc86b887e09c51a12b"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/result.json",
+      "sha256": "3afb5ebf447f7db464ff5a5d5ce2b7d77afeba83be369b0633269ffadc1ebdb3"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/stale-error.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/stale-error.png",
+      "sha256": "049bc2ea11a2de52095b82f9b6f43742ab3cec14eab856471410a406acb70890"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/stale-success.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/stale-success.png",
+      "sha256": "8202d541c65570282e6a3e364bc0b69de53bb68fbd48547f8d8c97170ab7764f"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/state-15.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/state-15.png",
+      "sha256": "5e649a3e318c57a71723c46359683cff73d1e9576fab62cebfdb62a2c6376ab2"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/state-23.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/state-23.png",
+      "sha256": "1079ffe442d6f768d4cf4e42d22c45f3b82638c8b2e1f1e8edaae0575feff858"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/state-31.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/state-31.png",
+      "sha256": "e0d6ad46437b9998903f192ca47515f69c439eb016b03410e2c4d8491b057280"
+    },
+    "apps/willyou-terminal-disk-read-app-4I4f5H/state-7.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4I4f5H/state-7.png",
+      "sha256": "168ddcc5326f53270ce42f9619a5e02b6154881c7d463497966e6088b8ce4c6c"
+    },
+    "fixtures/willyou-terminal-disk-read-app-4I4f5H.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-terminal-disk-read-app-4I4f5H.tar.gz",
+      "sha256": "a7b70ab2a951b79304ca0b2cf7dcb6cab2a0a580830b39d877a5c5bbf8593cfd"
+    },
+    "apps/willyou-window-boundary-app-qMPFnd/L10-surviving-window.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-window-boundary-app-qMPFnd/L10-surviving-window.png",
+      "sha256": "20c9ad05198774ba3bec98752682128b5228f50e22841a687f2b92bffd0eca77"
+    },
+    "apps/willyou-window-boundary-app-qMPFnd/L14-conflict-private-draft.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-window-boundary-app-qMPFnd/L14-conflict-private-draft.png",
+      "sha256": "120c012fa425bbcece021a7b988a0f538923052192fbd53850f8e218bb8058e5"
+    },
+    "apps/willyou-window-boundary-app-qMPFnd/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-window-boundary-app-qMPFnd/result.json",
+      "sha256": "faaf4fdfb119e42c8a7a822744ad71982d8b4989e17f280497314343ae3c66f0"
+    },
+    "fixtures/willyou-window-boundary-app-qMPFnd.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-window-boundary-app-qMPFnd.tar.gz",
+      "sha256": "0fd133deb1224770597eed2226cdbb6f9fd8bc1782eefbba3171151f04fb9675"
+    },
+    "apps/willyou-terminal-disk-read-app-4SQXzQ/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4SQXzQ/electron.log",
+      "sha256": "5ccc571cebef46beefd46ed3c794f4b3e4e12f525e04bd1ad000e9df6878420c"
+    },
+    "apps/willyou-terminal-disk-read-app-4SQXzQ/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4SQXzQ/failure.png",
+      "sha256": "1898bf1a50463a5c29e700fe2a5e411fc033af46c375d8126dfb095e0de7b536"
+    },
+    "apps/willyou-terminal-disk-read-app-4SQXzQ/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-4SQXzQ/result.json",
+      "sha256": "d5637c07e39198b7a9b4a6ae48f056f64d4455c24480ef035b14e872ffc64e50"
+    },
+    "fixtures/willyou-terminal-disk-read-app-4SQXzQ.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-terminal-disk-read-app-4SQXzQ.tar.gz",
+      "sha256": "8658be48ddbe73f16717613f0f9a5534de3855592267d360c2180e8f4ef3a27a"
+    },
+    "apps/willyou-terminal-disk-read-app-9coFw2/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-9coFw2/electron.log",
+      "sha256": "743f92b5bf3ff1bd93cc8dbbf48cda091f1bfba9b65a05ece93b4778e88c7853"
+    },
+    "apps/willyou-terminal-disk-read-app-9coFw2/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-9coFw2/failure.png",
+      "sha256": "6361c4e64ad900e75cf62664c577c7d7c07f306f0fb60fabd1349f6e0aa628cd"
+    },
+    "apps/willyou-terminal-disk-read-app-9coFw2/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-9coFw2/result.json",
+      "sha256": "f8e0029ccbb97e3ab792e36a1153586207003f8369cab0e3a02c898fa6ecdc18"
+    },
+    "fixtures/willyou-terminal-disk-read-app-9coFw2.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-terminal-disk-read-app-9coFw2.tar.gz",
+      "sha256": "0f992b9f86d76934faffac1d094a68acafff5d115e3cf5bb479186f75e295dd8"
+    },
+    "apps/willyou-terminal-disk-read-app-6Y0xKJ/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-6Y0xKJ/electron.log",
+      "sha256": "f99fa92bfb52681ea573921dda99c480b0ea74611b799661ac0847d02d149902"
+    },
+    "apps/willyou-terminal-disk-read-app-6Y0xKJ/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-6Y0xKJ/failure.png",
+      "sha256": "8c7253357d7d591d4ec098780d3e7ea52d4ad27f5d82aa46066d6353e704f8a1"
+    },
+    "apps/willyou-terminal-disk-read-app-6Y0xKJ/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-6Y0xKJ/result.json",
+      "sha256": "9788daaf97b085aa86585ff552ff2852aa145c07bf724c8defbdecc3a0e4c066"
+    },
+    "fixtures/willyou-terminal-disk-read-app-6Y0xKJ.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-terminal-disk-read-app-6Y0xKJ.tar.gz",
+      "sha256": "345bc7f5199d72f5afc086c29e6edc276e9af0cac2319f11e4269f55f302df4b"
+    },
+    "apps/willyou-terminal-disk-read-app-LBB04z/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-LBB04z/electron.log",
+      "sha256": "49eaa2517f4cb72d6022c93d0010466c06f758490fc0f30a183bac80f1eff258"
+    },
+    "apps/willyou-terminal-disk-read-app-LBB04z/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-LBB04z/failure.png",
+      "sha256": "bf0ea593567861ace5e76c788c41fc2e3255e1f783a586bb216274aa29820ec4"
+    },
+    "apps/willyou-terminal-disk-read-app-LBB04z/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-LBB04z/result.json",
+      "sha256": "871979f5e3b2373994bfe7d58f17dfc3872903944deff0ca210dba3a3c878ac7"
+    },
+    "fixtures/willyou-terminal-disk-read-app-LBB04z.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-terminal-disk-read-app-LBB04z.tar.gz",
+      "sha256": "1a4f194a637786a1c776b6ce5514292bec806b11cefea205c6a9d75663e5b474"
+    },
+    "apps/willyou-terminal-disk-read-app-dsHnXm/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-dsHnXm/electron.log",
+      "sha256": "e20459412aafa25fb36bae8164798089258df30f3a04411b8273b86eccb08383"
+    },
+    "apps/willyou-terminal-disk-read-app-dsHnXm/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-dsHnXm/failure.png",
+      "sha256": "b2e44976bd9172062d618bb3c6b36768b29f880ef8f1a95026512da0536ea945"
+    },
+    "apps/willyou-terminal-disk-read-app-dsHnXm/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-dsHnXm/result.json",
+      "sha256": "cc1ea6ad323e26728319c3d2ff2153645f074f28fa058092148a49201a76be04"
+    },
+    "apps/willyou-terminal-disk-read-app-dsHnXm/state-15.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-dsHnXm/state-15.png",
+      "sha256": "85fac159c57d86935da2e23adee5f68478e8f3ab2dbd2059655c4b5c5cac4e3d"
+    },
+    "apps/willyou-terminal-disk-read-app-dsHnXm/state-23.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-dsHnXm/state-23.png",
+      "sha256": "a469d09e0aab7a22362200f09cf6272673487e8d827ff14b770421aca0b12676"
+    },
+    "apps/willyou-terminal-disk-read-app-dsHnXm/state-7.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/apps/willyou-terminal-disk-read-app-dsHnXm/state-7.png",
+      "sha256": "62b30ac23feaf7ba49432b84d3045b038972cad37f07267241e6aad3b9776f2f"
+    },
+    "fixtures/willyou-terminal-disk-read-app-dsHnXm.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/fixtures/willyou-terminal-disk-read-app-dsHnXm.tar.gz",
+      "sha256": "bb9dc47c8f0f848d5615efd6da1cf0a3a36f6552f745305ef795616d33e42f8e"
+    },
+    "failure-history.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-content-disk-dev105-r57/failure-history.txt",
+      "sha256": "e479d0d295483c99637870565359cce559350f8794c027c8cdaeb0b15fdcff6e"
+    }
+  }
+}

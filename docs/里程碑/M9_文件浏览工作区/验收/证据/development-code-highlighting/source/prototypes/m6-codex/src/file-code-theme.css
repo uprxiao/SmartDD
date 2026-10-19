@@ -1,0 +1,65 @@
+/* 2026-10-17 user screenshot: recorded source/limits in the M9 reference note.
+   This palette is shared by the prototype and packaged CodeMirror view. */
+.file-workspace {
+  --fw-code-font: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+  --fw-code-size: 11px;
+  --fw-code-line: 20px;
+  --fw-code-text: #424242;
+  --fw-code-keyword: #8b44ac;
+  --fw-code-module: #bd3f39;
+  --fw-code-string: #287b31;
+  --fw-code-number: #1c64a0;
+  --fw-code-comment: #858585;
+  --fw-code-name: #995b23;
+  --fw-code-type: #397fa2;
+  --fw-code-tag: #bd3f39;
+  --fw-code-meta: #747474;
+}
+.ydark .file-workspace, :root[data-theme="dark"] .file-workspace {
+  --fw-code-text: #c9c9c9;
+  --fw-code-keyword: #b87cdb;
+  --fw-code-module: #fa7878;
+  --fw-code-string: #7ed273;
+  --fw-code-number: #75a9df;
+  --fw-code-comment: #808080;
+  --fw-code-name: #ff9d4d;
+  --fw-code-type: #80c4dc;
+  --fw-code-tag: #fa7878;
+  --fw-code-meta: #a1a1a1;
+}
+.fw-code-keyword { color: var(--fw-code-keyword); }
+.fw-code-module { color: var(--fw-code-module); }
+.fw-code-string { color: var(--fw-code-string); }
+.fw-code-number { color: var(--fw-code-number); }
+.fw-code-comment { color: var(--fw-code-comment); }
+.fw-code-name { color: var(--fw-code-name); }
+.fw-code-type { color: var(--fw-code-type); }
+.fw-code-tag { color: var(--fw-code-tag); }
+.fw-code-meta { color: var(--fw-code-meta); }
+.fw-code-deleted { color: var(--fw-code-module); }
+.fw-code-inserted { color: var(--fw-code-string); }
+.file-workspace .fw-md-block pre,.file-workspace .fw-md-block pre code,
+.file-workspace .fa-code-block pre,.file-workspace .fa-code-block pre code,
+.file-workspace .fw-md-fence pre,.file-workspace .fw-md-fence code,
+.file-workspace .fw-notebook-code pre,.file-workspace .fw-notebook-code code {
+  font-family:var(--fw-code-font);color:var(--fw-code-text);
+}
+.fw-code-overlay { position:relative;flex:1;min-width:0;min-height:0; }
+.fw-editor .fw-code-overlay>pre,.fw-editor .fw-code-overlay>textarea {
+  position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0 12px 24px;border:0;border-radius:0;
+  font:var(--fw-code-size)/var(--fw-code-line) var(--fw-code-font);letter-spacing:normal;tab-size:4;white-space:pre;overflow:auto;
+}
+.fw-editor .fw-code-overlay>pre { color:var(--fw-code-text);pointer-events:none;scrollbar-width:none; }
+.fw-editor .fw-code-overlay>textarea { color:transparent;caret-color:var(--text);background:transparent;resize:none;-webkit-text-fill-color:transparent; }
+.fw-editor .fw-code-overlay>textarea::selection { background:var(--selected); }
+.fw-editor .fw-line-numbers { font:var(--fw-code-size)/var(--fw-code-line) var(--fw-code-font);color:var(--fw-code-comment);border:0;padding:0 4px 0 8px;min-width:28px;overflow:hidden; }
+/* DEV038: same public TextMate scopes and independently verified Codex palette.
+   Both variants travel with each token, so theme changes never re-tokenize source. */
+.file-workspace { --fw-code-text:#0d0d0d; }
+.ydark .file-workspace, :root[data-theme="dark"] .file-workspace { --fw-code-text:#fcfcfc; }
+.fw-code-token {
+  color:var(--fw-token-light);font-style:var(--fw-token-light-style, normal);font-weight:var(--fw-token-light-weight, normal);text-decoration:var(--fw-token-light-decoration, none);
+}
+.ydark .fw-code-token, :root[data-theme="dark"] .fw-code-token {
+  color:var(--fw-token-dark);font-style:var(--fw-token-dark-style, normal);font-weight:var(--fw-token-dark-weight, normal);text-decoration:var(--fw-token-dark-decoration, none);
+}

@@ -1,0 +1,1 @@
+import {message} from './nested.mjs'; document.body.dataset.module=message;

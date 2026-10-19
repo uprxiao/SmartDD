@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "time": "2026-10-18T02:40:09.397131+08:00",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirements": [
+    "R06.8",
+    "R07.2",
+    "R07.16",
+    "R07.18"
+  ],
+  "action": "Office adapter X09: number/formula validation and scoped removal; test mapping W24/W26/Y13, not M9-T-X09",
+  "layer": "model/component and real Worker/native save/reopen; packaged App interaction pending",
+  "sourceHashes": {
+    "src/main/core/files/office/validation.ts": "142fa70279272a8cdf20d11613347a14a2a2d0c60fc0b6579595972f5d3496ad",
+    "src/main/core/files/office/validation.test.ts": "7e2dc0a0389754404e42a939666d8acd316062e521577c4e766fb5be3a32d083",
+    "src/main/core/files/office/native.test.ts": "fd4595347bd83e621fb3cc4470e8b3cb9e197b01bb5e2b316a2cded2a221b729",
+    "src/main/core/files/office/workbook.ts": "fd0d0f925e76de5e3e9f87364b486a2bbaf97dc77597ba4578a3f3a39e6dd71a",
+    "src/main/core/files/office/cell-edit.ts": "2d799c82bb4150c48aa0bc68a1ef29c242b38c046b8fae1d343902d862e3832e",
+    "src/main/core/files/office/range-edit.ts": "42d450becc9218dd8b93f5d5dcb5acfb17532feca7044ce16c58a8e7e9f21fad",
+    "src/main/core/files/office/service.ts": "f856243c0e840e4e7ad942fd8582fc8a9571c1ddfb164dc55c0674b5bbd1b226",
+    "src/shared/file-office.ts": "2df036078775bb1496a87e89a5afeada761447fb5af7a927db7b8874327223fe",
+    "src/renderer/features/files/office/format-panel.tsx": "2a597c613d29c948c0140814c67cde7735cca32af0dd4c1092730565ede6e6af",
+    "src/renderer/features/files/office/preview.tsx": "1cb01bdef029abea0d1b1a555b3727f7a66a98d5608c6aad9743c9d93a4972a3",
+    "src/renderer/features/files/office/preview.test.tsx": "deb0d7d30557d54684d39d679c3f40f844dd1ec6ccd12093137f098561e6e1f7"
+  },
+  "sourceArchive": {
+    "path": "/private/tmp/willyou-m9-office-validation-r1-sources.tar.gz",
+    "sha256": "a66c1457bbcdb89b028de80d422745549b4e1fa96512db146e81f452a32c4fa3"
+  },
+  "runs": [
+    {
+      "log": "/private/tmp/willyou-m9-office-validation-r1-native.log",
+      "sha256": "8c7620bd1d3a686e1b1493df16fd71b9bba23e74ea7813f99ea67dd0d5f90813",
+      "summary": [
+        "⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯",
+        "Test Files  1 failed (1)",
+        "Tests  1 failed | 21 skipped (22)"
+      ]
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-validation-r1-tests.log",
+      "sha256": "e929c6de8bc44e0965c5474ad785aa33983d1adfc855ac9ccdf32ed3b460a805",
+      "summary": [
+        "Test Files  2 passed (2)",
+        "Tests  22 passed (22)"
+      ]
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-validation-r1-typecheck.log",
+      "sha256": "b038a5c5812cbe8b2268db062a21e89db86dd96fa7a141ba36f49a69ce2fb988",
+      "summary": []
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-validation-r2-native.log",
+      "sha256": "053257e70c49412e6413839a0c1aaef8fa4d674a3ca8dd47954b95f55fb4f1e2",
+      "summary": [
+        "⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯",
+        "Test Files  1 failed (1)",
+        "Tests  1 failed | 21 skipped (22)"
+      ]
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-validation-r2-tests.log",
+      "sha256": "3938df545be16aa34f061666ebbef04505f43a1e7c3d429427cec767e1180543",
+      "summary": [
+        "Test Files  22 passed (22)",
+        "Tests  125 passed (125)"
+      ]
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-validation-r2-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "summary": []
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-validation-r3-native.log",
+      "sha256": "8e11be6b72f8a779d54ef3d1ab4a18c342ab12e098648e202ea426e2d64b7f4d",
+      "summary": [
+        "Test Files  1 passed (1)",
+        "Tests  1 passed | 21 skipped (22)"
+      ]
+    }
+  ],
+  "latest": {
+    "codeTests": "125/125 in 22 files, validation-r2 exit 0",
+    "typecheck": "validation-r2 exit 0",
+    "native": "validation-r3: 1 selected actual Worker/native/POI/save/reopen case passed, 21 not selected, exit 0",
+    "formalAcceptance": "3/419 unchanged",
+    "package": "not separately built; next packaged Office batch will include this source"
+  },
+  "retainedFailures": [
+    "r1 typecheck: preview activeCell was boolean rather than the selected cell; changed to find(), r2 passed.",
+    "native r1: test omitted explicit recalculate before asserting cached formula result; follows renderer/service contract after fix.",
+    "native r2: expected original workbook.xml despite intentional content-edit recalculation flags; now asserts only fullCalcOnLoad/forceFullCalc changed and all other workbook bytes retained. Native r3 passed."
+  ],
+  "limitations": [
+    "Real App, physical IME and exact visual/focus checks remain pending while CUA reports locked.",
+    "Existing simple constant whole/decimal/textLength/list constraints supported; arbitrary formula/extended validation cannot be evaluated and is explicitly refused without consuming input. Disabled error alerts preserve their disabled behavior; warning override UI is not yet implemented.",
+    "Partial edits preserve outside rules, rebase relative formulas, and reject unsupported extended identity splitting. Applying a new rule retains existing cell values.",
+    "Metadata control uses strict standard OOXML custom OR(ISBLANK,ISNUMBER,_xlfn.ISFORMULA); formulas of any result type permitted, no implicit numeric conversion of text.",
+    "4096 rules/16384 references/10000 selected cells; partial full compatibility and actual Excel/LibreOffice UI readback remain pending."
+  ]
+}

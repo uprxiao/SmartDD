@@ -1,31 +1,36 @@
 import { composing as imeComposing } from './file-ime.mjs';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useId, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Download, List, MessageSquare, Trash2, X } from 'lucide-react';
 import { PdfCanvasPage } from './FilePdfCanvas';
 import { createPdfSession } from './file-pdf-engine.mjs';
 import { classifyPdfError, fitWidthZoom, resolveDestinationPage, pdfPageWindow, pdfDeliveryResult, beginPdfDelivery, finishPdfDeliveryItem, stopPdfDelivery } from './file-pdf-model.mjs';
 import { initialPdfComments, pdfPoint, pdfRegion, removePdfComment, savePdfComment } from './file-artifact-model.mjs';
 import './file-artifact.css';
+import { bindPdfWheel } from '../../../src/renderer/features/files/pdf/wheel.mjs';
 
 const PAGE = { width: 600, height: 780 };
 const clampPage = (page, total) => Math.max(1, Math.min(total, Number.isFinite(page) ? Math.trunc(page) : 1));
 const clampZoom = value => Math.max(30, Math.min(800, value));
 const pageTitles = ['文件浏览工作区', '交互与状态', '验收与交付'];
 
-export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, onPageChange, path = 'synthetic.pdf', hostOptions = {}, onStateChange, onInsertContext }) {
+export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, initialZoom, onPageChange, onReadingChange, path = 'synthetic.pdf', hostOptions = {}, onStateChange, onInsertContext }) {
   const review = kind === 'pdf-review';
   const [source, setSource] = useState(hostOptions.pdfSource || (kind === 'tex' ? 'synthetic' : 'normal')), real = source !== 'synthetic';
   const [pdf, setPdf] = useState({ status: 'loading' }), [reloadKey, setReloadKey] = useState(0), [passwordPrompt, setPasswordPrompt] = useState(null), [password, setPassword] = useState(''), [downscaled, setDownscaled] = useState(() => new Set());
   const task = useRef(null), passwordCancelled = useRef(false);
   const total = real ? (pdf.pages?.length || 1) : hostOptions.pageCount === 1 ? 1 : 3;
   const sizeOf = number => real && pdf.pages?.[number - 1] ? pdf.pages[number - 1] : PAGE;
-  const [page, setPage] = useState(clampPage(initialPage, total)), [zoom, setZoom] = useState(100), [zoomMenu, setZoomMenu] = useState(false);
+  const [page, setPage] = useState(clampPage(initialPage, total)), [zoom, setZoom] = useState(initialZoom ?? 100), [zoomMenu, setZoomMenu] = useState(false);
+  const readingHint = useRef({ page: initialPage, zoom: initialZoom }), readingReady = useRef(false);
+  const [zooming, setZooming] = useState(false);
+  const [railHover,setRailHover]=useState(false),[railFocus,setRailFocus]=useState(false),railId=useId();
   const [docked, setDocked] = useState(false), [annotation, setAnnotation] = useState(false);
+  const railExpanded=docked||railHover||railFocus;
   const [enabled, setEnabled] = useState(hostOptions.annotationsEnabled !== false), [batching, setBatching] = useState(!!hostOptions.annotationBatchingEnabled);
   const [syntheticLoadState, setLoadState] = useState(hostOptions.pdfStatus || 'ready'), [failureNext, setFailureNext] = useState(false), [retryKey, setRetryKey] = useState(0);
   const [comments, setComments] = useState(() => initialPdfComments(path)), [draft, setDraft] = useState(null), [body, setBody] = useState(''), [drawing, setDrawing] = useState(null);
   const [notice, setNotice] = useState(''), [cardPosition, setCardPosition] = useState({ top: 80, left: 30 });
-  const root = useRef(null), scroll = useRef(null), pages = useRef([]), drag = useRef(null), zoomValue = useRef(100), timer = useRef(null), editor = useRef(null), currentComments = useRef(comments);
+  const root = useRef(null), scroll = useRef(null), pages = useRef([]), drag = useRef(null), zoomValue = useRef(initialZoom ?? 100), timer = useRef(null), editor = useRef(null), currentComments = useRef(comments);
   currentComments.current = comments;
   const [viewport, setViewport] = useState({ top: 0, height: 800 });
   const windowed = useMemo(() => pdfPageWindow(pdf.pages || [], zoom, viewport.top, viewport.height), [pdf.pages, zoom, viewport]);
@@ -42,7 +47,7 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, o
   useEffect(() => {
     if (!real) return;
     let cancelled = false, session = null;
-    passwordCancelled.current = false; setPdf({ status: 'loading' }); setPasswordPrompt(null); setPassword('');
+    passwordCancelled.current = false; readingReady.current = false; setPdf({ status: 'loading' }); setPasswordPrompt(null); setPassword('');
     setDownscaled(new Set()); setPage(1); setViewport({ top: 0, height: 800 }); pages.current = [];
     const reportError = error => {
       const info = classifyPdfError(error);
@@ -71,28 +76,24 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, o
     return () => { cancelled = true; void session?.destroy(); if (task.current === session) task.current = null; };
   }, [real, source, reloadKey]);
   useEffect(() => {
-    if (!real || pdf.status !== 'ready' || review) return;
-    const frame = requestAnimationFrame(() => { const width = scroll.current?.clientWidth; if (width) zoomTo(fitWidthZoom(pdf.pages[0].width, width - 48)); });
-    return () => cancelAnimationFrame(frame);
+    if (!real || pdf.status !== 'ready') return;
+    let locate;
+    const frame = requestAnimationFrame(() => {
+      const target = clampPage(readingHint.current.page, pdf.pages.length), width = scroll.current?.clientWidth;
+      changePage(target);
+      if (!review && width) zoomTo(readingHint.current.zoom ?? fitWidthZoom(pdf.pages[0].width, width - 48));
+      readingReady.current = true;
+      locate = requestAnimationFrame(() => { if (!review) { if (virtual) scroll.current?.scrollTo({ top: windowed.offsets[target - 1], behavior: 'auto' }); else pages.current[target - 1]?.scrollIntoView({ behavior: 'auto', block: 'start' }); } });
+    });
+    return () => { cancelAnimationFrame(frame); if (locate) cancelAnimationFrame(locate); };
   }, [real, pdf.status, source]);
+  useEffect(() => { if (loadState === 'ready' && (!real || readingReady.current)) onReadingChange?.({ page, zoom }); }, [page, zoom, loadState, real, onReadingChange]);
   useEffect(() => { onStateChange?.({ route: review ? 'review-pdf' : 'artifact-pdf', page, zoom, annotation, batching, loadState, comments, draftActive: !!draft }); }, [review, page, zoom, annotation, batching, loadState, comments, draft, onStateChange]);
   useEffect(() => {
+    setZooming(false);
     if (review || loadState !== 'ready' || !scroll.current) return;
-    const node = scroll.current;
-    const wheel = event => {
-      if (!event.ctrlKey) return;
-      event.preventDefault();
-      const previous = zoomValue.current;
-      let next = clampZoom(previous * Math.exp(-Math.max(-20, Math.min(20, event.deltaY)) * .005));
-      const snap = [50, 75, 100, 125, 150, 200, 300, 400].find(value => Math.abs(value - next) / value < .02);
-      if (snap) next = snap;
-      const rect = node.getBoundingClientRect(), x = event.clientX - rect.left, y = event.clientY - rect.top;
-      const target = { left: (node.scrollLeft + x) * next / previous - x, top: (node.scrollTop + y) * next / previous - y };
-      zoomTo(next); requestAnimationFrame(() => { node.scrollLeft = target.left; node.scrollTop = target.top; });
-    };
-    node.addEventListener('wheel', wheel, { passive: false });
-    return () => node.removeEventListener('wheel', wheel);
-  }, [review, loadState]);
+    return bindPdfWheel(scroll.current, { getZoom: () => zoomValue.current, setZoom: zoomTo, onZooming: setZooming });
+  }, [review, loadState, source, path, reloadKey]);
   useEffect(() => {
     if (review || loadState !== 'ready' || !scroll.current) return;
     const ratios = new Map();
@@ -197,7 +198,13 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, o
   const visibleComments = comments.requests;
   const locked = comments.phase === 'inserting';
 
-  return <div ref={root} className={'fw-artifact fw-pdf fa-pdf ' + (review ? 'fw-pdf-review' : '')} onKeyDown={event => {
+  function submitPassword() {
+    if (!password || !passwordPrompt) return;
+    const { update } = passwordPrompt;
+    setPasswordPrompt(null); setPassword(''); update(password);
+  }
+
+  return <div ref={root} data-zooming={zooming} className={'fw-artifact fw-pdf fa-pdf ' + (review ? 'fw-pdf-review' : '')} onKeyDown={event => {
     if (imeComposing(event) || event.key !== 'Escape') return;
     event.stopPropagation(); setZoomMenu(false);
     if (draft) { if (body.trim()) setNotice('评论草稿已保留；添加或取消后可退出评论模式。'); else setDraft(null); }
@@ -208,7 +215,7 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, o
       <button className="fw-icon" aria-label="下载文档示例" onClick={onDownload}><Download size={16} /></button>{enabled && <button className={'fw-icon ' + (annotation ? 'active' : '')} aria-label="PDF 评论" aria-pressed={annotation} disabled={locked || loadState !== 'ready'} onClick={() => { if (draft && body.trim()) setNotice('请先添加或取消当前草稿。'); else { setDraft(null); setAnnotation(!annotation); } }}><MessageSquare size={16} /></button>}
     </div>}
     {loadState !== 'ready' ? <div className="fw-empty" role={loadState === 'error' ? 'alert' : 'status'}>{loadState === 'loading' ? <><span className="fw-loading" />{real ? '正在载入 PDF' : '正在载入 PDF 示例'}</> : <><h3>PDF 页面渲染失败</h3><p>{real ? pdf.message : '原型模拟失败，原始文件没有被修改。'}原始文件没有被修改。</p><button onClick={() => { if (real) setReloadKey(x => x + 1); else { setLoadState('ready'); setRetryKey(x => x + 1); } }}>重试</button></>}</div> : <div className="fw-artifact-main">
-      {!review && total > 1 && <nav className={'fw-thumbnails ' + (docked ? 'docked' : 'undocked')} aria-label="PDF 页面缩略图"><button className="fw-dock-thumbnails" aria-label={docked ? '取消停靠缩略图' : '停靠缩略图'} onClick={() => setDocked(!docked)}><List size={12} /><span className="fw-thumbnail-dock-label">{docked ? '取消停靠' : '停靠缩略图'}</span></button>{Array.from({ length: total }, (_, i) => i + 1).map(number => <button key={number} aria-label={'第 ' + number + ' 页'} title={real && pdf.titles?.[number] ? '第 ' + number + ' 页 · ' + pdf.titles[number] : undefined} aria-current={number === page ? 'page' : undefined} onClick={() => goto(number)}>{real && (!virtual || Math.abs(number - page) <= 4) ? <PdfCanvasPage engine={pdf.engine} doc={pdf.doc} run={pdf.run} number={number} size={sizeOf(number)} zoom={100} thumbWidth={52} review className="fa-pdf-thumb" /> : null}<span>{real ? (pdf.titles?.[number] || '') : pageTitles[number - 1]}</span><small>{number}</small></button>)}</nav>}
+      {!review && total > 1 && <nav className={'fw-thumbnails ' + (docked ? 'docked' : 'undocked')} data-expanded={railExpanded} aria-label="PDF 页面缩略图" onMouseEnter={()=>setRailHover(true)} onMouseLeave={()=>setRailHover(false)} onFocusCapture={()=>setRailFocus(true)} onBlurCapture={event=>{if(!(event.relatedTarget instanceof Node)||!event.currentTarget.contains(event.relatedTarget))setRailFocus(false);}}><button className="fw-dock-thumbnails" aria-label={docked ? '取消停靠缩略图' : '停靠缩略图'} aria-pressed={docked} aria-expanded={railExpanded} aria-controls={railId} onClick={() => setDocked(!docked)}><List size={12} /><span className="fw-thumbnail-dock-label">{docked ? '取消停靠' : '停靠缩略图'}</span></button><div id={railId} className="fw-pdf-thumb-panel" aria-label="PDF 缩略页列表" aria-hidden={!railExpanded} inert={!railExpanded} hidden={!railExpanded}>{Array.from({ length: total }, (_, i) => i + 1).map(number => <button key={number} aria-label={'第 ' + number + ' 页'} title={real && pdf.titles?.[number] ? '第 ' + number + ' 页 · ' + pdf.titles[number] : undefined} aria-current={number === page ? 'page' : undefined} onClick={() => goto(number)}>{real && (!virtual || Math.abs(number - page) <= 4) ? <PdfCanvasPage engine={pdf.engine} doc={pdf.doc} run={pdf.run} number={number} size={sizeOf(number)} zoom={100} thumbWidth={52} review className="fa-pdf-thumb" /> : null}<span>{real ? (pdf.titles?.[number] || '') : pageTitles[number - 1]}</span><small>{number}</small></button>)}</div>{!railExpanded&&<div className="fw-pdf-thumb-rail" aria-hidden="true">{Array.from({length:total},(_,i)=>i+1).map(number=><div key={number} className={'fw-pdf-rail-page '+(number===page?'current':'')}><small>{number}</small></div>)}</div>}</nav>}
       <div className="fw-artifact-scroll fa-pdf-scroll" ref={scroll} onScroll={event => { if (virtual) setViewport({ top: event.currentTarget.scrollTop, height: event.currentTarget.clientHeight }); }}>{virtual && <div aria-hidden="true" style={{ height: windowed.before, flexShrink: 0 }} />}{renderedNumbers.map(number => real ? <PdfCanvasPage key={source + number} engine={pdf.engine} doc={pdf.doc} run={pdf.run} number={number} size={sizeOf(number)} zoom={review ? 100 : zoom} review={review} articleRef={node => { pages.current[number - 1] = node; }} className={'fw-paper fw-pdf-page ' + (annotation && !review ? 'fa-annotation-mode' : '')} onInternalLink={goto} onExternalLink={url => setNotice('外部链接入口（原型不导航）：' + url)} onPlan={(n, flag) => setDownscaled(previous => { if (previous.has(n) === flag) return previous; const next = new Set(previous); flag ? next.add(n) : next.delete(n); return next; })} onPointerDown={event => pointerDown(event, number)} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { drag.current = null; setDrawing(null); }} onMouseUp={event => captureText(event, number)}>
         {!review && visibleComments.filter(item => item.page === number).map(item => <button key={item.id} className="fa-pdf-marker" style={{ left: annotationRect(item).x / sizeOf(number).width * 100 + '%', top: annotationRect(item).y / sizeOf(number).height * 100 + '%' }} aria-label={'PDF 评论 ' + (visibleComments.indexOf(item) + 1)} onClick={() => startDraft(item)}>{visibleComments.indexOf(item) + 1}</button>)}
         {!review && draft?.page === number && draft.anchor.kind === 'region' && <span className="fa-pdf-region" style={boxStyle(draft.anchor.rect, number)} />}{drawing?.page === number && <span className="fa-pdf-region" style={boxStyle(drawing.rect, number)} />}
@@ -226,13 +233,13 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, o
       {locked ? <button onClick={() => { clearTimeout(timer.current); currentComments.current = stopPdfDelivery(currentComments.current); setComments(currentComments.current); setNotice('已停止等待，结果未知；不会停止或撤回 CLI。'); }}>停止等待</button> : <><button disabled={!!draft && !!body.trim()} onClick={() => { setComments(value => ({ ...stopPdfDelivery(value), requests: [], phase: 'idle' })); setAnnotation(false); setDraft(null); }}>取消</button><button disabled={!comments.requests.some(item => !['inserted', 'unknown'].includes(item.delivery)) || !!draft} onClick={() => send()}>{comments.phase === 'failed' ? '重试插入' : '插入上下文'}{!onInsertContext && '（模拟）'}</button></>}
     </div>}
     {loadState === 'ready' && comments.phase === 'failed' && !batching && <div className="fa-pdf-batch"><span>{comments.error}</span><button onClick={() => send()}>重试插入上下文</button></div>}
-    {passwordPrompt && <section className="fa-pdf-password" role="dialog" aria-label="PDF 密码" onKeyDown={event => { if (event.key === 'Enter' && password) { event.preventDefault(); passwordPrompt.update(password); setPassword(''); } }}>
+    {passwordPrompt && <section className="fa-pdf-password" role="dialog" aria-label="PDF 密码" onKeyDown={event => { if (event.key === 'Enter' && password) { event.preventDefault(); submitPassword(); } }}>
       <strong>{passwordPrompt.wrong ? '密码错误，请重试' : '此 PDF 需要密码'}</strong><input type="password" autoFocus aria-label="PDF 密码" value={password} onChange={event => setPassword(event.target.value)} /><small>演示样本的密码是 m9-user（不是真实凭据）。</small>
-      <div><button onClick={() => { passwordCancelled.current = true; task.current?.destroy(); task.current = null; setPasswordPrompt(null); setPdf({ status: 'error', kind: 'password', message: '需要密码才能打开此 PDF。' }); }}>取消</button><button disabled={!password} onClick={() => { passwordPrompt.update(password); setPassword(''); }}>打开</button></div>
+      <div><button onClick={() => { passwordCancelled.current = true; task.current?.destroy(); task.current = null; setPasswordPrompt(null); setPdf({ status: 'error', kind: 'password', message: '需要密码才能打开此 PDF。' }); }}>取消</button><button disabled={!password} onClick={submitPassword}>打开</button></div>
     </section>}
     {downscaled.size > 0 && <p className="fa-artifact-status" role="status">页面尺寸过大，已降低渲染分辨率以保护内存（第 {[...downscaled].join('、')} 页）。</p>}
     {comments.requests.some(item => item.delivery) && <p className="fa-artifact-status" role="status" data-pdf-delivery>{comments.requests.map((item, index) => `${index + 1}: ${item.delivery || 'idle'}`).join(' · ')}</p>}
     {(notice || comments.error) && <p className="fa-artifact-status" role="status">{comments.error || notice}</p>}
-    <details className="fa-fixture-controls"><summary>M9 PDF 场景</summary><label>文档来源<select aria-label="PDF 文档来源" value={source} onChange={event => { setSource(event.target.value); setDraft(null); setDrawing(null); setAnnotation(false); }}>{[['normal', '真实 PDF：3 页中文，含链接/大纲'], ['encrypted', '真实 PDF：需要密码'], ['truncated', '真实 PDF：截断损坏'], ['garbage', '真实 PDF：随机字节'], ['bigpage', '真实 PDF：14400×14400pt 超大页'], ['r34-large', '真实 PDF：2000页合成压力样本'], ['r34-cjk', '真实 PDF：非嵌入CJK字体'], ['synthetic', '合成页（原型原有，不解析 PDF）']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>{!real && <label>载入状态（仅合成页）<select aria-label="PDF 示例载入状态" value={loadState} onChange={event => { setLoadState(event.target.value); setDraft(null); setDrawing(null); }}>{[['ready', '正常'], ['loading', '载入中'], ['error', '渲染失败']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>}{!review && <><label><input type="checkbox" checked={enabled} disabled={locked || !!draft} onChange={event => { setEnabled(event.target.checked); if (!event.target.checked) setAnnotation(false); }} />annotations_enabled</label><label><input type="checkbox" checked={batching} disabled={locked || !!draft || comments.requests.length > 0} onChange={event => setBatching(event.target.checked)} />annotation_batching_enabled</label><label><input type="checkbox" checked={failureNext} onChange={event => setFailureNext(event.target.checked)} />下次发送失败</label></>}<p>真实来源由 pdf.js 解析（只读，不写入 PDF）；评论仅交接上下文，不自动回车、不追踪CLI完成、不写回PDF；未接终端回调时明确模拟。非嵌入CJK字形依赖系统字体。Review 与 artifact 路线分别验收。</p></details>
+    <details className="fa-fixture-controls"><summary>M9 PDF 场景</summary><label>文档来源<select aria-label="PDF 文档来源" value={source} onChange={event => { setSource(event.target.value); setDraft(null); setDrawing(null); setAnnotation(false); }}>{[['normal', '真实 PDF：3 页中文，含链接/大纲'], ['encrypted', '真实 PDF：需要密码'], ['truncated', '真实 PDF：截断损坏'], ['garbage', '真实 PDF：随机字节'], ['plain', '损坏输入：纯文本改名 PDF'], ['bigpage', '真实 PDF：14400×14400pt 超大页'], ['r34-large', '真实 PDF：2000页合成压力样本'], ['r34-cjk', '真实 PDF：非嵌入CJK字体'], ['synthetic', '合成页（原型原有，不解析 PDF）']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>{!real && <label>载入状态（仅合成页）<select aria-label="PDF 示例载入状态" value={loadState} onChange={event => { setLoadState(event.target.value); setDraft(null); setDrawing(null); }}>{[['ready', '正常'], ['loading', '载入中'], ['error', '渲染失败']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>}{!review && <><label><input type="checkbox" checked={enabled} disabled={locked || !!draft} onChange={event => { setEnabled(event.target.checked); if (!event.target.checked) setAnnotation(false); }} />annotations_enabled</label><label><input type="checkbox" checked={batching} disabled={locked || !!draft || comments.requests.length > 0} onChange={event => setBatching(event.target.checked)} />annotation_batching_enabled</label><label><input type="checkbox" checked={failureNext} onChange={event => setFailureNext(event.target.checked)} />下次发送失败</label></>}<p>真实来源由 pdf.js 解析（只读，不写入 PDF）；评论仅交接上下文，不自动回车、不追踪CLI完成、不写回PDF；未接终端回调时明确模拟。非嵌入CJK字形依赖系统字体。Review 与 artifact 路线分别验收。</p></details>
   </div>;
 }

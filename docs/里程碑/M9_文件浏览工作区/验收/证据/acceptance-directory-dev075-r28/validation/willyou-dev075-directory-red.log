@@ -1,0 +1,36 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/directory-race-acceptance.test.ts -t 'B02 cancels|forced refresh'
+
+[1018/195039.908383:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/195040.175200:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/directory-race-acceptance.test.ts (6 tests | 2 failed | 4 skipped) 600ms
+     × B02 cancels an unconfirmed collapsed request, reopens fresh and ignores inverse old delivery 562ms
+     × a forced refresh supersedes pending IO and an old finally cannot remove the new request 37ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/directory-race-acceptance.test.ts > directory request cancellation and late delivery > B02 cancels an unconfirmed collapsed request, reopens fresh and ignores inverse old delivery
+AssertionError: expected Promise{…} not to be Promise{…} // Object.is equality
+ ❯ src/renderer/features/files/directory-race-acceptance.test.ts:36:487
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/files/directory-race-acceptance.test.ts > directory request cancellation and late delivery > a forced refresh supersedes pending IO and an old finally cannot remove the new request
+AssertionError: expected Promise{…} not to be Promise{…} // Object.is equality
+ ❯ src/renderer/features/files/directory-race-acceptance.test.ts:37:373
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 skipped (6)
+   Start at  19:50:40
+   Duration  1.30s (transform 361ms, setup 0ms, import 628ms, tests 600ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

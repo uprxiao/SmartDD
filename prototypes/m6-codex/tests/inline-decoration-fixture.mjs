@@ -1,0 +1,1 @@
+export const inlineFixture = '# Prefix\r\n\r\n  ## 标题 **粗😀** [标题链](other.txt)\r\n\r\nIntro **Alpha** 与 *Italic* ~~gone~~   [Label](other.txt) &amp; ![图](tiny.png) and \\* end\r\n\r\nSetext **bold**\r\n===\r\n\r\nTail unchanged\r\n';

@@ -1,0 +1,607 @@
+{
+  "at": "2026-10-19T15:20:44.076Z",
+  "caseId": "M9-T-Y29",
+  "layer": "A",
+  "scratch": "/private/tmp/willyou-language-service-A-KRCnER",
+  "root": "/private/tmp/willyou-language-service-A-KRCnER/A",
+  "other": "/private/tmp/willyou-language-service-A-KRCnER/B",
+  "checks": [
+    {
+      "scenario": "unconfigured",
+      "menu": [
+        {
+          "text": "转到定义",
+          "disabled": true
+        },
+        {
+          "text": "转到类型定义",
+          "disabled": true
+        },
+        {
+          "text": "转到实现",
+          "disabled": true
+        },
+        {
+          "text": "查找引用",
+          "disabled": true
+        }
+      ],
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-KRCnER/A/real.cpp",
+        "alerts": [],
+        "status": "尚未为 cpp 配置语言服务"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "configure-existing-clangd",
+      "menu": [
+        {
+          "text": "转到定义",
+          "disabled": false
+        },
+        {
+          "text": "转到类型定义",
+          "disabled": false
+        },
+        {
+          "text": "转到实现",
+          "disabled": false
+        },
+        {
+          "text": "查找引用",
+          "disabled": false
+        }
+      ],
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-KRCnER/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "real-clangd-definition",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+            "requestId": "ca561111-cb3c-447e-a2c9-07c88c09c6d7",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423247068,
+        "inputHash": "c7b2403fa61b52a8c46cf6ca15c66c687f683002bb09e40668179399c48eb48f",
+        "before": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "delivered": true
+      },
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 26,
+          "head": 31
+        },
+        "selected": "value",
+        "active": "/private/tmp/willyou-language-service-A-KRCnER/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "utf16AfterEmoji": true,
+      "pass": true
+    },
+    {
+      "scenario": "real-clangd-implementation",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+            "requestId": "abf67663-a291-4836-895c-bef80938302a",
+            "version": 1,
+            "kind": "implementation",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423247943,
+        "inputHash": "46e64908cc9974c05c7826f57d2f26e2a91395fcffac4df786350735df365c87",
+        "before": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "output": {
+          "kind": "implementation",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "delivered": true
+      },
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 68,
+          "head": 73
+        },
+        "selected": "value",
+        "active": "/private/tmp/willyou-language-service-A-KRCnER/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "utf16AfterEmoji": true,
+      "pass": true
+    },
+    {
+      "scenario": "real-clangd-references",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+            "requestId": "3ec43254-1b96-4d6a-be15-f29e0868c463",
+            "version": 1,
+            "kind": "references",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423248826,
+        "inputHash": "d63a4e758421bc140e02cef2215923c1b19ef621daad57b9bf15fcbcc8d58287",
+        "before": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "output": {
+          "kind": "references",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 66
+                },
+                "end": {
+                  "line": 2,
+                  "character": 71
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "delivered": true
+      },
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 168,
+          "head": 168
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-KRCnER/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "utf16AfterEmoji": true,
+      "pass": true
+    }
+  ],
+  "status": "failed",
+  "asarSha256": "f49efd43440d0124f9758ab11902b65f39b2a5cf5f04750adb89030acbc5bf4b",
+  "boundary": "Original packaged UI, native filesystem, existing /usr/bin/clangd, and explicitly labelled deterministic stdio fault/capability peer. All configuration entered through real language-settings controls in own userData. Observer forwards original authenticated RPC and child_process.spawn, may hold a genuine query result unchanged for stale-delivery checks. No language server installation/download, fake ready/query injection, Store/editor/DOM mutation, clipboard, model, external applications or daily data. TypeScript/Python unavailable and not proved by protocol peer.",
+  "pid": 88667,
+  "failedStage": "real-clangd-hover",
+  "error": "Error: Electron test condition timed out",
+  "stack": "Error: Electron test condition timed out\n    at Object.waitFor (file:///Users/hx/hx/hxWork/SmartDD/scripts/lib/electron-harness.mjs:68:13)\n    at async file:///Users/hx/hx/hxWork/SmartDD/scripts/files/language-service-ui.mjs:28:244",
+  "state": {
+    "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+    "selection": {
+      "anchor": 168,
+      "head": 168
+    },
+    "selected": "",
+    "active": "/private/tmp/willyou-language-service-A-KRCnER/A/real.cpp",
+    "alerts": [],
+    "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+  },
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 language service acceptance\n设置\n首页\n›\nM9 language service acceptance\n文件\nM9 language service acceptance\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 language service acceptance\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n2\n创建时间\n10/19/2026, 11:20:44 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n2\n数据库\n0\n服务器\n0\nreal.cpp\nSynthetic static viewers\n›\nreal.cpp\n打开\n1\n2\n3\n4\nstruct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n\n\nA · Synthetic static viewers\nA\nprotocol.cpp\nreal.cpp\ntarget.cpp\n0.2 KiB\nUTF-8",
+  "trace": {
+    "rows": [
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "70df4d0f-a812-4a7c-ae82-d65f5dd61a35",
+            "ref": {
+              "id": "032cdb51-4595-4a5a-8e70-450116b7df5d",
+              "lease": "98fa69ea-7f64-4c45-bd67-ed155aeafa44",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n"
+          }
+        ],
+        "at": 1792423245328,
+        "inputHash": "720a560af1598239c335e72810b81c8003f4d62897d7c8de3ca5183649f1bccb",
+        "before": "d4a2d62d311072f5a94ab179af87342320d53a48436499b92fb08632096f69df",
+        "output": {
+          "state": "unavailable",
+          "reason": "尚未为 cpp 配置语言服务"
+        },
+        "originalReturned": true,
+        "after": "d4a2d62d311072f5a94ab179af87342320d53a48436499b92fb08632096f69df",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "e676ae8f-09ac-4d02-8c12-63fe6cc93294",
+                "name": "Existing Apple clangd",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/usr/bin/clangd",
+                "args": [
+                  "--background-index=false",
+                  "--clang-tidy=false",
+                  "--enable-config=false"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423245866,
+        "inputHash": "07ccb4f6bb61444aac6685605d563f60c6fb2955ab931faee43c0ac8f5feb35d",
+        "before": "c20d67a80df8b6dd82fa89ab2980f1f68f846d086f13d4d7a80e104c149eb9bc",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "e676ae8f-09ac-4d02-8c12-63fe6cc93294",
+              "name": "Existing Apple clangd",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/usr/bin/clangd",
+              "args": [
+                "--background-index=false",
+                "--clang-tidy=false",
+                "--enable-config=false"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "c20d67a80df8b6dd82fa89ab2980f1f68f846d086f13d4d7a80e104c149eb9bc",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "70df4d0f-a812-4a7c-ae82-d65f5dd61a35"
+        ],
+        "at": 1792423245867,
+        "inputHash": "41af14dee498ce33c818e6aa529b300584a164bc5379bc044f53ce2539dbda36",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+            "ref": {
+              "id": "032cdb51-4595-4a5a-8e70-450116b7df5d",
+              "lease": "98fa69ea-7f64-4c45-bd67-ed155aeafa44",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n"
+          }
+        ],
+        "at": 1792423245867,
+        "inputHash": "d4578a330cb30c9d50cd42b57785a04ab6b34c73e4cd42693452dff2c47825c3",
+        "before": "3e74888866bc1b4793c5dd32e8be762766d7f8ea12a73808f356912a94ebe6c0",
+        "output": {
+          "state": "ready",
+          "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+          "server": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "98fa69ea-7f64-4c45-bd67-ed155aeafa44",
+            "generation": 1
+          },
+          "relativePath": "real.cpp"
+        },
+        "originalReturned": true,
+        "after": "3e74888866bc1b4793c5dd32e8be762766d7f8ea12a73808f356912a94ebe6c0",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+            "requestId": "ca561111-cb3c-447e-a2c9-07c88c09c6d7",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423247068,
+        "inputHash": "c7b2403fa61b52a8c46cf6ca15c66c687f683002bb09e40668179399c48eb48f",
+        "before": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+            "requestId": "abf67663-a291-4836-895c-bef80938302a",
+            "version": 1,
+            "kind": "implementation",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423247943,
+        "inputHash": "46e64908cc9974c05c7826f57d2f26e2a91395fcffac4df786350735df365c87",
+        "before": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "output": {
+          "kind": "implementation",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "ebf4751a-8b47-40f9-a117-8e8e76adb860",
+            "requestId": "3ec43254-1b96-4d6a-be15-f29e0868c463",
+            "version": 1,
+            "kind": "references",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423248826,
+        "inputHash": "d63a4e758421bc140e02cef2215923c1b19ef621daad57b9bf15fcbcc8d58287",
+        "before": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "output": {
+          "kind": "references",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 66
+                },
+                "end": {
+                  "line": 2,
+                  "character": 71
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "delivered": true
+      }
+    ],
+    "slots": [],
+    "processes": [
+      {
+        "command": "/usr/bin/clangd",
+        "args": [
+          "--background-index=false",
+          "--clang-tidy=false",
+          "--enable-config=false"
+        ],
+        "pid": 88719,
+        "cwd": "/private/tmp/willyou-language-service-A-KRCnER/A",
+        "at": 1792423245897,
+        "exited": false
+      }
+    ]
+  },
+  "restored": {
+    "files.languageOpen": true,
+    "files.languageQuery": true,
+    "files.languageChange": true,
+    "files.languageCancel": true,
+    "files.languageClose": true,
+    "files.configureLanguages": true,
+    "spawn": true
+  },
+  "finishedAt": "2026-10-19T15:20:57.710Z"
+}

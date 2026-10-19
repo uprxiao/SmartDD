@@ -1,0 +1,2988 @@
+{
+  "at": "2026-10-19T09:10:29.909Z",
+  "scratch": "/private/tmp/willyou-keyboard-focus-app-pdQqvG",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r77-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "prototype": false,
+  "status": "failed",
+  "checks": [
+    {
+      "caseId": "M9-T-Y20",
+      "theme": "light",
+      "scenario": "unanchored Shift range starts at focused A",
+      "selected": [
+        "A.txt"
+      ],
+      "focused": "A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "tabStops": [
+        "A.txt"
+      ],
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y20",
+      "theme": "light",
+      "scenario": "Meta Space does not open a new file",
+      "before": {
+        "selected": [],
+        "focused": null,
+        "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+        "tabStops": []
+      },
+      "after": {
+        "selected": [
+          "A.txt"
+        ],
+        "focused": "B.txt",
+        "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+        "tabStops": [
+          "B.txt"
+        ]
+      },
+      "opens": 2,
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y20",
+      "theme": "light",
+      "scenario": "Control Space does not open a new file",
+      "before": {
+        "selected": [
+          "B.txt"
+        ],
+        "focused": "B.txt",
+        "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+        "tabStops": [
+          "B.txt"
+        ]
+      },
+      "after": {
+        "selected": [
+          "A.txt"
+        ],
+        "focused": "B.txt",
+        "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+        "tabStops": [
+          "B.txt"
+        ]
+      },
+      "opens": 2,
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y20",
+      "theme": "light",
+      "scenario": "collapsed child invalidates anchor and falls back to focused A",
+      "selected": [
+        "A.txt",
+        "B.txt"
+      ],
+      "focused": "B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "tabStops": [
+        "B.txt"
+      ],
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y20",
+      "theme": "light",
+      "scenario": "Ctrl/Meta all visible includes directory, ARIA and single tree tab stop",
+      "aria": {
+        "label": "文件目录",
+        "multi": "true",
+        "rows": [
+          {
+            "path": "folder",
+            "level": "1",
+            "pos": "1",
+            "size": "4",
+            "tab": 0
+          },
+          {
+            "path": "folder/child.txt",
+            "level": "2",
+            "pos": "1",
+            "size": "1",
+            "tab": -1
+          },
+          {
+            "path": "A.txt",
+            "level": "1",
+            "pos": "2",
+            "size": "4",
+            "tab": -1
+          },
+          {
+            "path": "B.txt",
+            "level": "1",
+            "pos": "3",
+            "size": "4",
+            "tab": -1
+          },
+          {
+            "path": "C.txt",
+            "level": "1",
+            "pos": "4",
+            "size": "4",
+            "tab": -1
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y22",
+      "theme": "light",
+      "scenario": "toolbar Escape returns focus to trigger",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y22",
+      "theme": "light",
+      "scenario": "backdrop restores toolbar focus",
+      "point": {
+        "x": 350.0674743652344,
+        "y": 194.63079833984375
+      },
+      "pass": true
+    }
+  ],
+  "boundary": "Y20 U/P/A and Y22 P/A, own files/profile only. P full shared FileWorkspace with labelled synthetic file provider and storage scope; A unchanged packaged App/native File RPC. Real browser trusted pointer/key/Tab, read-only source/DOM observations. No Store/editor state/DOM value injection, clipboard/models/external apps/daily resources; Ctrl/Meta branch dispatch is App browser input, not OS global-shortcut/physical IME validation.",
+  "asarSha256": "bcadba312a3e74c94493799e7bbd6c37554257d8cfa62b8a979290cab5f40d81",
+  "pid": 45305,
+  "failedStage": "light:search-Tab",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(await app.evaluate(\"(()=>{const d=document.querySelector('[role=dialog]'),items=[...d.querySelectorAll('input,textarea,button,select,a[href],[tabindex]')].filter(e=>!e.disabled&&e.tabIndex>=0&&e.getClientRects().length);return document.activeElement===items.at(-1)})()\"))\n",
+  "stack": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(await app.evaluate(\"(()=>{const d=document.querySelector('[role=dialog]'),items=[...d.querySelectorAll('input,textarea,button,select,a[href],[tabindex]')].filter(e=>!e.disabled&&e.tabIndex>=0&&e.getClientRects().length);return document.activeElement===items.at(-1)})()\"))\n\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/files/keyboard-focus-ui.mjs:45:425",
+  "inputs": [
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 635.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 635.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 636,
+      "target": "主题",
+      "active": "主题",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 638.7999999523163,
+      "target": "主题",
+      "active": "主题",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 638.8999998569489,
+      "target": "主题",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 639.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 643.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 643.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 644,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 645.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 645.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 645.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 647.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 647.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 647.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 649.8999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 649.8999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 650,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 651.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 651.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 651.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 653.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 653.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 653.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 654.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 654.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 654.8999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 659,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 659.0999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 659.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 660.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 660.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 661.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 662.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 662.8999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 663.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 666.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 666.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 667,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 669.0999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 669.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 669.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 670.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 670.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 670.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 672,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 672,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 672.0999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 674.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 674.5,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 674.5999999046326,
+      "target": "查找并打开文件",
+      "active": "查找并打开文件",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 675.3999998569489,
+      "target": "查找并打开文件",
+      "active": "查找并打开文件",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 675.5,
+      "target": "查找并打开文件",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 675.5,
+      "target": "文件全屏",
+      "active": "文件全屏",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 676.1999998092651,
+      "target": "文件全屏",
+      "active": "文件全屏",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 676.1999998092651,
+      "target": "文件全屏",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 676.1999998092651,
+      "target": "隐藏文件区域",
+      "active": "隐藏文件区域",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 676.7999999523163,
+      "target": "隐藏文件区域",
+      "active": "隐藏文件区域",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 676.8999998569489,
+      "target": "隐藏文件区域",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 677,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 677.5999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 677.6999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 677.7999999523163,
+      "target": "在文件中搜索",
+      "active": "在文件中搜索",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 678.6999998092651,
+      "target": "在文件中搜索",
+      "active": "在文件中搜索",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 678.6999998092651,
+      "target": "在文件中搜索",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 678.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 679.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 679.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 679.8999998569489,
+      "target": "隐藏目录树",
+      "active": "隐藏目录树",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 680.7999999523163,
+      "target": "隐藏目录树",
+      "active": "隐藏目录树",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 680.7999999523163,
+      "target": "隐藏目录树",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 680.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 682.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 683,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 683.1999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 684.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 684.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 684.3999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 685.0999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 685.2999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 685.2999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 688.0999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 689,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 689.1999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 692.1999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 698.1999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 698.2999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 710.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 711.2999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 711.6999998092651
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowUp",
+      "trusted": true,
+      "at": 711.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 726.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 726.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 824.1999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 824.3999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 824.5,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 834.5,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 835,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 835.2999999523163
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowUp",
+      "trusted": true,
+      "at": 845,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 854.1999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 854.2999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": " ",
+      "trusted": true,
+      "at": 949.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 951.5,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 954.7999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 955,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": " ",
+      "trusted": true,
+      "at": 1055.2999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 1065,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowUp",
+      "trusted": true,
+      "at": 1069.3999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1072.7999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1072.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": " ",
+      "trusted": true,
+      "at": 1173.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 1176.7999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1180,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1180.0999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": " ",
+      "trusted": true,
+      "at": 1282.7999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 1298.5,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1298.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1298.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1308,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1308.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 1311.5
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1326,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 1420.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1421.1999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1421.1999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1430.0999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1430.5,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 1430.6999998092651
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowLeft",
+      "trusted": true,
+      "at": 1430.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1453.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1453.7999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowLeft",
+      "trusted": true,
+      "at": 1538.5999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "folderA.txtB.txtC.txt",
+      "at": 1540.5999999046326
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1541.5,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1542,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 1544.1999998092651
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1557.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1557.6999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 1653.5,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1654,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1654.0999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "trusted": true,
+      "at": 1655.8999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1659.2999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1659.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 1659.7999999523163
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1682.1999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1682.2999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true,
+      "at": 1766.3999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 1774.5999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1774.6999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1774.6999998092651,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1778.0999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1778.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 1780.6999998092651
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1789.1999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1789.3999998569489,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true,
+      "at": 1885.5999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1893.0999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1893.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "DIV",
+      "windowFocused": true
+    },
+    {
+      "type": "removed-tree-nodes",
+      "removed": [
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+          "tab": 0
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "tab": -1
+        },
+        {
+          "title": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt",
+          "tab": -1
+        }
+      ],
+      "sameTree": false,
+      "removedParents": [],
+      "treeText": "正在读取…",
+      "at": 1893.7999999523163
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 1909.6999998092651,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 1909.7999999523163,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 2027.3999998569489,
+      "target": null,
+      "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 2027.5999999046326,
+      "target": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 2027.6999998092651,
+      "target": "在文件中搜索",
+      "active": "在文件中搜索",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 2034,
+      "target": "在文件中搜索",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 2034,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Escape",
+      "trusted": true,
+      "at": 2037.3999998569489,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 2038.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 2039.6999998092651,
+      "target": "在文件中搜索",
+      "active": "在文件中搜索",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 2048.0999999046326,
+      "target": null,
+      "active": "在文件中搜索",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 2056.199999809265,
+      "target": "在文件中搜索",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 2056.399999856949,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 2156.5999999046326,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 2156.899999856949,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 2169.199999809265,
+      "target": "在文件中搜索",
+      "active": "在文件中搜索",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true,
+      "at": 2175.399999856949,
+      "target": null,
+      "active": "在文件中搜索",
+      "activeTag": "BUTTON",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 2182.699999809265,
+      "target": "在文件中搜索",
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 2182.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "trusted": true,
+      "at": 2189.399999856949,
+      "target": null,
+      "active": null,
+      "activeTag": "INPUT",
+      "windowFocused": true
+    },
+    {
+      "type": "focusout",
+      "trusted": true,
+      "at": 2189.699999809265,
+      "target": null,
+      "active": null,
+      "activeTag": "BODY",
+      "windowFocused": true
+    },
+    {
+      "type": "focusin",
+      "trusted": true,
+      "at": 2189.7999999523163,
+      "target": null,
+      "active": null,
+      "activeTag": "SPAN",
+      "windowFocused": true
+    }
+  ],
+  "treeState": {
+    "selected": [
+      "folder",
+      "folder/child.txt",
+      "A.txt",
+      "B.txt",
+      "C.txt"
+    ],
+    "focused": null,
+    "active": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+    "tabStops": [
+      "folder"
+    ]
+  },
+  "treeDom": "<div class=\"fw-tree-scroll\" role=\"tree\" tabindex=\"-1\" aria-label=\"文件目录\" aria-multiselectable=\"true\"><div class=\"fw-tree-virtual\" style=\"height: 140px;\"><button role=\"treeitem\" aria-level=\"1\" aria-posinset=\"1\" aria-setsize=\"4\" aria-expanded=\"true\" aria-selected=\"true\" tabindex=\"0\" class=\"fw-tree-row fw-tree-virtual-row \" title=\"/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder\" draggable=\"false\" style=\"top: 0px; padding-left: 3px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-down\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg><span class=\"fw-tree-name\">folder</span></button><button role=\"treeitem\" aria-level=\"2\" aria-posinset=\"1\" aria-setsize=\"1\" aria-selected=\"true\" tabindex=\"-1\" class=\"fw-tree-row fw-tree-virtual-row selected select-none\" title=\"/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt\" draggable=\"true\" style=\"top: 28px; padding-left: 19px;\"><span class=\"fw-tree-spacer\"></span><svg class=\"fw-file-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\" style=\"--file-light: #84848a; --file-dark: #adadb1;\"><use href=\"file:///private/tmp/willyou-m9-acceptance-batch-r77-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/icons-CI_G4lan.svg#file-tree-builtin-text\"></use></svg><span class=\"fw-tree-name\">child.txt</span></button><button role=\"treeitem\" aria-level=\"1\" aria-posinset=\"2\" aria-setsize=\"4\" aria-selected=\"true\" tabindex=\"-1\" class=\"fw-tree-row fw-tree-virtual-row  select-none\" title=\"/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt\" draggable=\"true\" style=\"top: 56px; padding-left: 3px;\"><span class=\"fw-tree-spacer\"></span><svg class=\"fw-file-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\" style=\"--file-light: #84848a; --file-dark: #adadb1;\"><use href=\"file:///private/tmp/willyou-m9-acceptance-batch-r77-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/icons-CI_G4lan.svg#file-tree-builtin-text\"></use></svg><span class=\"fw-tree-name\">A.txt</span></button><button role=\"treeitem\" aria-level=\"1\" aria-posinset=\"3\" aria-setsize=\"4\" aria-selected=\"true\" tabindex=\"-1\" class=\"fw-tree-row fw-tree-virtual-row  select-none\" title=\"/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt\" draggable=\"true\" style=\"top: 84px; padding-left: 3px;\"><span class=\"fw-tree-spacer\"></span><svg class=\"fw-file-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\" style=\"--file-light: #84848a; --file-dark: #adadb1;\"><use href=\"file:///private/tmp/willyou-m9-acceptance-batch-r77-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/icons-CI_G4lan.svg#file-tree-builtin-text\"></use></svg><span class=\"fw-tree-name\">B.txt</span></button><button role=\"treeitem\" aria-level=\"1\" aria-posinset=\"4\" aria-setsize=\"4\" aria-selected=\"true\" tabindex=\"-1\" class=\"fw-tree-row fw-tree-virtual-row  select-none\" title=\"/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/C.txt\" draggable=\"true\" style=\"top: 112px; padding-left: 3px;\"><span class=\"fw-tree-spacer\"></span><svg class=\"fw-file-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\" style=\"--file-light: #84848a; --file-dark: #adadb1;\"><use href=\"file:///private/tmp/willyou-m9-acceptance-batch-r77-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/icons-CI_G4lan.svg#file-tree-builtin-text\"></use></svg><span class=\"fw-tree-name\">C.txt</span></button></div></div>",
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 Y20 Y22 keyboard and search focus\n设置\n首页\n›\nM9 Y20 Y22 keyboard and search focus\n文件\nM9 Y20 Y22 keyboard and search focus\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 Y20 Y22 keyboard and search focus\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/19/2026, 5:10:30 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nchild.txt\nSynthetic static viewers\n›\nfolder\n›\nchild.txt\n打开\n1\n2\nChild source\n\n\nproject\nfolder\nchild.txt\nA.txt\nB.txt\nC.txt\n0.0 KiB\nUTF-8\n在文件中搜索\n文件掩码\nSynthetic static viewers\n\n输入要查找的文本",
+  "focus": "<input aria-label=\"搜索文件掩码\" placeholder=\"如 *.ts\" list=\"m9-mask-history\" maxlength=\"256\" value=\"\">",
+  "rpc": {
+    "rows": [
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1,
+            "relativePath": "A.txt"
+          }
+        ],
+        "inputHash": "5b15c27405043b08a5456798537aca2bcb0fc62487c01ee94a0caaca5cd7a4c5",
+        "at": 1792401031235,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "76d20476-d443-46a9-98d6-4892f9ad9fc3",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076452",
+          "name": "A.txt",
+          "relativePath": "A.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "revision": {
+            "size": 1800,
+            "inode": "50076452",
+            "device": "16777232",
+            "changedNs": "1792401029908900871",
+            "modifiedNs": "1792401029908900871",
+            "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "7812e3c00dec252eb74800776a5067a6d76d74422fbcd94899910c279ba05bf8",
+        "currentFrame": true,
+        "after": "7812e3c00dec252eb74800776a5067a6d76d74422fbcd94899910c279ba05bf8",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "76d20476-d443-46a9-98d6-4892f9ad9fc3",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "e0ce1965cfeb9b1be117b590d95670256d763dbe4fd62d3b1e817f0c9196bb40",
+        "at": 1792401031246,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "76d20476-d443-46a9-98d6-4892f9ad9fc3",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076452",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+            "revision": {
+              "size": 1800,
+              "inode": "50076452",
+              "device": "16777232",
+              "changedNs": "1792401029908900871",
+              "modifiedNs": "1792401029908900871",
+              "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Zm9jdXNUb2tlbiBsaW5lIDAxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDExIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDYwIOS4reaWh/CfmYIK"
+        },
+        "before": "d045cff087b02f9e319e33797968bf21bb0cfd28699149882f0655d71afc5abd",
+        "currentFrame": true,
+        "after": "d045cff087b02f9e319e33797968bf21bb0cfd28699149882f0655d71afc5abd",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "76d20476-d443-46a9-98d6-4892f9ad9fc3",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "e0ce1965cfeb9b1be117b590d95670256d763dbe4fd62d3b1e817f0c9196bb40",
+        "at": 1792401031262,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "76d20476-d443-46a9-98d6-4892f9ad9fc3",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076452",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+            "revision": {
+              "size": 1800,
+              "inode": "50076452",
+              "device": "16777232",
+              "changedNs": "1792401029908900871",
+              "modifiedNs": "1792401029908900871",
+              "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Zm9jdXNUb2tlbiBsaW5lIDAxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDExIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDYwIOS4reaWh/CfmYIK"
+        },
+        "before": "d045cff087b02f9e319e33797968bf21bb0cfd28699149882f0655d71afc5abd",
+        "currentFrame": true,
+        "after": "d045cff087b02f9e319e33797968bf21bb0cfd28699149882f0655d71afc5abd",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1,
+            "relativePath": "B.txt"
+          }
+        ],
+        "inputHash": "89410e47033696e3e55f244c28a47ecf226478e6052e6edd3b877c7cf6f01c4a",
+        "at": 1792401031369,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076453",
+          "name": "B.txt",
+          "relativePath": "B.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "revision": {
+            "size": 14,
+            "inode": "50076453",
+            "device": "16777232",
+            "changedNs": "1792401029909138789",
+            "modifiedNs": "1792401029909138789",
+            "hash": "c18678c49def04aabefd2eda6f41e19aad0f27b0b9ec4f64c035dd0f926debd6"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "c31e11eb4355862b587e7584fcc11d273c0c988c12be4530544de8ad15ad9011",
+        "currentFrame": true,
+        "after": "c31e11eb4355862b587e7584fcc11d273c0c988c12be4530544de8ad15ad9011",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "19c906d72721aab88b7ba3df030a1b0aa03b591e5eb153b632f42ea48ed244ad",
+        "at": 1792401031380,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076453",
+            "name": "B.txt",
+            "relativePath": "B.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+            "revision": {
+              "size": 14,
+              "inode": "50076453",
+              "device": "16777232",
+              "changedNs": "1792401029909138789",
+              "modifiedNs": "1792401029909138789",
+              "hash": "c18678c49def04aabefd2eda6f41e19aad0f27b0b9ec4f64c035dd0f926debd6"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "U2Vjb25kIGZpbGUgQgo="
+        },
+        "before": "a2192015aa90861f96b9c6b90ab9ee61d331d82f29edb32ec4dc7dfb2121b185",
+        "currentFrame": true,
+        "after": "a2192015aa90861f96b9c6b90ab9ee61d331d82f29edb32ec4dc7dfb2121b185",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "19c906d72721aab88b7ba3df030a1b0aa03b591e5eb153b632f42ea48ed244ad",
+        "at": 1792401031391,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076453",
+            "name": "B.txt",
+            "relativePath": "B.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+            "revision": {
+              "size": 14,
+              "inode": "50076453",
+              "device": "16777232",
+              "changedNs": "1792401029909138789",
+              "modifiedNs": "1792401029909138789",
+              "hash": "c18678c49def04aabefd2eda6f41e19aad0f27b0b9ec4f64c035dd0f926debd6"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "U2Vjb25kIGZpbGUgQgo="
+        },
+        "before": "a2192015aa90861f96b9c6b90ab9ee61d331d82f29edb32ec4dc7dfb2121b185",
+        "currentFrame": true,
+        "after": "a2192015aa90861f96b9c6b90ab9ee61d331d82f29edb32ec4dc7dfb2121b185",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "19c906d72721aab88b7ba3df030a1b0aa03b591e5eb153b632f42ea48ed244ad",
+        "at": 1792401031608,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076453",
+          "name": "B.txt",
+          "relativePath": "B.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "revision": {
+            "size": 14,
+            "inode": "50076453",
+            "device": "16777232",
+            "changedNs": "1792401029909138789",
+            "modifiedNs": "1792401029909138789",
+            "hash": "c18678c49def04aabefd2eda6f41e19aad0f27b0b9ec4f64c035dd0f926debd6"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "c31e11eb4355862b587e7584fcc11d273c0c988c12be4530544de8ad15ad9011",
+        "currentFrame": true,
+        "after": "c31e11eb4355862b587e7584fcc11d273c0c988c12be4530544de8ad15ad9011",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "19c906d72721aab88b7ba3df030a1b0aa03b591e5eb153b632f42ea48ed244ad",
+        "at": 1792401031851,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "246adcd7-0159-4417-8767-94c5b7bbed7e",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076453",
+          "name": "B.txt",
+          "relativePath": "B.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/B.txt",
+          "revision": {
+            "size": 14,
+            "inode": "50076453",
+            "device": "16777232",
+            "changedNs": "1792401029909138789",
+            "modifiedNs": "1792401029909138789",
+            "hash": "c18678c49def04aabefd2eda6f41e19aad0f27b0b9ec4f64c035dd0f926debd6"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "c31e11eb4355862b587e7584fcc11d273c0c988c12be4530544de8ad15ad9011",
+        "currentFrame": true,
+        "after": "c31e11eb4355862b587e7584fcc11d273c0c988c12be4530544de8ad15ad9011",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1,
+            "relativePath": "folder/child.txt"
+          }
+        ],
+        "inputHash": "aabcb5fdb92bf9921ada0a1fb52b76feec7de67b63aa760537bfd255a419e502",
+        "at": 1792401031967,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "c01589da-9bb8-43dc-8795-ef82e8cf8867",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076456",
+          "name": "child.txt",
+          "relativePath": "folder/child.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+          "revision": {
+            "size": 13,
+            "inode": "50076456",
+            "device": "16777232",
+            "changedNs": "1792401029909465290",
+            "modifiedNs": "1792401029909465290",
+            "hash": "d55aaee3c0e9f08da97ff9a1265bd4728cf6920cf9a2e8ca187d132c3f149db2"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "0ccb0fd73d098d62b0f2e65a20f255e9be2cab83de8cbb850093c0c9e531db6b",
+        "currentFrame": true,
+        "after": "0ccb0fd73d098d62b0f2e65a20f255e9be2cab83de8cbb850093c0c9e531db6b",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "c01589da-9bb8-43dc-8795-ef82e8cf8867",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "2dd97b408d16ca46f53c428b5203a298b4369970a8d1397740f82c69d138a911",
+        "at": 1792401031978,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "c01589da-9bb8-43dc-8795-ef82e8cf8867",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076456",
+            "name": "child.txt",
+            "relativePath": "folder/child.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+            "revision": {
+              "size": 13,
+              "inode": "50076456",
+              "device": "16777232",
+              "changedNs": "1792401029909465290",
+              "modifiedNs": "1792401029909465290",
+              "hash": "d55aaee3c0e9f08da97ff9a1265bd4728cf6920cf9a2e8ca187d132c3f149db2"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Q2hpbGQgc291cmNlCg=="
+        },
+        "before": "f3c451571219fdccb25091f214e1053896c27983918bae8fc1420d84365519ae",
+        "currentFrame": true,
+        "after": "f3c451571219fdccb25091f214e1053896c27983918bae8fc1420d84365519ae",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "c01589da-9bb8-43dc-8795-ef82e8cf8867",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "2dd97b408d16ca46f53c428b5203a298b4369970a8d1397740f82c69d138a911",
+        "at": 1792401031990,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "c01589da-9bb8-43dc-8795-ef82e8cf8867",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076456",
+            "name": "child.txt",
+            "relativePath": "folder/child.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+            "revision": {
+              "size": 13,
+              "inode": "50076456",
+              "device": "16777232",
+              "changedNs": "1792401029909465290",
+              "modifiedNs": "1792401029909465290",
+              "hash": "d55aaee3c0e9f08da97ff9a1265bd4728cf6920cf9a2e8ca187d132c3f149db2"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Q2hpbGQgc291cmNlCg=="
+        },
+        "before": "f3c451571219fdccb25091f214e1053896c27983918bae8fc1420d84365519ae",
+        "currentFrame": true,
+        "after": "f3c451571219fdccb25091f214e1053896c27983918bae8fc1420d84365519ae",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "c01589da-9bb8-43dc-8795-ef82e8cf8867",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "2dd97b408d16ca46f53c428b5203a298b4369970a8d1397740f82c69d138a911",
+        "at": 1792401032083,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "c01589da-9bb8-43dc-8795-ef82e8cf8867",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076456",
+          "name": "child.txt",
+          "relativePath": "folder/child.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+          "revision": {
+            "size": 13,
+            "inode": "50076456",
+            "device": "16777232",
+            "changedNs": "1792401029909465290",
+            "modifiedNs": "1792401029909465290",
+            "hash": "d55aaee3c0e9f08da97ff9a1265bd4728cf6920cf9a2e8ca187d132c3f149db2"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "0ccb0fd73d098d62b0f2e65a20f255e9be2cab83de8cbb850093c0c9e531db6b",
+        "currentFrame": true,
+        "after": "0ccb0fd73d098d62b0f2e65a20f255e9be2cab83de8cbb850093c0c9e531db6b",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1,
+            "relativePath": "A.txt"
+          }
+        ],
+        "inputHash": "5b15c27405043b08a5456798537aca2bcb0fc62487c01ee94a0caaca5cd7a4c5",
+        "at": 1792401032198,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076452",
+          "name": "A.txt",
+          "relativePath": "A.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "revision": {
+            "size": 1800,
+            "inode": "50076452",
+            "device": "16777232",
+            "changedNs": "1792401029908900871",
+            "modifiedNs": "1792401029908900871",
+            "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "9d79c83e7ceb7525bbc23d990e3372db722e71036cb32f95207600b48d668f68",
+        "currentFrame": true,
+        "after": "9d79c83e7ceb7525bbc23d990e3372db722e71036cb32f95207600b48d668f68",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "f18d05c0f43c80f90bbfc90b028dc29371c8eff6dfd0f95e1d71c2c14ec7b053",
+        "at": 1792401032207,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076452",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+            "revision": {
+              "size": 1800,
+              "inode": "50076452",
+              "device": "16777232",
+              "changedNs": "1792401029908900871",
+              "modifiedNs": "1792401029908900871",
+              "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Zm9jdXNUb2tlbiBsaW5lIDAxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDExIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDYwIOS4reaWh/CfmYIK"
+        },
+        "before": "ed316dfaa7f6b6ef00fefe3d519815fd2b901270afa0cb23ea3cb602d6167191",
+        "currentFrame": true,
+        "after": "ed316dfaa7f6b6ef00fefe3d519815fd2b901270afa0cb23ea3cb602d6167191",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "f18d05c0f43c80f90bbfc90b028dc29371c8eff6dfd0f95e1d71c2c14ec7b053",
+        "at": 1792401032217,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076452",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+            "revision": {
+              "size": 1800,
+              "inode": "50076452",
+              "device": "16777232",
+              "changedNs": "1792401029908900871",
+              "modifiedNs": "1792401029908900871",
+              "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Zm9jdXNUb2tlbiBsaW5lIDAxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDAzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDA5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDExIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDEzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDE5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDIzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDI5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDMzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDM5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDQ5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUwIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUxIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUyIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDUzIOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU0IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU1IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU2IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU3IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU4IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDU5IOS4reaWh/CfmYIKZm9jdXNUb2tlbiBsaW5lIDYwIOS4reaWh/CfmYIK"
+        },
+        "before": "ed316dfaa7f6b6ef00fefe3d519815fd2b901270afa0cb23ea3cb602d6167191",
+        "currentFrame": true,
+        "after": "ed316dfaa7f6b6ef00fefe3d519815fd2b901270afa0cb23ea3cb602d6167191",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "f18d05c0f43c80f90bbfc90b028dc29371c8eff6dfd0f95e1d71c2c14ec7b053",
+        "at": 1792401032309,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076452",
+          "name": "A.txt",
+          "relativePath": "A.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "revision": {
+            "size": 1800,
+            "inode": "50076452",
+            "device": "16777232",
+            "changedNs": "1792401029908900871",
+            "modifiedNs": "1792401029908900871",
+            "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "9d79c83e7ceb7525bbc23d990e3372db722e71036cb32f95207600b48d668f68",
+        "currentFrame": true,
+        "after": "9d79c83e7ceb7525bbc23d990e3372db722e71036cb32f95207600b48d668f68",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "f18d05c0f43c80f90bbfc90b028dc29371c8eff6dfd0f95e1d71c2c14ec7b053",
+        "at": 1792401032319,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "6fa69ad1-e797-44c0-a4c4-906e42b96f44",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076452",
+          "name": "A.txt",
+          "relativePath": "A.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/A.txt",
+          "revision": {
+            "size": 1800,
+            "inode": "50076452",
+            "device": "16777232",
+            "changedNs": "1792401029908900871",
+            "modifiedNs": "1792401029908900871",
+            "hash": "4bcc46f3d4955cec995a2ce67e14f6131e716e6ddcf71509241fd9bebaa6a0a4"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "9d79c83e7ceb7525bbc23d990e3372db722e71036cb32f95207600b48d668f68",
+        "currentFrame": true,
+        "after": "9d79c83e7ceb7525bbc23d990e3372db722e71036cb32f95207600b48d668f68",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1,
+            "relativePath": "folder/child.txt"
+          }
+        ],
+        "inputHash": "aabcb5fdb92bf9921ada0a1fb52b76feec7de67b63aa760537bfd255a419e502",
+        "at": 1792401032428,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "b0513fa9-f127-4902-933a-dba7c649f208",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50076456",
+          "name": "child.txt",
+          "relativePath": "folder/child.txt",
+          "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+          "revision": {
+            "size": 13,
+            "inode": "50076456",
+            "device": "16777232",
+            "changedNs": "1792401029909465290",
+            "modifiedNs": "1792401029909465290",
+            "hash": "d55aaee3c0e9f08da97ff9a1265bd4728cf6920cf9a2e8ca187d132c3f149db2"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "2ae8ecd338b752d387a4359b983597c82bb3bcd99fdb7466673769af0ec89563",
+        "currentFrame": true,
+        "after": "2ae8ecd338b752d387a4359b983597c82bb3bcd99fdb7466673769af0ec89563",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "b0513fa9-f127-4902-933a-dba7c649f208",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "e4c589715c497624d5da06915882186f4c0e5dde46cb91b89e35f84a6c0263cd",
+        "at": 1792401032438,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "b0513fa9-f127-4902-933a-dba7c649f208",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076456",
+            "name": "child.txt",
+            "relativePath": "folder/child.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+            "revision": {
+              "size": 13,
+              "inode": "50076456",
+              "device": "16777232",
+              "changedNs": "1792401029909465290",
+              "modifiedNs": "1792401029909465290",
+              "hash": "d55aaee3c0e9f08da97ff9a1265bd4728cf6920cf9a2e8ca187d132c3f149db2"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Q2hpbGQgc291cmNlCg=="
+        },
+        "before": "1a51f31e3b40a3ec77aa6de3e8199a5111e981c121ccd10203f1537573833780",
+        "currentFrame": true,
+        "after": "1a51f31e3b40a3ec77aa6de3e8199a5111e981c121ccd10203f1537573833780",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "b0513fa9-f127-4902-933a-dba7c649f208",
+            "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+            "generation": 1
+          }
+        ],
+        "inputHash": "e4c589715c497624d5da06915882186f4c0e5dde46cb91b89e35f84a6c0263cd",
+        "at": 1792401032448,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "document": {
+            "ref": {
+              "id": "b0513fa9-f127-4902-933a-dba7c649f208",
+              "lease": "fc186bff-92db-49b8-a24c-b6fb2168d0d2",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:50076456",
+            "name": "child.txt",
+            "relativePath": "folder/child.txt",
+            "absolutePath": "/private/tmp/willyou-keyboard-focus-app-pdQqvG/project/folder/child.txt",
+            "revision": {
+              "size": 13,
+              "inode": "50076456",
+              "device": "16777232",
+              "changedNs": "1792401029909465290",
+              "modifiedNs": "1792401029909465290",
+              "hash": "d55aaee3c0e9f08da97ff9a1265bd4728cf6920cf9a2e8ca187d132c3f149db2"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "base64": "Q2hpbGQgc291cmNlCg=="
+        },
+        "before": "1a51f31e3b40a3ec77aa6de3e8199a5111e981c121ccd10203f1537573833780",
+        "currentFrame": true,
+        "after": "1a51f31e3b40a3ec77aa6de3e8199a5111e981c121ccd10203f1537573833780",
+        "delivered": true
+      }
+    ],
+    "reads": [],
+    "opens": [],
+    "readErrors": [],
+    "saves": []
+  },
+  "rpcRestored": {
+    "files.open": true,
+    "files.read": true,
+    "files.refresh": true,
+    "files.save": true,
+    "files.checkpoint": true
+  },
+  "finishedAt": "2026-10-19T09:10:32.960Z"
+}

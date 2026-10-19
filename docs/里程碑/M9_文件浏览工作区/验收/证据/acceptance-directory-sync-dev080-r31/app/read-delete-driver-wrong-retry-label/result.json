@@ -1,0 +1,331 @@
+{
+  "at": "2026-10-18T13:38:24.786Z",
+  "caseId": "M9-T-B07",
+  "scratch": "/private/tmp/willyou-read-delete-app-vR1ymt",
+  "original": "/private/tmp/willyou-m9-acceptance-batch-r31-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "executable": "/private/tmp/willyou-read-delete-app-vR1ymt/Read Gate WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "e1dd313066893c230c457d1c23d13da1bce00de26dc0beb8c7dd8da3d4acf7d9",
+  "normalAsarSha256": "e1dd313066893c230c457d1c23d13da1bce00de26dc0beb8c7dd8da3d4acf7d9",
+  "brokerSha256": "26f9843f533cc3b0bd4e5d886956eeb5ff767fd0999fae27e509e89bb8053db7",
+  "wrapperSha256": "de8a30f14c7e68724fb6a8a387b137f115775cebc628cde82d39e0cfb0e0077e",
+  "beforeA": {
+    "hash": "86252252c6499253741d9c36a5b98930d001f9b777b854e3381f6ca1485fc2c3",
+    "inode": "46634829",
+    "mtimeNs": "1792330702239976733"
+  },
+  "beforeB": {
+    "hash": "dae32f7426d35daefa0c85eeba876d41e8806f42e995669b2d6fe0b292bfc17c",
+    "inode": "46634830",
+    "mtimeNs": "1792330702240216734"
+  },
+  "boundary": "A: actual packaged tree/tab/editor/retry/menu/close inputs. Private COW App has identical ASAR; exact private B native read is gated before genuine IO, then original reply is forwarded unchanged. Own observed watcher IDs temporarily stopped through original public RPC for deterministic initial read; tree removal uses actual explicit refresh. No data/authorization replacement, model, clipboard or daily resources.",
+  "checks": [
+    {
+      "step": "delete-before-native-read",
+      "waiting": {
+        "atMs": 1792330712167.9192,
+        "pid": 23537,
+        "beforeNativeRead": true
+      },
+      "deletedAt": 1792330712243,
+      "nativeReply": [
+        {
+          "error": {
+            "message": "stat component: No such file or directory",
+            "code": "MISSING"
+          }
+        }
+      ],
+      "pending": {
+        "active": "/private/tmp/willyou-read-delete-app-vR1ymt/project/B.txt",
+        "editors": 0,
+        "content": "正在读取文件…",
+        "errors": [],
+        "rows": [
+          {
+            "path": "/private/tmp/willyou-read-delete-app-vR1ymt/project/A.txt",
+            "tabIndex": -1
+          },
+          {
+            "path": "/private/tmp/willyou-read-delete-app-vR1ymt/project/B.txt",
+            "tabIndex": 0
+          }
+        ]
+      },
+      "failed": {
+        "active": "/private/tmp/willyou-read-delete-app-vR1ymt/project/B.txt",
+        "editors": 0,
+        "content": "[MISSING] stat component: No such file or directory\n\n[MISSING] stat component: No such file or directory\n\n重新读取",
+        "errors": [
+          "[MISSING] stat component: No such file or directory"
+        ],
+        "rows": [
+          {
+            "path": "/private/tmp/willyou-read-delete-app-vR1ymt/project/A.txt",
+            "tabIndex": -1
+          },
+          {
+            "path": "/private/tmp/willyou-read-delete-app-vR1ymt/project/B.txt",
+            "tabIndex": 0
+          }
+        ]
+      }
+    }
+  ],
+  "ownPausedWatchIds": [
+    "d02eeccd-ce0a-4660-812a-ac4a868d6131"
+  ],
+  "status": "failed",
+  "failedStage": "retry-while-missing",
+  "error": "AssertionError [ERR_ASSERTION]: Missing actual file UI control",
+  "failureDom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 read before deletion\n设置\n首页\n›\nM9 read before deletion\n文件\nM9 read before deletion\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 read before deletion\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/18/2026, 9:38:29 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nB.txt\nSynthetic static viewers\n›\nB.txt\n打开\nError invoking remote method 'files.watch': FileError: [UNTRUSTED] 监听引用已失效或不属于当前窗口\n[MISSING] stat component: No such file or directory\n\n[MISSING] stat component: No such file or directory\n\n重新读取\nproject\nA.txt\nB.txt\n0.0 KiB",
+  "nativeEvents": [
+    {
+      "event": "native-returned",
+      "atMs": 1792330711038.976,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23487,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711061.455,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23489,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711220.3699,
+      "operation": "stat",
+      "relativePath": "A.txt",
+      "pid": 23493,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711260.588,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23495,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711332.865,
+      "operation": "read",
+      "relativePath": "A.txt",
+      "pid": 23498,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711364.4668,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23501,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711365.388,
+      "operation": "applications",
+      "relativePath": "A.txt",
+      "pid": 23492,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711402.542,
+      "operation": "applications",
+      "relativePath": "A.txt",
+      "pid": 23499,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711453.086,
+      "operation": "read",
+      "relativePath": "A.txt",
+      "pid": 23504,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711479.931,
+      "operation": "metadata",
+      "relativePath": "A.txt",
+      "pid": 23507,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711488.758,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23506,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711516.844,
+      "operation": "git-status",
+      "relativePath": null,
+      "pid": 23508,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711561.975,
+      "operation": "stat",
+      "relativePath": "A.txt",
+      "pid": 23510,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711644.2139,
+      "operation": "stat",
+      "relativePath": "A.txt",
+      "pid": 23515,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711706.041,
+      "operation": "metadata",
+      "relativePath": "A.txt",
+      "pid": 23517,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711706.223,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23516,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711734.617,
+      "operation": "stat",
+      "relativePath": "A.txt",
+      "pid": 23519,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711818.028,
+      "operation": "stat",
+      "relativePath": "A.txt",
+      "pid": 23522,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711818.8213,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23523,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330711954.2698,
+      "operation": "list",
+      "relativePath": "",
+      "pid": 23528,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330712074.2102,
+      "operation": "stat",
+      "relativePath": "B.txt",
+      "pid": 23532,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330712117.0881,
+      "operation": "git-status",
+      "relativePath": null,
+      "pid": 23534,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330712138.54,
+      "operation": "applications",
+      "relativePath": "B.txt",
+      "pid": 23531,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330712140.0151,
+      "operation": "applications",
+      "relativePath": "A.txt",
+      "pid": 23533,
+      "nativeExit": 0,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "before-native-read",
+      "atMs": 1792330712168.1,
+      "operation": "read",
+      "relativePath": "B.txt",
+      "pid": 23537
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330712258.003,
+      "operation": "applications",
+      "relativePath": "B.txt",
+      "pid": 23540,
+      "nativeExit": 1,
+      "heldBeforeRead": false
+    },
+    {
+      "event": "native-returned",
+      "atMs": 1792330712258.046,
+      "operation": "read",
+      "relativePath": "B.txt",
+      "pid": 23537,
+      "nativeExit": 1,
+      "heldBeforeRead": true
+    }
+  ],
+  "finalA": {
+    "hash": "86252252c6499253741d9c36a5b98930d001f9b777b854e3381f6ca1485fc2c3",
+    "inode": "46634829",
+    "mtimeNs": "1792330702239976733"
+  },
+  "finishedAt": "2026-10-18T13:38:42.551Z"
+}

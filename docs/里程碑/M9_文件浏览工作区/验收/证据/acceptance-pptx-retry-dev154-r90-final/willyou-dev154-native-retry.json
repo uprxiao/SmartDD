@@ -1,0 +1,113 @@
+{
+  "at": "2026-10-19T16:03:24.390Z",
+  "caseId": "M9-T-J04",
+  "rows": [
+    {
+      "scenario": "actual-write-denial/continued-edit/failed-close/explicit-retry",
+      "firstError": "create volume transaction: Permission denied",
+      "writes": [
+        {
+          "denied": true,
+          "before": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+          "after": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+          "input": {
+            "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+            "relativePath": "retry.pptx"
+          },
+          "receipt": {
+            "bufferVersion": 2,
+            "opId": "c2e0db03-e807-4931-b104-f6a97a27f306",
+            "state": "failed",
+            "message": "create volume transaction: Permission denied"
+          }
+        },
+        {
+          "denied": true,
+          "before": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+          "after": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+          "input": {
+            "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+            "relativePath": "retry.pptx"
+          },
+          "receipt": {
+            "bufferVersion": 4,
+            "opId": "45fd7462-09a1-4bc4-ae4f-9c3048fe1dc4",
+            "state": "failed",
+            "message": "create volume transaction: Permission denied"
+          }
+        },
+        {
+          "denied": false,
+          "before": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+          "after": "d81912905cd47040c26ebac575b9ddf33451de87b7e1a58a76ea9ddbed218f60",
+          "input": {
+            "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+            "relativePath": "retry.pptx"
+          },
+          "receipt": {
+            "revision": {
+              "size": 38346,
+              "inode": "50841070",
+              "device": "16777232",
+              "changedNs": "1792425803982869793",
+              "modifiedNs": "1792425803974560000",
+              "hash": "d81912905cd47040c26ebac575b9ddf33451de87b7e1a58a76ea9ddbed218f60"
+            },
+            "bufferVersion": 4,
+            "opId": "cecc119c-7877-46a0-b6df-7835dce65535",
+            "state": "saved",
+            "recoveryId": "cecc119c-7877-46a0-b6df-7835dce65535"
+          }
+        }
+      ],
+      "draftPending": [
+        {
+          "slideId": "256",
+          "text": "latest retained 🙂"
+        }
+      ],
+      "finalHash": "d81912905cd47040c26ebac575b9ddf33451de87b7e1a58a76ea9ddbed218f60",
+      "dirty": false,
+      "closePrepared": true
+    },
+    {
+      "scenario": "flush-validation/retained-raw/failed-close/corrected-save",
+      "error": "图表数据请输入以逗号分隔的非负数值",
+      "draftPending": [
+        {
+          "slideId": "256",
+          "elementId": "7",
+          "text": "1,",
+          "chartValues": true
+        }
+      ],
+      "writes": [
+        {
+          "denied": false,
+          "before": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+          "after": "dff3deb42d10140418eb17f38642de72d9ad5e04b34aa5b914fd5d958ba69482",
+          "input": {
+            "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+            "relativePath": "retry.pptx"
+          },
+          "receipt": {
+            "revision": {
+              "size": 43863,
+              "inode": "50841101",
+              "device": "16777232",
+              "changedNs": "1792425804348885536",
+              "modifiedNs": "1792425804340560000",
+              "hash": "dff3deb42d10140418eb17f38642de72d9ad5e04b34aa5b914fd5d958ba69482"
+            },
+            "bufferVersion": 3,
+            "opId": "6d91895b-ae37-4d11-a42d-9fc4701a5a91",
+            "state": "saved",
+            "recoveryId": "6d91895b-ae37-4d11-a42d-9fc4701a5a91"
+          }
+        }
+      ],
+      "dirty": false,
+      "closePrepared": true
+    }
+  ]
+}

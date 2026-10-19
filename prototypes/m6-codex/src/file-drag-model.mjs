@@ -1,6 +1,7 @@
 import { buildInsertion, sanitizeTerminalText } from './file-reference-model.mjs';
 export const FILE_DRAG_TYPE = 'application/x-willyou-prototype-file';
 let activeDrag = null;
+let cancelledDragToken = null;
 let sequence = 0;
 // Root and file come from the synthetic workspace catalog, never from a browser URL.
 // Production must resolve an opaque root/file identity in main; this is not a real root lease.
@@ -12,18 +13,22 @@ export function absoluteFilePath(rootPath, relativePath) {
   if (!/^(\/|[A-Za-z]:\/)/.test(rootPath) || /^[\/\\]|^[A-Za-z]:/.test(relativePath) || /\\/.test(rootPath + relativePath) || [...rootPath.split('/'), ...relativePath.split('/')].some(p => p === '.' || p === '..')) return { ok: false, error: 'invalid-path' };
   return { ok: true, path: rootPath.replace(/\/+$/, '') + '/' + relativePath };
 }
-export function beginFileDrag({ taskId, rootPath, relativePath }) {
+export function beginFileDrag({ taskId, ptyId = taskId, rootPath, relativePath }) {
+  cancelledDragToken = null;
   const result = absoluteFilePath(rootPath, relativePath);
-  activeDrag = result.ok && taskId ? { token: 'file-drag-' + ++sequence, taskId, path: result.path } : null;
+  activeDrag = result.ok && taskId ? { token: 'file-drag-' + ++sequence, taskId, ptyId, path: result.path } : null;
   return activeDrag ? { ok: true, token: activeDrag.token } : { ok: false, error: result.error || 'no-task' };
 }
-export function resolveFileDrag(token, taskId) {
-  if (!activeDrag || activeDrag.token !== token) return { ok: false, error: 'unknown-drag' };
-  if (activeDrag.taskId !== taskId) return { ok: false, error: 'foreign-task' };
+export function resolveFileDrag(token, taskId, ptyId = taskId) {
+  if (!activeDrag || activeDrag.token !== token) {
+    if (!activeDrag && cancelledDragToken === token) { cancelledDragToken = null; return { ok: false, error: 'cancelled-drag' }; }
+    return { ok: false, error: 'unknown-drag' };
+  }
+  if (activeDrag.taskId !== taskId || activeDrag.ptyId !== ptyId) return { ok: false, error: 'foreign-task' };
   const path = activeDrag.path; activeDrag = null;
   return { ok: true, path };
 }
-export function endFileDrag() { activeDrag = null; }
+export function endFileDrag() { if (activeDrag) cancelledDragToken = activeDrag.token; activeDrag = null; }
 export function buildFilePathInsertion({ path, existingInput = '', ...terminal }) {
   if (typeof path !== 'string' || !/^(\/|[A-Za-z]:\/)/.test(path)) return { ok: false, error: 'invalid-path' };
   // Paths must be rejected, not sanitised into a different file name.

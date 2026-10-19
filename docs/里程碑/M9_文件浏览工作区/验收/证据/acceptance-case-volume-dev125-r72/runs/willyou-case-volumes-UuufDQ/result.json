@@ -1,0 +1,191 @@
+{
+  "at": "2026-10-19T05:18:21.926Z",
+  "scratch": "/private/tmp/willyou-case-volumes-UuufDQ",
+  "sourceApp": "/private/tmp/willyou-m9-acceptance-batch-r72-build/mac-arm64/WillYou.app",
+  "asarSha256": "81fcc9dc55b069070d48e33007a09b2cc461fbf2e3ffaed011ac14198a9ffb99",
+  "status": "failed",
+  "checks": [],
+  "pids": [],
+  "exits": [],
+  "boundary": "A normal packaged App on own real APFS/APFSX; public directory registration only for setup, actual root/tree/tab/input/undo/redo/conflict/Ctrl-S controls. Original IPC delegated unchanged and read-only CM/disk checks. Insensitive host has one A.txt entry; literal a.txt is tested in I, not an invented UI row. No X Windows/Linux/Mac-other-arch, clipboard/model/externalApp/dailydata or Store/editor/DOM-value injection.",
+  "failedStage": "a-light-insensitive:launch",
+  "error": "Error: Error: Error invoking remote method 'projectDirs.add': Error: 该项目已登记此目录：/private/tmp/willyou-case-volumes-UuufDQ/insensitive/a-light-insensitive",
+  "stack": "Error: Error: Error invoking remote method 'projectDirs.add': Error: 该项目已登记此目录：/private/tmp/willyou-case-volumes-UuufDQ/insensitive/a-light-insensitive\n    at evaluate (file:///Users/hx/hx/hxWork/SmartDD/scripts/lib/electron-harness.mjs:61:42)\n    at async prepare (file:///Users/hx/hx/hxWork/SmartDD/scripts/files/case-volume-ui.mjs:26:325)\n    at async openFileAcceptanceApp (file:///Users/hx/hx/hxWork/SmartDD/scripts/files/file-acceptance-ui.mjs:18:13)\n    at async file:///Users/hx/hx/hxWork/SmartDD/scripts/files/case-volume-ui.mjs:26:7",
+  "environment": {
+    "at": "2026-10-19T05:18:19.295Z",
+    "base": "/private/tmp/willyou-case-volumes-UuufDQ",
+    "volumes": [
+      {
+        "kind": "insensitive",
+        "format": "APFS",
+        "sensitive": false,
+        "mount": "/private/tmp/willyou-case-volumes-UuufDQ/insensitive",
+        "image": "/private/tmp/willyou-case-volumes-UuufDQ/insensitive.dmg",
+        "device": "/dev/disk8s1",
+        "mountedDevice": 16777245,
+        "capacityBytes": 67067904,
+        "detached": true,
+        "actualProbe": {
+          "lowerCreate": "EEXIST",
+          "upperInode": "16",
+          "lowerInode": "16",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79"
+        }
+      },
+      {
+        "kind": "sensitive",
+        "format": "Case-sensitive APFS",
+        "sensitive": true,
+        "mount": "/private/tmp/willyou-case-volumes-UuufDQ/sensitive",
+        "image": "/private/tmp/willyou-case-volumes-UuufDQ/sensitive.dmg",
+        "device": "/dev/disk10s1",
+        "mountedDevice": 16777249,
+        "capacityBytes": 67067904,
+        "detached": true,
+        "actualProbe": {
+          "lowerCreate": "created",
+          "upperInode": "16",
+          "lowerInode": "17",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "61413ee5c361db405097a5ead22801f6f5be1a957867c3ae1543ea04ed89c5b3"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "args": [
+          "hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "APFS",
+          "-volname",
+          "WillYou-M05-insensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-case-volumes-UuufDQ/insensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-case-volumes-UuufDQ/insensitive",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-UuufDQ/insensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-case-volumes-UuufDQ/insensitive-attach.plist"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-UuufDQ/insensitive"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "Case-sensitive APFS",
+          "-volname",
+          "WillYou-M05-sensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-case-volumes-UuufDQ/sensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-case-volumes-UuufDQ/sensitive",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-UuufDQ/sensitive.dmg"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-case-volumes-UuufDQ/sensitive-attach.plist"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-case-volumes-UuufDQ/sensitive"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "detach",
+          "/dev/disk10s1"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "hdiutil",
+          "detach",
+          "/dev/disk8s1"
+        ],
+        "code": 0,
+        "stderr": ""
+      }
+    ],
+    "cases": [
+      {
+        "kind": "insensitive",
+        "slot": "a-light-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-case-volumes-UuufDQ/insensitive/a-light-insensitive",
+        "inner": "/private/tmp/willyou-case-volumes-UuufDQ/insensitive/a-light-insensitive/inner",
+        "alias": "/private/tmp/willyou-case-volumes-UuufDQ/insensitive-a-light-insensitive-root-alias"
+      }
+    ],
+    "boundary": "Own two64MiBAPFS/APFSX images only, no user disk formatting/mounting or network. Actual exclusive-create A.txt/a.txt, inode/dev/byte probes decide host semantics; format labels alone are not proof. macOS arm64 I/A only, not X Windows/Linux/Mac x64.",
+    "finishedAt": "2026-10-19T05:18:23.399Z"
+  },
+  "finishedAt": "2026-10-19T05:18:23.399Z"
+}

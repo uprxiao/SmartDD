@@ -1,0 +1,698 @@
+{
+  "at": "2026-10-19T16:55:21.306285+00:00",
+  "localDate": "2026-10-20",
+  "caseId": "M9-T-W27",
+  "status": "passed U/I/A",
+  "revision": "R3.4/R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "electron": "42.11.14"
+  },
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r91-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "arch": "arm64",
+    "system": "macOS",
+    "asarSha256": "a806a86036dfb07ed7d499bfea47201bf0a6002533a2e89e047c1eed41747afa",
+    "brokerSha256": "803d456fd8b8853dde15fef6b543126b995bf56505fba5e6e2e50fe0f73fe0bf",
+    "newBuild": true,
+    "installer": false,
+    "release": false
+  },
+  "sourceSnapshot": {
+    "at": "2026-10-19T16:55:21.129805+00:00",
+    "previousManifest": "/private/tmp/willyou-dev154-source-delta.json",
+    "previousManifestSha256": "fd25d5d40ec1e5c5a507941acdb9ae9c4cb87720f90f07b21cd3e9c628f8bf6b",
+    "fileCount": 1326,
+    "changedFiles": {
+      "docs/真实App自动验收流程.md": "efdf2405c1b41be8ad99de9c7e24042b7faa8581b0cc4e7a93a899b270695198",
+      "src/renderer/features/files/office/pages-preview.tsx": "544bcc6dfd602c06d55bf8a140db9338347977637fe95f2941624037375b3607",
+      "src/renderer/features/files/office/pptx-preview.test.tsx": "5635908bce567a442e826d22e1ca3f785617bb58127fc0c3756926da99f27f7e"
+    },
+    "addedFiles": {
+      "scripts/lib/office-ack-observer.mjs": "9a24cd201acc19300620fc7003e61a1f45b4b52dbf16766dc27cd45e17c1471e",
+      "scripts/files/office-save-ack-ui.mjs": "6c955fa3f79ae19cc9cb501cabd036d334dd7eca9ed695c2d33f0639eb4f42c6",
+      "scripts/files/verify-office-ack.py": "ec455bbe703b6785e5904b25359b1de50a253217d0c35878d98cb196bab57cdb",
+      "src/renderer/features/files/office/save-ack-native-acceptance.test.ts": "134a4ee0c0ef4447032e58160caa70f7def40a7011421aece279c6407c71fb54"
+    },
+    "deltaPath": "/private/tmp/willyou-dev155-source-delta.tar.gz",
+    "deltaSha256": "b0d50f9aaea14cbbe7328a2bc0fec4d156da54b611dbed0fab2ed82c76ec6d7b",
+    "prebuildManifestSha256": "5ddf730050fa8c1f0e69c928c3e80e454d670b75dbd7a5feeec0d17adeba057e",
+    "prebuildArchiveSha256": "ac32c8a3750e79ec1f65a6f7389d23582d2bfcbacd4bd90fef2a7173e4bdadd1",
+    "postBuildDifferences": {
+      "docs/真实App自动验收流程.md": "efdf2405c1b41be8ad99de9c7e24042b7faa8581b0cc4e7a93a899b270695198",
+      "scripts/lib/office-ack-observer.mjs": "9a24cd201acc19300620fc7003e61a1f45b4b52dbf16766dc27cd45e17c1471e",
+      "scripts/files/office-save-ack-ui.mjs": "6c955fa3f79ae19cc9cb501cabd036d334dd7eca9ed695c2d33f0639eb4f42c6",
+      "scripts/files/verify-office-ack.py": "ec455bbe703b6785e5904b25359b1de50a253217d0c35878d98cb196bab57cdb"
+    },
+    "boundary": "Full1326source archive captured before r91build. OneproductionPPTXkeyboard handler, fivecorrespondingUItests, fournewverification sources; reusableCDPguide updated. Postbuild onlythreeexternalverification scripts plusguide changed; allproduction/native/config/dependency/build inputs unchanged, runtime82packaged hash matches. Final7filedelta plusfullprebuildarchive recovers currentinputs."
+  },
+  "results": {
+    "formalPassed": 263,
+    "formalTotal": 419,
+    "unexecuted": 153,
+    "blocked": 3,
+    "appRemaining": 153,
+    "currentCodeTests": 96,
+    "newCodeTests": 7,
+    "existingRegressionCodeTests": 89,
+    "historicalProductionCodeTestUnion": 2277,
+    "appChecks": 4,
+    "genuineNativeSavedReceipts": 12,
+    "heldUnchangedOriginalSavedReceipts": 4,
+    "originalV8OutputsVerified": 72,
+    "trustedFocusedHandledSaveKeys": 12,
+    "originalRpcHandlersRestored": 11,
+    "ownedOfficeThreadsExited": 8,
+    "allOwnedAppRunsGone": 7,
+    "sampledOwnProcessPidsGone": 4,
+    "nativeSmokeChecks": 6,
+    "runtimeFilesVerified": 82,
+    "sourceRecoveryInputs": 1326,
+    "readerDiscriminationControls": 4,
+    "readOnlyCalculationSources": 3,
+    "rawNumericFormulaAndArrayCacheChecks": 14
+  },
+  "defect": {
+    "id": "DEV155-OBS01",
+    "status": "fixed in r91",
+    "fact": "PPTX page keydown returned early for focused textarea/input before any save shortcut, so Meta/CtrlS did not directly save active object or notes. Strict component red4/1 and original r90 actual focused MetaS no-save/falseprevented prove gap. Handler now handles unmodified single-primary S first, preserving focus and using existing buffer.save; composing/repeat/dual-primary/alt/shift/menu/dialog/embed guards and read-only business capability retained. Five new component cases cover object/notes×Meta/Ctrl plus guard matrix. Native/Office save/ack models unchanged.",
+    "prototypeBoundary": "Shared prototype already has root Meta/CtrlS callback; checked existing source, synthetic only. No prototype/UI geometry changes, no new P/V result claimed; W27 requiresU/I/A."
+  },
+  "coverage": {
+    "U": "Focused save test immediately spies on original public buffer.save call, preventing500ms note autosave from masking shortcut absence; real existing buffer path continues. Five new component cases plus current editor/navigation/buffer regressions. Synthetic composition guards are not real systemIME.",
+    "I": "Two actual packagedr91Worker/native FileService/FileBuffer cases: active V1 save once, repeatedflush/timer3500clean no re-write, original genuine V1-held native result delayed only in test IPC adapter, actual diskV1, thenV2pending withstaleoriginalbaseline; releasing exactoldstate leavesV2dirty/baseHash adopts realreceipt; explicitnewsave persistsV2, flush3500clean and exactly3writes each. Real cached calculation fallback because no engine configured in I; no fake success receipt.",
+    "A": "Normalr91, light/dark×XLSXformula/PPTshape text fourfullcases. Original trusted MetaS while input focused, actual native saved and stillfocused/clean, ExcelEnter commit and PPTblur remainclean/noextra write. Second genuineV1 result held after native saved/diskV1, originalcontrol typesV2, exactoldreply release keepsV2dirty/focus/style anddiskV1. ExplicitV2save/reopen correct; exactly3nativewritespercase. Twelvehandledtrustedkeys, fouroriginalgates,72originalV8outputs independentlyhashed/decoded,11RPC/listener restorations, originalwatchframes released unchanged,8retainedOffice threads exited,zero rendererexception,normalApp0/null.",
+    "fidelity": "Independent sourceZIP/XML hashes preserve PPTtarget formatting/otherobjects/notes andallunrelatedparts; XLSX cellstyle/merge/columns/formulas/non-targetvalues/definednames/structure preserve. Onlytargettext, recognizedordinary/shared/arraycachesandcalcflagsnormalized. Native correctly calculated previouslyempty other-sheet caches; foursyntheticforbiddenformula/style/non-targetconstant/definednamechanges are detected. Separate rawXML audit preservesallcalcPrnon-derivedattributes and verifies14numericordinary/shared/arraycaches; all3sourcesidentity/hash/timesunchanged. Not a generalY10orcompleteOfficefidelity pass."
+  },
+  "failureHistory": {
+    "redRefinement": "Initial oldcomponent2red/3green missed notes because500msautomatic save satisfied eventualwait. Tightened immediatebuffer.save spy, strict4red/1guardgreen/18filter-nonselected. Final96allselected0skip; initial results retained as inadequate for note shortcut.",
+    "nativeFixture": "First native39run had38pass/1fixturefailure: imported realPPTX text lives in kindshape, notkindtext. Correct helper selects actual text-bearing element, supported by production beginElementText. No production model change; finaltwoactualnativepass.",
+    "oldApp": "Two r90 negative ownApp runs: focusedobjectMetaSneverdispatchessave and passivekeynotprevented. Originaldriver downstream read-only reopenbranch was refined after firstred but before newApp; that downstreambranch neverexecuted inred. No exactwholefirstred-driver snapshot claim.",
+    "xlsxOracle": "First r91 reached saved/clean focusedXLSX; reader incorrectly demanded rawsheet2hashunchanged. Actualdelta is legitimatecachefill ofordinary/shared/arrayformulas. Added strict structural normalization, fourdiscrimination controls andindependent rawcalcmetadata/cachesaudit, without relaxingformula/style/otherdata guards.",
+    "shortWait": "Next r91 completedXLSX then10sPPTsaveRPCwaitexpired while genuinecheckpoint/edit/save chain queued behind native layout. Raised driver observation tooriginal90squeuebudget; no production timeout/scheduler changes. Passive trusted key distinguishes handled event from eventualnative result.",
+    "inspector": "Two later ownr91runs hit generic main-inspection failure while polling Office results: one afterkey/savequeued, one afterfirstPPTsave whenarmingnext. Root cause not fully proven; not a production failure or approval rejection. Observation now returns lightweightJSON andencodes finaloriginalV8payload rather than frequentdeepobjecttransfer, with explicitinternalerror diagnostics and100mspoll. Finalfull4pass,all72payloadbyteschecked. No business/receipt/Store replacement.",
+    "keyObserver": "Passive record reads finaldefaultPrevented in a zero-delay task aftereventpropagation, not capture-listener microtask; does not prevent/redispatch events or prove physicalIME. Historical negative microtask run not sole proof of oldfailure."
+  },
+  "remaining": "OnlyW27newlypasses; W28full Ctrl/MetaS+close/failure/conflict/readonly matrix, J02/J10/J09 andallother originalscopes remain incomplete until full evidence. Still153unexecuted+3blockedT32/T34/Y29; prior reference/system/platform andDEV139-OBS01/DEV111 retained. No release/merge/tag/push.",
+  "artifacts": {
+    "willyou-office-ack-A-6p89Ya-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-6p89Ya-failure-electron.log",
+      "sha256": "a702407af63329bd09b8da89dcab761c86d78b6be6ea96b7461348df895910be",
+      "bytes": 69852
+    },
+    "willyou-office-ack-A-6p89Ya-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-6p89Ya-failure.png",
+      "sha256": "9c44854bf0a669749adc33bbe6fab90e50d1d6d4d02b9f1968883a5263298fa2",
+      "bytes": 60226
+    },
+    "willyou-office-ack-A-6p89Ya-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-6p89Ya-progress.json",
+      "sha256": "313e7cb837e6e4bca0d28250220cda83dcef4e050302a5bdf596b5ece49bbf81",
+      "bytes": 70
+    },
+    "willyou-office-ack-A-6p89Ya-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-6p89Ya-result.json",
+      "sha256": "593ec35b5cdd721fa8251500796714ddb92948b568f53c1f4a2e3c561341cde0",
+      "bytes": 27806
+    },
+    "willyou-office-ack-A-9ICMSl-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-9ICMSl-failure-electron.log",
+      "sha256": "825658b11ad6d8c18c38e09eabe5217d4978f658154e881ffd10e4f89f7574e4",
+      "bytes": 209658
+    },
+    "willyou-office-ack-A-9ICMSl-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-9ICMSl-failure.png",
+      "sha256": "e2117420018beaab1e227c25d2c5ecb3ff311df6e15a7a3750d43ab757922734",
+      "bytes": 59982
+    },
+    "willyou-office-ack-A-9ICMSl-light-pptx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-9ICMSl-light-pptx-clean-after-commit.png",
+      "sha256": "66ff2135c17f5984be1b8351b66a1c5260d123891b578ea4b5ba18ed2e0a460c",
+      "bytes": 60708
+    },
+    "willyou-office-ack-A-9ICMSl-light-xlsx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-9ICMSl-light-xlsx-clean-after-commit.png",
+      "sha256": "a9d67ecd53e2c04f5a6fc9a5edfa5407f22b869093e32979f89bd2597ef7ff5c",
+      "bytes": 67379
+    },
+    "willyou-office-ack-A-9ICMSl-light-xlsx-old-ack-retains-new.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-9ICMSl-light-xlsx-old-ack-retains-new.png",
+      "sha256": "c1666d3bdb9453a3b5858e4c083cb6e923e1405605c6c07c2cbb11aa22e7dcb4",
+      "bytes": 70048
+    },
+    "willyou-office-ack-A-9ICMSl-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-9ICMSl-progress.json",
+      "sha256": "88731cfffb00a9bbef1bc25f7744645341c4368b7136d75c3d27a32ba67f0993",
+      "bytes": 79
+    },
+    "willyou-office-ack-A-9ICMSl-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-9ICMSl-result.json",
+      "sha256": "c3dafe67898f2dd8ada3da0b05a84e2cf35e08a45bbd5c080c28433967a9d706",
+      "bytes": 142914
+    },
+    "willyou-office-ack-A-AzfSMj-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-AzfSMj-failure-electron.log",
+      "sha256": "af944f2fff7903cd49a5bbc45592b303737646b5a222d76cdfed3328f7e759b5",
+      "bytes": 128010
+    },
+    "willyou-office-ack-A-AzfSMj-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-AzfSMj-failure.png",
+      "sha256": "6bc88fb8e3fd8a34912920c794649676a30766e14816ea13c1ba41507b62d4a9",
+      "bytes": 60709
+    },
+    "willyou-office-ack-A-AzfSMj-light-xlsx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-AzfSMj-light-xlsx-clean-after-commit.png",
+      "sha256": "a9d67ecd53e2c04f5a6fc9a5edfa5407f22b869093e32979f89bd2597ef7ff5c",
+      "bytes": 67379
+    },
+    "willyou-office-ack-A-AzfSMj-light-xlsx-old-ack-retains-new.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-AzfSMj-light-xlsx-old-ack-retains-new.png",
+      "sha256": "c1666d3bdb9453a3b5858e4c083cb6e923e1405605c6c07c2cbb11aa22e7dcb4",
+      "bytes": 70048
+    },
+    "willyou-office-ack-A-AzfSMj-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-AzfSMj-progress.json",
+      "sha256": "8cab214b2d0cf37ad5970064fda2ec921fbd6b0d3239b0c91a935d40216f1e79",
+      "bytes": 70
+    },
+    "willyou-office-ack-A-AzfSMj-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-AzfSMj-result.json",
+      "sha256": "e57116fc0488bd0309a521a6244d35eae210c49b15d330e604951aab34e12b87",
+      "bytes": 169355
+    },
+    "willyou-office-ack-A-VEAbrC-dark-pptx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-dark-pptx-clean-after-commit.png",
+      "sha256": "f9f5ff496be0ff44d096e6c896765b72f6b9a3e16c36377f0219b8d7793e5784",
+      "bytes": 59182
+    },
+    "willyou-office-ack-A-VEAbrC-dark-pptx-old-ack-retains-new.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-dark-pptx-old-ack-retains-new.png",
+      "sha256": "2812e9292effc229ef47e80ed9060f299b49a7d0d77e0e332d364b33fc2e5023",
+      "bytes": 60679
+    },
+    "willyou-office-ack-A-VEAbrC-dark-xlsx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-dark-xlsx-clean-after-commit.png",
+      "sha256": "78d73f781126b1b60c9f4e362e4df7b7e66d51dabcafe1d72a8917fd96a4d666",
+      "bytes": 66369
+    },
+    "willyou-office-ack-A-VEAbrC-dark-xlsx-old-ack-retains-new.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-dark-xlsx-old-ack-retains-new.png",
+      "sha256": "1b7dd93de744403eb55f97592aec8e3500a2751a3629f94f0a25e7723d4301d8",
+      "bytes": 69195
+    },
+    "willyou-office-ack-A-VEAbrC-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-electron.log",
+      "sha256": "ce52bbf4f76feb0ceb9ffebb52d47589b28a7e42d96c0e313c63c335312b8743",
+      "bytes": 170076
+    },
+    "willyou-office-ack-A-VEAbrC-light-pptx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-light-pptx-clean-after-commit.png",
+      "sha256": "66ff2135c17f5984be1b8351b66a1c5260d123891b578ea4b5ba18ed2e0a460c",
+      "bytes": 60708
+    },
+    "willyou-office-ack-A-VEAbrC-light-pptx-old-ack-retains-new.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-light-pptx-old-ack-retains-new.png",
+      "sha256": "91a25b5dbe1ff853f465e62d76a77d1c282d1a322f4d532c3b777d5aa19d226c",
+      "bytes": 62202
+    },
+    "willyou-office-ack-A-VEAbrC-light-xlsx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-light-xlsx-clean-after-commit.png",
+      "sha256": "a9d67ecd53e2c04f5a6fc9a5edfa5407f22b869093e32979f89bd2597ef7ff5c",
+      "bytes": 67379
+    },
+    "willyou-office-ack-A-VEAbrC-light-xlsx-old-ack-retains-new.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-light-xlsx-old-ack-retains-new.png",
+      "sha256": "c1666d3bdb9453a3b5858e4c083cb6e923e1405605c6c07c2cbb11aa22e7dcb4",
+      "bytes": 70048
+    },
+    "willyou-office-ack-A-VEAbrC-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-progress.json",
+      "sha256": "2781136a026f917a37f77c2149d0c9742da46f7d54aedd073bb6444b11b2ae1a",
+      "bytes": 75
+    },
+    "willyou-office-ack-A-VEAbrC-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-VEAbrC-result.json",
+      "sha256": "710124d05215ee855ec153d091b7d429f92e98783284bf88742e765ae2395314",
+      "bytes": 715168
+    },
+    "willyou-office-ack-A-XdwT4p-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-XdwT4p-failure-electron.log",
+      "sha256": "9c5568f3340d7bc2a17b637c7a72fb012a01f35cf3fc9f6f4d294a148603093e",
+      "bytes": 3288
+    },
+    "willyou-office-ack-A-XdwT4p-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-XdwT4p-failure.png",
+      "sha256": "9c44854bf0a669749adc33bbe6fab90e50d1d6d4d02b9f1968883a5263298fa2",
+      "bytes": 60226
+    },
+    "willyou-office-ack-A-XdwT4p-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-XdwT4p-progress.json",
+      "sha256": "a17f7901786856428c25bff51f0305d47355ea964fab3db5a46753dc9e97a158",
+      "bytes": 70
+    },
+    "willyou-office-ack-A-XdwT4p-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-XdwT4p-result.json",
+      "sha256": "dee7c0f3f412a70dd689819a3eeaa8909f2a01d4ae339249dd11777981cb309a",
+      "bytes": 24716
+    },
+    "willyou-office-ack-A-s28zZd-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-s28zZd-failure-electron.log",
+      "sha256": "b445706c903786594307ee919aa9e19aa0a6306bf7a668fd24748ee6a541f829",
+      "bytes": 124464
+    },
+    "willyou-office-ack-A-s28zZd-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-s28zZd-failure.png",
+      "sha256": "e746dcbab5857652749e7caeec0008b1e35d3977466a45ac02ce1101adb8df4c",
+      "bytes": 60702
+    },
+    "willyou-office-ack-A-s28zZd-light-xlsx-clean-after-commit.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-s28zZd-light-xlsx-clean-after-commit.png",
+      "sha256": "a9d67ecd53e2c04f5a6fc9a5edfa5407f22b869093e32979f89bd2597ef7ff5c",
+      "bytes": 67379
+    },
+    "willyou-office-ack-A-s28zZd-light-xlsx-old-ack-retains-new.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-s28zZd-light-xlsx-old-ack-retains-new.png",
+      "sha256": "c1666d3bdb9453a3b5858e4c083cb6e923e1405605c6c07c2cbb11aa22e7dcb4",
+      "bytes": 70048
+    },
+    "willyou-office-ack-A-s28zZd-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-s28zZd-progress.json",
+      "sha256": "ae6c356afa1d6057f9fbe01b682f8bc10256e4658cccc147a67c6d309a497d84",
+      "bytes": 70
+    },
+    "willyou-office-ack-A-s28zZd-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-s28zZd-result.json",
+      "sha256": "ff21f1d97ae96a30f00da58270740d289251f59774cee69b6630f9b093dca79b",
+      "bytes": 165359
+    },
+    "willyou-office-ack-A-zDkUji-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-zDkUji-failure-electron.log",
+      "sha256": "f60b71845f1ce16951cf27afca5c886bbea281a0f28835516c6eee4b5f5685de",
+      "bytes": 19688
+    },
+    "willyou-office-ack-A-zDkUji-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-zDkUji-failure.png",
+      "sha256": "d47971b612406d8afcae999b2fdd58ebf1819138a8692d88bfe81077a2a0dd0d",
+      "bytes": 69445
+    },
+    "willyou-office-ack-A-zDkUji-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-zDkUji-progress.json",
+      "sha256": "30037ae57303c4a639ac4b571541044ff1686bc51e8abad675ebc81bebec68b8",
+      "bytes": 70
+    },
+    "willyou-office-ack-A-zDkUji-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-office-ack-A-zDkUji-result.json",
+      "sha256": "4e59f0cf3988a0edce21908a6b65f7b4773f655a0f4629716417c33e74f89727",
+      "bytes": 41718
+    },
+    "willyou-dev155-calculation-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-calculation-audit.json",
+      "sha256": "aedaa662afe500e743e3cac9894003d609c63632b1a988ff3a586b1cad13d461",
+      "bytes": 3047
+    },
+    "willyou-dev155-cases-before.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-cases-before.json.gz",
+      "sha256": "04a6b1e2776b72d9fd2ae02e02ad3b646a2a87f6001747d38bdb6c58ed86f474",
+      "bytes": 196456,
+      "compression": "gzip",
+      "originalSha256": "0cad1d12f129d67304e21c90996b266ddeef549bc7b3e4a13d5312f3489a626c",
+      "originalBytes": 1066455
+    },
+    "willyou-dev155-code-r91.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-code-r91.json",
+      "sha256": "56bb9d4dc5adbbbff3556d0ca8bf18e28d84b2ab225636fe69b887723f5b4398",
+      "bytes": 39511
+    },
+    "willyou-dev155-code.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-code.json",
+      "sha256": "7b6e44cbf0dc1e058d28a71ce06128d16c1db939a6be413e2a0936ae8a2e2aab",
+      "bytes": 39517
+    },
+    "willyou-dev155-current-driver-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-current-driver-source.json",
+      "sha256": "a24cbded7aa3ced011f4439a899e6fbb81ad7ed7fb9aa9a73b2453f5a90a813d",
+      "bytes": 670
+    },
+    "willyou-dev155-native-ack-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-native-ack-final.json",
+      "sha256": "fca56af2b8411ed4a06c91489fbb07e4c834cfa9eeb74ef8bd517b4aef8418f9",
+      "bytes": 1645
+    },
+    "willyou-dev155-native-ack-r91.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-native-ack-r91.json",
+      "sha256": "14957d7c70c5aab810b95123057bdb12388bae1c2b37ccfadf386bd83914c47a",
+      "bytes": 1645
+    },
+    "willyou-dev155-native-ack.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-native-ack.json",
+      "sha256": "aff880f69091d237ac5c4c9e212708eb3184c15a255e66e0fbed11f9e3522712",
+      "bytes": 862
+    },
+    "willyou-dev155-native-code.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-native-code.json",
+      "sha256": "ce1e55a82bd119bb336476870383568380dc53ced8dad4adf095eede082aa847",
+      "bytes": 17562
+    },
+    "willyou-dev155-navigation-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-navigation-regression.json",
+      "sha256": "8f3b284b3de9dd0af0558b6df30b2a8c12e4e18a86e5fa6b9be109b0439d6ab4",
+      "bytes": 4170
+    },
+    "willyou-dev155-normalized-baseline.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-normalized-baseline.json",
+      "sha256": "63b0222fa5a462c2ea415f228a5e2dd360ab4ab24d0b134a596c49ad30468151",
+      "bytes": 2764
+    },
+    "willyou-dev155-normalized-first-save.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-normalized-first-save.json",
+      "sha256": "2eac74a899b05a9e363912d3c00ea005e979be696dfee641553b51d0087038ed",
+      "bytes": 2753
+    },
+    "willyou-dev155-oracle-controls.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-oracle-controls.json",
+      "sha256": "31cc38a7c5b19277174d186315abe367000de38d27b53b528247f5ebbea380e6",
+      "bytes": 1969
+    },
+    "willyou-dev155-prebuild-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-prebuild-source.json",
+      "sha256": "5ddf730050fa8c1f0e69c928c3e80e454d670b75dbd7a5feeec0d17adeba057e",
+      "bytes": 158652
+    },
+    "willyou-dev155-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-process-audit.json",
+      "sha256": "8a752abbdd6ecc55bf8c2c2a1789ee796d8eaa168d066e34088303f0ce438a9f",
+      "bytes": 1280
+    },
+    "willyou-dev155-process-live.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-process-live.json",
+      "sha256": "1fb5febfa10bd33e0d9368cd6ddc12e8eb7d5a26c15f173dc99e0fa90a5cb619",
+      "bytes": 1333
+    },
+    "willyou-dev155-r91-fast-package-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-r91-fast-package-result.json",
+      "sha256": "cf92cd930b839cf81f0c1ef3c82514f6e3401ee3f30d81f8edaa16edca260966",
+      "bytes": 2540
+    },
+    "willyou-dev155-r91-native-abi-before-fast-package.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-r91-native-abi-before-fast-package.json",
+      "sha256": "84c614bf8a16a881f47a5bfaad18f5534e41e8183a804a5c82b83ec0f7753f44",
+      "bytes": 624
+    },
+    "willyou-dev155-runtime-r91.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-runtime-r91.json",
+      "sha256": "04cf448b1e9cbad00bd70af3f29f1ba6a4d3a6132b09cfe83f46435b7d68983f",
+      "bytes": 13049
+    },
+    "willyou-dev155-shortcut-green-strict.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-green-strict.json",
+      "sha256": "dd1adbe0e9e7f3af74173b3e82e4b9ed0269cc545c469f30abcaf03b4b6b7ea1",
+      "bytes": 10653
+    },
+    "willyou-dev155-shortcut-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-green.json",
+      "sha256": "a43ead9dd9a3365f454b7477c3314e6d5bd03d40e2ba3a81324887273c5c1aca",
+      "bytes": 10647
+    },
+    "willyou-dev155-shortcut-red-strict.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-red-strict.json",
+      "sha256": "60934a18a5b7ab7c631dbde326a4de90744370bd3fa75e7809a20da2c849b69c",
+      "bytes": 11403
+    },
+    "willyou-dev155-shortcut-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-red.json",
+      "sha256": "80cf0bba36ae3706c770a8d8f6550ca64f7d35f56cfb4a4cfad3a15d6e045d2b",
+      "bytes": 31823
+    },
+    "willyou-dev155-source-delta.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-source-delta.json",
+      "sha256": "a2e65ac7d995c5d8bd8bf0d560cfaf8914f164359fc6f6b4371d475b8b31ed39",
+      "bytes": 159550
+    },
+    "willyou-dev155-v8-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-v8-audit.json",
+      "sha256": "f769480f7cc5b66e3a690a9551fd794c86bbeead67bda2e48fb32f275566433f",
+      "bytes": 4139
+    },
+    "willyou-dev155-A-r90-key-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-r90-key-red.log",
+      "sha256": "0949334063f917c47d961d372b841b9cb1f16951d171469456cdaab8a44ca94c",
+      "bytes": 354
+    },
+    "willyou-dev155-A-r90-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-r90-red.log",
+      "sha256": "fd630f7a7ed8bc26eb28d88a768803bb4e7a77f1b9c0ef38780bee319dd3e0c5",
+      "bytes": 339
+    },
+    "willyou-dev155-A-r91-compact-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-r91-compact-final.log",
+      "sha256": "44373390491ec0fa911f9fc8e909d6de85ad00acf88ef6adf3aff555657ee0fc",
+      "bytes": 735
+    },
+    "willyou-dev155-A-r91-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-r91-final.log",
+      "sha256": "9bbdb905e3cb954afd298f421e7f0ae1ccf09bd24cc1e08f771cb97a5f2cfceb",
+      "bytes": 639
+    },
+    "willyou-dev155-A-r91-json-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-r91-json-final.log",
+      "sha256": "e633141b7227265c517aded098cd025712b9b421e91460efa128923769235b26",
+      "bytes": 1278
+    },
+    "willyou-dev155-A-r91-keys-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-r91-keys-final.log",
+      "sha256": "08028c093b8798e1747a7fd2b3f8c2d287024e138421e6c4570964e64c55d41c",
+      "bytes": 643
+    },
+    "willyou-dev155-A-r91.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-r91.log",
+      "sha256": "9c567129788df9d25755d9b76c442b35346024f89161cfac0e26fef911daee37",
+      "bytes": 498
+    },
+    "willyou-dev155-calculation-audit.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-calculation-audit.log",
+      "sha256": "5d58e8280c461e64e81b477fc608767707459f2e3f28b00d310898f6cccef914",
+      "bytes": 123
+    },
+    "willyou-dev155-code-r91.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-code-r91.log",
+      "sha256": "cef209bd640613cf11976b249a466326d5d06b804e270d677d5f1553b58776a9",
+      "bytes": 65
+    },
+    "willyou-dev155-code.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-code.log",
+      "sha256": "9241d96d9031dc2dd0e494834fdccb6887ebac839a40dfd8b23d4ceb4dfd46fc",
+      "bytes": 61
+    },
+    "willyou-dev155-native-code.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-native-code.log",
+      "sha256": "a720f91a6399c50d11f27da6967c14d6043bc9f17b8a2f411d99ea7bd6e81904",
+      "bytes": 68
+    },
+    "willyou-dev155-navigation-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-navigation-regression.log",
+      "sha256": "e21e83952a4867e1897a131eb12a5069508fc42c300309834bb73638308a2bcb",
+      "bytes": 78
+    },
+    "willyou-dev155-oracle-controls.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-oracle-controls.log",
+      "sha256": "ec67326cf84b27883bb0776ab3d462b0efcc7e09707ecac47bdc30d0f77337b6",
+      "bytes": 105
+    },
+    "willyou-dev155-r91-build-driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-r91-build-driver.log",
+      "sha256": "7f273785ce2335cfbf8bd62b59269dd279c85ccac1ad88dd8ba4c5616dd737b3",
+      "bytes": 111
+    },
+    "willyou-dev155-r91-compile.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-r91-compile.log",
+      "sha256": "d85627b41600ee6ec8e7ce01350eeef6c285f781d78632cd9e444e2b87fdc392",
+      "bytes": 16111
+    },
+    "willyou-dev155-r91-native-smoke.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-r91-native-smoke.log",
+      "sha256": "96572e052da16ca4746a35e68beb4ad23bbf960ad662db95c067c626d4137c8b",
+      "bytes": 182
+    },
+    "willyou-dev155-r91-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-r91-package.log",
+      "sha256": "580508f318dd8cc44904dca497eb6337def628bc812dd82519f19fb3183770ee",
+      "bytes": 2729
+    },
+    "willyou-dev155-shortcut-green-strict.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-green-strict.log",
+      "sha256": "d8459b533dec888e0fca672aeafab7df286a02d5c471c6873a11dcd64de0425a",
+      "bytes": 78
+    },
+    "willyou-dev155-shortcut-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-green.log",
+      "sha256": "bfe71c1cbbd8d42f324feb45b6fcb9aea19da57efefa0c8c30e66836eb9eea9a",
+      "bytes": 71
+    },
+    "willyou-dev155-shortcut-red-strict.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-red-strict.log",
+      "sha256": "98cf44755a17dcc6e9646ab2d91fa57c12dc9ae5d367380d2836a0b01542b8f3",
+      "bytes": 76
+    },
+    "willyou-dev155-shortcut-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-shortcut-red.log",
+      "sha256": "9652a4a91e799e58e0a9a471cc0ac908b10f5aa5376084b8c66edd9b6299333d",
+      "bytes": 69
+    },
+    "willyou-dev155-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-dev155-v8-audit.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-v8-audit.log",
+      "sha256": "c51ad7edd7eaaac82e2a93cf993b29348a84d4a125351bc24b483cbd6781427d",
+      "bytes": 46
+    },
+    "willyou-dev155-A-driver-before-json.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-driver-before-json.mjs",
+      "sha256": "0ff8feec7aa62c82a2cd6747c94780b28c59370fb86f34b55e537758d136ccea",
+      "bytes": 14393
+    },
+    "willyou-dev155-A-driver-before-normalize.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-driver-before-normalize.mjs",
+      "sha256": "4e210c13dc6fbc9fbd128d68e5c07f0c9483a32d839ed72c4b1901d55897ee8a",
+      "bytes": 13406
+    },
+    "willyou-dev155-A-driver-full-output.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-driver-full-output.mjs",
+      "sha256": "e27540143ce72faeec119ae6a70b6d0a5f3347703069a58b70ffa124286f389c",
+      "bytes": 14371
+    },
+    "willyou-dev155-A-driver-short-rpc-wait.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-A-driver-short-rpc-wait.mjs",
+      "sha256": "0f940e61108aa830a95e46f73279841ad104a0645bd9f811f910599cfeb4f3d4",
+      "bytes": 13572
+    },
+    "willyou-dev155-ack-observer-before-json.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-ack-observer-before-json.mjs",
+      "sha256": "12cc83e55de447beabf900d32b244cc9074a8fd77dcd5c14b38e1cb4bd20b75b",
+      "bytes": 4593
+    },
+    "willyou-dev155-ack-observer-first.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-ack-observer-first.mjs",
+      "sha256": "46219a85afd5d0fa26d438e4141e49b2aac124b412c57bc52d01467898f4ed3c",
+      "bytes": 3170
+    },
+    "willyou-dev155-ack-observer-full-output.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-ack-observer-full-output.mjs",
+      "sha256": "276cc7b782be30cd9c7645970dde02407527b9055b1cf775b27349cfd937353c",
+      "bytes": 4249
+    },
+    "willyou-dev155-ack-observer-key-microtask.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-ack-observer-key-microtask.mjs",
+      "sha256": "997b4d74f740b7105f7c6d5581a3794eee669ca24550591e9919783579a939a5",
+      "bytes": 4251
+    },
+    "willyou-dev155-r91-fast-package.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-r91-fast-package.mjs",
+      "sha256": "4eea27f19b6894fc19ec2e20374b786ddb1f776be8d336da084e45f030220537",
+      "bytes": 3145
+    },
+    "willyou-dev155-verify-runtime-r91.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-verify-runtime-r91.cjs",
+      "sha256": "79b1485329aebfaa1d562f88e1053934180b3a72e0a662598dc23a1ebceae488",
+      "bytes": 890
+    },
+    "willyou-dev155-verify-v8.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-verify-v8.cjs",
+      "sha256": "ab577ea505a0e2a75373327929dcd789fb418e5b8d7f10e4818912de9fcd2d93",
+      "bytes": 1735
+    },
+    "willyou-dev155-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-archive.py",
+      "sha256": "cf1f63b08d485e59120b0503ac77ba72319326e124ad451883f8f2f7ee826157",
+      "bytes": 14540
+    },
+    "willyou-dev155-calculation-audit.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-calculation-audit.py",
+      "sha256": "b0bf991b901e798e5e87d9100b3b10d70108f921044835e09c68cb07afc14126",
+      "bytes": 2152
+    },
+    "willyou-dev155-oracle-controls.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-oracle-controls.py",
+      "sha256": "90becdb6b6b3cb787cb00475d6191ab5a9c7ec3f42995f4f352ba299871dc633",
+      "bytes": 2733
+    },
+    "willyou-dev155-oracle-first.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-oracle-first.py",
+      "sha256": "cdade1feb7bf20e10278e4dd11b2b9825deca378e8f5914cf98556becd1d5cbe",
+      "bytes": 2192
+    },
+    "willyou-dev155-pages-fixed.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-pages-fixed.tsx",
+      "sha256": "544bcc6dfd602c06d55bf8a140db9338347977637fe95f2941624037375b3607",
+      "bytes": 23781
+    },
+    "willyou-dev155-native-first.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-native-first.test.ts",
+      "sha256": "de17bdc64533135872f3647b207926ac004e78faa2b922a222b183596d1776bd",
+      "bytes": 7670
+    },
+    "before-office-save-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/before-office-save-observer.mjs",
+      "sha256": "2c523b1c1c41a55d6dbf4b7d2e87fe7e6a662b2029f2082971060b4c84c65f4d",
+      "bytes": 3505
+    },
+    "before-pages-preview.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/before-pages-preview.tsx",
+      "sha256": "21314b46fc26c2e504db7bc6149b245919d70fb81bd02c9e8b04fd0d503b7cfd",
+      "bytes": 23317
+    },
+    "before-pptx-preview.test.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/before-pptx-preview.test.tsx",
+      "sha256": "754932112895aef91b2194919ff21be3a8a57d48717c4dc353462cd7e0388d73",
+      "bytes": 30181
+    },
+    "driver-input-pages-preview.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/driver-input-pages-preview.tsx",
+      "sha256": "544bcc6dfd602c06d55bf8a140db9338347977637fe95f2941624037375b3607",
+      "bytes": 23781
+    },
+    "driver-input-office-ack-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/driver-input-office-ack-observer.mjs",
+      "sha256": "276cc7b782be30cd9c7645970dde02407527b9055b1cf775b27349cfd937353c",
+      "bytes": 4249
+    },
+    "driver-input-save-ack-native-acceptance.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/driver-input-save-ack-native-acceptance.test.ts",
+      "sha256": "134a4ee0c0ef4447032e58160caa70f7def40a7011421aece279c6407c71fb54",
+      "bytes": 7673
+    },
+    "driver-input-office-save-ack-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/driver-input-office-save-ack-ui.mjs",
+      "sha256": "e27540143ce72faeec119ae6a70b6d0a5f3347703069a58b70ffa124286f389c",
+      "bytes": 14371
+    },
+    "driver-input-verify-office-ack.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/driver-input-verify-office-ack.py",
+      "sha256": "ec455bbe703b6785e5904b25359b1de50a253217d0c35878d98cb196bab57cdb",
+      "bytes": 3611
+    },
+    "willyou-dev155-source-delta.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-source-delta.tar.gz",
+      "sha256": "b0d50f9aaea14cbbe7328a2bc0fec4d156da54b611dbed0fab2ed82c76ec6d7b",
+      "bytes": 59483
+    },
+    "willyou-dev155-prebuild-source.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-prebuild-source.tar.gz",
+      "sha256": "ac32c8a3750e79ec1f65a6f7389d23582d2bfcbacd4bd90fef2a7173e4bdadd1",
+      "bytes": 12287205
+    },
+    "willyou-dev155-fixtures.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-save-ack-dev155-r91-final/willyou-dev155-fixtures.tar.gz",
+      "sha256": "17e77ff208dca9cd4cb4b43132ce278ac29d1112ae9e1b28f8c42ba37c248a51",
+      "bytes": 320285
+    }
+  },
+  "boundary": "Newr91fullbuild/sixsmokes, current96code, fourfullA,1326sourceprebuild+7delta. Only production change is PPTX page save-key handling; P/native/deps/version unchanged. Original425/419+6 requirements/steps/expected/layerskept; sevenApp runs allknownparentsgone,4sampledPIDs/starttimesgone,notclaimingeverytransientchildsampled. NativeAppJSONoutputfinal72fullyverified; finalnormalexit only, earlierfailedAppsclosecleanup. No model,clipboard,currentCodex,externalapps/services,dailyprofile orlanguage-serverinstall. Allfailuresretained; not allM9complete.",
+  "releasePerformed": false
+}

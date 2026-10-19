@@ -1,0 +1,43 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/content-search-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev096-stream-red.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+stderr | src/renderer/features/files/content-search-acceptance.test.tsx > R05/R06/R12 content dialog→registered RPC→native filesystem > R05 a genuine current-session row delivered after the authoritative native result never duplicates its completed UI rows
+Encountered two children with the same key, `late.txt:1`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx (7 tests | 1 failed) 1186ms
+     ✓ R05 real 99 rows have exact UI/native cap and no101st streamed row 170ms
+     ✓ R05 real 100 rows have exact UI/native cap and no101st streamed row 107ms
+     ✓ R05 real 101 rows have exact UI/native cap and no101st streamed row 105ms
+     ✓ R06 same basenames in unexpanded CJK directories open by click/Enter at exact emoji/BOM/CRLF-aware source range 246ms
+     ✓ R12 native permission issues and outside symlinks are bounded; changed/deleted hits are revalidated instead of locating obsolete bytes  341ms
+     ✓ R12 real files changed/deleted/replaced by an outside symlink after native enumeration are read afresh or reported, never searched through the alias 99ms
+     × R05 a genuine current-session row delivered after the authoritative native result never duplicates its completed UI rows 118ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/content-search-acceptance.test.tsx > R05/R06/R12 content dialog→registered RPC→native filesystem > R05 a genuine current-session row delivered after the authoritative native result never duplicates its completed UI rows
+AssertionError: expected [ <button …(3)>…(2)</button>, …(99) ] to have a length of 99 but got 100
+
+- Expected
++ Received
+
+- 99
++ 100
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx:64:371
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  03:12:06
+   Duration  2.23s (transform 428ms, setup 0ms, import 763ms, tests 1.19s, environment 206ms)
+
+JSON report written to /private/tmp/willyou-dev096-stream-red.json
+ ELIFECYCLE  Test failed. See above for more details.

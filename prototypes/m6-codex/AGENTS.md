@@ -9,6 +9,10 @@
 
 # Prototype Instructions
 
+## M9 visual reference update — 2026-10-17 19:46
+
+- The user supplied a new Codex file-workspace screenshot and explicitly requires identical layout and code highlighting. Use the archived image and evidence limits in `../../docs/里程碑/M9_文件浏览工作区/原型/代码与文件区视觉对照_20261017.md`. Align file tabs with the window title strip, breadcrumb/tool spacing, format icons, line numbers, code typography and individual syntax roles. Keep the production App and prototype consistent. This continues the authorized M9 scope; it does not add a chat UI. Do not claim unverified themes, languages, fonts or states are exact matches.
+
 ## Current R3.4 authorization — 2026-10-17
 
 The user authorized fixing the nine remaining issues. Continue that scope; D01 independent terminal/disk view, D07 local-only and full-path drag stay confirmed. Current results are in `docs/里程碑/M9_文件浏览工作区/九项问题处理结果_R3.4.md`. Prototype fixes and the existing App PTY ownership fix are implemented; complete M9 production delivery and packaged acceptance are not complete. The latest user allows REA/Computer Use research, superseding the old user ban below. The historical Computer Use safety denial for Codex still cannot be bypassed through other tools or copies. Older statements of scope/authorization below describe their historical revision when they conflict with this note.

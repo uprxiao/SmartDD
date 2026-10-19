@@ -72,13 +72,21 @@ try {
   };
   const invoke = (channel, ...args) => evaluate(`window.electronAPI.invoke(${JSON.stringify(channel)}, ...${JSON.stringify(args)})`);
   const click = (selector) => evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
-  const section = () => evaluate(`[...document.querySelectorAll('nav button')].find(b => b.textContent.includes('Skill')).click()`);
+  const section = async () => {
+    await waitFor(`[...document.querySelectorAll('nav button')].some(b => b.textContent.includes('Skill'))`);
+    return evaluate(`[...document.querySelectorAll('nav button')].find(b => b.textContent.includes('Skill')).click()`);
+  };
+  const reload = async () => {
+    const origin = await evaluate('performance.timeOrigin');
+    await cdp('Page.reload');
+    await waitFor(`performance.timeOrigin!==${origin} && Boolean(document.querySelector('[data-testid=nav-settings]'))`);
+  };
   const screenshot = async (name) => { const { data } = await cdp('Page.captureScreenshot', { format: 'png' }); await writeFile(join(scratch, name + '.png'), Buffer.from(data, 'base64')); };
   await waitFor('Boolean(window.electronAPI && document.querySelector("[data-testid=nav-settings]"))');
   const project = await invoke('projects.create', { name: 'M4 UI 验证', aliases: [], description: 'Isolated test project', rulesPath: null }, [{ label: 'SVN fixture', path: join(scratch, 'work') }]);
   const profile = await invoke('aiProfiles.create', { name: 'M4 test runner', runner: 'claude', executable: '/usr/bin/python3', args: [fake], env: [], color: null, isDefault: true });
   // A reload exercises persistence and refreshes the same queries an ordinary app launch uses.
-  await cdp('Page.reload');
+  await reload();
   await waitFor(`Boolean(document.querySelector('[data-project-id="${project.id}"]'))`);
   await click('[data-testid=nav-settings]'); await section();
   await waitFor('Boolean(document.querySelector("[data-testid=capability-discovery]"))');
@@ -132,7 +140,7 @@ try {
   assert.equal(await readFile(join(scratch, 'work', 'unchanged.txt'), 'utf8'), 'working copy sentinel');
   assert.deepEqual(rendererErrors, []); checks.push('No renderer exceptions; original working-copy file unchanged');
   await invoke('appSettings.update', 'general', { language: 'en' });
-  await cdp('Page.reload');
+  await reload();
   await waitFor('Boolean(document.querySelector("[data-testid=nav-settings]"))');
   await click('[data-testid=nav-settings]'); await section();
   await waitFor('document.body.innerText.includes("Skills & MCP")'); await screenshot('english'); checks.push('English capability screen rendered');
@@ -144,6 +152,12 @@ try {
   await writeFile(join(scratch, 'failure.json'), JSON.stringify({ error: String(error), checks }, null, 2));
   console.error(String(error)); console.error(`Artifacts: ${scratch}`); process.exitCode = 1;
 } finally {
-  ws?.close(); child.kill('SIGTERM');
+  ws?.close();
+  if (child.exitCode === null && child.signalCode === null) {
+    const exited = new Promise(resolve => child.once('exit', resolve));
+    child.kill('SIGTERM');
+    await Promise.race([exited, pause(3000)]);
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+  }
   await writeFile(join(scratch, 'electron.log'), childLogs);
 }

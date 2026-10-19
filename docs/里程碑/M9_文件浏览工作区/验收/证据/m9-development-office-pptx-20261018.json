@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-17T20:27:30.142699+00:00",
+  "baseline": "M9 R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "state": "P04/P05/P06 base production integration and save lifecycle; complete PPTX actions and App acceptance unfinished",
+  "requirements": [
+    "R06.10",
+    "R07.1",
+    "R07.2",
+    "R07.4",
+    "R07.5",
+    "R07.6",
+    "R07.9",
+    "R07.10",
+    "R07.11",
+    "R07.16",
+    "R07.18",
+    "R08.7"
+  ],
+  "actionCoverage": [
+    "P04 target slide show/hide without deleting pages",
+    "P05 existing single-body notes including normal rich runs/paragraphs and new notes relationship closure",
+    "P06 local solid background override, unchanged master/theme and retained local effects"
+  ],
+  "implementation": [
+    "retained bounded Worker with original OOXML immutable history",
+    "owner/ref/version checked edits, checkpoint, save, restore and rebase",
+    "WYPPTX1 recovery envelope retains uncommitted notes including composition/invalid XML input",
+    "500ms automatic save, serialized snapshot commits and explicit retry after failure",
+    "native save hash acknowledgement; older receipts cannot clear new input",
+    "source disconnect retains ready local models for checkpoint; document close releases them",
+    "candidate PDF jobs independent of local model; cancellation and superseded renders cannot destroy dirty content",
+    "approved edit/finish, notes, visibility menu, background inspector and undo/redo connected"
+  ],
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-pptx-edit-r1-sources.tar.gz",
+    "sha256": "b43e8268b89d6c8724008eaa42c6269b54162ecf39c58a7a762a469399c8f624",
+    "files": {
+      "src/shared/file-pptx.ts": "54314b8d8ae3362280ce1eb30941184174a92d45b8d53b7903c325f04a93612f",
+      "src/shared/file-office-pages.ts": "a71e82e0b93328271629217df5098776505d9646da39976db7ab55a00566e9fd",
+      "src/main/core/files/office/pptx-document.ts": "fd4e7cdf9f22e8d5f9615db27de3f557df7fc517d55678ef3faa9cd323f9f25f",
+      "src/main/core/files/office/pptx-edit.ts": "92dd621bc8e1945a53e6a24066e75471ecbc3951c1a41dd7cb1dfc84d916393f",
+      "src/main/core/files/office/pptx-text-edit.ts": "1fecd25c9650d0e120550fa5084719c9d9d48761c8054d2fc329e5af03e0951f",
+      "src/main/core/files/office/pptx-draft.ts": "fa1c51d0c71689afc3b315338b7ed850233cec0da4d86876f4af5a75213e9948",
+      "src/main/core/files/office/pptx-parser.ts": "c27146ef1758b7f7a8958e36c066d7342069472f04e89d59ac21836ede2641d8",
+      "src/main/core/files/office/pptx-worker.ts": "269dd064136598069f4680f5a7cab2d1f9f9690da715a1b8c97f62eaad1f3f91",
+      "src/main/core/files/office/pptx-service.ts": "8539d56b9c0e0befd315cc0ac8138bdd023070bea272258ed6336f1432d60f0c",
+      "src/main/core/files/office/pages-model.ts": "6e8b3e2a60f5ff581ed4192753615246475a147e203cfa5163e701b0b4963fca",
+      "src/main/core/files/office/worker-client.ts": "fe0d92481d03e1c6ef8efb7fb9d23ea94fcc028a60423c79c50a1dd3d7560591",
+      "src/main/core/files/file-service.ts": "860c5e202abfd57dac0a308ac16b32eeca02f7f1abcd5a1a33e93f28c2a45b8b",
+      "src/main/core/files/controller.ts": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+      "src/main/index.ts": "fba7e08e4a280626a583d5b88d9e7ecab1253da35c2502eba03bf18da914a05f",
+      "src/renderer/features/files/office/pptx-buffer.ts": "70dd934b63d0777a330669a9beb2c32024b8450d9177c631f2fbb56667722629",
+      "src/renderer/features/files/office/pptx-menu.tsx": "e444fe9f120d1a6a6438dfc3588fb6828b1db83e38d0b980fa8a0e40b422b352",
+      "src/renderer/features/files/office/pages-preview.tsx": "758f171ebc225364fce13d691438ab3c4fee7126c16bb7daf94abbd1d9b94931",
+      "src/renderer/features/files/office/pages-style.css": "bc073cc133415f3ba63e2525b519f2c431a87ad6d9bc10efdeac635ceb65e684",
+      "src/renderer/features/files/office/format-panel.tsx": "ae25f9f57e459b818b56702aafc59eb600aa3973cf3c51f4b02f1db1bd0aebaf",
+      "src/renderer/features/files/file-buffer.ts": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+      "src/renderer/features/files/workspace-panel.tsx": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+      "electron.vite.config.ts": "c9ec511064599d5347e9d0872edad80e5fd3f01b58cd17d50467560ffae609fd"
+    }
+  },
+  "tests": [
+    {
+      "layer": "code regression, RPC/PDF/native mocks where indicated; opt-in native unexecuted",
+      "passed": 232,
+      "skipped": 36,
+      "log": "/private/tmp/willyou-m9-pptx-regression-r1.log",
+      "json": "/private/tmp/willyou-m9-pptx-regression-r1.json"
+    },
+    {
+      "layer": "final Worker failure cleanup and IPC authentication plus existing parser regression",
+      "passed": 15,
+      "log": "/private/tmp/willyou-m9-pptx-lifecycle-r2.log",
+      "json": "/private/tmp/willyou-m9-pptx-lifecycle-r2.json"
+    },
+    {
+      "layer": "actual FileService and compiled Worker, real native test broker and fixed prepared LibreOffice; independent Python ZIP/XML disk read, conflict/rebase/save/reopen",
+      "passed": 1,
+      "skipped": 8,
+      "log": "/private/tmp/willyou-m9-pptx-native-r1.log",
+      "json": "/private/tmp/willyou-m9-pptx-native-r1.json",
+      "savedHash": "d232e8352d85ad9d56a4602768dc9f183263e43412c12b52e508eeef8bdf04e7",
+      "reopenedHash": "82655a32989194fd71633774875c894edf11ea3c1fa090a4a96c106aa47ca2cf",
+      "boundary": "One synthetic rich PPTX; not packaged main process, real App UI, or all OOXML fidelity cases"
+    },
+    {
+      "layer": "typecheck",
+      "state": "passed",
+      "log": "/private/tmp/willyou-m9-pptx-final-r1-typecheck.log"
+    },
+    {
+      "layer": "actual shipped PPTX Worker/native helper/fixed layout plus real source FileService; independent Python ZIP/XML read and unchanged-part hashes",
+      "passed": 1,
+      "skipped": 2,
+      "log": "/private/tmp/willyou-m9-pptx-packaged-r1.log",
+      "json": "/private/tmp/willyou-m9-pptx-packaged-r1.json",
+      "savedHash": "cb4078ad427b0ebf102d6e6e93ee5f781ef04770b925d84218c8637125a25b37",
+      "pdfHash": "723c084156905483d683f2c213628928e2fe34c5b2b5fdbb470e6ad8256b92ed",
+      "pages": 2,
+      "elapsedMs": 2950,
+      "boundary": "Test uses current source FileService harness and bundled Worker/helper/resources; not actual App UI",
+      "testFileSha256": "573488605f0daa06ba02a07c286f075e5be1515eb7586ae25b273f55258064a7"
+    }
+  ],
+  "failuresRetained": [
+    {
+      "log": "/private/tmp/willyou-m9-pptx-core-r1.log",
+      "cause": "Missing-notes test assumed slide2 had a notes relation; fixture corrected to remove actual slide1 relation and verify orphan preservation. Subsequent core 10/10."
+    },
+    {
+      "log": "/private/tmp/willyou-m9-pptx-core-r2-typecheck.log",
+      "cause": "Test helper accepted mutable array instead of readonly plan; corrected."
+    },
+    {
+      "log": "/private/tmp/willyou-m9-pptx-service-r2-typecheck.log",
+      "cause": "Mock save receipt inferred state as general string; constrained literal and typecheck passed."
+    }
+  ],
+  "reviewCorrections": [
+    "Materialization captures original history identity and checks version again after async ZIP compression.",
+    "Reverting keystroke during mutation and new keystroke during save remain pending.",
+    "Unready/error model does not start layout; retry creates a fresh document id.",
+    "Actual native color change/blur reused from workbook control to avoid premature RGB commits."
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-pptx-edit-r1-build/mac-arm64/WillYou.app",
+    "state": "directory build, native smoke and shipped PPTX Worker/native save-render-reopen verification passed; App UI unexecuted",
+    "log": "/private/tmp/willyou-m9-pptx-edit-r1-package.log",
+    "asarSha256": "ef969ebc75e2508697eca651f3650790541d726afc4b616edad2c9fdeab73adb"
+  },
+  "ui": {
+    "state": "blocked",
+    "reason": "CUA explicitly reports Mac locked again at latest retry; no new PPTX actual App UI evidence."
+  },
+  "remaining": [
+    "P01/P02/P03 slide add/duplicate/delete and reference closure",
+    "P07-P15 objects, chart types, text/shape/image/table/transform/layers",
+    "Complex notes fields/soft breaks/shared body parts and multiple body shapes need adapters; currently reject changes while preserving originals",
+    "Signed Office confirmation/fidelity workflow",
+    "Full background inheritance and complex fill projection; only explicit local srgb is shown as known current color",
+    "Full physical IME, focus, themes, pixels, navigation, failure/restart and packaged App matrix"
+  ],
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "unchanged": true
+  },
+  "references": [
+    "https://learn.microsoft.com/en-us/office/open-xml/presentation/working-with-notes-slides",
+    "https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.paragraph?view=openxml-3.0.1"
+  ]
+}

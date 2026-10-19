@@ -1,0 +1,711 @@
+{
+  "id": "M9-DEV-038",
+  "case": "M9-T-F05",
+  "recordedAt": "2026-10-18T02:27:10.298290+00:00",
+  "status": "Shared implementation and U/I regression passed; App light/dark visual acceptance pending. Do not count F05 passed yet.",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "workspace": "Uncommitted shared feature workspace; exact tested source files snapshotted below.",
+  "priorFailure": "m9-dev038-language-coverage-20261018.json",
+  "priorAcceptance": "m9-acceptance-f05-20261018.json",
+  "reference": {
+    "app": "/Applications/ChatGPT.app",
+    "bundleId": "com.openai.codex",
+    "version": "26.1007.71326",
+    "build": "20398",
+    "asarSha256": "2f231a64e6dd30111bcd09e03c149cd06c8679b25914842772423251c4608ded",
+    "access": "Static read-only extraction and TypeScript AST literal parsing; no internal code execution or private implementation redistribution. The older 345 mapping baseline is separately archived; this currently installed reference differs from the original screenshot version.",
+    "registryPath": "docs/里程碑/M9_文件浏览工作区/调研/证据/m9-viewers-source.json",
+    "registrySha256": "66cfcfcf1598a99f3ecb93c42eb9bfcd23ebd51fd9476d84fe84054173a917b5"
+  },
+  "implementation": {
+    "engine": "Public Shiki 3.20.0, JavaScript regex engine. Selected public grammar imports; no downloaded executable scripts run.",
+    "themes": "Public @pierre/theme 2.0.0 Apache-2.0 scope rules adapted independently: omit 3 decorator rules and map observed color facts.",
+    "sharedConsumers": [
+      "actual code editor Worker",
+      "actual Markdown Worker",
+      "actual Notebook Worker",
+      "prototype code Worker",
+      "prototype Markdown/Notebook models"
+    ],
+    "themeRuleCount": 245,
+    "themeTokenColorHashes": {
+      "light": "f35c7b53bfa2a86babdb0dfffa89620728a55c86a63b6ba521a3692de62892bf",
+      "dark": "c6c92a4904eedc328132811ae68e06e28ec508a61976b672b7d8b42394af42cb"
+    },
+    "safety": [
+      "Numeric Uint32 offsets/colors/font bits only across code Worker boundary",
+      "Source UTF-16 slices and non-newline coverage checked before paint",
+      "HTML contains only escaped source and numeric-derived style variables",
+      "Both themes travel with tokens; theme change needs no source reparse",
+      "Existing Worker cancellation/revision guard/15s deadline and 20MiB source/2million token/16384 token-window budgets retained",
+      "Normal font style declarations omitted to reduce bounded Markdown/Notebook markup payloads; payload fallback remains literal source"
+    ]
+  },
+  "coverage": {
+    "filenameEntries": 345,
+    "expectedLanguageIdsMatched": 345,
+    "primaryPlainFallbacks": 0,
+    "filenameForms": 1380,
+    "artifactOverrides": [
+      {
+        "name": "sample.potx",
+        "kind": "archive"
+      },
+      {
+        "name": "sample.wasm",
+        "kind": "binary"
+      }
+    ],
+    "languageIdsActuallyTokenized": 228,
+    "languagesWithColoredTokens": 228,
+    "allSourceRecoveryExact": true,
+    "grammarCanonicalCompared": 214,
+    "grammarCanonicalExact": 213,
+    "realFileReads": 354,
+    "allRealFileBytesInodeMtimeCtimeUnchanged": true
+  },
+  "validation": {
+    "tests": {
+      "model-tests-final.json": {
+        "numTotalTests": 19,
+        "numPassedTests": 19,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "success": true
+      },
+      "registry-r2.json": {
+        "numTotalTests": 6,
+        "numPassedTests": 6,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "success": true
+      }
+    },
+    "prototypeUnit": "35 passed, 0 failed, 0 skipped; raw TAP log retained",
+    "typecheck": "Full pnpm typecheck exit 0, raw log retained",
+    "prototypeBuild": "Vite build exit 0 with static Worker bundle; expected >500KiB chunk warning retained. No App packaged by this agent.",
+    "compiledWorker": "Real worker_thread of Vite production code Worker with Web Worker message adapter: dual-theme tokens, Uint32 transfer, stale revision ignore, source budget and termination passed; not browser/App E2E.",
+    "nativeBroker": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "integrationBoundary": "Real FileService/FileRootsService/FileRecoveryStore/FileBuffer and packaged native broker; direct typed service adapter, not Electron IPC transport or App UI."
+  },
+  "retainedFailures": [
+    {
+      "artifact": "registry-r1.json",
+      "result": "5 passed / 1 failed",
+      "reason": "Exhaustive 1380-name U case completed in 6627ms but exceeded Vitest default 5000ms. Set this test timeout to 30000ms; product deadline unchanged. r2 6/6."
+    },
+    {
+      "artifact": "token-coverage-r1.json",
+      "result": "6 passed / 1 failed",
+      "reason": "Generic lexical probe had no colored Polar token. Added an authored valid Polar rule sample, not a production change. Final all228 have actual colored tokens."
+    },
+    {
+      "artifact": "prototype-build-r1.log",
+      "reason": "pnpm --dir prototype exec vite could not find local prototype bin. Reused installed root Vite executable; build r2/final passed."
+    },
+    {
+      "artifact": "grammar-comparison-3.20.0-original-label.json",
+      "reason": "Initial comparator retained hardcoded package label4.5.0 despite explicit3.20 directory. Corrected label to actual installed package metadata and reran read-only comparison, same213/214 exact."
+    }
+  ],
+  "remainingDifferences": [
+    "Kusto: public3.20 grammar recognizes project-reorder; installed private reference has numeric literal1753900615 in the equivalent keyword alternative. Public correct grammar retained, difference explicitly not called identical.",
+    "Upstream/reference Mermaid grammar tokenizes fenced Mermaid blocks; bare diagram text receives default color. Both probes preserve original source; this grammar behavior is not a supported-compiler/runtime claim.",
+    "345 language IDs and real colored-token probes do not establish every syntax edge case or App pixel parity. Actual new-package code/Markdown/Notebook shallow/deep theme visual checks remain with root.",
+    "Prototype Markdown/Notebook retain their existing synchronous demo-model execution; actual App code/Markdown/Notebook remain in dedicated bounded Workers.",
+    "F28 MCP viewer host remains unimplemented; this highlighter change does not close its stronger R06.18/D05 requirement. F06 still has no user custom mapping facility."
+  ],
+  "sources": [
+    {
+      "path": "NOTICE",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/NOTICE",
+      "bytes": 7075,
+      "sha256": "dcbb65dfff86e1e872f0a15aabeb85742d62481abe84c40966b12ed3c9cd302b"
+    },
+    {
+      "path": "package.json",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/package.json",
+      "bytes": 3987,
+      "sha256": "7d150a632bef37d37461851e20af5ed592fe640efe89892ddca286199daaa960"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/pnpm-lock.yaml",
+      "bytes": 244740,
+      "sha256": "d1ffb8b15de4b3612674257513e9374ec2f39f8f4519b8efc0a9d214d511a7b5"
+    },
+    {
+      "path": "prototypes/m6-codex/src/FileCodeTextarea.jsx",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/prototypes/m6-codex/src/FileCodeTextarea.jsx",
+      "bytes": 3590,
+      "sha256": "7ee9c382463579d50e4647af3a8dca28cd30f795d6addbaeb45a98e33c53249c"
+    },
+    {
+      "path": "prototypes/m6-codex/src/file-code-theme.css",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/prototypes/m6-codex/src/file-code-theme.css",
+      "bytes": 3486,
+      "sha256": "02e9cfce98e3592d7a8c5758fc7d4b02738fe0b01d3d7ac08cd22086b881b126"
+    },
+    {
+      "path": "prototypes/m6-codex/src/file-highlight.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/prototypes/m6-codex/src/file-highlight.mjs",
+      "bytes": 175,
+      "sha256": "c6f5c6171b70dc92ac4aa859e340084dec0a0af72787a54f0b11cda21de69ca3"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/file-markdown-source.test.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/prototypes/m6-codex/tests/file-markdown-source.test.mjs",
+      "bytes": 5635,
+      "sha256": "82af50b09956dbaf24962974196cb7492f9a147d358e79005a81fe115c4c8af2"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/file-notebook-render.test.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/prototypes/m6-codex/tests/file-notebook-render.test.mjs",
+      "bytes": 1977,
+      "sha256": "883bae0ead304ae447e352ef8854f87831fa6563348f9b64a203c21cbfc6deb7"
+    },
+    {
+      "path": "src/renderer/features/files/classification-registry-acceptance.test.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/classification-registry-acceptance.test.ts",
+      "bytes": 14833,
+      "sha256": "eeaa2a2a82f2a7e2ad19d41e028ebe282d05913a53b04b670ff2fad76113e476"
+    },
+    {
+      "path": "src/renderer/features/files/code/editor.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/editor.ts",
+      "bytes": 3390,
+      "sha256": "2c001ffbae64cb3bc49c8e8f179cb3bd4ca83edeb6ef213d6005c5c9c1e08827"
+    },
+    {
+      "path": "src/renderer/features/files/code/engine.d.mts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/engine.d.mts",
+      "bytes": 588,
+      "sha256": "2a6a30a2f18da230d73dc652168e9fa57796bcadbb6b1dc2cdd1c76179b1d311"
+    },
+    {
+      "path": "src/renderer/features/files/code/engine.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/engine.mjs",
+      "bytes": 4975,
+      "sha256": "4eaea4304f0bd125f4aa91b0bb76ab8364fd09bc3c9767e9ab78d792805a8fd4"
+    },
+    {
+      "path": "src/renderer/features/files/code/grammar-coverage.test.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/grammar-coverage.test.ts",
+      "bytes": 3377,
+      "sha256": "50702118c3c142e6a611c2e4e7f64ca379c85c62d2323dc136b122bbea944773"
+    },
+    {
+      "path": "src/renderer/features/files/code/grammars.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/grammars.mjs",
+      "bytes": 13681,
+      "sha256": "705d59e32811784c2f950168cbd4decfb1e561b1e544b71d7158254c81bbda78"
+    },
+    {
+      "path": "src/renderer/features/files/code/languages.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/languages.mjs",
+      "bytes": 6880,
+      "sha256": "24a8173f074dd557aa65845bef15f3824de88a97df81e551264cf80cef934788"
+    },
+    {
+      "path": "src/renderer/features/files/code/model.test.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/model.test.ts",
+      "bytes": 5700,
+      "sha256": "e4755f9892575468ea574e098a17c8fbff06b59551239c0cf359b5b80b3e56b8"
+    },
+    {
+      "path": "src/renderer/features/files/code/model.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/model.ts",
+      "bytes": 235,
+      "sha256": "0d34094321fe176af06ac0e8c41b7194c41e68f9f0ef3026031d85d6e2b9d253"
+    },
+    {
+      "path": "src/renderer/features/files/code/paint.d.mts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/paint.d.mts",
+      "bytes": 111,
+      "sha256": "34a87eccf195169ad1df2ed1de18c49ee1aa689820acbc625efb37484d8b6cda"
+    },
+    {
+      "path": "src/renderer/features/files/code/paint.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/paint.mjs",
+      "bytes": 1375,
+      "sha256": "438dad70288ab6e9e47488635baa1430886e2506b6f29e5eb483c0087dfee467"
+    },
+    {
+      "path": "src/renderer/features/files/code/themes.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/themes.mjs",
+      "bytes": 2288,
+      "sha256": "e212c0e234d07b4a69cf6fc0478803ad6fb1a79240d8077b4a181b647b72794f"
+    },
+    {
+      "path": "src/renderer/features/files/code/token-samples.json",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/token-samples.json",
+      "bytes": 1861,
+      "sha256": "880a1c0f5cbf5745c5d39812b3176802d2164f3a467debcd554a4623cefc5fdf"
+    },
+    {
+      "path": "src/renderer/features/files/code/worker.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/code/worker.ts",
+      "bytes": 808,
+      "sha256": "5a14015ecbef3c6d7dff04b37a759cc28890d6d63347d061e634c00984e3a1d2"
+    },
+    {
+      "path": "src/renderer/features/files/markdown/file-highlight.mjs",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/markdown/file-highlight.mjs",
+      "bytes": 156,
+      "sha256": "f1def99604df01078ddd17989e193e1ee0c9163bdd15f33bec4a329c34a86415"
+    },
+    {
+      "path": "src/renderer/features/files/markdown/worker.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/markdown/worker.ts",
+      "bytes": 961,
+      "sha256": "40fe3c2cf528eb82d59e690fff5207eabdcd00d5cb99eff564183dd458d2bac4"
+    },
+    {
+      "path": "src/renderer/features/files/notebook/model.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/notebook/model.ts",
+      "bytes": 15283,
+      "sha256": "c994a86bb1b85a2822755c2b6a73349168c64c0a22133f220565cb34101e3776"
+    },
+    {
+      "path": "src/renderer/features/files/notebook/worker.ts",
+      "snapshot": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/source/src/renderer/features/files/notebook/worker.ts",
+      "bytes": 1004,
+      "sha256": "4f4fba838b2b3b967a0a3d7d2fe9d3ead75474692d87cbda65f0550af0174b5c"
+    }
+  ],
+  "licenses": [
+    {
+      "path": "licenses/M9/code-highlighting/zwitch@2.0.4__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@pierre__theme@2.0.0__LICENSE.txt",
+      "sha256": "13d92be18d5ceac526f33cc96b6902a14d168f3e1d4b16be738f0fa70da7fe98",
+      "bytes": 10899
+    },
+    {
+      "path": "licenses/M9/code-highlighting/hast-util-to-html@9.0.5__license.txt",
+      "sha256": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+      "bytes": 1094
+    },
+    {
+      "path": "licenses/M9/code-highlighting/unist-util-is@6.0.1__license.txt",
+      "sha256": "82974dbf2639d13edab95c32ed9cb6c0867ede272cd2e07ce47ce8548fe55c05",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/unist-util-stringify-position@4.0.0__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/regex@6.1.0__LICENSE.txt",
+      "sha256": "3d19c2b6246b3072547af2bd05e6b4c09bd3d15955590f1f1e1d20382c919a49",
+      "bytes": 1072
+    },
+    {
+      "path": "licenses/M9/code-highlighting/micromark-util-encode@2.0.1__license.txt",
+      "sha256": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+      "bytes": 1094
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@ungap__structured-clone@1.4.0__LICENSE.txt",
+      "sha256": "dc6d4961d8b6ee747231582ae9c53ce1d66bf76bc9f5a28f554c0e97210953bf",
+      "bytes": 765
+    },
+    {
+      "path": "licenses/M9/code-highlighting/unist-util-position@5.0.0__license.txt",
+      "sha256": "63cb98b3f6abfb3c3592c16f88253c1bdc834087bf52671e8ce5609e4eb693cf",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/micromark-util-sanitize-uri@2.0.1__license.txt",
+      "sha256": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+      "bytes": 1094
+    },
+    {
+      "path": "licenses/M9/code-highlighting/mdast-util-to-hast@13.2.1__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@shikijs__engine-oniguruma@3.20.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/trim-lines@3.0.1__license.txt",
+      "sha256": "9f084fac69d8cf1e6ce983ba5a3499c7695ed74a26ec625c38f0fd19fddd5e10",
+      "bytes": 1106
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@shikijs__core@3.20.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/character-entities-html4@2.1.0__license.txt",
+      "sha256": "63cb98b3f6abfb3c3592c16f88253c1bdc834087bf52671e8ce5609e4eb693cf",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/ccount@2.0.1__license.txt",
+      "sha256": "63cb98b3f6abfb3c3592c16f88253c1bdc834087bf52671e8ce5609e4eb693cf",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/regex-recursion@6.0.2__LICENSE.txt",
+      "sha256": "3d19c2b6246b3072547af2bd05e6b4c09bd3d15955590f1f1e1d20382c919a49",
+      "bytes": 1072
+    },
+    {
+      "path": "licenses/M9/code-highlighting/micromark-util-types@2.0.3__license.txt",
+      "sha256": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+      "bytes": 1094
+    },
+    {
+      "path": "licenses/M9/code-highlighting/html-void-elements@3.0.0__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@types__mdast@4.0.4__LICENSE.txt",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141
+    },
+    {
+      "path": "licenses/M9/code-highlighting/oniguruma-parser@0.12.2__LICENSE.txt",
+      "sha256": "5fe78c91b36c6147ed0b6ab1631ce731165b7dd5e00482be1f027d46d12a8082",
+      "bytes": 1077
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@types__hast@3.0.5__LICENSE.txt",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141
+    },
+    {
+      "path": "licenses/M9/code-highlighting/comma-separated-tokens@2.0.3__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/vfile-message@4.0.3__license.txt",
+      "sha256": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+      "bytes": 1094
+    },
+    {
+      "path": "licenses/M9/code-highlighting/unist-util-visit-parents@6.0.2__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/tm-grammars@1.26.0__NOTICE.txt",
+      "sha256": "90a9a76cf38e419e859051731cbcb86fe616a4b5962403f670035b9fe407c59f",
+      "bytes": 533154
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@shikijs__langs@3.20.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/dequal@2.0.3__license.txt",
+      "sha256": "306fa513e39b23a6e8747520de761809d206b99800ef41907b530226574c59ae",
+      "bytes": 1114
+    },
+    {
+      "path": "licenses/M9/code-highlighting/unist-util-visit@5.1.0__license.txt",
+      "sha256": "63cb98b3f6abfb3c3592c16f88253c1bdc834087bf52671e8ce5609e4eb693cf",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/hast-util-whitespace@3.0.0__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/manifest.json",
+      "sha256": "455dbf465946ad9c851a0f0485167cda16a93e517d0bafcf4e4446c896d6c2c5",
+      "bytes": 18646
+    },
+    {
+      "path": "licenses/M9/code-highlighting/character-entities-legacy@3.0.0__license.txt",
+      "sha256": "63cb98b3f6abfb3c3592c16f88253c1bdc834087bf52671e8ce5609e4eb693cf",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@shikijs__engine-javascript@3.20.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/tm-grammars@1.26.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@shikijs__vscode-textmate@10.0.2__LICENSE.md.txt",
+      "sha256": "b5cb7ff7859e7d282d98fc43ab081b0dda5dc659dc3385cf65740c759a7e6a6c",
+      "bytes": 1083
+    },
+    {
+      "path": "licenses/M9/code-highlighting/property-information@7.2.0__license.txt",
+      "sha256": "5d0698266086f217bb11ea0499d33453e401fe479fb9126ad04e625e63d3557b",
+      "bytes": 1101
+    },
+    {
+      "path": "licenses/M9/code-highlighting/micromark-util-character@2.1.1__license.txt",
+      "sha256": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+      "bytes": 1094
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@types__unist@3.0.3__LICENSE.txt",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141
+    },
+    {
+      "path": "licenses/M9/code-highlighting/shiki@3.20.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/stringify-entities@4.0.4__license.txt",
+      "sha256": "9f084fac69d8cf1e6ce983ba5a3499c7695ed74a26ec625c38f0fd19fddd5e10",
+      "bytes": 1106
+    },
+    {
+      "path": "licenses/M9/code-highlighting/regex-utilities@2.3.0__LICENSE.txt",
+      "sha256": "8ca7af4f6c753e5ab8388e1078d94ce4650723bba4b0d4dfe562fbd45fb4a4e6",
+      "bytes": 1072
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@shikijs__themes@3.20.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/micromark-util-symbol@2.0.1__license.txt",
+      "sha256": "dd1081884a92952802f4803110a6bb543acea9a814c786d58605b4c1219b5ebb",
+      "bytes": 1094
+    },
+    {
+      "path": "licenses/M9/code-highlighting/devlop@1.1.0__license.txt",
+      "sha256": "6f296a5eccc1dc96714bb94ebaa9cac25b0a1467d74cc5263ac4d0646ab01f62",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/space-separated-tokens@2.0.2__license.txt",
+      "sha256": "ca4662cb5d1b738fbe5350c0d5485ba11773b4b7208974082ae6e129a52d631d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/oniguruma-to-es@4.3.6__LICENSE.txt",
+      "sha256": "c1a5a1ebc88f3e0f3caa04c0af52bf8f3a5405a467337a09594ae1ad149cec83",
+      "bytes": 1077
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@shikijs__types@3.20.0__LICENSE.txt",
+      "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee",
+      "bytes": 1121
+    },
+    {
+      "path": "licenses/M9/code-highlighting/vfile@6.0.3__license.txt",
+      "sha256": "05811400116ed61f1a7693b78fe8ca6598c155a12f3978e609db4df648a4cb3d",
+      "bytes": 1099
+    },
+    {
+      "path": "licenses/M9/code-highlighting/@pierre__theme@2.0.0__NOTICE.md.txt",
+      "sha256": "d64db9acda54bde8eb5ca1a679166b9376fc8bd8059967a396a156b3db8a1983",
+      "bytes": 1503
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/model-tests-r1.json",
+      "bytes": 8227,
+      "sha256": "29c615e4fc2efe2364f35b2a6b9bc90f4df303cc49eb4102e641576e8c2d8e03"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/model-tests-r1.log",
+      "bytes": 851,
+      "sha256": "afead38c5c289e3c1652f16d905a985412a83434eec6319e03ce4dfd086ceb13"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/model-tests-final.json",
+      "bytes": 8754,
+      "sha256": "a2ffbf23f2ea94a1fe0134a87ee5cd75399faf7584626887a8e17417212ff387"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/model-tests-final.log",
+      "bytes": 459,
+      "sha256": "f677e58a95d5b7df4f6a665edd06fa519a369a9fd99c83413a48e52d0166501f"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/typecheck-r1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/typecheck-r2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/typecheck-final.log",
+      "bytes": 130,
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/prototype-tests-r1.log",
+      "bytes": 3119,
+      "sha256": "533030e55fe48c8f1f6f5be7a9827ddbfbfa1256ae334a4a90c013052dc1c74a"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/prototype-tests-final.log",
+      "bytes": 3136,
+      "sha256": "668a88e726b962342c6df6431e8f0a8430c707ca6df596ae2825490a63596e03"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/prototype-build-r1.log",
+      "bytes": 76,
+      "sha256": "5b6b87f155faa0d07470b1e53d0416b1d79e3e0b5c19121036f2620296cc165b"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/prototype-build-r2.log",
+      "bytes": 18576,
+      "sha256": "fff75dcb59df1d9b2bee1d535b13f72ed2321e990418ed700235556615c290ef"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/prototype-build-final.log",
+      "bytes": 19285,
+      "sha256": "53e9c72e79c24e3e31b31424a37ba33d433c0832a558375d9b39f6fedc940295"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/registry-r1.json",
+      "bytes": 4951,
+      "sha256": "7f45a64fb9c2ed7e9366b3a2ff5b5489636dcc8e2cd3b0e44705a71f7d48d43f"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/registry-r1.log",
+      "bytes": 369,
+      "sha256": "dca42be3b6c31ed896083b5f7438580cb2b75b6138a0cd43f70a4e33f8607cdb"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/registry-r1-observations.json",
+      "bytes": 795377,
+      "sha256": "3314b99d7e43a3954a4a13e2791c73652a8a4c7defe590bc7c39efeefb14bf1a"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/registry-r2.json",
+      "bytes": 3483,
+      "sha256": "63dca4abb91efcc93c74fbc16d1d4edd6fd3be6cc53d4385e9229106fb51cbaa"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/registry-r2.log",
+      "bytes": 311,
+      "sha256": "72af66fdd1dab69c3410f58c627b4b06ca08fce9974095ee0f85555c814cc840"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/registry-r2-observations.json",
+      "bytes": 795395,
+      "sha256": "6d6faafc7ad2749b9ed99224ac57a2f3d6d6612e6bdc796a12c103a3cb40e286"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/token-coverage-r1.json",
+      "bytes": 5029,
+      "sha256": "d3832bd135bf9ebe70da7fb05052b72f7dcaac6a9b889645a598e6855b282f4a"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/token-coverage-r1.log",
+      "bytes": 757,
+      "sha256": "33c6b2d40ad55dd9596976722906145718022a92197d598ec3f8437b07c3b3d2"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/token-coverage-r2.json",
+      "bytes": 3764,
+      "sha256": "1e8dcf4b559d6f200d6bcb968917d1f8db7b02330310ed3c06f6f037c0241329"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/token-coverage-r2.log",
+      "bytes": 699,
+      "sha256": "0026a230a30e4fc6d38b3c90def23a644f31c1bbc4e7dfb274cfb095b3dc01cd"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/token-coverage-r2-observations.json",
+      "bytes": 253490,
+      "sha256": "a748d6eafdcf9f7b236dea5d5bff27ac407d7768fdcfa4b2e14adaa8947882cd"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/token-coverage-final-observations.json",
+      "bytes": 253490,
+      "sha256": "e373c6bb465c8ad92cce9ece7bfa2c04cad0953ee06d32ee1cb9be3a76a8bee8"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/compiled-worker-probe.mjs",
+      "bytes": 3263,
+      "sha256": "50ebb8ca9116ecbfbad0c0eb0b1ebe4170ebcbb4ca9ee35c3391478a4fe42b94"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/compiled-worker-probe.json",
+      "bytes": 2166,
+      "sha256": "28f9d5f822a95ec9fac1afcb1fd35ac22de1fe2dae99ed92160055e009fdf7a4"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/compare-grammars.cjs",
+      "bytes": 3000,
+      "sha256": "d4c3faa02826db46ae5306cdfcd768c2e5b8fdddbc9975c69fd2676f35771043"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/compare-kusto.cjs",
+      "bytes": 3115,
+      "sha256": "e8b7284b56f95e758ad7df78417a69693ececf16df3c3ec585f96b51bdcc9bf1"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/grammar-comparison-3.20.0-original-label.json",
+      "bytes": 94887,
+      "sha256": "e42378b3afb57924d165f9ace1d3662f9a9a0ffbb389b0da2e3d3131499b4884"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/grammar-comparison-3.20.0.json",
+      "bytes": 95014,
+      "sha256": "f01cb5e3eab12ec6ba4f1b3532ad75a0b3af7cb5c829c13a3686ef732eea1967"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/codex-theme-scope-comparison.json",
+      "bytes": 868,
+      "sha256": "6b780b56b733f54761f98b6695ec8ffe051fae11928cfde257d770515e2aabe9"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/theme-static-comparison.json",
+      "bytes": 3444,
+      "sha256": "4b78146b9d466bddfdb8e5e3ece18caf2a36dcbbd7a5b5ae8b5bfd780a926230"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/shiki-3.20.0-lock.yaml",
+      "bytes": 323781,
+      "sha256": "fe7a6789d381c1da41ada753533535812703745bf24d9e6361431fc860cc703f"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/tm-grammars-1.26.0.json",
+      "bytes": 2011,
+      "sha256": "9d0ba3e7ea0970b5156938b0df594de61d4c3adb4d1052900cff8bd1384e897f"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/product-install.log",
+      "bytes": 886,
+      "sha256": "aa94ac6ff321e107d19ce20e9c29c355c2283ca1ffb2445b327a3cef889b9b3a"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-code-highlighting/reference-assets-manifest.json",
+      "bytes": 5214,
+      "sha256": "58b31b23c365369f28d4ec2060bafb1561dbd408f27784a4369dc92b1c904cf2"
+    }
+  ]
+}

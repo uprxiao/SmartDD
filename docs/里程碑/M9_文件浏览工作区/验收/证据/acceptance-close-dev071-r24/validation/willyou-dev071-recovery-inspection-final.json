@@ -1,0 +1,487 @@
+{
+  "at": "2026-10-18T10:22:16.899Z",
+  "helper": "/private/tmp/willyou-test-file-broker-DgQIfD/willyou-files-test",
+  "helperSha256": "f0306c9dad2f033fbfb7bb829e2daacc17f0ff1844a605f02b939103224c52e9",
+  "nativeSourceSha256": "acee0212c8a6f9aa893acc0a5903678ad77b4f8986e4ac5e0bb03c11cb9c190a",
+  "boundary": "Actual production store/FileService/recovery and real native save/exchange/read; test macro injects swapped IO failure or suspends while an external old-FD writer edits the displaced inode. No fabricated receipt/inspection content. These are I, not UI A.",
+  "rows": [
+    {
+      "mode": "unknown",
+      "receipt": {
+        "recoveryId": "eac49d26-bd39-4195-9a5d-d17a8ad038ca",
+        "bufferVersion": 1,
+        "opId": "eac49d26-bd39-4195-9a5d-d17a8ad038ca",
+        "state": "unknown",
+        "message": "Injected I/O failure"
+      },
+      "beforeAndAfter": {
+        "current": {
+          "text": "Local candidate 中文🙂\n",
+          "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07",
+          "inode": "45861797",
+          "mtimeNs": "1792318934162166000",
+          "ctimeNs": "1792318934170983906"
+        },
+        "displaced": {
+          "text": "Original before save\n",
+          "hash": "4d5975a3416d229b4cecb7f577013076fa8965545980dbf1f3fe8ff5231afe23",
+          "inode": "45861783",
+          "mtimeNs": "1792318933963808191",
+          "ctimeNs": "1792318934170983948"
+        },
+        "materialized": {
+          "text": "Local candidate 中文🙂\n",
+          "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07",
+          "inode": "45861797",
+          "mtimeNs": "1792318934162166000",
+          "ctimeNs": "1792318934170983906"
+        },
+        "draft": {
+          "text": "Local candidate 中文🙂\n",
+          "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07",
+          "inode": "45861794",
+          "mtimeNs": "1792318934148937949",
+          "ctimeNs": "1792318934148937949"
+        },
+        "journal": {
+          "text": "{\"baseRevision\":{\"changedNs\":\"1792318933963808191\",\"device\":\"16777232\",\"hash\":\"4d5975a3416d229b4cecb7f577013076fa8965545980dbf1f3fe8ff5231afe23\",\"inode\":\"45861783\",\"modifiedNs\":\"1792318933963808191\",\"size\":21},\"bufferVersion\":1,\"bytes\":65611,\"candidateHash\":\"4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"45861797\"},\"createdAt\":1792318934142,\"draftHash\":\"4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"45861794\"},\"draftLeaf\":\"draft\",\"exchanged\":true,\"fingerprint\":\"980ec3952e3e56fd784de59bc67489adb0fabb2f14a5e3dd10fb1f1bc67fa55f\",\"materializedLeaf\":\"materialized\",\"opId\":\"eac49d26-bd39-4195-9a5d-d17a8ad038ca\",\"projectKey\":\"395d2e3ed7865b38a59cb54c5f13bee93cec2d554a86956dac9253b46f60f708\",\"receipt\":{\"bufferVersion\":1,\"message\":\"Injected I\\/O failure\",\"opId\":\"eac49d26-bd39-4195-9a5d-d17a8ad038ca\",\"recoveryId\":\"eac49d26-bd39-4195-9a5d-d17a8ad038ca\",\"state\":\"unknown\"},\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"45861792\"},\"relativePath\":\"source.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"45861781\"},\"path\":\"\\/private\\/var\\/folders\\/rt\\/7q3bp7tx7p13zgcpkcfs04080000gn\\/T\\/willyou-recovery-inspect-QUByJl\\/project\",\"sourcePath\":\"\\/private\\/var\\/folders\\/rt\\/7q3bp7tx7p13zgcpkcfs04080000gn\\/T\\/willyou-recovery-inspect-QUByJl\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"root\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"recovery-inspect\"}},\"stagingLeaf\":\"candidate\",\"state\":\"unknown\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"45861781\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"45861795\"},\"transactionLeaf\":\".willyou-recovery-12985d04-aaf8-496a-a8eb-85d50900fd8a-eac49d26-bd39-4195-9a5d-d17a8ad038ca\",\"volumeId\":\"16777232\"}",
+          "hash": "af535026d6beac251ef9926a296c48067be23a6d490e120aa402a409b341f7a3",
+          "inode": "45861801",
+          "mtimeNs": "1792318934171391657",
+          "ctimeNs": "1792318934176126249"
+        }
+      },
+      "inspection": {
+        "item": {
+          "id": "eac49d26-bd39-4195-9a5d-d17a8ad038ca",
+          "projectKey": "395d2e3ed7865b38a59cb54c5f13bee93cec2d554a86956dac9253b46f60f708",
+          "state": "needs-inspection",
+          "relativePath": "source.txt",
+          "source": {
+            "kind": "project-directory",
+            "id": "root",
+            "scope": {
+              "kind": "project",
+              "projectId": "recovery-inspect"
+            }
+          },
+          "createdAt": 1792318934142,
+          "sourceAvailable": true
+        },
+        "state": "unknown",
+        "readOnly": true,
+        "materials": [
+          {
+            "kind": "current",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861797",
+              "device": "16777232",
+              "changedNs": "1792318934170983906",
+              "modifiedNs": "1792318934162166000",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "displaced",
+            "available": true,
+            "revision": {
+              "size": 21,
+              "inode": "45861783",
+              "device": "16777232",
+              "changedNs": "1792318934170983948",
+              "modifiedNs": "1792318933963808191",
+              "hash": "4d5975a3416d229b4cecb7f577013076fa8965545980dbf1f3fe8ff5231afe23"
+            },
+            "preview": "Original before save\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "draft",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861794",
+              "device": "16777232",
+              "changedNs": "1792318934148937949",
+              "modifiedNs": "1792318934148937949",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861797",
+              "device": "16777232",
+              "changedNs": "1792318934170983906",
+              "modifiedNs": "1792318934162166000",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          }
+        ]
+      },
+      "saveCalls": 1,
+      "explicitClosed": true
+    },
+    {
+      "mode": "conflict",
+      "receipt": {
+        "recoveryId": "0edcae10-95c2-44f9-929d-950607d1339d",
+        "bufferVersion": 1,
+        "opId": "0edcae10-95c2-44f9-929d-950607d1339d",
+        "state": "conflict",
+        "message": "Displaced file contains a concurrent external edit"
+      },
+      "beforeAndAfter": {
+        "current": {
+          "text": "Local candidate 中文🙂\n",
+          "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07",
+          "inode": "45861826",
+          "mtimeNs": "1792318934628845000",
+          "ctimeNs": "1792318934637974142"
+        },
+        "displaced": {
+          "text": "External concurrent edit through original FD\n",
+          "hash": "2683991a220b24357d41bc8a6fdb0d66786d303607f793b9019a5f385d8d2172",
+          "inode": "45861810",
+          "mtimeNs": "1792318934638276601",
+          "ctimeNs": "1792318934638276601"
+        },
+        "materialized": {
+          "text": "Local candidate 中文🙂\n",
+          "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07",
+          "inode": "45861826",
+          "mtimeNs": "1792318934628845000",
+          "ctimeNs": "1792318934637974142"
+        },
+        "draft": {
+          "text": "Local candidate 中文🙂\n",
+          "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07",
+          "inode": "45861823",
+          "mtimeNs": "1792318934613216680",
+          "ctimeNs": "1792318934613216680"
+        },
+        "journal": {
+          "text": "{\"baseRevision\":{\"changedNs\":\"1792318934422438828\",\"device\":\"16777232\",\"hash\":\"4d5975a3416d229b4cecb7f577013076fa8965545980dbf1f3fe8ff5231afe23\",\"inode\":\"45861810\",\"modifiedNs\":\"1792318934422438828\",\"size\":21},\"bufferVersion\":1,\"bytes\":65611,\"candidateHash\":\"4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"45861826\"},\"createdAt\":1792318934604,\"draftHash\":\"4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"45861823\"},\"draftLeaf\":\"draft\",\"exchanged\":true,\"fingerprint\":\"fca97543b49f6d014b252c176d4722b1d023c0597bbb166f24e6bbc18647ba32\",\"materializedLeaf\":\"materialized\",\"opId\":\"0edcae10-95c2-44f9-929d-950607d1339d\",\"projectKey\":\"395d2e3ed7865b38a59cb54c5f13bee93cec2d554a86956dac9253b46f60f708\",\"receipt\":{\"bufferVersion\":1,\"message\":\"Displaced file contains a concurrent external edit\",\"opId\":\"0edcae10-95c2-44f9-929d-950607d1339d\",\"recoveryId\":\"0edcae10-95c2-44f9-929d-950607d1339d\",\"state\":\"conflict\"},\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"45861820\"},\"relativePath\":\"source.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"45861808\"},\"path\":\"\\/private\\/var\\/folders\\/rt\\/7q3bp7tx7p13zgcpkcfs04080000gn\\/T\\/willyou-recovery-inspect-DAX5MA\\/project\",\"sourcePath\":\"\\/private\\/var\\/folders\\/rt\\/7q3bp7tx7p13zgcpkcfs04080000gn\\/T\\/willyou-recovery-inspect-DAX5MA\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"root\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"recovery-inspect\"}},\"stagingLeaf\":\"candidate\",\"state\":\"conflict\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"45861808\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"45861824\"},\"transactionLeaf\":\".willyou-recovery-0976fe6b-b0f2-4c66-b238-076d01f443f5-0edcae10-95c2-44f9-929d-950607d1339d\",\"volumeId\":\"16777232\"}",
+          "hash": "78cb6b48529a55d29f48263df8abd5e13e296045a2ad750054e42abca6f965ff",
+          "inode": "45861831",
+          "mtimeNs": "1792318934639069686",
+          "ctimeNs": "1792318934643657194"
+        }
+      },
+      "inspection": {
+        "item": {
+          "id": "0edcae10-95c2-44f9-929d-950607d1339d",
+          "projectKey": "395d2e3ed7865b38a59cb54c5f13bee93cec2d554a86956dac9253b46f60f708",
+          "state": "needs-inspection",
+          "relativePath": "source.txt",
+          "source": {
+            "kind": "project-directory",
+            "id": "root",
+            "scope": {
+              "kind": "project",
+              "projectId": "recovery-inspect"
+            }
+          },
+          "createdAt": 1792318934604,
+          "sourceAvailable": true
+        },
+        "state": "conflict",
+        "readOnly": true,
+        "materials": [
+          {
+            "kind": "current",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861826",
+              "device": "16777232",
+              "changedNs": "1792318934637974142",
+              "modifiedNs": "1792318934628845000",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "displaced",
+            "available": true,
+            "revision": {
+              "size": 45,
+              "inode": "45861810",
+              "device": "16777232",
+              "changedNs": "1792318934638276601",
+              "modifiedNs": "1792318934638276601",
+              "hash": "2683991a220b24357d41bc8a6fdb0d66786d303607f793b9019a5f385d8d2172"
+            },
+            "preview": "External concurrent edit through original FD\n",
+            "truncated": false,
+            "changed": true
+          },
+          {
+            "kind": "draft",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861823",
+              "device": "16777232",
+              "changedNs": "1792318934613216680",
+              "modifiedNs": "1792318934613216680",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861826",
+              "device": "16777232",
+              "changedNs": "1792318934637974142",
+              "modifiedNs": "1792318934628845000",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          }
+        ]
+      },
+      "saveCalls": 1,
+      "explicitClosed": true
+    },
+    {
+      "scenario": "parent identity changes after journal validation",
+      "inspection": {
+        "item": {
+          "id": "9a7994ae-5995-4e7b-9532-0a7ca80a3a71",
+          "projectKey": "395d2e3ed7865b38a59cb54c5f13bee93cec2d554a86956dac9253b46f60f708",
+          "state": "saved-history",
+          "relativePath": "source.txt",
+          "source": {
+            "kind": "project-directory",
+            "id": "root",
+            "scope": {
+              "kind": "project",
+              "projectId": "recovery-inspect"
+            }
+          },
+          "createdAt": 1792318935141,
+          "sourceAvailable": true
+        },
+        "state": "saved",
+        "readOnly": true,
+        "materials": [
+          {
+            "kind": "current",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861859",
+              "device": "16777232",
+              "changedNs": "1792318935181758061",
+              "modifiedNs": "1792318935172201000",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "displaced",
+            "available": false,
+            "message": "该版本未通过读取核对，其余恢复材料仍保留"
+          },
+          {
+            "kind": "draft",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861856",
+              "device": "16777232",
+              "changedNs": "1792318935155724347",
+              "modifiedNs": "1792318935155724347",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "available": false,
+            "message": "该版本未通过读取核对，其余恢复材料仍保留"
+          }
+        ]
+      },
+      "originalRetained": true
+    },
+    {
+      "scenario": "source removed; private material retained without ambient source access",
+      "inspection": {
+        "item": {
+          "id": "26d7139f-bdcc-44ed-97f4-593c28a74e37",
+          "projectKey": "395d2e3ed7865b38a59cb54c5f13bee93cec2d554a86956dac9253b46f60f708",
+          "state": "needs-inspection",
+          "relativePath": "source.txt",
+          "source": {
+            "kind": "project-directory",
+            "id": "root",
+            "scope": {
+              "kind": "project",
+              "projectId": "recovery-inspect"
+            }
+          },
+          "createdAt": 1792318935575,
+          "sourceAvailable": false,
+          "message": "[STALE_ROOT] 恢复来源已删除或不再属于原项目"
+        },
+        "state": "unknown",
+        "readOnly": true,
+        "materials": [
+          {
+            "kind": "current",
+            "available": false,
+            "message": "原目录或该版本当前不可用，其余恢复材料仍保留"
+          },
+          {
+            "kind": "displaced",
+            "available": false,
+            "message": "原目录或该版本当前不可用，其余恢复材料仍保留"
+          },
+          {
+            "kind": "draft",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861890",
+              "device": "16777232",
+              "changedNs": "1792318935584326387",
+              "modifiedNs": "1792318935584326387",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "available": false,
+            "message": "原目录或该版本当前不可用，其余恢复材料仍保留"
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "owner-scoped cancellation is retryable",
+      "again": {
+        "item": {
+          "id": "36e1fcce-1fe2-4723-9538-92ca73e04211",
+          "projectKey": "395d2e3ed7865b38a59cb54c5f13bee93cec2d554a86956dac9253b46f60f708",
+          "state": "needs-inspection",
+          "relativePath": "source.txt",
+          "source": {
+            "kind": "project-directory",
+            "id": "root",
+            "scope": {
+              "kind": "project",
+              "projectId": "recovery-inspect"
+            }
+          },
+          "createdAt": 1792318935858,
+          "sourceAvailable": true
+        },
+        "state": "unknown",
+        "readOnly": true,
+        "materials": [
+          {
+            "kind": "current",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861927",
+              "device": "16777232",
+              "changedNs": "1792318935887203444",
+              "modifiedNs": "1792318935879134000",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "displaced",
+            "available": true,
+            "revision": {
+              "size": 21,
+              "inode": "45861908",
+              "device": "16777232",
+              "changedNs": "1792318935887203486",
+              "modifiedNs": "1792318935692921504",
+              "hash": "4d5975a3416d229b4cecb7f577013076fa8965545980dbf1f3fe8ff5231afe23"
+            },
+            "preview": "Original before save\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "draft",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861924",
+              "device": "16777232",
+              "changedNs": "1792318935867093782",
+              "modifiedNs": "1792318935867093782",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "available": true,
+            "revision": {
+              "size": 27,
+              "inode": "45861927",
+              "device": "16777232",
+              "changedNs": "1792318935887203444",
+              "modifiedNs": "1792318935879134000",
+              "hash": "4781eb2a6c20de6cf0e9233e5733aa31c018de2120460464009c4121351e4f07"
+            },
+            "preview": "Local candidate 中文🙂\n",
+            "truncated": false,
+            "changed": false
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "bounded UTF-8 prefix plus exact full hash",
+      "bytes": 262149,
+      "previewUnits": 262143,
+      "sha256": "6702ad3eab95fcc86bd8e5b7c6b63e94f6ac8d2c3afbd43128a638c1abd16968"
+    },
+    {
+      "scenario": "opaque schemas reject paths before IO"
+    }
+  ]
+}

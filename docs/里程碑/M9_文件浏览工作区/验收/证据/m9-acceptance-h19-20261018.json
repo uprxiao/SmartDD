@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-H19",
+  "at": "2026-10-18T03:20:00.645518+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requiredLayers": [
+    "U",
+    "I"
+  ],
+  "status": "passed",
+  "formalCasePassed": true,
+  "requirements": [
+    "M9-R07.4",
+    "M9-R07.6",
+    "M9-R07.17"
+  ],
+  "steps": "分别模拟提交前 revision 冲突且无未决恢复记录、交换后 displaced 校验冲突；回读 current 分别等于 candidate 与不同值。",
+  "expected": "只有无未决恢复记录、身份/revision 核对通过的普通提交前冲突，回读等于提交内容才可按主进程权威结果视已存；不同值进入普通手工冲突。提交后恢复冲突即使 current 等于 candidate 仍保留 current/displaced/draft、暂停自动保存，不强制覆盖或误报已保存。",
+  "layers": {
+    "U": {
+      "status": "passed",
+      "coverage": "Production FileBuffer dirty/conflict/recovery gate, actual EditorState edits and 3500ms fake-clock autosave boundary."
+    },
+    "I": {
+      "status": "passed",
+      "chain": "Actual FileBuffer -> FileService -> NativeFileBroker -> macOS filesystem and durable transaction/checkpoint storage. Precommit uses packaged r6 helper; exchange fault uses unchanged broker.mm compiled with existing test suspension flag."
+    }
+  },
+  "actual": {
+    "ordinaryEqual": "Original save() returns false/conflict and retains local/base. A subsequent explicit refresh re-reads exact raw+BOM and authoritative revision, clears ordinary conflict and becomes clean. No synthetic saved receipt or source write; original conflict result is not hidden.",
+    "ordinaryDifferent": "Save and refresh retain local/base plus actual disk alternative; dirty ordinary conflict remains; 3500ms does not save or overwrite source.",
+    "displacedEqual": "Actual atomic exchange then old open fd modification triggers native Displaced conflict while current bytes equal candidate. Current, displaced, materialized and independent draft plus journal retain their exact bytes/inodes/timestamps; buffer remains dirty/recoveryBlocked even after refresh, timers and explicit save/keepLocal attempts.",
+    "displacedDifferent": "After the same actual displaced conflict receipt, an independent atomic rename replaces current path before buffer readback. Current becomes the third writer; displaced and independent draft remain intact. No second source save, automatic rollback or false saved result.",
+    "sourceSaveCounts": {
+      "ordinaryEqual": 0,
+      "ordinaryDifferent": 0,
+      "displacedEqual": 1,
+      "displacedDifferent": 1
+    },
+    "saveRpcCallsEach": 1,
+    "policyInterpretation": "Original wording 只有…才可 is an authorization condition, not a requirement to fabricate immediate success. The conservative explicit-refresh convergence is recorded openly; root independently confirmed this interpretation in the task conversation."
+  },
+  "validation": {
+    "uniqueTests": 4,
+    "passed": 4,
+    "failedUnresolved": 0,
+    "reports": [
+      {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/tests-r2.json",
+        "sha256": "0c39d5a219fbd8def137e1a336b303ff6ff3d1450c1512063eb6a427ffa89442"
+      },
+      {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/tests-r3.json",
+        "sha256": "4b8536e15b930234d27dfcdccff1a7cdb0bfdbc31d059a3e6762007e80f88a41"
+      }
+    ],
+    "reportAccounting": "r2 3 passed/1 fixture assertion failed; r3 targeted previously failing case 1 passed/3 not selected. Four distinct scenarios passed. Filtered scenarios are not counted a second time.",
+    "commands": [
+      "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r6-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_H19_EVIDENCE=/private/tmp/willyou-h19/matrix-r2.json pnpm test src/renderer/features/files/save-conflict-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-h19/tests-r2.json",
+      "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r6-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_H19_EVIDENCE=/private/tmp/willyou-h19/matrix-r3.json pnpm test src/renderer/features/files/save-conflict-acceptance.test.ts --testNamePattern displaced.*false --reporter=json --outputFile=/private/tmp/willyou-h19/tests-r3.json"
+    ],
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+      "exitCode": 0,
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/typecheck-r1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "diffCheckExitCode": 0,
+    "diagnostics": [
+      "r1 test fixture incorrectly expected LF although the production source model correctly preserves the CRLF baseline. Fixed expected candidate bytes to exact CRLF.",
+      "r2 divergent third writer was in-place and correctly changed the linked materialized inode; that was not the independent draft. Changed only the previously failing fixture branch to atomic replacement to model an independent current version, then targeted rerun passed. Original failure retained; no production fix or suppression."
+    ],
+    "necessaryRegression": "No production source changes in this task; did not repeat unrelated existing whole suites."
+  },
+  "environment": {
+    "os": "macOS 26.6.1",
+    "arch": "arm64",
+    "node": "26.5.0",
+    "pnpm": "10.27.0",
+    "r6Package": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/broker-package-r6.json",
+      "sha256": "29b99bbc1039a94d89486fc72d1193c35f89b9315b104d606f4a5df7b6bb03ad"
+    },
+    "postExchangeTestHelper": {
+      "source": "native/files/broker.mm",
+      "sourceSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "testBroker": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-h19-test-broker-1o1B7M/willyou-files-test",
+      "testBrokerSha256": "308e210d35f5b70db2230f70eb69eec6291750d69b620d51283def703898fcc8",
+      "compile": [
+        "xcrun",
+        "clang++",
+        "-std=c++17",
+        "-fobjc-arc",
+        "-O1",
+        "-Wno-deprecated-declarations",
+        "-DWILLYOU_FILE_BROKER_TEST=1",
+        "-framework",
+        "Foundation",
+        "-framework",
+        "AppKit",
+        "-framework",
+        "ImageIO",
+        "-framework",
+        "CoreGraphics",
+        "-framework",
+        "CoreText",
+        "/Users/hx/hx/hxWork/SmartDD/native/files/broker.mm",
+        "-o",
+        "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-h19-test-broker-1o1B7M/willyou-files-test"
+      ],
+      "productionBroker": "/private/tmp/willyou-m9-acceptance-batch-r6-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "productionBrokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "boundary": "Separate helper compiles unchanged production source with existing WILLYOU_FILE_BROKER_TEST suspension hook; no fake saved/conflict response. Precommit cases use actual packaged r6 helper."
+    }
+  },
+  "sourceBaseline": {
+    "manifest": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/source-manifest.json",
+      "sha256": "7d779062b94d449090611e961dde6c5ee3133d1284befc524edaf80f5b617b79"
+    },
+    "archive": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/tested-sources.tar.gz",
+      "sha256": "64f7c663a0e2cb0239b4f22da02ec7962c61875824e72d5c1282092b53700799"
+    },
+    "files": {
+      "src/renderer/features/files/file-buffer.ts": "9387ce199b3cc07d9708da37f38dac9da3ed37687b12cd8e2cf27ff0ba7171e5",
+      "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+      "src/main/core/files/file-service.ts": "a64221c26fb5ce95cea35de83101fec66f520e95286b434a31c6d27c22bf3f7d",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "native/files/broker.mm": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "tsconfig.web.json": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+      "package.json": "6c694c3f932157f0918694b234550a4411cd9ac84b9bde83a0fedb3ec30639a1",
+      "pnpm-lock.yaml": "6eabe2274635bf0939dc67926dcc422589589813dd23dd1a1cca96c259100edb",
+      "src/renderer/features/files/save-conflict-acceptance.test.ts": "02c2f52c0b2e503cea05a610b01bfcf6c60fcd51c9ecd1d88778fbfd01444c13"
+    },
+    "captureBoundary": "Captured after validation; ten relevant core files compared against pre-existing root r6 snapshot. Test-only changes across r2/r3 described explicitly; no claimed separate pre-run snapshot by this subagent."
+  },
+  "artifacts": {
+    "matrix": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/matrix-complete.json",
+      "sha256": "774028d082363deb6e69a787ae086384f71e52a3d4cbab0d941d4aa8b5949a52"
+    },
+    "initialFailures": [
+      {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/tests-r1.json",
+        "sha256": "da39bde514c601e8c4690258de7c397e7527c7e111f1a842e401fb8ef10b0dd4"
+      },
+      {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/tests-r2.json",
+        "sha256": "0c39d5a219fbd8def137e1a336b303ff6ff3d1450c1512063eb6a427ffa89442"
+      }
+    ],
+    "finalTargeted": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-conflict/tests-r3.json",
+      "sha256": "4b8536e15b930234d27dfcdccff1a7cdb0bfdbc31d059a3e6762007e80f88a41"
+    }
+  },
+  "boundaries": [
+    "Original case explicitly requires U+I; no App or prototype gate added. No GUI, user files, external resources or user Git modified.",
+    "Fault injection adds only testStopAt at the existing compiled test-only gate and actual filesystem writer actions. Native receipts, revisions and recovery contents are genuine, not stubbed.",
+    "macOS arm64 only; no Windows/Linux safety claims.",
+    "Current TypeScript plus r6 production helper; post-exchange test helper is a separate source-identical debug-gate build and is not claimed to be the packaged binary."
+  ]
+}

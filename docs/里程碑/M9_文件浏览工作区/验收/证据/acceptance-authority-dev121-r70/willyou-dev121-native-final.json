@@ -1,0 +1,159 @@
+{
+  "at": "2026-10-19T03:33:08.922Z",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r70-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "rows": [
+    {
+      "caseId": "M9-T-M01",
+      "scenario": "task launch snapshot and deleted DB owner",
+      "roots": [
+        {
+          "lease": "c64f8299-c26f-4cc5-857d-d29c9961bad0",
+          "generation": 2,
+          "source": "task-cwd",
+          "sourceId": "task-A",
+          "label": "任务启动目录",
+          "path": "/private/tmp/willyou-authority-native-tl3sD9/project",
+          "canonicalPath": "/private/tmp/willyou-authority-native-tl3sD9/project",
+          "identity": {
+            "inode": "49307605",
+            "device": "16777232"
+          }
+        },
+        {
+          "lease": "88a19c94-5609-479e-a2e4-c3218a7c352b",
+          "generation": 2,
+          "source": "project-directory",
+          "sourceId": "dir-A",
+          "label": "dir-A",
+          "path": "/private/tmp/willyou-authority-native-tl3sD9/foreign",
+          "canonicalPath": "/private/tmp/willyou-authority-native-tl3sD9/foreign",
+          "identity": {
+            "inode": "49307606",
+            "device": "16777232"
+          }
+        }
+      ],
+      "deletedTaskRefRejected": true,
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-M03",
+      "scenario": "invalid path matrix",
+      "attempts": [
+        {
+          "path": "../outside.txt",
+          "error": "需要根内相对路径"
+        },
+        {
+          "path": "safe/../../outside.txt",
+          "error": "需要根内相对路径"
+        },
+        {
+          "path": "./safe/允许 空格 中文🙂.txt",
+          "error": "需要根内相对路径"
+        },
+        {
+          "path": "/private/tmp/willyou-authority-native-Q9W7S8/outside.txt",
+          "error": "需要根内相对路径"
+        },
+        {
+          "path": "//server/share/outside.txt",
+          "error": "需要根内相对路径"
+        },
+        {
+          "path": "safe/\u0000outside.txt",
+          "error": "需要根内相对路径"
+        },
+        {
+          "path": "safe//允许 空格 中文🙂.txt",
+          "error": "[INVALID_INPUT]"
+        },
+        {
+          "path": "file:///private/tmp/willyou-authority-native-Q9W7S8/outside.txt",
+          "error": "[INVALID_INPUT]"
+        }
+      ],
+      "interfaces": [
+        "open",
+        "list"
+      ],
+      "outside": {
+        "sha256": "0618ff5159fac374f7b35bfe43c394503935ba29f81a5a7e326f414e4e6d10db",
+        "inode": "49307651",
+        "mtimeNs": "1792380788569369749",
+        "ctimeNs": "1792380788569369749"
+      },
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-M03",
+      "scenario": "no URL/Windows decoding in POSIX file IPC",
+      "actual": [
+        {
+          "path": "safe/允许 空格 中文🙂.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/safe/允许 空格 中文🙂.txt",
+          "hash": "3c7e16b64e648b1f22b9e187bd5802f918d3ac82c93add908169b27cfb0a18a2"
+        },
+        {
+          "path": "%2e%2e/outside.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/%2e%2e/outside.txt",
+          "hash": "5e7c78dc6601c9804608f9df671c743428834b2cfc3d97c32732c910e48945f5"
+        },
+        {
+          "path": "%2e%2e%2foutside.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/%2e%2e%2foutside.txt",
+          "hash": "536ea97c0a813e5dbcc0702be7b7bedbf55b825e2670a5e20562ffcd86450242"
+        },
+        {
+          "path": "%252e%252e%252foutside.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/%252e%252e%252foutside.txt",
+          "hash": "6e853a090013f7c6381a5914a74216cfa53bf2a260277a11860f943995306fbc"
+        },
+        {
+          "path": "encoded%00.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/encoded%00.txt",
+          "hash": "10f15cf04514c784959d029d69ed6fe1994c8b4cc986bb4f7e9c44e0fb49bf2c"
+        },
+        {
+          "path": "C:/outside.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/C:/outside.txt",
+          "hash": "df18990252ba2bf51b1e0d067b951669fceaa92588f94759bc4be2072fdfef67"
+        },
+        {
+          "path": "C:\\outside.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/C:\\outside.txt",
+          "hash": "0b0a3d2a33676abeebefd8cb541a5c5fe78cfedfd46d95195e76763cc584d486"
+        },
+        {
+          "path": "\\\\server\\share\\outside.txt",
+          "absolutePath": "/private/tmp/willyou-authority-native-cBsYg9/project/\\\\server\\share\\outside.txt",
+          "hash": "77f1fcfa309540d039beb154e2e69b9bd26df69256d6018ba51eebb3ce3af8dc"
+        }
+      ],
+      "outsideUnchanged": true,
+      "windowsPlatformNotTested": true,
+      "pass": true
+    },
+    {
+      "caseIds": [
+        "M9-T-M01",
+        "M9-T-M03"
+      ],
+      "scenario": "forged capabilities/save paths",
+      "legitimateSource": {
+        "sha256": "3c7e16b64e648b1f22b9e187bd5802f918d3ac82c93add908169b27cfb0a18a2",
+        "inode": "49307737",
+        "mtimeNs": "1792380788868798795",
+        "ctimeNs": "1792380788868798795"
+      },
+      "outside": {
+        "sha256": "0618ff5159fac374f7b35bfe43c394503935ba29f81a5a7e326f414e4e6d10db",
+        "inode": "49307735",
+        "mtimeNs": "1792380788868692420",
+        "ctimeNs": "1792380788868692420"
+      },
+      "pass": true
+    }
+  ],
+  "boundary": "I actual SQLite migrations and project/task rows, FileSourceResolver, roots, service, recovery and byte-identical packaged native broker. Electron shell/window imports isolated, no OS reveal/open or real GUI claim. No fake resolver, native reply, auth bypass, credentials or CLI launch."
+}

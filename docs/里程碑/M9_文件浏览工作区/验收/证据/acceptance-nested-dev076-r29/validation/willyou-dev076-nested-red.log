@@ -1,0 +1,108 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/shared/file-root-location.test.ts src/renderer/features/files/nested-root-acceptance.test.ts
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/nested-root-acceptance.test.ts (3 tests | 3 failed) 742ms
+     × A13 displays the longest ancestor, preserves a containing tree, and never confuses /a with /abc 606ms
+     × D21 reuses one dirty buffer/history and rebases identity after save through both nested aliases 91ms
+     × does not override a manual root choice when an earlier file read finishes 44ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/nested-root-acceptance.test.ts > nested local roots > A13 displays the longest ancestor, preserves a containing tree, and never confuses /a with /abc
+AssertionError: expected undefined to match object { root: { …(8) }, …(1) }
+
+- Expected:
+{
+  "relativePath": "x.txt",
+  "root": {
+    "canonicalPath": "/private/tmp/willyou-nested-roots-WTaAQP/a/b",
+    "generation": 1,
+    "identity": {
+      "device": "16777232",
+      "inode": "46259215",
+    },
+    "label": "Inner",
+    "lease": "cfa1b4b4-79e0-43f6-8d5c-e6ec3d8b57ec",
+    "path": "/private/tmp/willyou-nested-roots-WTaAQP/a/b",
+    "source": "project-directory",
+    "sourceId": "4ead64c0-ddcb-4399-87ed-77b557046d5b",
+  },
+}
+
++ Received:
+undefined
+
+ ❯ src/renderer/features/files/nested-root-acceptance.test.ts:54:30
+     52|     const f = await fixture(), [outer, inner, sibling] = f.roots, s = …
+     53|     await s.open(outer, 'b/x.txt', true);
+     54|     expect(s.activeLocation).toMatchObject({ root: inner, relativePath…
+       |                              ^
+     55|     s.selectRoot(sibling); s.activate(s.activeId!); expect(s.treeRoot)…
+     56|     const id = s.activeId; await s.open(sibling, 'y.txt', true); expec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/features/files/nested-root-acceptance.test.ts > nested local roots > D21 reuses one dirty buffer/history and rebases identity after save through both nested aliases
+AssertionError: expected undefined to match object { Object (root, relativePath) }
+
+- Expected:
+{
+  "relativePath": "a.md",
+  "root": {
+    "canonicalPath": "/private/tmp/willyou-nested-roots-KuwEIW/a/b",
+    "generation": 1,
+    "identity": {
+      "device": "16777232",
+      "inode": "46259229",
+    },
+    "label": "Inner",
+    "lease": "6d67f245-7639-4a38-b19f-9c9192a58df6",
+    "path": "/private/tmp/willyou-nested-roots-KuwEIW/a/b",
+    "source": "project-directory",
+    "sourceId": "2dc7d0aa-6f70-48b8-96a1-73cb35566b5d",
+  },
+}
+
++ Received:
+undefined
+
+ ❯ src/renderer/features/files/nested-root-acceptance.test.ts:66:30
+     64|     s.selectRoot(inner); await s.open(inner, 'a.md', true);
+     65|     expect(s.tabs).toHaveLength(1); expect(s.activeId).toBe(id); expec…
+     66|     expect(s.activeLocation).toMatchObject({ root: inner, relativePath…
+       |                              ^
+     67|     expect(await buffer.save()).toBe(true); const savedVersion = buffe…
+     68|     expect(savedIdentity).toBe(`local:${buffer.file.revision.device}:$…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/features/files/nested-root-acceptance.test.ts > nested local roots > does not override a manual root choice when an earlier file read finishes
+AssertionError: expected undefined to be 'x.txt' // Object.is equality
+
+- Expected:
+"x.txt"
+
++ Received:
+undefined
+
+ ❯ src/renderer/features/files/nested-root-acceptance.test.ts:78:90
+     76|     const f = await fixture(), [outer, , sibling] = f.roots, held = f.…
+     77|     await held.entered.promise; f.store.selectRoot(sibling); held.rele…
+     78|     expect(f.store.treeRoot).toBe(sibling); expect(f.store.activeLocat…
+       |                                                                                          ^
+     79|     rows.push({ case: 'manual tree intent', active: f.store.active!.ro…
+     80|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  3 failed | 4 passed (7)
+   Start at  20:19:16
+   Duration  1.47s (transform 407ms, setup 0ms, import 684ms, tests 744ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

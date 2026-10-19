@@ -1,0 +1,55 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/text-size-native-acceptance.test.ts --testNamePattern metadata-to-native-read --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev102-setup-diagnostic.json
+
+[1019/051015.750105:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/051015.887552:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/text-size-native-acceptance.test.ts (21 tests | 2 failed | 19 skipped) 25ms
+     ↓ 'M9-T-K01' undefined
+     ↓ 'M9-T-K01' undefined
+     ↓ 'M9-T-K01' undefined
+     ↓ 'M9-T-K01' undefined
+     ↓ 'M9-T-K01' undefined
+     ↓ 'M9-T-K01' undefined
+     ↓ 'M9-T-K02' undefined
+     ↓ 'M9-T-K02' undefined
+     ↓ 'M9-T-K02' undefined
+     ↓ 'M9-T-K02' undefined
+     ↓ 'M9-T-K02' undefined
+     ↓ 'M9-T-K02' undefined
+     ↓ K01/K02 independent recovered checkpoint 10485759 bytes
+     ↓ K01/K02 independent recovered checkpoint 10485760 bytes
+     ↓ K01/K02 independent recovered checkpoint 10485761 bytes
+     ↓ K01/K02 independent recovered checkpoint 20971519 bytes
+     ↓ K01/K02 independent recovered checkpoint 20971520 bytes
+     ↓ K02 large savedContent still narrows a small recovered draft
+     ↓ K02 over-20MiB editor input remains complete in memory and cannot checkpoint or save a prefix
+     × K08 metadata-to-native-read growth .txt 15ms
+     × K08 metadata-to-native-read growth .md 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/text-size-native-acceptance.test.ts > K01/K02/K08 native source and checkpoint byte boundaries > K08 metadata-to-native-read growth .txt
+ FAIL  src/renderer/features/files/text-size-native-acceptance.test.ts > K01/K02/K08 native source and checkpoint byte boundaries > K08 metadata-to-native-read growth .md
+FileError: [MISSING] resolve root: No such file or directory
+ ❯ Socket.<anonymous> src/main/core/files/native-broker.ts:85:27
+     83|             else if (message.error) {
+     84|               const code = FILE_ERROR_CODES.includes(message.error.cod…
+     85|               failure ??= new FileError(code, String(message.error.mes…
+       |                           ^
+     86|             } else if (Object.hasOwn(message, 'result')) {
+     87|               if (receivedResult) throw new Error('Duplicate result');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 skipped (21)
+   Start at  05:10:15
+   Duration  578ms (transform 337ms, setup 0ms, import 484ms, tests 25ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev102-setup-diagnostic.json
+ ELIFECYCLE  Test failed. See above for more details.

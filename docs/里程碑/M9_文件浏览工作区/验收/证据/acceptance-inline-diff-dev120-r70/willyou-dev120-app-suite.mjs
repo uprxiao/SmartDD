@@ -1,0 +1,4 @@
+import{spawnSync}from'node:child_process';import{openSync,closeSync,writeFileSync}from'node:fs';
+const steps=[['diff','scripts/files/inline-diff-ui.mjs'],['conflict','scripts/files/text-conflict-decisions-ui.mjs'],['math-selection','scripts/files/markdown-math-selection-ui.mjs'],['source','scripts/files/markdown-source-boundary-ui.mjs']];const rows=[];
+for(const[name,script]of steps){const log='/private/tmp/willyou-dev120-app-'+name+'-verified.log',fd=openSync(log,'wx');const r=spawnSync(process.execPath,[script],{env:process.env,stdio:['ignore',fd,fd]});closeSync(fd);rows.push({name,script,log,code:r.status,signal:r.signal,error:r.error?.message});console.log(JSON.stringify(rows.at(-1)));if(r.status!==0){process.exitCode=1;break;}}
+writeFileSync('/private/tmp/willyou-dev120-app-suite.json',JSON.stringify(rows,null,2)+'\n');

@@ -26,7 +26,8 @@ export class PtyAccess {
     }
   }
 
-  private target(event: SenderEvent, value: unknown): Target {
+  /** Shared authorization for controlled context insertion; does not write. */
+  authorize(event: SenderEvent, value: unknown): Target {
     this.requireSender(event);
     const t = value as Partial<Target> | null;
     if (!t || typeof t.taskId !== 'string' || !t.taskId || t.taskId.length > 128 ||
@@ -37,7 +38,7 @@ export class PtyAccess {
 
   input(event: SenderEvent, value: unknown): boolean {
     try {
-      const t = this.target(event, value);
+      const t = this.authorize(event, value);
       const data = (value as { data?: unknown }).data;
       // This is keyboard input, so control keys remain valid. Context insertion
       // has a separate sanitization contract and may not reuse raw input blindly.
@@ -49,7 +50,7 @@ export class PtyAccess {
 
   resize(event: SenderEvent, value: unknown): boolean {
     try {
-      const t = this.target(event, value);
+      const t = this.authorize(event, value);
       const { cols, rows } = value as { cols: number; rows: number };
       if (!Number.isSafeInteger(cols) || !Number.isSafeInteger(rows) || cols < 1 || rows < 1 || cols > 1000 || rows > 1000) return false;
       this.deps.resize(t.ptyId, cols, rows);
@@ -58,7 +59,7 @@ export class PtyAccess {
   }
 
   kill(event: SenderEvent, taskId: string, ptyId: string): void {
-    this.target(event, { taskId, ptyId });
+    this.authorize(event, { taskId, ptyId });
     this.deps.killTask(taskId);
   }
 }

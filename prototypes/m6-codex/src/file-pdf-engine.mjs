@@ -1,10 +1,11 @@
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 // Dedicated native browser workers: no fake-worker fallback and no remote resources.
 let enginePromise = null;
 const live = new Map();
 let serial = 0, created = 0, destroyed = 0;
 export function loadPdfEngine() {
-  return enginePromise ||= Promise.all([import('pdfjs-dist/build/pdf.mjs'), import('pdfjs-dist/build/pdf.worker.min.mjs?url')]).then(([pdfjs, worker]) => {
-    pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
+  return enginePromise ||= import('pdfjs-dist/build/pdf.mjs').then(pdfjs => {
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
     return pdfjs;
   }).catch(error => { enginePromise = null; throw error; });
 }

@@ -1,0 +1,38 @@
+{
+  "reviewer": "area_marker_review",
+  "reviewedAt": "2026-10-18T03:24:50.301024+00:00",
+  "scope": "DEV043 independent read-only review; no test rerun; no GUI operation",
+  "conclusion": "No blocking defect found within reviewed changes after cleanup barrier correction. This is a static review and not a substitute for L16 runtime evidence.",
+  "findings": [
+    {
+      "severity": "resolved",
+      "issue": "Cleanup promises could be replaced so a newer open missed an earlier pending cleanup.",
+      "resolution": "slot.ready chains cleanup after the previous promise; subsequent opens await it; rejection remains fail-closed."
+    }
+  ],
+  "verifiedStructure": [
+    "Bounded session pool reuses only idle slots; fixed proxy has no DIRECT fallback and implicit loopback bypass is disabled before view loads. WebRTC disable_non_proxied_udp complements the required proxy.",
+    "Trusted outer preload bridge is inaccessible from opaque child; child messages require matching source, null origin and JSON-RPC; main bridge also requires sender mainFrame and current source authority.",
+    "Abort and owner/id checks close stale views, prevent late open after close, and separate source lifetime; layout cleanup removes native child and listeners.",
+    "The 15-second initialization deadline persists until actual ui/notifications/initialized.",
+    "Final watchdog checks all framesInSubtree (including opaque OOPIF) with constant 0 and sums their process memory; timeout tears down extension view. No untrusted callback is evaluated by the watchdog.",
+    "Renderer cleanup removes event subscriptions, observers/RAF/timers and closes bridge/native view; retry remains explicit."
+  ],
+  "runtimeEvidenceOwner": "acceptance_l16",
+  "runtimeEvidenceReferenced": "/private/tmp/willyou-dev043-ui-final-r4/result.json",
+  "runtimeBoundary": "Agent inspected report metadata and implementation; did not independently rerun seven native/SDK scenarios or claim packaged App UI acceptance.",
+  "sourceHashes": {
+    "src/main/core/files/mcp/ui-view.ts": "1a55e2085e54ef0007638a1f9b59a1fcbeb17c834198f604ba22589794b45914",
+    "src/main/core/files/mcp/ui-document.ts": "83881a51451c2af35ed854767e99c85e9c9e1c1a109fb55d994d7d4ccff93bce",
+    "src/preload/m9-mcp-ui.ts": "63473825e1cc09bffcb4d43609b1cb7c24f5dbe061c7ce76593aa6152e42f569",
+    "src/renderer/features/files/mcp/apps.tsx": "baec209f945b2b347f3c3937730beb4dff5e2bda983096dc0f76fda59fa6146f",
+    "src/renderer/features/files/mcp/bridge.ts": "0c1fffd88c0487b2913e89a5b416453f1b2f7f1e19204d09f5a85f3c04399d79"
+  },
+  "guardAddendum": {
+    "reviewedAt": "2026-10-18T03:31:20.133469+00:00",
+    "result": "Captured original apply/getters/event methods and composed path before untrusted HTML; fixed file picker methods and guarded file click/label forwarding/file paste. No issue found in those intended guards.",
+    "evidenceOwner": "acceptance_l16",
+    "runtimeEvidence": "/private/tmp/willyou-dev043-ui-input-guard-r2/result.json",
+    "limit": "JS guards are defense in depth, not proof that every system chooser route is unreachable. Main-target CDP chooser interception must not be described as independently verified for OOPIF by this review; no system picker was triggered by reviewer."
+  }
+}

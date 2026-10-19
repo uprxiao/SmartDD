@@ -1,0 +1,77 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/files/symlink-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-b20-native-tests.json
+
+[1018/140751.569207:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/140751.726761:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/files/symlink-acceptance.test.ts (2 tests | 2 failed) 20ms
+     × resolves a contained directory and file alias to one authorized physical document without writing 12ms
+     × disables outside/cyclic entries and rejects direct forged opens/lists without exposing outside bytes 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/files/symlink-acceptance.test.ts > B20 contained and outside symlinks through real native FileService > resolves a contained directory and file alias to one authorized physical document without writing
+ZodError: [
+  {
+    "code": "unrecognized_keys",
+    "keys": [
+      "source",
+      "sourceId",
+      "label",
+      "path",
+      "canonicalPath",
+      "identity"
+    ],
+    "path": [],
+    "message": "Unrecognized keys: \"source\", \"sourceId\", \"label\", \"path\", \"canonicalPath\", \"identity\""
+  }
+]
+ ❯ FileService.list src/main/core/files/file-service.ts:266:39
+    264|
+    265|   async list(owner: string, input: PathRequest): Promise<FileEntry[]> {
+    266|     const request = pathRequestSchema.parse(input); await this.recover…
+       |                                       ^
+    267|     const result = await this.readRequest<{ entries: FileEntry[] }>('l…
+    268|     this.roots.require(owner, request);
+ ❯ src/main/core/files/symlink-acceptance.test.ts:26:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/files/symlink-acceptance.test.ts > B20 contained and outside symlinks through real native FileService > disables outside/cyclic entries and rejects direct forged opens/lists without exposing outside bytes
+ZodError: [
+  {
+    "code": "unrecognized_keys",
+    "keys": [
+      "source",
+      "sourceId",
+      "label",
+      "path",
+      "canonicalPath",
+      "identity"
+    ],
+    "path": [],
+    "message": "Unrecognized keys: \"source\", \"sourceId\", \"label\", \"path\", \"canonicalPath\", \"identity\""
+  }
+]
+ ❯ FileService.list src/main/core/files/file-service.ts:266:39
+    264|
+    265|   async list(owner: string, input: PathRequest): Promise<FileEntry[]> {
+    266|     const request = pathRequestSchema.parse(input); await this.recover…
+       |                                       ^
+    267|     const result = await this.readRequest<{ entries: FileEntry[] }>('l…
+    268|     this.roots.require(owner, request);
+ ❯ src/main/core/files/symlink-acceptance.test.ts:35:181
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  14:07:51
+   Duration  503ms (transform 297ms, setup 0ms, import 406ms, tests 20ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-b20-native-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,255 @@
+{
+  "schema": "m9-acceptance/v1",
+  "caseId": "M9-T-J08",
+  "defect": "M9-DEV-056",
+  "completedAt": "2026-10-18T05:34:29.485441+00:00",
+  "baseline": "R3.4-P1 / R07.12 / R07.4",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad + archived workspace",
+  "status": "passed",
+  "layers": [
+    "U",
+    "I"
+  ],
+  "scopeUnchanged": true,
+  "implementationMapping": "R07.12 explicitly permits equivalent non-CRDT implementation. Append maps to versioned Worker edits; materialize to authoritative OOXML snapshots; subscription to production native watch and snapshot fallback. This does not claim a CRDT protocol.",
+  "defectAndFix": "A transient recovery-checkpoint IO failure had no 1000ms retry. Add exactly one retry for the same draft/version checkpoint; new edits supersede the timer and close/discard/save cancel it. CHANGED/TOO_LARGE/CONFLICT/UNTRUSTED/TIMEOUT and source-write failures never enter this retry. No edit or source-save replay is introduced.",
+  "branches": [
+    {
+      "branch": "checkpoint pre-write IO and lost durable receipt",
+      "result": "At 999ms no retry; at 1000ms same payload is retried once. Independent recovery-envelope decode retains raw input. Source is unchanged until explicit save; exactly one native source write."
+    },
+    {
+      "branch": "append equivalent edit dispatch failure",
+      "result": "Inject first RPC failure before edit; real durable raw pending input retained, model remains version 0, 30s no replay. Explicit retry applies once and writes once."
+    },
+    {
+      "branch": "materialize stale",
+      "result": "Actual packaged Worker receives an obsolete expected version and rejects CHANGED. Model/draft retained, source unchanged, no automatic source retry. Explicit valid-version retry succeeds."
+    },
+    {
+      "branch": "materialize too-large",
+      "result": "TOO_LARGE explicitly injected at parser materialize boundary; valid current draft/model retained, source untouched and no retry loop. Removing the injected failure permits explicit save. This tests error handling, not generating a >40MiB edited workbook."
+    },
+    {
+      "branch": "conflict",
+      "result": "Real external XLSX modification creates a conflict receipt. External bytes, local Worker model and draft are retained; source is not overwritten."
+    },
+    {
+      "branch": "subscription disconnect and revoked source",
+      "result": "Real native subscription receives one injected disconnect callback; production fallback announces poll/resync and broker snapshot detects a real external XLSX change. Explicit renderer refresh retains dirty input and conflict. Lease revocation announces none/source-invalid, retains checkpointable model and releases all watch resources."
+    },
+    {
+      "branch": "permanent failure/close cancellation",
+      "result": "Unit matrix proves bounded IO retry, zero retry for non-IO problems, retained pending input and busy=false. Closing cancels retry. DEV055 packaged real permission test proves source autosave remains paused across 60s and new input, then explicit recovery writes once."
+    }
+  ],
+  "validation": {
+    "red": {
+      "passed": 16,
+      "failed": 2,
+      "log": "willyou-j08-retry-red.log"
+    },
+    "affectedTestsDeduplicated": {
+      "passed": 88
+    },
+    "packagedWorkerAndNative": {
+      "passed": 20,
+      "failed": 0,
+      "report": "willyou-j08-r9-packaged-tests.json"
+    },
+    "typecheck": 0,
+    "package": {
+      "app": "/private/tmp/willyou-m9-acceptance-batch-r9-build/mac-arm64/WillYou.app",
+      "asarSha256": "ac07e16c48b80a0a2041e64850dd78d90ae30e175d60533e58391c06e6b97a07",
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "sourceSnapshot": "willyou-m9-acceptance-batch-r9-sources.tar.gz",
+      "sourceSnapshotSha256": "027667563fdea1944f66c829548996855139bc485fd65b7ba09302d3e04d3e86",
+      "sourceFiles": 833,
+      "snapshotFileChangesAfterBuild": [],
+      "postSnapshotAdditions": [
+        "src/renderer/features/files/tree-failure-native-acceptance.test.tsx (test only)"
+      ],
+      "includedFixes": [
+        "DEV052",
+        "DEV053",
+        "DEV054",
+        "DEV055",
+        "DEV056"
+      ],
+      "typecheckExit": 0,
+      "buildExit": 0,
+      "nativeChecks": {
+        "sqlite": "passed",
+        "pty": "passed",
+        "voiceBridge": "passed",
+        "fileBroker": "passed",
+        "officeRenderer": "passed",
+        "fileWatcher": "passed"
+      },
+      "packagedOfficeTests": 20,
+      "compiledEntryInspection": "willyou-r9-js-inspection.json",
+      "GUIStarted": false
+    }
+  },
+  "retainedFailures": [
+    "First matrix assertions incorrectly looked for host save-error strip inside the Office grid component; the actual strip lives in workspace-panel.tsx. Corrected the component-boundary assertion without changing production error display.",
+    "Sandbox matrix r1/r2 native watcher did not reach native coverage. Identical test passed in normal macOS environment (r3) and against r9 packaged Worker/native helpers.",
+    "Tree B07 initial test expected undefined for a closed active tab; production API returns null. Corrected assertion; four tree tests passed.",
+    "Initial package command included an extra --, failed at argument parsing before any build. Corrected command completed normally."
+  ],
+  "aggregateLatestCodeResults": {
+    "uniqueTests": 1516,
+    "passed": 1514,
+    "skipped": 2,
+    "basis": "Previous full baseline plus targeted reruns, deduplicated by file/full test name; not a new monolithic full-suite run."
+  },
+  "boundaries": [
+    "Original J08 requires U+I, now complete. It has no A/P requirement; no App GUI or visual/IME acceptance is claimed.",
+    "Tests use production renderer buffers/service orchestration plus actual packaged Worker/native broker, with explicitly listed fault injection.",
+    "R9 replaces the candidate package, but the older running GUI was not stopped/replaced while user is away.",
+    "This does not complete the milestone or authorize a release."
+  ],
+  "sourceHashes": {
+    "src/renderer/features/files/office/buffer.ts": "0dc729f0df79e6e35aa64c5e8c64847c74bda2e2f42f9475437060664f34c604",
+    "src/renderer/features/files/office/buffer.test.ts": "5130782585ec9f078d601ee0af9681a7be8da8f8a79c3716696591ef9cb20479",
+    "src/renderer/features/files/office/session-state-acceptance.test.tsx": "9e475881d937f510d4e253cd1bde6934c0d4b9a71d56a053b3df86bf035ae050",
+    "src/renderer/features/files/office/xlsx-materialization-acceptance.test.ts": "7814486500ffb5e2e0409dd93e79e2c6829ecd70abe9e8948b72efb0679c2b66",
+    "src/renderer/features/files/office/pptx-buffer.ts": "50b66104b0d8a3b67e8376edcd7354147cbef7965ce1a52593357bfe495d1473",
+    "src/renderer/features/files/tree-failure-native-acceptance.test.tsx": "2c14e957fdfa8d3779dd6558893fa502d908c8bb852458cced7a1b1240ebaa1c"
+  },
+  "artifacts": {
+    "willyou-j08-r9-packaged.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-r9-packaged.log",
+      "sha256": "525c331e847a6e70bad34a1b7b935349902f9641c63d43d23e6faf79e2f374cb"
+    },
+    "willyou-j08-matrix-r2-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r2-tests.json",
+      "sha256": "8218222534df29d45554a5f7ab1986d3524dc21d437bd9685d84b1abab2eb985"
+    },
+    "willyou-j08-matrix-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r2.json",
+      "sha256": "46785f21ef1de16b5d30f9d555b415064e3652c552fcdd7e874b7832f4b939c9"
+    },
+    "willyou-j08-matrix-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r3.json",
+      "sha256": "3e8d10c2843ed34b9c30f1af3ad7688d5927a6bf36508ee08d9a09c282f4ff70"
+    },
+    "willyou-j08-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-typecheck-r1.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-j08-matrix-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r1.log",
+      "sha256": "67e6095ac93cd6381a594c518e1bb3d80e2ccf390701d02ae3905f2f8435ff15"
+    },
+    "willyou-j08-matrix-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r1.json",
+      "sha256": "eb571d7e72191b0ccf561bf9e60324360fcbdead990cbd5010f4dee3b28e9a40"
+    },
+    "willyou-j08-matrix-r1-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r1-tests.json",
+      "sha256": "e82fd1f566a1c20d8fb3dae9165c45a34b48bc7233110314a12a0ae81ff7fa14"
+    },
+    "willyou-j08-r9-packaged-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-r9-packaged-tests.json",
+      "sha256": "fe99f6bef591553f427b106481426ca50794f3ae6402e99026e4890f886162de"
+    },
+    "willyou-j08-matrix-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r3.log",
+      "sha256": "bca35afbd531c8787f423788c3429556c7dd3a12023d7589aca5bc7e3139548b"
+    },
+    "willyou-j08-matrix-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r2.log",
+      "sha256": "36859f9601cdc56a07e22dc4f30cbc13d47c3700438c1056b3ae6d24b43b7b36"
+    },
+    "willyou-j08-retry-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-retry-red.log",
+      "sha256": "db2824c344840cac67be7e4d070ed2acabbadd8aed8bb582797bb50c8fed1add"
+    },
+    "willyou-j08-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-j08-matrix-r3-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-matrix-r3-tests.json",
+      "sha256": "35e416cd15f9a4d4700a267115bec04dde45e1052c9f3f52070f048b4b5a3b34"
+    },
+    "willyou-j08-retry-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-retry-green.log",
+      "sha256": "4cf5ef2097efd49c1620fae1c4f994bc25cbb47f6ec613afc1ee6caa216331ce"
+    },
+    "willyou-j08-r9-packaged-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-j08-r9-packaged-matrix.json",
+      "sha256": "e4158d06b48269a8470a780a4aa62615e8c5d7ed39e4b661c08cd7961e80ee39"
+    },
+    "willyou-m9-r9-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-m9-r9-package.log",
+      "sha256": "ed2a8b7e11f82a480c90b9f07717d8069056409177c1783734d2f49e1e57febf"
+    },
+    "willyou-m9-r9-package-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-m9-r9-package-r2.log",
+      "sha256": "dfe7150297eaa9ae6e07af90c00e88fe8a2cc25e7d62dec0d604c5246dfd345b"
+    },
+    "willyou-r9-js-inspection.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-r9-js-inspection.json",
+      "sha256": "990a2d2be0ae59426b20ff7a83f121cea0e6b693f5bb6f7c47ca46e1b9edd97e"
+    },
+    "willyou-tree-failures-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-tree-failures-r2.json",
+      "sha256": "540cfe01e8dfb70e5eafebe489fbbeff2d9e71bd176354d2f66294c540f660e2"
+    },
+    "willyou-tree-failures-r1-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-tree-failures-r1-tests.json",
+      "sha256": "c60a129dc4f791bf7a58ee6c46ff4b777accd6f30dc189ef265939f76c017830"
+    },
+    "willyou-tree-failures-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-tree-failures-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-tree-failures-r2-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-tree-failures-r2-tests.json",
+      "sha256": "fe5e893208da54369a2f4b0b8b94157be29784929b16ac092d170eb1a9c9deb2"
+    },
+    "willyou-tree-failures-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-tree-failures-r1.json",
+      "sha256": "da797f63696751c5d3352c0d87dc1354c2ad86dd219a23a5089f12e57c98ac80"
+    },
+    "willyou-tree-failures-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-tree-failures-r1.log",
+      "sha256": "4f98434f8efe4f7db5c36bece4e880238671d4047223e9a94d173b60cf06569e"
+    },
+    "willyou-tree-failures-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-tree-failures-r2.log",
+      "sha256": "f75cf0b20da967c877f748b8718162d57755112879b7dd77d7e93a5289c7bab3"
+    },
+    "willyou-m9-acceptance-batch-r9-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-m9-acceptance-batch-r9-sources.tar.gz",
+      "sha256": "027667563fdea1944f66c829548996855139bc485fd65b7ba09302d3e04d3e86"
+    },
+    "willyou-m9-acceptance-batch-r9-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/willyou-m9-acceptance-batch-r9-sources.json",
+      "sha256": "d311110a2f291d905842e2ae0273bfbedd3605147cf75572b5c6af1dacb29216"
+    },
+    "final-test-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/final-test-sources.tar.gz",
+      "sha256": "653c8b6c44482115964679e581489796e808c02be453207a490f4106e50d7e8e"
+    },
+    "final-test-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/final-test-sources.json",
+      "sha256": "0f9b60413762ad54add963369f07211e2c9aafc5a5da3b66586ee99ce73b7db4"
+    },
+    "latest-result-per-test.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/latest-result-per-test.json",
+      "sha256": "58b91321f53ccda9d6d86bebdfb3f806d3a6ebb6ce8aad1c31d3455e9dc3456a"
+    },
+    "batch-result-per-test.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/batch-result-per-test.json",
+      "sha256": "28af65b25fc835d9d6d291c5d2546a35bf62e5886d8fc44f620e1e1ef02d13b6"
+    },
+    "package.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-j08-r9/package.json",
+      "sha256": "95472fbe99f9c22d1f4317f984433e7f62225a3005c57de502ee473ef5e2b252"
+    }
+  }
+}

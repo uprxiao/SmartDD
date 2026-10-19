@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-18T03:13:01.712955+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requiredLayers": [
+    "U",
+    "I",
+    "A"
+  ],
+  "status": "passed",
+  "formalCasePassed": true,
+  "layers": {
+    "U": {
+      "status": "passed"
+    },
+    "I": {
+      "status": "passed",
+      "chain": "Production FileWorkspaceStore/FileBuffer/FileTextEditor/EditorView and real Markdown worker/parser/widget code -> actual FileService/recovery -> r5 native broker; watch uses macOS FSEvents. Worker transport uses node:worker_threads, IPC event delivery/native module loading bridged."
+    },
+    "A": {
+      "status": "passed",
+      "steps": [
+        "Opened clean h14-clean.md in packaged r5; separate CLI wrote heading plus strong Markdown. Rich view updated; source toggle displayed exact latest Markdown.",
+        "Used actual 使用 TextEdit 打开 action; verified TextEdit window h14-clean.md; changed heading/strong paragraph and Cmd-S. WillYou source updated automatically.",
+        "Pinned file, switched to sample.ts, CLI wrote third version, returned to rich view; third heading/content visible. Invoked 文件菜单→刷新文件和目录; newest content remained clean.",
+        "Changed only test fixture permission to 000; actual App displayed [PERMISSION] open component: Permission denied and preserved previous text. Restored original 0644 and wrote final latest version; watcher updated rich view and cleared error."
+      ],
+      "actual": "CLI and actual ordinary editor changes visible without approval/restore action or false conflict; source and rich content reflect newest disk; real read-error display and recovery verified.",
+      "boundary": "Writer × all trigger combinations and later manual-dirty transition covered in I. A covers CLI watch/reactivation/refresh, TextEdit watch, source/rich transitions, and native permission error. No screenshot exported; AX/actions retained in session.",
+      "at": "2026-10-18T11:17:50.928336+08:00",
+      "packageAsarSha256": "4ed97c8632b87fcd9e2b351b5e11412a0a6feb46bfd1298cd7f2e118e0f01468",
+      "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-r5-markdown-refresh-app-20261018.json",
+      "evidenceSha256": "a497a0b4449a1f94dc8ca4bf1f9709ce893b304142f7cc1c4d3b7c89f6c2ae8c"
+    }
+  },
+  "environment": {
+    "os": "macOS 26.6.1",
+    "arch": "arm64",
+    "node": "26.5.0",
+    "pnpm": "10.27.0",
+    "brokerPackage": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/broker-package-r5.json",
+      "sha256": "049ade22ef55166dde89c0a307517306498ce63c1be775b56dae7deb5afe1987"
+    }
+  },
+  "validation": {
+    "tests": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "report": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/tests-r3.json",
+        "sha256": "a7cd8b4cea468673fb92244fb897b4191d649cb9d695711803f0c3b4c1e6105f"
+      }
+    },
+    "command": "SMARTDD_MARKDOWN_REFRESH_APP=/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app SMARTDD_MARKDOWN_REFRESH_EVIDENCE=/private/tmp/willyou-markdown-refresh/matrix-r3.json pnpm test --config /private/tmp/willyou-markdown-refresh/vitest.config.mjs --reporter=json --outputFile=/private/tmp/willyou-markdown-refresh/tests-r3.json",
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+      "exitCode": 0,
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/typecheck-repository.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "scope": "Repository test installed after freeze; complete renderer/shared/preload program checked successfully."
+    },
+    "diagnostics": "First attempts r1/r2 were harness setup failures (unexposed transitive esbuild dependency, then jsdom cross-realm Uint8Array). No product case executed. r3 compiles the unmodified production worker in a real Node subprocess, then runs all 8 cases successfully. Earlier reports retained.",
+    "temporaryTypecheck": {
+      "command": "pnpm exec tsc --noEmit -p /private/tmp/willyou-markdown-refresh/tsconfig.json",
+      "exitCode": 0,
+      "log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/typecheck-r1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "diffCheckExitCode": 0
+  },
+  "sourceBaseline": {
+    "manifest": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/source-manifest.json",
+      "sha256": "8c7c4533795f5d82ea59b672deda2e39eff2575323f674eded408cddf00d7af0"
+    },
+    "archive": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/tested-sources.tar.gz",
+      "sha256": "3bf2ffcc8f49d5df33f913df9bc2906d94851fcf68390830e57539b1a73b1602"
+    },
+    "testedFileCount": 33,
+    "allMatchFrozenR6": true,
+    "executedTest": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/markdown-refresh-acceptance.test.tsx",
+      "sha256": "551f94eea5aeadc1204aea7c1632aad981d7af92e35b89508c35f3fa455b9add"
+    },
+    "executionPath": "/private/tmp/willyou-markdown-refresh/markdown-refresh-acceptance.test.tsx",
+    "repositoryTest": {
+      "path": "src/renderer/features/files/markdown-refresh-acceptance.test.tsx",
+      "sha256": "551f94eea5aeadc1204aea7c1632aad981d7af92e35b89508c35f3fa455b9add",
+      "identicalToExecutedTemporaryTest": true,
+      "installedAfterR6FreezeRelease": true
+    }
+  },
+  "artifacts": {
+    "tests-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/tests-r3.json",
+      "sha256": "a7cd8b4cea468673fb92244fb897b4191d649cb9d695711803f0c3b4c1e6105f"
+    },
+    "matrix-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/matrix-r3.json",
+      "sha256": "c5563141fba90b665a0f9249300d7d6c3bfbfaa6f2e20d88316206b78b85168e"
+    },
+    "tests-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/tests-r3.log",
+      "sha256": "5e81dd3a5b25ba505b8041eff174829f96dbd3faba6d797363913f7247eabcad"
+    },
+    "typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/typecheck-r1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "markdown-refresh-acceptance.test.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/markdown-refresh-acceptance.test.tsx",
+      "sha256": "551f94eea5aeadc1204aea7c1632aad981d7af92e35b89508c35f3fa455b9add"
+    },
+    "vitest.config.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/vitest.config.mjs",
+      "sha256": "7632e92117eebe39aeec9466c925693576a1ee68785f44c93a2faca82b5691d9"
+    },
+    "tsconfig.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-markdown-refresh/tsconfig.json",
+      "sha256": "9ea6ae866827e8f4c479f7c327da0dbcef94dbce12a44603a443f53d14447844"
+    }
+  },
+  "boundaries": [
+    "No actual App automation by this subagent; DOM events run in jsdom. Root supplies A-layer focus/terminal/read-error visibility.",
+    "Ordinary external writer is a direct independent filesystem writer; CLI writer is a separate Electron-as-Node process. No actual third-party GUI writer in I; root tests TextEdit in A.",
+    "Rich Markdown is the real production parser/Worker/widgets. Only Worker communication is adapted to node:worker_threads; code syntax worker is isolated because fixtures have headings/emphasis, no code fences.",
+    "File panel hide/remount in I is component/store lifecycle. No real PTY here and no inference that disk change means a CLI task finished. Root supplies actual terminal switch/PID evidence.",
+    "Native broker comes from r5; TypeScript sources match frozen r6 snapshot. This does not claim r5 App contains DEV047 or later product changes.",
+    "No source-file save calls or checkpoint calls in clean scenarios. Conflict scenario may schedule recovery checkpoint but no source-file save."
+  ],
+  "caseId": "M9-T-H14",
+  "case": {
+    "expected": "Clean Markdown external changes refresh exact source and rich document via native watch, reactivation and explicit refresh for CLI and ordinary writers; real read errors remain clear and recover; no old-content writeback or CLI approval. Only later real local dirty plus differing disk enters ordinary conflict.",
+    "matrix": [
+      "ordinary writer × native watch/reactivation/explicit refresh",
+      "separate CLI process × native watch/reactivation/explicit refresh"
+    ],
+    "eachSuccess": "Two external revisions; real Worker heading/strong DOM and source EditorView match exact latest bytes. source→document toggles remain clean, disk hash/mtime/ctime/inode unchanged by App, no save/checkpoint calls.",
+    "error": "Actual rename away produces [MISSING] native error while retaining previous source; restore same file + new bytes clears error and renders newest heading.",
+    "dirtyBoundary": "Actual EditorView transaction after clean synchronization keeps local text and exposes separately-read disk conflict when a further CLI change differs.",
+    "caseTests": 8
+  }
+}

@@ -1,6 +1,8 @@
+import { createPathPreviewDelivery } from './file-path-delivery.mjs';
 import { FILE_DRAG_TYPE, resolveFileDrag, buildFilePathInsertion } from './file-drag-model.mjs';
 import { buildInsertion } from './file-reference-model.mjs';
 import { useEffect, useRef, useState } from 'react';
+import { filePanelBounds, normalizedFilePanelWidth, readFilePanelWidthPreference, resolveFilePanelWidth } from '../../../src/shared/file-panel-layout.mjs';
 import { ArrowDown, Archive, ArchiveRestore, ArrowRight, ArrowUp, Check, CheckCheck, ChevronDown, ChevronRight, Code2, Database, Ellipsis, Folder, FolderOpen, Info, Keyboard, LoaderCircle, Monitor, Moon, PanelLeft, Plus, Search, Server, Settings2, ShieldCheck, SlidersHorizontal, Sparkles, Square, SquarePlus, SquarePen, SquareTerminal, Sun, X, Zap } from 'lucide-react';
 import { Terminal } from '@xterm/xterm';
 import { ReferenceSidebar } from './ReferenceSidebar';
@@ -56,10 +58,13 @@ function SettingsGroup({ title, children }) {
   return <section className="settings-group"><h2>{title}</h2><div className="settings-card">{children}</div></section>;
 }
 const terminalSessions = new Map();
-function TerminalPreview({ task, profile, project, dark, fontSize, fontFamily, voiceTarget, integrationReference, onIntegrationReferenceHandled }) {
+// Read-only snapshot for isolated prototype acceptance; never exposes the live session.
+export function terminalPreviewSnapshot(taskId) { const value = terminalSessions.get(taskId); return value ? { input: value.input, output: value.output } : null; }
+export function TerminalPreview({ task, profile, project, dark, fontSize, fontFamily, voiceTarget, integrationReference, onIntegrationReferenceHandled, pathDelivery }) {
   const container = useRef(null), terminal = useRef(null), fitRef = useRef(null), running = useRef(task.status === 'running'), dropHandler = useRef(null);
   const [dropStatus, setDropStatus] = useState('');
-  useEffect(() => { running.current = task.status === 'running'; }, [task.status]);
+  const pathTransport = useRef(pathDelivery), delivery = useRef(null); pathTransport.current = pathDelivery;
+  useEffect(() => { running.current = task.status === 'running'; delivery.current?.invalidate(); setDropStatus(''); }, [task.status]);
   useEffect(() => {
     let disposed = false;
     const t = new Terminal({ fontFamily: fontFamily || 'Menlo, monospace', fontSize, lineHeight: 1.45, cursorBlink: true, theme: terminalTheme(dark), convertEol: true, scrollback: 600 });
@@ -67,8 +72,9 @@ function TerminalPreview({ task, profile, project, dark, fontSize, fontFamily, v
     const fitNow = () => { if (!disposed && container.current?.clientWidth && container.current?.clientHeight) { fit.fit(); t.refresh(0, t.rows - 1); } };
     fitNow();
     const observer = new ResizeObserver(fitNow); observer.observe(container.current); const timer = setTimeout(fitNow, 60);
-    const session = terminalSessions.get(task.id) || { output: '', input: '' };
-    terminalSessions.set(task.id, session);
+    const ptyId = task.ptyId ?? task.id;
+    const session = terminalSessions.get(ptyId) || { output: '', input: '' };
+    terminalSessions.set(ptyId, session);
     const refreshOutput = () => { if (!disposed) { t.scrollToBottom(); t.refresh(0, t.rows - 1); } };
     const write = text => { session.output = (session.output + text).slice(-200000); t.write(text, refreshOutput); };
     const writeln = text => write(text + '\r\n');
@@ -95,24 +101,26 @@ function TerminalPreview({ task, profile, project, dark, fontSize, fontFamily, v
       insert: text => { input += text; session.input = input; write(text); },
       insertReference: (text, requestId) => { if (session.integrationRequest === requestId) return true; if (!running.current || !text || /[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(text)) return false; const addition = (input && !/\s$/.test(input) ? ' ' : '') + text; input += addition; session.input = input; session.integrationRequest = requestId; write(addition); t.focus(); return true; },
     };
-    // 文件区 → 终端输入：只“插入”，不回车；校验与清理复用隔离实验的 buildInsertion，生产主进程尚待接入。演示终端的 ptyId 就是 taskId。
+    // 合成演示只插入、不回车；生产使用独立主进程通道。默认ptyId=taskId，显式ptyId区分原型终端代次。
     const reply = detail => window.dispatchEvent(new CustomEvent('m9:terminal-insert-result', { detail }));
     const onInsert = event => {
       const d = event.detail; if (d?.taskId !== task.id) return;
-      const r = buildInsertion({ text: d.text, bracketedPaste: !!session.bracketed, ptyId: task.id, taskId: task.id, owners: new Map([[task.id, task.id]]), running: running.current ? new Set([task.id]) : new Set() });
+      const r = buildInsertion({ text: d.text, bracketedPaste: !!session.bracketed, ptyId, taskId: task.id, owners: new Map([[ptyId, task.id]]), running: running.current ? new Set([task.id]) : new Set() });
       if (!r.ok) return reply({ requestId: d.requestId, ok: false, error: r.error });
       const shown = session.bracketed ? r.data.slice(6, -6).replace(/\r/g, '\n') : r.data;
       input += shown; session.input = input; write(shown);
       t.focus(); reply({ requestId: d.requestId, ok: true, mode: r.mode, collapsed: r.collapsed, sanitized: r.sanitized, removed: r.removed });
     };
+    const pathSession = createPathPreviewDelivery({ available: () => !disposed && running.current, accept: data => { input += data; session.input = input; write(data); t.focus(); }, status: setDropStatus, transport: request => pathTransport.current ? pathTransport.current(request) : { state: request.accept() ? 'inserted' : 'failed', message: '任务未运行，文件路径未放入；请先恢复终端。' } }); delivery.current = pathSession; setDropStatus('');
+    const onFileContext = event => { if (event.detail?.taskId === task.id) { pathSession.invalidate(); setDropStatus(''); } };
+    window.addEventListener('m9:file-context-invalidated', onFileContext);
     dropHandler.current = event => {
       event.preventDefault();
-      const file = resolveFileDrag(event.dataTransfer.getData(FILE_DRAG_TYPE), task.id);
-      if (!file.ok) { setDropStatus('无法放入：拖放文件不属于当前会话或已失效。'); return; }
-      const result = buildFilePathInsertion({ path: file.path, existingInput: input, ptyId: task.id, taskId: task.id, owners: new Map([[task.id, task.id]]), running: running.current ? new Set([task.id]) : new Set() });
+      const file = resolveFileDrag(event.dataTransfer.getData(FILE_DRAG_TYPE), task.id, ptyId);
+      if (!file.ok) { setDropStatus(['cancelled-drag', 'foreign-task'].includes(file.error) ? '拖动来源或目标已改变，请重新拖动' : '无法放入：拖放文件不属于当前会话或已失效。'); return; }
+      const result = buildFilePathInsertion({ path: file.path, existingInput: input, ptyId, taskId: task.id, owners: new Map([[ptyId, task.id]]), running: running.current ? new Set([task.id]) : new Set() });
       if (!result.ok) { setDropStatus(result.error === 'task-not-running' ? '任务未运行，文件路径未放入；请先恢复终端。' : '文件路径无法安全放入，未修改终端输入。'); return; }
-      input += result.data; session.input = input; write(result.data); t.focus();
-      setDropStatus('已放入完整文件路径，未发送；可继续输入或语音补充。');
+      void pathSession.insert(task.id, result.data);
     };
     const onConfig = event => { if (event.detail?.taskId === task.id) session.bracketed = !!event.detail.bracketed; };
     window.addEventListener('m9:terminal-insert', onInsert); window.addEventListener('m9:terminal-config', onConfig);
@@ -135,8 +143,8 @@ function TerminalPreview({ task, profile, project, dark, fontSize, fontFamily, v
         else if (ch >= ' ') { input += ch; write(ch); }
       }
     });
-    return () => { window.removeEventListener('m9:terminal-insert', onInsert); window.removeEventListener('m9:terminal-config', onConfig); disposed = true; dropHandler.current = null; session.input = input; clearTimeout(timer); observer.disconnect(); onData.dispose(); t.dispose(); voiceTarget.current = null; terminal.current = null; fitRef.current = null; };
-  }, [task.id]);
+    return () => { window.removeEventListener('m9:terminal-insert', onInsert); window.removeEventListener('m9:terminal-config', onConfig); disposed = true; window.removeEventListener('m9:file-context-invalidated', onFileContext); pathSession.dispose(); if (delivery.current === pathSession) delivery.current = null; dropHandler.current = null; session.input = input; clearTimeout(timer); observer.disconnect(); onData.dispose(); t.dispose(); voiceTarget.current = null; terminal.current = null; fitRef.current = null; };
+  }, [task.id, task.ptyId]);
   useEffect(() => {
     if (integrationReference?.taskId !== task.id) return;
     const ok = voiceTarget.current?.insertReference?.(integrationReference.text, integrationReference.requestId) || false;
@@ -155,6 +163,8 @@ export function App() {
   const [projects, setProjects] = useState(() => PROJECTS.map(p => makeProject(p, true))), [profiles, setProfiles] = useState(PROFILES), [tasks, setTasks] = useState(() => TASKS.map(t => ({ ...t, firstMessage: t.title })));
   const [projectId, setProjectId] = useState('smartdd'), [profileId, setProfileId] = useState('cc-work'), [prompt, setPrompt] = useState('');
   const [fileWorkspace, setFileWorkspace] = useState(new URLSearchParams(location.search).get('preview') === 'm9');
+  const fileFrame = useRef(null), fileArea = useRef(null);
+  const [fileAvailable, setFileAvailable] = useState(1000), [filePreference, setFilePreference] = useState(() => readFilePanelWidthPreference(localStorage.getItem('willyou-m9-prototype-panel-width')));
   const [theme, setTheme] = useState(['m9', 'm10'].includes(new URLSearchParams(location.search).get('preview')) ? 'light' : 'dark'), [fontSize, setFontSize] = useState(13), [collapsed, setCollapsed] = useState(false), [sidebarWidth, setSidebarWidth] = useState(240);
   const [integrationReference, setIntegrationReference] = useState(null);
   const [settingsSearch, setSettingsSearch] = useState('');
@@ -177,6 +187,13 @@ export function App() {
   const isSettings = route.startsWith('settings'), section = route.split('/')[1] || 'ai';
   const isProject = route.startsWith('project/'), projectTab = route.split('/')[2] || 'overview';
   const isApps = route === 'apps' || route.startsWith('apps/');
+  const storeFileWidth = (width, available = fileAvailable) => { const next = normalizedFilePanelWidth(width, available); if (!next) return; setFilePreference(next); localStorage.setItem('willyou-m9-prototype-panel-width', String(next.value)); };
+  useEffect(() => {
+    const frame = fileFrame.current, area = fileArea.current; if (!frame || !area) return;
+    const measure = () => { const available = frame.getBoundingClientRect().right - parseFloat(getComputedStyle(frame).paddingRight || '0') - area.getBoundingClientRect().left; if (available > 0) { setFileAvailable(available); if (task && fileWorkspace && filePreference.unit === 'pixels') storeFileWidth(filePreference.value, available); } };
+    measure(); const observer = new ResizeObserver(measure); observer.observe(frame); observer.observe(area); return () => observer.disconnect();
+  }, [task?.id, fileWorkspace, collapsed, sidebarWidth, filePreference.unit]);
+  const fileWidth = resolveFilePanelWidth(filePreference, fileAvailable), fileBounds = filePanelBounds(fileAvailable);
   const lastIntegrationTask = useRef(null);
   useEffect(() => { if (taskId) lastIntegrationTask.current = taskId; }, [taskId]);
   const activeProject = projects.find(p => p.id === route.split('/')[1]) ?? project, taskProject = projects.find(p => p.id === task?.project) ?? { name: '未关联项目', path: task?.cwd || '/workspace', capabilities: {} };
@@ -232,7 +249,7 @@ export function App() {
   const matchingTasks = tasks.filter(t => (searchProject === 'all' || (t.project || 'orphan') === searchProject) && (t.title + (t.firstMessage || '') + (projects.find(p => p.id === t.project)?.name || '未关联项目') + (profiles.find(p => p.id === t.profile)?.name || t.profileName || '')).toLowerCase().includes(search.toLowerCase()));
   const recentRow = (t, index) => <button key={t.id} className={"recent-row " + (index === searchIndex ? "search-selected" : "")} onClick={() => { nav('task/' + t.id); setModal(null); }}><SquareTerminal size={16} /><div><span>{t.title}{t.archived && <span className="tag">已归档</span>}</span><small>{projects.find(p => p.id === t.project)?.name || '未关联项目'} · {profiles.find(p => p.id === t.profile)?.name || t.profileName || '配置已删除'}</small></div><span>{t.time}</span><ChevronRight size={14} /></button>;
 
-  return <div className={'app codex-frame ' + (isApps ? 'apps-mode ' : isSettings ? 'settings-mode ' : route === 'scheduled' ? 'scheduled-mode ' : route === 'home' ? 'home-mode ' : '') + (collapsed ? 'sidebar-collapsed ' : '') + (task && fileWorkspace ? 'm9-active' : '')} style={{ '--sidebar-width': sidebarWidth + 'px' }}>
+  return <div ref={fileFrame} className={'app codex-frame ' + (isApps ? 'apps-mode ' : isSettings ? 'settings-mode ' : route === 'scheduled' ? 'scheduled-mode ' : route === 'home' ? 'home-mode ' : '') + (collapsed ? 'sidebar-collapsed ' : '') + (task && fileWorkspace ? 'm9-active' : '')} style={{ '--sidebar-width': sidebarWidth + 'px', '--prototype-file-width': fileWidth + 'px' }}>
     <div className="window-navigation"><IconButton icon={ArrowLeft} label="返回工作台" onClick={() => nav('home')} /><IconButton icon={ArrowRight} label="前进" onClick={() => history.forward()} />{!isSettings && <IconButton icon={PanelLeft} label={collapsed ? '展开侧栏' : '收起侧栏'} onClick={() => setCollapsed(!collapsed)} />}{!task && <><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); nav("task/build"); }}><FolderOpen size={13} />M9 · 文件工作区</button><button className="m7-preview-entry" onClick={() => setModal({ type: 'project-transfer', mode: 'import' })}><Folder size={13} />M8 · 项目迁移</button><button className="m7-preview-entry" onClick={() => { voice.clear(); setModal({ type: 'voice-demo' }); }}><Mic size={13} />M7 · 语音预览</button>{voice.notice?.kind === 'sent' && <button className="m7-preview-entry" onPointerDown={e => e.preventDefault()} onClick={voice.fillExample}>演示文字回填</button>}</>}</div>
     {task && <header className="task-window-header" aria-label="当前会话">
       <div className="task-window-title" title={taskProject.name + ' / ' + task.title}><Folder size={17} /><span>{task.title}</span></div>
@@ -264,7 +281,7 @@ export function App() {
       onSettings={() => nav('settings/general')} onInfo={() => setModal({ type: 'preview' })} />
     {route === 'scheduled' && <aside className="sidebar scheduled-sidebar"><h2>定时任务</h2><button className="nav-row" disabled title="后续开放"><Plus size={16} />新建任务</button><p>即将执行</p><span className="scheduled-empty">暂未开放</span></aside>}
     {!collapsed && <div className="sidebar-resizer" role="separator" aria-label="调整侧栏宽度" aria-orientation="vertical" tabIndex={0} aria-valuenow={sidebarWidth} aria-valuemin={240} aria-valuemax={420} onPointerDown={resize} onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setSidebarWidth(w => Math.max(240, Math.min(420, w + (e.key === 'ArrowRight' ? 10 : -10)))); } }} />}
-    <main className="workspace">
+    <main ref={fileArea} className="workspace">
       {isApps && <IntegrationWorkspace route={route} nav={nav} projects={projects} tasks={tasks} dark={dark} onTheme={() => setTheme(dark ? 'light' : 'dark')} onInsertReference={(text, selectedProject) => { const eligible = tasks.filter(t => t.project === selectedProject && t.status === 'running' && !t.archived); const target = eligible.find(t => t.id === lastIntegrationTask.current) || (eligible.length === 1 ? eligible[0] : null); if (!target) return notify(eligible.length ? '请先进入目标终端，再返回应用插入引用。' : '请先恢复当前项目的示例终端。'); setFileWorkspace(false); setIntegrationReference({ taskId: target.id, text, requestId: Date.now() }); nav('task/' + target.id); }} />}
       {!task && <header className="topbar"><div className="breadcrumbs">{isSettings ? <><span>设置</span><ChevronRight size={12} /><span>{SETTINGS.find(s => s[0] === section)?.[2] || 'AI 配置'}</span></> : isProject ? <><Folder size={15} /><span>{activeProject.name}</span></> : <span className="quiet">工作台</span>}</div>
         <div className="topbar-actions"><button className="preview-badge" onClick={() => setModal({ type: 'preview' })}>界面预览</button><IconButton icon={dark ? Sun : Moon} label={dark ? '切换浅色主题' : '切换深色主题'} onClick={() => setTheme(dark ? 'light' : 'dark')} /></div>
@@ -298,7 +315,7 @@ export function App() {
       {isProject && <ProjectWorkspace key={activeProject.id} project={activeProject} tab={projectTab} profiles={profiles} tasks={tasks} onNavigate={tab => nav('project/' + activeProject.id + '/' + tab)} onUpdate={updateProject} onDelete={deleteProject} onNewTask={() => { setProjectId(activeProject.id); nav('home'); }} onOpenTask={key => nav('task/' + key)} onExport={() => setModal({ type: 'project-transfer', mode: 'export', project: activeProject })} />}
       {route !== 'home' && route !== 'scheduled' && !isApps && !isSettings && !isProject && !task && <div className="empty-state"><h2>任务暂不可用</h2><button className="button secondary" onClick={() => nav('home')}>返回工作台</button></div>}
     </main>
-    {task && fileWorkspace && <FileWorkspace key={task.id + ":" + (task.cwd || taskProject.path || "")} task={task} project={taskProject} dark={dark} onTheme={() => setTheme(dark ? "light" : "dark")} onClose={() => setFileWorkspace(false)} />}
+    {task && fileWorkspace && <><div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" tabIndex={0} aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(fileBounds.minimum)} aria-valuemax={Math.round(fileBounds.maximum)} onPointerDown={e => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); }} onPointerMove={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) storeFileWidth(fileFrame.current.getBoundingClientRect().right - parseFloat(getComputedStyle(fileFrame.current).paddingRight || '0') - e.clientX); }} onPointerUp={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); }} onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); storeFileWidth(fileWidth + (e.key === 'ArrowLeft' ? 10 : -10)); } }} /><FileWorkspace key={task.id + ":" + (task.cwd || taskProject.path || "")} task={task} project={taskProject} dark={dark} onTheme={() => setTheme(dark ? "light" : "dark")} onClose={() => setFileWorkspace(false)} /></>}
     {modal?.type === 'voice-demo' && <VoiceDemoDialog voice={voice} onClose={() => { voice.clear(); setModal(null); }} onNavigate={path => { voice.clear(); setModal(null); nav(path); }} />}
     {!modal && <VoiceFeedback voice={voice} onSettings={() => { voice.clear(); nav('settings/voice'); }} />}
     {popover && <button className="popover-dismiss" aria-label="关闭选择菜单" onClick={() => setPopover(null)} tabIndex={-1} />}

@@ -1,0 +1,44 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/source-view.test.tsx --reporter=verbose
+
+[1019/105746.519748:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/105746.821892:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/renderer/features/files/source-view.test.tsx > H33 full source fallback and synthetic host > keeps complete oversized disk source readonly and keyboard-selectable 81ms
+ × src/renderer/features/files/source-view.test.tsx > H33 full source fallback and synthetic host > keeps the same editor/history after a synthetic host reflects its actual raw edit 28ms
+   → expected last "vi.fn()" call to have been called with [ 'Xocal\r\n' ]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/source-view.test.tsx > H33 full source fallback and synthetic host > keeps the same editor/history after a synthetic host reflects its actual raw edit
+AssertionError: expected last "vi.fn()" call to have been called with [ 'Xocal\r\n' ]
+
+- Expected
++ Received
+
+  [
+-   "Xocal
+- ",
++   "Xocal\\r\\n",
+  ]
+
+ ❯ src/renderer/features/files/source-view.test.tsx:19:100
+     17|  it('keeps the same editor/history after a synthetic host reflects its…
+     18|   const edited=vi.fn(),mounted=render(<FileSourceView text="Local\r\n"…
+     19|   act(()=>view.dispatch({changes:{from:0,to:1,insert:'X'},userEvent:'i…
+       |                                                                                                    ^
+     20|   mounted.rerender(<FileSourceView text="Xocal\r\n" original="New disk…
+     21|   expect(current()).toBe(view);expect(view.state.doc).toBe(doc);expect…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  10:57:46
+   Duration  698ms (transform 62ms, setup 0ms, import 192ms, tests 110ms, environment 312ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,543 @@
+{
+  "at": "2026-10-19T19:39:34.197Z",
+  "purpose": "T19 genuine native duration reachability; exploratory, not formal pass",
+  "scratch": "/private/tmp/willyou-media-state-probe-LI5DI0",
+  "manifest": "/private/tmp/willyou-media-state-o4dxs49f/fixtures.json",
+  "fixture": {
+    "at": "2026-10-19T19:39:22.944485+00:00",
+    "project": "/private/tmp/willyou-media-state-o4dxs49f/project",
+    "cases": [
+      {
+        "name": "below-preskip.opus",
+        "size": 170,
+        "sha256": "b2cd618388a2458b27e95ea615e6ae6c6e8729d08c38cc2ed88fec977b12cf43"
+      },
+      {
+        "name": "broken.wav",
+        "size": 50,
+        "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+      },
+      {
+        "name": "empty.opus",
+        "size": 135,
+        "sha256": "389f5d49286d4a7e205d53d5ad2cd7a54fd38058fb1c6780df19a55687a939f9"
+      },
+      {
+        "name": "live-webm.opus",
+        "size": 1866,
+        "sha256": "c3ef50376b03c5102e027bbda759ac98ce286de25d12cbfdd9d6c9913d7e3274"
+      },
+      {
+        "name": "no-eos.opus",
+        "size": 847,
+        "sha256": "3b1357f9e3df4785bfe8081999a72d98672f8c72c06f9bfe60ef6d4c30834a36"
+      },
+      {
+        "name": "normal.opus",
+        "size": 847,
+        "sha256": "d45661789606d5791bc3fbe8c4ac39078f8bd01a1aba9b495347e78ae5490fb5"
+      },
+      {
+        "name": "normal.wav",
+        "size": 288078,
+        "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+      },
+      {
+        "name": "odd-pcm16.wav",
+        "size": 46,
+        "sha256": "96d35ebe003658f0c49cef2fae07a94478efecc67b2e55950daef79f0383d7b3"
+      },
+      {
+        "name": "odd-pcm32.wav",
+        "size": 46,
+        "sha256": "416b267d37dda8ec5b5c7845d707caaf9b98bcd132c2f707d61eb07ff0267150"
+      },
+      {
+        "name": "short.opus",
+        "size": 170,
+        "sha256": "652d1089765013f8229d3c6089a40d8c90d505c5304c40a2e9e6d869bf69117c"
+      },
+      {
+        "name": "tiny.m4a",
+        "size": 829,
+        "sha256": "90b2c273566def7a30c13bc640ab0eec5885fb683528ca1b2645670ba5e6f2e3"
+      },
+      {
+        "name": "unknown-granule.opus",
+        "size": 847,
+        "sha256": "4ad43f9907e5e460505dad18ee7d2c4bd1d2483b7b8e21229bb45adbed0ec725"
+      },
+      {
+        "name": "zero-granule.opus",
+        "size": 170,
+        "sha256": "518b9c04e5ae82443026dc7d1d3482c4f5342c83332bf55790f88930c7901ddb"
+      },
+      {
+        "name": "zero.wav",
+        "size": 44,
+        "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+      }
+    ],
+    "commands": [
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "pcm_s16le",
+          "/private/tmp/willyou-media-state-o4dxs49f/project/normal.wav"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "webm",
+          "-live",
+          "1",
+          "/private/tmp/willyou-media-state-o4dxs49f/project/live-webm.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "ogg",
+          "/private/tmp/willyou-media-state-o4dxs49f/project/normal.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "0.02",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "ogg",
+          "/private/tmp/willyou-media-state-o4dxs49f/project/short.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "0",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "ogg",
+          "/private/tmp/willyou-media-state-o4dxs49f/project/empty.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "0.000001",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "32k",
+          "-movflags",
+          "+faststart",
+          "/private/tmp/willyou-media-state-o4dxs49f/project/tiny.m4a"
+        ],
+        "code": 0,
+        "stderr": ""
+      }
+    ],
+    "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+    "boundary": "All silent generated media. live-webm.opus deliberately declares an Opus extension over a live WebM container to explore decoder handling, not a valid Ogg-format conformance claim. Ogg no-EOS/unknown granule fixtures retain complete packets and recomputed page CRC; decoder duration/outcome measured, not assumed."
+  },
+  "asarSha256": "db7c8b7c51f6e1f84a5b24eab91d5e2cb53a317cfe31068178066f54d0658344",
+  "before": {
+    "below-preskip.opus": {
+      "sha256": "b2cd618388a2458b27e95ea615e6ae6c6e8729d08c38cc2ed88fec977b12cf43",
+      "inode": "51181023",
+      "mtimeNs": "1792438762921906168"
+    },
+    "broken.wav": {
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "inode": "51181032",
+      "mtimeNs": "1792438762944016990"
+    },
+    "empty.opus": {
+      "sha256": "389f5d49286d4a7e205d53d5ad2cd7a54fd38058fb1c6780df19a55687a939f9",
+      "inode": "51181021",
+      "mtimeNs": "1792438762920896085"
+    },
+    "live-webm.opus": {
+      "sha256": "c3ef50376b03c5102e027bbda759ac98ce286de25d12cbfdd9d6c9913d7e3274",
+      "inode": "51181012",
+      "mtimeNs": "1792438762859207368"
+    },
+    "no-eos.opus": {
+      "sha256": "3b1357f9e3df4785bfe8081999a72d98672f8c72c06f9bfe60ef6d4c30834a36",
+      "inode": "51181015",
+      "mtimeNs": "1792438762882812314"
+    },
+    "normal.opus": {
+      "sha256": "d45661789606d5791bc3fbe8c4ac39078f8bd01a1aba9b495347e78ae5490fb5",
+      "inode": "51181014",
+      "mtimeNs": "1792438762881803315"
+    },
+    "normal.wav": {
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "inode": "51181010",
+      "mtimeNs": "1792438762833913840"
+    },
+    "odd-pcm16.wav": {
+      "sha256": "96d35ebe003658f0c49cef2fae07a94478efecc67b2e55950daef79f0383d7b3",
+      "inode": "51181030",
+      "mtimeNs": "1792438762943857031"
+    },
+    "odd-pcm32.wav": {
+      "sha256": "416b267d37dda8ec5b5c7845d707caaf9b98bcd132c2f707d61eb07ff0267150",
+      "inode": "51181031",
+      "mtimeNs": "1792438762943947948"
+    },
+    "short.opus": {
+      "sha256": "652d1089765013f8229d3c6089a40d8c90d505c5304c40a2e9e6d869bf69117c",
+      "inode": "51181017",
+      "mtimeNs": "1792438762901675762"
+    },
+    "tiny.m4a": {
+      "sha256": "90b2c273566def7a30c13bc640ab0eec5885fb683528ca1b2645670ba5e6f2e3",
+      "inode": "51181027",
+      "mtimeNs": "1792438762942892782"
+    },
+    "unknown-granule.opus": {
+      "sha256": "4ad43f9907e5e460505dad18ee7d2c4bd1d2483b7b8e21229bb45adbed0ec725",
+      "inode": "51181016",
+      "mtimeNs": "1792438762882919022"
+    },
+    "zero-granule.opus": {
+      "sha256": "518b9c04e5ae82443026dc7d1d3482c4f5342c83332bf55790f88930c7901ddb",
+      "inode": "51181022",
+      "mtimeNs": "1792438762921767210"
+    },
+    "zero.wav": {
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0",
+      "inode": "51181011",
+      "mtimeNs": "1792438762835827089"
+    }
+  },
+  "checks": [
+    {
+      "item": {
+        "name": "odd-pcm16.wav",
+        "size": 46,
+        "sha256": "96d35ebe003658f0c49cef2fae07a94478efecc67b2e55950daef79f0383d7b3"
+      },
+      "state": {
+        "duration": "0.000021",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/1e93905061c25d5e69cc0fc15f72fab9211a3c02c8d90c26b3917dd022533790",
+        "transport": "protocol",
+        "seekDisabled": false,
+        "seekMax": "0.000021",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 591.1000001430511,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 649.2999999523163,
+          "tag": "AUDIO",
+          "duration": "0.000021",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 649.5,
+          "tag": "AUDIO",
+          "duration": "0.000021",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 649.6000001430511,
+          "tag": "AUDIO",
+          "duration": "0.000021",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "odd-pcm32.wav",
+        "size": 46,
+        "sha256": "416b267d37dda8ec5b5c7845d707caaf9b98bcd132c2f707d61eb07ff0267150"
+      },
+      "state": {
+        "duration": "0.000021",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/00ef92e1566dfd5643c3cbf3819c3d52cc87c892baca21f56466e528a7793d27",
+        "transport": "protocol",
+        "seekDisabled": false,
+        "seekMax": "0.000021",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 941.1000001430511,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 974.1000001430511,
+          "tag": "AUDIO",
+          "duration": "0.000021",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 974.2000000476837,
+          "tag": "AUDIO",
+          "duration": "0.000021",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 974.2999999523163,
+          "tag": "AUDIO",
+          "duration": "0.000021",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "item": {
+        "name": "tiny.m4a",
+        "size": 829,
+        "sha256": "90b2c273566def7a30c13bc640ab0eec5885fb683528ca1b2645670ba5e6f2e3"
+      },
+      "state": {
+        "duration": "0.021333",
+        "readyState": 4,
+        "paused": true,
+        "src": "willyou-media://local/4ee47e674908a51c406113c7d40a79bd4b0fd797a5976b46312747dd6dec9267",
+        "transport": "protocol",
+        "seekDisabled": false,
+        "seekMax": "0.021333",
+        "time": "0:00 / 0:00",
+        "error": null,
+        "loading": false
+      },
+      "events": [
+        {
+          "type": "emptied",
+          "at": 1217.1000001430511,
+          "tag": "AUDIO",
+          "duration": "NaN",
+          "readyState": 0,
+          "error": null
+        },
+        {
+          "type": "durationchange",
+          "at": 1247.4000000953674,
+          "tag": "AUDIO",
+          "duration": "0.021333",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "loadedmetadata",
+          "at": 1247.5,
+          "tag": "AUDIO",
+          "duration": "0.021333",
+          "readyState": 4,
+          "error": null
+        },
+        {
+          "type": "canplay",
+          "at": 1247.5,
+          "tag": "AUDIO",
+          "duration": "0.021333",
+          "readyState": 4,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "status": "completed exploration",
+  "pid": 46315,
+  "after": {
+    "below-preskip.opus": {
+      "sha256": "b2cd618388a2458b27e95ea615e6ae6c6e8729d08c38cc2ed88fec977b12cf43",
+      "inode": "51181023",
+      "mtimeNs": "1792438762921906168"
+    },
+    "broken.wav": {
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "inode": "51181032",
+      "mtimeNs": "1792438762944016990"
+    },
+    "empty.opus": {
+      "sha256": "389f5d49286d4a7e205d53d5ad2cd7a54fd38058fb1c6780df19a55687a939f9",
+      "inode": "51181021",
+      "mtimeNs": "1792438762920896085"
+    },
+    "live-webm.opus": {
+      "sha256": "c3ef50376b03c5102e027bbda759ac98ce286de25d12cbfdd9d6c9913d7e3274",
+      "inode": "51181012",
+      "mtimeNs": "1792438762859207368"
+    },
+    "no-eos.opus": {
+      "sha256": "3b1357f9e3df4785bfe8081999a72d98672f8c72c06f9bfe60ef6d4c30834a36",
+      "inode": "51181015",
+      "mtimeNs": "1792438762882812314"
+    },
+    "normal.opus": {
+      "sha256": "d45661789606d5791bc3fbe8c4ac39078f8bd01a1aba9b495347e78ae5490fb5",
+      "inode": "51181014",
+      "mtimeNs": "1792438762881803315"
+    },
+    "normal.wav": {
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "inode": "51181010",
+      "mtimeNs": "1792438762833913840"
+    },
+    "odd-pcm16.wav": {
+      "sha256": "96d35ebe003658f0c49cef2fae07a94478efecc67b2e55950daef79f0383d7b3",
+      "inode": "51181030",
+      "mtimeNs": "1792438762943857031"
+    },
+    "odd-pcm32.wav": {
+      "sha256": "416b267d37dda8ec5b5c7845d707caaf9b98bcd132c2f707d61eb07ff0267150",
+      "inode": "51181031",
+      "mtimeNs": "1792438762943947948"
+    },
+    "short.opus": {
+      "sha256": "652d1089765013f8229d3c6089a40d8c90d505c5304c40a2e9e6d869bf69117c",
+      "inode": "51181017",
+      "mtimeNs": "1792438762901675762"
+    },
+    "tiny.m4a": {
+      "sha256": "90b2c273566def7a30c13bc640ab0eec5885fb683528ca1b2645670ba5e6f2e3",
+      "inode": "51181027",
+      "mtimeNs": "1792438762942892782"
+    },
+    "unknown-granule.opus": {
+      "sha256": "4ad43f9907e5e460505dad18ee7d2c4bd1d2483b7b8e21229bb45adbed0ec725",
+      "inode": "51181016",
+      "mtimeNs": "1792438762882919022"
+    },
+    "zero-granule.opus": {
+      "sha256": "518b9c04e5ae82443026dc7d1d3482c4f5342c83332bf55790f88930c7901ddb",
+      "inode": "51181022",
+      "mtimeNs": "1792438762921767210"
+    },
+    "zero.wav": {
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0",
+      "inode": "51181011",
+      "mtimeNs": "1792438762835827089"
+    }
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 46315,
+    "code": 0,
+    "signal": null
+  },
+  "finishedAt": "2026-10-19T19:39:36.939Z"
+}

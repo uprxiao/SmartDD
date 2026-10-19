@@ -1,0 +1,766 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T02:27:28.502562+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "basis": {
+    "requirements": {
+      "path": "/Users/hx/hx/hxWork/SmartDD/docs/里程碑/M9_文件浏览工作区/需求.md",
+      "sha256": "10b74851a524d8bad0a5305ddc0d12c0312080888a9f2717c01f4f1531f6e041"
+    },
+    "cases": {
+      "path": "/Users/hx/hx/hxWork/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+      "sha256": "d3131ee95b7a590eb7e872b7f837e038efd8881adc69b1616c22030c7bfad9a0"
+    }
+  },
+  "cases": {
+    "M9-T-R03": {
+      "status": "passed",
+      "requiredLayers": [
+        "U",
+        "I"
+      ],
+      "steps": "输入连续字符，推进49/50ms；清空query。",
+      "expected": "参考50ms合并查询；空词不搜索；旧请求cancel并拒绝迟到结果。",
+      "actual": "a→al→alpha每49ms没有search，最后+1ms只发alpha，真实native返回正确行；空串/空白/50ms前清空不调用search。真实beta结果成功后截留回执，清空调用同requestId cancelSearch；释放迟到结果仍idle，requests/processes/listeners均0。",
+      "supportingExistingActiveCancellation": {
+        "evidence": "m9-acceptance-search-session-20261018.json",
+        "sha256": "28a0c8ca2aa3a9486d51ad3a85bfc7b97b4f136045aacf522f717d8c407f8a6e",
+        "rows": "C11 content start-pending clear/unmount，真实注册job在公共broker边界等待时signal abort，释放后资源归零。",
+        "boundary": "复用已完成证据，不重复执行也不计第二次用例。"
+      },
+      "fullCasePass": true
+    },
+    "M9-T-R07": {
+      "status": "passed",
+      "requiredLayers": [
+        "U",
+        "I"
+      ],
+      "steps": "写入31条query、21个mask、21个host+roots scope，再重启dialog。",
+      "expected": "query30/mask20/scope20，去重且mask trim；scope不串；损坏localStorage可恢复。",
+      "actual": "最终8项R07代码测试完整覆盖31query保留30、21mask保留20/去重/trim、21本机project/root scope仅保留20、最近remember晋升/仅打开不晋升、重启dialog恢复、坏JSON与坏MRU索引安全恢复、旧mask迁移、不同项目/同项目不同root切换清理旧历史游标及draft、无关应用storage不被删除。原型额外5模型和4项真实浏览器DOM检查通过。",
+      "fullCasePass": true,
+      "defect": "M9-DEV-039 fixed U/I/P; packaged App regression pending"
+    }
+  },
+  "test": {
+    "command": "SMARTDD_SEARCH_APP='/private/tmp/willyou-m9-acceptance-batch-r3-build/mac-arm64/WillYou.app' SMARTDD_SEARCH_HISTORY_EVIDENCE=/private/tmp/willyou-search-history-matrix-r4.json pnpm test src/renderer/features/files/search-history-acceptance.test.tsx --reporter=json --outputFile=/private/tmp/willyou-search-history-tests-r4.json",
+    "exitCode": 0,
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedTestMilliseconds": 2089.822021484375,
+    "report": {
+      "path": "/private/tmp/willyou-search-history-tests-r4.json",
+      "sha256": "0be6babd6cfa49a830416196e4019ee2bb70ea3493df3a4aa3e5f9e6296d0814"
+    },
+    "log": {
+      "path": "/private/tmp/willyou-search-history-tests-r4.log",
+      "sha256": "ee7aa03d7f4faead2588ebfac813c2a884c6a63c5f2e2564c7ebda33ee1ba8a8"
+    },
+    "matrix": {
+      "path": "/private/tmp/willyou-search-history-matrix-r4.json",
+      "sha256": "afba51ec84322a69640bd151281f3161841d5164caa23fd26b1c04628f3b83d6"
+    },
+    "tests": [
+      {
+        "title": "R03: merges consecutive input at exactly 49/50ms before executing the actual native search",
+        "status": "passed"
+      },
+      {
+        "title": "R03: empty/whitespace and clear-before-debounce do not search; a real late successful response cannot repopulate cleared state",
+        "status": "passed"
+      },
+      {
+        "title": "R07: retains 30 unique queries and 20 masks, newest first, across dialog restart",
+        "status": "passed"
+      },
+      {
+        "title": "R07: trims masks before deduplication and storage",
+        "status": "passed"
+      },
+      {
+        "title": "R07: scopes do not leak histories and only the newest 20 survive a 21st scope and restart",
+        "status": "passed"
+      },
+      {
+        "title": "R07: corrupt localStorage recovers to an operable dialog and persists new history after restart",
+        "status": "passed"
+      },
+      {
+        "title": "R07: migrates whitespace/duplicate masks already present in legacy history on read and remember",
+        "status": "passed"
+      },
+      {
+        "title": "R07: changing 'project' cannot carry A history navigation or its saved draft into B",
+        "status": "passed"
+      },
+      {
+        "title": "R07: changing 'root' cannot carry A history navigation or its saved draft into B",
+        "status": "passed"
+      },
+      {
+        "title": "R07: a corrupt MRU index migrates legacy records without deleting unrelated application storage",
+        "status": "passed"
+      }
+    ]
+  },
+  "observations": [
+    {
+      "case": "M9-T-R03",
+      "sample": "a/al/alpha, each 49ms then final +1ms",
+      "callsAtFinal49": 0,
+      "callsAt50": 1,
+      "requestedQuery": "alpha",
+      "nativeRows": [
+        {
+          "revision": {
+            "size": 32,
+            "inode": "44488201",
+            "device": "16777232",
+            "changedNs": "1792290397373321407",
+            "modifiedNs": "1792290397373321407",
+            "hash": "78eec8e7f1dd7bec3cce51d0df94365b5daeea1c0305642b150df941498df144"
+          },
+          "ranges": [
+            {
+              "to": 5,
+              "from": 0
+            }
+          ],
+          "rangesTruncated": false,
+          "rawOffset": 0,
+          "text": "alpha needle",
+          "relativePath": "needle.txt",
+          "line": 1
+        }
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-R03",
+      "sample": "empty/whitespace/pre-debounce clear + completed native success held before renderer receipt",
+      "totalSearchCalls": 1,
+      "cancelId": "d802ffef-4245-4f36-beaf-a9d80ecc3a0a",
+      "lateRows": [
+        {
+          "revision": {
+            "size": 32,
+            "inode": "44488208",
+            "device": "16777232",
+            "changedNs": "1792290397478702211",
+            "modifiedNs": "1792290397478702211",
+            "hash": "78eec8e7f1dd7bec3cce51d0df94365b5daeea1c0305642b150df941498df144"
+          },
+          "ranges": [
+            {
+              "to": 4,
+              "from": 0
+            }
+          ],
+          "rangesTruncated": false,
+          "rawOffset": 13,
+          "text": "beta needle 中文",
+          "relativePath": "needle.txt",
+          "line": 2
+        }
+      ],
+      "finalPhase": "idle",
+      "resources": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "31 queries / 21 masks / duplicates / dialog restart",
+      "saved": {
+        "query": [
+          "query-29",
+          "query-30",
+          "query-28",
+          "query-27",
+          "query-26",
+          "query-25",
+          "query-24",
+          "query-23",
+          "query-22",
+          "query-21",
+          "query-20",
+          "query-19",
+          "query-18",
+          "query-17",
+          "query-16",
+          "query-15",
+          "query-14",
+          "query-13",
+          "query-12",
+          "query-11",
+          "query-10",
+          "query-9",
+          "query-8",
+          "query-7",
+          "query-6",
+          "query-5",
+          "query-4",
+          "query-3",
+          "query-2",
+          "query-1"
+        ],
+        "mask": [
+          "*.type19",
+          "*.type20",
+          "*.type18",
+          "*.type17",
+          "*.type16",
+          "*.type15",
+          "*.type14",
+          "*.type13",
+          "*.type12",
+          "*.type11",
+          "*.type10",
+          "*.type9",
+          "*.type8",
+          "*.type7",
+          "*.type6",
+          "*.type5",
+          "*.type4",
+          "*.type3",
+          "*.type2",
+          "*.type1"
+        ]
+      },
+      "restoredFirstQuery": "query-29",
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "mask whitespace normalization",
+      "actual": [
+        "*.ts"
+      ],
+      "expected": [
+        "*.ts"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "21 authorized local project/root scopes; reopen newest",
+      "storedScopeCount": 20,
+      "oldestRetained": false,
+      "newestQuery": [
+        "private-project-20"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "opening old scope does not promote; remembering does",
+      "readOnlyOldestEvicted": true,
+      "explicitlyRememberedRetained": true,
+      "nextOldestEvicted": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "invalid JSON -> normal query/mask -> dialog restart",
+      "actual": {
+        "query": [
+          "recovered"
+        ],
+        "mask": [
+          "*.txt"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "legacy masks normalized when loaded and saved",
+      "options": [
+        "*.ts",
+        "*.js"
+      ],
+      "after": {
+        "query": [
+          "new",
+          "old"
+        ],
+        "mask": [
+          "*.ts",
+          "*.js"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "live A→B project change while Alt history navigation active",
+      "afterSwitch": "",
+      "afterHistoryUp": "",
+      "firstSaved": {
+        "query": [
+          "A history"
+        ],
+        "mask": []
+      },
+      "secondSaved": {
+        "query": [
+          "B history"
+        ],
+        "mask": []
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "live A→B root change while Alt history navigation active",
+      "afterSwitch": "",
+      "afterHistoryUp": "",
+      "firstSaved": {
+        "query": [
+          "A history"
+        ],
+        "mask": []
+      },
+      "secondSaved": {
+        "query": [
+          "B history"
+        ],
+        "mask": []
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-R07",
+      "sample": "corrupt MRU index / 21 legacy records / unrelated storage",
+      "storedScopeCount": 20,
+      "currentScopeFirst": true,
+      "unrelated": "KEEP",
+      "pass": true
+    }
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r3-build/mac-arm64/WillYou.app",
+    "asarSha256": "c4ef4b83f9786e9f876e85b9f0997c4354e0e365bb987e34ac16e491b96ae2b6",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "sourceBaseline": {
+    "archive": {
+      "path": "/private/tmp/willyou-dev039-sources.tar.gz",
+      "sha256": "32b23ed9539412a044f3be083a5c687a002be1120bdef09afb8707fdfdf878f5"
+    },
+    "files": {
+      "src/renderer/features/files/search-panel.tsx": "5a4e558f90dd802f83116817ecc9c68801073e5af11ef41b0ac164e8c6c884c7",
+      "src/renderer/features/files/search-history.ts": "cfcc3221cf46d0ff116494d508c788a661200e5fcb8be9286569bf99a6323a36",
+      "src/renderer/features/files/search-history-acceptance.test.tsx": "3f4db3334cee8620917dee630c8e91a51b36cd62974cf456391b3db01bbb52f1",
+      "prototypes/m6-codex/src/FileWorkspace.jsx": "b95877734d05bed5ab449ed70bea6634f14e4ea2df8ae9f181af31ed0d5d4329",
+      "prototypes/m6-codex/src/file-search-history-model.mjs": "5003df88c158d07530b7e89594085a33e6d6cc91ccca873c2ed977291cbe6d14",
+      "prototypes/m6-codex/tests/file-search-history-model.test.mjs": "7be0de4192613619015c57efb0e91a24d3ee6efb2165a4bedddcf1ec8655c1c6"
+    },
+    "r4Manifest": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r4-sources.json",
+      "sha256": "24c6d865bd4748dd747e4303acf0eb35dd2405425ed8d27f5180eb82c40b0a14"
+    },
+    "r4SourceArchive": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r4-sources.tar.gz",
+      "sha256": "3116071a7239f18d6edc97d6631d2310e2f8d1a3f2d14c759805ca8828d3b97e"
+    },
+    "r4Match": {
+      "src/renderer/features/files/search-panel.tsx": true,
+      "src/renderer/features/files/search-history.ts": true,
+      "src/renderer/features/files/search-history-acceptance.test.tsx": true,
+      "prototypes/m6-codex/src/FileWorkspace.jsx": true,
+      "prototypes/m6-codex/src/file-search-history-model.mjs": true,
+      "prototypes/m6-codex/tests/file-search-history-model.test.mjs": true
+    },
+    "boundary": "源码已冻结并与r4快照相符；r3包只提供同哈希native broker，r3不含DEV039 JS修复，不把r3 GUI当修复后验收。"
+  },
+  "typecheck": {
+    "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+    "exitCode": 0,
+    "log": {
+      "path": "/private/tmp/willyou-search-history-typecheck-r4.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "defects": [
+    {
+      "id": "M9-DEV-039",
+      "status": "fixed-and-verified-unit-integration-prototype; packaged-app-recheck-pending",
+      "affectedCase": "M9-T-R07",
+      "reproductions": [
+        "mask trims absent: [\"*.ts\",\"  *.ts  \"] instead of [\"*.ts\"]",
+        "21 project/root history keys retained; oldest still present, expected at most20"
+      ],
+      "productFiles": [
+        "src/renderer/features/files/search-panel.tsx"
+      ],
+      "fixAuthorization": "Root授权同范围修复mask trim/20scope淘汰/若复现的切scope同步；保持原失败证据；不打包。",
+      "fix": "历史模块读写统一normalize；独立scope MRU索引由remember更新至多20；旧记录无时间戳按原storage顺序迁入已知MRU之后，坏索引只扫描本模块；scope key作为内层dialog React key，切scope重建state/ref并取消旧query。",
+      "review": "area_marker_review只读核两生产文件；与已确认原型remember触发MRU语义一致，无明显阻断。",
+      "scopeBoundary": "本机scope/root身份隔离不引入远程host服务；未改变query文本含义或擅增搜索功能。"
+    }
+  ],
+  "boundary": [
+    "真实生产hook/dialog/store以及注册RPC→FileService→r3同哈希native broker；IPC sender为合成，DOM为jsdom，不声称App端到端。",
+    "最终10个测试互相独立；此前r1/r2/r3复跑不累加。R03两项，R07八项；P模型5项另列不折算正式用例。",
+    "R07规范化mask用于实际搜索与历史；query保留文本，只排除空白及无效长度历史。",
+    "生产源码和原型均冻结供唯一r4包；主代理另做App回归，未宣称该界面或Codex像素已验。",
+    "正式R03/R07环境均显式U/I，完整要求已满足；初始失败、修复和额外P层均可追溯。"
+  ],
+  "initialExecution": {
+    "schemaVersion": 1,
+    "recordedAt": "2026-10-18T02:23:40.346468+00:00",
+    "branch": "feature/0.0.1",
+    "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+    "basis": {
+      "requirements": {
+        "path": "/Users/hx/hx/hxWork/SmartDD/docs/里程碑/M9_文件浏览工作区/需求.md",
+        "sha256": "10b74851a524d8bad0a5305ddc0d12c0312080888a9f2717c01f4f1531f6e041"
+      },
+      "cases": {
+        "path": "/Users/hx/hx/hxWork/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+        "sha256": "d3131ee95b7a590eb7e872b7f837e038efd8881adc69b1616c22030c7bfad9a0"
+      }
+    },
+    "cases": {
+      "M9-T-R03": {
+        "status": "passed",
+        "requiredLayers": [
+          "U",
+          "I"
+        ],
+        "steps": "输入连续字符，推进49/50ms；清空query。",
+        "expected": "参考50ms合并查询；空词不搜索；旧请求cancel并拒绝迟到结果。",
+        "actual": "a→al→alpha每49ms没有search，最后+1ms只发alpha，真实native返回正确行；空串/空白/50ms前清空不调用search。真实beta结果成功后截留回执，清空调用同requestId cancelSearch；释放迟到结果仍idle，requests/processes/listeners均0。",
+        "supportingExistingActiveCancellation": {
+          "evidence": "m9-acceptance-search-session-20261018.json",
+          "sha256": "28a0c8ca2aa3a9486d51ad3a85bfc7b97b4f136045aacf522f717d8c407f8a6e",
+          "rows": "C11 content start-pending clear/unmount，真实注册job在公共broker边界等待时signal abort，释放后资源归零。",
+          "boundary": "复用已完成证据，不重复执行也不计第二次用例。"
+        },
+        "fullCasePass": true
+      },
+      "M9-T-R07": {
+        "status": "failed",
+        "requiredLayers": [
+          "U",
+          "I"
+        ],
+        "steps": "写入31条query、21个mask、21个host+roots scope，再重启dialog。",
+        "expected": "query30/mask20/scope20，去重且mask trim；scope不串；损坏localStorage可恢复。",
+        "actual": "query30/mask20、相同词去重、重启dialog恢复、项目scope隔离和坏JSON恢复通过；mask不trim导致重复，scope有21条且最旧未淘汰。",
+        "fullCasePass": false,
+        "defect": "M9-DEV-039"
+      }
+    },
+    "test": {
+      "command": "SMARTDD_SEARCH_APP='/private/tmp/willyou-m9-acceptance-batch-r3-build/mac-arm64/WillYou.app' SMARTDD_SEARCH_HISTORY_EVIDENCE=/private/tmp/willyou-search-history-matrix-r1.json pnpm test src/renderer/features/files/search-history-acceptance.test.tsx --reporter=json --outputFile=/private/tmp/willyou-search-history-tests-r1.json",
+      "exitCode": 1,
+      "total": 6,
+      "passed": 4,
+      "failed": 2,
+      "skipped": 0,
+      "elapsedTestMilliseconds": 2193.572265625,
+      "report": {
+        "path": "/private/tmp/willyou-search-history-tests-r1.json",
+        "sha256": "653558d3065aaf5dbe3ca24ce6fc323f83c05e58b937e3932d9bb966c719359b"
+      },
+      "log": {
+        "path": "/private/tmp/willyou-search-history-tests-r1.log",
+        "sha256": "2f728580d7f8e70434d59b4b6b4112c388debc09b343199f75274340c7046af2"
+      },
+      "matrix": {
+        "path": "/private/tmp/willyou-search-history-matrix-r1.json",
+        "sha256": "7a02c59bb5b5ea1e9dfe0d0be6296a4ee1be8676c882d879e794f1493db3f880"
+      }
+    },
+    "observations": [
+      {
+        "case": "M9-T-R03",
+        "sample": "a/al/alpha, each 49ms then final +1ms",
+        "callsAtFinal49": 0,
+        "callsAt50": 1,
+        "requestedQuery": "alpha",
+        "nativeRows": [
+          {
+            "revision": {
+              "size": 32,
+              "inode": "44484505",
+              "device": "16777232",
+              "changedNs": "1792290161245214493",
+              "modifiedNs": "1792290161245214493",
+              "hash": "78eec8e7f1dd7bec3cce51d0df94365b5daeea1c0305642b150df941498df144"
+            },
+            "ranges": [
+              {
+                "to": 5,
+                "from": 0
+              }
+            ],
+            "rangesTruncated": false,
+            "rawOffset": 0,
+            "text": "alpha needle",
+            "relativePath": "needle.txt",
+            "line": 1
+          }
+        ],
+        "pass": true
+      },
+      {
+        "case": "M9-T-R03",
+        "sample": "empty/whitespace/pre-debounce clear + completed native success held before renderer receipt",
+        "totalSearchCalls": 1,
+        "cancelId": "dc304b5c-93c8-4b4b-8406-0e952e19627d",
+        "lateRows": [
+          {
+            "revision": {
+              "size": 32,
+              "inode": "44484520",
+              "device": "16777232",
+              "changedNs": "1792290161419859807",
+              "modifiedNs": "1792290161419859807",
+              "hash": "78eec8e7f1dd7bec3cce51d0df94365b5daeea1c0305642b150df941498df144"
+            },
+            "ranges": [
+              {
+                "to": 4,
+                "from": 0
+              }
+            ],
+            "rangesTruncated": false,
+            "rawOffset": 13,
+            "text": "beta needle 中文",
+            "relativePath": "needle.txt",
+            "line": 2
+          }
+        ],
+        "finalPhase": "idle",
+        "resources": {
+          "requests": 0,
+          "processes": 0,
+          "listeners": 0
+        },
+        "pass": true
+      },
+      {
+        "case": "M9-T-R07",
+        "sample": "31 queries / 21 masks / duplicates / dialog restart",
+        "saved": {
+          "query": [
+            "query-29",
+            "query-30",
+            "query-28",
+            "query-27",
+            "query-26",
+            "query-25",
+            "query-24",
+            "query-23",
+            "query-22",
+            "query-21",
+            "query-20",
+            "query-19",
+            "query-18",
+            "query-17",
+            "query-16",
+            "query-15",
+            "query-14",
+            "query-13",
+            "query-12",
+            "query-11",
+            "query-10",
+            "query-9",
+            "query-8",
+            "query-7",
+            "query-6",
+            "query-5",
+            "query-4",
+            "query-3",
+            "query-2",
+            "query-1"
+          ],
+          "mask": [
+            "*.type19",
+            "*.type20",
+            "*.type18",
+            "*.type17",
+            "*.type16",
+            "*.type15",
+            "*.type14",
+            "*.type13",
+            "*.type12",
+            "*.type11",
+            "*.type10",
+            "*.type9",
+            "*.type8",
+            "*.type7",
+            "*.type6",
+            "*.type5",
+            "*.type4",
+            "*.type3",
+            "*.type2",
+            "*.type1"
+          ]
+        },
+        "restoredFirstQuery": "query-29",
+        "pass": true
+      },
+      {
+        "case": "M9-T-R07",
+        "sample": "mask whitespace normalization",
+        "actual": [
+          "*.ts",
+          "  *.ts  "
+        ],
+        "expected": [
+          "*.ts"
+        ],
+        "pass": false
+      },
+      {
+        "case": "M9-T-R07",
+        "sample": "21 authorized local project/root scopes; reopen newest",
+        "storedScopeCount": 21,
+        "oldestRetained": true,
+        "newestQuery": [
+          "private-project-20"
+        ],
+        "pass": false
+      },
+      {
+        "case": "M9-T-R07",
+        "sample": "invalid JSON -> normal query/mask -> dialog restart",
+        "actual": {
+          "query": [
+            "recovered"
+          ],
+          "mask": [
+            "*.txt"
+          ]
+        },
+        "pass": true
+      }
+    ],
+    "package": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r3-build/mac-arm64/WillYou.app",
+      "asarSha256": "c4ef4b83f9786e9f876e85b9f0997c4354e0e365bb987e34ac16e491b96ae2b6",
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "sourceBaseline": {
+      "archive": {
+        "path": "/private/tmp/willyou-search-history-before-fix-r1.tar.gz",
+        "sha256": "9d92ea1b65ec64d6cd8da361e426ce4852bc63ea01803ddb6719ad7215f01147"
+      },
+      "files": {
+        "src/renderer/features/files/search-history-acceptance.test.tsx": "9d81c84c09b48ee1356284a0072dff324a29be01235f7a7f544cd0306bf75be9",
+        "src/renderer/features/files/search-panel.tsx": "76c5402d97260181901a2d9ea7421ca112a4207fc3861b1d3224a8db24e94cc1",
+        "src/renderer/features/files/file-search.ts": "646b134c55efcbfcc547b83cef8dad431918fb32d508f822365637f4969d9e77",
+        "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "src/main/core/files/controller.ts": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+        "src/main/core/files/search-service.ts": "677ff613e43656c35654173975ba1d1ff55a22d23f1b1d755b66a365b7de81f0",
+        "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "src/shared/events.ts": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+        "src/shared/ipc/rpc.ts": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac",
+        "src/renderer/lib/ui/dialog.tsx": "ccf730ca3abeeadea25e7b5c5f47fea6eccd10794328b5cb5218cd9f7f2d446d"
+      },
+      "r3Match": {
+        "src/renderer/features/files/search-panel.tsx": true,
+        "src/renderer/features/files/file-search.ts": true,
+        "src/renderer/features/files/workspace-store.ts": true,
+        "src/main/core/files/controller.ts": true,
+        "src/main/core/files/search-service.ts": true,
+        "src/main/core/files/file-service.ts": true,
+        "src/main/core/files/roots.ts": true,
+        "src/main/core/files/native-broker.ts": true,
+        "src/shared/files.ts": true,
+        "src/shared/events.ts": true,
+        "src/shared/ipc/rpc.ts": true,
+        "src/renderer/lib/ui/dialog.tsx": true
+      }
+    },
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+      "exitCode": 0,
+      "log": {
+        "path": "/private/tmp/willyou-search-history-typecheck-r1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "defects": [
+      {
+        "id": "M9-DEV-039",
+        "status": "open",
+        "affectedCase": "M9-T-R07",
+        "reproductions": [
+          "mask trims absent: [\"*.ts\",\"  *.ts  \"] instead of [\"*.ts\"]",
+          "21 project/root history keys retained; oldest still present, expected at most20"
+        ],
+        "productFiles": [
+          "src/renderer/features/files/search-panel.tsx"
+        ],
+        "fixAuthorization": "Root授权同范围修复mask trim/20scope淘汰/若复现的切scope同步；保持原失败证据；不打包。"
+      }
+    ],
+    "boundary": [
+      "真实生产hook/dialog/store以及注册RPC→FileService→r3同哈希native broker；IPC sender为合成，DOM为jsdom，不声称App端到端。",
+      "R03仅控制setTimeout/clearTimeout以核49/50ms，真实原生IO仍由系统执行；R07在提交历史时不推进50ms、不伪造搜索结果。",
+      "scope为本期合法本机项目/root，未创建非本机host/provider。",
+      "本记录初次失败保留；R03一条可正式通过，R07不能计通过。"
+    ]
+  },
+  "summary": {
+    "formalCasesPassed": [
+      "M9-T-R03",
+      "M9-T-R07"
+    ],
+    "formalPassCount": 2,
+    "productionIntegrationTestsPassed": 10,
+    "prototypeModelTestsPassed": 5,
+    "prototypeDOMChecks": 4,
+    "packagedAppRecheck": "pending, root owns r4 GUI; not required layer for these two explicit U/I cases"
+  },
+  "prototype": {
+    "evidence": {
+      "path": "/Users/hx/hx/hxWork/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-history-prototype/prototype-observations.json",
+      "sha256": "4e5c658f41ade515d16ecd4b40ffbe3c40130f36d715dad10e89ff1df610f13d"
+    },
+    "result": "5/5模型、4项真实Chrome DOM，编译exit0；全部为合成原型，不调用原生服务",
+    "boundary": "坏JSON/旧mask/20scope由模型验证；DOM覆盖masktrim去重、结果打开/重开history与draft恢复、切root隔离；未保存截图。"
+  },
+  "diffCheck": {
+    "command": "git diff --check",
+    "exitCode": 0
+  },
+  "additionalRetainedFailure": {
+    "report": {
+      "path": "/private/tmp/willyou-search-history-tests-r2.json",
+      "sha256": "08b69f4da64bc662cf3fe6350fb4a4f364deef63c78247c7ce61432e236d32b6"
+    },
+    "matrix": {
+      "path": "/private/tmp/willyou-search-history-matrix-r2.json",
+      "sha256": "4a75626b267a2756f0815c875d31e87ddc949dddcdb3466aee61ea6614cd9b99"
+    },
+    "log": {
+      "path": "/private/tmp/willyou-search-history-tests-r2.log",
+      "sha256": "f5e24dd782772d66ede7cbfbd28668dc705b9d09ce2624bfb1c7716318e6f4b4"
+    },
+    "selectedTests": 2,
+    "failed": 2,
+    "filteredNotExecuted": 6,
+    "actual": "旧mask读入未规范化；切project后A未提交draft/history可被存进B，已独立复现。",
+    "boundary": "不把过滤的6条算通过/失败；原始r1和此r2失败完整保留。"
+  }
+}

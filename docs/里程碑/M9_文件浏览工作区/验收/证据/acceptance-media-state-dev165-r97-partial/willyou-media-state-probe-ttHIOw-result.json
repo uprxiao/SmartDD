@@ -1,0 +1,166 @@
+{
+  "at": "2026-10-19T19:34:20.266Z",
+  "purpose": "T19 genuine native duration reachability; exploratory, not formal pass",
+  "scratch": "/private/tmp/willyou-media-state-probe-ttHIOw",
+  "manifest": "/private/tmp/willyou-media-state-he3axxd_/fixtures.json",
+  "fixture": {
+    "at": "2026-10-19T19:34:04.843479+00:00",
+    "project": "/private/tmp/willyou-media-state-he3axxd_/project",
+    "cases": [
+      {
+        "name": "broken.wav",
+        "size": 50,
+        "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+      },
+      {
+        "name": "live-webm.opus",
+        "size": 1866,
+        "sha256": "00c3e1077d3d7fd0b7e009d61e74eff752a21e8e99d45d983908738118e6d844"
+      },
+      {
+        "name": "no-eos.opus",
+        "size": 847,
+        "sha256": "398b14f1e60cd3fad342dfe06dfd9ef53544dc89622241c13a5afa612379d4eb"
+      },
+      {
+        "name": "normal.opus",
+        "size": 847,
+        "sha256": "3c2bf2d650ff2aefb7f976aa7a74eebcbd5a3488795a2b99b8c920bf3d23cda9"
+      },
+      {
+        "name": "normal.wav",
+        "size": 288078,
+        "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+      },
+      {
+        "name": "unknown-granule.opus",
+        "size": 847,
+        "sha256": "4d18fe5119684fd6d22d41d9f679eca550db6a22d1cbebfdb7d93a865c1c06c4"
+      },
+      {
+        "name": "zero.wav",
+        "size": 44,
+        "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+      }
+    ],
+    "commands": [
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "pcm_s16le",
+          "/private/tmp/willyou-media-state-he3axxd_/project/normal.wav"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "webm",
+          "-live",
+          "1",
+          "/private/tmp/willyou-media-state-he3axxd_/project/live-webm.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      },
+      {
+        "args": [
+          "/opt/homebrew/bin/ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "anullsrc=r=48000:cl=mono",
+          "-t",
+          "3",
+          "-c:a",
+          "libopus",
+          "-b:a",
+          "32k",
+          "-f",
+          "ogg",
+          "/private/tmp/willyou-media-state-he3axxd_/project/normal.opus"
+        ],
+        "code": 0,
+        "stderr": ""
+      }
+    ],
+    "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+    "boundary": "All silent generated media. live-webm.opus deliberately declares an Opus extension over a live WebM container to explore decoder handling, not a valid Ogg-format conformance claim. Ogg no-EOS/unknown granule fixtures retain complete packets and recomputed page CRC; decoder duration/outcome measured, not assumed."
+  },
+  "asarSha256": "db7c8b7c51f6e1f84a5b24eab91d5e2cb53a317cfe31068178066f54d0658344",
+  "before": {
+    "broken.wav": {
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7",
+      "inode": "51176750",
+      "mtimeNs": "1792438444842932764"
+    },
+    "live-webm.opus": {
+      "sha256": "00c3e1077d3d7fd0b7e009d61e74eff752a21e8e99d45d983908738118e6d844",
+      "inode": "51176746",
+      "mtimeNs": "1792438444817647028"
+    },
+    "no-eos.opus": {
+      "sha256": "398b14f1e60cd3fad342dfe06dfd9ef53544dc89622241c13a5afa612379d4eb",
+      "inode": "51176748",
+      "mtimeNs": "1792438444842719223"
+    },
+    "normal.opus": {
+      "sha256": "3c2bf2d650ff2aefb7f976aa7a74eebcbd5a3488795a2b99b8c920bf3d23cda9",
+      "inode": "51176747",
+      "mtimeNs": "1792438444841485473"
+    },
+    "normal.wav": {
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb",
+      "inode": "51176744",
+      "mtimeNs": "1792438444790874875"
+    },
+    "unknown-granule.opus": {
+      "sha256": "4d18fe5119684fd6d22d41d9f679eca550db6a22d1cbebfdb7d93a865c1c06c4",
+      "inode": "51176749",
+      "mtimeNs": "1792438444842859014"
+    },
+    "zero.wav": {
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0",
+      "inode": "51176745",
+      "mtimeNs": "1792438444792385375"
+    }
+  },
+  "checks": [],
+  "status": "failed exploration",
+  "pid": 42490,
+  "error": "Error: TypeError: Cannot read properties of undefined (reading 'events')\n    at <anonymous>:1:33",
+  "stack": "Error: TypeError: Cannot read properties of undefined (reading 'events')\n    at <anonymous>:1:33\n    at Object.evaluate (file:///Users/hx/hx/hxWork/SmartDD/scripts/lib/electron-harness.mjs:61:42)\n    at async file:///Users/hx/hx/hxWork/SmartDD/scripts/files/media-state-probe-ui.mjs:4:465",
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nT19 native duration exploration\n设置\n首页\n›\nT19 native duration exploration\n文件\nT19 native duration exploration\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nT19 native duration exploration\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/20/2026, 3:34:21 AM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nSynthetic static viewers\n\n正在读取项目目录…\n\nproject\n正在读取…\n本机文件\nT19 native duration exploration\n0 个任务\n该项目还没有登记代码目录，请先在项目页添加。\n编辑项目\n导出项目",
+  "finishedAt": "2026-10-19T19:34:21.958Z"
+}

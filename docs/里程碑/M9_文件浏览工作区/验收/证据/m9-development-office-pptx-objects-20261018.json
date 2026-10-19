@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-17T20:49:05.274280+00:00",
+  "baseline": "M9 R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "state": "P07/P11-text/P12-explicit-transform/P14 model and Worker foundation; not yet exposed by App controls",
+  "requirements": [
+    "R06.10",
+    "R07.2",
+    "R07.11",
+    "R07.16",
+    "R07.18"
+  ],
+  "caseCandidates": [
+    "M9-T-W14",
+    "M9-T-W16",
+    "M9-T-W26",
+    "M9-T-W27",
+    "M9-T-W28",
+    "M9-T-Y10",
+    "M9-T-Y13"
+  ],
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-pptx-objects-core-r1-sources.tar.gz",
+    "sha256": "e24b2be1381845b305246d30966a7f3a01c16e940fbbbbdabe39bb2790f50f90",
+    "files": {
+      "src/shared/file-pptx-elements.ts": "ad9a7359d1e89418b39b10e3a718e16b678d40e2d566be7e5df965410a924c37",
+      "src/shared/file-pptx.ts": "abc57e0fceeff4fafca4b1173bcd6137aded3af06ce641b5187416e9bbaac167",
+      "src/shared/file-office-pages.ts": "119b8153402cbdb2e93ba8ac6b20855027e0ba21959f6e8f6ad75c74379a233f",
+      "src/main/core/files/office/pptx-elements.ts": "2fa1f1e1e7808bc5dc22d24bc3458b4e2fd27c694603120dda8da3e13e28b7f6",
+      "src/main/core/files/office/pptx-element-edit.ts": "80611271d0be7077e3cae0f23cd9510322988ab68f6c2d07346f5876a69fb1f1",
+      "src/main/core/files/office/pptx-edit.ts": "cfa3f6312675636c2b734a820546ffc35121fd6616dd28238944cdd60f6e9837",
+      "src/main/core/files/office/pptx-text-edit.ts": "8972f8d19c0d196a349f1b961233af91f300d17cb37e2e2cd2d61eb6b97f231b",
+      "src/main/core/files/office/pages-model.ts": "789c5119e261b1d94512eccbc0e33f3e489611f7eacefc0e6de8ad7b6cb11fb9",
+      "src/main/core/files/office/pptx-elements.test.ts": "e4e33d4af129934c40806a0164049956a00ea415ba49bc63c83cafc8ae66d484",
+      "src/main/core/files/office/libreoffice-native.test.ts": "33f0efb554b2b9e8ff3e4f7600276811afe518c4f47741f8481811527a52bbe7"
+    }
+  },
+  "implementation": [
+    "source object IDs/types/names/local transforms/text and group-parent identities; duplicate or invalid IDs rejected",
+    "source metadata bounded to 2 MiB serialized UTF-8; undefined inherited bounds stay undefined",
+    "new textbox/11 real preset geometries with independent nonvisual IDs; no CSS geometry written as OOXML",
+    "existing rich-text body patches reuse paragraph/run preservation, CJK/emoji and XML validation",
+    "point-to-EMU and degree-to-angle exact patches on existing transforms; original flip/group and child content retained",
+    "layer changes within the existing parent; all other object IDs/relationships and relative order preserved; unknown drawing nodes reject",
+    "full immutable history, materialization and native-save paths reused"
+  ],
+  "tests": [
+    {
+      "layer": "Office/files code regression; mocks where indicated",
+      "passed": 255,
+      "skipped": 40,
+      "log": "/private/tmp/willyou-m9-pptx-objects-regression-r1.log",
+      "json": "/private/tmp/willyou-m9-pptx-objects-regression-r1.json"
+    },
+    {
+      "layer": "real compiled Worker and native test broker/LibreOffice, Python ZIP/XML independent save check and original-part undo comparison",
+      "passed": 1,
+      "skipped": 10,
+      "log": "/private/tmp/willyou-m9-pptx-objects-native-r2.log",
+      "json": "/private/tmp/willyou-m9-pptx-objects-native-r2.json",
+      "insertedShapes": 11,
+      "committedVersion": 27,
+      "pages": 2,
+      "pdfHash": "b6dd98df2609d56d45f759bd309d3918eb39235451de5eec12bc18418aed5818",
+      "savedHash": "3790b3c697ad4628837130bbea0a2de725cdb36926e70d4b019f9a18010f8c5d",
+      "restoredHash": "49aeb3598ce5653779af4c653caaf0a52b30705e948069d17619034b4b6fd85a",
+      "originalPartsRestored": true
+    },
+    {
+      "layer": "typecheck",
+      "state": "passed",
+      "log": "/private/tmp/willyou-m9-pptx-objects-final-typecheck.log"
+    },
+    {
+      "layer": "git diff --check",
+      "state": "passed"
+    }
+  ],
+  "failuresRetained": [
+    {
+      "log": "/private/tmp/willyou-m9-pptx-objects-core-r1.log",
+      "passed": 7,
+      "failed": 1,
+      "cause": "test fixture assumed original title had an explicit transform; no-op fixture patch violated the exact-part plan",
+      "fix": "fixture helper keeps unchanged package; production still rejects unresolved inherited transforms"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-pptx-objects-native-r1.log",
+      "failed": 1,
+      "skipped": 10,
+      "cause": "layout-order PDF extraction interleaved rotated text with the existing title; whole-word assertion failed",
+      "fix": "content-stream-order extraction for character validation plus independent XML and retained raster; not a claim that overlapping text has a specific reading order"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-objects/pptx-objects-page1.png",
+      "sha256": "347b0efff7853c5deb88d10c9bd13b95c13b414afbaf78f8f0bd03403a95c2f1",
+      "kind": "native-rendered synthetic document projection, not App screenshot"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-objects/pptx-objects.pdf",
+      "sha256": "b6dd98df2609d56d45f759bd309d3918eb39235451de5eec12bc18418aed5818",
+      "kind": "native-rendered synthetic document projection, not App screenshot"
+    }
+  ],
+  "visualInspection": {
+    "kind": "viewed generated page image",
+    "observed": "rotated CJK/emoji textbox, original table/chart and all 11 native geometries are present; deliberate test placement overlaps original objects",
+    "notClaimed": [
+      "real App UI",
+      "Codex fidelity",
+      "font/theme full matrix",
+      "all formats and shared dependencies"
+    ]
+  },
+  "package": {
+    "state": "not built for this increment",
+    "latestUiPackage": "/private/tmp/willyou-m9-pptx-structure-r1-build/mac-arm64/WillYou.app",
+    "latestUiPackageBoundary": "does not contain this object model increment"
+  },
+  "remaining": [
+    "renderer selection/hit areas, object pending input, controls and actual App acceptance",
+    "layout/master placeholder bounds and mixed/inherited style resolution",
+    "full P11 formatting/P12 dragging/P13 appearance/P15 delete dependency adaptation",
+    "P08 images/P09 charts/P10 table adapters",
+    "complete M9 matrix and system IME/visual checks"
+  ],
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "futureExcluded": 6,
+    "newPassesFromThisBatch": 0
+  },
+  "release": "not requested",
+  "environment": {
+    "macOS": "26.6.1",
+    "architecture": "arm64"
+  },
+  "increments": [
+    {
+      "recordedAt": "2026-10-17T20:54:05.676676+00:00",
+      "state": "normal placeholder layout/master geometry resolution and local override added; complex inheritance and UI remain",
+      "environment": {
+        "macOS": "26.6.1",
+        "architecture": "arm64"
+      },
+      "sourceSnapshot": {
+        "path": "/private/tmp/willyou-m9-pptx-geometry-r1-sources.tar.gz",
+        "sha256": "0f43ee3b4242840364b12243d10a22b9fa956834ea1d02dc00bd3700ff2626f6",
+        "files": {
+          "src/shared/file-pptx-elements.ts": "2b0e779ca5ac48a9a6a096d24fb27f32782406627fa00e3b239f2dde1837c511",
+          "src/main/core/files/office/pptx-geometry.ts": "20173a4de325e39d7571fe89992fe9c347eaaf53252c7439076f3c3dfaa2cee8",
+          "src/main/core/files/office/pptx-geometry.test.ts": "ed53a717579393c222e5c73627bc7f4ff64d5fb0eb1289c9c793f31be914f642",
+          "src/main/core/files/office/pptx-elements.ts": "9d0f59b24dfb0798fc9091ff9102c5ec00b60313d51ffd9dfd6a1ae0156f22a6",
+          "src/main/core/files/office/pptx-element-edit.ts": "da2c61d53f71b963be5fd0a3c98792675425b8d09f24fed86965535d9404a87f",
+          "src/main/core/files/office/pages-model.ts": "11f392510f5191f5acb298d572e4c216f8498f153db26f83b9d5a7ed0f2ac588",
+          "src/main/core/files/office/pptx-elements.test.ts": "ef1da82525ffb4f8e9992abc0935cfeb1763af491659cbb556f4e2fd31e0d094",
+          "src/main/core/files/office/libreoffice-native.test.ts": "b0b2558858aa2e7688fb88abeb0ed08eb303c9c15d1437079851eaed65257fc1"
+        }
+      },
+      "behavior": [
+        "slide placeholder matches layout idx, layout matches known master placeholder type",
+        "complete unrotated/unflipped inherited geometry is exposed with layout/master provenance",
+        "editing materializes only a local xfrm, retaining shared template parts",
+        "partial/ambiguous/rotated/flipped inheritance stays explicitly unresolved; nested group positions remain local"
+      ],
+      "tests": [
+        {
+          "layer": "related source/model/compiled Worker/service regression",
+          "passed": 39,
+          "log": "/private/tmp/willyou-m9-pptx-inherit-final-r1.log",
+          "json": "/private/tmp/willyou-m9-pptx-inherit-final-r1.json"
+        },
+        {
+          "layer": "source model/edit plus real native test broker/LibreOffice/independent Poppler raster; not Worker save or App UI",
+          "passed": 1,
+          "skipped": 11,
+          "log": "/private/tmp/willyou-m9-pptx-inherit-native-r1.log",
+          "json": "/private/tmp/willyou-m9-pptx-inherit-native-r1.json",
+          "pixelHash": "11314b60a0c21089f356bc90df6c7c6ce48fd9d0f5c05dd3870647e0de519ec2",
+          "originalPdfHash": "682d1a918890bca886d08afdb7d63b096ead70d04b7279a05c4508c77152315b",
+          "materializedPdfHash": "5a5ce274c3f4a02b07e59cad3952e55bb18f921a84bb31cb88254ce98d87a17a",
+          "sharedPartsUnchanged": true
+        },
+        {
+          "layer": "typecheck",
+          "state": "passed",
+          "log": "/private/tmp/willyou-m9-pptx-inherit-final-typecheck.log"
+        },
+        {
+          "layer": "git diff --check",
+          "state": "passed"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-objects/pptx-inherited-original.png",
+          "sha256": "11314b60a0c21089f356bc90df6c7c6ce48fd9d0f5c05dd3870647e0de519ec2",
+          "kind": "synthetic native PDF raster at maximum dimension 1000 px; not App screenshot"
+        },
+        {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-objects/pptx-inherited-materialized.png",
+          "sha256": "11314b60a0c21089f356bc90df6c7c6ce48fd9d0f5c05dd3870647e0de519ec2",
+          "kind": "synthetic native PDF raster at maximum dimension 1000 px; not App screenshot"
+        }
+      ],
+      "package": "not yet built; source snapshot and native results retained"
+    }
+  ]
+}

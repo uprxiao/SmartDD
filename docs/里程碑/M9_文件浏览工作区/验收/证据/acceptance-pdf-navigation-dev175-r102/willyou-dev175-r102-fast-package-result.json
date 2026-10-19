@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-19T21:57:26.936Z",
+  "method": "Reuse same verified Electron-ABI native modules; full electron-vite build + identical electron-builder configuration/afterPack + original six native-smoke checks. No installer/publish.",
+  "steps": [
+    {
+      "command": "/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+      "args": [
+        "-e",
+        "const req=require('node:module').createRequire(\"/Users/hx/hx/hxWork/SmartDD/package.json\"),Db=req('better-sqlite3'),db=new Db(':memory:'),pty=req('node-pty');if(process.platform!=='darwin'||process.arch!=='arm64'||process.versions.electron!==\"42.11.14\")throw Error('Target mismatch');if(db.prepare('select 1 as value').get().value!==1||typeof pty.spawn!=='function')throw Error('Native ABI mismatch');db.close();console.log(JSON.stringify({platform:process.platform,arch:process.arch,versions:process.versions,sqlite:'passed',ptyModule:'loaded'}));"
+      ],
+      "log": "/private/tmp/willyou-dev175-r102-native-abi-before-fast-package.json",
+      "code": 0,
+      "signal": null,
+      "ms": 185
+    },
+    {
+      "command": "pnpm",
+      "args": [
+        "build"
+      ],
+      "log": "/private/tmp/willyou-dev175-r102-compile.log",
+      "code": 0,
+      "signal": null,
+      "ms": 18163
+    },
+    {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "electron-builder",
+        "--mac",
+        "--dir",
+        "--arm64",
+        "--publish",
+        "never",
+        "--config",
+        "electron-builder.config.cjs",
+        "--config.directories.output=/private/tmp/willyou-m9-acceptance-batch-r102-build",
+        "--config.electronDist=/Users/hx/hx/hxWork/SmartDD/node_modules/electron/dist"
+      ],
+      "log": "/private/tmp/willyou-dev175-r102-package.log",
+      "code": 0,
+      "signal": null,
+      "ms": 27756
+    },
+    {
+      "command": "/private/tmp/willyou-m9-acceptance-batch-r102-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "args": [
+        "/Users/hx/hx/hxWork/SmartDD/scripts/release/native-smoke.cjs",
+        "/private/tmp/willyou-m9-acceptance-batch-r102-build/mac-arm64/WillYou.app/Contents/Resources",
+        "0.0.5",
+        "arm64"
+      ],
+      "log": "/private/tmp/willyou-dev175-r102-native-smoke.log",
+      "code": 0,
+      "signal": null,
+      "ms": 7187
+    }
+  ],
+  "status": "passed",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r102-build/mac-arm64/WillYou.app",
+  "finishedAt": "2026-10-19T21:58:20.229Z"
+}

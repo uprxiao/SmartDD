@@ -1,0 +1,115 @@
+{
+  "caseId": "M9-T-H01",
+  "at": "2026-10-18T09:30:37.948Z",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r21-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "brokerSha256": "81205d4eb75670835a23652a936a3cdd07fcf3e8e8d2f65eb7afa2c546af4676",
+  "boundary": "Real production store/buffer/FileService/recovery and packaged native IO. Watch transport is absent; read-delivery timing/error alone gated after the actual native read. Native permission, missing and persistent draft failures are real. No actual UI/OS-watch claim.",
+  "rows": [
+    {
+      "trigger": "reactivate",
+      "raw": "A original\n",
+      "error": "",
+      "opens": 2,
+      "disk": {
+        "text": "A original\n",
+        "hash": "38af9627cf48086a9f89728091695b1bfca19f489187a3a2f6df46680d8ba0be",
+        "inode": "45698965"
+      }
+    },
+    {
+      "trigger": "refresh",
+      "raw": "A original\n",
+      "error": "",
+      "opens": 2,
+      "disk": {
+        "text": "A original\n",
+        "hash": "38af9627cf48086a9f89728091695b1bfca19f489187a3a2f6df46680d8ba0be",
+        "inode": "45698971"
+      }
+    },
+    {
+      "trigger": "reopen tree",
+      "raw": "A original\n",
+      "error": "",
+      "opens": 2,
+      "disk": {
+        "text": "A original\n",
+        "hash": "38af9627cf48086a9f89728091695b1bfca19f489187a3a2f6df46680d8ba0be",
+        "inode": "45698981"
+      }
+    },
+    {
+      "scenario": "initial read delivery failure -> same-buffer retry",
+      "raw": "B recovered\n",
+      "disk": {
+        "text": "B recovered\n",
+        "hash": "873107c5437f2e485ddbd730b4e6a83672a76e74c6108a21644523eaf594e519",
+        "inode": "45698987"
+      },
+      "reads": 2
+    },
+    {
+      "scenario": "obsolete real A read delivery",
+      "fail": false,
+      "old": "A original\n",
+      "final": "B authoritative\n",
+      "reads": 2,
+      "disk": {
+        "text": "B authoritative\n",
+        "hash": "354b6e34b99a6381f0f2279428d189879ad6b59240092e12593ef747d5e949bc",
+        "inode": "45698993"
+      }
+    },
+    {
+      "scenario": "obsolete real A read delivery",
+      "fail": true,
+      "old": "A original\n",
+      "final": "B authoritative\n",
+      "reads": 2,
+      "disk": {
+        "text": "B authoritative\n",
+        "hash": "354b6e34b99a6381f0f2279428d189879ad6b59240092e12593ef747d5e949bc",
+        "inode": "45698999"
+      }
+    },
+    {
+      "scenario": "permission retry preserves dirty and native checkpoint",
+      "raw": "A original\nLocal draft 中文🙂",
+      "draft": {
+        "base64": "QSBvcmlnaW5hbApMb2NhbCBkcmFmdCDkuK3mlofwn5mC",
+        "baseHash": "38af9627cf48086a9f89728091695b1bfca19f489187a3a2f6df46680d8ba0be",
+        "bufferVersion": 1,
+        "hash": "3544f7d3e524f723cd71a3b391936ec95b50fa9aa8f0b2150050976fed97966c",
+        "encoding": "utf-8"
+      },
+      "disk": {
+        "text": "A original\n",
+        "hash": "38af9627cf48086a9f89728091695b1bfca19f489187a3a2f6df46680d8ba0be",
+        "inode": "45699005"
+      }
+    },
+    {
+      "scenario": "same-inode retry / new-inode explicit fresh capability",
+      "before": {
+        "text": "A original\n",
+        "hash": "38af9627cf48086a9f89728091695b1bfca19f489187a3a2f6df46680d8ba0be",
+        "inode": "45699016"
+      },
+      "after": {
+        "text": "Restored new inode\n",
+        "hash": "4e2f28470ead0a4306344c67b917a5b20a08f464ee48378d6822336f8fd0c6f0",
+        "inode": "45699019"
+      },
+      "raw": "Restored new inode\n"
+    },
+    {
+      "scenario": "late native B refresh after newer C explicit load",
+      "final": "C latest load\n",
+      "disk": {
+        "text": "C latest load\n",
+        "hash": "c59083c66d79a355c14866d33725c88cf15ec53fd71e2c1b0fc24b7f04280dc5",
+        "inode": "45699023"
+      }
+    }
+  ]
+}

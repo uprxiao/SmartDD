@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-17T19:56:11.996337+00:00",
+  "baseline": "M9 R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "state": "development; no real App DOCX/PPTX acceptance",
+  "scope": [
+    "R06.9",
+    "R06.10",
+    "R07.18",
+    "R08.7",
+    "Y09",
+    "W26"
+  ],
+  "environment": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "data": "Synthetic DOCX and reviewed rich-edited.pptx only; AIS original untouched"
+  },
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-libreoffice-r1-sources.tar.gz",
+    "sha256": "d6fbe4664717e0d778be5ae718c5a49da26416d8ce70d717b70bf6dc2d68edb8",
+    "files": {
+      "native/files/office-render.inc.mm": "8c00cbd022c9c5946572695d80dbef530adfa91892d99c6df994655627da8644",
+      "native/files/engine-workspaces.inc.mm": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+      "native/files/broker.mm": "6f874679fbbd2fe83927c70c14f84e031dabce3e8ca4aaf4c33c7a68c12cd7cf",
+      "src/main/core/files/office/libreoffice-resources.ts": "8da5a854c6c9463a219558a5a8ca55389faaeaba3b812192dab995ee6ed8808a",
+      "src/main/core/files/office/libreoffice-engine.ts": "6db42aa6c3de055bf215db9ebd746f257ae7d3b22906ecc5a85cc5f5612b10d3",
+      "src/main/core/files/office/libreoffice-native.test.ts": "0c53697ca56ffc3ba409e0e20f07938091449d474fc1f6ccb515ec56150de1ce",
+      "scripts/files/prepare-libreoffice.py": "151421f389bc264287b8880dd74993de57a852b94c5936b12387125cbbd08dc1",
+      "electron-builder.config.cjs": "479aa5054adedc081c989929df780f7b6a8f401e28654618eaa6006d3d4aea29",
+      "electron.vite.config.ts": "8a5d950d00d4f2b96e9433cce409ff5bad6aef413c47b927d5508e75aaa1059e",
+      "scripts/release/native-smoke.cjs": "55eda816eb2ab96510f3d72b660456c12a67648c5b5be6dc912168f6bac071eb"
+    }
+  },
+  "runtime": {
+    "version": "26.2.4.2",
+    "build": "0229ac93fcf0d7cbc6376066c6f35021cef002dc",
+    "filesAndLinks": 17610,
+    "bytes": 791208986,
+    "sourceDmgSha256": "64e0ad05564554eeee639d49b08b20908a38d4722ec95f1620d05c99bcbe9fb1",
+    "vendorTeam": "7P5S3ZLCN7",
+    "privateProfile": true,
+    "macrosDisabled": true,
+    "preserveVendorSignature": true
+  },
+  "tests": [
+    {
+      "layer": "Python preparation safety",
+      "passed": 4,
+      "log": "/private/tmp/willyou-m9-libreoffice-prepare-tests.log"
+    },
+    {
+      "layer": "offline full preparation/real vendor signature",
+      "result": "passed",
+      "log": "/private/tmp/willyou-m9-libreoffice-prepare-r3.log"
+    },
+    {
+      "layer": "resource and engine unit tests (signature/native boundaries mocked)",
+      "passed": 18,
+      "log": "/private/tmp/willyou-m9-libreoffice-r3-unit.log",
+      "json": "/private/tmp/willyou-m9-libreoffice-r3-unit.json"
+    },
+    {
+      "layer": "real native resource/rendering boundary",
+      "passed": 6,
+      "log": "/private/tmp/willyou-m9-libreoffice-render-native-r5.log",
+      "json": "/private/tmp/willyou-m9-libreoffice-render-native-r5.json",
+      "cases": [
+        "complete vendor signature/inventory",
+        "DOCX/PPTX to PDF with private job cleanup",
+        "resource checksum mismatch rejection",
+        "wall/RSS/cancel limits",
+        "malformed document then valid retry",
+        "independent native read/write/exec/TCP/unrelated UNIX-socket denial canary"
+      ]
+    },
+    {
+      "layer": "typecheck",
+      "result": "passed",
+      "log": "/private/tmp/willyou-m9-libreoffice-r3-typecheck.log"
+    },
+    {
+      "layer": "real packaged original vendor runtime and production native helper; no UI",
+      "passed": 1,
+      "covers": [
+        "DOCX one page",
+        "PPTX two pages",
+        "source bytes unchanged",
+        "private directory cleanup"
+      ],
+      "log": "/private/tmp/willyou-m9-libreoffice-packaged-r1.log",
+      "json": "/private/tmp/willyou-m9-libreoffice-packaged-r1.json"
+    }
+  ],
+  "rendered": [
+    {
+      "format": "docx",
+      "pages": 1,
+      "bytes": 52825,
+      "elapsedMs": 2730,
+      "peakRssBytes": 287932416,
+      "sha256": "6dc37d2ebf75b3670880b6733e0d16aafebe47d13c14a1554ecc2393d29557e7"
+    },
+    {
+      "format": "pptx",
+      "pages": 2,
+      "bytes": 21501,
+      "elapsedMs": 2727,
+      "peakRssBytes": 322945024,
+      "sha256": "7ddbe9c6943ece1ae81826b0432de448e0208586a4d9ea1bfa738d6f0d085852"
+    }
+  ],
+  "failuresRetained": [
+    {
+      "log": "/private/tmp/willyou-m9-libreoffice-resources-native-r1.log",
+      "cause": "codesign -R inline requirement missing =; corrected and r2 passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-libreoffice-render-native-r1.log",
+      "cause": "AppKit register application abort in restricted helper; exact LaunchServices/WindowServer lookups added"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-libreoffice-render-native-r2.log",
+      "cause": "LO global OSL pipe denied; configured OSL_SOCKET_PATH=ipc under fresh private 0700 job with UNIX socket path restrictions"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-libreoffice-render-native-r3.log",
+      "cause": "Seatbelt file-type condition invalid; corrected to local documented vnode-type DIRECTORY"
+    }
+  ],
+  "limits": {
+    "inputBytes": 41943040,
+    "pdfBytes": 41943040,
+    "pdfPages": 2000,
+    "runtimeBytes": 1073741824,
+    "wallMs": 20000,
+    "rssProcessTreeBytes": 1073741824,
+    "prepareAndRunMs": 60000,
+    "temporaryBytes": 134217728,
+    "queue": "one heavy job shared with POI/TeX"
+  },
+  "isolation": "Only fixed vendor runtime, system libraries/fonts, exact ancestor directories, private source/output/profile/temp and private UNIX socket directory. Network outside private UNIX sockets, user file contents, runtime writes and other executables denied in a real canary. No clipboard or external document server access was allowed.",
+  "package": {
+    "path": "/private/tmp/willyou-m9-libreoffice-r1-build/mac-arm64/WillYou.app",
+    "state": "passed directory build and native smoke",
+    "log": "/private/tmp/willyou-m9-libreoffice-r1-package.log",
+    "asarSha256": "187c2ad5d2950629be6bc0742778bf6ee798e818bfbe68f6923362ea1a2ec991",
+    "manifestSha256": "0a53a75d19bebd9cd140d9e19b37436b32e7b81ee03f18413c730fb268aec323",
+    "nativeBytes": 1108019921,
+    "appBytes": 1474662637,
+    "installerSize": "not measured; app directory is not a compressed installer"
+  },
+  "ui": {
+    "result": "blocked",
+    "reason": "CUA after latest unlocked reply still explicitly reports Mac locked; awaiting next user readiness. ui-r3 remains running; ui-r4 color retest not executed."
+  },
+  "notYetImplemented": [
+    "DOCX/PPTX production document model/service/UI",
+    "complete Office fidelity/editing matrix"
+  ],
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "unchanged": true
+  },
+  "reference": [
+    "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/libsyscall/wrappers/libproc/libproc.c",
+    "https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.2.4.2/desktop/source/app/officeipcthread.cxx",
+    "https://raw.githubusercontent.com/LibreOffice/core/master/sal/osl/unx/pipe.cxx",
+    "https://downloadarchive.documentfoundation.org/libreoffice/old/26.2.4.2/src/"
+  ]
+}

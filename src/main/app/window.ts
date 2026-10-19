@@ -1,7 +1,7 @@
 // Window chrome follows Yoda (Apache-2.0) src/main/app/window.ts.
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { BrowserWindow, nativeTheme, type IpcMainEvent } from 'electron';
+import { app, BrowserWindow, nativeTheme, type IpcMainEvent } from 'electron';
 import type { Theme } from '@shared/app-settings';
 import { appIcon } from './icon';
 
@@ -76,9 +76,10 @@ export async function createMainWindow(): Promise<BrowserWindow> {
 
   // macOS: closing the window hides it (terminals keep running); Cmd+Q is the real quit.
   win.on('close', (event) => {
-    if (appQuitting || !isMac) return;
+    if (appQuitting) return;
     event.preventDefault();
-    win.hide();
+    if (isMac) win.hide();
+    else app.quit();
   });
   win.on('closed', () => {
     if (mainWindow === win) { mainWindow = null; mainDocumentURL = null; }

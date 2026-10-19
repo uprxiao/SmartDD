@@ -1,0 +1,139 @@
+{
+  "recordedAt": "2026-10-17T19:28:10.338269+08:00",
+  "scope": "Packaged native App development checks; not final 419-case acceptance",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS 26.6.1 arm64",
+  "method": "CUA native AX clicks/keyboard/scroll and actual App screenshots; only synthetic fixture bytes inspected via filesystem",
+  "bundles": {
+    "first": {
+      "path": "/private/tmp/willyou-m9-pdf-build/mac-arm64/WillYou.app",
+      "appAsarSha256": "96ecc3d3c1e5f45d9107712f0cf76631041ed96a0b17f7117fc72726104be81f"
+    },
+    "fixed": {
+      "path": "/private/tmp/willyou-m9-pdf-fixed-build/mac-arm64/WillYou.app",
+      "appAsarSha256": "8088b15c1ae8caf3310fa1460d45b83ce451beb54be3e0d990d3124b1baa4692"
+    }
+  },
+  "checks": [
+    {
+      "id": "DEV-PDF-01",
+      "bundle": "first",
+      "name": "Normal PDF",
+      "steps": "Open normal.pdf",
+      "actual": "Three pages, Chinese/English canvas text and accessible text layer; outline titles appear",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-02",
+      "bundle": "first",
+      "name": "Links",
+      "steps": "Click external then internal link",
+      "actual": "External URL shown as notice with App retained; internal link reaches page 3 and PAGE_THREE_MARKER",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-03",
+      "bundle": "first",
+      "name": "Password retry",
+      "steps": "Open AES PDF; wrong then synthetic-pass",
+      "actual": "Wrong-password message, then successful canvas/text rendering",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-04",
+      "bundle": "first",
+      "name": "Invalid PDF",
+      "steps": "Open invalid.pdf and truncated.pdf",
+      "actual": "Both report invalid/damaged/incomplete PDF with retry",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-05",
+      "bundle": "first",
+      "name": "CJK recovery",
+      "steps": "Open r34-cjk.pdf after failures",
+      "actual": "Chinese glyphs 文件工作区 中文测试 visible",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-06",
+      "bundle": "first",
+      "name": "Password cancellation",
+      "steps": "Reopen encrypted after switch; wait at least 48 seconds; cancel",
+      "actual": "Password requested again; prompt does not expire while waiting; cancelled message and retry appear",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-07",
+      "bundle": "fixed",
+      "name": "Zoom layout",
+      "steps": "Open normal.pdf, select 25%, dock thumbnails",
+      "actual": "Toolbar30%; actual scaled page geometry and full thumbnail image verified",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-08",
+      "bundle": "fixed",
+      "name": "Rotation",
+      "steps": "Open rotated.pdf",
+      "actual": "Landscape page and rotated text visible",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-09",
+      "bundle": "fixed",
+      "name": "Read-only form",
+      "steps": "Open acroform.pdf",
+      "actual": "READONLY SAMPLE visible, no editable PDF form control in AX tree",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-10",
+      "bundle": "fixed",
+      "name": "Oversized page",
+      "steps": "Open oversized-page.pdf",
+      "actual": "Page opens with explicit reduced-render-resolution notice; numeric canvas limits not measured by this UI check",
+      "status": "passed"
+    },
+    {
+      "id": "DEV-PDF-11",
+      "bundle": "fixed",
+      "name": "2000 pages",
+      "steps": "Open r34-large.pdf; drag scrollbar near bottom, scroll to last, return to first",
+      "actual": "Actual first/2000th/first-page text and page state observed; no timing or memory metric claimed",
+      "status": "passed"
+    }
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-002",
+      "foundIn": "first",
+      "trigger": "Select 25% (actual 30%) in PDF zoom menu",
+      "actual": "Shared prototype min-height 780px overrode scaled PDF page size, leaving oversized blank pages and cropped thumbnails",
+      "fix": "Scoped production PDF page min-height:0",
+      "retestedIn": "fixed",
+      "result": "Actual 30% page height and small page gap verified by native screenshot; docked thumbnails display whole pages",
+      "status": "fixed-and-retested"
+    }
+  ],
+  "ime": {
+    "method": "User physically entered requested phrase and replied 已输入; CUA observed final text and 已保存; disk bytes independently checked",
+    "actual": {
+      "file": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/hello.txt",
+      "bytes": 149,
+      "sha256": "31689a3f5c6db0f8c920b531a6d50677dceca654efd1e712ada2e2ebcbcc875c",
+      "expectedPhraseCount": 1,
+      "allNewlinesCRLF": false,
+      "endsWithExpectedPhrase": true
+    },
+    "status": "basic-input-and-save-passed",
+    "limits": "No captured composition candidate frames; user did not separately describe candidate timing or focus behavior. Markdown/toolbar/search composition guards and full IME matrix still pending."
+  },
+  "evidence": "Native AX states and actual screenshots are in this task conversation. No separate PNG files archived for this group.",
+  "limits": [
+    "No long-run 50-round RSS/JS/GPU/DOM/worker metrics; visible behavior does not prove resource ceilings.",
+    "Review route, download, task comments, selection and full light/dark parity not yet accepted.",
+    "Not all first-bundle checks repeated in fixed bundle; formal final acceptance remains pending."
+  ]
+}

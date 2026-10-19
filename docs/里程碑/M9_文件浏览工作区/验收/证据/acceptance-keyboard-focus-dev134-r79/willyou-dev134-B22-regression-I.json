@@ -1,0 +1,172 @@
+{
+  "at": "2026-10-19T08:50:11.599Z",
+  "caseId": "M9-T-B22",
+  "layer": "I: production tree/store/FileService + real packaged native filesystem; component user-event inputs and jsdom geometry, no actual App claim. Open observations are passive calls into the original native service, no result replacement.",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r76-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "observations": [
+    {
+      "scenario": "range, Meta/Control click, Meta/Control Space and empty selection",
+      "range": {
+        "selected": [
+          "A.txt",
+          "B.txt",
+          "C.txt"
+        ],
+        "focused": "A.txt",
+        "active": "A.txt",
+        "opens": [
+          "C.txt",
+          "A.txt"
+        ]
+      },
+      "toggledFirst": {
+        "selected": [
+          "B.txt",
+          "C.txt"
+        ],
+        "focused": "A.txt",
+        "active": "B.txt",
+        "opens": [
+          "C.txt",
+          "A.txt",
+          "B.txt"
+        ]
+      },
+      "empty": {
+        "selected": [],
+        "focused": "B.txt",
+        "active": "B.txt",
+        "opens": [
+          "C.txt",
+          "A.txt",
+          "B.txt"
+        ]
+      },
+      "final": {
+        "selected": [],
+        "focused": "B.txt",
+        "active": "B.txt",
+        "opens": [
+          "C.txt",
+          "A.txt",
+          "B.txt"
+        ]
+      },
+      "sourceUnchanged": {
+        "A.txt": {
+          "hash": "ab2093f3aa5682668b14616fd38630c331b68df5615f61c9c84a1aa4b147554e",
+          "inode": "50041207",
+          "mtimeNs": "1792399810647669088"
+        },
+        "B.txt": {
+          "hash": "77dbda02971c5de22853eaef97d6609c6ff26e20d6acc4a94b3ce0c8ff10fd7d",
+          "inode": "50041209",
+          "mtimeNs": "1792399810647742713"
+        },
+        "C.txt": {
+          "hash": "2d2bd035676cdaf0d4cb13b2c2423fd034d8d6cc9a4a7005fccf3bf84ef57bac",
+          "inode": "50041212",
+          "mtimeNs": "1792399810647933672"
+        },
+        "folder/child.txt": {
+          "hash": "83f96c8853ce7cb71e6931a6edbacbd11f8a977a4765df30970aba845af60b53",
+          "inode": "50041215",
+          "mtimeNs": "1792399810648001631"
+        }
+      }
+    },
+    {
+      "scenario": "Shift arrow, visible select-all, native Space activation",
+      "range": {
+        "selected": [
+          "A.txt",
+          "B.txt"
+        ],
+        "focused": "A.txt",
+        "active": "A.txt",
+        "opens": [
+          "B.txt",
+          "A.txt"
+        ]
+      },
+      "final": {
+        "selected": [
+          "folder",
+          "child.txt",
+          "A.txt",
+          "B.txt",
+          "C.txt"
+        ],
+        "focused": "folder",
+        "active": "folder/child.txt",
+        "opens": [
+          "B.txt",
+          "A.txt",
+          "B.txt",
+          "folder/child.txt"
+        ]
+      },
+      "sourceUnchanged": {
+        "A.txt": {
+          "hash": "ab2093f3aa5682668b14616fd38630c331b68df5615f61c9c84a1aa4b147554e",
+          "inode": "50041265",
+          "mtimeNs": "1792399811017344751"
+        },
+        "B.txt": {
+          "hash": "77dbda02971c5de22853eaef97d6609c6ff26e20d6acc4a94b3ce0c8ff10fd7d",
+          "inode": "50041266",
+          "mtimeNs": "1792399811017402293"
+        },
+        "C.txt": {
+          "hash": "2d2bd035676cdaf0d4cb13b2c2423fd034d8d6cc9a4a7005fccf3bf84ef57bac",
+          "inode": "50041267",
+          "mtimeNs": "1792399811017456751"
+        },
+        "folder/child.txt": {
+          "hash": "83f96c8853ce7cb71e6931a6edbacbd11f8a977a4765df30970aba845af60b53",
+          "inode": "50041268",
+          "mtimeNs": "1792399811017527626"
+        }
+      }
+    },
+    {
+      "scenario": "native refresh crosses pending keyboard focus",
+      "frameDeliveredWhileRowsUnavailable": true,
+      "originalNativeListResultHeldOnlyAfterIO": true,
+      "final": {
+        "selected": [
+          "A.txt",
+          "B.txt"
+        ],
+        "focused": "A.txt",
+        "active": "A.txt",
+        "opens": [
+          "B.txt",
+          "A.txt"
+        ]
+      },
+      "sourceUnchanged": {
+        "A.txt": {
+          "hash": "ab2093f3aa5682668b14616fd38630c331b68df5615f61c9c84a1aa4b147554e",
+          "inode": "50041277",
+          "mtimeNs": "1792399811443238271"
+        },
+        "B.txt": {
+          "hash": "77dbda02971c5de22853eaef97d6609c6ff26e20d6acc4a94b3ce0c8ff10fd7d",
+          "inode": "50041278",
+          "mtimeNs": "1792399811443301813"
+        },
+        "C.txt": {
+          "hash": "2d2bd035676cdaf0d4cb13b2c2423fd034d8d6cc9a4a7005fccf3bf84ef57bac",
+          "inode": "50041279",
+          "mtimeNs": "1792399811443365813"
+        },
+        "folder/child.txt": {
+          "hash": "83f96c8853ce7cb71e6931a6edbacbd11f8a977a4765df30970aba845af60b53",
+          "inode": "50041280",
+          "mtimeNs": "1792399811443430897"
+        }
+      }
+    }
+  ]
+}

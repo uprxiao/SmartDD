@@ -1,0 +1,53 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/terminal-context/store.test.ts src/shared/file-terminal.test.ts src/main/core/files/terminal-context-acceptance.test.ts
+
+[1020/051836.372759:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1020/051836.739075:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1020/051836.739095:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1020/051836.739071:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/files/terminal-context-acceptance.test.ts (32 tests | 1 failed) 2444ms
+     × Y33 original file source and terminal service preserve the same generic path for all real formats 241ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/files/terminal-context-acceptance.test.ts > DEV045 controlled file-to-terminal service integration > Y33 original file source and terminal service preserve the same generic path for all real formats
+ZodError: [
+  {
+    "code": "unrecognized_keys",
+    "keys": [
+      "size",
+      "changedNs",
+      "modifiedNs",
+      "hash"
+    ],
+    "path": [
+      "identity"
+    ],
+    "message": "Unrecognized keys: \"size\", \"changedNs\", \"modifiedNs\", \"hash\""
+  }
+]
+ ❯ FileTerminalService.prepare src/main/core/files/terminal-context.ts:49:41
+     47|   }
+     48|   async prepare(event: IpcMainInvokeEvent, owner: string, raw: Termina…
+     49|     const input = terminalPrepareSchema.parse(raw), binding = this.req…
+       |                                         ^
+     50|     const root: RootRequest = input.target.kind === 'document' ? input…
+     51|     if (root.lease !== binding.root.lease || root.generation !== bindi…
+ ❯ terminalPrepare src/main/core/files/controller.ts:57:189
+ ❯ src/shared/ipc/rpc.ts:33:25
+ ❯ Object.invoke src/main/core/files/terminal-context-acceptance.test.ts:40:93
+ ❯ src/main/core/files/terminal-context-acceptance.test.ts:92:123
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 69 passed (70)
+   Start at  05:18:36
+   Duration  3.17s (transform 542ms, setup 0ms, import 833ms, tests 3.38s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

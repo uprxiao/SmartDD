@@ -1,0 +1,122 @@
+{
+  "kind": "development-native-ui",
+  "time": "2026-10-17",
+  "platform": "macOS 26.6.1 arm64",
+  "branch": "feature/0.0.1",
+  "baseline": "89de9af4b631abdef5673ce8949fb02a32f6fcad + uncommitted M9 work",
+  "build": {
+    "path": "/private/tmp/willyou-m9-notebook-build/mac-arm64/WillYou.app",
+    "asarSHA256": "c40ff20d932a14cfc571ac136bbd500d338163546908f78ddbb6ab1349addd51"
+  },
+  "fixtures": [
+    {
+      "name": "all.ipynb",
+      "bytes": 3236,
+      "sha256": "33bca7df324f59ddedffe64a62b1dc06292dac3dea7d7250f1672cf933d6a758"
+    },
+    {
+      "name": "empty.ipynb",
+      "bytes": 12,
+      "sha256": "704c7f575b473af84665f2d217a63070b70161fc46f5bf300b3d0ac3e0346160"
+    },
+    {
+      "name": "html-table.ipynb",
+      "bytes": 143106,
+      "sha256": "00d30f19dc82d431e2e07d8b0c92b423757dd382076bf41c97807cda8b8beea9"
+    },
+    {
+      "name": "invalid-json.ipynb",
+      "bytes": 9,
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    {
+      "name": "invalid-schema.ipynb",
+      "bytes": 44,
+      "sha256": "f2b1191eaacf5b0608b2043d5edcf3383975d2273395d8a21038f0e7c5d3f0b2"
+    },
+    {
+      "name": "many-cells.ipynb",
+      "bytes": 241796,
+      "sha256": "5202c4cbfe32e3a2bc870b5c4d418512a70964c9a60ae7b1428ba2f0de9afd5c"
+    },
+    {
+      "name": "stream-40m.ipynb",
+      "bytes": 41943040,
+      "sha256": "381f6d5aaeba9e319f3db4d59d9a67091bc0e53575981c4a679758cde0b8816f"
+    },
+    {
+      "name": "many-outputs.ipynb",
+      "bytes": 54987,
+      "sha256": "0054081e62d9d347a520abcac8f975125ed54678273217114ca05d7e33ae5e97"
+    }
+  ],
+  "checks": [
+    {
+      "id": "NB-DEV-01",
+      "state": "passed",
+      "actual": "真实 all.ipynb 标题/8单元；有描述代码默认折叠，展开显示print(\"WillYou\")，Run4只显示，summary及Raw output展开；Raw/未知类型/空单元显示。"
+    },
+    {
+      "id": "NB-DEV-02",
+      "state": "passed-with-boundary",
+      "actual": "实际JPEG、SVG、HTML表格、Markdown、text、JSON/Vega、error/traceback显示；1×1透明PNG只核对图像节点，不宣称复杂图像保真。网络及脚本拒绝本轮仅模型测试，未做真实网络探针。"
+    },
+    {
+      "id": "NB-DEV-03",
+      "state": "passed",
+      "actual": "Copy code首次因document未聚焦明确失败；窗口Raise后重试，粘贴到筛选框确认Raw cell content，随后清空筛选。"
+    },
+    {
+      "id": "NB-DEV-04",
+      "state": "passed",
+      "actual": "empty.ipynb显示0单元空态；invalid-json与invalid-schema分别显示JSON解析失败和第1单元结构无效。随后有效文件可打开。"
+    },
+    {
+      "id": "NB-DEV-05",
+      "state": "passed",
+      "actual": "41943040字节文件实际打开，末段41926516–41942899/41942899，截图可见TAIL_40M_END；前一段、末段键盘切换可用。未测精确时间/RSS。"
+    },
+    {
+      "id": "NB-DEV-06",
+      "state": "passed-with-boundary",
+      "actual": "3000单元打开，通过End到Cell3000及CELL_3000_OF_3000，再Home回Cell1。此夹具把1000 outputs放在raw cell，未计输出分页验证，另生成独立code cell夹具。"
+    },
+    {
+      "id": "NB-DEV-07",
+      "state": "failed",
+      "defect": "M9-DEV-003",
+      "actual": "HTML计数可翻至23/23；截图最后iframe为空白。第16段曾由实际AX看到ROW_1981…ROW_2112。单独解析最后段仍有ROW_2905…ROW_3000，不能据模型结果宣布UI通过。"
+    }
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-003",
+      "state": "fixed-and-packaged-retested",
+      "description": "HTML输出翻段后的iframe空白；加入片段key强制更换独立iframe生命周期。需新包真实复验，不预填修复成功。",
+      "retest": "2026-10-17约20:06 CUA逐页点击1–23段，末段截图显示ROW_2905起；聚焦iframe后End，截图实际显示ROW_2991…ROW_3000，末页下一段禁用。保留旧失败事实。"
+    }
+  ],
+  "limits": [
+    "非419条正式全量验收；此处为开发检查",
+    "截图/AX位于会话工具结果，本轮未伪造本地截图文件",
+    "50次生命周期、DOM/Worker/帧/图像数和RSS定量测试未执行",
+    "全部Notebook菜单/下载/外改/用户系统IME矩阵未完成"
+  ],
+  "retestBuild": {
+    "path": "/private/tmp/willyou-m9-code-build/mac-arm64/WillYou.app",
+    "asarSHA256": "024befbd4fc954992f4086da435f2d5f12dad73e9323ca31283f28f8a04d97eb"
+  },
+  "retests": [
+    {
+      "id": "NB-DEV-07-R1",
+      "state": "passed",
+      "defect": "M9-DEV-003",
+      "actual": "2026-10-17约20:06 CUA逐页点击1–23段，末段截图显示ROW_2905起；聚焦iframe后End，截图实际显示ROW_2991…ROW_3000，末页下一段禁用。保留旧失败事实。"
+    },
+    {
+      "id": "NB-DEV-08",
+      "state": "passed",
+      "actual": "独立code cell内1000个stream输出，从首组1–12通过83次真实按钮点击逐组到997–1000；逐组AX范围连续、最后截图OUTPUT_997…OUTPUT_1000可见，后一组禁用。前一组返回985–996。未将原raw-cell夹具计作此验证。"
+    }
+  ]
+}

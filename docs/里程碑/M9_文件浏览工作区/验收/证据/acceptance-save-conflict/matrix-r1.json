@@ -1,0 +1,37 @@
+{
+  "caseId": "M9-T-H19",
+  "startedAt": "2026-10-18T03:17:25.944Z",
+  "rows": [],
+  "native": {
+    "source": "native/files/broker.mm",
+    "sourceSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+    "testBroker": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-h19-test-broker-GIegfu/willyou-files-test",
+    "testBrokerSha256": "308e210d35f5b70db2230f70eb69eec6291750d69b620d51283def703898fcc8",
+    "compile": [
+      "xcrun",
+      "clang++",
+      "-std=c++17",
+      "-fobjc-arc",
+      "-O1",
+      "-Wno-deprecated-declarations",
+      "-DWILLYOU_FILE_BROKER_TEST=1",
+      "-framework",
+      "Foundation",
+      "-framework",
+      "AppKit",
+      "-framework",
+      "ImageIO",
+      "-framework",
+      "CoreGraphics",
+      "-framework",
+      "CoreText",
+      "/Users/hx/hx/hxWork/SmartDD/native/files/broker.mm",
+      "-o",
+      "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-h19-test-broker-GIegfu/willyou-files-test"
+    ],
+    "productionBroker": "/private/tmp/willyou-m9-acceptance-batch-r6-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "productionBrokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "boundary": "Separate helper compiles unchanged production source with existing WILLYOU_FILE_BROKER_TEST suspension hook; no fake saved/conflict response. Precommit cases use actual packaged r6 helper."
+  },
+  "finishedAt": "2026-10-18T03:17:33.029Z"
+}

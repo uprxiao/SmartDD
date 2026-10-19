@@ -42,3 +42,26 @@ test('a successful drop consumes its token and a newer drag invalidates the prev
  assert.equal(resolveFileDrag(old.token,'t').ok,false);assert.equal(resolveFileDrag(current.token,'t').path,'/work/new');
  assert.equal(resolveFileDrag(current.token,'t').error,'unknown-drag');
 });
+
+test('cancelled prototype drop gives one re-drag reason; newer input clears old cancellation',()=>{const old=beginFileDrag({taskId:'t',rootPath:'/work',relativePath:'old'});endFileDrag();assert.equal(resolveFileDrag(old.token,'t').error,'cancelled-drag');assert.equal(resolveFileDrag(old.token,'t').error,'unknown-drag');const abandoned=beginFileDrag({taskId:'t',rootPath:'/work',relativePath:'abandoned'});endFileDrag();const next=beginFileDrag({taskId:'t',rootPath:'/work',relativePath:'next'});assert.equal(resolveFileDrag(next.token,'t').path,'/work/next');assert.equal(resolveFileDrag(abandoned.token,'t').error,'unknown-drag');});
+
+test('same task with a rebuilt PTY cannot consume an old captured drag',()=>{const old=beginFileDrag({taskId:'t',ptyId:'old-pty',rootPath:'/work',relativePath:'a'});assert.equal(resolveFileDrag(old.token,'t','new-pty').error,'foreign-task');endFileDrag();const next=beginFileDrag({taskId:'t',ptyId:'new-pty',rootPath:'/work',relativePath:'b'});assert.equal(resolveFileDrag(next.token,'t','new-pty').path,'/work/b');});
+
+test('Y39 forged DataTransfer path/root/file/task or URL never becomes or consumes a catalog source',()=>{
+ const valid=beginFileDrag({taskId:'t',rootPath:'/synthetic/local',relativePath:'picture.png'});
+ for(const forged of[JSON.stringify({path:'/synthetic/local/picture.png',rootId:'main',fileId:'picture.png',taskId:'t'}),'picture.png','/synthetic/local/picture.png','https://invalid.example/p.png','data:image/png;base64,AA==','blob:synthetic'])assert.equal(resolveFileDrag(forged,'t').error,'unknown-drag');
+ assert.equal(resolveFileDrag(valid.token,'t').path,'/synthetic/local/picture.png');endFileDrag();
+ for(const rootPath of['ssh://other/same','https://invalid.example','blob:synthetic','data:image/png;base64,AA=='])assert.equal(beginFileDrag({taskId:'t',rootPath,relativePath:'picture.png'}).ok,false);
+});
+
+test('Y35 all legal filename classes preserve exact catalog paths; all control bytes reject whole identity',()=>{
+ for(const name of['中文.txt','with space.txt','emoji🙂.txt',"single'quote.txt",'double"quote.txt','paren().txt','semi;.txt','grave`.txt','cash$().txt',"中文 空格🙂'\"();`$().txt"]){const path='/synthetic/'+name;assert.equal(absoluteFilePath('/synthetic',name).path,path);assert.equal(buildFilePathInsertion({...terminal,path}).data,path+' ');}
+ for(const code of[...Array.from({length:32},(_,i)=>i),...Array.from({length:33},(_,i)=>127+i)]){const name='a'+String.fromCharCode(code)+'b';assert.equal(beginFileDrag({taskId:'t',rootPath:'/synthetic',relativePath:name}).ok,false);assert.equal(buildFilePathInsertion({...terminal,path:'/synthetic/'+name}).error,'unsafe-path');}endFileDrag();
+});
+test('Y35 exactly L-1/L/L+1 count the final separator and never truncate an over-limit file identity',()=>{
+ for(const total of[7999,8000,8001]){const path='/'+'x'.repeat(total-2),result=buildFilePathInsertion({...terminal,path});if(total<=8000){assert.equal(result.data,path+' ');assert.equal(result.data.length,total);}else{assert.equal(result.error,'too-large');assert.equal(result.data,undefined);}}
+});
+
+test('Y33 every file suffix follows the same catalog token/path contract, independent of optional CLI labels',()=>{
+ for(const runner of['claude','codex'])for(const extension of['txt','md','docx','pdf','png','jpg','unknown-m9']){const name='sample.'+extension,drag=beginFileDrag({taskId:'t',rootPath:'/synthetic/formats',relativePath:name,runner}),source=resolveFileDrag(drag.token,'t'),result=buildFilePathInsertion({...terminal,path:source.path,runner});assert.equal(source.path,'/synthetic/formats/'+name);assert.equal(result.data,source.path+' ');assert(!result.data.startsWith('@'));assert(!/[\r\n\x1b]/.test(result.data));endFileDrag();}
+});

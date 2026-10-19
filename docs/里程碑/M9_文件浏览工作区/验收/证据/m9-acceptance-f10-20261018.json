@@ -1,0 +1,3240 @@
+{
+  "schema": 1,
+  "case": "M9-T-F10",
+  "requirements": [
+    "M9-R06.1",
+    "M9-R06.14"
+  ],
+  "requirementRevision": "R3.4-P1",
+  "recordedAt": "2026-10-18T01:45:56.587828+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "testRunner": "pnpm test (Electron bundled Node/Vitest)",
+    "data": "40 isolated synthetic files in a disposable project; no user project data"
+  },
+  "status": "F10 complete: all explicitly required U/I matrix branches passed, plus actual packaged App GUI checks of three representative fixtures",
+  "formalIndexUpdated": false,
+  "levelBoundary": {
+    "caseEnvironments": [
+      "U",
+      "I"
+    ],
+    "executed": [
+      "production classifier unit matrix",
+      "production FileService/root/recovery + FileBuffer integrated through real packaged native broker",
+      "real authorized filesystem read/checkpoint/save and byte hashes",
+      "Actual new-package App GUI subset: three files, verified by root CUA and independent post-operation hashes"
+    ],
+    "notExecuted": [
+      "GUI execution of all 40 matrix samples",
+      "other operating systems"
+    ],
+    "note": "The formal case explicitly names U+I; those complete matrices passed. Three App GUI samples additionally verify the repaired routing. This does not claim 40 GUI samples or whole-viewer visual parity."
+  },
+  "reference": {
+    "path": "docs/里程碑/M9_文件浏览工作区/调研/M9_文件类型与编辑状态全集.md",
+    "sha256": "07127ed2672a4f755fa0cff5bb4a55bbb03ec029363592ad775e8734cee430d6",
+    "line": 50,
+    "rule": "first 4096 bytes; unknown magic fallback: value <32 outside inclusive 7..14 is binary; other bytes do not independently force binary",
+    "source": "archived V2 uTt/fTt/_Tt/vTt/ETt L56978–57031",
+    "remainingComparisonBoundary": "No live reference App was operated. These are comparisons with the reviewed archived classifier facts, not a full viewer equivalence claim."
+  },
+  "defect": {
+    "localId": "M9-T-F10-control-range",
+    "state": "closed for the reproduced control-range defect after source/native integration and new-package GUI verification",
+    "before": "WHATWG fallback classified 07/08/0B/0E as binary and ESC 1B as text, conflicting with reviewed range. Aggregate all-permitted fixture also failed.",
+    "after": "Control fallback now allows inclusive C0 7..14 and rejects other C0; signature and 4096-byte ordering unchanged.",
+    "unitMismatchesBefore": [
+      "c0-07.txt",
+      "c0-08.txt",
+      "c0-0b.txt",
+      "c0-0e.txt",
+      "c0-1b.txt",
+      "all-permitted-controls.txt"
+    ],
+    "integrationMismatchesBefore": [
+      "c0-07.txt",
+      "c0-08.txt",
+      "c0-0b.txt",
+      "c0-0e.txt",
+      "c0-1b.txt",
+      "all-permitted-controls.txt"
+    ],
+    "id": "M9-DEV-032"
+  },
+  "sourceFiles": {
+    "src/shared/file-classification.ts": {
+      "sha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+      "previousPackagedSourceSha256": "92014fceb10b2cac03105576060ac523be86ad3481c160626c1eca29ed9c3342",
+      "matchesPreviousPackagedSource": false
+    },
+    "src/shared/file-classification.test.ts": {
+      "sha256": "145e909291a5e20995c82d1e2d0c95190f2df8081a6c97a4aec1d3b53068df4e",
+      "previousPackagedSourceSha256": "9731d56383070c8fc4b6872d81465b231026620d54f9475a7639825a7a470be7",
+      "matchesPreviousPackagedSource": false
+    },
+    "src/shared/file-text.ts": {
+      "sha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "previousPackagedSourceSha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "matchesPreviousPackagedSource": true
+    },
+    "src/main/core/files/file-service.ts": {
+      "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "previousPackagedSourceSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "matchesPreviousPackagedSource": true
+    },
+    "src/main/core/files/native-broker.ts": {
+      "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "previousPackagedSourceSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "matchesPreviousPackagedSource": true
+    },
+    "src/renderer/features/files/file-buffer.ts": {
+      "sha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+      "previousPackagedSourceSha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+      "matchesPreviousPackagedSource": true
+    },
+    "native/files/broker.mm": {
+      "sha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "previousPackagedSourceSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "matchesPreviousPackagedSource": true
+    },
+    "src/renderer/features/files/classification-f10.test.ts": {
+      "sha256": "e8053be05dfa192b5e663735974705bcd7d4f4d6c06d216b6826f210287fe5b8",
+      "previousPackagedSourceSha256": null,
+      "matchesPreviousPackagedSource": false
+    }
+  },
+  "reusedPackage": {
+    "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+    "asarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+    "native": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "sourceManifest": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-sources.json",
+      "sha256": "4e8b9b58e0669928df12ed8aebe0ee982a8fe9a20296d40a2024e37d215334d7"
+    },
+    "note": "Tests execute this exact packaged broker binary. JS is current production source under Vitest, not old ASAR; the previous package contains the failed classifier implementation. No recompile of native broker and no new App package was performed by this task."
+  },
+  "testReports": [
+    {
+      "phase": "before",
+      "path": "/private/tmp/willyou-f10-before-tests.json",
+      "sha256": "0c471f291bcf39bbf6ef73a9805874691baea38429fd58dd1daf8a205f7e2599",
+      "passed": 34,
+      "failed": 7,
+      "pending": 0,
+      "suiteSpanSeconds": 1.344,
+      "failedTests": [
+        "M9-T-F10 reviewed 4096-byte content classification 'c0-07.txt' follows the reviewed classification and sample boundary",
+        "M9-T-F10 reviewed 4096-byte content classification 'c0-08.txt' follows the reviewed classification and sample boundary",
+        "M9-T-F10 reviewed 4096-byte content classification 'c0-0b.txt' follows the reviewed classification and sample boundary",
+        "M9-T-F10 reviewed 4096-byte content classification 'c0-0e.txt' follows the reviewed classification and sample boundary",
+        "M9-T-F10 reviewed 4096-byte content classification 'c0-1b.txt' follows the reviewed classification and sample boundary",
+        "M9-T-F10 reviewed 4096-byte content classification 'all-permitted-controls.txt' follows the reviewed classification and sample boundary",
+        "M9-T-F10 production service/buffer with packaged native broker verifies every sample through real authorized IO, editor routing and text save boundaries"
+      ]
+    },
+    {
+      "phase": "after",
+      "path": "/private/tmp/willyou-f10-after-tests.json",
+      "sha256": "c11c706a49314f28cce5ff25d055092598cf2d8a120bc9d7807d486e4a323d83",
+      "passed": 65,
+      "failed": 0,
+      "pending": 0,
+      "suiteSpanSeconds": 3.174,
+      "failedTests": []
+    }
+  ],
+  "matrixSummary": {
+    "unitRows": 40,
+    "unitPassed": 40,
+    "integrationRows": 40,
+    "integrationPassed": 40,
+    "editableTextRealSaves": 12,
+    "notEditableWithUnchangedBytes": 28,
+    "notEditableWithNoSaveOrCheckpoint": 28
+  },
+  "pngFixtureIndependentValidation": {
+    "bytes": 70,
+    "sha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+    "dimensions": [
+      1,
+      1
+    ],
+    "chunks": [
+      "IHDR",
+      "IDAT",
+      "IEND"
+    ],
+    "allCrcValid": true,
+    "inflatedScanlineHex": "00ff0000ff",
+    "fixtureCorrection": "Initial negative-control run used a known 1px PNG base64 with invalid IDAT CRC. The PNG signature classification was still valid, but it was replaced before final run with a complete independently CRC/deflate-validated red pixel. Initial evidence is retained without alteration."
+  },
+  "safetyMeaning": "The production text buffer creates no editor or writable text state for 28 noneditable samples and makes no save/checkpoint calls. FileService.save is a generic byte-save contract also used for Office; this record does not claim arbitrary direct generic save calls reject every binary format.",
+  "sampleBoundary": "NUL at offsets 4094/4095 classifies binary. Offset 4096 is beyond the sample and classifies text, but complete strict text decode rejects its NUL before creating an editor; all three original files remain byte-identical.",
+  "before": {
+    "case": "M9-T-F10",
+    "startedAt": "2026-10-18T01:30:16.697Z",
+    "unit": [
+      {
+        "name": "c0-00.txt",
+        "size": 3,
+        "sha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-01.txt",
+        "size": 3,
+        "sha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-02.txt",
+        "size": 3,
+        "sha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-03.txt",
+        "size": 3,
+        "sha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-04.txt",
+        "size": 3,
+        "sha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-05.txt",
+        "size": 3,
+        "sha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-06.txt",
+        "size": 3,
+        "sha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-07.txt",
+        "size": 3,
+        "sha256": "9f069067bda2832e7ce0b0957917882e35680e3f36dd6b850a3c2c40a6441046",
+        "expected": "text",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": false
+      },
+      {
+        "name": "c0-08.txt",
+        "size": 3,
+        "sha256": "b5a1f15d56efd354a4991c78147a94bff5903f4bda2f887e67f6e1a1a666c688",
+        "expected": "text",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": false
+      },
+      {
+        "name": "c0-09.txt",
+        "size": 3,
+        "sha256": "34d0e593db2e19f3846171ea117f698e16a2268a8da824a04fd1e083842b4a63",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0a.txt",
+        "size": 3,
+        "sha256": "23519a43c66b4c342f25b32e09797ec5f3fc0be388cd8243fb3449afbdce4013",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0b.txt",
+        "size": 3,
+        "sha256": "4b21641edaacd3f14e7117569da0514c71aeab11770623832b5c23b379d07b58",
+        "expected": "text",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": false
+      },
+      {
+        "name": "c0-0c.txt",
+        "size": 3,
+        "sha256": "b90245ee5d9d74d103493407baa834be8a3662965a57b3f432dc76ac5d706529",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0d.txt",
+        "size": 3,
+        "sha256": "3425894c5c4c4f46c9a46ad6ce013729f832d2cdc96d4b7d9f874d0c5eacd192",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0e.txt",
+        "size": 3,
+        "sha256": "65ba0f8ceed5e94b2a37b75c0e160f85138b592877c5c14d2b5aff8faec5b58a",
+        "expected": "text",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": false
+      },
+      {
+        "name": "c0-0f.txt",
+        "size": 3,
+        "sha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-10.txt",
+        "size": 3,
+        "sha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-11.txt",
+        "size": 3,
+        "sha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-12.txt",
+        "size": 3,
+        "sha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-13.txt",
+        "size": 3,
+        "sha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-14.txt",
+        "size": 3,
+        "sha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-15.txt",
+        "size": 3,
+        "sha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-16.txt",
+        "size": 3,
+        "sha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-17.txt",
+        "size": 3,
+        "sha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-18.txt",
+        "size": 3,
+        "sha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-19.txt",
+        "size": 3,
+        "sha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1a.txt",
+        "size": 3,
+        "sha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1b.txt",
+        "size": 3,
+        "sha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "expected": "binary",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": false
+      },
+      {
+        "name": "c0-1c.txt",
+        "size": 3,
+        "sha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1d.txt",
+        "size": 3,
+        "sha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1e.txt",
+        "size": 3,
+        "sha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1f.txt",
+        "size": 3,
+        "sha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "tab-lf-cr.txt",
+        "size": 3,
+        "sha256": "5f17b566f2cf1c904a2dcffbfedf232ff0aeaf445d5d7c89499e9084091b3858",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "all-permitted-controls.txt",
+        "size": 8,
+        "sha256": "186910699e1058c751c2942e0521cf37932d2121ede323c4ad789947314d6832",
+        "expected": "text",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": false
+      },
+      {
+        "name": "del.txt",
+        "size": 3,
+        "sha256": "d0c64418313a5fb1d0a16155efa162e545d4cd7fb2cafe72e46dc27595a326d9",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "empty.txt",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "png-disguised.txt",
+        "size": 68,
+        "sha256": "01dd7f08f84eca35384fd4e7d49f70e2cc33c2dd99a45b199bdd2297be5b0462",
+        "expected": "image",
+        "actual": {
+          "kind": "image",
+          "mime": "image/png",
+          "format": "txt",
+          "basis": "signature"
+        },
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4094.txt",
+        "size": 4097,
+        "sha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4095.txt",
+        "size": 4097,
+        "sha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4096.txt",
+        "size": 4097,
+        "sha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      }
+    ],
+    "integration": [
+      {
+        "name": "c0-00.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "finalSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "expectedFinalSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-01.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "finalSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "expectedFinalSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-02.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "finalSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "expectedFinalSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-03.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "finalSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "expectedFinalSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-04.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "finalSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "expectedFinalSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-05.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "finalSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "expectedFinalSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-06.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "finalSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "expectedFinalSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-07.txt",
+        "expectedKind": "text",
+        "actualKind": "binary",
+        "expectedEditable": true,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "9f069067bda2832e7ce0b0957917882e35680e3f36dd6b850a3c2c40a6441046",
+        "finalSha256": "9f069067bda2832e7ce0b0957917882e35680e3f36dd6b850a3c2c40a6441046",
+        "expectedFinalSha256": "9f069067bda2832e7ce0b0957917882e35680e3f36dd6b850a3c2c40a6441046",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": false
+      },
+      {
+        "name": "c0-08.txt",
+        "expectedKind": "text",
+        "actualKind": "binary",
+        "expectedEditable": true,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "b5a1f15d56efd354a4991c78147a94bff5903f4bda2f887e67f6e1a1a666c688",
+        "finalSha256": "b5a1f15d56efd354a4991c78147a94bff5903f4bda2f887e67f6e1a1a666c688",
+        "expectedFinalSha256": "b5a1f15d56efd354a4991c78147a94bff5903f4bda2f887e67f6e1a1a666c688",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": false
+      },
+      {
+        "name": "c0-09.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "34d0e593db2e19f3846171ea117f698e16a2268a8da824a04fd1e083842b4a63",
+        "finalSha256": "e2b75136b5ff28319ac0c00f423302a9753594902a9ea027221bce658be50724",
+        "expectedFinalSha256": "e2b75136b5ff28319ac0c00f423302a9753594902a9ea027221bce658be50724",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0a.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "23519a43c66b4c342f25b32e09797ec5f3fc0be388cd8243fb3449afbdce4013",
+        "finalSha256": "51a6c883ad5b4883d4adee3811a5c44d9352facacc6a88e25640b8ce756740c0",
+        "expectedFinalSha256": "51a6c883ad5b4883d4adee3811a5c44d9352facacc6a88e25640b8ce756740c0",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0b.txt",
+        "expectedKind": "text",
+        "actualKind": "binary",
+        "expectedEditable": true,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "4b21641edaacd3f14e7117569da0514c71aeab11770623832b5c23b379d07b58",
+        "finalSha256": "4b21641edaacd3f14e7117569da0514c71aeab11770623832b5c23b379d07b58",
+        "expectedFinalSha256": "4b21641edaacd3f14e7117569da0514c71aeab11770623832b5c23b379d07b58",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": false
+      },
+      {
+        "name": "c0-0c.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "b90245ee5d9d74d103493407baa834be8a3662965a57b3f432dc76ac5d706529",
+        "finalSha256": "5c60bc64e03b5ec8dedfc1627904b5fd4e57cb62b02d9d0246596f4655a0f6c0",
+        "expectedFinalSha256": "5c60bc64e03b5ec8dedfc1627904b5fd4e57cb62b02d9d0246596f4655a0f6c0",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0d.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "3425894c5c4c4f46c9a46ad6ce013729f832d2cdc96d4b7d9f874d0c5eacd192",
+        "finalSha256": "5e7211c0358e4a6154b61dd40122973f0fb34183f20cc5648db8ccdcce790230",
+        "expectedFinalSha256": "5e7211c0358e4a6154b61dd40122973f0fb34183f20cc5648db8ccdcce790230",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0e.txt",
+        "expectedKind": "text",
+        "actualKind": "binary",
+        "expectedEditable": true,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "65ba0f8ceed5e94b2a37b75c0e160f85138b592877c5c14d2b5aff8faec5b58a",
+        "finalSha256": "65ba0f8ceed5e94b2a37b75c0e160f85138b592877c5c14d2b5aff8faec5b58a",
+        "expectedFinalSha256": "65ba0f8ceed5e94b2a37b75c0e160f85138b592877c5c14d2b5aff8faec5b58a",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": false
+      },
+      {
+        "name": "c0-0f.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "finalSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "expectedFinalSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-10.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "finalSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "expectedFinalSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-11.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "finalSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "expectedFinalSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-12.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "finalSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "expectedFinalSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-13.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "finalSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "expectedFinalSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-14.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "finalSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "expectedFinalSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-15.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "finalSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "expectedFinalSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-16.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "finalSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "expectedFinalSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-17.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "finalSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "expectedFinalSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-18.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "finalSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "expectedFinalSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-19.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "finalSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "expectedFinalSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1a.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "finalSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "expectedFinalSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1b.txt",
+        "expectedKind": "binary",
+        "actualKind": "text",
+        "expectedEditable": false,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "finalSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "expectedFinalSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "textReadCalls": 1,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": false
+      },
+      {
+        "name": "c0-1c.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "finalSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "expectedFinalSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1d.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "finalSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "expectedFinalSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1e.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "finalSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "expectedFinalSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1f.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "finalSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "expectedFinalSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "tab-lf-cr.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "5f17b566f2cf1c904a2dcffbfedf232ff0aeaf445d5d7c89499e9084091b3858",
+        "finalSha256": "2d8aab9f84ef0649b343ffbed1233fe42e78f0d2339a9973c15dc449721acca8",
+        "expectedFinalSha256": "2d8aab9f84ef0649b343ffbed1233fe42e78f0d2339a9973c15dc449721acca8",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "all-permitted-controls.txt",
+        "expectedKind": "text",
+        "actualKind": "binary",
+        "expectedEditable": true,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 8,
+        "initialSha256": "186910699e1058c751c2942e0521cf37932d2121ede323c4ad789947314d6832",
+        "finalSha256": "186910699e1058c751c2942e0521cf37932d2121ede323c4ad789947314d6832",
+        "expectedFinalSha256": "186910699e1058c751c2942e0521cf37932d2121ede323c4ad789947314d6832",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": false
+      },
+      {
+        "name": "del.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "d0c64418313a5fb1d0a16155efa162e545d4cd7fb2cafe72e46dc27595a326d9",
+        "finalSha256": "6275f244d43320b1c8d60db21605d180f2a6c77c876b3ac7ed599d7c94e84b84",
+        "expectedFinalSha256": "6275f244d43320b1c8d60db21605d180f2a6c77c876b3ac7ed599d7c94e84b84",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "empty.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 0,
+        "initialSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "finalSha256": "d10036cce39b0c2bfb70d5d1618f5806ddd2b0be75dd1b3656831f36b0db94bf",
+        "expectedFinalSha256": "d10036cce39b0c2bfb70d5d1618f5806ddd2b0be75dd1b3656831f36b0db94bf",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "png-disguised.txt",
+        "expectedKind": "image",
+        "actualKind": "image",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 68,
+        "initialSha256": "01dd7f08f84eca35384fd4e7d49f70e2cc33c2dd99a45b199bdd2297be5b0462",
+        "finalSha256": "01dd7f08f84eca35384fd4e7d49f70e2cc33c2dd99a45b199bdd2297be5b0462",
+        "expectedFinalSha256": "01dd7f08f84eca35384fd4e7d49f70e2cc33c2dd99a45b199bdd2297be5b0462",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4094.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 4096,
+        "initialSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "finalSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "expectedFinalSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4095.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 4096,
+        "initialSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "finalSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "expectedFinalSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4096.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 4096,
+        "initialSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "finalSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "expectedFinalSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "textReadCalls": 1,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      }
+    ],
+    "native": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "finishedAt": "2026-10-18T01:30:18.043Z"
+  },
+  "after": {
+    "case": "M9-T-F10",
+    "startedAt": "2026-10-18T01:31:59.008Z",
+    "unit": [
+      {
+        "name": "c0-00.txt",
+        "size": 3,
+        "sha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-01.txt",
+        "size": 3,
+        "sha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-02.txt",
+        "size": 3,
+        "sha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-03.txt",
+        "size": 3,
+        "sha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-04.txt",
+        "size": 3,
+        "sha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-05.txt",
+        "size": 3,
+        "sha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-06.txt",
+        "size": 3,
+        "sha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-07.txt",
+        "size": 3,
+        "sha256": "9f069067bda2832e7ce0b0957917882e35680e3f36dd6b850a3c2c40a6441046",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-08.txt",
+        "size": 3,
+        "sha256": "b5a1f15d56efd354a4991c78147a94bff5903f4bda2f887e67f6e1a1a666c688",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-09.txt",
+        "size": 3,
+        "sha256": "34d0e593db2e19f3846171ea117f698e16a2268a8da824a04fd1e083842b4a63",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0a.txt",
+        "size": 3,
+        "sha256": "23519a43c66b4c342f25b32e09797ec5f3fc0be388cd8243fb3449afbdce4013",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0b.txt",
+        "size": 3,
+        "sha256": "4b21641edaacd3f14e7117569da0514c71aeab11770623832b5c23b379d07b58",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0c.txt",
+        "size": 3,
+        "sha256": "b90245ee5d9d74d103493407baa834be8a3662965a57b3f432dc76ac5d706529",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0d.txt",
+        "size": 3,
+        "sha256": "3425894c5c4c4f46c9a46ad6ce013729f832d2cdc96d4b7d9f874d0c5eacd192",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0e.txt",
+        "size": 3,
+        "sha256": "65ba0f8ceed5e94b2a37b75c0e160f85138b592877c5c14d2b5aff8faec5b58a",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-0f.txt",
+        "size": 3,
+        "sha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-10.txt",
+        "size": 3,
+        "sha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-11.txt",
+        "size": 3,
+        "sha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-12.txt",
+        "size": 3,
+        "sha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-13.txt",
+        "size": 3,
+        "sha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-14.txt",
+        "size": 3,
+        "sha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-15.txt",
+        "size": 3,
+        "sha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-16.txt",
+        "size": 3,
+        "sha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-17.txt",
+        "size": 3,
+        "sha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-18.txt",
+        "size": 3,
+        "sha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-19.txt",
+        "size": 3,
+        "sha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1a.txt",
+        "size": 3,
+        "sha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1b.txt",
+        "size": 3,
+        "sha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1c.txt",
+        "size": 3,
+        "sha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1d.txt",
+        "size": 3,
+        "sha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1e.txt",
+        "size": 3,
+        "sha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "c0-1f.txt",
+        "size": 3,
+        "sha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "tab-lf-cr.txt",
+        "size": 3,
+        "sha256": "5f17b566f2cf1c904a2dcffbfedf232ff0aeaf445d5d7c89499e9084091b3858",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "all-permitted-controls.txt",
+        "size": 8,
+        "sha256": "186910699e1058c751c2942e0521cf37932d2121ede323c4ad789947314d6832",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "del.txt",
+        "size": 3,
+        "sha256": "d0c64418313a5fb1d0a16155efa162e545d4cd7fb2cafe72e46dc27595a326d9",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "empty.txt",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "png-disguised.txt",
+        "size": 70,
+        "sha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+        "expected": "image",
+        "actual": {
+          "kind": "image",
+          "mime": "image/png",
+          "format": "txt",
+          "basis": "signature"
+        },
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4094.txt",
+        "size": 4097,
+        "sha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4095.txt",
+        "size": 4097,
+        "sha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "expected": "binary",
+        "actual": {
+          "kind": "binary",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4096.txt",
+        "size": 4097,
+        "sha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "expected": "text",
+        "actual": {
+          "kind": "text",
+          "format": "txt",
+          "basis": "sample"
+        },
+        "pass": true
+      }
+    ],
+    "integration": [
+      {
+        "name": "c0-00.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "finalSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "expectedFinalSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-01.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "finalSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "expectedFinalSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-02.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "finalSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "expectedFinalSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-03.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "finalSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "expectedFinalSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-04.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "finalSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "expectedFinalSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-05.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "finalSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "expectedFinalSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-06.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "finalSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "expectedFinalSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-07.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "9f069067bda2832e7ce0b0957917882e35680e3f36dd6b850a3c2c40a6441046",
+        "finalSha256": "a93c8c61db29d63d83de69d43ef6ed81ddff4ff697c23d37926f2a292ee88338",
+        "expectedFinalSha256": "a93c8c61db29d63d83de69d43ef6ed81ddff4ff697c23d37926f2a292ee88338",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-08.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "b5a1f15d56efd354a4991c78147a94bff5903f4bda2f887e67f6e1a1a666c688",
+        "finalSha256": "17a87ecbf16dcc8e3762001623f962b93e0fb52823f1cf5bcc6dad6ad9c58e07",
+        "expectedFinalSha256": "17a87ecbf16dcc8e3762001623f962b93e0fb52823f1cf5bcc6dad6ad9c58e07",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-09.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "34d0e593db2e19f3846171ea117f698e16a2268a8da824a04fd1e083842b4a63",
+        "finalSha256": "e2b75136b5ff28319ac0c00f423302a9753594902a9ea027221bce658be50724",
+        "expectedFinalSha256": "e2b75136b5ff28319ac0c00f423302a9753594902a9ea027221bce658be50724",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0a.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "23519a43c66b4c342f25b32e09797ec5f3fc0be388cd8243fb3449afbdce4013",
+        "finalSha256": "51a6c883ad5b4883d4adee3811a5c44d9352facacc6a88e25640b8ce756740c0",
+        "expectedFinalSha256": "51a6c883ad5b4883d4adee3811a5c44d9352facacc6a88e25640b8ce756740c0",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0b.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "4b21641edaacd3f14e7117569da0514c71aeab11770623832b5c23b379d07b58",
+        "finalSha256": "30d6a33b4ef1f05e00d2d98ec8b169cf4777280c8bc8e8d800ea3e299ec20cc1",
+        "expectedFinalSha256": "30d6a33b4ef1f05e00d2d98ec8b169cf4777280c8bc8e8d800ea3e299ec20cc1",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0c.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "b90245ee5d9d74d103493407baa834be8a3662965a57b3f432dc76ac5d706529",
+        "finalSha256": "5c60bc64e03b5ec8dedfc1627904b5fd4e57cb62b02d9d0246596f4655a0f6c0",
+        "expectedFinalSha256": "5c60bc64e03b5ec8dedfc1627904b5fd4e57cb62b02d9d0246596f4655a0f6c0",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0d.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "3425894c5c4c4f46c9a46ad6ce013729f832d2cdc96d4b7d9f874d0c5eacd192",
+        "finalSha256": "5e7211c0358e4a6154b61dd40122973f0fb34183f20cc5648db8ccdcce790230",
+        "expectedFinalSha256": "5e7211c0358e4a6154b61dd40122973f0fb34183f20cc5648db8ccdcce790230",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0e.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "65ba0f8ceed5e94b2a37b75c0e160f85138b592877c5c14d2b5aff8faec5b58a",
+        "finalSha256": "441dcc7637870357959ca97ad9350779ca29ad52e92942b8aa2d5d87a907647d",
+        "expectedFinalSha256": "441dcc7637870357959ca97ad9350779ca29ad52e92942b8aa2d5d87a907647d",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "c0-0f.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "finalSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "expectedFinalSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-10.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "finalSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "expectedFinalSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-11.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "finalSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "expectedFinalSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-12.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "finalSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "expectedFinalSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-13.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "finalSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "expectedFinalSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-14.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "finalSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "expectedFinalSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-15.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "finalSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "expectedFinalSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-16.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "finalSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "expectedFinalSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-17.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "finalSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "expectedFinalSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-18.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "finalSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "expectedFinalSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-19.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "finalSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "expectedFinalSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1a.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "finalSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "expectedFinalSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1b.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "finalSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "expectedFinalSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1c.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "finalSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "expectedFinalSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1d.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "finalSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "expectedFinalSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1e.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "finalSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "expectedFinalSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "c0-1f.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 3,
+        "initialSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "finalSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "expectedFinalSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "tab-lf-cr.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "5f17b566f2cf1c904a2dcffbfedf232ff0aeaf445d5d7c89499e9084091b3858",
+        "finalSha256": "2d8aab9f84ef0649b343ffbed1233fe42e78f0d2339a9973c15dc449721acca8",
+        "expectedFinalSha256": "2d8aab9f84ef0649b343ffbed1233fe42e78f0d2339a9973c15dc449721acca8",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "all-permitted-controls.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 8,
+        "initialSha256": "186910699e1058c751c2942e0521cf37932d2121ede323c4ad789947314d6832",
+        "finalSha256": "61dcc16ade9557fc051dd6e948bd7fb9d9084a75592d49685146b4109e0e9119",
+        "expectedFinalSha256": "61dcc16ade9557fc051dd6e948bd7fb9d9084a75592d49685146b4109e0e9119",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "del.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 3,
+        "initialSha256": "d0c64418313a5fb1d0a16155efa162e545d4cd7fb2cafe72e46dc27595a326d9",
+        "finalSha256": "6275f244d43320b1c8d60db21605d180f2a6c77c876b3ac7ed599d7c94e84b84",
+        "expectedFinalSha256": "6275f244d43320b1c8d60db21605d180f2a6c77c876b3ac7ed599d7c94e84b84",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "empty.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": true,
+        "editable": true,
+        "hasEditor": true,
+        "sampleBytes": 0,
+        "initialSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "finalSha256": "d10036cce39b0c2bfb70d5d1618f5806ddd2b0be75dd1b3656831f36b0db94bf",
+        "expectedFinalSha256": "d10036cce39b0c2bfb70d5d1618f5806ddd2b0be75dd1b3656831f36b0db94bf",
+        "textReadCalls": 1,
+        "saveCalls": 1,
+        "checkpointCalls": 1,
+        "pass": true
+      },
+      {
+        "name": "png-disguised.txt",
+        "expectedKind": "image",
+        "actualKind": "image",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 70,
+        "initialSha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+        "finalSha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+        "expectedFinalSha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4094.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 4096,
+        "initialSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "finalSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "expectedFinalSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4095.txt",
+        "expectedKind": "binary",
+        "actualKind": "binary",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 4096,
+        "initialSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "finalSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "expectedFinalSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+        "textReadCalls": 0,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      },
+      {
+        "name": "nul-offset-4096.txt",
+        "expectedKind": "text",
+        "actualKind": "text",
+        "expectedEditable": false,
+        "editable": false,
+        "hasEditor": false,
+        "sampleBytes": 4096,
+        "initialSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "finalSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "expectedFinalSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+        "textReadCalls": 1,
+        "saveCalls": 0,
+        "checkpointCalls": 0,
+        "pass": true
+      }
+    ],
+    "native": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "finishedAt": "2026-10-18T01:32:01.449Z"
+  },
+  "next": "Ready for coordinator to update formal index as one passed acceptance case; this task did not edit the index.",
+  "commands": {
+    "before": "SMARTDD_F10_BROKER='<reusedPackage>/Contents/Resources/native/willyou-files' SMARTDD_F10_EVIDENCE=/private/tmp/willyou-f10-before-matrix.json pnpm test src/main/core/files/classification-f10.test.ts --reporter=json --outputFile=/private/tmp/willyou-f10-before-tests.json",
+    "after": "SMARTDD_F10_BROKER='<reusedPackage>/Contents/Resources/native/willyou-files' SMARTDD_F10_EVIDENCE=/private/tmp/willyou-f10-after-matrix.json pnpm test src/renderer/features/files/classification-f10.test.ts src/shared/file-classification.test.ts src/shared/file-text.test.ts src/renderer/features/files/file-buffer.test.ts --reporter=json --outputFile=/private/tmp/willyou-f10-after-tests.json",
+    "note": "The independent test moved from main to renderer to match the renderer TypeScript program; only import paths changed. The retained before report uses its original path."
+  },
+  "batchPackage": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+    "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+    "nativeBrokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "nativeBrokerMatchesPreviousTestedPackage": true,
+    "sourceBaseline": {
+      "manifest": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.json",
+      "manifestSha256": "be6cc4310aeb917b972031fdb24a189b3686661db497b69a81b2fba64d4bdf11",
+      "archive": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.tar.gz",
+      "archiveSha256": "5ec8a673a2569d2f6a6439a4f22e170b828c254f993e0d951357c2e085a3f008",
+      "fileCount": 627,
+      "mismatchesAtVerification": []
+    },
+    "buildCommand": "pnpm package --output-dir /private/tmp/willyou-m9-acceptance-batch-r1-build",
+    "buildExitCode": 0,
+    "successfulBuildLog": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build-unsandboxed.log",
+      "sha256": "a3f27118348b0f9125df9012c2a60516f872abefaf2c3d56cb051ac3fdd2ed20"
+    },
+    "nativeSmoke": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "firstAttempt": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build.log",
+      "sha256": "cc51ce98c9e13c5825ec744966d2d57ae2b0d7c458d8e15f4fb3676bc861f580",
+      "exitCode": 1,
+      "cause": "sandboxed codesign verification reported invalid signature on fixed LibreOffice bundle; the identical read-only codesign verification outside the sandbox exited 0. Rebuilt same source baseline in approved escalated context; no product/resource patch and no separate replacement package."
+    },
+    "packageScope": "Local macOS arm64 application directory; no installer/tag/release; GUI operation not performed by this task."
+  },
+  "batchPackageNativeIntegration": {
+    "command": "SMARTDD_F10_BROKER='<batchPackage>/Contents/Resources/native/willyou-files' SMARTDD_F10_EVIDENCE=/private/tmp/willyou-f10-batch-package-matrix.json pnpm test src/renderer/features/files/classification-f10.test.ts -t 'production service/buffer' --reporter=json --outputFile=/private/tmp/willyou-f10-batch-package-tests.json",
+    "report": "/private/tmp/willyou-f10-batch-package-tests.json",
+    "reportSha256": "ae155ddfbe8e67140f822543cd3a0892ad7aa83df4514777c53554eb02489ed7",
+    "passed": 1,
+    "failed": 0,
+    "unselected": 40,
+    "matrix": {
+      "case": "M9-T-F10",
+      "startedAt": "2026-10-18T01:38:34.583Z",
+      "unit": [],
+      "integration": [
+        {
+          "name": "c0-00.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+          "finalSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+          "expectedFinalSha256": "76fe3925c7167317f2df68454339f5ec3650e4062178b4f2be219b105a507907",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-01.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+          "finalSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+          "expectedFinalSha256": "c1b5b98a85e43224ac3619d523a29eafce5405711053e1e452a814b8cc6f0262",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-02.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+          "finalSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+          "expectedFinalSha256": "92dbdf05b2f138b106355b0f02998e9df8a72a2b75800be5f1a03c7756998888",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-03.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+          "finalSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+          "expectedFinalSha256": "4cbcd453af068f8342953216e1d359d6ff404ad5aeb3063400feff2b0ff271d6",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-04.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+          "finalSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+          "expectedFinalSha256": "ee0059349ae5a8599eb3ec030fa38f52e40f609c80a7cbf7e75dd51d703aeee6",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-05.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+          "finalSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+          "expectedFinalSha256": "2e094ac6e0f71192a5c58035c21f0f3d4d5f5e8925957b1a6facd171f389c8a1",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-06.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+          "finalSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+          "expectedFinalSha256": "cc5ed55c846240d9b4c8ba6dd95ad0c1b09267e0513bac57c11f7a245306770d",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-07.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "9f069067bda2832e7ce0b0957917882e35680e3f36dd6b850a3c2c40a6441046",
+          "finalSha256": "a93c8c61db29d63d83de69d43ef6ed81ddff4ff697c23d37926f2a292ee88338",
+          "expectedFinalSha256": "a93c8c61db29d63d83de69d43ef6ed81ddff4ff697c23d37926f2a292ee88338",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-08.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "b5a1f15d56efd354a4991c78147a94bff5903f4bda2f887e67f6e1a1a666c688",
+          "finalSha256": "17a87ecbf16dcc8e3762001623f962b93e0fb52823f1cf5bcc6dad6ad9c58e07",
+          "expectedFinalSha256": "17a87ecbf16dcc8e3762001623f962b93e0fb52823f1cf5bcc6dad6ad9c58e07",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-09.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "34d0e593db2e19f3846171ea117f698e16a2268a8da824a04fd1e083842b4a63",
+          "finalSha256": "e2b75136b5ff28319ac0c00f423302a9753594902a9ea027221bce658be50724",
+          "expectedFinalSha256": "e2b75136b5ff28319ac0c00f423302a9753594902a9ea027221bce658be50724",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-0a.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "23519a43c66b4c342f25b32e09797ec5f3fc0be388cd8243fb3449afbdce4013",
+          "finalSha256": "51a6c883ad5b4883d4adee3811a5c44d9352facacc6a88e25640b8ce756740c0",
+          "expectedFinalSha256": "51a6c883ad5b4883d4adee3811a5c44d9352facacc6a88e25640b8ce756740c0",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-0b.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "4b21641edaacd3f14e7117569da0514c71aeab11770623832b5c23b379d07b58",
+          "finalSha256": "30d6a33b4ef1f05e00d2d98ec8b169cf4777280c8bc8e8d800ea3e299ec20cc1",
+          "expectedFinalSha256": "30d6a33b4ef1f05e00d2d98ec8b169cf4777280c8bc8e8d800ea3e299ec20cc1",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-0c.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "b90245ee5d9d74d103493407baa834be8a3662965a57b3f432dc76ac5d706529",
+          "finalSha256": "5c60bc64e03b5ec8dedfc1627904b5fd4e57cb62b02d9d0246596f4655a0f6c0",
+          "expectedFinalSha256": "5c60bc64e03b5ec8dedfc1627904b5fd4e57cb62b02d9d0246596f4655a0f6c0",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-0d.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "3425894c5c4c4f46c9a46ad6ce013729f832d2cdc96d4b7d9f874d0c5eacd192",
+          "finalSha256": "5e7211c0358e4a6154b61dd40122973f0fb34183f20cc5648db8ccdcce790230",
+          "expectedFinalSha256": "5e7211c0358e4a6154b61dd40122973f0fb34183f20cc5648db8ccdcce790230",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-0e.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "65ba0f8ceed5e94b2a37b75c0e160f85138b592877c5c14d2b5aff8faec5b58a",
+          "finalSha256": "441dcc7637870357959ca97ad9350779ca29ad52e92942b8aa2d5d87a907647d",
+          "expectedFinalSha256": "441dcc7637870357959ca97ad9350779ca29ad52e92942b8aa2d5d87a907647d",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "c0-0f.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+          "finalSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+          "expectedFinalSha256": "99231bf2033206db7930c330a6614abbb30bbb3a5ece11467f55025afab6149b",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-10.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+          "finalSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+          "expectedFinalSha256": "05af9001ce364f2a1ac8bac81752d1b609e94b594164c63b7599d5f1c11928e3",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-11.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+          "finalSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+          "expectedFinalSha256": "79049903809ab9427a73c77803319467bd262e3b5b7de21ab799deaf572ee323",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-12.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+          "finalSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+          "expectedFinalSha256": "5fa823c993f1bad227df7fe6935974a04eba09c2c359f2c6f5ae0047b265a11e",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-13.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+          "finalSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+          "expectedFinalSha256": "d0ea0bc6721e9f93aa7a1ddb7c4c5ef8f2cc1d617382a63a7796d03c448bd3bb",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-14.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+          "finalSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+          "expectedFinalSha256": "1d928a4b66bdc590f2be03cb88553e5a90557ecacb0f8af5342a7f5fb2ebe1ce",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-15.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+          "finalSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+          "expectedFinalSha256": "71bb49598fab0dd6a4bd9d5ce51d6ed4c405719da6fe73ff50fb67eee49b5f14",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-16.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+          "finalSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+          "expectedFinalSha256": "55193a26d8e3324cf4adffb9cc8a32742d4f97ea4df928db963f667a8e152acd",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-17.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+          "finalSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+          "expectedFinalSha256": "b0f276b37c5b9e6b448b21e1aced904c24af32b5cb4f8b5862a17949850e26c2",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-18.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+          "finalSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+          "expectedFinalSha256": "4c22fb6d38e44cc81e0649f0f34b01dec825e0e230e02753c1c949c9966c6bde",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-19.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+          "finalSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+          "expectedFinalSha256": "489e0a66011a86cd1b0c463282e97e6dd6b1c7a791ecc2d500359db139960c87",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-1a.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+          "finalSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+          "expectedFinalSha256": "2fe537e2e2d4d2ccc0058235a19eb50ece036001038f004f2aac16744b135f0e",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-1b.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+          "finalSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+          "expectedFinalSha256": "bc5b0ea5b986127bfa1f1cd179cb5d80601931d60683d516c0a867120c76979a",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-1c.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+          "finalSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+          "expectedFinalSha256": "49ea6e35b50f5652077442720d6e829af2cb280613a73f57dd6f556b338e34ec",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-1d.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+          "finalSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+          "expectedFinalSha256": "93e2a3b935425dc68830b06f629a234e91df6e1a6fbe4c489071533b61a1c50b",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-1e.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+          "finalSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+          "expectedFinalSha256": "1b06987b9e355c6b695936ced219f087733d4d0b142934df4cecdde346948fec",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "c0-1f.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 3,
+          "initialSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+          "finalSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+          "expectedFinalSha256": "74bc9fd5877289289c31981fd787e8f0f3ff1eb4225fa6ced844dc861593cd5e",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "tab-lf-cr.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "5f17b566f2cf1c904a2dcffbfedf232ff0aeaf445d5d7c89499e9084091b3858",
+          "finalSha256": "2d8aab9f84ef0649b343ffbed1233fe42e78f0d2339a9973c15dc449721acca8",
+          "expectedFinalSha256": "2d8aab9f84ef0649b343ffbed1233fe42e78f0d2339a9973c15dc449721acca8",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "all-permitted-controls.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 8,
+          "initialSha256": "186910699e1058c751c2942e0521cf37932d2121ede323c4ad789947314d6832",
+          "finalSha256": "61dcc16ade9557fc051dd6e948bd7fb9d9084a75592d49685146b4109e0e9119",
+          "expectedFinalSha256": "61dcc16ade9557fc051dd6e948bd7fb9d9084a75592d49685146b4109e0e9119",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "del.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 3,
+          "initialSha256": "d0c64418313a5fb1d0a16155efa162e545d4cd7fb2cafe72e46dc27595a326d9",
+          "finalSha256": "6275f244d43320b1c8d60db21605d180f2a6c77c876b3ac7ed599d7c94e84b84",
+          "expectedFinalSha256": "6275f244d43320b1c8d60db21605d180f2a6c77c876b3ac7ed599d7c94e84b84",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "empty.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": true,
+          "editable": true,
+          "hasEditor": true,
+          "sampleBytes": 0,
+          "initialSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "finalSha256": "d10036cce39b0c2bfb70d5d1618f5806ddd2b0be75dd1b3656831f36b0db94bf",
+          "expectedFinalSha256": "d10036cce39b0c2bfb70d5d1618f5806ddd2b0be75dd1b3656831f36b0db94bf",
+          "textReadCalls": 1,
+          "saveCalls": 1,
+          "checkpointCalls": 1,
+          "pass": true
+        },
+        {
+          "name": "png-disguised.txt",
+          "expectedKind": "image",
+          "actualKind": "image",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 70,
+          "initialSha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+          "finalSha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+          "expectedFinalSha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "nul-offset-4094.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 4096,
+          "initialSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+          "finalSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+          "expectedFinalSha256": "1308d785218f161927b116589e184e4ecb477839ddd5d05f6cfcedba5a1f0143",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "nul-offset-4095.txt",
+          "expectedKind": "binary",
+          "actualKind": "binary",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 4096,
+          "initialSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+          "finalSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+          "expectedFinalSha256": "5d16b036e103e0b60f679326e3f2c140ce7bf4498a6a8a469c2b6f1d26f02af3",
+          "textReadCalls": 0,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        },
+        {
+          "name": "nul-offset-4096.txt",
+          "expectedKind": "text",
+          "actualKind": "text",
+          "expectedEditable": false,
+          "editable": false,
+          "hasEditor": false,
+          "sampleBytes": 4096,
+          "initialSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+          "finalSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+          "expectedFinalSha256": "db67670bbc672b554c2cfc2b2671e7024838f74371e81c45de652bdc0cb3bb2d",
+          "textReadCalls": 1,
+          "saveCalls": 0,
+          "checkpointCalls": 0,
+          "pass": true
+        }
+      ],
+      "native": {
+        "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+        "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "finishedAt": "2026-10-18T01:38:36.872Z"
+    },
+    "note": "New package native executable with current source service/buffer, not a GUI/App-IPC test. The 40 unit tests are unselected here because the source regression already passed; all 40 integration matrix rows reran."
+  },
+  "caseStatus": "passed",
+  "guiSubset": {
+    "reportedBy": "root agent, native CUA operation of the packaged WillYou App; this agent independently read fixture hashes",
+    "recordedAt": "2026-10-18T01:45:56.587622+00:00",
+    "package": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+      "sourceBaseline": {
+        "manifest": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.json",
+        "manifestSha256": "be6cc4310aeb917b972031fdb24a189b3686661db497b69a81b2fba64d4bdf11",
+        "archive": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.tar.gz",
+        "archiveSha256": "5ec8a673a2569d2f6a6439a4f22e170b828c254f993e0d951357c2e085a3f008",
+        "fileCount": 627
+      },
+      "nativeSmoke": "SQLite/PTY/voice/fileBroker/officeRenderer/watcher passed; full record in m9-acceptance-f10-20261018.json"
+    },
+    "requiredCaseEnvironments": [
+      "U",
+      "I"
+    ],
+    "guiSampleCount": 3,
+    "fullUIMatrixClaimed": false,
+    "actions": "Opened each file through the real App; no edit, external open or save action.",
+    "observations": [
+      {
+        "fixture": "f10-escape.txt",
+        "result": "binary fallback",
+        "visibleMessage": "二进制文件不支持文本编辑；可使用外部应用打开或另存副本",
+        "sizeBytes": 29,
+        "editorPresent": false
+      },
+      {
+        "fixture": "f10-allowed.txt",
+        "result": "real text editor",
+        "accessibilityCharacters": [
+          "bell",
+          "backspace",
+          "vertical tab",
+          "0xe"
+        ],
+        "encoding": "UTF-8",
+        "undoEnabled": false,
+        "redoEnabled": false,
+        "editorPresent": true
+      },
+      {
+        "fixture": "f10-disguised.txt",
+        "result": "image control",
+        "visibleSize": "0.1 KiB",
+        "editorPresent": false
+      }
+    ],
+    "fixtureManifest": {
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/f10-fixtures-manifest.json",
+      "sha256": "5ecda1eb0e11b8839fc421e33f486e22c9b4c437370ca8939a4b073bac262143"
+    },
+    "independentAfterChecks": [
+      {
+        "file": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/f10-allowed.txt",
+        "sha256": "39e1fa3c8aa9af238d9e7e5b306b424adeeb47146b08c71cee9d5b4a66241e18",
+        "bytes": 30,
+        "matchesBefore": true
+      },
+      {
+        "file": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/f10-escape.txt",
+        "sha256": "9f7c091f5c612652421a11aea4b55fda920defe602f2ed7219887e02abcf8aa1",
+        "bytes": 29,
+        "matchesBefore": true
+      },
+      {
+        "file": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/f10-disguised.txt",
+        "sha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+        "bytes": 70,
+        "matchesBefore": true
+      }
+    ],
+    "screenshotsArchived": false,
+    "visualClaim": "Classification and editor presence only; no full pixel/style equivalence claim."
+  }
+}

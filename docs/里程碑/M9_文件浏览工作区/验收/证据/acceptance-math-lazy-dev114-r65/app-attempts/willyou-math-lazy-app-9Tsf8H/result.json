@@ -1,0 +1,1409 @@
+{
+  "at": "2026-10-19T00:37:17.220Z",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scratch": "/private/tmp/willyou-math-lazy-app-9Tsf8H",
+  "asarSha256": "2797a14e48b6e7eb50fe213dfce28fe1e126d34e6d2d14e4e862c98376efe293",
+  "status": "failed",
+  "checks": [
+    {
+      "caseId": "M9-T-X06",
+      "scenario": "plain-lazy",
+      "noEngineWorkerOrModuleRequest": true,
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-X08",
+      "scenario": "native-load-failure",
+      "raw": [
+        "$a^2$",
+        "$\\frac{$",
+        "$$\n\\frac{a}{b}\n$$\n"
+      ],
+      "nativeTrustedError": true,
+      "noGateForThisFailure": true,
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-X06",
+      "scenario": "real-engine-recovery",
+      "actual": [
+        {
+          "displayMode": "inline",
+          "ready": "ready",
+          "source": "a^2",
+          "width": 16.875,
+          "height": 18
+        },
+        {
+          "displayMode": "inline",
+          "ready": "ready",
+          "source": "\\frac{",
+          "width": 36.703125,
+          "height": 18
+        },
+        {
+          "displayMode": "block",
+          "ready": "ready",
+          "source": "\n\\frac{a}{b}\n",
+          "width": 325.265625,
+          "height": 32.546875
+        }
+      ],
+      "originalRequestMeasureAfterRealEngine": true,
+      "pass": true
+    }
+  ],
+  "sessions": [
+    {
+      "label": "normal",
+      "status": "running",
+      "resourceInstall": {
+        "kind": "native Worker debugger-start pause",
+        "active": true,
+        "webRequestUntouched": true,
+        "protocolUntouched": true
+      },
+      "failure": true,
+      "failureResources": {
+        "kind": "native Worker debugger-start pause",
+        "active": true,
+        "rows": [
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/markdown-math-worker-DrqU35IS.js",
+            "sessionId": "60108275DA637C475655AEA559C4410B",
+            "at": 1792370238808,
+            "waitingForDebugger": true,
+            "resumedAt": 1792370238808,
+            "detachedAt": 1792370238933
+          },
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/markdown-math-worker-DrqU35IS.js",
+            "sessionId": "39E1699A93792912E4341196288E41AB",
+            "at": 1792370239164,
+            "waitingForDebugger": true,
+            "resumedAt": 1792370239164,
+            "detachedAt": 1792370239174
+          }
+        ],
+        "slots": [],
+        "errors": []
+      },
+      "failureWorkers": {
+        "rows": [
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/worker-BU6ECkO4.js",
+            "inputs": [
+              {
+                "data": {
+                  "id": 1,
+                  "rev": 0,
+                  "type": "parse",
+                  "source": "# Plain\n\nNo formulas here.\n\nTail Plain 中文🙂\n"
+                },
+                "before": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Plain\\n\\nNo formulas here.\\n\\nTail Plain 中文🙂\\n\"}",
+                "at": 1792370238170,
+                "after": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Plain\\n\\nNo formulas here.\\n\\nTail Plain 中文🙂\\n\"}"
+              },
+              {
+                "data": {
+                  "id": 2,
+                  "rev": 0,
+                  "type": "window",
+                  "start": 0,
+                  "readOnly": false
+                },
+                "before": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}",
+                "at": 1792370238230,
+                "after": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}"
+              }
+            ],
+            "messages": [
+              {
+                "data": {
+                  "type": "result",
+                  "id": 1,
+                  "rev": 0,
+                  "index": {
+                    "0": 0,
+                    "1": 8,
+                    "2": 1,
+                    "3": 3,
+                    "4": 8,
+                    "5": 9,
+                    "6": 2,
+                    "7": 0,
+                    "8": 9,
+                    "9": 27,
+                    "10": 3,
+                    "11": 4,
+                    "12": 27,
+                    "13": 28,
+                    "14": 4,
+                    "15": 0,
+                    "16": 28,
+                    "17": 44,
+                    "18": 5,
+                    "19": 4
+                  }
+                },
+                "before": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":8,\"2\":1,\"3\":3,\"4\":8,\"5\":9,\"6\":2,\"7\":0,\"8\":9,\"9\":27,\"10\":3,\"11\":4,\"12\":27,\"13\":28,\"14\":4,\"15\":0,\"16\":28,\"17\":44,\"18\":5,\"19\":4}}",
+                "trusted": true,
+                "at": 1792370238230,
+                "after": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":8,\"2\":1,\"3\":3,\"4\":8,\"5\":9,\"6\":2,\"7\":0,\"8\":9,\"9\":27,\"10\":3,\"11\":4,\"12\":27,\"13\":28,\"14\":4,\"15\":0,\"16\":28,\"17\":44,\"18\":5,\"19\":4}}",
+                "deliveredAt": 1792370238230
+              },
+              {
+                "data": {
+                  "type": "window",
+                  "id": 2,
+                  "rev": 0,
+                  "items": [
+                    {
+                      "from": 0,
+                      "to": 8,
+                      "line": 1,
+                      "type": "heading",
+                      "html": "<h1><span data-md-source-from=\"2\" data-md-source-to=\"7\" data-md-source-mode=\"linear\">Plain</span></h1>\n"
+                    },
+                    {
+                      "from": 8,
+                      "to": 9,
+                      "line": 2,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 9,
+                      "to": 27,
+                      "line": 3,
+                      "type": "paragraph",
+                      "html": "<p><span data-md-source-from=\"9\" data-md-source-to=\"26\" data-md-source-mode=\"linear\">No formulas here.</span></p>\n"
+                    },
+                    {
+                      "from": 27,
+                      "to": 28,
+                      "line": 4,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 28,
+                      "to": 44,
+                      "line": 5,
+                      "type": "paragraph",
+                      "html": "<p><span data-md-source-from=\"28\" data-md-source-to=\"43\" data-md-source-mode=\"linear\">Tail Plain 中文🙂</span></p>\n"
+                    }
+                  ]
+                },
+                "before": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":8,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"7\\\" data-md-source-mode=\\\"linear\\\">Plain</span></h1>\\n\"},{\"from\":8,\"to\":9,\"line\":2,\"type\":\"blank\"},{\"from\":9,\"to\":27,\"line\":3,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"9\\\" data-md-source-to=\\\"26\\\" data-md-source-mode=\\\"linear\\\">No formulas here.</span></p>\\n\"},{\"from\":27,\"to\":28,\"line\":4,\"type\":\"blank\"},{\"from\":28,\"to\":44,\"line\":5,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"28\\\" data-md-source-to=\\\"43\\\" data-md-source-mode=\\\"linear\\\">Tail Plain 中文🙂</span></p>\\n\"}]}",
+                "trusted": true,
+                "at": 1792370238230,
+                "after": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":8,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"7\\\" data-md-source-mode=\\\"linear\\\">Plain</span></h1>\\n\"},{\"from\":8,\"to\":9,\"line\":2,\"type\":\"blank\"},{\"from\":9,\"to\":27,\"line\":3,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"9\\\" data-md-source-to=\\\"26\\\" data-md-source-mode=\\\"linear\\\">No formulas here.</span></p>\\n\"},{\"from\":27,\"to\":28,\"line\":4,\"type\":\"blank\"},{\"from\":28,\"to\":44,\"line\":5,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"28\\\" data-md-source-to=\\\"43\\\" data-md-source-mode=\\\"linear\\\">Tail Plain 中文🙂</span></p>\\n\"}]}",
+                "deliveredAt": 1792370238230
+              }
+            ],
+            "errors": [],
+            "terminated": 1,
+            "markdown": true,
+            "math": false
+          },
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/worker-BU6ECkO4.js",
+            "inputs": [
+              {
+                "data": {
+                  "id": 1,
+                  "rev": 0,
+                  "type": "parse",
+                  "source": "# Math\n\nInline $a^2$ and invalid $\\frac{$.\n\n$$\n\\frac{a}{b}\n$$\n\nTail Math 中文🙂\n"
+                },
+                "before": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Math\\n\\nInline $a^2$ and invalid $\\\\frac{$.\\n\\n$$\\n\\\\frac{a}{b}\\n$$\\n\\nTail Math 中文🙂\\n\"}",
+                "at": 1792370238378,
+                "after": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Math\\n\\nInline $a^2$ and invalid $\\\\frac{$.\\n\\n$$\\n\\\\frac{a}{b}\\n$$\\n\\nTail Math 中文🙂\\n\"}"
+              },
+              {
+                "data": {
+                  "id": 2,
+                  "rev": 0,
+                  "type": "window",
+                  "start": 0,
+                  "readOnly": false
+                },
+                "before": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}",
+                "at": 1792370238435,
+                "after": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}"
+              }
+            ],
+            "messages": [
+              {
+                "data": {
+                  "type": "result",
+                  "id": 1,
+                  "rev": 0,
+                  "index": {
+                    "0": 0,
+                    "1": 7,
+                    "2": 1,
+                    "3": 3,
+                    "4": 7,
+                    "5": 8,
+                    "6": 2,
+                    "7": 0,
+                    "8": 8,
+                    "9": 43,
+                    "10": 3,
+                    "11": 4,
+                    "12": 43,
+                    "13": 44,
+                    "14": 4,
+                    "15": 0,
+                    "16": 44,
+                    "17": 62,
+                    "18": 5,
+                    "19": 9,
+                    "20": 62,
+                    "21": 63,
+                    "22": 8,
+                    "23": 0,
+                    "24": 63,
+                    "25": 78,
+                    "26": 9,
+                    "27": 4
+                  }
+                },
+                "before": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":7,\"2\":1,\"3\":3,\"4\":7,\"5\":8,\"6\":2,\"7\":0,\"8\":8,\"9\":43,\"10\":3,\"11\":4,\"12\":43,\"13\":44,\"14\":4,\"15\":0,\"16\":44,\"17\":62,\"18\":5,\"19\":9,\"20\":62,\"21\":63,\"22\":8,\"23\":0,\"24\":63,\"25\":78,\"26\":9,\"27\":4}}",
+                "trusted": true,
+                "at": 1792370238435,
+                "after": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":7,\"2\":1,\"3\":3,\"4\":7,\"5\":8,\"6\":2,\"7\":0,\"8\":8,\"9\":43,\"10\":3,\"11\":4,\"12\":43,\"13\":44,\"14\":4,\"15\":0,\"16\":44,\"17\":62,\"18\":5,\"19\":9,\"20\":62,\"21\":63,\"22\":8,\"23\":0,\"24\":63,\"25\":78,\"26\":9,\"27\":4}}",
+                "deliveredAt": 1792370238435
+              },
+              {
+                "data": {
+                  "type": "window",
+                  "id": 2,
+                  "rev": 0,
+                  "items": [
+                    {
+                      "from": 0,
+                      "to": 7,
+                      "line": 1,
+                      "type": "heading",
+                      "html": "<h1><span data-md-source-from=\"2\" data-md-source-to=\"6\" data-md-source-mode=\"linear\">Math</span></h1>\n"
+                    },
+                    {
+                      "from": 7,
+                      "to": 8,
+                      "line": 2,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 8,
+                      "to": 43,
+                      "line": 3,
+                      "type": "paragraph",
+                      "html": "<p><span data-md-source-from=\"8\" data-md-source-to=\"15\" data-md-source-mode=\"linear\">Inline </span><span data-md-source-from=\"15\" data-md-source-to=\"20\" data-md-source-mode=\"atomic\"><eq><span class=\"fw-md-math-pending\" data-md-math=\"inline\" data-md-math-code=\"a^2\">$a^2$</span></eq></span><span data-md-source-from=\"20\" data-md-source-to=\"33\" data-md-source-mode=\"linear\"> and invalid </span><span data-md-source-from=\"33\" data-md-source-to=\"41\" data-md-source-mode=\"atomic\"><eq><span class=\"fw-md-math-pending\" data-md-math=\"inline\" data-md-math-code=\"\\frac{\">$\\frac{$</span></eq></span><span data-md-source-from=\"41\" data-md-source-to=\"42\" data-md-source-mode=\"linear\">.</span></p>\n"
+                    },
+                    {
+                      "from": 43,
+                      "to": 44,
+                      "line": 4,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 44,
+                      "to": 62,
+                      "line": 5,
+                      "type": "math",
+                      "html": "<span data-md-source-from=\"44\" data-md-source-to=\"62\" data-md-source-mode=\"atomic\"><section><eqn><span class=\"fw-md-math-pending\" data-md-math=\"block\" data-md-math-code=\"\n\\frac{a}{b}\n\">$$\n\\frac{a}{b}\n$$\n</span></eqn></section></span>"
+                    },
+                    {
+                      "from": 62,
+                      "to": 63,
+                      "line": 8,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 63,
+                      "to": 78,
+                      "line": 9,
+                      "type": "paragraph",
+                      "html": "<p><span data-md-source-from=\"63\" data-md-source-to=\"77\" data-md-source-mode=\"linear\">Tail Math 中文🙂</span></p>\n"
+                    }
+                  ]
+                },
+                "before": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":7,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"6\\\" data-md-source-mode=\\\"linear\\\">Math</span></h1>\\n\"},{\"from\":7,\"to\":8,\"line\":2,\"type\":\"blank\"},{\"from\":8,\"to\":43,\"line\":3,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"8\\\" data-md-source-to=\\\"15\\\" data-md-source-mode=\\\"linear\\\">Inline </span><span data-md-source-from=\\\"15\\\" data-md-source-to=\\\"20\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"a^2\\\">$a^2$</span></eq></span><span data-md-source-from=\\\"20\\\" data-md-source-to=\\\"33\\\" data-md-source-mode=\\\"linear\\\"> and invalid </span><span data-md-source-from=\\\"33\\\" data-md-source-to=\\\"41\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"\\\\frac{\\\">$\\\\frac{$</span></eq></span><span data-md-source-from=\\\"41\\\" data-md-source-to=\\\"42\\\" data-md-source-mode=\\\"linear\\\">.</span></p>\\n\"},{\"from\":43,\"to\":44,\"line\":4,\"type\":\"blank\"},{\"from\":44,\"to\":62,\"line\":5,\"type\":\"math\",\"html\":\"<span data-md-source-from=\\\"44\\\" data-md-source-to=\\\"62\\\" data-md-source-mode=\\\"atomic\\\"><section><eqn><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"block\\\" data-md-math-code=\\\"\\n\\\\frac{a}{b}\\n\\\">$$\\n\\\\frac{a}{b}\\n$$\\n</span></eqn></section></span>\"},{\"from\":62,\"to\":63,\"line\":8,\"type\":\"blank\"},{\"from\":63,\"to\":78,\"line\":9,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"63\\\" data-md-source-to=\\\"77\\\" data-md-source-mode=\\\"linear\\\">Tail Math 中文🙂</span></p>\\n\"}]}",
+                "trusted": true,
+                "at": 1792370238435,
+                "after": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":7,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"6\\\" data-md-source-mode=\\\"linear\\\">Math</span></h1>\\n\"},{\"from\":7,\"to\":8,\"line\":2,\"type\":\"blank\"},{\"from\":8,\"to\":43,\"line\":3,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"8\\\" data-md-source-to=\\\"15\\\" data-md-source-mode=\\\"linear\\\">Inline </span><span data-md-source-from=\\\"15\\\" data-md-source-to=\\\"20\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"a^2\\\">$a^2$</span></eq></span><span data-md-source-from=\\\"20\\\" data-md-source-to=\\\"33\\\" data-md-source-mode=\\\"linear\\\"> and invalid </span><span data-md-source-from=\\\"33\\\" data-md-source-to=\\\"41\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"\\\\frac{\\\">$\\\\frac{$</span></eq></span><span data-md-source-from=\\\"41\\\" data-md-source-to=\\\"42\\\" data-md-source-mode=\\\"linear\\\">.</span></p>\\n\"},{\"from\":43,\"to\":44,\"line\":4,\"type\":\"blank\"},{\"from\":44,\"to\":62,\"line\":5,\"type\":\"math\",\"html\":\"<span data-md-source-from=\\\"44\\\" data-md-source-to=\\\"62\\\" data-md-source-mode=\\\"atomic\\\"><section><eqn><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"block\\\" data-md-math-code=\\\"\\n\\\\frac{a}{b}\\n\\\">$$\\n\\\\frac{a}{b}\\n$$\\n</span></eqn></section></span>\"},{\"from\":62,\"to\":63,\"line\":8,\"type\":\"blank\"},{\"from\":63,\"to\":78,\"line\":9,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"63\\\" data-md-source-to=\\\"77\\\" data-md-source-mode=\\\"linear\\\">Tail Math 中文🙂</span></p>\\n\"}]}",
+                "deliveredAt": 1792370238435
+              }
+            ],
+            "errors": [],
+            "terminated": 1,
+            "markdown": true,
+            "math": false
+          },
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/markdown-math-worker-DrqU35IS.js",
+            "requestedUrl": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/markdown-math-worker-DrqU35IS.js.__m9_missing_resource__",
+            "failureInjected": "native missing-module URL; real Worker ErrorEvent",
+            "inputs": [
+              {
+                "data": {
+                  "type": "render-math",
+                  "id": 1,
+                  "formulas": [
+                    {
+                      "source": "a^2",
+                      "displayMode": false
+                    },
+                    {
+                      "source": "\\frac{",
+                      "displayMode": false
+                    }
+                  ],
+                  "baseNodes": 20,
+                  "baseUnits": 671
+                },
+                "before": "{\"type\":\"render-math\",\"id\":1,\"formulas\":[{\"source\":\"a^2\",\"displayMode\":false},{\"source\":\"\\\\frac{\",\"displayMode\":false}],\"baseNodes\":20,\"baseUnits\":671}",
+                "at": 1792370238436,
+                "after": "{\"type\":\"render-math\",\"id\":1,\"formulas\":[{\"source\":\"a^2\",\"displayMode\":false},{\"source\":\"\\\\frac{\",\"displayMode\":false}],\"baseNodes\":20,\"baseUnits\":671}"
+              },
+              {
+                "data": {
+                  "type": "render-math",
+                  "id": 2,
+                  "formulas": [
+                    {
+                      "source": "\n\\frac{a}{b}\n",
+                      "displayMode": true
+                    }
+                  ],
+                  "baseNodes": 8,
+                  "baseUnits": 215
+                },
+                "before": "{\"type\":\"render-math\",\"id\":2,\"formulas\":[{\"source\":\"\\n\\\\frac{a}{b}\\n\",\"displayMode\":true}],\"baseNodes\":8,\"baseUnits\":215}",
+                "at": 1792370238436,
+                "after": "{\"type\":\"render-math\",\"id\":2,\"formulas\":[{\"source\":\"\\n\\\\frac{a}{b}\\n\",\"displayMode\":true}],\"baseNodes\":8,\"baseUnits\":215}"
+              }
+            ],
+            "messages": [],
+            "errors": [
+              {
+                "core": {
+                  "type": "error"
+                },
+                "before": "{\"type\":\"error\"}",
+                "trusted": true,
+                "at": 1792370238440,
+                "defaultPreventedBefore": false,
+                "after": "{\"type\":\"error\"}",
+                "deliveredAt": 1792370238440,
+                "defaultPreventedAfter": true
+              }
+            ],
+            "terminated": 1,
+            "markdown": false,
+            "math": true
+          },
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/worker-BU6ECkO4.js",
+            "inputs": [
+              {
+                "data": {
+                  "id": 1,
+                  "rev": 0,
+                  "type": "parse",
+                  "source": "# Math\n\nInline $a^2$ and invalid $\\frac{$.\n\n$$\n\\frac{a}{b}\n$$\n\nTail Math 中文🙂\n"
+                },
+                "before": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Math\\n\\nInline $a^2$ and invalid $\\\\frac{$.\\n\\n$$\\n\\\\frac{a}{b}\\n$$\\n\\nTail Math 中文🙂\\n\"}",
+                "at": 1792370238752,
+                "after": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Math\\n\\nInline $a^2$ and invalid $\\\\frac{$.\\n\\n$$\\n\\\\frac{a}{b}\\n$$\\n\\nTail Math 中文🙂\\n\"}"
+              },
+              {
+                "data": {
+                  "id": 2,
+                  "rev": 0,
+                  "type": "window",
+                  "start": 0,
+                  "readOnly": false
+                },
+                "before": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}",
+                "at": 1792370238804,
+                "after": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}"
+              }
+            ],
+            "messages": [
+              {
+                "data": {
+                  "type": "result",
+                  "id": 1,
+                  "rev": 0,
+                  "index": {
+                    "0": 0,
+                    "1": 7,
+                    "2": 1,
+                    "3": 3,
+                    "4": 7,
+                    "5": 8,
+                    "6": 2,
+                    "7": 0,
+                    "8": 8,
+                    "9": 43,
+                    "10": 3,
+                    "11": 4,
+                    "12": 43,
+                    "13": 44,
+                    "14": 4,
+                    "15": 0,
+                    "16": 44,
+                    "17": 62,
+                    "18": 5,
+                    "19": 9,
+                    "20": 62,
+                    "21": 63,
+                    "22": 8,
+                    "23": 0,
+                    "24": 63,
+                    "25": 78,
+                    "26": 9,
+                    "27": 4
+                  }
+                },
+                "before": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":7,\"2\":1,\"3\":3,\"4\":7,\"5\":8,\"6\":2,\"7\":0,\"8\":8,\"9\":43,\"10\":3,\"11\":4,\"12\":43,\"13\":44,\"14\":4,\"15\":0,\"16\":44,\"17\":62,\"18\":5,\"19\":9,\"20\":62,\"21\":63,\"22\":8,\"23\":0,\"24\":63,\"25\":78,\"26\":9,\"27\":4}}",
+                "trusted": true,
+                "at": 1792370238804,
+                "after": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":7,\"2\":1,\"3\":3,\"4\":7,\"5\":8,\"6\":2,\"7\":0,\"8\":8,\"9\":43,\"10\":3,\"11\":4,\"12\":43,\"13\":44,\"14\":4,\"15\":0,\"16\":44,\"17\":62,\"18\":5,\"19\":9,\"20\":62,\"21\":63,\"22\":8,\"23\":0,\"24\":63,\"25\":78,\"26\":9,\"27\":4}}",
+                "deliveredAt": 1792370238804
+              },
+              {
+                "data": {
+                  "type": "window",
+                  "id": 2,
+                  "rev": 0,
+                  "items": [
+                    {
+                      "from": 0,
+                      "to": 7,
+                      "line": 1,
+                      "type": "heading",
+                      "html": "<h1><span data-md-source-from=\"2\" data-md-source-to=\"6\" data-md-source-mode=\"linear\">Math</span></h1>\n"
+                    },
+                    {
+                      "from": 7,
+                      "to": 8,
+                      "line": 2,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 8,
+                      "to": 43,
+                      "line": 3,
+                      "type": "paragraph",
+                      "html": "<p><span data-md-source-from=\"8\" data-md-source-to=\"15\" data-md-source-mode=\"linear\">Inline </span><span data-md-source-from=\"15\" data-md-source-to=\"20\" data-md-source-mode=\"atomic\"><eq><span class=\"fw-md-math-pending\" data-md-math=\"inline\" data-md-math-code=\"a^2\">$a^2$</span></eq></span><span data-md-source-from=\"20\" data-md-source-to=\"33\" data-md-source-mode=\"linear\"> and invalid </span><span data-md-source-from=\"33\" data-md-source-to=\"41\" data-md-source-mode=\"atomic\"><eq><span class=\"fw-md-math-pending\" data-md-math=\"inline\" data-md-math-code=\"\\frac{\">$\\frac{$</span></eq></span><span data-md-source-from=\"41\" data-md-source-to=\"42\" data-md-source-mode=\"linear\">.</span></p>\n"
+                    },
+                    {
+                      "from": 43,
+                      "to": 44,
+                      "line": 4,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 44,
+                      "to": 62,
+                      "line": 5,
+                      "type": "math",
+                      "html": "<span data-md-source-from=\"44\" data-md-source-to=\"62\" data-md-source-mode=\"atomic\"><section><eqn><span class=\"fw-md-math-pending\" data-md-math=\"block\" data-md-math-code=\"\n\\frac{a}{b}\n\">$$\n\\frac{a}{b}\n$$\n</span></eqn></section></span>"
+                    },
+                    {
+                      "from": 62,
+                      "to": 63,
+                      "line": 8,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 63,
+                      "to": 78,
+                      "line": 9,
+                      "type": "paragraph",
+                      "html": "<p><span data-md-source-from=\"63\" data-md-source-to=\"77\" data-md-source-mode=\"linear\">Tail Math 中文🙂</span></p>\n"
+                    }
+                  ]
+                },
+                "before": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":7,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"6\\\" data-md-source-mode=\\\"linear\\\">Math</span></h1>\\n\"},{\"from\":7,\"to\":8,\"line\":2,\"type\":\"blank\"},{\"from\":8,\"to\":43,\"line\":3,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"8\\\" data-md-source-to=\\\"15\\\" data-md-source-mode=\\\"linear\\\">Inline </span><span data-md-source-from=\\\"15\\\" data-md-source-to=\\\"20\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"a^2\\\">$a^2$</span></eq></span><span data-md-source-from=\\\"20\\\" data-md-source-to=\\\"33\\\" data-md-source-mode=\\\"linear\\\"> and invalid </span><span data-md-source-from=\\\"33\\\" data-md-source-to=\\\"41\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"\\\\frac{\\\">$\\\\frac{$</span></eq></span><span data-md-source-from=\\\"41\\\" data-md-source-to=\\\"42\\\" data-md-source-mode=\\\"linear\\\">.</span></p>\\n\"},{\"from\":43,\"to\":44,\"line\":4,\"type\":\"blank\"},{\"from\":44,\"to\":62,\"line\":5,\"type\":\"math\",\"html\":\"<span data-md-source-from=\\\"44\\\" data-md-source-to=\\\"62\\\" data-md-source-mode=\\\"atomic\\\"><section><eqn><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"block\\\" data-md-math-code=\\\"\\n\\\\frac{a}{b}\\n\\\">$$\\n\\\\frac{a}{b}\\n$$\\n</span></eqn></section></span>\"},{\"from\":62,\"to\":63,\"line\":8,\"type\":\"blank\"},{\"from\":63,\"to\":78,\"line\":9,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"63\\\" data-md-source-to=\\\"77\\\" data-md-source-mode=\\\"linear\\\">Tail Math 中文🙂</span></p>\\n\"}]}",
+                "trusted": true,
+                "at": 1792370238805,
+                "after": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":7,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"6\\\" data-md-source-mode=\\\"linear\\\">Math</span></h1>\\n\"},{\"from\":7,\"to\":8,\"line\":2,\"type\":\"blank\"},{\"from\":8,\"to\":43,\"line\":3,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"8\\\" data-md-source-to=\\\"15\\\" data-md-source-mode=\\\"linear\\\">Inline </span><span data-md-source-from=\\\"15\\\" data-md-source-to=\\\"20\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"a^2\\\">$a^2$</span></eq></span><span data-md-source-from=\\\"20\\\" data-md-source-to=\\\"33\\\" data-md-source-mode=\\\"linear\\\"> and invalid </span><span data-md-source-from=\\\"33\\\" data-md-source-to=\\\"41\\\" data-md-source-mode=\\\"atomic\\\"><eq><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"inline\\\" data-md-math-code=\\\"\\\\frac{\\\">$\\\\frac{$</span></eq></span><span data-md-source-from=\\\"41\\\" data-md-source-to=\\\"42\\\" data-md-source-mode=\\\"linear\\\">.</span></p>\\n\"},{\"from\":43,\"to\":44,\"line\":4,\"type\":\"blank\"},{\"from\":44,\"to\":62,\"line\":5,\"type\":\"math\",\"html\":\"<span data-md-source-from=\\\"44\\\" data-md-source-to=\\\"62\\\" data-md-source-mode=\\\"atomic\\\"><section><eqn><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"block\\\" data-md-math-code=\\\"\\n\\\\frac{a}{b}\\n\\\">$$\\n\\\\frac{a}{b}\\n$$\\n</span></eqn></section></span>\"},{\"from\":62,\"to\":63,\"line\":8,\"type\":\"blank\"},{\"from\":63,\"to\":78,\"line\":9,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"63\\\" data-md-source-to=\\\"77\\\" data-md-source-mode=\\\"linear\\\">Tail Math 中文🙂</span></p>\\n\"}]}",
+                "deliveredAt": 1792370238805
+              }
+            ],
+            "errors": [],
+            "terminated": 1,
+            "markdown": true,
+            "math": false
+          },
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/markdown-math-worker-DrqU35IS.js",
+            "inputs": [
+              {
+                "data": {
+                  "type": "render-math",
+                  "id": 1,
+                  "formulas": [
+                    {
+                      "source": "a^2",
+                      "displayMode": false
+                    },
+                    {
+                      "source": "\\frac{",
+                      "displayMode": false
+                    }
+                  ],
+                  "baseNodes": 20,
+                  "baseUnits": 671
+                },
+                "before": "{\"type\":\"render-math\",\"id\":1,\"formulas\":[{\"source\":\"a^2\",\"displayMode\":false},{\"source\":\"\\\\frac{\",\"displayMode\":false}],\"baseNodes\":20,\"baseUnits\":671}",
+                "at": 1792370238805,
+                "after": "{\"type\":\"render-math\",\"id\":1,\"formulas\":[{\"source\":\"a^2\",\"displayMode\":false},{\"source\":\"\\\\frac{\",\"displayMode\":false}],\"baseNodes\":20,\"baseUnits\":671}"
+              },
+              {
+                "data": {
+                  "type": "render-math",
+                  "id": 2,
+                  "formulas": [
+                    {
+                      "source": "\n\\frac{a}{b}\n",
+                      "displayMode": true
+                    }
+                  ],
+                  "baseNodes": 8,
+                  "baseUnits": 215
+                },
+                "before": "{\"type\":\"render-math\",\"id\":2,\"formulas\":[{\"source\":\"\\n\\\\frac{a}{b}\\n\",\"displayMode\":true}],\"baseNodes\":8,\"baseUnits\":215}",
+                "at": 1792370238805,
+                "after": "{\"type\":\"render-math\",\"id\":2,\"formulas\":[{\"source\":\"\\n\\\\frac{a}{b}\\n\",\"displayMode\":true}],\"baseNodes\":8,\"baseUnits\":215}"
+              }
+            ],
+            "messages": [
+              {
+                "data": {
+                  "type": "math-result",
+                  "id": 1,
+                  "result": {
+                    "html": [
+                      "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8141em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8141em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span>",
+                      "<span class=\"katex-error\" title=\"ParseError: KaTeX parse error: Unexpected end of input in a macro argument, expected &#x27;}&#x27; at end of input: \\frac{\" style=\"color:#cc0000\">\\frac{</span>"
+                    ],
+                    "nodes": 66,
+                    "units": 1630,
+                    "overflow": false
+                  }
+                },
+                "before": "{\"type\":\"math-result\",\"id\":1,\"result\":{\"html\":[\"<span class=\\\"katex\\\"><span class=\\\"katex-mathml\\\"><math xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup></mrow><annotation encoding=\\\"application/x-tex\\\">a^2</annotation></semantics></math></span><span class=\\\"katex-html\\\" aria-hidden=\\\"true\\\"><span class=\\\"base\\\"><span class=\\\"strut\\\" style=\\\"height:0.8141em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mord mathnormal\\\">a</span><span class=\\\"msupsub\\\"><span class=\\\"vlist-t\\\"><span class=\\\"vlist-r\\\"><span class=\\\"vlist\\\" style=\\\"height:0.8141em;\\\"><span style=\\\"top:-3.063em;margin-right:0.05em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:2.7em;\\\"></span><span class=\\\"sizing reset-size6 size3 mtight\\\"><span class=\\\"mord mtight\\\">2</span></span></span></span></span></span></span></span></span></span></span>\",\"<span class=\\\"katex-error\\\" title=\\\"ParseError: KaTeX parse error: Unexpected end of input in a macro argument, expected &#x27;}&#x27; at end of input: \\\\frac{\\\" style=\\\"color:#cc0000\\\">\\\\frac{</span>\"],\"nodes\":66,\"units\":1630,\"overflow\":false}}",
+                "trusted": true,
+                "at": 1792370238815,
+                "after": "{\"type\":\"math-result\",\"id\":1,\"result\":{\"html\":[\"<span class=\\\"katex\\\"><span class=\\\"katex-mathml\\\"><math xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup></mrow><annotation encoding=\\\"application/x-tex\\\">a^2</annotation></semantics></math></span><span class=\\\"katex-html\\\" aria-hidden=\\\"true\\\"><span class=\\\"base\\\"><span class=\\\"strut\\\" style=\\\"height:0.8141em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mord mathnormal\\\">a</span><span class=\\\"msupsub\\\"><span class=\\\"vlist-t\\\"><span class=\\\"vlist-r\\\"><span class=\\\"vlist\\\" style=\\\"height:0.8141em;\\\"><span style=\\\"top:-3.063em;margin-right:0.05em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:2.7em;\\\"></span><span class=\\\"sizing reset-size6 size3 mtight\\\"><span class=\\\"mord mtight\\\">2</span></span></span></span></span></span></span></span></span></span></span>\",\"<span class=\\\"katex-error\\\" title=\\\"ParseError: KaTeX parse error: Unexpected end of input in a macro argument, expected &#x27;}&#x27; at end of input: \\\\frac{\\\" style=\\\"color:#cc0000\\\">\\\\frac{</span>\"],\"nodes\":66,\"units\":1630,\"overflow\":false}}",
+                "deliveredAt": 1792370238815
+              },
+              {
+                "data": {
+                  "type": "math-result",
+                  "id": 2,
+                  "result": {
+                    "html": [
+                      "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mfrac><mi>a</mi><mi>b</mi></mfrac></mrow><annotation encoding=\"application/x-tex\">\n\\frac{a}{b}\n</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1.7936em;vertical-align:-0.686em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.1076em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.686em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span>"
+                    ],
+                    "nodes": 78,
+                    "units": 1495,
+                    "overflow": false
+                  }
+                },
+                "before": "{\"type\":\"math-result\",\"id\":2,\"result\":{\"html\":[\"<span class=\\\"katex-display\\\"><span class=\\\"katex\\\"><span class=\\\"katex-mathml\\\"><math xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\" display=\\\"block\\\"><semantics><mrow><mfrac><mi>a</mi><mi>b</mi></mfrac></mrow><annotation encoding=\\\"application/x-tex\\\">\\n\\\\frac{a}{b}\\n</annotation></semantics></math></span><span class=\\\"katex-html\\\" aria-hidden=\\\"true\\\"><span class=\\\"base\\\"><span class=\\\"strut\\\" style=\\\"height:1.7936em;vertical-align:-0.686em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mopen nulldelimiter\\\"></span><span class=\\\"mfrac\\\"><span class=\\\"vlist-t vlist-t2\\\"><span class=\\\"vlist-r\\\"><span class=\\\"vlist\\\" style=\\\"height:1.1076em;\\\"><span style=\\\"top:-2.314em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:3em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mord mathnormal\\\">b</span></span></span><span style=\\\"top:-3.23em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:3em;\\\"></span><span class=\\\"frac-line\\\" style=\\\"border-bottom-width:0.04em;\\\"></span></span><span style=\\\"top:-3.677em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:3em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mord mathnormal\\\">a</span></span></span></span><span class=\\\"vlist-s\\\">​</span></span><span class=\\\"vlist-r\\\"><span class=\\\"vlist\\\" style=\\\"height:0.686em;\\\"><span></span></span></span></span></span><span class=\\\"mclose nulldelimiter\\\"></span></span></span></span></span></span>\"],\"nodes\":78,\"units\":1495,\"overflow\":false}}",
+                "trusted": true,
+                "at": 1792370238825,
+                "after": "{\"type\":\"math-result\",\"id\":2,\"result\":{\"html\":[\"<span class=\\\"katex-display\\\"><span class=\\\"katex\\\"><span class=\\\"katex-mathml\\\"><math xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\" display=\\\"block\\\"><semantics><mrow><mfrac><mi>a</mi><mi>b</mi></mfrac></mrow><annotation encoding=\\\"application/x-tex\\\">\\n\\\\frac{a}{b}\\n</annotation></semantics></math></span><span class=\\\"katex-html\\\" aria-hidden=\\\"true\\\"><span class=\\\"base\\\"><span class=\\\"strut\\\" style=\\\"height:1.7936em;vertical-align:-0.686em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mopen nulldelimiter\\\"></span><span class=\\\"mfrac\\\"><span class=\\\"vlist-t vlist-t2\\\"><span class=\\\"vlist-r\\\"><span class=\\\"vlist\\\" style=\\\"height:1.1076em;\\\"><span style=\\\"top:-2.314em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:3em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mord mathnormal\\\">b</span></span></span><span style=\\\"top:-3.23em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:3em;\\\"></span><span class=\\\"frac-line\\\" style=\\\"border-bottom-width:0.04em;\\\"></span></span><span style=\\\"top:-3.677em;\\\"><span class=\\\"pstrut\\\" style=\\\"height:3em;\\\"></span><span class=\\\"mord\\\"><span class=\\\"mord mathnormal\\\">a</span></span></span></span><span class=\\\"vlist-s\\\">​</span></span><span class=\\\"vlist-r\\\"><span class=\\\"vlist\\\" style=\\\"height:0.686em;\\\"><span></span></span></span></span></span><span class=\\\"mclose nulldelimiter\\\"></span></span></span></span></span></span>\"],\"nodes\":78,\"units\":1495,\"overflow\":false}}",
+                "deliveredAt": 1792370238825
+              }
+            ],
+            "errors": [],
+            "terminated": 1,
+            "markdown": false,
+            "math": true
+          },
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/worker-BU6ECkO4.js",
+            "inputs": [
+              {
+                "data": {
+                  "id": 1,
+                  "rev": 0,
+                  "type": "parse",
+                  "source": "# Budget\n\n$$\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\n$$\n\nTail Budget 中文🙂\n"
+                },
+                "before": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Budget\\n\\n$$\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n$$\\n\\nTail Budget 中文🙂\\n\"}",
+                "at": 1792370239111,
+                "after": "{\"id\":1,\"rev\":0,\"type\":\"parse\",\"source\":\"# Budget\\n\\n$$\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n$$\\n\\nTail Budget 中文🙂\\n\"}"
+              },
+              {
+                "data": {
+                  "id": 2,
+                  "rev": 0,
+                  "type": "window",
+                  "start": 0,
+                  "readOnly": false
+                },
+                "before": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}",
+                "at": 1792370239160,
+                "after": "{\"id\":2,\"rev\":0,\"type\":\"window\",\"start\":0,\"readOnly\":false}"
+              }
+            ],
+            "messages": [
+              {
+                "data": {
+                  "type": "result",
+                  "id": 1,
+                  "rev": 0,
+                  "index": {
+                    "0": 0,
+                    "1": 9,
+                    "2": 1,
+                    "3": 3,
+                    "4": 9,
+                    "5": 10,
+                    "6": 2,
+                    "7": 0,
+                    "8": 10,
+                    "9": 426,
+                    "10": 3,
+                    "11": 9,
+                    "12": 426,
+                    "13": 427,
+                    "14": 6,
+                    "15": 0,
+                    "16": 427,
+                    "17": 444,
+                    "18": 7,
+                    "19": 4
+                  }
+                },
+                "before": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":9,\"2\":1,\"3\":3,\"4\":9,\"5\":10,\"6\":2,\"7\":0,\"8\":10,\"9\":426,\"10\":3,\"11\":9,\"12\":426,\"13\":427,\"14\":6,\"15\":0,\"16\":427,\"17\":444,\"18\":7,\"19\":4}}",
+                "trusted": true,
+                "at": 1792370239160,
+                "after": "{\"type\":\"result\",\"id\":1,\"rev\":0,\"index\":{\"0\":0,\"1\":9,\"2\":1,\"3\":3,\"4\":9,\"5\":10,\"6\":2,\"7\":0,\"8\":10,\"9\":426,\"10\":3,\"11\":9,\"12\":426,\"13\":427,\"14\":6,\"15\":0,\"16\":427,\"17\":444,\"18\":7,\"19\":4}}",
+                "deliveredAt": 1792370239160
+              },
+              {
+                "data": {
+                  "type": "window",
+                  "id": 2,
+                  "rev": 0,
+                  "items": [
+                    {
+                      "from": 0,
+                      "to": 9,
+                      "line": 1,
+                      "type": "heading",
+                      "html": "<h1><span data-md-source-from=\"2\" data-md-source-to=\"8\" data-md-source-mode=\"linear\">Budget</span></h1>\n"
+                    },
+                    {
+                      "from": 9,
+                      "to": 10,
+                      "line": 2,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 10,
+                      "to": 426,
+                      "line": 3,
+                      "type": "math",
+                      "html": "<span data-md-source-from=\"10\" data-md-source-to=\"426\" data-md-source-mode=\"atomic\"><section><eqn><span class=\"fw-md-math-pending\" data-md-math=\"block\" data-md-math-code=\"\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\n\">$$\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\n$$\n</span></eqn></section></span>"
+                    },
+                    {
+                      "from": 426,
+                      "to": 427,
+                      "line": 6,
+                      "type": "blank"
+                    },
+                    {
+                      "from": 427,
+                      "to": 444,
+                      "line": 7,
+                      "type": "paragraph",
+                      "html": "<p><span data-md-source-from=\"427\" data-md-source-to=\"443\" data-md-source-mode=\"linear\">Tail Budget 中文🙂</span></p>\n"
+                    }
+                  ]
+                },
+                "before": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":9,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"8\\\" data-md-source-mode=\\\"linear\\\">Budget</span></h1>\\n\"},{\"from\":9,\"to\":10,\"line\":2,\"type\":\"blank\"},{\"from\":10,\"to\":426,\"line\":3,\"type\":\"math\",\"html\":\"<span data-md-source-from=\\\"10\\\" data-md-source-to=\\\"426\\\" data-md-source-mode=\\\"atomic\\\"><section><eqn><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"block\\\" data-md-math-code=\\\"\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n\\\">$$\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n$$\\n</span></eqn></section></span>\"},{\"from\":426,\"to\":427,\"line\":6,\"type\":\"blank\"},{\"from\":427,\"to\":444,\"line\":7,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"427\\\" data-md-source-to=\\\"443\\\" data-md-source-mode=\\\"linear\\\">Tail Budget 中文🙂</span></p>\\n\"}]}",
+                "trusted": true,
+                "at": 1792370239160,
+                "after": "{\"type\":\"window\",\"id\":2,\"rev\":0,\"items\":[{\"from\":0,\"to\":9,\"line\":1,\"type\":\"heading\",\"html\":\"<h1><span data-md-source-from=\\\"2\\\" data-md-source-to=\\\"8\\\" data-md-source-mode=\\\"linear\\\">Budget</span></h1>\\n\"},{\"from\":9,\"to\":10,\"line\":2,\"type\":\"blank\"},{\"from\":10,\"to\":426,\"line\":3,\"type\":\"math\",\"html\":\"<span data-md-source-from=\\\"10\\\" data-md-source-to=\\\"426\\\" data-md-source-mode=\\\"atomic\\\"><section><eqn><span class=\\\"fw-md-math-pending\\\" data-md-math=\\\"block\\\" data-md-math-code=\\\"\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n\\\">$$\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n$$\\n</span></eqn></section></span>\"},{\"from\":426,\"to\":427,\"line\":6,\"type\":\"blank\"},{\"from\":427,\"to\":444,\"line\":7,\"type\":\"paragraph\",\"html\":\"<p><span data-md-source-from=\\\"427\\\" data-md-source-to=\\\"443\\\" data-md-source-mode=\\\"linear\\\">Tail Budget 中文🙂</span></p>\\n\"}]}",
+                "deliveredAt": 1792370239160
+              }
+            ],
+            "errors": [],
+            "terminated": 0,
+            "markdown": true,
+            "math": false
+          },
+          {
+            "url": "file:///private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/markdown-math-worker-DrqU35IS.js",
+            "inputs": [
+              {
+                "data": {
+                  "type": "render-math",
+                  "id": 1,
+                  "formulas": [
+                    {
+                      "source": "\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\n",
+                      "displayMode": true
+                    }
+                  ],
+                  "baseNodes": 8,
+                  "baseUnits": 614
+                },
+                "before": "{\"type\":\"render-math\",\"id\":1,\"formulas\":[{\"source\":\"\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n\",\"displayMode\":true}],\"baseNodes\":8,\"baseUnits\":614}",
+                "at": 1792370239161,
+                "after": "{\"type\":\"render-math\",\"id\":1,\"formulas\":[{\"source\":\"\\nx_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59}\\n\",\"displayMode\":true}],\"baseNodes\":8,\"baseUnits\":614}"
+              }
+            ],
+            "messages": [
+              {
+                "data": {
+                  "type": "math-result",
+                  "id": 1,
+                  "result": {
+                    "html": [],
+                    "nodes": 2896,
+                    "units": 53059,
+                    "overflow": true
+                  }
+                },
+                "before": "{\"type\":\"math-result\",\"id\":1,\"result\":{\"html\":[],\"nodes\":2896,\"units\":53059,\"overflow\":true}}",
+                "trusted": true,
+                "at": 1792370239173,
+                "after": "{\"type\":\"math-result\",\"id\":1,\"result\":{\"html\":[],\"nodes\":2896,\"units\":53059,\"overflow\":true}}",
+                "deliveredAt": 1792370239173
+              }
+            ],
+            "errors": [],
+            "terminated": 1,
+            "markdown": false,
+            "math": true
+          }
+        ],
+        "slots": []
+      },
+      "workerRestored": {
+        "constructor": true,
+        "postMessage": true,
+        "terminate": true,
+        "allMarkdownWorkersTerminated": false,
+        "allMathWorkersTerminated": true,
+        "allSlotsReleased": true
+      },
+      "failureRpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1,
+                "relativePath": "plain.md"
+              }
+            ],
+            "inputHash": "b26245fef1a80979256827283e3f18970976cb0a4285cde132d6afbbaa35cdb9",
+            "at": 1792370238092,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "d221ad9d-be39-4422-bed3-1c57cf909cfc",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:48946128",
+              "name": "plain.md",
+              "relativePath": "plain.md",
+              "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/plain.md",
+              "revision": {
+                "size": 50,
+                "inode": "48946128",
+                "device": "16777232",
+                "changedNs": "1792370237219112664",
+                "modifiedNs": "1792370237219112664",
+                "hash": "42c1a8a233011bf54ef9be5cb8b267e6393b8d0a7ac4b32075143d9869adc756"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "md",
+                "basis": "sample"
+              }
+            },
+            "before": "5eb707d9fa5d9bb26c34bd1a621d27fe7fdb50be48d9cf6826b53eaf17d3586c",
+            "currentFrame": true,
+            "after": "5eb707d9fa5d9bb26c34bd1a621d27fe7fdb50be48d9cf6826b53eaf17d3586c",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "d221ad9d-be39-4422-bed3-1c57cf909cfc",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "e959b8635901a539354c54548da6b96346e08bcb4e00f4aca6720cd21265737e",
+            "at": 1792370238102,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "d221ad9d-be39-4422-bed3-1c57cf909cfc",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946128",
+                "name": "plain.md",
+                "relativePath": "plain.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/plain.md",
+                "revision": {
+                  "size": 50,
+                  "inode": "48946128",
+                  "device": "16777232",
+                  "changedNs": "1792370237219112664",
+                  "modifiedNs": "1792370237219112664",
+                  "hash": "42c1a8a233011bf54ef9be5cb8b267e6393b8d0a7ac4b32075143d9869adc756"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBQbGFpbgoKTm8gZm9ybXVsYXMgaGVyZS4KClRhaWwgUGxhaW4g5Lit5paH8J+Zggo="
+            },
+            "before": "54aa18f4c474ff90f48a805cc9af376e0de22965e56d8976298e615a1522417f",
+            "currentFrame": true,
+            "after": "54aa18f4c474ff90f48a805cc9af376e0de22965e56d8976298e615a1522417f",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "d221ad9d-be39-4422-bed3-1c57cf909cfc",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "e959b8635901a539354c54548da6b96346e08bcb4e00f4aca6720cd21265737e",
+            "at": 1792370238111,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "d221ad9d-be39-4422-bed3-1c57cf909cfc",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946128",
+                "name": "plain.md",
+                "relativePath": "plain.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/plain.md",
+                "revision": {
+                  "size": 50,
+                  "inode": "48946128",
+                  "device": "16777232",
+                  "changedNs": "1792370237219112664",
+                  "modifiedNs": "1792370237219112664",
+                  "hash": "42c1a8a233011bf54ef9be5cb8b267e6393b8d0a7ac4b32075143d9869adc756"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBQbGFpbgoKTm8gZm9ybXVsYXMgaGVyZS4KClRhaWwgUGxhaW4g5Lit5paH8J+Zggo="
+            },
+            "before": "54aa18f4c474ff90f48a805cc9af376e0de22965e56d8976298e615a1522417f",
+            "currentFrame": true,
+            "after": "54aa18f4c474ff90f48a805cc9af376e0de22965e56d8976298e615a1522417f",
+            "delivered": true
+          },
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1,
+                "relativePath": "math.md"
+              }
+            ],
+            "inputHash": "6609794df9a74d8dda1e387f97029723b1fbc866eda105219db595f51a58311e",
+            "at": 1792370238316,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "cb6ae44a-a96e-46f0-baf1-6c9770bddcae",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:48946129",
+              "name": "math.md",
+              "relativePath": "math.md",
+              "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/math.md",
+              "revision": {
+                "size": 84,
+                "inode": "48946129",
+                "device": "16777232",
+                "changedNs": "1792370237219291331",
+                "modifiedNs": "1792370237219291331",
+                "hash": "b31a03e4ed0682ae6de957fdfc672668e478d5d7b361aed06ca14375872415c5"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "md",
+                "basis": "sample"
+              }
+            },
+            "before": "6e608906ad584b54546cd49c2df713654183713996c6d4548d2b42f8b9664e0b",
+            "currentFrame": true,
+            "after": "6e608906ad584b54546cd49c2df713654183713996c6d4548d2b42f8b9664e0b",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "cb6ae44a-a96e-46f0-baf1-6c9770bddcae",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "d65f7489be07c861e2682c8ce47fbf86c7672ac4610b4f242c9684f67d89a231",
+            "at": 1792370238326,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "cb6ae44a-a96e-46f0-baf1-6c9770bddcae",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946129",
+                "name": "math.md",
+                "relativePath": "math.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/math.md",
+                "revision": {
+                  "size": 84,
+                  "inode": "48946129",
+                  "device": "16777232",
+                  "changedNs": "1792370237219291331",
+                  "modifiedNs": "1792370237219291331",
+                  "hash": "b31a03e4ed0682ae6de957fdfc672668e478d5d7b361aed06ca14375872415c5"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBNYXRoCgpJbmxpbmUgJGFeMiQgYW5kIGludmFsaWQgJFxmcmFjeyQuCgokJApcZnJhY3thfXtifQokJAoKVGFpbCBNYXRoIOS4reaWh/CfmYIK"
+            },
+            "before": "448fc3a4b09eb5fc2be1804617cad9ba3dc48bdb34294efe5a6be8a5235429f3",
+            "currentFrame": true,
+            "after": "448fc3a4b09eb5fc2be1804617cad9ba3dc48bdb34294efe5a6be8a5235429f3",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "cb6ae44a-a96e-46f0-baf1-6c9770bddcae",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "d65f7489be07c861e2682c8ce47fbf86c7672ac4610b4f242c9684f67d89a231",
+            "at": 1792370238335,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "cb6ae44a-a96e-46f0-baf1-6c9770bddcae",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946129",
+                "name": "math.md",
+                "relativePath": "math.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/math.md",
+                "revision": {
+                  "size": 84,
+                  "inode": "48946129",
+                  "device": "16777232",
+                  "changedNs": "1792370237219291331",
+                  "modifiedNs": "1792370237219291331",
+                  "hash": "b31a03e4ed0682ae6de957fdfc672668e478d5d7b361aed06ca14375872415c5"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBNYXRoCgpJbmxpbmUgJGFeMiQgYW5kIGludmFsaWQgJFxmcmFjeyQuCgokJApcZnJhY3thfXtifQokJAoKVGFpbCBNYXRoIOS4reaWh/CfmYIK"
+            },
+            "before": "448fc3a4b09eb5fc2be1804617cad9ba3dc48bdb34294efe5a6be8a5235429f3",
+            "currentFrame": true,
+            "after": "448fc3a4b09eb5fc2be1804617cad9ba3dc48bdb34294efe5a6be8a5235429f3",
+            "delivered": true
+          },
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1,
+                "relativePath": "math.md"
+              }
+            ],
+            "inputHash": "6609794df9a74d8dda1e387f97029723b1fbc866eda105219db595f51a58311e",
+            "at": 1792370238683,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "3ca2618a-3a8d-44dc-ae6d-38f259449a55",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:48946129",
+              "name": "math.md",
+              "relativePath": "math.md",
+              "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/math.md",
+              "revision": {
+                "size": 84,
+                "inode": "48946129",
+                "device": "16777232",
+                "changedNs": "1792370237219291331",
+                "modifiedNs": "1792370237219291331",
+                "hash": "b31a03e4ed0682ae6de957fdfc672668e478d5d7b361aed06ca14375872415c5"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "md",
+                "basis": "sample"
+              }
+            },
+            "before": "508c82df14574561fa4e570d9a878f53a86a21661fa599eaa007b71c5d7adc08",
+            "currentFrame": true,
+            "after": "508c82df14574561fa4e570d9a878f53a86a21661fa599eaa007b71c5d7adc08",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "3ca2618a-3a8d-44dc-ae6d-38f259449a55",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "f53224a5870683238851bd27b4ffd296afc0eaf96e1c2d72b6c2780462285bd6",
+            "at": 1792370238691,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "3ca2618a-3a8d-44dc-ae6d-38f259449a55",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946129",
+                "name": "math.md",
+                "relativePath": "math.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/math.md",
+                "revision": {
+                  "size": 84,
+                  "inode": "48946129",
+                  "device": "16777232",
+                  "changedNs": "1792370237219291331",
+                  "modifiedNs": "1792370237219291331",
+                  "hash": "b31a03e4ed0682ae6de957fdfc672668e478d5d7b361aed06ca14375872415c5"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBNYXRoCgpJbmxpbmUgJGFeMiQgYW5kIGludmFsaWQgJFxmcmFjeyQuCgokJApcZnJhY3thfXtifQokJAoKVGFpbCBNYXRoIOS4reaWh/CfmYIK"
+            },
+            "before": "e407a8518d7faf141c298310082584191d2a8fd561852a159f609ec129959f78",
+            "currentFrame": true,
+            "after": "e407a8518d7faf141c298310082584191d2a8fd561852a159f609ec129959f78",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "3ca2618a-3a8d-44dc-ae6d-38f259449a55",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "f53224a5870683238851bd27b4ffd296afc0eaf96e1c2d72b6c2780462285bd6",
+            "at": 1792370238701,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "3ca2618a-3a8d-44dc-ae6d-38f259449a55",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946129",
+                "name": "math.md",
+                "relativePath": "math.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/math.md",
+                "revision": {
+                  "size": 84,
+                  "inode": "48946129",
+                  "device": "16777232",
+                  "changedNs": "1792370237219291331",
+                  "modifiedNs": "1792370237219291331",
+                  "hash": "b31a03e4ed0682ae6de957fdfc672668e478d5d7b361aed06ca14375872415c5"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBNYXRoCgpJbmxpbmUgJGFeMiQgYW5kIGludmFsaWQgJFxmcmFjeyQuCgokJApcZnJhY3thfXtifQokJAoKVGFpbCBNYXRoIOS4reaWh/CfmYIK"
+            },
+            "before": "e407a8518d7faf141c298310082584191d2a8fd561852a159f609ec129959f78",
+            "currentFrame": true,
+            "after": "e407a8518d7faf141c298310082584191d2a8fd561852a159f609ec129959f78",
+            "delivered": true
+          },
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1,
+                "relativePath": "budget.md"
+              }
+            ],
+            "inputHash": "03e8c01a326593b93afc925a4ac775b11469a4de24b6b66a202710623b9ed79c",
+            "at": 1792370239050,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "2f4066f3-90bd-4f6a-a283-be4226cdbaf2",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:48946130",
+              "name": "budget.md",
+              "relativePath": "budget.md",
+              "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/budget.md",
+              "revision": {
+                "size": 450,
+                "inode": "48946130",
+                "device": "16777232",
+                "changedNs": "1792370237219411415",
+                "modifiedNs": "1792370237219411415",
+                "hash": "e1fe974f528d22a9ea43e5a0cfd805ce55b453abaa9453059d46b88423368fd0"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "md",
+                "basis": "sample"
+              }
+            },
+            "before": "6cb1e615a2ebce59e033946d4c612905b9c77a2f7d866815bceb73cbeabd78a1",
+            "currentFrame": true,
+            "after": "6cb1e615a2ebce59e033946d4c612905b9c77a2f7d866815bceb73cbeabd78a1",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "2f4066f3-90bd-4f6a-a283-be4226cdbaf2",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "6eb2f43df15467503486d98ecac893b40e4d5ca439626f9f05a38a244054d997",
+            "at": 1792370239059,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "2f4066f3-90bd-4f6a-a283-be4226cdbaf2",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946130",
+                "name": "budget.md",
+                "relativePath": "budget.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/budget.md",
+                "revision": {
+                  "size": 450,
+                  "inode": "48946130",
+                  "device": "16777232",
+                  "changedNs": "1792370237219411415",
+                  "modifiedNs": "1792370237219411415",
+                  "hash": "e1fe974f528d22a9ea43e5a0cfd805ce55b453abaa9453059d46b88423368fd0"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBCdWRnZXQKCiQkCnhfezB9K3hfezF9K3hfezJ9K3hfezN9K3hfezR9K3hfezV9K3hfezZ9K3hfezd9K3hfezh9K3hfezl9K3hfezEwfSt4X3sxMX0reF97MTJ9K3hfezEzfSt4X3sxNH0reF97MTV9K3hfezE2fSt4X3sxN30reF97MTh9K3hfezE5fSt4X3syMH0reF97MjF9K3hfezIyfSt4X3syM30reF97MjR9K3hfezI1fSt4X3syNn0reF97Mjd9K3hfezI4fSt4X3syOX0reF97MzB9K3hfezMxfSt4X3szMn0reF97MzN9K3hfezM0fSt4X3szNX0reF97MzZ9K3hfezM3fSt4X3szOH0reF97Mzl9K3hfezQwfSt4X3s0MX0reF97NDJ9K3hfezQzfSt4X3s0NH0reF97NDV9K3hfezQ2fSt4X3s0N30reF97NDh9K3hfezQ5fSt4X3s1MH0reF97NTF9K3hfezUyfSt4X3s1M30reF97NTR9K3hfezU1fSt4X3s1Nn0reF97NTd9K3hfezU4fSt4X3s1OX0KJCQKClRhaWwgQnVkZ2V0IOS4reaWh/CfmYIK"
+            },
+            "before": "9b81ad2a44033e04e11dd51db1389e7183a908f455c16efa3cb75db089dafd67",
+            "currentFrame": true,
+            "after": "9b81ad2a44033e04e11dd51db1389e7183a908f455c16efa3cb75db089dafd67",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "2f4066f3-90bd-4f6a-a283-be4226cdbaf2",
+                "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                "generation": 1
+              }
+            ],
+            "inputHash": "6eb2f43df15467503486d98ecac893b40e4d5ca439626f9f05a38a244054d997",
+            "at": 1792370239069,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "2f4066f3-90bd-4f6a-a283-be4226cdbaf2",
+                  "lease": "79e01fa7-c894-44d5-b9be-6b453de229e0",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:48946130",
+                "name": "budget.md",
+                "relativePath": "budget.md",
+                "absolutePath": "/private/tmp/willyou-math-lazy-app-9Tsf8H/project/budget.md",
+                "revision": {
+                  "size": 450,
+                  "inode": "48946130",
+                  "device": "16777232",
+                  "changedNs": "1792370237219411415",
+                  "modifiedNs": "1792370237219411415",
+                  "hash": "e1fe974f528d22a9ea43e5a0cfd805ce55b453abaa9453059d46b88423368fd0"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "md",
+                  "basis": "sample"
+                }
+              },
+              "base64": "IyBCdWRnZXQKCiQkCnhfezB9K3hfezF9K3hfezJ9K3hfezN9K3hfezR9K3hfezV9K3hfezZ9K3hfezd9K3hfezh9K3hfezl9K3hfezEwfSt4X3sxMX0reF97MTJ9K3hfezEzfSt4X3sxNH0reF97MTV9K3hfezE2fSt4X3sxN30reF97MTh9K3hfezE5fSt4X3syMH0reF97MjF9K3hfezIyfSt4X3syM30reF97MjR9K3hfezI1fSt4X3syNn0reF97Mjd9K3hfezI4fSt4X3syOX0reF97MzB9K3hfezMxfSt4X3szMn0reF97MzN9K3hfezM0fSt4X3szNX0reF97MzZ9K3hfezM3fSt4X3szOH0reF97Mzl9K3hfezQwfSt4X3s0MX0reF97NDJ9K3hfezQzfSt4X3s0NH0reF97NDV9K3hfezQ2fSt4X3s0N30reF97NDh9K3hfezQ5fSt4X3s1MH0reF97NTF9K3hfezUyfSt4X3s1M30reF97NTR9K3hfezU1fSt4X3s1Nn0reF97NTd9K3hfezU4fSt4X3s1OX0KJCQKClRhaWwgQnVkZ2V0IOS4reaWh/CfmYIK"
+            },
+            "before": "9b81ad2a44033e04e11dd51db1389e7183a908f455c16efa3cb75db089dafd67",
+            "currentFrame": true,
+            "after": "9b81ad2a44033e04e11dd51db1389e7183a908f455c16efa3cb75db089dafd67",
+            "delivered": true
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "resourceRestored": {
+        "restored": true,
+        "allSlotsReleased": true,
+        "noObserverErrors": true,
+        "webRequestUntouched": true,
+        "protocolUntouched": true
+      },
+      "measureRestored": true
+    }
+  ],
+  "boundary": "A actual packaged App and native file service, real KaTeX module/Worker/errors/results and real UI input. Test-only Chromium debugger-start pauses real Worker module initialization without changing bytes; original webRequest/protocol handlers unchanged. Explicit missing-module constructor URL faults produce real trusted Worker errors, not synthetic errors. Native ErrorEvent gates prevent default solely to avoid gate-induced unhandled reporting, then forward the original unchanged core event. Passive Worker/file RPC/requestMeasure observation. No fake engine results, editor/Store/DOM value injection, clipboard, daily files, models, external apps or Codex. X07 fine-grained formula selection remains unaccepted.",
+  "failedStage": "real-engine-budget",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(budgetWorkers.rows.some(x=>x.math&&x.messages.some(m=>m.deliveredAt&&m.data.type==='math-result'&&m.data.result.overflow)))\n",
+  "stack": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(budgetWorkers.rows.some(x=>x.math&&x.messages.some(m=>m.deliveredAt&&m.data.type==='math-result'&&m.data.result.overflow)))\n\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/files/markdown-math-lazy-ui.mjs:33:345",
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 math normal\n设置\n首页\n›\nM9 math normal\n文件\nM9 math normal\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 math normal\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/19/2026, 8:37:17 AM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nbudget.md\nSynthetic static viewers\n›\nbudget.md\n打开\n# Budget\n\n\n$$ x_{0}+x_{1}+x_{2}+x_{3}+x_{4}+x_{5}+x_{6}+x_{7}+x_{8}+x_{9}+x_{10}+x_{11}+x_{12}+x_{13}+x_{14}+x_{15}+x_{16}+x_{17}+x_{18}+x_{19}+x_{20}+x_{21}+x_{22}+x_{23}+x_{24}+x_{25}+x_{26}+x_{27}+x_{28}+x_{29}+x_{30}+x_{31}+x_{32}+x_{33}+x_{34}+x_{35}+x_{36}+x_{37}+x_{38}+x_{39}+x_{40}+x_{41}+x_{42}+x_{43}+x_{44}+x_{45}+x_{46}+x_{47}+x_{48}+x_{49}+x_{50}+x_{51}+x_{52}+x_{53}+x_{54}+x_{55}+x_{56}+x_{57}+x_{58}+x_{59} $$\n\nTail Budget 中文🙂\n\nproject\nbudget.md\nerror-close.md\nerror-switch.md\nmath.md\nnotebook.ipynb\nother.txt\nplain.md\nresource-close.md\nresource-switch.md\nresult-close.md\nresult-switch.md\n0.4 KiB\nUTF-8",
+  "finishedAt": "2026-10-19T00:37:19.433Z"
+}

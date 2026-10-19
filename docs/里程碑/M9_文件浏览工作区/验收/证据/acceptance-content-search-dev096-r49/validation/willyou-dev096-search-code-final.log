@@ -1,0 +1,40 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/content-search-acceptance.test.tsx src/renderer/features/files/search-history-acceptance.test.tsx src/renderer/features/files/search-session-acceptance.test.tsx src/renderer/features/files/search-race-acceptance.test.tsx src/renderer/features/files/search-failure-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev096-search-code-final.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/renderer/features/files/content-search-acceptance.test.tsx (6 tests) 1341ms
+     ✓ R06 same basenames in unexpanded CJK directories open by click/Enter at exact emoji/BOM/CRLF-aware source range  314ms
+     ✓ R12 native permission issues and outside symlinks are bounded; changed/deleted hits are revalidated instead of locating obsolete bytes  360ms
+ ✓ src/renderer/features/files/search-race-acceptance.test.tsx (6 tests) 1966ms
+     ✓ C16 twenty real pending mount/unmount cycles leave zero jobs,processes or renderer IPC listeners  1251ms
+ ✓ src/renderer/features/files/search-history-acceptance.test.tsx (10 tests) 1857ms
+     ✓ R07: retains 30 unique queries and 20 masks, newest first, across dialog restart  439ms
+     ✓ R07: scopes do not leak histories and only the newest 20 survive a 21st scope and restart  572ms
+ ✓ src/renderer/features/files/search-session-acceptance.test.tsx (16 tests) 5652ms
+     ✓ C10: real search with legacy host=false selects its supported endpoint and caches only capability  765ms
+     ✓ C10: real search with legacy host=true selects its supported endpoint and caches only capability  458ms
+     ✓ C10: real 'PERMISSION' on legacy=false remains an error without extra retries  358ms
+     ✓ C10: real 'IO' on legacy=false remains an error without extra retries  387ms
+     ✓ C10: real 'PERMISSION' on legacy=true remains an error without extra retries  359ms
+     ✓ C10: real 'IO' on legacy=true remains an error without extra retries  356ms
+     ✓ C11: 'name' / 'unmount' while 'success reply pending'  309ms
+     ✓ C11: 'content' / 'clear' while 'start pending'  300ms
+     ✓ C11: 'content' / 'clear' while 'success reply pending'  316ms
+     ✓ C11: 'content' / 'unmount' while 'start pending'  309ms
+     ✓ C11: 'content' / 'unmount' while 'success reply pending'  344ms
+ ✓ src/renderer/features/files/search-failure-acceptance.test.tsx (5 tests) 20136ms
+     ✓ C12 empty native matches complete successfully without an error  1461ms
+     ✓ C12 genuine root permission error remains an error and retry succeeds after chmod restore  842ms
+     ✓ C12 real unchanged main timeout kills a withheld genuine success and retry starts a fresh native job  15894ms
+     ✓ C15 selected cached delete result revalidates on open and never chooses its neighbor  887ms
+     ✓ C15 selected cached rename result revalidates on open and never chooses its neighbor  1051ms
+
+ Test Files  5 passed (5)
+      Tests  43 passed (43)
+   Start at  03:09:51
+   Duration  21.43s (transform 2.25s, setup 0ms, import 4.13s, tests 30.95s, environment 2.10s)
+
+JSON report written to /private/tmp/willyou-dev096-search-code-final.json

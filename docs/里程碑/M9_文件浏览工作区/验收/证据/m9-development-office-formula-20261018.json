@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "time": "2026-10-18T01:33:54.260199+08:00",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirements": [
+    "R06.8",
+    "R07.6",
+    "R07.10",
+    "R07.12",
+    "R07.16",
+    "R07.17"
+  ],
+  "defect": "M9-DEV-014",
+  "finding": "Code review found =SUM( passed scalar input checks and could be written despite failed calculation; before-fix real App reproduction not executed. X01 TRUE/FALSE literal typing also differed from reviewed type-preserving contract.",
+  "layer": "model/component and real native integration; actual formula App interaction pending",
+  "sourceHashes": {
+    "src/shared/file-office.ts": "b771e70283ece67239412f58aaa55d8b59615f84bd6a59aa65ad46eebb92e8bc",
+    "native/files/broker.mm": "389b39b222e8af7e6c6e6371f66a3bfa37367e446cf6de6f491f8cd0babff24b",
+    "native/files/office-calculate.inc.mm": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+    "native/files/office/WillYouOffice.java": "21505c80ac4bff8af791972900ce51fd620ab70f674740b80be28640354e5cba",
+    "src/main/core/files/office/engine.ts": "e4a1c21a651388e187e59f2b15fe3752c8f2b9505e5ad88fab2150dd7fa369e3",
+    "src/main/core/files/office/service.ts": "791ba936fe8e6c27e2bc4ffc2d675b55ca1c22ff44c2d8f087e66ed10698b708",
+    "src/main/core/files/office/document.ts": "8a462da4d46d95273c862507c1ee89eff5ae537e7ce153747948020bdf219351",
+    "src/main/core/files/office/workbook.ts": "b1d30536b43379fd2cfd0256eeb9b96fdb24e1d166b8ef63b1700513532a0a79",
+    "src/main/core/files/office/worker.ts": "b5d152f4c1cbf6d6742adef6b159238184bf047d02a21fcde3a6d1b1fad71fe3",
+    "src/main/core/files/office/parser.ts": "e08f307383b297788b78ab6ffe519cd4a3f5ad9c0c2157ef1783276e2dfaf3e8",
+    "src/main/core/files/office/cell-edit.ts": "e53b093d5fdbc8b39f5aa217ffd9f36c55de01a0dc84e15307d5038686f3976e",
+    "src/main/core/files/office/cell-edit.test.ts": "0fc607679c6e4bcf931e69eb43328c37e5c78050d6ecaaa04e99a927ca35be71",
+    "src/main/core/files/office/document.test.ts": "2101f25fc26b184b90104fd3c5730aeb6f3c2d9a7c1804e66e5401b584e20671",
+    "src/main/core/files/office/native.test.ts": "b513ef30c80a906fe8d1fac3ddd593525552aad0b5bf80c810819a1374894341"
+  },
+  "runs": [
+    {
+      "log": "/private/tmp/willyou-m9-office-formula-r1-tests.log",
+      "result": "indeterminate: process returned 0 but no test summary; not counted as passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-formula-r2-tests.log",
+      "json": "/private/tmp/willyou-m9-office-formula-r2-tests.json",
+      "result": "41 passed, 1 skipped, 6 files; skipped packaged-runtime case requires new package"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-formula-r1-typecheck.log",
+      "result": "passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-formula-r2-typecheck.log",
+      "result": "passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-formula-r3-cell-tests.log",
+      "result": "6 passed, 1 file, includes new actual OOXML boolean/text round trip"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-formula-r4-package-tests.log",
+      "json": "/private/tmp/willyou-m9-office-formula-r4-package-tests.json",
+      "result": "1 selected packaged-runtime case passed: calculation plus valid/invalid formula validation; 12 non-selected cases not rerun"
+    }
+  ],
+  "nativeChecks": [
+    "Malformed SUM(, 1+, unterminated quote rejected; private jobs removed; valid retry allowed",
+    "Unicode string, normal range, IFERROR with #REF and unknown UDF syntax parsed without evaluation or source rewrite",
+    "Rejected raw formula remains in durable pending envelope and Worker value remains old",
+    "Legacy malformed formula restored into model: save rejects after durable checkpoint; source bytes unchanged; corrected formula saves through native commit",
+    "Existing process/RSS/deadline/cancellation and read/write/process/network sandbox checks pass"
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-office-formula-r1-build/mac-arm64/WillYou.app",
+    "status": "built; native smoke and targeted packaged runtime passed",
+    "asarSHA256": "a844e2edea7bcf11a68f9c32e49e35cb4dc23ccc84d6ae13be2e40bbd4787d9f",
+    "buildLog": "/private/tmp/willyou-m9-office-formula-r1-package.log"
+  },
+  "appChecks": {
+    "status": "pending",
+    "reason": "Mac locked; existing manual unlock request remains pending"
+  },
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "unchanged": true
+  },
+  "limitations": [
+    "Parser compatibility is not formula calculation compatibility; unsupported syntax remains explicit pending work",
+    "Literal TRUE/FALSE type protection does not implement OOXML checkbox controls",
+    "Physical IME and full Office UI/action/format matrices remain incomplete"
+  ]
+}

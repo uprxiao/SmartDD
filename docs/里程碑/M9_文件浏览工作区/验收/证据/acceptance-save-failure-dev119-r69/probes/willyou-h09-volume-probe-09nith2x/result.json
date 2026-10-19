@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-19T02:28:39.230257+00:00",
+  "scratch": "/private/tmp/willyou-h09-volume-probe-09nith2x",
+  "status": "passed-feasibility-only",
+  "boundary": "Disposable16MiB own disk image, mounted only at own /private/tmp path; never fill the host filesystem. Native ENOSPC feasibility only, not App acceptance.",
+  "commands": [
+    {
+      "args": [
+        "hdiutil",
+        "create",
+        "-size",
+        "16m",
+        "-fs",
+        "HFS+",
+        "-volname",
+        "WillYou-H09-Probe",
+        "-type",
+        "UDIF",
+        "/private/tmp/willyou-h09-volume-probe-09nith2x/disk.dmg"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "hdiutil",
+        "attach",
+        "-nobrowse",
+        "-noautoopen",
+        "-mountpoint",
+        "/private/tmp/willyou-h09-volume-probe-09nith2x/volume",
+        "-plist",
+        "/private/tmp/willyou-h09-volume-probe-09nith2x/disk.dmg"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "hdiutil",
+        "detach",
+        "/dev/disk7s1"
+      ],
+      "code": 0,
+      "stderr": ""
+    }
+  ],
+  "entities": [
+    {
+      "content-hint": "Apple_HFS",
+      "dev-entry": "/dev/disk7s1",
+      "mount-point": "/private/tmp/willyou-h09-volume-probe-09nith2x/volume",
+      "potentially-mountable": true,
+      "unmapped-content-hint": "48465300-0000-11AA-AA11-00306543ECAC",
+      "volume-kind": "hfs"
+    },
+    {
+      "content-hint": "GUID_partition_scheme",
+      "dev-entry": "/dev/disk7",
+      "potentially-mountable": false,
+      "unmapped-content-hint": "GUID_partition_scheme"
+    }
+  ],
+  "capacityBytes": 16736256,
+  "actualErrno": 28,
+  "actualError": "[Errno 28] No space left on device",
+  "writtenBytes": 16347136,
+  "retrySucceeded": true,
+  "detached": true,
+  "finishedAt": "2026-10-19T02:28:41.052259+00:00"
+}

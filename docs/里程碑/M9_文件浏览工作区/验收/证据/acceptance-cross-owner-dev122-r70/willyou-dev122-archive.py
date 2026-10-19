@@ -1,0 +1,49 @@
+from pathlib import Path
+import datetime,hashlib,json,platform,shutil,tarfile
+r=Path('/Users/hx/hx/hxWork/SmartDD');s=r/'docs/里程碑/M9_文件浏览工作区';b=Path('/private/tmp');sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+previous=s/'验收/证据/m9-acceptance-authority-dev121-r70-20261019.json';assert sha(previous)=='07e86ccb484760065c88f1ba3dae63e7ad67ad02a8aa81e8754809d726e34377';old=json.loads(previous.read_text())
+for a in old['artifacts'].values():assert sha(r/a['path'])==a['sha256']
+m=json.loads((b/'willyou-m9-acceptance-batch-r70-dev122-tested-sources.json').read_text());prior=json.loads((b/'willyou-m9-acceptance-batch-r70-dev121-tested-sources.json').read_text());assert m['fileCount']==1156 and len(m['addedFiles'])==4 and m['changedFromPrevious']==[]
+for p,h in m['files'].items():assert sha(r/p)==h,p
+for p,h in prior['files'].items():assert m['files'][p]==h,p
+assert sha(m['path'])==m['sha256']
+with tarfile.open(m['path']) as tar:
+ assert len(tar.getmembers())==1156
+ for e in tar.getmembers():assert hashlib.sha256(tar.extractfile(e).read()).hexdigest()==m['files'][e.name]
+code=json.loads((b/'willyou-dev122-code-final.json').read_text());native=json.loads((b/'willyou-dev122-native-final.json').read_text());assert code['success'] and code['numPassedTests']==17 and code['numFailedTests']==code['numPendingTests']==0 and len(native['rows'])==4
+assert 'Unhandled Errors' not in (b/'willyou-dev122-code-final.log').read_text();regression=json.loads((b/'willyou-dev122-authority-regression.json').read_text());assert len(regression['rows'])==5
+summary=json.loads((b/'willyou-dev122-app-r1.log').read_text().splitlines()[-1]);directory=Path(summary['artifacts']);app=json.loads((directory/'result.json').read_text());assert app['status']=='passed' and len(app['checks'])==4 and all(x['pass'] for x in app['checks'])
+assert sum(len(x['attempts']) for x in app['checks'])==64
+for x in app['checks']:
+ for a in x['attempts']:assert '[UNTRUSTED]' in a['error'] and 'PRIVATE OWNER' not in a['error']
+ assert x['peerNativeWatchStillActive'] and x['sourceFingerprintsUnchanged'] and x['uiBefore']==x['uiAfter']
+assert len(app['positiveSaves'])==len(app['exits'])==2
+for exit in app['exits']:assert exit['code']==0 and exit['signal'] is None
+for owner in app['restored']:assert all(owner['rpc'].values()) and all(owner['watch'].values())
+for rpc in app['rpc']:
+ for row in rpc['rows']:
+  if row.get('delivered'):assert row['before']==row['after']
+for watch in app['watch']:
+ assert all(x['settled'] and x['stopped'] for x in watch['native'])
+ for row in watch['updates']:assert row['before']==row['after']
+resources=Path(old['app']['path'])/'Contents/Resources';assert sha(resources/'app.asar')==app['asarSha256']==old['app']['asarSha256'];assert sha(resources/'native/willyou-files')==app['brokerSha256']==old['app']['brokerSha256'];assert json.loads((b/'willyou-dev122-runtime-r70.json').read_text())['verified']==82;assert json.loads((b/'willyou-dev122-watcher-r70.json').read_text())['sha256']==old['app']['watcherSha256']
+audit=json.loads((b/'willyou-dev122-process-audit.json').read_text());assert audit['allClosed'] and len(audit['rows'])==2
+assert json.loads((s/'验收/用例覆盖索引.json').read_text())==json.loads((b/'willyou-dev122-index-before.json').read_text())
+out=s/'验收/证据/acceptance-cross-owner-dev122-r70';report=s/'验收/证据/m9-acceptance-cross-owner-dev122-r70-20261019.json';assert not report.exists();out.mkdir(exist_ok=True);artifacts={}
+def copy(p,label):
+ target=out/label;target.parent.mkdir(parents=True,exist_ok=True)
+ if target.exists():assert sha(target)==sha(p)
+ else:shutil.copy2(p,target)
+ artifacts[label]={'path':str(target.relative_to(r)),'sha256':sha(target)}
+for p in sorted(b.glob('willyou-dev122-*')):
+ if p.is_file() and p.suffix in ['.json','.log','.py','.mjs','.cjs']:copy(p,p.name)
+for ext in ['json','tar.gz']:
+ p=b/('willyou-m9-acceptance-batch-r70-dev122-tested-sources.'+ext);copy(p,p.name)
+for p in sorted({directory/'result.json',*directory.glob('*electron*.log'),*directory.glob('*.png')}):copy(p,'runs/'+directory.name+'/'+p.name)
+notes='''DEV122 completes M02 only, original I/A requirements/steps/expected/scope unchanged. Formal231/419(55.13%),186unexecuted/2blocked,185remaining with A. No production/prototype/build input changes or repackaging. Four verification files added, all1152 prior hashes unchanged, current1156 source/tar verified. Same r70 macOS arm64 internal0.0.5 ASAR/broker/watcher unchanged; fresh82 runtime check. Previous DEV121 report/all32 artifacts unchanged. Earlier six native smoke and P243/P16/build/Sites4 remain hash-applicable prior results, not fresh reruns. No release.
+Current17 code pass0fail/skip/Unhandled:4new I plus previous13 authority/controller/root-invalidation regression. First focused I4 and first A4 also pass, no discarded failures in this batch. I uses one production controller/FileService, real SQLite/project resolver/native broker/recovery and actual packaged watcher. Two synthetic authenticated Electron sender/mainFrame contexts have separately issued roots/docs for the same physical file. Admission predicate is an explicit I substitute; no App auth handler is changed. Both directions16 well-formed foreign-capability APIs reject UNTRUSTED before native dispatch: list/open/read/refresh/chunk/save/checkpoint/drafts/readDraft/resolveDraft/watch(peer root)/watch(own root plus peer ref)/reveal(document)/reveal(path)/applications/closeDocument. Own reads and peer private draft still work. Native watchers share one canonical source with two consumers; foreign stop IDs have no effect, foreign root release rejected, own-ref foreign-draft read/resolve rejected, original draft still available. Each correct stop affects its own consumer only, final counts zero. Null/foreign frame contexts cannot reuse a valid main-frame capability. Actual watcher/native APIs run; shell/window imports isolated and sender identities synthetic, not GUI.
+Normal App supports one trusted main window per process. A deliberately uses two independently launched normal packaged processes/windows, separate profiles and source projects; it does not claim a shared main service. Same-main owner equality is proved in I above. Each actual trusted renderer receives the other's real root/doc/draft capabilities, without inventing sender identities or replacing admission. A light/dark x both directions4scenarios yield64 UNTRUSTED results through real preload/IPC/main. This programmatic capability-transfer attack is the explicit required security input, not a pointer action. Source/selection/tab/footer in both windows stay unchanged; both original source inode/hash/mtime/ctime unchanged before explicit saves. Peer private draft exact hash/B-base and original native watch remain usable after foreign stop/release cleanup IDs; unknown cleanup IDs are idempotent no-ops in the separate process namespace, not grants. Then actual pointer/keyboard Ctrl-S in each window saves its own exact raw CRLF/Chinese/emoji source. Original RPC/results/watch events forwarded unchanged, every native watch stopped through normal hide-files UI, observers restored, both Apps normal exit0/null and both known PIDs/native prefixes closed. No auth bypass, fabricated native reply, Store/editor/DOM value injection, models/CLI/clipboard/OS reveal/external apps/daily credentials or physical IME claim. Synthetic only, no DB/userData/whole bundle archived. Dark receiver1 screenshot inspected, no full-pixel/Codex/reference/Windows claim. M04/M11 resource/path-race boundaries and all other pending cases remain open; all419 still required.
+'''
+p=out/'execution-boundaries.txt';p.write_text(notes);artifacts[p.name]={'path':str(p.relative_to(r)),'sha256':sha(p)}
+value={'schemaVersion':1,'id':'M9-ACCEPTANCE-CROSS-OWNER-DEV122-R70','at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'localDate':'2026-10-19','status':'passed-one-case','revision':'R3.4 / R3.4-P1; M02 original scope/steps/expected unchanged','branch':m['branch'],'head':m['head'],'platform':platform.platform(),'architecture':platform.machine(),'fullCasesPassed':['M9-T-M02'],'productionChanges':[],'prototypeChanges':[],'defects':[],'app':{'path':old['app']['path'],'version':'0.0.5','published':False,'asarSha256':app['asarSha256'],'brokerSha256':app['brokerSha256'],'watcherSha256':old['app']['watcherSha256'],'runtimeAssetsVerified':82,'nativeChecksReused':old['app']['nativeChecksReused']},'previousReport':{'path':str(previous.relative_to(r)),'sha256':sha(previous),'all32ArtifactsUnchanged':True},'sourceBaseline':{'previousTestedFiles':1152,'testedFiles':1156,'previousTestedSha256':prior['sha256'],'finalTestedSha256':m['sha256'],'priorSourceFilesUnchanged':1152,'newVerificationFiles':m['addedFiles'],'productionAndPrototypeChanges':[]},'verification':{'currentCodePassed':17,'newUniqueCodeTests':4,'newTestsByBoundary':{'I':4},'currentSkipped':0,'unhandledErrors':0,'currentTypecheckExit':0,'nativeRows':4,'priorAuthorityRegressionRows':5,'actualSecurityScenarios':4,'intentionalRejectedRendererRequests':64,'actualPositiveUiSaves':2,'normalQuitRuns':app['exits'],'knownAppPidsClosed':2,'formalPassed':231,'formalTotal':419,'formalRemaining':188,'unexecuted':186,'blocked':2,'appRemaining':185},'boundaries':[native['boundary'],app['boundary'],'I same service/same physical source/two synthetic authenticated frames; A two normal processes with separate profiles, no claim of a shared main.','Sixteen valid-payload peer-capability APIs reject UNTRUSTED; idempotent cleanup IDs separately verify no authority effect. No system/physical IME/clipboard/full pixel/Codex/Windows claim. All419 remain required.'],'artifacts':artifacts}
+report.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n');print(json.dumps({'report':str(report.relative_to(r)),'sha256':sha(report),'artifacts':len(artifacts),'formalPassed':231,'percentage':round(231/419*100,2)},ensure_ascii=False))

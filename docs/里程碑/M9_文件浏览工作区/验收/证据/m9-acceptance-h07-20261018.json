@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-H07",
+  "title": "保存串行",
+  "requirements": [
+    "M9-R07.3",
+    "M9-R07.4"
+  ],
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "environmentsUnchanged": [
+    "U",
+    "I"
+  ],
+  "levelUnchanged": "单元／集成／安装端到端",
+  "stepsUnchanged": "让第一次write悬挂，再触发两次保存。",
+  "expectedUnchanged": "同文件最多一个在途write；后续合并/排队；结果不会倒序把base回滚。",
+  "explicitUIResult": "passed (U+I; U means unit, I means integration)",
+  "formalIndexChanged": false,
+  "actual": {
+    "summary": "第一次真实write挂起后再请求两次save：三个请求合并等待，始终单写入；旧回执保留较新dirty内容，下一次按已返回revision写入，无倒序base回滚。额外两条迟到checkpoint恢复链通过。",
+    "checks": [
+      "Three concurrent save requests, one active writer",
+      "Only first snapshot committed before release",
+      "Newer input remains dirty while base advances to first saved revision",
+      "Second native write uses exact first native revision hash",
+      "Two transactions only and final bytes independently correct",
+      "Older/newer checkpoint delivery inversion plus durable restart/restore",
+      "Real history undo-to-clean then newer edit: old v1 checkpoint receipt before/after durable v3 cannot resolve v3; restart service+FileBuffer restores v3 before next autosave.",
+      "Latest v3 later reaches actual native save; normal clean cleanup and explicit discard still resolve intended drafts."
+    ]
+  },
+  "observations": [
+    {
+      "case": "M9-T-H07",
+      "concurrentRequests": 3,
+      "nativeWrites": 2,
+      "maxActiveSaves": 1,
+      "saved": [
+        {
+          "request": {
+            "ref": {
+              "id": "237a817c-afc4-46c5-bc48-0661a84dfa44",
+              "lease": "de3700d8-7f19-4436-a504-ab7bf2d360c4",
+              "generation": 1
+            },
+            "opId": "fdc3f3e1-f672-4c68-bf1a-9a1464489076",
+            "bufferVersion": 1,
+            "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+            "base64": "RklSU1QK"
+          },
+          "receipt": {
+            "revision": {
+              "size": 6,
+              "inode": "44401697",
+              "device": "16777232",
+              "changedNs": "1792288404818926947",
+              "modifiedNs": "1792288404792564000",
+              "hash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335"
+            },
+            "bufferVersion": 1,
+            "opId": "fdc3f3e1-f672-4c68-bf1a-9a1464489076",
+            "state": "saved",
+            "recoveryId": "fdc3f3e1-f672-4c68-bf1a-9a1464489076"
+          },
+          "at": 0
+        },
+        {
+          "request": {
+            "ref": {
+              "id": "237a817c-afc4-46c5-bc48-0661a84dfa44",
+              "lease": "de3700d8-7f19-4436-a504-ab7bf2d360c4",
+              "generation": 1
+            },
+            "opId": "9ca06291-bcd5-49fc-8943-2c2682db3a54",
+            "bufferVersion": 3,
+            "baseHash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335",
+            "base64": "U0VDT05ECg=="
+          },
+          "receipt": {
+            "revision": {
+              "size": 7,
+              "inode": "44401710",
+              "device": "16777232",
+              "changedNs": "1792288405197379921",
+              "modifiedNs": "1792288405184799000",
+              "hash": "c147bbabc3cc254f2914171fa3830faf0e1aa96bdc45a0541e177ec81a57cc5f"
+            },
+            "bufferVersion": 3,
+            "opId": "9ca06291-bcd5-49fc-8943-2c2682db3a54",
+            "state": "saved",
+            "recoveryId": "9ca06291-bcd5-49fc-8943-2c2682db3a54"
+          },
+          "at": 3000
+        }
+      ],
+      "finalBytes": "SECOND\n"
+    },
+    {
+      "case": [
+        "M9-T-H04",
+        "M9-T-H07"
+      ],
+      "defect": "M9-DEV-034",
+      "lateCheckpointVersion": 2,
+      "durableBeforeRebase": {
+        "base64": "VEhJUkQg5Lit5paHCg==",
+        "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+        "bufferVersion": 3,
+        "hash": "7a566aae34a0e673721b4c5e094c8a9980180773041787c9bdb30257b81e35ca",
+        "encoding": "utf-8",
+        "restoredBuffer": {
+          "raw": "THIRD 中文\n",
+          "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+          "dirty": true,
+          "conflict": false
+        }
+      },
+      "durableAfterRebase": {
+        "base64": "VEhJUkQg5Lit5paHCg==",
+        "baseHash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335",
+        "bufferVersion": 4,
+        "hash": "7a566aae34a0e673721b4c5e094c8a9980180773041787c9bdb30257b81e35ca",
+        "encoding": "utf-8",
+        "restoredBuffer": {
+          "raw": "THIRD 中文\n",
+          "baseHash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335",
+          "dirty": true,
+          "conflict": false
+        }
+      },
+      "finalSaved": {
+        "request": {
+          "ref": {
+            "id": "55395e1c-070c-4602-a3e4-aed8b81e1fa1",
+            "lease": "e547e75b-5876-4234-8e14-e0e5cc585792",
+            "generation": 1
+          },
+          "opId": "d9380b06-79c1-4b40-b1b2-5cfe7218d48d",
+          "bufferVersion": 4,
+          "baseHash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335",
+          "base64": "VEhJUkQg5Lit5paHCg=="
+        },
+        "receipt": {
+          "revision": {
+            "size": 13,
+            "inode": "44401770",
+            "device": "16777232",
+            "changedNs": "1792288406653052713",
+            "modifiedNs": "1792288406641521000",
+            "hash": "7a566aae34a0e673721b4c5e094c8a9980180773041787c9bdb30257b81e35ca"
+          },
+          "bufferVersion": 4,
+          "opId": "d9380b06-79c1-4b40-b1b2-5cfe7218d48d",
+          "state": "saved",
+          "recoveryId": "d9380b06-79c1-4b40-b1b2-5cfe7218d48d"
+        },
+        "at": 4000
+      },
+      "finalBytes": "THIRD 中文\n"
+    },
+    {
+      "case": [
+        "M9-T-H04",
+        "M9-T-H07"
+      ],
+      "defect": "M9-DEV-034",
+      "lateCheckpointVersion": 3,
+      "durableBeforeRebase": {
+        "base64": "VEhJUkQg5Lit5paHCg==",
+        "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+        "bufferVersion": 3,
+        "hash": "7a566aae34a0e673721b4c5e094c8a9980180773041787c9bdb30257b81e35ca",
+        "encoding": "utf-8",
+        "restoredBuffer": {
+          "raw": "THIRD 中文\n",
+          "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+          "dirty": true,
+          "conflict": false
+        }
+      },
+      "durableAfterRebase": {
+        "base64": "VEhJUkQg5Lit5paHCg==",
+        "baseHash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335",
+        "bufferVersion": 4,
+        "hash": "7a566aae34a0e673721b4c5e094c8a9980180773041787c9bdb30257b81e35ca",
+        "encoding": "utf-8",
+        "restoredBuffer": {
+          "raw": "THIRD 中文\n",
+          "baseHash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335",
+          "dirty": true,
+          "conflict": false
+        }
+      },
+      "finalSaved": {
+        "request": {
+          "ref": {
+            "id": "49d9d3a3-cfc5-4e6d-b59b-9a87826a85f5",
+            "lease": "01ecf5dd-a233-44f6-9871-30fbdbdc6968",
+            "generation": 1
+          },
+          "opId": "adae127f-68fe-4d8b-a8b3-1519f4fc76df",
+          "bufferVersion": 4,
+          "baseHash": "769de7aa90420fc20b613b9dba39e234821b286f19d63b9298583750d6359335",
+          "base64": "VEhJUkQg5Lit5paHCg=="
+        },
+        "receipt": {
+          "revision": {
+            "size": 13,
+            "inode": "44401810",
+            "device": "16777232",
+            "changedNs": "1792288408087133610",
+            "modifiedNs": "1792288408074725000",
+            "hash": "7a566aae34a0e673721b4c5e094c8a9980180773041787c9bdb30257b81e35ca"
+          },
+          "bufferVersion": 4,
+          "opId": "adae127f-68fe-4d8b-a8b3-1519f4fc76df",
+          "state": "saved",
+          "recoveryId": "adae127f-68fe-4d8b-a8b3-1519f4fc76df"
+        },
+        "at": 4000
+      },
+      "finalBytes": "THIRD 中文\n"
+    },
+    {
+      "case": [
+        "M9-T-H04",
+        "M9-T-H07"
+      ],
+      "defect": "M9-DEV-035",
+      "oldReceiptOrder": "before",
+      "recoveredBeforeAutosave": {
+        "base64": "TkVXRVNUIOS4reaWhwo=",
+        "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+        "bufferVersion": 3,
+        "hash": "1b833bd52f3a06a4216d3fd46477a167d06d1078c9537a46186548476bc39a38",
+        "encoding": "utf-8",
+        "restoredBuffer": {
+          "raw": "NEWEST 中文\n",
+          "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+          "dirty": true,
+          "conflict": false
+        }
+      },
+      "finalSaved": [
+        {
+          "request": {
+            "ref": {
+              "id": "e02c2834-43db-454b-95fd-6ee3e238c87e",
+              "lease": "03cb5882-7e3d-442b-b1a8-d7df7d34fa0b",
+              "generation": 1
+            },
+            "opId": "ef9dff66-aeff-4427-bbeb-599ac3493a53",
+            "bufferVersion": 3,
+            "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+            "base64": "TkVXRVNUIOS4reaWhwo="
+          },
+          "receipt": {
+            "revision": {
+              "size": 14,
+              "inode": "44401862",
+              "device": "16777232",
+              "changedNs": "1792288408953607108",
+              "modifiedNs": "1792288408944272000",
+              "hash": "1b833bd52f3a06a4216d3fd46477a167d06d1078c9537a46186548476bc39a38"
+            },
+            "bufferVersion": 3,
+            "opId": "ef9dff66-aeff-4427-bbeb-599ac3493a53",
+            "state": "saved",
+            "recoveryId": "ef9dff66-aeff-4427-bbeb-599ac3493a53"
+          },
+          "at": 3500
+        }
+      ],
+      "finalBytes": "NEWEST 中文\n"
+    },
+    {
+      "case": [
+        "M9-T-H04",
+        "M9-T-H07"
+      ],
+      "defect": "M9-DEV-035",
+      "oldReceiptOrder": "after",
+      "recoveredBeforeAutosave": {
+        "base64": "TkVXRVNUIOS4reaWhwo=",
+        "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+        "bufferVersion": 3,
+        "hash": "1b833bd52f3a06a4216d3fd46477a167d06d1078c9537a46186548476bc39a38",
+        "encoding": "utf-8",
+        "restoredBuffer": {
+          "raw": "NEWEST 中文\n",
+          "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+          "dirty": true,
+          "conflict": false
+        }
+      },
+      "finalSaved": [
+        {
+          "request": {
+            "ref": {
+              "id": "de9e47eb-3da7-4076-aac9-1ae3fabf9027",
+              "lease": "ae89ca5e-1ae3-4586-9481-38405ea725b9",
+              "generation": 1
+            },
+            "opId": "ec4b8d27-6607-4497-b032-8566e4d87dd8",
+            "bufferVersion": 3,
+            "baseHash": "61629605a12a1c6a65c17f879ed70aca88010a02627c37b2dbf05273b327baca",
+            "base64": "TkVXRVNUIOS4reaWhwo="
+          },
+          "receipt": {
+            "revision": {
+              "size": 14,
+              "inode": "44401890",
+              "device": "16777232",
+              "changedNs": "1792288409721011295",
+              "modifiedNs": "1792288409706660000",
+              "hash": "1b833bd52f3a06a4216d3fd46477a167d06d1078c9537a46186548476bc39a38"
+            },
+            "bufferVersion": 3,
+            "opId": "ec4b8d27-6607-4497-b032-8566e4d87dd8",
+            "state": "saved",
+            "recoveryId": "ec4b8d27-6607-4497-b032-8566e4d87dd8"
+          },
+          "at": 3500
+        }
+      ],
+      "finalBytes": "NEWEST 中文\n"
+    },
+    {
+      "case": [
+        "M9-T-H04",
+        "M9-T-H07"
+      ],
+      "defect": "M9-DEV-035",
+      "discard": "automatic",
+      "resolvedDraftCount": 1,
+      "finalBytes": "BASE\n"
+    },
+    {
+      "case": [
+        "M9-T-H04",
+        "M9-T-H07"
+      ],
+      "defect": "M9-DEV-035",
+      "discard": "explicit",
+      "resolvedDraftCount": 1,
+      "finalBytes": "BASE\n"
+    }
+  ],
+  "commonEvidence": {
+    "path": "m9-acceptance-text-buffer-20261018.json",
+    "sha256": "507932db029a1f75ef34aee2393fa13b4036cf4e3ada591b56974a3d58275aba"
+  },
+  "remaining": [
+    "Root combined package must include M9-DEV-034 and M9-DEV-035 corrections; no new App build is claimed here.",
+    "Run affected real App H02/D14 regressions against that combined package before final delivery association."
+  ],
+  "defects": [
+    "M9-DEV-034",
+    "M9-DEV-035"
+  ],
+  "statusBoundary": "Specified U+I steps complete against current source plus unchanged packaged native helper. App delivery validation remains separately pending; no existing package result is silently carried over.",
+  "deliveryFollowup": {
+    "status": "passed",
+    "package": "acceptance-batch-r2",
+    "appRegressionEvidence": "m9-acceptance-r2-app-regression-20261018.json",
+    "note": "原记录remaining为当时状态；统一r2含修复，H02/D14影响范围已完成真实App复验。"
+  }
+}

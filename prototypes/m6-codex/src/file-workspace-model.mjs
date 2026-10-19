@@ -1,3 +1,4 @@
+import {durablePrototypeReadings} from './file-reading-model.mjs';
 // Original interaction model. Synthetic data only; no native filesystem access.
 import { rankFileCandidates } from './file-fuzzy-model.mjs';
 export const REFERENCE_REV = 'M9-R2-20261017';
@@ -141,6 +142,7 @@ still code
 `});
 // 引用安全演示：第 2 行含 ESC[201~（提前结束括号粘贴）与 ^C（中断前台进程）。放入终端前必须被清理。
 FILES.push({path:'docs/拖放 空格示例.txt',kind:'code',text:'用于核对完整路径拖放，文件内容不进入终端。'});
+FILES.push({path:'docs/路径 中文 space 🙂.txt',kind:'code',text:'E04 合成文件名：中文、空格与 emoji；用于复制路径验收，不访问真实文件。'});
 FILES.push({path:'fixtures/控制字符.txt',kind:'code',text:'safe line\nx\u001b[201~\u0003touch INJECTED\ntail\n'});
 export const FILE_BY_PATH = Object.fromEntries(FILES.map(f => [f.path, f]));
 export const EMPTY_DIRS = ['node_modules', 'out', 'prototypes', 'release', 'fixtures/空目录'];
@@ -160,7 +162,7 @@ export function searchFiles(files, query) {
   // Mock candidate provider: a path subsequence, not the native search service.
   // Ranking is separate and retains basename zero-score path matches.
   const candidates = files.filter(f => !f.path.split('/').some(p => SEARCH_EXCLUDES.has(p)))
-    .filter(f => fuzzyScore(f.path, query.trim().replaceAll('*', '')) >= 0);
+    .filter(f => fuzzyScore(f.path.replaceAll('\\', '/'), query.trim().replaceAll('*', '').replaceAll('\\', '/')) >= 0);
   return rankFileCandidates(query, candidates);
 }
 export function directoryChildren(files, prefix = '') {
@@ -227,11 +229,13 @@ export function treeKeyboardIntent(rows, expanded, focusedPath, key, { shift=fal
 export function serializeWorkspaceStore(store) {
   return {
     ...store,
-    ...Object.fromEntries(Object.entries(store).filter(([k]) => k !== 'saved').map(([key, s]) => {
-      const tabs = s.tabs.filter(t => !t.preview);
+    ...Object.fromEntries(Object.entries(store).filter(([k]) => k !== 'saved' && k !== 'fileOpener').map(([key, s]) => {
+      const tabs = s.tabs.filter(t => !t.preview && !t.attachment).map(t => ({ root: t.root, path: t.path, preview: false, ...(pdfReadingHint(t.pdf) ? { pdf: pdfReadingHint(t.pdf) } : {}) }));
       return [key, {
         ...s,
         tabs,
+        ...(s.readings?{readings:durablePrototypeReadings(s,tabs,(s.closed||[]).filter(t=>!t.attachment))}:{}),
+        closed: (s.closed || []).filter(t => !t.attachment).map(t => ({ root: t.root, path: t.path, preview: false, index: t.index, ...(pdfReadingHint(t.pdf) ? { pdf: pdfReadingHint(t.pdf) } : {}) })),
         active: tabs.some(t => fileKey(t.root, t.path) === s.active) ? s.active : tabs[0] ? fileKey(tabs[0].root, tabs[0].path) : null
       }];
     }))
@@ -281,9 +285,11 @@ export function setFileScenario(state, key, scenario, diskText) {
   } } };
 }
 export function editDraft(state, key, text, base) {
+  if (state.tabs.find(t => fileKey(t.root, t.path) === key)?.attachment) return state;
   if (!state.tabs.some(t => fileKey(t.root, t.path) === key)) return state;
   const previous = state.drafts[key];
   if (previous?.text === text || (!previous && text === base)) return state;
+  if (fileScenario(state,key) === 'input-interrupted') state = setFileScenario(state,key,'ready');
   if (text === (previous?.base ?? base) && fileScenario(state,key) !== 'conflict') {
     const drafts = {...state.drafts}; delete drafts[key];
     return {...state,drafts,revisions:{...state.revisions,[key]:(state.revisions?.[key]||0)+1}};
@@ -299,18 +305,68 @@ export function openDocument(state, roots, root, path, pin=false) {
   const alias=identity && state.tabs.find(t=>documentKey(roots,fileKey(t.root,t.path))===identity);
   return openFile(state,alias?.root||root,alias?.path||path,pin);
 }
+// The visible tree can intentionally lag external fixture changes. Opening a
+// cached result still revalidates against the synthetic disk projection; it
+// must not consume those changes or retarget the neighboring result.
+export function openVerifiedDocument(state, roots, root, path, pin=false, defaults=FILES) {
+  const next = openDocument(state, roots, root, path, pin);
+  const pending = state.pendingFiles?.[root]?.length || state.pendingDirectoryChanges?.[root]?.length;
+  const disk = pending ? refreshSyntheticDirectory(state, root, defaults) : state;
+  const available = prototypeDirectoryFiles(disk, root, defaults).find(file => file.path === path);
+  if (!available || available.kind === 'missing' || disk.retiredFiles?.[fileKey(root, path)]) return setFileScenario(next, fileKey(root, path), 'missing');
+  return next;
+}
+// Labelled prototype fixture completion: background restored documents become
+// ready while the current user selection, draft and root remain untouched.
+export function completeSyntheticFileRestores(state) {
+  return state.tabs.reduce((next, tab) => {
+    const key = fileKey(tab.root, tab.path);
+    return fileScenario(next, key) === 'loading' ? setFileScenario(next, key, 'ready') : next;
+  }, state);
+}
+export function completeSyntheticWorkspaceRestores(store) {
+  let changed = false;
+  const entries = Object.entries(store).map(([scope, state]) => {
+    const next = Array.isArray(state?.tabs) ? completeSyntheticFileRestores(state) : state;
+    changed ||= next !== state;
+    return [scope, next];
+  });
+  return changed ? Object.fromEntries(entries) : store;
+}
+export function prototypeCloseContext(state, key, scope) {
+  return { scope, key, tab: state.tabs.find(tab => fileKey(tab.root, tab.path) === key), draft: state.drafts[key] };
+}
+export function prototypeCloseIsCurrent(state, context, scope) {
+  return Boolean(context?.tab && context.scope === scope && state.tabs.includes(context.tab) && state.drafts[context.key] === context.draft);
+}
+export function prototypeModeSwitchContext(state, key, scope, intent, target) {
+  return { ...prototypeCloseContext(state, key, scope), intent, target, from: state.mode[key] || 'render' };
+}
+/** Explicit delayed-save demo only; production uses the real save promise. */
+export function completePrototypeModeSwitch(store, scope, roots, context, intent) {
+  const state = store[scope];
+  if (!state || !prototypeCloseIsCurrent(state, context, scope) || (state.mode[context.key] || 'render') !== context.from) return { store, result: 'stale' };
+  const current = state.active === context.key && context.intent === intent;
+  const outcome = commitDraft(store, scope, roots, context.key);
+  if (outcome.result !== 'saved' || !current) return outcome;
+  const next = outcome.store[scope];
+  return { ...outcome, store: { ...outcome.store, [scope]: { ...next, mode: { ...next.mode, [context.key]: context.target } } } };
+}
 export function readRootView(state, root=state.root) {
-  return {expanded:['docs'],selected:[],query:'',focused:'AGENTS.md',scrollTop:0,...state.rootStates?.[root]};
+  return {expanded:['docs'],selected:[],query:'',focused:'AGENTS.md',scrollTop:0,searchScrollTop:0,...state.rootStates?.[root]};
 }
 export function updateRootView(state, patch, root=state.root) {
   return {...state,rootStates:{...state.rootStates,[root]:{...readRootView(state,root),...patch}}};
 }
 export function commitDraft(store, taskId, roots, key, { override = false } = {}) {
   const state = store[taskId];
+  if (state?.tabs.find(t => fileKey(t.root, t.path) === key)?.attachment) return { store, result: 'readonly' };
   if (!state?.drafts[key]) return { store, result: 'clean' };
   const scenario = fileScenario(state, key);
+  if (state.retiredFiles?.[key] || ['missing','root-missing','unreadable'].includes(scenario)) return { store, result: 'missing' };
   if (scenario === 'conflict' && !override) return { store, result: 'conflict' };
   if (scenario === 'save-error') return { store, result: 'save-error' };
+  if (scenario === 'input-interrupted') return { store, result: 'input-interrupted' };
   const identity = documentKey(roots, key);
   if (!identity) return { store, result: 'missing-root' };
   const disk = store.saved?.[identity];
@@ -330,6 +386,11 @@ export function acceptDisk(state, key) {
     revisions: { ...state.revisions, [key]: (state.revisions?.[key] || 0) + 1 },
     reloads: { ...state.reloads, [key]: (state.reloads?.[key] || 0) + 1 }
   }, key, 'ready');
+}
+export function continueConflict(state, key) {
+  const draft = state.drafts?.[key], disk = state.fileStates?.[key]?.diskText;
+  if (!draft || disk === undefined || fileScenario(state, key) !== 'conflict') return state;
+  return setFileScenario({ ...state, drafts: { ...state.drafts, [key]: { ...draft, base: disk } } }, key, 'ready');
 }
 export function captureSelection({ scope, identity, revision, text, start, end }) {
   if (!identity || start < 0 || end <= start || end > text.length) return null;
@@ -354,11 +415,66 @@ export function applyExternalFileChange(store, scope, roots, key, diskText) {
 export function queueSyntheticFile(state, root, file) {
   return { ...state, pendingFiles: { ...state.pendingFiles, [root]: [...(state.pendingFiles?.[root] || []).filter(f => f.path !== file.path), file] } };
 }
-export function refreshSyntheticDirectory(state, root) {
+export function prototypeDirectoryFiles(state, root, defaults = FILES) {
+  const removed = new Set(state.removedPaths?.[root] || []), byPath = new Map(defaults.map(file => [file.path, file]));
+  for (const file of state.syntheticFiles?.[root] || []) byPath.set(file.path, file);
+  return [...byPath.values()].filter(file => !removed.has(file.path));
+}
+export function queueSyntheticDirectoryChanges(state, root, changes) {
+  return { ...state, pendingDirectoryChanges: { ...state.pendingDirectoryChanges, [root]: [...(state.pendingDirectoryChanges?.[root] || []), ...changes] } };
+}
+export function refreshSyntheticDirectory(state, root, defaults = FILES) {
   const pending = state.pendingFiles?.[root] || [];
   const byPath = new Map((state.syntheticFiles?.[root] || []).map(file => [file.path, file]));
-  for (const file of pending) byPath.set(file.path, file);
-  return { ...state, syntheticFiles: { ...state.syntheticFiles, [root]: [...byPath.values()] }, pendingFiles: { ...state.pendingFiles, [root]: [] } };
+  const visible = new Map(prototypeDirectoryFiles(state, root, defaults).map(file => [file.path, file]));
+  const removed = new Set(state.removedPaths?.[root] || []), retired = { ...state.retiredFiles };
+  const version = (state.directoryRevisions?.[root] || 0) + 1;
+  let next = state;
+  const identity = file => file.syntheticId || 'initial:' + root + ':' + file.path;
+  const retire = path => {
+    const file = visible.get(path), key = fileKey(root, path);
+    if (file && next.tabs.some(tab => fileKey(tab.root, tab.path) === key)) {
+      if (!retired[key]) retired[key] = { ...file, syntheticId: identity(file) };
+      next = setFileScenario(next, key, 'missing');
+      next = { ...next, revisions: { ...next.revisions, [key]: (next.revisions?.[key] || 0) + 1 } };
+    }
+    visible.delete(path); byPath.delete(path); removed.add(path);
+  };
+  const put = (file, newIdentity = true) => {
+    if (newIdentity && visible.has(file.path)) retire(file.path);
+    const value = newIdentity ? { ...file, syntheticId: 'external:' + root + ':' + version + ':' + file.path } : file;
+    visible.set(value.path, value); byPath.set(value.path, value); removed.delete(value.path);
+    return value;
+  };
+  for (const file of pending) put(file, Boolean(retired[fileKey(root, file.path)]));
+  for (const change of state.pendingDirectoryChanges?.[root] || []) {
+    if (change.type === 'delete') retire(change.path);
+    else if (change.type === 'create') put(change.file);
+    else if (change.type === 'rename') {
+      const file = visible.get(change.from); if (!file) continue;
+      const originalId = identity(file); retire(change.from);
+      if (visible.has(change.to)) retire(change.to);
+      put({ ...file, path: change.to, syntheticId: originalId }, false);
+    } else if (change.type === 'restore') {
+      const value = put(change.file, false), key = fileKey(root, value.path);
+      if (retired[key] && identity(value) === identity(retired[key])) { delete retired[key]; next = setFileScenario(next, key, 'ready'); }
+    }
+  }
+  return { ...next, retiredFiles: retired, removedPaths: { ...next.removedPaths, [root]: [...removed] }, directoryRevisions: { ...next.directoryRevisions, [root]: version }, syntheticFiles: { ...next.syntheticFiles, [root]: [...byPath.values()] }, pendingFiles: { ...next.pendingFiles, [root]: [] }, pendingDirectoryChanges: { ...next.pendingDirectoryChanges, [root]: [] } };
+}
+export function refreshSyntheticDirectoryStore(store, scope, roots, root, defaults = FILES) {
+  const state = store[scope]; if (!state) return store;
+  const changed = [...(state.pendingFiles?.[root] || []).map(file => file.path), ...(state.pendingDirectoryChanges?.[root] || []).flatMap(change => change.type === 'rename' ? [change.to] : change.file ? [change.file.path] : [])];
+  const next = refreshSyntheticDirectory(state, root, defaults), visible = new Map(prototypeDirectoryFiles(next, root, defaults).map(file => [file.path, file])), saved = { ...store.saved };
+  for (const path of changed) { const file = visible.get(path), id = documentKey(roots, fileKey(root, path)); if (file && id) saved[id] = file.text ?? ''; }
+  return { ...store, saved, [scope]: next };
+}
+export function retrySyntheticFile(state, root, path, defaults = FILES) {
+  const key = fileKey(root, path), file = prototypeDirectoryFiles(state, root, defaults).find(file => file.path === path), retired = state.retiredFiles?.[key];
+  if (!file) return { state, result: 'missing' };
+  if (retired && (retired.syntheticId || 'initial:' + root + ':' + path) !== (file.syntheticId || 'initial:' + root + ':' + path)) return { state, result: 'changed-file' };
+  const retiredFiles = { ...state.retiredFiles }; delete retiredFiles[key];
+  return { state: setFileScenario({ ...state, retiredFiles }, key, 'ready'), result: 'ready' };
 }
 
 export function artifactModel(value = '') {
@@ -406,7 +522,9 @@ export function openFile(state, root, path, pin = false) {
   if (existing) return {
     ...state,
     active: key,
-    tabs: state.tabs.map(t => t === existing ? {
+    // Activation is not a new document instance. Preserve its identity when
+    // pinning would leave the preview flag unchanged (pending saves own it).
+    tabs: state.tabs.map(t => t === existing && t.preview !== (t.preview && !pin) ? {
       ...t,
       preview: t.preview && !pin
     } : t)
@@ -430,11 +548,14 @@ export function closeFile(state, key) {
   if (index < 0) return state;
   const tab = state.tabs[index],
     tabs = state.tabs.filter(t => fileKey(t.root, t.path) !== key);
+  const retiredFiles = { ...state.retiredFiles }, fileStates = { ...state.fileStates };
+  if (retiredFiles[key]) { delete retiredFiles[key]; delete fileStates[key]; }
   return {
     ...state,
+    ...(state.retiredFiles?.[key] ? { retiredFiles, fileStates } : {}),
     tabs,
     active: state.active === key ? tabs[Math.min(index, tabs.length - 1)] ? fileKey(tabs[Math.min(index, tabs.length - 1)].root, tabs[Math.min(index, tabs.length - 1)].path) : null : state.active,
-    closed: [{
+    closed: tab.attachment ? state.closed : [{
       ...tab,
       index
     }, ...state.closed].slice(0, 25)
@@ -443,18 +564,29 @@ export function closeFile(state, key) {
 export function restoreFile(state) {
   const [tab, ...closed] = state.closed;
   if (!tab) return state;
+  if (state.tabs.some(t => fileKey(t.root, t.path) === fileKey(tab.root, tab.path))) return { ...openFile(state, tab.root, tab.path, true), closed };
   const next = openFile(state, tab.root, tab.path, true);
+  const pdf = pdfReadingHint(state.tabs.find(t => fileKey(t.root, t.path) === fileKey(tab.root, tab.path))?.pdf || tab.pdf);
   const tabs = next.tabs.filter(t => fileKey(t.root, t.path) !== fileKey(tab.root, tab.path));
   tabs.splice(Math.min(tab.index, tabs.length), 0, {
     root: tab.root,
     path: tab.path,
-    preview: false
+    preview: false,
+    ...(pdf ? { pdf } : {})
   });
   return {
     ...next,
     tabs,
     closed
   };
+}
+function pdfReadingHint(value) {
+  return value && Number.isSafeInteger(value.page) && value.page >= 1 && Number.isFinite(value.zoom) && value.zoom >= 30 && value.zoom <= 800 ? { page: value.page, zoom: value.zoom } : null;
+}
+export function updatePdfReading(state, key, value) {
+  const pdf = pdfReadingHint(value), tab = state.tabs.find(t => fileKey(t.root, t.path) === key);
+  if (!pdf || !tab || tab.pdf?.page === pdf.page && tab.pdf?.zoom === pdf.zoom) return state;
+  return { ...state, tabs: state.tabs.map(t => t === tab ? { ...t, pdf } : t) };
 }
 export function treeRows(files, expanded, query = '') {
   const paths = [...files.map(f => f.path), ...EMPTY_DIRS];
@@ -486,11 +618,4 @@ export function treeRows(files, expanded, query = '') {
   });
 }
 // 树的 ARIA 位置：同一父目录下的兄弟序号与总数（仅统计当前可见行）。
-export function treeSetInfo(rows) {
-  const parentOf = path => path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
-  const groups = new Map();
-  for (const row of rows) { const key = parentOf(row.path); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row.path); }
-  const info = {};
-  for (const list of groups.values()) list.forEach((path, i) => { info[path] = { pos: i + 1, size: list.length }; });
-  return info;
-}
+export { treeSetInfo } from '../../../src/shared/file-tree-scroll.mjs';

@@ -1,0 +1,81 @@
+{
+  "at": "2026-10-19T06:16:14.342Z",
+  "base": "/private/tmp/willyou-native-save-failure-sjgTZa",
+  "volume": "/private/tmp/willyou-native-save-failure-sjgTZa/volume",
+  "project": "/private/tmp/willyou-native-save-failure-sjgTZa/volume/project",
+  "image": "/private/tmp/willyou-native-save-failure-sjgTZa/fault-volume.dmg",
+  "commands": [
+    {
+      "args": [
+        "hdiutil",
+        "create",
+        "-size",
+        "64m",
+        "-fs",
+        "APFS",
+        "-volname",
+        "WillYou-Save-Failure",
+        "-type",
+        "UDIF",
+        "/private/tmp/willyou-native-save-failure-sjgTZa/fault-volume.dmg"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "hdiutil",
+        "attach",
+        "-nobrowse",
+        "-noautoopen",
+        "-mountpoint",
+        "/private/tmp/willyou-native-save-failure-sjgTZa/volume",
+        "-plist",
+        "/private/tmp/willyou-native-save-failure-sjgTZa/fault-volume.dmg"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/bin/python3",
+        "-c",
+        "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+        "/private/tmp/willyou-native-save-failure-sjgTZa/attach.plist"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/bin/cp",
+        "-cR",
+        "/private/tmp/willyou-m9-acceptance-batch-r74-build/mac-arm64/WillYou.app",
+        "/private/tmp/willyou-native-save-failure-sjgTZa/WillYou-Fault-Test.app"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "hdiutil",
+        "detach",
+        "/dev/disk8s1"
+      ],
+      "code": 0,
+      "stderr": ""
+    }
+  ],
+  "boundary": "Own64MiB APFS image only; actual parent permission removal, actual native ENOSPC/capacity guard, actual native EFBIG from4096-byte RLIMIT_FSIZE on save only. Relay forwards original requests and newline frames byte-identically, never fabricates responses. userData/drafts remain outside full volume.",
+  "capacityBytes": 67067904,
+  "device": "/dev/disk8s1",
+  "originalBrokerSha256": "c4176b6b72465e048cfefce014c8f4e52b32083763fd2d9f9270f51230f234d9",
+  "wrapperSha256": "8eb938a81e975f2b0633234b1366434ca379269f74b28629f181d36b3c5b6b30",
+  "privateApp": {
+    "path": "/private/tmp/willyou-native-save-failure-sjgTZa/WillYou-Fault-Test.app",
+    "wrapperSha256": "8eb938a81e975f2b0633234b1366434ca379269f74b28629f181d36b3c5b6b30",
+    "originalSourceApp": "/private/tmp/willyou-m9-acceptance-batch-r74-build/mac-arm64/WillYou.app"
+  },
+  "detached": true,
+  "finishedAt": "2026-10-19T06:16:39.797Z"
+}

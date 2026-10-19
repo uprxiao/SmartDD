@@ -1,0 +1,112 @@
+{
+  "caseId": "M9-T-M07",
+  "layer": "I; real SQLite/source resolver/native broker/store; no App GUI",
+  "runs": [
+    {
+      "scenario": "configured-ssh-and-local-root",
+      "rootIds": [
+        "local"
+      ],
+      "unavailable": [
+        {
+          "sourceId": "remote",
+          "label": "remote",
+          "path": "ssh://fixture.invalid/remote",
+          "reason": "[UNSUPPORTED] 本期不支持远程工作区；远程记录仍保留，未连接或读取远程文件。"
+        }
+      ],
+      "sourceSelects": [
+        "select \"id\" from \"projects\" where \"projects\".\"id\" = 'm07-local-boundary'",
+        "select \"id\", \"label\", \"path\" from \"project_dirs\" where \"project_dirs\".\"project_id\" = 'm07-local-boundary'",
+        "select \"id\" from \"projects\" where \"projects\".\"id\" = 'm07-local-boundary'",
+        "select \"id\", \"label\", \"path\" from \"project_dirs\" where \"project_dirs\".\"project_id\" = 'm07-local-boundary'",
+        "select \"id\" from \"projects\" where \"projects\".\"id\" = 'm07-local-boundary'",
+        "select \"id\", \"label\", \"path\" from \"project_dirs\" where \"project_dirs\".\"project_id\" = 'm07-local-boundary'",
+        "select \"id\" from \"projects\" where \"projects\".\"id\" = 'm07-local-boundary'",
+        "select \"id\", \"label\", \"path\" from \"project_dirs\" where \"project_dirs\".\"project_id\" = 'm07-local-boundary'",
+        "select \"id\" from \"projects\" where \"projects\".\"id\" = 'm07-local-boundary'",
+        "select \"id\", \"label\", \"path\" from \"project_dirs\" where \"project_dirs\".\"project_id\" = 'm07-local-boundary'",
+        "select \"id\" from \"projects\" where \"projects\".\"id\" = 'm07-local-boundary'",
+        "select \"id\", \"label\", \"path\" from \"project_dirs\" where \"project_dirs\".\"project_id\" = 'm07-local-boundary'"
+      ],
+      "result": "passed"
+    },
+    {
+      "scenario": "host-and-remotePath-injection",
+      "rejected": 3,
+      "existingLocalCapabilityStillWorks": true,
+      "result": "passed"
+    },
+    {
+      "scenario": "historical-host-isolation",
+      "persisted": {
+        "schemaVersion": 1,
+        "routes": [
+          {
+            "source": "project-directory",
+            "sourceId": "local",
+            "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m07-z6k06a/root",
+            "relativePath": "hello.txt",
+            "mode": "source",
+            "hostId": "ssh-fixture"
+          },
+          {
+            "source": "project-directory",
+            "sourceId": "local",
+            "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m07-z6k06a/root",
+            "relativePath": "hello.txt",
+            "mode": "source",
+            "remotePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m07-z6k06a/root"
+          },
+          {
+            "source": "project-directory",
+            "sourceId": "local",
+            "sourcePath": "ssh://fixture.invalid/remote",
+            "relativePath": "hello.txt",
+            "mode": "source"
+          },
+          {
+            "source": "project-directory",
+            "sourceId": "local",
+            "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m07-z6k06a/root",
+            "relativePath": "hello.txt",
+            "mode": "source"
+          }
+        ],
+        "active": {
+          "source": "project-directory",
+          "sourceId": "local",
+          "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m07-z6k06a/root",
+          "relativePath": "hello.txt",
+          "mode": "source",
+          "hostId": "ssh-fixture"
+        },
+        "treeSource": "project-directory:local:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m07-z6k06a/root",
+        "expanded": {},
+        "collapsedRoots": [],
+        "filters": {},
+        "treeWidth": 250
+      },
+      "errors": [
+        "本期不支持远程工作区；远程记录仍保留，未连接或读取远程文件。",
+        "本期不支持远程工作区；远程记录仍保留，未连接或读取远程文件。",
+        "本期不支持远程工作区；远程记录仍保留，未连接或读取远程文件。"
+      ],
+      "localReadCalls": 1,
+      "result": "passed"
+    },
+    {
+      "scenario": "unknown-schema-preserved",
+      "beforeHash": "cba233ef12befc35a0407d94563142cedbde8ba1bb939ab5a6e3707731d80fa3",
+      "preservedHash": "cba233ef12befc35a0407d94563142cedbde8ba1bb939ab5a6e3707731d80fa3",
+      "retryLocalRootUsable": true,
+      "result": "passed"
+    }
+  ],
+  "runtime": {
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r6-build/mac-arm64/WillYou.app",
+    "nativeSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "platform": "darwin",
+    "arch": "arm64"
+  }
+}

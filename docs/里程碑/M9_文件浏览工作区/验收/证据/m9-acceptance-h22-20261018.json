@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-H22",
+  "requirements": [
+    "M9-R07.5",
+    "M9-R08.2"
+  ],
+  "status": "passed",
+  "formalCasePassed": true,
+  "recordedAt": "2026-10-18T02:31:00.490038+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "caseDefinition": {
+    "requiredLayers": [
+      "U",
+      "I"
+    ],
+    "data": "D04+D11",
+    "steps": "Notify a change before initial load finishes, then complete the original load.",
+    "expected": "The pending invalidation causes a current-disk check; the editor does not permanently show the stale base."
+  },
+  "layers": {
+    "U": {
+      "status": "passed",
+      "coverage": "Production FileBuffer initial-load state and guards are exercised with controlled response order; three exact failing before cases now pass. Quiet-load, coalesced-notification and disposal controls supplement the 15 existing FileBuffer unit tests and 6 workspace-state regressions."
+    },
+    "I": {
+      "status": "passed",
+      "chain": "Synthetic matching fileWatch event -> production FileWorkspaceStore attach/receiveWatch/refreshRoot -> FileBuffer -> real FileService/recovery -> r4 packaged native broker -> independent filesystem checks",
+      "coverage": [
+        "Real ordinary in-place write after first read captured ORIGINAL ends with clean LATEST and matching new hash.",
+        "Real atomic rename replacement ends with clean LATEST and its actual new file identity.",
+        "A late initial delivery error does not consume a newer invalidation; the next actual read recovers LATEST.",
+        "Three pending matching notifications coalesce into one new read (two total); a quiet initial load reads once.",
+        "Disposal before old delivery leaves no editor and causes no later reread.",
+        "No save or checkpoint occurs in these initial read/update checks."
+      ]
+    }
+  },
+  "sourceBaseline": {
+    "files": {
+      "src/renderer/features/files/file-buffer.ts": "e2ccf88c51c71cb8f0ab1d4518a0b5cc52ca9b8657fc4bf7c31bfacb59b52fa1",
+      "src/renderer/features/files/initial-load-acceptance.test.ts": "9917522482ba60a872b825f2c36043487d6f151521957e59dde4a1a9f86bcc52",
+      "src/renderer/features/files/file-buffer.test.ts": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+      "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+      "src/renderer/features/files/workspace-store.test.ts": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "src/shared/file-classification.ts": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+      "vitest.config.ts": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+      "tsconfig.web.json": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70"
+    },
+    "archive": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/fixed-tested-sources.tar.gz",
+    "sha256": "a037590c8721208711644b255515fbd45d32023d05594036b7d2a3eacd5c4c28",
+    "r4Comparison": {
+      "src/renderer/features/files/file-buffer.ts": {
+        "current": "e2ccf88c51c71cb8f0ab1d4518a0b5cc52ca9b8657fc4bf7c31bfacb59b52fa1",
+        "r4": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+        "matches": false
+      },
+      "src/renderer/features/files/initial-load-acceptance.test.ts": {
+        "current": "9917522482ba60a872b825f2c36043487d6f151521957e59dde4a1a9f86bcc52",
+        "r4": null,
+        "matches": false
+      },
+      "src/renderer/features/files/file-buffer.test.ts": {
+        "current": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+        "r4": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+        "matches": true
+      },
+      "src/renderer/features/files/workspace-store.ts": {
+        "current": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "r4": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "matches": true
+      },
+      "src/renderer/features/files/workspace-store.test.ts": {
+        "current": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+        "r4": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+        "matches": true
+      },
+      "src/main/core/files/file-service.ts": {
+        "current": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "r4": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "matches": true
+      },
+      "src/main/core/files/native-broker.ts": {
+        "current": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "r4": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "matches": true
+      },
+      "src/main/core/files/roots.ts": {
+        "current": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "r4": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "matches": true
+      },
+      "src/main/core/files/recovery-store.ts": {
+        "current": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "r4": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "matches": true
+      },
+      "src/shared/files.ts": {
+        "current": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "r4": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "matches": true
+      },
+      "src/shared/file-text.ts": {
+        "current": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+        "r4": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+        "matches": true
+      },
+      "src/shared/file-classification.ts": {
+        "current": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+        "r4": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+        "matches": true
+      },
+      "vitest.config.ts": {
+        "current": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+        "r4": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+        "matches": true
+      },
+      "tsconfig.web.json": {
+        "current": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+        "r4": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+        "matches": true
+      }
+    },
+    "boundary": "file-buffer.ts is the DEV040 source fix after r4; initial-load-acceptance.test.ts is new. The integration tests use the unchanged broker from r4. This is a source-level U/I result, not acceptance of a rebuilt App."
+  },
+  "validation": {
+    "command": "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_H22_EVIDENCE=/private/tmp/willyou-h22-fixed-r1-observations.json pnpm test src/renderer/features/files/initial-load-acceptance.test.ts src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/workspace-store.test.ts --reporter=json --outputFile=/private/tmp/willyou-h22-fixed-r1-tests.json > /private/tmp/willyou-h22-fixed-r1.log 2>&1",
+    "exitCode": 0,
+    "passed": 26,
+    "failed": 0,
+    "pending": 0,
+    "files": {
+      "file-buffer.test.ts": 15,
+      "initial-load-acceptance.test.ts": 5,
+      "workspace-store.test.ts": 6
+    },
+    "report": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/fixed-r1-tests.json",
+    "reportSha256": "44aa298fe533462289f8498060edb4e8615940d1ec7ddc67cd0feb466c464916",
+    "observations": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/fixed-r1-observations.json",
+    "observationsSha256": "ba3fc8901b1e1b127249318d1fcb34824e96b153a8991d6fcb679de1290af9d2",
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json > /private/tmp/willyou-h22-web-typecheck-r1.log 2>&1",
+      "exitCode": 0,
+      "log": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/web-typecheck-r1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "defect": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-dev040-initial-load-20261018.json",
+    "sha256": "55601b6559f0fc2d4e59e2628bbb486c2b8d2fc61b22c5a87434d9ee7d820447",
+    "preFixResult": "Three exact IO/order scenarios failed; raw failing reports are preserved in acceptance-initial-load/."
+  },
+  "package": {
+    "metadata": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-initial-load/r4-package.json",
+    "sha256": "1caddb6d15d0ae51ea1017d43541de0d3185831ce5879a71afaae0cc10f2460d",
+    "broker": "/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c"
+  },
+  "limits": [
+    "Original H22 requires U+I; this is not a P/A real App or real native watcher-event acceptance.",
+    "The matching watch event and initial read return ordering are injected at public boundaries; file contents, inode changes, main service and native IO are real.",
+    "macOS arm64 only. Current source fix postdates r4; no assertion that r4 App contains DEV040.",
+    "Saving-time invalidations and other unrelated refresh/draft races are outside this exact initial-load case."
+  ]
+}

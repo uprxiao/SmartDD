@@ -1,0 +1,1059 @@
+{
+  "schema": "smartdd-m9-acceptance-evidence-v1",
+  "caseId": "M9-T-H02",
+  "recordedAt": "2026-10-18T01:46:26.462379+00:00",
+  "requirementRevision": "R3.4-P1",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "caseDefinitionAtExecution": {
+    "id": "M9-T-H02",
+    "group": "H",
+    "title": "dirty与还原",
+    "requirements": [
+      "M9-R07.1",
+      "M9-R07.2"
+    ],
+    "level": "单元／集成／安装端到端",
+    "environments": [
+      "U",
+      "I",
+      "A"
+    ],
+    "data": [
+      "D04",
+      "D11"
+    ],
+    "steps": "修改一字符，再撤销回base。",
+    "expected": "首次修改dirty；回base后clean；无多余写盘；undo/redo可用性正确。",
+    "source": "V S04/S23",
+    "prototype": "PS-editor",
+    "basis": "参考事实＋迁移设计",
+    "status": "未执行",
+    "evidence": [],
+    "actual_result": null,
+    "defects": [],
+    "legacy_parent_requirements": [
+      "M9-R07",
+      "M9-R08"
+    ],
+    "prototype_pages": [
+      "P08"
+    ],
+    "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+    "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R07.1",
+        "M9-R07.2"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "status": "passed",
+  "formalIndexUpdated": false,
+  "requirements": [
+    "M9-R07.1",
+    "M9-R07.2"
+  ],
+  "environment": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.1\nBuildVersion:\t\t25G76",
+    "architecture": "arm64",
+    "testRunner": "pnpm test -> scripts/run-tests.mjs -> Electron ELECTRON_RUN_AS_NODE=1 -> Vitest",
+    "electronVersion": "42.11.14",
+    "codeMirrorCommandsVersion": "6.11.1",
+    "clock": "Vitest fake timers"
+  },
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+    "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+    "sourceBaseline": {
+      "manifest": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.json",
+      "manifestSha256": "be6cc4310aeb917b972031fdb24a189b3686661db497b69a81b2fba64d4bdf11",
+      "archive": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.tar.gz",
+      "archiveSha256": "5ec8a673a2569d2f6a6439a4f22e170b828c254f993e0d951357c2e085a3f008",
+      "fileCount": 627
+    },
+    "nativeSmoke": "SQLite/PTY/voice/fileBroker/officeRenderer/watcher passed; full record in m9-acceptance-f10-20261018.json"
+  },
+  "sourceHashes": {
+    "src/renderer/features/files/file-buffer.ts": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+    "src/renderer/features/files/file-buffer.test.ts": "80f9798b22bc514a0c41b4278d38df387ad3c647d5b55b011a71ebeff75ff858",
+    "src/renderer/features/files/text-editor.tsx": "cfec325e890c4f72b2eb96a13c7ec21d70db594f259e3070b651046e5d30c2f2",
+    "src/renderer/features/files/text-editor.test.tsx": "022c4b52ed616cc194b5d6be0ffa3a7f2e09381bbcdd1d64c10ce597fada7de8",
+    "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+    "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82"
+  },
+  "sourceMatchesPackagedBaseline": true,
+  "defect": {
+    "id": "M9-DEV-033",
+    "state": "closed for this reproduction",
+    "before": "Text editor history shortcuts worked, but the required visible undo/redo availability controls were missing.",
+    "fix": "Production text toolbar reuses existing approved controls/styles and executes current CodeMirror history; guards read-only/composition and restores focus.",
+    "verification": "18 code/component tests, typecheck, actual new-package button/dirty/focus sequence, unchanged original bytes and mtime."
+  },
+  "retainedLayerEvidence": [
+    {
+      "path": "/private/tmp/willyou-h02-layer.json",
+      "sha256": "e89429af8f0b5fe9a2eb2f24c03954b1563b858c31b1f37721f2ca414959c3ff",
+      "data": {
+        "schema": "smartdd-m9-acceptance-layer-evidence-v1",
+        "caseId": "M9-T-H02",
+        "recordedAt": "2026-10-18T01:32:59.161474+00:00",
+        "branch": "feature/0.0.1",
+        "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+        "caseDefinitionAtExecution": {
+          "id": "M9-T-H02",
+          "group": "H",
+          "title": "dirty与还原",
+          "requirements": [
+            "M9-R07.1",
+            "M9-R07.2"
+          ],
+          "level": "单元／集成／安装端到端",
+          "environments": [
+            "U",
+            "I",
+            "A"
+          ],
+          "data": [
+            "D04",
+            "D11"
+          ],
+          "steps": "修改一字符，再撤销回base。",
+          "expected": "首次修改dirty；回base后clean；无多余写盘；undo/redo可用性正确。",
+          "source": "V S04/S23",
+          "prototype": "PS-editor",
+          "basis": "参考事实＋迁移设计",
+          "status": "未执行",
+          "evidence": [],
+          "actual_result": null,
+          "defects": [],
+          "legacy_parent_requirements": [
+            "M9-R07",
+            "M9-R08"
+          ],
+          "prototype_pages": [
+            "P08"
+          ],
+          "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+          "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+          "decision_dependencies": [],
+          "engineering_dependencies": [],
+          "evidence_dependencies": [],
+          "scope": "m9-local",
+          "applicability": {
+            "classification": "current-local",
+            "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+            "deferred_branch": null,
+            "current_requirements": [
+              "M9-R07.1",
+              "M9-R07.2"
+            ],
+            "deferred_requirements": [],
+            "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+          }
+        },
+        "sourceHashes": {
+          "src/renderer/features/files/file-buffer.test.ts": "80f9798b22bc514a0c41b4278d38df387ad3c647d5b55b011a71ebeff75ff858",
+          "src/renderer/features/files/file-buffer.ts": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+          "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "src/renderer/features/files/text-editor.tsx": "0d7e4bd5bcfc0f11ea46720441fa17ad7f861c453581930c044bc09042cbcc22",
+          "src/renderer/features/files/workspace-panel.tsx": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+          "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+          "scripts/run-tests.mjs": "c8eb4fda8cf33dc74d5c079776ad12fadd3e3716fa01203e82e3b214357b8543",
+          "vitest.config.ts": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+          "AGENTS.md": "2a228dbb493416b94602805f189b39bab262199c377c67914f81ad01a6d1bd4f",
+          "CLAUDE.md": "75dfa0166fa2070a0f9e742ee145891ee7c1a582ce57cc740e51a3f4ee73ae2a",
+          "docs/里程碑/M9_文件浏览工作区/验收/用例覆盖索引.json": "ae6fca60bc6a11a4c0c488b67551ba5d66a1527a56cdc46d3909926d43a65351",
+          "docs/里程碑/M9_文件浏览工作区/需求.md": "10b74851a524d8bad0a5305ddc0d12c0312080888a9f2717c01f4f1531f6e041",
+          "node_modules/@codemirror/commands/dist/index.js": "395c41fb17d4966162e8d29106e438278123bc3a3fa1b11825debdf1523594a4",
+          "node_modules/@codemirror/state/dist/index.js": "cf4ffe7d177bf2c7c5da66c49be0811cc79a29e12cb658238876bbdcef12939c"
+        },
+        "environment": {
+          "os": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.1\nBuildVersion:\t\t25G76",
+          "architecture": "arm64",
+          "testRunner": "pnpm test -> scripts/run-tests.mjs -> Electron ELECTRON_RUN_AS_NODE=1 -> Vitest",
+          "electronVersion": "42.11.14",
+          "codeMirrorCommandsVersion": "6.11.1",
+          "clock": "Vitest fake timers"
+        },
+        "layer": {
+          "executed": "U: real production FileBuffer and installed CodeMirror history state/commands; file API boundary isolated",
+          "requiredByCase": [
+            "U",
+            "I",
+            "A"
+          ],
+          "realCodeMirrorHistory": true,
+          "apiSaveMocked": true,
+          "realDiskWritesExercised": false,
+          "uiExecuted": false,
+          "physicalShortcutExecuted": false,
+          "caseFullyComplete": false,
+          "remaining": "Combine with independently recorded real App shortcut/state and actual disk/no-write evidence; visible undo/redo availability is not proved by this test."
+        },
+        "command": "pnpm test src/renderer/features/files/file-buffer.test.ts --reporter=json --outputFile=/private/tmp/willyou-h02-layer-vitest.json > /private/tmp/willyou-h02-layer-vitest.log 2>&1",
+        "exitCode": 0,
+        "result": {
+          "codeLayer": "passed",
+          "totalTests": 15,
+          "passedTests": 15,
+          "failedTests": 0,
+          "pendingTests": 0,
+          "targetTest": {
+            "ancestorTitles": [
+              "real editor buffer lifecycle (API boundary isolated)"
+            ],
+            "fullName": "real editor buffer lifecycle (API boundary isolated) M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines",
+            "status": "passed",
+            "title": "M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines",
+            "duration": 4.400459000000012,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        },
+        "validatedTimeline": [
+          {
+            "fakeElapsedMs": 0,
+            "action": "load base",
+            "raw": "BASE\r\n",
+            "dirty": false,
+            "undoAvailable": false,
+            "redoAvailable": false,
+            "checkpointCalls": 0,
+            "saveCalls": 0,
+            "bufferVersion": 0,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          },
+          {
+            "fakeElapsedMs": 0,
+            "action": "change exactly one character S to X",
+            "raw": "BAXE\r\n",
+            "dirty": true,
+            "undoAvailable": true,
+            "redoAvailable": false,
+            "checkpointCalls": 0,
+            "saveCalls": 0,
+            "bufferVersion": 1,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          },
+          {
+            "fakeElapsedMs": 499,
+            "action": "real undo command before checkpoint",
+            "raw": "BASE\r\n",
+            "dirty": false,
+            "undoAvailable": false,
+            "redoAvailable": true,
+            "checkpointCalls": 0,
+            "saveCalls": 0,
+            "bufferVersion": 2,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          },
+          {
+            "fakeElapsedMs": 3000,
+            "action": "cross cancelled checkpoint and autosave deadlines",
+            "raw": "BASE\r\n",
+            "dirty": false,
+            "undoAvailable": false,
+            "redoAvailable": true,
+            "checkpointCalls": 0,
+            "saveCalls": 0,
+            "bufferVersion": 2,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          },
+          {
+            "fakeElapsedMs": 3000,
+            "action": "real redo command",
+            "raw": "BAXE\r\n",
+            "dirty": true,
+            "undoAvailable": true,
+            "redoAvailable": false,
+            "checkpointCalls": 0,
+            "saveCalls": 0,
+            "bufferVersion": 3,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          },
+          {
+            "fakeElapsedMs": 3500,
+            "action": "500ms dirty checkpoint contains version 3 and edited bytes",
+            "raw": "BAXE\r\n",
+            "dirty": true,
+            "undoAvailable": true,
+            "redoAvailable": false,
+            "checkpointCalls": 1,
+            "saveCalls": 0,
+            "bufferVersion": 3,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          },
+          {
+            "fakeElapsedMs": 5999,
+            "action": "real undo at 2999ms after redo",
+            "raw": "BASE\r\n",
+            "dirty": false,
+            "undoAvailable": false,
+            "redoAvailable": true,
+            "checkpointCalls": 1,
+            "saveCalls": 0,
+            "bufferVersion": 4,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          },
+          {
+            "fakeElapsedMs": 9000,
+            "action": "cross second cancelled autosave deadline and wait another 3s",
+            "raw": "BASE\r\n",
+            "dirty": false,
+            "undoAvailable": false,
+            "redoAvailable": true,
+            "checkpointCalls": 1,
+            "saveCalls": 0,
+            "bufferVersion": 4,
+            "basis": "assertions in the passing production FileBuffer + real CodeMirror history test"
+          }
+        ],
+        "validatedInvariants": {
+          "saveCalls": 0,
+          "checkpointCalls": 1,
+          "checkpointText": "BAXE\r\n",
+          "checkpointVersion": 3,
+          "resolvedDraftAction": "discard",
+          "resolvedDraftVersion": 3,
+          "resolvedDraftHash": "51a5223f99b35f7a4e81a52f8c7124a9d9ca64d4759a41f2d427e74e248cb75f",
+          "apiDiskRemains": "BASE\r\n",
+          "baseHashUnchanged": true,
+          "fileRevisionObjectUnchanged": true,
+          "savedVersion": 0,
+          "rawCrlfPreserved": true,
+          "commandProbeLeavesEditorStateUnchanged": true
+        },
+        "uiBoundary": {
+          "actualTextEditor": "historyKeymap is installed in text-editor.tsx",
+          "visibleTextUndoRedoButtonsFound": false,
+          "locationsReviewed": [
+            "src/renderer/features/files/text-editor.tsx",
+            "src/renderer/features/files/workspace-panel.tsx"
+          ],
+          "requirement": "R07.2: 有编辑历史时显示可用状态",
+          "conclusion": "Command availability is verified; visible button/availability acceptance is reserved for root agent and not claimed here."
+        },
+        "vitestReport": {
+          "numTotalTestSuites": 2,
+          "numPassedTestSuites": 2,
+          "numFailedTestSuites": 0,
+          "numPendingTestSuites": 0,
+          "numTotalTests": 15,
+          "numPassedTests": 15,
+          "numFailedTests": 0,
+          "numPendingTests": 0,
+          "numTodoTests": 0,
+          "snapshot": {
+            "added": 0,
+            "failure": false,
+            "filesAdded": 0,
+            "filesRemoved": 0,
+            "filesRemovedList": [],
+            "filesUnmatched": 0,
+            "filesUpdated": 0,
+            "matched": 0,
+            "total": 0,
+            "unchecked": 0,
+            "uncheckedKeysByFile": [],
+            "unmatched": 0,
+            "updated": 0,
+            "didUpdate": false
+          },
+          "startTime": 1792287141901,
+          "success": true,
+          "testResults": [
+            {
+              "assertionResults": [
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) loads SVG source on mode entry, saves before returning to the image and retains source on a save conflict",
+                  "status": "passed",
+                  "title": "loads SVG source on mode entry, saves before returning to the image and retains source on a save conflict",
+                  "duration": 5.94904200000002,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) does not create an editor or read the complete bytes for non-text metadata",
+                  "status": "passed",
+                  "title": "does not create an editor or read the complete bytes for non-text metadata",
+                  "duration": 0.31749999999999545,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) drops a clean text view when the same local path becomes binary, then can recover to text",
+                  "status": "passed",
+                  "title": "drops a clean text view when the same local path becomes binary, then can recover to text",
+                  "duration": 0.619542000000024,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) preserves CSV BOM, quoting, separators and mixed EOLs through preview and a targeted source save",
+                  "status": "passed",
+                  "title": "preserves CSV BOM, quoting, separators and mixed EOLs through preview and a targeted source save",
+                  "duration": 1.2495829999999728,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) uses separate 500ms checkpoints and 3s autosaves",
+                  "status": "passed",
+                  "title": "uses separate 500ms checkpoints and 3s autosaves",
+                  "duration": 2.888417000000004,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines",
+                  "status": "passed",
+                  "title": "M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines",
+                  "duration": 4.400459000000012,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) keeps new edits dirty when an older save completes",
+                  "status": "passed",
+                  "title": "keeps new edits dirty when an older save completes",
+                  "duration": 0.5772919999999999,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) reloads clean external edits and retains all dirty conflict versions",
+                  "status": "passed",
+                  "title": "reloads clean external edits and retains all dirty conflict versions",
+                  "duration": 0.4852920000000154,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) does not retry an unknown commit or remove recovery material after using disk",
+                  "status": "passed",
+                  "title": "does not retry an unknown commit or remove recovery material after using disk",
+                  "duration": 0.5574579999999969,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) resolves a superseded checkpoint when undo returns the buffer to disk content",
+                  "status": "passed",
+                  "title": "resolves a superseded checkpoint when undo returns the buffer to disk content",
+                  "duration": 0.44033300000000963,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) discards late success/error after disposal and releases the backend reference",
+                  "status": "passed",
+                  "title": "discards late success/error after disposal and releases the backend reference",
+                  "duration": 0.2803750000000491,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) leaves the in-memory buffer intact if checkpoint storage fails",
+                  "status": "passed",
+                  "title": "leaves the in-memory buffer intact if checkpoint storage fails",
+                  "duration": 0.35308400000002393,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) flushes the latest edit after awaiting an older save during close",
+                  "status": "passed",
+                  "title": "flushes the latest edit after awaiting an older save during close",
+                  "duration": 0.2904169999999908,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) can explicitly discard a durable older draft when its latest checkpoint failed",
+                  "status": "passed",
+                  "title": "can explicitly discard a durable older draft when its latest checkpoint failed",
+                  "duration": 0.25658300000003464,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                },
+                {
+                  "ancestorTitles": [
+                    "real editor buffer lifecycle (API boundary isolated)"
+                  ],
+                  "fullName": "real editor buffer lifecycle (API boundary isolated) keeps an updated draft if the discard receipt refuses an older version",
+                  "status": "passed",
+                  "title": "keeps an updated draft if the discard receipt refuses an older version",
+                  "duration": 0.22320799999999963,
+                  "failureMessages": [],
+                  "meta": {},
+                  "tags": []
+                }
+              ],
+              "startTime": 1792287142218,
+              "endTime": 1792287142237.2905,
+              "status": "passed",
+              "message": "",
+              "name": "/Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/file-buffer.test.ts"
+            }
+          ]
+        },
+        "stdoutAndStderr": "\n> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD\n> node scripts/run-tests.mjs src/renderer/features/files/file-buffer.test.ts --reporter=json --outputFile=/private/tmp/willyou-h02-layer-vitest.json\n\n[1018/093221.787832:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)\n[1018/093221.941498:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)\nJSON report written to /private/tmp/willyou-h02-layer-vitest.json\n",
+        "artifacts": [
+          {
+            "path": "/private/tmp/willyou-h02-layer-vitest.json",
+            "sha256": "7d8a9623b73567c389026bb5817ca6dcf341be8bc0a5528b1648feb30ca70a21"
+          },
+          {
+            "path": "/private/tmp/willyou-h02-layer-vitest.log",
+            "sha256": "541188486c86a1011d128f193cfce7d25a54d9b66f5ccb1ebcc5679c188655f2"
+          }
+        ],
+        "notes": [
+          "Electron emitted task_name_for_pid codesign diagnostics; process exit was 0 and all assertions passed.",
+          "Only the test file was modified by this H02 subtask; no product code, formal index, stage documents or package was changed.",
+          "This evidence fragment alone does not mark the formal U/I/A case passed."
+        ],
+        "writes": [
+          "src/renderer/features/files/file-buffer.test.ts",
+          "/private/tmp/willyou-h02-layer.json"
+        ]
+      }
+    },
+    {
+      "path": "/private/tmp/willyou-h02-toolbar.json",
+      "sha256": "2dcb2b72abd83ba98da172a1e700b2b96423056df5d0589f5383e37a8fa1bc20",
+      "data": {
+        "schema": "smartdd-m9-acceptance-layer-evidence-v1",
+        "caseId": "M9-T-H02",
+        "recordedAt": "2026-10-18T01:35:38.472991+00:00",
+        "branch": "feature/0.0.1",
+        "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+        "sourceHashes": {
+          "src/renderer/features/files/text-editor.tsx": "cfec325e890c4f72b2eb96a13c7ec21d70db594f259e3070b651046e5d30c2f2",
+          "src/renderer/features/files/text-editor.test.tsx": "022c4b52ed616cc194b5d6be0ffa3a7f2e09381bbcdd1d64c10ce597fada7de8",
+          "src/renderer/features/files/file-buffer.test.ts": "80f9798b22bc514a0c41b4278d38df387ad3c647d5b55b011a71ebeff75ff858",
+          "src/renderer/features/files/file-buffer.ts": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+          "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "src/renderer/features/files/workspace-baseline.css": "f13d1bd043860f78319d8d8a206e6cf7ad7d977a534de73800bd617171a2587a",
+          "src/renderer/features/files/workspace.css": "01d70d55bdfd5af9d90c14e1c81cee50356bf283d9c6d8bc881ac640f72342d6",
+          "prototypes/m6-codex/src/FileWorkspace.jsx": "153cc6c0edc798add5af58d6cf5cbf39233389206e1fc0c5c926e5a3676ffabe",
+          "prototypes/m6-codex/src/file-workspace.css": "bb909b67a97dbd9e00b7211a900c462ca04921b1e0b5786a59d085af930d23f9"
+        },
+        "change": {
+          "productionFiles": [
+            "src/renderer/features/files/text-editor.tsx"
+          ],
+          "testFiles": [
+            "src/renderer/features/files/text-editor.test.tsx",
+            "src/renderer/features/files/file-buffer.test.ts"
+          ],
+          "summary": "Reuse approved fw-editor-tools/fw-icon styling and Undo2/Redo2 icons at size 17, strokeWidth 1.65. Buttons execute the mounted real CodeMirror history commands, expose disabled availability for the current file, guard read-only/composition, and restore editor focus. No new CSS or Office changes.",
+          "prototypeReference": "prototypes/m6-codex/src/FileWorkspace.jsx:728 and its Button helper; existing production workspace-baseline.css already has these toolbar styles."
+        },
+        "validation": [
+          {
+            "command": "pnpm test src/renderer/features/files/text-editor.test.tsx src/renderer/features/files/file-buffer.test.ts --reporter=json --outputFile=/private/tmp/willyou-h02-toolbar-vitest.json > /private/tmp/willyou-h02-toolbar-vitest.log 2>&1",
+            "exitCode": 0,
+            "report": {
+              "numTotalTestSuites": 4,
+              "numPassedTestSuites": 4,
+              "numFailedTestSuites": 0,
+              "numPendingTestSuites": 0,
+              "numTotalTests": 18,
+              "numPassedTests": 18,
+              "numFailedTests": 0,
+              "numPendingTests": 0,
+              "numTodoTests": 0,
+              "snapshot": {
+                "added": 0,
+                "failure": false,
+                "filesAdded": 0,
+                "filesRemoved": 0,
+                "filesRemovedList": [],
+                "filesUnmatched": 0,
+                "filesUpdated": 0,
+                "matched": 0,
+                "total": 0,
+                "unchecked": 0,
+                "uncheckedKeysByFile": [],
+                "unmatched": 0,
+                "updated": 0,
+                "didUpdate": false
+              },
+              "startTime": 1792287305365,
+              "success": true,
+              "testResults": [
+                {
+                  "assertionResults": [
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) loads SVG source on mode entry, saves before returning to the image and retains source on a save conflict",
+                      "status": "passed",
+                      "title": "loads SVG source on mode entry, saves before returning to the image and retains source on a save conflict",
+                      "duration": 7.276166999999987,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) does not create an editor or read the complete bytes for non-text metadata",
+                      "status": "passed",
+                      "title": "does not create an editor or read the complete bytes for non-text metadata",
+                      "duration": 0.6488749999999754,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) drops a clean text view when the same local path becomes binary, then can recover to text",
+                      "status": "passed",
+                      "title": "drops a clean text view when the same local path becomes binary, then can recover to text",
+                      "duration": 0.730707999999936,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) preserves CSV BOM, quoting, separators and mixed EOLs through preview and a targeted source save",
+                      "status": "passed",
+                      "title": "preserves CSV BOM, quoting, separators and mixed EOLs through preview and a targeted source save",
+                      "duration": 2.277582999999936,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) uses separate 500ms checkpoints and 3s autosaves",
+                      "status": "passed",
+                      "title": "uses separate 500ms checkpoints and 3s autosaves",
+                      "duration": 2.73862500000007,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines",
+                      "status": "passed",
+                      "title": "M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines",
+                      "duration": 5.853417000000036,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) keeps new edits dirty when an older save completes",
+                      "status": "passed",
+                      "title": "keeps new edits dirty when an older save completes",
+                      "duration": 2.910082999999986,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) reloads clean external edits and retains all dirty conflict versions",
+                      "status": "passed",
+                      "title": "reloads clean external edits and retains all dirty conflict versions",
+                      "duration": 1.4742909999999938,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) does not retry an unknown commit or remove recovery material after using disk",
+                      "status": "passed",
+                      "title": "does not retry an unknown commit or remove recovery material after using disk",
+                      "duration": 0.9584580000000642,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) resolves a superseded checkpoint when undo returns the buffer to disk content",
+                      "status": "passed",
+                      "title": "resolves a superseded checkpoint when undo returns the buffer to disk content",
+                      "duration": 0.4729169999999385,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) discards late success/error after disposal and releases the backend reference",
+                      "status": "passed",
+                      "title": "discards late success/error after disposal and releases the backend reference",
+                      "duration": 0.3139170000000604,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) leaves the in-memory buffer intact if checkpoint storage fails",
+                      "status": "passed",
+                      "title": "leaves the in-memory buffer intact if checkpoint storage fails",
+                      "duration": 0.86850000000004,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) flushes the latest edit after awaiting an older save during close",
+                      "status": "passed",
+                      "title": "flushes the latest edit after awaiting an older save during close",
+                      "duration": 0.5735419999999749,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) can explicitly discard a durable older draft when its latest checkpoint failed",
+                      "status": "passed",
+                      "title": "can explicitly discard a durable older draft when its latest checkpoint failed",
+                      "duration": 0.45812499999999545,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "real editor buffer lifecycle (API boundary isolated)"
+                      ],
+                      "fullName": "real editor buffer lifecycle (API boundary isolated) keeps an updated draft if the discard receipt refuses an older version",
+                      "status": "passed",
+                      "title": "keeps an updated draft if the discard receipt refuses an older version",
+                      "duration": 0.39391599999999016,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    }
+                  ],
+                  "startTime": 1792287305943,
+                  "endTime": 1792287305971.3938,
+                  "status": "passed",
+                  "message": "",
+                  "name": "/Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/file-buffer.test.ts"
+                },
+                {
+                  "assertionResults": [
+                    {
+                      "ancestorTitles": [
+                        "production text history controls (real CodeMirror; file API isolated)"
+                      ],
+                      "fullName": "production text history controls (real CodeMirror; file API isolated) M9-T-H02: reflects real undo/redo availability, restores focus and avoids a save after returning to base",
+                      "status": "passed",
+                      "title": "M9-T-H02: reflects real undo/redo availability, restores focus and avoids a save after returning to base",
+                      "duration": 335.11237500000016,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "production text history controls (real CodeMirror; file API isolated)"
+                      ],
+                      "fullName": "production text history controls (real CodeMirror; file API isolated) disables both directions when the file becomes read-only even with a usable history branch",
+                      "status": "passed",
+                      "title": "disables both directions when the file becomes read-only even with a usable history branch",
+                      "duration": 46.858584000000064,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    },
+                    {
+                      "ancestorTitles": [
+                        "production text history controls (real CodeMirror; file API isolated)"
+                      ],
+                      "fullName": "production text history controls (real CodeMirror; file API isolated) targets only the current document and retains its own history after a view switch",
+                      "status": "passed",
+                      "title": "targets only the current document and retains its own history after a view switch",
+                      "duration": 61.392083000000184,
+                      "failureMessages": [],
+                      "meta": {},
+                      "tags": []
+                    }
+                  ],
+                  "startTime": 1792287306800,
+                  "endTime": 1792287307243.392,
+                  "status": "passed",
+                  "message": "",
+                  "name": "/Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/text-editor.test.tsx"
+                }
+              ]
+            },
+            "stdoutAndStderr": "\n> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD\n> node scripts/run-tests.mjs src/renderer/features/files/text-editor.test.tsx src/renderer/features/files/file-buffer.test.ts --reporter=json --outputFile=/private/tmp/willyou-h02-toolbar-vitest.json\n\n[1018/093504.859879:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)\n[1018/093505.418216:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)\n[1018/093505.418211:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)\nJSON report written to /private/tmp/willyou-h02-toolbar-vitest.json\n"
+          },
+          {
+            "command": "pnpm exec tsc --noEmit -p tsconfig.web.json > /private/tmp/willyou-h02-toolbar-typecheck.log 2>&1",
+            "exitCode": 0,
+            "stdoutAndStderr": ""
+          }
+        ],
+        "componentAssertions": [
+          "Fresh buffer disables undo and redo.",
+          "One-character edit enables undo and disables redo; actual button undo restores CRLF base and clean, enables redo.",
+          "Mouse-down preserves editor focus; both mouse and keyboard-origin button activation restore editor focus.",
+          "Button redo restores the edit and dirty state; second undo returns clean with redo available.",
+          "After 4 seconds no checkpoint or save API is called when immediately undone to base.",
+          "A read-only file disables both directions even when a history branch exists.",
+          "Switching documents never applies a previous file history to the current file; remount retains each buffer own history."
+        ],
+        "layers": {
+          "executed": [
+            "U: production FileBuffer + real CodeMirror state/history",
+            "Component: mounted production FileTextEditor + real EditorView with jsdom; unrelated code/Markdown rendering and file API isolated"
+          ],
+          "physicalAppUiExecuted": false,
+          "actualDiskWritesExercised": false,
+          "visualPixelComparisonExecuted": false,
+          "wholeCasePassed": false,
+          "remaining": "Root agent to verify packaged App buttons, availability and focus with actual file bytes/mtime. This fragment cannot independently mark the formal U/I/A case passed."
+        },
+        "supersedesObservation": {
+          "evidence": "/private/tmp/willyou-h02-layer.json",
+          "sha256": "e89429af8f0b5fe9a2eb2f24c03954b1563b858c31b1f37721f2ca414959c3ff",
+          "scope": "Only the earlier missing-visible-text-buttons finding is fixed here. The earlier actual history/fake-timer validation remains valid; its pre-fix source hashes are retained."
+        },
+        "artifacts": [
+          {
+            "path": "/private/tmp/willyou-h02-toolbar-vitest.json",
+            "sha256": "0e41a33a2741762e1285d3c0e695211ab5089374f25b749287658995b2699f22"
+          },
+          {
+            "path": "/private/tmp/willyou-h02-toolbar-vitest.log",
+            "sha256": "ea11e5e9e069a490396fea09dfea9f755f532af8d086a19de1bea00c0c2e918c"
+          },
+          {
+            "path": "/private/tmp/willyou-h02-toolbar-typecheck.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "notes": [
+          "The final renderer typecheck passed; its first run found an unsupported test query option, removed before the recorded successful rerun.",
+          "Electron emitted codesign task_name_for_pid diagnostics; the recorded test command exited 0 and all 18 tests passed.",
+          "No package, UI operation or formal index/document update was performed by this subtask."
+        ]
+      }
+    }
+  ],
+  "testSummary": {
+    "finalRelatedTests": 18,
+    "passed": 18,
+    "failed": 0,
+    "note": "The earlier 15-test run overlaps the later 18; counts are not added. API-isolated tests are not described as App E2E."
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exitCode": 0,
+    "log": "/private/tmp/willyou-m9-acceptance-batch-r1-final-typecheck.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+  },
+  "appEvidence": {
+    "reportedBy": "root agent using native CUA; independent final file inspection by acceptance_f10 agent",
+    "oldPackageShortcutRun": {
+      "package": {
+        "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+        "asarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+        "sourceManifest": "/private/tmp/willyou-m9-chart-resize-r1-sources.json"
+      },
+      "sequence": [
+        "insert x -> dirty",
+        "Cmd+Z -> clean",
+        "Cmd+Shift+Z -> dirty",
+        "Cmd+Z -> clean"
+      ],
+      "scope": "Existing shortcut/state path only; old package lacked visible controls."
+    },
+    "newPackageButtonRun": {
+      "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+      "fixture": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/accept-undo.txt",
+      "focusAfterEveryStep": "accept-undo.txt text editor",
+      "states": [
+        {
+          "action": "initial",
+          "text": "Undo baseline\n",
+          "dirty": false,
+          "undoEnabled": false,
+          "redoEnabled": false
+        },
+        {
+          "action": "insert X",
+          "text": "XUndo baseline\n",
+          "dirty": true,
+          "undoEnabled": true,
+          "redoEnabled": false
+        },
+        {
+          "action": "click Undo",
+          "text": "Undo baseline\n",
+          "dirty": false,
+          "undoEnabled": false,
+          "redoEnabled": true
+        },
+        {
+          "action": "click Redo",
+          "text": "XUndo baseline\n",
+          "dirty": true,
+          "undoEnabled": true,
+          "redoEnabled": false
+        },
+        {
+          "action": "click Undo again",
+          "text": "Undo baseline\n",
+          "dirty": false,
+          "undoEnabled": false,
+          "redoEnabled": true
+        }
+      ]
+    },
+    "lightThemeVisualCheck": {
+      "observed": "Toolbar visible above text without obscuring content.",
+      "screenshotViewedInTool": true,
+      "screenshotFileArchived": false,
+      "pixelParityClaimed": false
+    },
+    "darkThemeVisualCheck": {
+      "reportedBy": "root agent via native CUA on acceptance-batch-r1 App",
+      "action": "Used actual theme button to switch to dark and returned to accept-undo.txt",
+      "observed": "Toolbar remains above the text without obscuring the content; Undo disabled and Redo enabled after final undo to base.",
+      "undoEnabled": false,
+      "redoEnabled": true,
+      "screenshotViewedInTool": true,
+      "screenshotFileArchived": false,
+      "pixelParityClaimed": false
+    },
+    "themeCoverage": "Both light and dark actual App screenshots were visually reviewed in tool output; no screenshot files archived and no full Codex pixel equivalence claim."
+  },
+  "independentDiskVerification": {
+    "checkedAt": "2026-10-18T01:45:56.590004+00:00",
+    "file": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/accept-undo.txt",
+    "beforeSha256": "36ff791b24610d68dac8f14d1a506496ceb1e4f1bc00b3a9fae2acf7869d3259",
+    "afterSha256": "36ff791b24610d68dac8f14d1a506496ceb1e4f1bc00b3a9fae2acf7869d3259",
+    "beforeMtimeNs": 1792287026683996243,
+    "afterMtimeNs": 1792287026683996243,
+    "bytes": 14,
+    "text": "Undo baseline\n",
+    "unchanged": true,
+    "meaning": "No observed source file modification during the App undo/redo sequence; the complementary fake-clock test also verifies no save API calls past cancelled autosave deadlines."
+  },
+  "layers": {
+    "U": "passed: actual production buffer and installed CodeMirror history state with isolated API boundary",
+    "I": "passed: component history integration plus actual packaged App state/focus and independently unchanged on-disk file",
+    "A": "passed: packaged native CUA shortcut and repaired button sequence"
+  },
+  "limitations": [
+    "No full pixel comparison claim; tool screenshot was viewed but not archived.",
+    "This case verifies dirty/base/undo/redo/no-extra-save behavior, not the whole editor or M9.",
+    "No crash, power-loss or other-platform claim."
+  ],
+  "r2AffectedRegression": {
+    "evidence": "m9-acceptance-r2-app-regression-20261018.json",
+    "status": "passed",
+    "packageAsarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6"
+  }
+}

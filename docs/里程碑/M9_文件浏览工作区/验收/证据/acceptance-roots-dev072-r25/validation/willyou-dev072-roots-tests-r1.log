@@ -1,0 +1,60 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/root-scope-acceptance.test.ts src/renderer/features/files/workspace-store.test.ts src/main/core/files/controller.test.ts
+
+[1018/183956.084681:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/183956.500804:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/183956.505790:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/183956.505750:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/root-scope-acceptance.test.ts (7 tests | 2 failed) 412ms
+     × A05 distinguishes file and missing roots and never substitutes another root 51ms
+     × binds release to the owner/generation and reuses a still-trusted root without renewal 46ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/root-scope-acceptance.test.ts > registered roots and isolated recovery > A05 distinguishes file and missing roots and never substitutes another root
+Error: ENOENT: no such file or directory, chmod '/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-root-scope-2rfYKa/dirB'
+ ❯ Object.cleanup src/renderer/features/files/root-scope-acceptance.test.ts:32:370
+
+ ❯ src/renderer/features/files/root-scope-acceptance.test.ts:34:69
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/files/root-scope-acceptance.test.ts > registered roots and isolated recovery > binds release to the owner/generation and reuses a still-trusted root without renewal
+AssertionError: expected [Function] to throw error including 'UNTRUSTED' but got '[\n  {\n    "code": "unrecognized_key…'
+
+- Expected
++ Received
+
+- UNTRUSTED
++ [
++   {
++     "code": "unrecognized_keys",
++     "keys": [
++       "source",
++       "sourceId",
++       "label",
++       "path",
++       "canonicalPath",
++       "identity"
++     ],
++     "path": [],
++     "message": "Unrecognized keys: \"source\", \"sourceId\", \"label\", \"path\", \"canonicalPath\", \"identity\""
++   }
++ ]
+
+ ❯ src/renderer/features/files/root-scope-acceptance.test.ts:42:350
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 22 passed (24)
+   Start at  18:39:56
+   Duration  1.53s (transform 874ms, setup 0ms, import 1.49s, tests 447ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

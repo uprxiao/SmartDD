@@ -1,0 +1,211 @@
+{
+  "at": "2026-10-19T12:20:24.593Z",
+  "caseId": "M9-T-R18",
+  "layer": "A",
+  "scratch": "/private/tmp/willyou-find-scope-A-JeyGaV",
+  "root": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+  "userData": "/private/tmp/willyou-find-scope-A-JeyGaV/userdata",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r82-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "d8ed4c46ab86705911fe370b01f6bad1f2c13715ebf61d42a68379845ed3fae2",
+  "before": {
+    "A.txt": {
+      "sha256": "f19e3b717f1028ec7ac3dc957834a6d338c817ff7be7da9aa45aa6424dfaeb35",
+      "inode": "50487545",
+      "mtimeNs": "1792412424593135240",
+      "ctimeNs": "1792412424593135240"
+    },
+    "B.txt": {
+      "sha256": "1f79ee6f85ba07192a63ae0406d4e644231a6e3bc6af6f8aeb0970c0bfd51afa",
+      "inode": "50487546",
+      "mtimeNs": "1792412424593327699",
+      "ctimeNs": "1792412424593327699"
+    }
+  },
+  "checks": [
+    {
+      "theme": "light",
+      "scenario": "owned editor Meta/Control Find and repeat create only one local panel",
+      "receivers": {
+        "T1": {
+          "pid": 57618,
+          "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+          "label": "T1",
+          "phase": "INIT",
+          "counter": 0,
+          "heartbeat": 9,
+          "terminalColumns": 56,
+          "terminalRows": 53,
+          "text": "",
+          "rawHex": "",
+          "bytes": 0,
+          "lines": [],
+          "pending": "",
+          "inputOnly": true,
+          "executedCommands": 0
+        },
+        "T2": {
+          "pid": 57646,
+          "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+          "label": "T2",
+          "phase": "INIT",
+          "counter": 0,
+          "heartbeat": 11,
+          "terminalColumns": 56,
+          "terminalRows": 53,
+          "text": "",
+          "rawHex": "",
+          "bytes": 0,
+          "lines": [],
+          "pending": "",
+          "inputOnly": true,
+          "executedCommands": 0
+        }
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "existing GoToLine button via real Tab/Enter, Find cancels preview without duplicate panel or wrong focus",
+      "tabs": 2,
+      "beforeLine": {
+        "doc": "First needle A\nSecond A\nThird A\n",
+        "from": 32,
+        "to": 32,
+        "focused": false
+      },
+      "cancelled": {
+        "doc": "First needle A\nSecond A\nThird A\n",
+        "from": 32,
+        "to": 32,
+        "focused": true
+      },
+      "receivers": {
+        "T1": {
+          "pid": 57618,
+          "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+          "label": "T1",
+          "phase": "INIT",
+          "counter": 0,
+          "heartbeat": 15,
+          "terminalColumns": 56,
+          "terminalRows": 53,
+          "text": "",
+          "rawHex": "",
+          "bytes": 0,
+          "lines": [],
+          "pending": "",
+          "inputOnly": true,
+          "executedCommands": 0
+        },
+        "T2": {
+          "pid": 57646,
+          "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+          "label": "T2",
+          "phase": "INIT",
+          "counter": 0,
+          "heartbeat": 17,
+          "terminalColumns": 56,
+          "terminalRows": 53,
+          "text": "",
+          "rawHex": "",
+          "bytes": 0,
+          "lines": [],
+          "pending": "",
+          "inputOnly": true,
+          "executedCommands": 0
+        }
+      },
+      "pass": true
+    }
+  ],
+  "status": "failed",
+  "boundary": "Normal packaged App, two own real PTYs running existing input-only Python receiver, no model/eval/subprocess of terminal input. Actual pointer/keyboard Find and existing keyboard-accessible GoToLine button; no invented unconfirmed global GoToLine accelerator. Original source/selection/UI and native input bytes observed read-only. Native Mac uses Meta-F; Control-F separately tested only in owned editor as App branch. ShadowRoot topology has separate component/browser evidence, normal App has no such file route. No daily paths/credentials/clipboard/external actions.",
+  "pid": 57605,
+  "runtime": {
+    "packaged": true,
+    "userData": "/private/tmp/willyou-find-scope-A-JeyGaV/userdata",
+    "executable": "/private/tmp/willyou-m9-acceptance-batch-r82-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+  },
+  "initial": {
+    "T1": {
+      "pid": 57618,
+      "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+      "label": "T1",
+      "phase": "INIT",
+      "counter": 0,
+      "heartbeat": 1,
+      "terminalColumns": 56,
+      "terminalRows": 53,
+      "text": "",
+      "rawHex": "",
+      "bytes": 0,
+      "lines": [],
+      "pending": "",
+      "inputOnly": true,
+      "executedCommands": 0
+    },
+    "T2": {
+      "pid": 57646,
+      "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+      "label": "T2",
+      "phase": "INIT",
+      "counter": 0,
+      "heartbeat": 1,
+      "terminalColumns": 56,
+      "terminalRows": 53,
+      "text": "",
+      "rawHex": "",
+      "bytes": 0,
+      "lines": [],
+      "pending": "",
+      "inputOnly": true,
+      "executedCommands": 0
+    }
+  },
+  "failedStage": "light:search-dialog",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(tabOwners.at(-1).inside)\n",
+  "stack": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(tabOwners.at(-1).inside)\n\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/files/find-scope-ui.mjs:26:534",
+  "dom": "M9 Find scope T1 10-19 20:20\n文件\nWillYou\n新建任务\n⌘N\n任务历史\n2\n项目\nM9 Find scope\nM9 Find scope T2 10-19 20:20\nM9 Find scope T1 10-19 20:20\n设置\nCOEX INPUT ONLY - NO EXECUTION\n \nA.txt\n任务启动目录\n›\nA.txt\n打开\n1\n2\n3\n4\nFirst needle A\nSecond A\nThird A\n\n\nproject · 任务启动目录\nproject\nA.txt\nB.txt\n0.0 KiB\nUTF-8\nClaude Code\n·\nM9 Find scope T1\n2 个运行中\n在文件中搜索\n文件掩码\n任务启动目录\n\n输入要查找的文本",
+  "focus": "<input aria-label=\"全文搜索内容\" placeholder=\"搜索文本\" maxlength=\"256\" value=\"\">",
+  "receiver": {
+    "T1": {
+      "pid": 57618,
+      "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+      "label": "T1",
+      "phase": "INIT",
+      "counter": 0,
+      "heartbeat": 18,
+      "terminalColumns": 56,
+      "terminalRows": 53,
+      "text": "",
+      "rawHex": "",
+      "bytes": 0,
+      "lines": [],
+      "pending": "",
+      "inputOnly": true,
+      "executedCommands": 0
+    },
+    "T2": {
+      "pid": 57646,
+      "cwd": "/private/tmp/willyou-find-scope-A-JeyGaV/project",
+      "label": "T2",
+      "phase": "INIT",
+      "counter": 0,
+      "heartbeat": 18,
+      "terminalColumns": 56,
+      "terminalRows": 53,
+      "text": "",
+      "rawHex": "",
+      "bytes": 0,
+      "lines": [],
+      "pending": "",
+      "inputOnly": true,
+      "executedCommands": 0
+    }
+  },
+  "ptyObserver": {
+    "rows": [],
+    "restored": true
+  },
+  "finishedAt": "2026-10-19T12:20:30.624Z"
+}

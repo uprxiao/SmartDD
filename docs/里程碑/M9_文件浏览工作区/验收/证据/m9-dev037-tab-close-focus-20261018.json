@@ -1,0 +1,431 @@
+{
+  "schemaVersion": 1,
+  "defectId": "M9-DEV-037",
+  "affectedCases": [
+    "M9-T-D08",
+    "M9-T-D09"
+  ],
+  "recordedAt": "2026-10-18T02:02:00.736968+00:00",
+  "status": "fixed-component-and-prototype-verified-app-retest-pending",
+  "formalCasePassed": false,
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "description": "Closing an inactive file tab kept the active document but moved browser focus to BODY/root content. A removed active tab/editor had the same missing fallback focus.",
+  "rootActualAppFailure": {
+    "observer": "Root agent /root",
+    "appPath": "/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app",
+    "appAsarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6",
+    "action": "Activate tab-B, click its editor, then click inactive C close button.",
+    "actual": "C closed; B remained active and its content unchanged; AX focus moved to HTML content index 3 instead of B editor.",
+    "suppliedElementIndices": {
+      "editor": 241,
+      "closeC": 125
+    },
+    "rawAccessibilityDumpArchived": false,
+    "screenshotsArchived": false,
+    "timeBoundary": "No per-action timestamp supplied; this is an attributed actual observation, not a fabricated AX dump."
+  },
+  "componentReproduction": {
+    "source": "Unmodified r2 workspace-panel.tsx before fix",
+    "cases": 3,
+    "failed": 3,
+    "passed": 0,
+    "failures": [
+      "Mouse close inactive C loses B real CodeMirror focus.",
+      "Keyboard Enter close C leaves focus on BODY instead of active B tab.",
+      "Mouse close inactive C loses an outside focus sentinel."
+    ],
+    "note": "The initial 3-case test source was not separately snapshotted; the retained initial report gives actual failures. Final test adds the adjacent active-tab focus regression."
+  },
+  "fix": {
+    "files": [
+      "src/renderer/features/files/workspace-panel.tsx",
+      "prototypes/m6-codex/src/FileWorkspace.jsx"
+    ],
+    "behavior": [
+      "Left-button mousedown on close does not steal the current editor/external focus.",
+      "Capture the prior focus; after a successful close, if that focused node was removed (including keyboard close trigger) and focus is still only BODY/trigger, restore the currently selected tab or the existing find-file button when none remains.",
+      "If prior focus remains connected or the user has moved focus elsewhere during an async close, leave it unchanged."
+    ],
+    "unchangedByThisFix": [
+      "Close/save/discard business flow",
+      "Adjacent tab choice",
+      "File bytes and persistence contracts"
+    ]
+  },
+  "sourceBaseline": {
+    "archivePath": "/private/tmp/willyou-dev037-sources.tar.gz",
+    "archiveSha256": "8f8be0ede8d832829358dc872aab3d24224f4165801f23abcaf82b524cec112d",
+    "files": {
+      "src/renderer/features/files/workspace-panel.tsx": "120c0120056aee54e33ea163478b541b3edf840e43d90ef3afd2f9db5e0b5590",
+      "src/renderer/features/files/workspace-panel-focus.test.tsx": "662d29cd97d364d5f1eeb3656891ba006bc68713943c083c3990ff8f58208224",
+      "src/renderer/features/files/workspace-tree-acceptance.test.tsx": "67fbc6ec6dce3f7a33c17d6f2e6e94937f6f24fe6d201a8817e943ceab705bf3",
+      "prototypes/m6-codex/src/FileWorkspace.jsx": "401a1e1ba64be99a6d0b63df155d251c3e9fbcb8d7545e68e5964c034cc2660b",
+      "src/renderer/features/files/workspace-store.ts": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+      "src/renderer/features/files/workspace-tree.tsx": "156e820cdfb2369213e876eadd57ad7040535b498b74d5d4b4177da6a573f32a",
+      "src/renderer/features/files/text-editor.tsx": "cfec325e890c4f72b2eb96a13c7ec21d70db594f259e3070b651046e5d30c2f2",
+      "src/renderer/features/files/text-editor.test.tsx": "022c4b52ed616cc194b5d6be0ffa3a7f2e09381bbcdd1d64c10ce597fada7de8"
+    },
+    "previousPackageSourceManifest": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.json"
+  },
+  "validation": {
+    "command": "SMARTDD_M9_TAB_FOCUS_EVIDENCE=/private/tmp/willyou-dev037-after-observations.json SMARTDD_M9_TREE_CLICK_EVIDENCE=/private/tmp/willyou-b18-tree-component-observations-final.json pnpm test src/renderer/features/files/workspace-panel-focus.test.tsx src/renderer/features/files/workspace-tree-acceptance.test.tsx src/renderer/features/files/text-editor.test.tsx --reporter=json --outputFile=/private/tmp/willyou-dev037-after-tests.json",
+    "exitCode": 0,
+    "testsPassed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "composition": "4 focus cases, 3 B18 double-click diagnostic cases, 3 existing real-history editor regressions. These are supporting checks, not 10 formal acceptance cases.",
+    "typecheckCommand": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+    "typecheckExitCode": 0,
+    "typecheckLog": "/private/tmp/willyou-dev037-web-typecheck.log",
+    "typecheckLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "diffCheckExitCode": 0
+  },
+  "reports": {
+    "willyou-dev037-before-tests.json": {
+      "path": "/private/tmp/willyou-dev037-before-tests.json",
+      "sha256": "f139aa0dfe995ab2dea1d4d069b0607209e40cb63396147e75a3390ee5eedb11",
+      "report": {
+        "numTotalTestSuites": 2,
+        "numPassedTestSuites": 0,
+        "numFailedTestSuites": 2,
+        "numPendingTestSuites": 0,
+        "numTotalTests": 3,
+        "numPassedTests": 0,
+        "numFailedTests": 3,
+        "numPendingTests": 0,
+        "numTodoTests": 0,
+        "snapshot": {
+          "added": 0,
+          "failure": false,
+          "filesAdded": 0,
+          "filesRemoved": 0,
+          "filesRemovedList": [],
+          "filesUnmatched": 0,
+          "filesUpdated": 0,
+          "matched": 0,
+          "total": 0,
+          "unchecked": 0,
+          "uncheckedKeysByFile": [],
+          "unmatched": 0,
+          "updated": 0,
+          "didUpdate": false
+        },
+        "startTime": 1792288782804,
+        "success": false,
+        "testResults": [
+          {
+            "assertionResults": [
+              {
+                "ancestorTitles": [
+                  "M9-DEV-037 D08 non-active tab close focus"
+                ],
+                "fullName": "M9-DEV-037 D08 non-active tab close focus keeps the active editor focus, selection and buffer while releasing the inactive tab",
+                "status": "failed",
+                "title": "keeps the active editor focus, selection and buffer while releasing the inactive tab",
+                "duration": 231.41054199999985,
+                "failureMessages": [
+                  "AssertionError: expected false to be true // Object.is equality\n    at /Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/workspace-panel-focus.test.tsx:67:92\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+                ],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "M9-DEV-037 D08 non-active tab close focus"
+                ],
+                "fullName": "M9-DEV-037 D08 non-active tab close focus gives keyboard close a usable focus target on the still-active tab",
+                "status": "failed",
+                "title": "gives keyboard close a usable focus target on the still-active tab",
+                "duration": 1049.7399999999998,
+                "failureMessages": [
+                  "AssertionError: expected <body><div>…(2)</div></body> to be <button role=\"tab\" …(2)>…(2)</button> // Object.is equality\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<input\u001b[39m\n        \u001b[33maria-label\u001b[39m=\u001b[32m\"Outside workspace focus sentinel\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n      \u001b[36m<aside\u001b[39m\n        \u001b[33maria-label\u001b[39m=\u001b[32m\"文件工作区\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"file-workspace fw-production \"\u001b[39m\n        \u001b[33mdata-testid\u001b[39m=\u001b[32m\"file-workspace\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33maria-label\u001b[39m=\u001b[32m\"文件标签\"\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"fw-tabs\"\u001b[39m\n          \u001b[33mrole\u001b[39m=\u001b[32m\"tablist\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"fw-tab  \"\u001b[39m\n            \u001b[33mdraggable\u001b[39m=\u001b[32m\"true\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33maria-selected\u001b[39m=\u001b[32m\"false\"\u001b[39m\n              \u001b[33mrole\u001b[39m=\u001b[32m\"tab\"\u001b[39m\n              \u001b[33mtitle\u001b[39m=\u001b[32m\"/fixture/A.txt\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<svg\u001b[39m\n                \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"fw-file-icon\"\u001b[39m\n                \u001b[33mheight\u001b[39m=\u001b[32m\"16\"\u001b[39m\n                \u001b[33mstyle\u001b[39m=\u001b[32m\"--file-light: #84848a; --file-dark: #adadb1;\"\u001b[39m\n                \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 16 16\"\u001b[39m\n                \u001b[33mwidth\u001b[39m=\u001b[32m\"16\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<use\u001b[39m\n                  \u001b[33mhref\u001b[39m=\u001b[32m\"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text\"\u001b[39m\n                \u001b[36m/>\u001b[39m\n              \u001b[36m</svg>\u001b[39m\n              \u001b[36m<span>\u001b[39m\n                \u001b[0mA.txt\u001b[0m\n              \u001b[36m</span>\u001b[39m\n            \u001b[36m</button>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33maria-label\u001b[39m=\u001b[32m\"关闭 A.txt\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"fw-tab-close\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<svg\u001b[39m\n                \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-x\"\u001b[39m\n                \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                \u001b[33mheight\u001b[39m=\u001b[32m\"13\"\u001b[39m\n                \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                \u001b[33mwidth\u001b[39m=\u001b[32m\"13\"\u001b[39m\n                \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<path\u001b[39m\n                  \u001b[33md\u001b[39m=\u001b[32m\"M18 6 6 18\"\u001b[39m\n                \u001b[36m/>\u001b[39m\n                \u001b[36m<path\u001b[39m\n                  \u001b[33md\u001b[39m=\u001b[32m\"m6 6 12 12\"\u001b[39m\n                \u001b[36m/>\u001b[39m\n              \u001b[36m</svg>\u001b[39m\n            \u001b[36m</button>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"fw-tab selected \"\u001b[39m\n            \u001b[33mdraggable\u001b[39m=\u001b[32m\"true\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33maria-selected\u001b[39m=\u001b[32m\"true\"\u001b[39m\n              \u001b[33mrole\u001b[39m=\u001b[32m\"tab\"\u001b[39m\n              \u001b[33mtitle\u001b[39m=\u001b[32m\"/fixture/B.txt\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<svg\u001b[39m\n                \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"fw-file-icon\"\u001b[39m\n                \u001b[33mheight\u001b[39m=\u001b[32m\"16\"\u001b[39m\n                \u001b[33mstyle\u001b[39m=\u001b[32m\"--file-light: #84848a; --file-dark: #adadb1;\"\u001b[39m\n                \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 16 16\"\u001b[39m\n                \u001b[33mwidth\u001b[39m=\u001b[32m\"16\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<use\u001b[39m\n                  \u001b[33mhref\u001b[39m=\u001b[32m\"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text\"\u001b[39m\n                \u001b[36m/>\u001b[39m\n              \u001b[36m</svg>\u001b[39m\n              \u001b[36m<span>\u001b[39m\n                \u001b[0mB.txt\u001b[0m\n              \u001b[36m</span>\u001b[39m\n            \u001b[36m</button>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33maria-label\u001b[39m=\u001b[32m\"关闭 B.txt\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"fw-tab-close\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<svg\u001b[39m\n                \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-x\"\u001b[39m\n                \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                \u001b[33mheight\u001b[39m=\u001b[32m\"13\"\u001b[39m\n                \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                \u001b[33mwidth\u001b[39m=\u001b[32m\"13\"\u001b[39m\n                \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<path\u001b[39m\n                  \u001b[33md\u001b[39m=\u001b[32m\"M18 6 6 18\"\u001b[39m\n                \u001b[36m/>\u001b[39m\n                \u001b[36m<path\u001b[39m\n                  \u001b[33md\u001b[39m=\u001b[32m\"m6 6 12 12\"\u001b[39m\n                \u001b[36m/>\u001b[39m\n              \u001b[36m</svg>\u001b[39m\n            \u001b[36m</button>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<button\u001b[39m\n            \u001b[33maria-label\u001b[39m=\u001b[32m\"查找并打开文件\"\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"fw-icon \"\u001b[39m\n            \u001b[33mtitle\u001b[39m=\u001b[32m\"查找并打开文件\"\u001b[39m\n            \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<svg\u001b[39m\n              \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-plus\"\u001b[39m\n              \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n              \u001b[33mheight\u001b[39m=\u001b[32m\"16\"\u001b[39m\n              \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n              \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n              \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n              \u001b[33mwidth\u001b[39m=\u001b[32m\"16\"\u001b[39m\n              \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M5 12h14\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M12 5v14\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n            \u001b[36m</svg>\u001b[39m\n          \u001b[36m</button>\u001b[39m\n          \u001b[36m<span\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"fw-push\"\u001b[39m\n          \u001b[36m/>\u001b[39m\n          \u001b[36m<button\u001b[39m\n            \u001b[33maria-label\u001b[39m=\u001b[32m\"文件全屏\"\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"fw-icon \"\u001b[39m\n            \u001b[33mtitle\u001b[39m=\u001b[32m\"文件全屏\"\u001b[39m\n            \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<svg\u001b[39m\n              \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-maximize2 lucide-maximize-2\"\u001b[39m\n              \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n              \u001b[33mheight\u001b[39m=\u001b[32m\"16\"\u001b[39m\n              \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n              \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n ...\n    at /Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/workspace-panel-focus.test.tsx:74:56\n    at runWithExpensiveErrorDiagnosticsDisabled (/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:635:17)\n    at processTimers (node:internal/timers:571:7)"
+                ],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "M9-DEV-037 D08 non-active tab close focus"
+                ],
+                "fullName": "M9-DEV-037 D08 non-active tab close focus does not steal focus from outside the workspace when closing inactive C with the mouse",
+                "status": "failed",
+                "title": "does not steal focus from outside the workspace when closing inactive C with the mouse",
+                "duration": 44.431583000000046,
+                "failureMessages": [
+                  "AssertionError: expected <body><div>…(2)</div></body> to be <input …(1)></input> // Object.is equality\n    at /Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/workspace-panel-focus.test.tsx:82:70\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+                ],
+                "meta": {},
+                "tags": []
+              }
+            ],
+            "startTime": 1792288784223,
+            "endTime": 1792288785548.4316,
+            "status": "failed",
+            "message": "",
+            "name": "/Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/workspace-panel-focus.test.tsx"
+          }
+        ]
+      }
+    },
+    "willyou-dev037-after-tests.json": {
+      "path": "/private/tmp/willyou-dev037-after-tests.json",
+      "sha256": "c7ec471f15094c665de9f78e067fa7ccfc468fafd557e487d8f62e49b32a2c6d",
+      "report": {
+        "numTotalTestSuites": 6,
+        "numPassedTestSuites": 6,
+        "numFailedTestSuites": 0,
+        "numPendingTestSuites": 0,
+        "numTotalTests": 10,
+        "numPassedTests": 10,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "numTodoTests": 0,
+        "snapshot": {
+          "added": 0,
+          "failure": false,
+          "filesAdded": 0,
+          "filesRemoved": 0,
+          "filesRemovedList": [],
+          "filesUnmatched": 0,
+          "filesUpdated": 0,
+          "matched": 0,
+          "total": 0,
+          "unchecked": 0,
+          "uncheckedKeysByFile": [],
+          "unmatched": 0,
+          "updated": 0,
+          "didUpdate": false
+        },
+        "startTime": 1792288860535,
+        "success": true,
+        "testResults": [
+          {
+            "assertionResults": [
+              {
+                "ancestorTitles": [
+                  "production text history controls (real CodeMirror; file API isolated)"
+                ],
+                "fullName": "production text history controls (real CodeMirror; file API isolated) M9-T-H02: reflects real undo/redo availability, restores focus and avoids a save after returning to base",
+                "status": "passed",
+                "title": "M9-T-H02: reflects real undo/redo availability, restores focus and avoids a save after returning to base",
+                "duration": 324.793083,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "production text history controls (real CodeMirror; file API isolated)"
+                ],
+                "fullName": "production text history controls (real CodeMirror; file API isolated) disables both directions when the file becomes read-only even with a usable history branch",
+                "status": "passed",
+                "title": "disables both directions when the file becomes read-only even with a usable history branch",
+                "duration": 86.96583299999998,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "production text history controls (real CodeMirror; file API isolated)"
+                ],
+                "fullName": "production text history controls (real CodeMirror; file API isolated) targets only the current document and retains its own history after a view switch",
+                "status": "passed",
+                "title": "targets only the current document and retains its own history after a view switch",
+                "duration": 91.27504199999998,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              }
+            ],
+            "startTime": 1792288861754,
+            "endTime": 1792288862257.2751,
+            "status": "passed",
+            "message": "",
+            "name": "/Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/text-editor.test.tsx"
+          },
+          {
+            "assertionResults": [
+              {
+                "ancestorTitles": [
+                  "M9-DEV-037 D08 non-active tab close focus"
+                ],
+                "fullName": "M9-DEV-037 D08 non-active tab close focus keeps the active editor focus, selection and buffer while releasing the inactive tab",
+                "status": "passed",
+                "title": "keeps the active editor focus, selection and buffer while releasing the inactive tab",
+                "duration": 297.19570799999997,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "M9-DEV-037 D08 non-active tab close focus"
+                ],
+                "fullName": "M9-DEV-037 D08 non-active tab close focus gives keyboard close a usable focus target on the still-active tab",
+                "status": "passed",
+                "title": "gives keyboard close a usable focus target on the still-active tab",
+                "duration": 110.21287500000017,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "M9-DEV-037 D08 non-active tab close focus"
+                ],
+                "fullName": "M9-DEV-037 D08 non-active tab close focus does not steal focus from outside the workspace when closing inactive C with the mouse",
+                "status": "passed",
+                "title": "does not steal focus from outside the workspace when closing inactive C with the mouse",
+                "duration": 64.98387500000013,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "M9-DEV-037 D08 non-active tab close focus"
+                ],
+                "fullName": "M9-DEV-037 D08 non-active tab close focus restores focus to the adjacent active tab when the previously focused editor was removed",
+                "status": "passed",
+                "title": "restores focus to the adjacent active tab when the previously focused editor was removed",
+                "duration": 112.56987500000014,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              }
+            ],
+            "startTime": 1792288862123,
+            "endTime": 1792288862707.5698,
+            "status": "passed",
+            "message": "",
+            "name": "/Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/workspace-panel-focus.test.tsx"
+          },
+          {
+            "assertionResults": [
+              {
+                "ancestorTitles": [
+                  "B18 production tree first-double-click diagnostic"
+                ],
+                "fullName": "B18 production tree first-double-click diagnostic pins a never-opened B on its first double click with none delivery delay",
+                "status": "passed",
+                "title": "pins a never-opened B on its first double click with none delivery delay",
+                "duration": 306.7141250000002,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "B18 production tree first-double-click diagnostic"
+                ],
+                "fullName": "B18 production tree first-double-click diagnostic pins a never-opened B on its first double click with open delivery delay",
+                "status": "passed",
+                "title": "pins a never-opened B on its first double click with open delivery delay",
+                "duration": 69.49462500000004,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              },
+              {
+                "ancestorTitles": [
+                  "B18 production tree first-double-click diagnostic"
+                ],
+                "fullName": "B18 production tree first-double-click diagnostic pins a never-opened B on its first double click with read delivery delay",
+                "status": "passed",
+                "title": "pins a never-opened B on its first double click with read delivery delay",
+                "duration": 68.99220799999989,
+                "failureMessages": [],
+                "meta": {},
+                "tags": []
+              }
+            ],
+            "startTime": 1792288862002,
+            "endTime": 1792288862446.9922,
+            "status": "passed",
+            "message": "",
+            "name": "/Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/workspace-tree-acceptance.test.tsx"
+          }
+        ]
+      }
+    },
+    "willyou-dev037-before-observations.json": {
+      "path": "/private/tmp/willyou-dev037-before-observations.json",
+      "sha256": "e677e52d7fe056e5f34743adb0fa44cf0be16134d365c07b15a765f47615c957",
+      "report": {
+        "observedAt": "2026-10-18T01:59:45.549Z",
+        "level": "Real production workspace panel/store/CodeMirror in jsdom, user-event pointer/keyboard events; native API isolated, no actual terminal/native App.",
+        "observations": []
+      }
+    },
+    "willyou-dev037-after-observations.json": {
+      "path": "/private/tmp/willyou-dev037-after-observations.json",
+      "sha256": "9d8bb658e250e8901d48a0506f0a2efca14a8c1a4115ec46c1866a737ec7b39e",
+      "report": {
+        "observedAt": "2026-10-18T02:01:02.709Z",
+        "level": "Real production workspace panel/store/CodeMirror in jsdom, user-event pointer/keyboard events; native API isolated, no actual terminal/native App.",
+        "observations": [
+          {
+            "action": "mouse close inactive C with B editor focus",
+            "active": "B.txt",
+            "focus": "B editor",
+            "selection": 2,
+            "raw": "BASE\n",
+            "CReferenceReleased": true
+          },
+          {
+            "action": "keyboard Enter closes inactive C",
+            "active": "B.txt",
+            "focus": "B tab"
+          },
+          {
+            "action": "mouse close inactive C with external focus",
+            "active": "B.txt",
+            "externalFocusPreserved": true
+          },
+          {
+            "action": "mouse closes focused active B",
+            "active": "C.txt",
+            "focus": "C tab"
+          }
+        ]
+      }
+    }
+  },
+  "layers": {
+    "P": {
+      "status": "passed",
+      "observer": "acceptance_l16",
+      "scope": "Actual Chrome prototype through documented cua_repl Playwright locator actions and read-only DOM observations. Synthetic data and stopped demonstration terminal only.",
+      "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-tabs/prototype-observations.json",
+      "evidenceSha256": "ea76222df8652cdd064a7b4827cdf5e64450afeac725d3a572f7561b10db3d25",
+      "prototypeFileWorkspaceSha256": "401a1e1ba64be99a6d0b63df155d251c3e9fbcb8d7545e68e5964c034cc2660b",
+      "verifiedBranches": [
+        "Mouse closes inactive C: B remains selected and focused.",
+        "Keyboard Enter closes inactive C: B remains selected and receives focus.",
+        "With Terminal input TEXTAREA focused, mouse closes inactive C: focus and empty input value retained; rendered terminal rows unchanged.",
+        "Mouse closes active B: adjacent C becomes selected and focused."
+      ],
+      "historicalFailureRetained": true,
+      "screenshotsArchived": false,
+      "rawAccessibilityDumpArchived": false,
+      "boundary": "The evidence is an attributed agent record of real browser actions; no screenshot file or raw AX text was archived. This does not prove native App focus/resource release or active PTY behavior."
+    },
+    "I": {
+      "status": "passed",
+      "scope": "Production panel/store/CodeMirror user-event focus tests; native API and unrelated viewers isolated. C reference release and B editor state/selection preserved."
+    },
+    "A": {
+      "status": "failed-before-fix-retest-pending",
+      "scope": "Root actual r2 failure above. No new package built after this fix by this agent."
+    }
+  },
+  "limits": [
+    "jsdom component interactions are not native App end-to-end acceptance.",
+    "The outside focus sentinel checks non-stealing behavior but is not a real PTY terminal.",
+    "No formal coverage index, README or execution record was updated by this agent.",
+    "Do not inherit r2 package acceptance for these later workspace-panel.tsx changes; root must package and perform affected real App checks."
+  ],
+  "prototypeEvidenceLinkedAt": "2026-10-18T02:03:55.742080+00:00"
+}

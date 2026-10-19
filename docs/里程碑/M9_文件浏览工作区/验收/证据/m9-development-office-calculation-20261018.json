@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-18",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "workingTree": "uncommitted M9",
+  "layer": "代码与原生集成测试；另含 calc-r2 打包 App 的真实界面开发验证，非完整 Office 验收",
+  "typecheck": {
+    "state": "passed",
+    "log": "/private/tmp/willyou-m9-office-calculation-r5-typecheck.log"
+  },
+  "testRuns": [
+    {
+      "log": "/private/tmp/willyou-m9-office-calculation-r3-tests.log",
+      "passed": 11,
+      "failed": 2,
+      "cause": "Missing array follower in private calculation input and mismatch between XML formula node count and POI array result count",
+      "fix": "Declare complete array result set; insert missing private input cells and count all formula result positions. Cached results only return to original XML."
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-calculation-r4-tests.log",
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-calculation-r5-tests.log",
+      "passed": 64,
+      "failed": 2,
+      "files": 14,
+      "rawResultSha256": "a684c7c0afdd204e58a9ac4d02917cb3e66536b0bc05a165fde1827b7e0bfb9d",
+      "cause": "Packaged jspawnhelper code signature changes not recognised; cancellation test asserted message instead of stable code"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-calculation-r6-tests.log",
+      "passed": 14,
+      "failed": 0,
+      "files": [
+        "src/main/core/files/office/native.test.ts",
+        "src/main/core/files/office/service.test.ts"
+      ],
+      "fix": "Accept signed Mach-O only at declared JRE executable/library paths, including jre/lib/jspawnhelper; full app codesign and exact data/JAR/class hashes remain required. Cancellation test checks CANCELLED."
+    }
+  ],
+  "actualEnginePackage": {
+    "path": "/private/tmp/willyou-m9-office-preview-r1-build/mac-arm64/WillYou.app",
+    "asarSha256": "722fdfc8d5d3fa685c3851ec193c9b512eef5af0007b2786714beb26a1064d94",
+    "boundary": "actual packaged native broker and signed JRE/POI run by production engine wrapper in a test process; no App renderer interaction",
+    "result": "#REF!, #REF!, 100; expected 3 formula results"
+  },
+  "limits": [
+    "Read-only source refresh in service; no editing/save integration yet",
+    "Formal 3/419 unchanged",
+    "No general Excel function compatibility or external Office parity claim"
+  ],
+  "sourceHashes": {
+    "src/main/core/files/office/relationships.ts": "d76b7a9c0c402e3367fcee436a9c36034bd71dc114abd70ab8af43f20fa7016f",
+    "src/main/core/files/office/native.test.ts": "8f84b7f2f6b140ee7240da6f79cafc4528f949b6131457982a3cb3f3168b5785",
+    "src/main/core/files/office/parser.test.ts": "6b24950f86207378272c571f1fd7b66a23a345eae64f983e5c0722424051eb2f",
+    "src/main/core/files/office/service.test.ts": "54bea8ee58b209678bd741de14e292acac4aaf86731c48dd0e4f73abfc5b1507",
+    "src/main/core/files/office/styles.ts": "1bb3ee46804b266709518f278fee335097612f4d46da23ea1bdaf14bfc50294f",
+    "src/main/core/files/office/styles.test.ts": "46032c766a09a102c9de188879350967d5eefda8dcaa730e92b7fe277ed7270b",
+    "src/main/core/files/office/engine.ts": "6a7498e69740faf59bdc71538d211d24f97b908193e95727f6927338e896d063",
+    "src/main/core/files/office/engine-resources.ts": "00d817e8c184491f38fbbc8d32eece9cab9c6487cface4fe03f5c2430340c77f",
+    "src/main/core/files/office/parser.ts": "af2200e2b7d6dba3baa1eef164330ff945c130f183a7001c6ecbd2ce31e3972b",
+    "src/main/core/files/office/workbook.test.ts": "12b4c3bb1ca15354fafa2b4160ff8b510f0d963ff35e1c3adb5f01d3fb21e9c3",
+    "src/main/core/files/office/worksheet-edits.ts": "64d33674c772b8d29c6269be3ca5b2e653f189ab892b39e12f116368e1a04894",
+    "src/main/core/files/office/calculation.test.ts": "875f388a9d242d7124d39de44314303128ef7498b53b50d370943e0932c31f6c",
+    "src/main/core/files/office/package.test.ts": "6f148b140038b604ce95ae315af3c94c1cb7de8bde2d0f230b513b4caf82c73e",
+    "src/main/core/files/office/xml.ts": "060f62b1ee9c2afc3de4d24d4594cbe687a7be5f795abf93246809455cd1c023",
+    "src/main/core/files/office/calculation.ts": "9c5d06198ca8e488bce1844ffddaaccd1eb19ef04c62a5069dad8b63c071a159",
+    "src/main/core/files/office/formula.test.ts": "0b5b8d0bfbe9a8878a8672c571adc6d7ac093439f7f4015d89ee61b4980c9085",
+    "src/main/core/files/office/xml.test.ts": "dc1ab3333ba66ea67b5638ac785674ae450052ce04d5b93f1e58e967e4fbc562",
+    "src/main/core/files/office/formula.ts": "6397360ad1d9a2da8888188db065c9bad948f75a5548e144d45ae191a34667ec",
+    "src/main/core/files/office/service.ts": "532b33409a9eaca37b017d1f3a54fd8f4f7949cd651fa9ac3762939c72343290",
+    "src/main/core/files/office/workbook.ts": "e4ee922592e0b3918047c9a0f65b45bccb1624bcd47e4874c90db79aa0fc0e88",
+    "src/main/core/files/office/worker.ts": "4505342fdfcc803a735d7ff808d1739d7aaa00a1704fc38bf33cc415e1c057d7",
+    "src/main/core/files/office/package.ts": "d376ec9b7061c2add4b3fbb0de17c48814b58b8319d7ad20a97d9f3588e83fa3",
+    "src/renderer/features/files/office/preview.tsx": "2e12a0d92ce391046c74ef81c306bf750a1b58cafb5ded937417bd8cd81b8194",
+    "src/renderer/features/files/office/preview.test.tsx": "4ce642d3875fb10c1129fae72c66a37139b7df99a4f879dde5bc0b84eae88f70",
+    "src/renderer/features/files/office/client.ts": "d7f964a130f1d005d348f7d975a0ff464f65a6f36d5bb96003542764803a0f67",
+    "src/renderer/features/files/office/style.css": "74fddb6ccd9f95b47c04a25fbf7f208db6bce858ca2ea36899e3a9bbd5ca46d1",
+    "src/renderer/features/files/office/layout.ts": "fd8ce5c686c5d6f9d57360a06a81caa4da11c5f33c261620dbee3021a6a023be",
+    "src/renderer/features/files/office/layout.test.ts": "b482cd9dfe608427b0bbbf41c22de2d454817069df26b76c2f6d8117bb5693c3",
+    "src/renderer/features/files/office/client.test.ts": "cfa3776a3a472e445dcfa32db9575b243563cb65c99c0c20fe648b86a44bed2d",
+    "src/shared/file-office.ts": "f273aada5f5c8f5dfda8c614a458ff2a77aeb4fbeb596b9bcfca55ac57693fbe",
+    "src/main/core/files/file-service.ts": "7c6d96c148117a59da09b529dd6a9a5fb2abab06f9cc51252ec59f270d2a3abf",
+    "src/main/index.ts": "73e0c79ff6d5ee4ef322837e1fd507ecd28c6d036dc226eb93587e36d8c3de6b"
+  },
+  "appChecks": {
+    "path": "/private/tmp/willyou-m9-office-calc-r2-build/mac-arm64/WillYou.app",
+    "asarSha256": "218d3559f0fdfddadac22758280d1343ac66fd8615503feb84f4a6e5ff86636e",
+    "buildLog": "/private/tmp/willyou-m9-office-calc-r2-package.log",
+    "nativeSmoke": "passed",
+    "layer": "actual packaged App, CUA AX clicks, keyboard, screenshots; independent read-only hashes afterwards",
+    "results": [
+      "Opened rich-source.xlsx and switched Calc: formula values B2=7,B3=7,B4=100,B5=3,B6=42,B7=7,B8=7,B9=7,B10=5,B11=6,B12=8,B15=7,B16=3,D2=9,D3=12",
+      "Selected B11: formula bar =Data!B2*2, readable value6 on white file cell with green outline in dark and light themes",
+      "Opened oa12-deleted.xlsx: #REF!, #REF!, 100 displayed, no #NAME? substitution",
+      "Both fixture SHA-256 unchanged; private m9-office-jobs directory empty after calculation"
+    ],
+    "defectRetests": {
+      "M9-DEV-010": "passed original selected-text contrast reproduction in both themes"
+    },
+    "sourceHashesAfter": {
+      "rich-source.xlsx": "56c0ccd354d6a02153f3d7e850da3999f89d5cbfdee8801f602b15fe73a1e100",
+      "oa12-deleted.xlsx": "b50bff3452c78ecb37d65977c55b798789fd953044eda78e4a131401c9060ab7"
+    },
+    "screenshots": "CUA conversation only, no standalone archive",
+    "limits": [
+      "No Office edit/save workflow in this package",
+      "No full visual parity or complete formula-function compatibility assertion",
+      "Formal count remains3/419"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+<!doctype html><meta charset="UTF-8"><title>HTML isolated fixture</title><link rel="stylesheet" href="assets/style.css"><h1>HTML_F24_plain.html_中文🙂</h1><img id="picture" src="assets/pixel.png"><p id="count">0</p><button id="count-button">点击计数</button><button id="local-nav">本地导航</button><button id="external-nav">外部导航</button><button id="popup">打开弹窗</button><iframe id="frame" src="next.html"></iframe><script src="assets/classic.js"></script><script src="assets/outside-link.js"></script><script type="module" src="assets/module.mjs"></script><script>
+const trap="http://127.0.0.1:57919/m9-html",d=document.body.dataset; window.__M9_DOC_EXECUTED='isolated';d.inline='INLINE_中文🙂';d.bridge=[typeof electronAPI,typeof require,typeof process,typeof Buffer,typeof ipcRenderer].join('|');d.parentSelf=String(parent===window);d.opener=String(opener===null);d.origin=window.origin;
+fetch(trap+'/fetch').then(()=>d.fetch='executed',()=>d.fetch='blocked');
+try{const x=new XMLHttpRequest();x.open('GET',trap+'/xhr');x.onload=()=>d.xhr='executed';x.onerror=()=>d.xhr='blocked';x.send()}catch(e){d.xhr='blocked'}
+try{const s=new WebSocket(trap.replace('http:','ws:')+'/socket');s.onopen=()=>{d.socket='executed';s.close()};s.onerror=()=>d.socket='blocked'}catch(e){d.socket='blocked'}
+try{const w=new Worker('assets/worker.js');w.onmessage=()=>{d.worker='executed';w.terminate()};w.onerror=()=>{d.worker='blocked';w.terminate()}}catch(e){d.worker='blocked'}
+try{eval('window.__M9_EVAL_EXECUTED=true');d.eval='executed'}catch(e){d.eval='blocked'}
+try{localStorage.setItem('m9-html','must-not-store');d.storage='executed'}catch(e){d.storage='blocked'}
+addEventListener('message',e=>{if(e.data?.m9Probe){d.messageOrigin=e.origin;d.messageSourceSelf=String(e.source===window)}});parent.postMessage({m9Probe:true,origin:'app://trusted',channel:'files.open',args:['../outside-denied.js']},'*');
+document.querySelector('#count-button').onclick=()=>document.querySelector('#count').textContent=String(Number(document.querySelector('#count').textContent)+1);
+document.querySelector('#local-nav').onclick=()=>{d.localNav='attempted';location.href='next.html'};
+document.querySelector('#external-nav').onclick=()=>{d.externalNav='attempted';location.href=trap+'/navigation'};
+document.querySelector('#popup').onclick=()=>{const w=open(trap+'/popup');d.popup=w?'executed':'blocked';if(w)w.close()};
+</script><!-- END_HTML_FIXTURE -->

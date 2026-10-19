@@ -1,0 +1,312 @@
+{
+  "caseId": "M9-T-H24",
+  "at": "2026-10-18T02:45:15.901Z",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+  "boundary": "Production store+buffer+FileService/recovery+packaged broker; real checkpoint/write/conflict and independent disk checks. Only native save dispatch timing is gated. No mocked successful save, UI or physical IME claim.",
+  "rows": [
+    {
+      "scenario": "current intent control",
+      "outcome": "success",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "source",
+        "aRouteMode": "source",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "44526748",
+            "device": "16777232",
+            "changedNs": "1792291513836920045",
+            "modifiedNs": "1792291513828413000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "c96a16b8-dae9-473d-b21e-a02d6d5ce9f4",
+          "state": "saved",
+          "recoveryId": "c96a16b8-dae9-473d-b21e-a02d6d5ce9f4"
+        }
+      ],
+      "nativeSaves": 1,
+      "transactions": [
+        "c96a16b8-dae9-473d-b21e-a02d6d5ce9f4"
+      ]
+    },
+    {
+      "scenario": "current intent control",
+      "outcome": "conflict",
+      "result": {
+        "status": "rejected",
+        "message": "Error: The file changed on disk before save"
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# External\n",
+        "aDirty": true,
+        "aConflict": true,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "bufferVersion": 1,
+          "opId": "4bcbb24b-4bd2-4163-85ae-a4b2fe5b5025",
+          "state": "conflict",
+          "message": "The file changed on disk before save"
+        }
+      ],
+      "nativeSaves": 1,
+      "transactions": []
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "other tab",
+      "outcome": "success",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "b.md",
+        "aMode": "source",
+        "aRouteMode": "source",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "44526786",
+            "device": "16777232",
+            "changedNs": "1792291514208712567",
+            "modifiedNs": "1792291514200574000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "cf8f5870-5ee8-4145-8e19-fb86d5d8b23d",
+          "state": "saved",
+          "recoveryId": "cf8f5870-5ee8-4145-8e19-fb86d5d8b23d"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "other tab",
+      "outcome": "conflict",
+      "result": {
+        "status": "rejected",
+        "message": "Error: The file changed on disk before save"
+      },
+      "final": {
+        "active": "b.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# External\n",
+        "aDirty": true,
+        "aConflict": true,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "bufferVersion": 1,
+          "opId": "c73ff6d7-048f-40c7-adca-8b6bf587c13b",
+          "state": "conflict",
+          "message": "The file changed on disk before save"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "away then back",
+      "outcome": "success",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "source",
+        "aRouteMode": "source",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "44526822",
+            "device": "16777232",
+            "changedNs": "1792291514618186869",
+            "modifiedNs": "1792291514607713000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "01d45fe2-708e-4b95-8b2f-cd3d7e44898c",
+          "state": "saved",
+          "recoveryId": "01d45fe2-708e-4b95-8b2f-cd3d7e44898c"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "navigation during mode save",
+      "navigation": "away then back",
+      "outcome": "conflict",
+      "result": {
+        "status": "rejected",
+        "message": "Error: The file changed on disk before save"
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# A edited\n",
+        "aDisk": "# External\n",
+        "aDirty": true,
+        "aConflict": true,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "bufferVersion": 1,
+          "opId": "2787c418-3852-4499-b34b-b807907c021d",
+          "state": "conflict",
+          "message": "The file changed on disk before save"
+        }
+      ],
+      "nativeSaves": 1
+    },
+    {
+      "scenario": "new mode intent supersedes old pending mode",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "source",
+        "aRouteMode": "source",
+        "aRaw": "# A edited\n",
+        "aDisk": "# A edited\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 11,
+            "inode": "44526860",
+            "device": "16777232",
+            "changedNs": "1792291515231292596",
+            "modifiedNs": "1792291515218681000",
+            "hash": "bb6813975b252eb3f830c8839fcaad5e277541bfb26b2dd49bfd74698014a0af"
+          },
+          "bufferVersion": 1,
+          "opId": "71b66d2c-4fb0-4df5-b0d3-ec91ba0ac19d",
+          "state": "saved",
+          "recoveryId": "71b66d2c-4fb0-4df5-b0d3-ec91ba0ac19d"
+        }
+      ]
+    },
+    {
+      "scenario": "new active native save before old switch continuation",
+      "result": {
+        "status": "fulfilled",
+        "message": ""
+      },
+      "whileSecondPending": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# Second\n",
+        "aDisk": "# First\n",
+        "aDirty": true,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "final": {
+        "active": "a.md",
+        "aMode": "document",
+        "aRouteMode": "document",
+        "aRaw": "# Second\n",
+        "aDisk": "# Second\n",
+        "aDirty": false,
+        "aConflict": false,
+        "bMode": "document",
+        "bRaw": "# B base\n",
+        "bDisk": "# B base\n"
+      },
+      "receipts": [
+        {
+          "revision": {
+            "size": 8,
+            "inode": "44526884",
+            "device": "16777232",
+            "changedNs": "1792291515558087097",
+            "modifiedNs": "1792291515548843000",
+            "hash": "9deb94158e91742ee59a098729128779da85eef76b28890b6c0cb64401537a29"
+          },
+          "bufferVersion": 1,
+          "opId": "f799841a-2929-47d5-9a3d-5c635e881894",
+          "state": "saved",
+          "recoveryId": "f799841a-2929-47d5-9a3d-5c635e881894"
+        },
+        {
+          "revision": {
+            "size": 9,
+            "inode": "44526898",
+            "device": "16777232",
+            "changedNs": "1792291515821504479",
+            "modifiedNs": "1792291515811306000",
+            "hash": "797e649f79050c5aae111c0f55d82376a57d7b3a227af67be93c3158c2e1999f"
+          },
+          "bufferVersion": 2,
+          "opId": "aa7f29db-1bde-4bf0-9456-079a91c56f4b",
+          "state": "saved",
+          "recoveryId": "aa7f29db-1bde-4bf0-9456-079a91c56f4b"
+        }
+      ],
+      "nativeSaves": 2
+    }
+  ]
+}

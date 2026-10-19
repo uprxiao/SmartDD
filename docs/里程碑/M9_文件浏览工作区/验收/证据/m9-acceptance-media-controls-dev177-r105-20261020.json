@@ -1,0 +1,590 @@
+{
+  "at": "2026-10-19T22:40:25.703897+00:00",
+  "status": "passed",
+  "caseIds": [
+    "M9-T-T24",
+    "M9-T-T28",
+    "M9-T-T29"
+  ],
+  "revision": "R3.4-P1",
+  "requirements": [
+    "M9-R06.12"
+  ],
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "data": "Own ffmpeg testsrc2/anullsrc silent H264/AAC and MPEG4/AAC, 30s video; copied same-byte second path and PCM WAV native-I control. No user media/model/PTY/clipboard/picker/external App/current Codex access."
+  },
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r105-build/mac-arm64/WillYou.app",
+    "asarSha256": "6430a310cd14885f2844aba239d6de1a6031950e0d8201606c029bf42a152912",
+    "runtimeFiles": 81,
+    "build": "New full build/same packaging/afterPack/native sixsmoke passed. No release."
+  },
+  "results": {
+    "code": 23,
+    "newComponentTests": 4,
+    "realNativeI": 2,
+    "uniqueVitest": 25,
+    "prototypeBuild": "passed",
+    "sites": 4,
+    "typecheck": "passed",
+    "appFullChecks": 36,
+    "prototypeFullChecks": 34,
+    "appFocusLeaveT24": 4,
+    "prototypeFocusLeaveT24": 4,
+    "realRateSamples": 16,
+    "prototypeSimulatedSamples": 16,
+    "realUnsupportedCodecFailures": 2,
+    "rpcAudit": {
+      "status": "passed",
+      "fileRpcs": 20,
+      "mediaRpcs": 20,
+      "protocolOpens": 10,
+      "originalReleases": 10,
+      "originalHandlersRestored": 8,
+      "actualRateSamples": 16,
+      "maxRateError": 0.1630909999046326
+    },
+    "sourceInputs": 1401,
+    "finalOwnAppsNormalExit": 4,
+    "remainingOwnApps": []
+  },
+  "coverage": {
+    "passedBefore": 287,
+    "passedAfter": 290,
+    "currentTotal": 419,
+    "percentage": 69.21,
+    "unexecuted": 126,
+    "blocked": 3,
+    "futureOnly": 6,
+    "total": 425,
+    "newPassed": [
+      "M9-T-T24",
+      "M9-T-T28",
+      "M9-T-T29"
+    ]
+  },
+  "fixes": [
+    "DEV177-OBS01: controlled volume/mute now synchronously retain requested React state while updating native media properties, and still accept external native volumechange. Native event-delayed component red/green and actual rapid input observed.",
+    "DEV177-OBS02: prototype speed control exposes actual eight menuitemradio choices/check state rather than select; volume zero uses same existing Lucide muted icon logic. Synthetic timing remains explicit."
+  ],
+  "evidenceScopes": [
+    "T24 A/P light/dark >3.05played seconds, below-frame controls visible, native controls false in A, no Copy link; strengthened with both pointer and real Tab focus outside viewer before interval.",
+    "T28 A/P light/dark0/.5/1,mute,.01unmute/popover reopen, previous file volume0 versus fresh other file default. A nativevolume1default/P preexisting synthetic.75default separately recorded, no all-state pixel equality.",
+    "T29 all8rates light/dark: A actual playbackRate + exactly one checked radio + real currentTime/wallclock progress and decoded frames; maximum measured time error is in rpcAudit. Two genuine unsupported MPEG4 video cases show explicit errors. P uses original simulation, no actual codec claim.",
+    "I actual original Swift/FileService/media binary capabilities: all4fixtures full bytes/hash and owner/release checks, native2tests. A original protocol grants match source hashes and actual decoded clip; no browser fetch added because connect-src excludes media scheme.",
+    "Full A r105; full P34 used r104 only as shell for unchanged served P source, T24P supplement used r105. P sources same reviewed update; no P result classified as real App native playback."
+  ],
+  "history": [
+    "Initial new U test incorrectly reopened still-open Menu.RadioItem popup; installed primary-source default closeOnClick=false confirmed, corrected test only.",
+    "Initial Home/focus/track-click/instant-drag probes did not reach expected slider values; retained logs/source variants. Home cause unclassified, event not prevented; no claim Home/instant drag passed.",
+    "r104 focused rapid native arrows left volume.99, and deterministic delayed-volumechange U failed UIvalue0 versus requested.9. Production state update fixes pending-native-feedback race; new r105full36passed.",
+    "Range rewind tracks can hit thumb without moving. Final external driver uses focused platform-native arrow steps to exact endpoints; values/native properties explicitly checked, no DOM/media setter injection.",
+    "CSP source inspection excluded an extra browser fetch probe before any such execution; native complete-byte I and original App protocol/grant/decoder evidence used.",
+    "After full pass, strengthened T24 alone with focus/pointer outside; did not repeat passed volume/rate matrices. Original partial failures and source snapshots retained."
+  ],
+  "sourceSnapshot": {
+    "manifest": "willyou-dev177-source.json",
+    "delta": "willyou-dev177-source.tar.gz",
+    "prebuild": "willyou-dev177-prebuild-source.json",
+    "parentInputs": 1395,
+    "changed": [
+      "docs/真实App自动验收流程.md",
+      "prototypes/m6-codex/src/FileWorkspace.jsx",
+      "prototypes/m6-codex/src/file-workspace.css",
+      "src/renderer/features/files/media/preview.test.tsx",
+      "src/renderer/features/files/media/preview.tsx"
+    ],
+    "new": [
+      "scripts/files/media-controls-fixtures.py",
+      "scripts/lib/media-resource-observer.mjs",
+      "scripts/lib/media-controls-matrix.mjs",
+      "scripts/files/media-controls-ui.mjs",
+      "prototypes/m6-codex/tests/media-controls-runtime.html",
+      "prototypes/m6-codex/tests/media-controls-harness.jsx"
+    ]
+  },
+  "parent": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-pdf-rail-dev176-r104-20261020.json",
+    "sha256": "7581ce416d333265a590cdeff3c313618a6b885f14a01677e8fd39f2068aac35"
+  },
+  "limits": [
+    "R uses existing reviewed D15/D16/D17 static facts, no fresh Codex dynamic or pixel comparison.",
+    "U decoder/native-event scheduling isolated; native I binary bytes separate from A protocol/decoder. P timing synthetic; no PiP/fullscreen/real terminal key focus claim.",
+    "T19 actual raw0 and other media/system/reference/platform cases remain original scope. Human/environment blockers T32/T34/Y29 unchanged. M9 incomplete, unpublished."
+  ],
+  "artifacts": {
+    "willyou-media-controls-A-Dapcap-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-Dapcap-result.json",
+      "sha256": "04dad6719fd7d0cdf0fc80e9b56efbcc22b3b21b866be81024718af9638290f6",
+      "bytes": 25348
+    },
+    "willyou-media-controls-A-Dapcap-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-Dapcap-electron.log",
+      "sha256": "fb7a8407160055499f59fb8a0d569fa4f9c415eadc8c1ae973b311a6ee65debb",
+      "bytes": 3116
+    },
+    "willyou-media-controls-A-Dapcap-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-Dapcap-failure.png",
+      "sha256": "68594c2172cb8b846ab27d1f088818278af3d6bbc429a45fa61ccc80586ae853",
+      "bytes": 122056
+    },
+    "willyou-media-controls-A-HSE3WY-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-HSE3WY-result.json",
+      "sha256": "bb174abbff6caf479f667cbb618f68ce0b36c50661c5ebca6dd5a471c02dc271",
+      "bytes": 7511
+    },
+    "willyou-media-controls-A-HSE3WY-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-HSE3WY-electron.log",
+      "sha256": "f0c1d621c3472f2a8c4f09f533aae1be7aa002b5c588ee58c81223551586e86e",
+      "bytes": 3116
+    },
+    "willyou-media-controls-A-HSE3WY-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-HSE3WY-failure.png",
+      "sha256": "76ee44abc6b7fc01ce74fad4b164f13fede07bf1bd494e31e435031dd675075d",
+      "bytes": 121847
+    },
+    "willyou-media-controls-A-JYJowo-result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-JYJowo-result.json.gz",
+      "sha256": "9ed72a2395a56958844e8c2468fdd5e1881aadc2be5337939d6cb4e196be900b",
+      "bytes": 16442,
+      "compression": "gzip",
+      "originalSha256": "3c4d8ccddb92501138a2cb82222540f7dab1fd02ff4068e0a3a140690ea3d5ac"
+    },
+    "willyou-media-controls-A-JYJowo-dark-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-JYJowo-dark-final.png",
+      "sha256": "593727fb55483995b82db6ceef8a92345bb4000ee82c57b8bdff6c385beabc96",
+      "bytes": 107956
+    },
+    "willyou-media-controls-A-JYJowo-light-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-JYJowo-light-final.png",
+      "sha256": "7a38b6f5763099bcd3aca4e587d9cfc195c0ecf1ff74d98fd9e42c9b78794184",
+      "bytes": 109181
+    },
+    "willyou-media-controls-A-JYJowo-light-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-JYJowo-light-controls.png",
+      "sha256": "7a38b6f5763099bcd3aca4e587d9cfc195c0ecf1ff74d98fd9e42c9b78794184",
+      "bytes": 109181
+    },
+    "willyou-media-controls-A-JYJowo-dark-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-JYJowo-dark-controls.png",
+      "sha256": "593727fb55483995b82db6ceef8a92345bb4000ee82c57b8bdff6c385beabc96",
+      "bytes": 107956
+    },
+    "willyou-media-controls-A-fdffEl-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-fdffEl-result.json",
+      "sha256": "58b7dd7f5e48a9c190bf2b670af622972ac56796ae8ecd94da0357058468ad1a",
+      "bytes": 7355
+    },
+    "willyou-media-controls-A-fdffEl-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-fdffEl-electron.log",
+      "sha256": "c66426b2f09dd5ab1101a22e1490d312fbca88b3c7a1f87b46de30421e54d3c5",
+      "bytes": 3116
+    },
+    "willyou-media-controls-A-fdffEl-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-fdffEl-failure.png",
+      "sha256": "fd40dc79e7f2b1e62bfa0add57ddfe90128f76f68c7156c64859a1965fc44688",
+      "bytes": 121664
+    },
+    "willyou-media-controls-A-pD87HR-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-pD87HR-result.json",
+      "sha256": "b8c8e8cb3990e07ce81870a58d2d5cdd7b26dd60516913ea58ecb97f2e1037f3",
+      "bytes": 22647
+    },
+    "willyou-media-controls-A-pD87HR-light-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-pD87HR-light-controls.png",
+      "sha256": "c1fc4f6ccf4f6612b2afd4d73742e0a2d618fe8139a5d20791bd3eae8da433cb",
+      "bytes": 119936
+    },
+    "willyou-media-controls-A-pD87HR-dark-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-pD87HR-dark-controls.png",
+      "sha256": "e98cf2d38d466dcd66488291f03e1e0b2e5d7c805d6fa1d6bc7d327d915c4a09",
+      "bytes": 118863
+    },
+    "willyou-media-controls-A-sanw7n-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-sanw7n-result.json",
+      "sha256": "d107bf8cd6e62108d41b2a3a5df7abb14e612525cd5233fa3ee5d37a3b8099ac",
+      "bytes": 6161
+    },
+    "willyou-media-controls-A-sanw7n-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-sanw7n-electron.log",
+      "sha256": "6a6fcd6bef8215ab954d43ba554cd78578b5647704155e785775ba33a7067279",
+      "bytes": 3116
+    },
+    "willyou-media-controls-A-sanw7n-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-sanw7n-failure.png",
+      "sha256": "ec724b2f968ae87323f9555d9c52d32701fb0fb6fb0d53d8c8a445ca30c17e0d",
+      "bytes": 121560
+    },
+    "willyou-media-controls-A-uhTm8i-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-uhTm8i-result.json",
+      "sha256": "2ad04f409459ac13825217ec630f77a39d640d84ffb7590de60829770a8b601e",
+      "bytes": 21046
+    },
+    "willyou-media-controls-A-uhTm8i-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-uhTm8i-electron.log",
+      "sha256": "2f5b8674f653fe136aa09bb85210e13ecf73c83a066daeac262dfb6895e8524c",
+      "bytes": 4236
+    },
+    "willyou-media-controls-A-uhTm8i-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-A-uhTm8i-failure.png",
+      "sha256": "7b4f351abd4af24b2e1d97f1d9c931ef45f5cb973e82fd8ba68fc097e08d4318",
+      "bytes": 114118
+    },
+    "willyou-media-controls-P-FCcjaH-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-FCcjaH-result.json",
+      "sha256": "c770b8f584364ad492ff868573340aba36b42c690fe308c35696fabee8cd5361",
+      "bytes": 2817
+    },
+    "willyou-media-controls-P-FCcjaH-light-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-FCcjaH-light-controls.png",
+      "sha256": "f22dc986f79bd2ebb178631549f4002d278dd4124ba00e25dd6be37071494fc3",
+      "bytes": 66144
+    },
+    "willyou-media-controls-P-JdZWOS-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-JdZWOS-result.json",
+      "sha256": "2cdc07b018f33f43b2a5ca74fdf3cb9892ce389b08804cf6ec8333e74dff49da",
+      "bytes": 10534
+    },
+    "willyou-media-controls-P-JdZWOS-light-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-JdZWOS-light-controls.png",
+      "sha256": "eab0e4b0682e6852301fad6d1c78fc59246d5aeae1a5a43af91753e21877866d",
+      "bytes": 64261
+    },
+    "willyou-media-controls-P-JdZWOS-dark-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-JdZWOS-dark-controls.png",
+      "sha256": "0d68e350e7c4a88a52a458a080b6baac46a43fc3a163756f4e0287e5c5afc172",
+      "bytes": 64224
+    },
+    "willyou-media-controls-P-XlwWii-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-XlwWii-result.json",
+      "sha256": "b28adf570c11eba0dfaf9297c5540501ae05fb6219c979a2c6ed8db3a83a24fa",
+      "bytes": 858658
+    },
+    "willyou-media-controls-P-XlwWii-dark-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-XlwWii-dark-final.png",
+      "sha256": "8dbee8b64166d4cddcf9dc2b192bf5e8d30e895ff0965d504b0d99ad1f9ff509",
+      "bytes": 62732
+    },
+    "willyou-media-controls-P-XlwWii-light-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-XlwWii-light-final.png",
+      "sha256": "74831b3d8d07032683b9d95a6712d30f07ca5f65f34f4595ce2dcdeaac479b97",
+      "bytes": 62742
+    },
+    "willyou-media-controls-P-XlwWii-light-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-XlwWii-light-controls.png",
+      "sha256": "74831b3d8d07032683b9d95a6712d30f07ca5f65f34f4595ce2dcdeaac479b97",
+      "bytes": 62742
+    },
+    "willyou-media-controls-P-XlwWii-dark-controls.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-media-controls-P-XlwWii-dark-controls.png",
+      "sha256": "8dbee8b64166d4cddcf9dc2b192bf5e8d30e895ff0965d504b0d99ad1f9ff509",
+      "bytes": 62732
+    },
+    "willyou-dev177-fixtures-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-fixtures-result.json",
+      "sha256": "1d6b86c4c4396a422eaf303110fab3cd8d996214e107f5d8ea1f8f0fe81b9e4d",
+      "bytes": 176
+    },
+    "willyou-dev177-A-T24-focus.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-T24-focus.log",
+      "sha256": "3106604d292ea2beadf3af8dbaace209b54953427e13f4957f227d8b0c094a0a",
+      "bytes": 554
+    },
+    "willyou-dev177-prebuild-source.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-prebuild-source.tar.gz",
+      "sha256": "9021732dabb66e41380d1dfde45b7a079a883ad6882ec7c95a27f95c97a5bf20",
+      "bytes": 51333
+    },
+    "willyou-dev177-native.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-native.json",
+      "sha256": "b444aaac6583f235933f47faa2514991de12b35061f4312140d0b5dfccd1485a",
+      "bytes": 1482
+    },
+    "willyou-dev177-runtime-r105.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-runtime-r105.json",
+      "sha256": "7126e32364f3fbef87f52dd7a34d5ca0941930d27d119c6d823319a13057de29",
+      "bytes": 13051
+    },
+    "willyou-dev177-P-T24-focus.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-P-T24-focus.log",
+      "sha256": "d02cdbd1eb752e599592d0905ffeebbd1c0c21a4eaadd2ce384db1d2a10e5017",
+      "bytes": 554
+    },
+    "willyou-dev177-P-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-P-build.log",
+      "sha256": "ae672acdf1d3dd4fcbc012ec997730730409fdfdbd00e398f6afb6ae48a12272",
+      "bytes": 12649
+    },
+    "willyou-dev177-P-sites.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-P-sites.log",
+      "sha256": "52c5c7d68673fee42491659fdc1f363eb6eb6b9a2155419aef5628825b8404d9",
+      "bytes": 457
+    },
+    "willyou-dev177-rpc-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-rpc-audit.json",
+      "sha256": "7e94bbdbc6c143bb849ee5b61175cec71be0a59779e2423bc5c90b8727d0bdfb",
+      "bytes": 209
+    },
+    "willyou-dev177-type.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-type.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-dev177-r105-console.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-r105-console.log",
+      "sha256": "45a5b7d23ddb528559359d9f0c801cac24f0b5013c7ef40f8a293ce05dec14c1",
+      "bytes": 112
+    },
+    "willyou-dev177-r105-fast-package.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-r105-fast-package.mjs",
+      "sha256": "e8b53f37af23eda8f747714002acbd04219c54dfc13c6877a2d5153aaab13d95",
+      "bytes": 3151
+    },
+    "willyou-dev177-type-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-type-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-dev177-code-first.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-code-first.log",
+      "sha256": "fcc9326de41923532f99909a2cf82ae069aaa1b1087b13d31d537d43cd41eee2",
+      "bytes": 8396
+    },
+    "willyou-dev177-P-baseline.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-P-baseline.log",
+      "sha256": "2452586eea281b0c008db9949ac4440e4f1507273186fc615362d00cc8af2dfd",
+      "bytes": 211
+    },
+    "willyou-dev177-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-source.json",
+      "sha256": "1836542c5258409ce838a514d0b93f73469c61fd5408ef383d779653b090674a",
+      "bytes": 166794
+    },
+    "willyou-dev177-volume-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-volume-red.log",
+      "sha256": "31eab8d0aae7813051c20c3d1d516f863e21bc10f86e9783d5d93a700d3e9580",
+      "bytes": 926
+    },
+    "willyou-dev177-r105-fast-package-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-r105-fast-package-result.json",
+      "sha256": "19109e462b47fcc315ccb876fe84c770c17a28f1b142621f35c89589f7fa1224",
+      "bytes": 2548
+    },
+    "willyou-dev177-A-controls.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-controls.log",
+      "sha256": "df23ee87846eb90e7160cddfc970cd53ae168b15d996c930ba9bd6e5d452a57b",
+      "bytes": 374
+    },
+    "willyou-dev177-A-first.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-first.log",
+      "sha256": "df23ee87846eb90e7160cddfc970cd53ae168b15d996c930ba9bd6e5d452a57b",
+      "bytes": 374
+    },
+    "willyou-dev177-A-focus.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-focus.log",
+      "sha256": "be039223eaa8a1347de9d93a55e9e0a76ee5da9594c6d4b42ab30df3d9b77e90",
+      "bytes": 458
+    },
+    "willyou-dev177-A-r105.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-r105.log",
+      "sha256": "aaec665374f6b446f194a9f46f81450e3b5d6fc155b5a0abd25a7abcb6b60742",
+      "bytes": 3604
+    },
+    "willyou-dev177-r105-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-r105-package.log",
+      "sha256": "66883a512181ecc3520c31b1644a984257390641ebf4820873f8496c42e09e8f",
+      "bytes": 2736
+    },
+    "willyou-dev177-rpc-audit.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-rpc-audit.mjs",
+      "sha256": "7d6fcdde2cd9ca22130267d8cb23e5c632bc28f599e2a3956ac1b3d4ca38b44d",
+      "bytes": 2230
+    },
+    "willyou-dev177-r105-native-smoke.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-r105-native-smoke.log",
+      "sha256": "96572e052da16ca4746a35e68beb4ad23bbf960ad662db95c067c626d4137c8b",
+      "bytes": 182
+    },
+    "willyou-dev177-A-pointer.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-pointer.log",
+      "sha256": "5c742cd97c817e07a116d2b4d00ce74d06be23016f6b531217089d3d7ff460a2",
+      "bytes": 1178
+    },
+    "willyou-dev177-fixtures-first3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-fixtures-first3.json",
+      "sha256": "e08b9be69ec765971669209d192f514349872ae5be018a67296b78797b1c17dc",
+      "bytes": 176
+    },
+    "willyou-dev177-codec-versions.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-codec-versions.json",
+      "sha256": "fdcf594302ab1e9f00d83f77026f068b92895fb04362c939a8c5acb48ba97c82",
+      "bytes": 288
+    },
+    "willyou-dev177-A-drag.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-drag.log",
+      "sha256": "d034c6c3302705ac8c8ec5425f7ebca8759100af6d1e94182819a8b8b729b8cd",
+      "bytes": 458
+    },
+    "willyou-dev177-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-code-final.log",
+      "sha256": "1398dc8b407b0f5b2c17de7499992aafb0e9db81e40a33f599a0e20e269d176e",
+      "bytes": 216
+    },
+    "willyou-dev177-prebuild-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-prebuild-source.json",
+      "sha256": "377fdc6954f52b56e041b386797eaccd635ab1e9e5b32e023d7ed6860482adfc",
+      "bytes": 166652
+    },
+    "willyou-dev177-runtime-r105.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-runtime-r105.cjs",
+      "sha256": "1af3fec153038294edeae642b0521cb1650ceba60975ffb7bf8c9104e6342a76",
+      "bytes": 907
+    },
+    "willyou-dev177-native.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-native.log",
+      "sha256": "b5c2be632973b87d7b705da349040432b8e98164e08952f8b9a6adb143321a3a",
+      "bytes": 572
+    },
+    "willyou-dev177-A-keys.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-A-keys.log",
+      "sha256": "9c78041e6150f6aceb9cc22e76bec21c44bce7e78d9eb25c5cdf32115172aae3",
+      "bytes": 458
+    },
+    "willyou-dev177-r105-native-abi-before-fast-package.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-r105-native-abi-before-fast-package.json",
+      "sha256": "84c614bf8a16a881f47a5bfaad18f5534e41e8183a804a5c82b83ec0f7753f44",
+      "bytes": 624
+    },
+    "willyou-dev177-P-controls.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-P-controls.log",
+      "sha256": "9c33f2cb47a78cb7b259909994b970bf1d9b4ea0f0164da3997b9a0e2b29a553",
+      "bytes": 3397
+    },
+    "willyou-dev177-volume-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-volume-green.log",
+      "sha256": "06b942f2fb4356931a714f8a65a82e2a7f974e79e7a378d65f942cc5b16e55e5",
+      "bytes": 216
+    },
+    "willyou-dev177-r105-compile.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-r105-compile.log",
+      "sha256": "0d598d2e7863dd5976e71cda5386234d90da25db1353f2949fb48aed50912a5a",
+      "bytes": 16110
+    },
+    "willyou-dev177-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-archive.py",
+      "sha256": "274f0c77a5984f2433f8ccf9b3aacbb7de80d559c6bd62fa66dc3b580f4dc421",
+      "bytes": 10487
+    },
+    "willyou-dev177-source.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/willyou-dev177-source.tar.gz",
+      "sha256": "3fbf0c54f576135524e49f43022ae00465b5ff2d85f76901c0e4db545b7487f5",
+      "bytes": 99259
+    },
+    "before-media-controls-matrix-track-click.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-track-click.mjs",
+      "sha256": "7f5ffdb2f7ca2e8c05daaf4c17282d3955cb84cd2f756141a76980315bf85087",
+      "bytes": 9676
+    },
+    "before-media-controls-matrix-first-full.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-first-full.mjs",
+      "sha256": "85e1faa49aa85df571e0228944f16190e5fd97dfba6253c950b85c09209b9cd0",
+      "bytes": 8258
+    },
+    "before-preview.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-preview.tsx",
+      "sha256": "614a4597263580fd1ccd516061b42ee96acf74cbc4ce25ee970928d593283b7d",
+      "bytes": 12027
+    },
+    "before-media-controls-matrix-baseline.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-baseline.mjs",
+      "sha256": "b916fa3b1749a92f471277db9fa324eaa2e5a2dc325e2bb84081a77adfdc9cbd",
+      "bytes": 788
+    },
+    "before-media-controls-matrix-before-range-focus.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-before-range-focus.mjs",
+      "sha256": "842b8d8165ed9b6bbf95eeeb34b97cbd8ae228f4451a2c10a501804187cc5eb7",
+      "bytes": 8521
+    },
+    "before-FileWorkspace.jsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-FileWorkspace.jsx",
+      "sha256": "a5938636e544843984dba53d70184d0ea969796438e3facfc928834086e8458d",
+      "bytes": 97712
+    },
+    "before-preview.test.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-preview.test.tsx",
+      "sha256": "fab7db42fb20bdb01275f2028651f5d32efc93d81ec26f50cfd938ee4db602d2",
+      "bytes": 10650
+    },
+    "before-preview-before-volume-delay.test.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-preview-before-volume-delay.test.tsx",
+      "sha256": "e147d3a558166d9ee590eefaa2725297b7b92b48f7ffbb96a26a399c459b866a",
+      "bytes": 13266
+    },
+    "before-file-workspace.css": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-file-workspace.css",
+      "sha256": "7b0b81b18293db0618433563ac470131b6a7dff620c5187893bcb4589aedac58",
+      "bytes": 27250
+    },
+    "before-media-controls-matrix-before-CSP-boundary.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-before-CSP-boundary.mjs",
+      "sha256": "e5f25df8422438bacdc84183da95a44843b7bf951d961dcf71cd40ea4912d884",
+      "bytes": 10489
+    },
+    "before-media-controls-matrix-instant-drag.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-instant-drag.mjs",
+      "sha256": "5b1fe5a84cad71d1d9e480043cef6dd43594d8580c2a3ad64c28a313a66204fc",
+      "bytes": 10610
+    },
+    "before-media-controls-matrix-Home-noop.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-Home-noop.mjs",
+      "sha256": "1a2d9a3a4231fbfa45ef09d150cc862052643eb7f5f1671ea32a790892bb7973",
+      "bytes": 9203
+    },
+    "before-media-controls-matrix-before-T24-focus-leave.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/before-media-controls-matrix-before-T24-focus-leave.mjs",
+      "sha256": "49de68c0eca7b02c86e79273a01b11c0b00bbbbbb24f5d6b5990b3fb336aba08",
+      "bytes": 10095
+    },
+    "fixtures-used.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/fixtures-used.json",
+      "sha256": "dcd472206d5502d41281053cf78985bad376b64a46f88163fe2ded81628a3c03",
+      "bytes": 3653
+    },
+    "source-clip-a.mp4": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/source-clip-a.mp4",
+      "sha256": "7269649e44121a5132146f37aa5a9edbdffcd9c4aff6942498d4e6ef2c4ad112",
+      "bytes": 1461549
+    },
+    "source-clip-b.mp4": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/source-clip-b.mp4",
+      "sha256": "7269649e44121a5132146f37aa5a9edbdffcd9c4aff6942498d4e6ef2c4ad112",
+      "bytes": 1461549
+    },
+    "source-control.wav": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/source-control.wav",
+      "sha256": "0a8f76d89c709043814cb74f331a4578d17ff61256303bd0019a263d053f86e8",
+      "bytes": 96044
+    },
+    "source-unsupported.mp4": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/source-unsupported.mp4",
+      "sha256": "736cfffeeb68970c24b81df2a328a000c0dafdc8beae5875115b5c8c3e22d12f",
+      "bytes": 878260
+    },
+    "m9-acceptance-pdf-rail-dev176-r104-20261020.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/m9-acceptance-pdf-rail-dev176-r104-20261020.json",
+      "sha256": "7581ce416d333265a590cdeff3c313618a6b885f14a01677e8fd39f2068aac35",
+      "bytes": 36597
+    },
+    "reference-D15-D17.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-media-controls-dev177-r105/reference-D15-D17.md",
+      "sha256": "07127ed2672a4f755fa0cff5bb4a55bbb03ec029363592ad775e8734cee430d6",
+      "bytes": 58236
+    }
+  },
+  "releasePerformed": false
+}

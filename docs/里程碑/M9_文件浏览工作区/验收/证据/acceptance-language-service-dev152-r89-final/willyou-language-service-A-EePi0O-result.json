@@ -1,0 +1,3527 @@
+{
+  "at": "2026-10-19T15:24:02.812Z",
+  "caseId": "M9-T-Y29",
+  "layer": "A",
+  "scratch": "/private/tmp/willyou-language-service-A-EePi0O",
+  "root": "/private/tmp/willyou-language-service-A-EePi0O/A",
+  "other": "/private/tmp/willyou-language-service-A-EePi0O/B",
+  "checks": [
+    {
+      "scenario": "unconfigured",
+      "menu": [
+        {
+          "text": "转到定义",
+          "disabled": true
+        },
+        {
+          "text": "转到类型定义",
+          "disabled": true
+        },
+        {
+          "text": "转到实现",
+          "disabled": true
+        },
+        {
+          "text": "查找引用",
+          "disabled": true
+        }
+      ],
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/real.cpp",
+        "alerts": [],
+        "status": "尚未为 cpp 配置语言服务"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "configure-existing-clangd",
+      "menu": [
+        {
+          "text": "转到定义",
+          "disabled": false
+        },
+        {
+          "text": "转到类型定义",
+          "disabled": false
+        },
+        {
+          "text": "转到实现",
+          "disabled": false
+        },
+        {
+          "text": "查找引用",
+          "disabled": false
+        }
+      ],
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "real-clangd-definition",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "requestId": "0fd46b6a-2273-44c3-aa2c-dbddc71f1c36",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423446037,
+        "inputHash": "d8e6af992c0a48ed74cf15885f9b1a6de974ed6b6c6d996b4c99a5e55ad0cffb",
+        "before": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "delivered": true
+      },
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 26,
+          "head": 31
+        },
+        "selected": "value",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "utf16AfterEmoji": true,
+      "pass": true
+    },
+    {
+      "scenario": "real-clangd-implementation",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "requestId": "f3664501-d71f-4634-9557-34e04fdcf047",
+            "version": 1,
+            "kind": "implementation",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423447069,
+        "inputHash": "188c2f4fe15fa5193a99491c0adba018a6b7df44cace1097f127ebe506bb3b23",
+        "before": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "output": {
+          "kind": "implementation",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "delivered": true
+      },
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 68,
+          "head": 73
+        },
+        "selected": "value",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "utf16AfterEmoji": true,
+      "pass": true
+    },
+    {
+      "scenario": "real-clangd-references",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "requestId": "c2c8a501-c029-4ab1-9b21-98d14ef7d4bf",
+            "version": 1,
+            "kind": "references",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423448143,
+        "inputHash": "5dce04c6b18d65af98286464999f3194f5bb20d9667bb5a46f3cf6e76e667700",
+        "before": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "output": {
+          "kind": "references",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 66
+                },
+                "end": {
+                  "line": 2,
+                  "character": 71
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "delivered": true
+      },
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 168,
+          "head": 168
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/real.cpp",
+        "alerts": [],
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "utf16AfterEmoji": true,
+      "pass": true
+    },
+    {
+      "scenario": "real-clangd-hover",
+      "state": {
+        "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n",
+        "selection": {
+          "anchor": 168,
+          "head": 168
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/real.cpp",
+        "alerts": [],
+        "tooltip": "instance-method value\n\n→ int\n\n// In Base\npublic: virtual int value() = 0",
+        "status": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "capabilities-none",
+      "items": [
+        {
+          "text": "转到定义",
+          "disabled": true
+        },
+        {
+          "text": "转到类型定义",
+          "disabled": true
+        },
+        {
+          "text": "转到实现",
+          "disabled": true
+        },
+        {
+          "text": "查找引用",
+          "disabled": true
+        }
+      ],
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [],
+        "status": "isolated-protocol-peer 1"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "capabilities-definition",
+      "items": [
+        {
+          "text": "转到定义",
+          "disabled": false
+        },
+        {
+          "text": "转到类型定义",
+          "disabled": true
+        },
+        {
+          "text": "转到实现",
+          "disabled": true
+        },
+        {
+          "text": "查找引用",
+          "disabled": true
+        }
+      ],
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [],
+        "status": "isolated-protocol-peer 1"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "capabilities-full",
+      "items": [
+        {
+          "text": "转到定义",
+          "disabled": false
+        },
+        {
+          "text": "转到类型定义",
+          "disabled": false
+        },
+        {
+          "text": "转到实现",
+          "disabled": false
+        },
+        {
+          "text": "查找引用",
+          "disabled": false
+        }
+      ],
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [],
+        "status": "isolated-protocol-peer 1"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "canonical-alias",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "4e6887d5-fe68-43e6-bb00-544e41ff271b",
+            "requestId": "b25d8a45-739d-44e6-85fc-d402088ccc61",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423451428,
+        "inputHash": "640ec610fea9e6598afdd9d4f6cb7c9ef2f4202d32b962441e9e5465caba0a68",
+        "before": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "target.cpp",
+              "displayPath": "target.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 4
+                },
+                "end": {
+                  "line": 0,
+                  "character": 8
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+        "delivered": true
+      },
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\n",
+        "selection": {
+          "anchor": 4,
+          "head": 8
+        },
+        "selected": "plus",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/target.cpp",
+        "alerts": [],
+        "status": "isolated-protocol-peer 1"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "fault-stall",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "56f247e1-0892-42dc-b6ab-41fa62dbf963",
+            "requestId": "9d3d4372-cd86-4c14-b235-10c0191d9686",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423452345,
+        "inputHash": "bbeaad316dafcb936ee6d8870d31b4dfb499adfa4c07500bb9d76b9ccbac87a6",
+        "error": "Error: 语言服务请求超时：textDocument/definition"
+      },
+      "elapsedMs": 5091,
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 1,
+          "head": 1
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [
+          "Error invoking remote method 'files.languageQuery': Error: 语言服务请求超时：textDocument/definition重新连接语言服务"
+        ],
+        "status": "连接失败"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "fault-crash",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "0407d630-7e06-4a82-9f54-a65571e94792",
+            "requestId": "d545c335-a7ae-45aa-a7d7-4bc4dc26769f",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423458628,
+        "inputHash": "d804e7d3b7b89f6457a0e5a996f7ad36c53dbd33a4e13fa00438883d98fe7ea7",
+        "error": "Error: Pending response rejected since connection got disposed"
+      },
+      "elapsedMs": 110,
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 1,
+          "head": 1
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [
+          "Error invoking remote method 'files.languageQuery': Error: Pending response rejected since connection got disposed重新连接语言服务"
+        ],
+        "status": "连接失败"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "fault-oversize",
+      "query": {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "5afc4a6e-70c1-4cf3-a551-2a59207bbcb7",
+            "requestId": "05ff09b1-44de-4574-8674-68e3b3161474",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423459953,
+        "inputHash": "fc733845b0796298da4eafdabc8be4fe5c3625221e7c6b05cbe51c20bf3d728f",
+        "error": "Error: Pending response rejected since connection got disposed"
+      },
+      "elapsedMs": 91,
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 1,
+          "head": 1
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [
+          "Error invoking remote method 'files.languageQuery': Error: Pending response rejected since connection got disposed重新连接语言服务"
+        ],
+        "status": "连接失败"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "initialize-utf8",
+      "elapsedMs": 601,
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 1,
+          "head": 1
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [
+          "Error invoking remote method 'files.languageOpen': Error: 语言服务未协商 UTF-16 位置编码重新连接语言服务"
+        ],
+        "status": "连接失败"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "initialize-init-stall",
+      "elapsedMs": 10494,
+      "state": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 1,
+          "head": 1
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [
+          "Error invoking remote method 'files.languageOpen': Error: 语言服务请求超时：initialize重新连接语言服务"
+        ],
+        "status": "连接失败"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "late-original-result-after-continuous-edit-and-undo",
+      "slot": {
+        "row": {
+          "method": "languageQuery",
+          "args": [
+            {
+              "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+              "requestId": "1869b6e3-70cc-40b1-8ac4-b0a12d0a8c4b",
+              "version": 1,
+              "kind": "definition",
+              "position": {
+                "line": 0,
+                "character": 1
+              }
+            }
+          ],
+          "at": 1792423472928,
+          "inputHash": "4fe70be02c0f4158cc2eefea3f0facc3ba972b781a937139e52c5e4eecc1bec6",
+          "before": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+          "output": {
+            "kind": "definition",
+            "locations": [
+              {
+                "relativePath": "target.cpp",
+                "displayPath": "target.cpp",
+                "outsideRoot": false,
+                "range": {
+                  "start": {
+                    "line": 0,
+                    "character": 4
+                  },
+                  "end": {
+                    "line": 0,
+                    "character": 8
+                  }
+                }
+              }
+            ]
+          },
+          "originalReturned": true
+        },
+        "waiting": true
+      },
+      "before": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 75,
+          "head": 75
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [],
+        "status": "isolated-protocol-peer 1"
+      },
+      "after": {
+        "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n",
+        "selection": {
+          "anchor": 75,
+          "head": 75
+        },
+        "selected": "",
+        "active": "/private/tmp/willyou-language-service-A-EePi0O/A/protocol.cpp",
+        "alerts": [],
+        "status": "isolated-protocol-peer 1"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "shutdown-stall-budget",
+      "process": {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "close-stall",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-close-stall.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 91068,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423473401,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423473588
+      },
+      "elapsedMs": 14,
+      "pass": true
+    }
+  ],
+  "status": "failed",
+  "asarSha256": "f49efd43440d0124f9758ab11902b65f39b2a5cf5f04750adb89030acbc5bf4b",
+  "boundary": "Original packaged UI, native filesystem, existing /usr/bin/clangd, and explicitly labelled deterministic stdio fault/capability peer. All configuration entered through real language-settings controls in own userData. Observer forwards original authenticated RPC and child_process.spawn, may hold a genuine query result unchanged for stale-delivery checks. No language server installation/download, fake ready/query injection, Store/editor/DOM mutation, clipboard, model, external applications or daily data. TypeScript/Python unavailable and not proved by protocol peer.",
+  "pid": 90530,
+  "failedStage": "late-original-result-across-root-file-close",
+  "error": "AssertionError [ERR_ASSERTION]: Missing or occluded actual file UI control",
+  "stack": "AssertionError [ERR_ASSERTION]: Missing or occluded actual file UI control\n    at Object.click (file:///Users/hx/hx/hxWork/SmartDD/scripts/files/file-acceptance-ui.mjs:12:1055)\n    at async file:///Users/hx/hx/hxWork/SmartDD/scripts/files/language-service-ui.mjs:35:753",
+  "state": {
+    "text": "int other_root = 13;\n",
+    "selection": {
+      "anchor": 0,
+      "head": 0
+    },
+    "selected": "",
+    "active": "/private/tmp/willyou-language-service-A-EePi0O/B/B.cpp",
+    "alerts": [],
+    "status": "isolated-protocol-peer 1"
+  },
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 language service acceptance\n设置\n首页\n›\nM9 language service acceptance\n文件\nM9 language service acceptance\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 language service acceptance\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n2\n创建时间\n10/19/2026, 11:24:03 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n2\n数据库\n0\n服务器\n0\nreal.cpp\ntarget.cpp\nB.cpp\nRoot B\n›\nB.cpp\n打开\n1\n2\nint other_root = 13;\n\n\nB · Root B\nB\nB.cpp\n0.0 KiB\nUTF-8",
+  "trace": {
+    "rows": [
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "3c1e92f2-83f3-4c31-b732-320b9f0117c5",
+            "ref": {
+              "id": "eaafba52-672d-485e-909b-f0d3172f0af6",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n"
+          }
+        ],
+        "at": 1792423444065,
+        "inputHash": "ec4744ca682c60a79d3610c0d5dd6108613ebb1276fea5a09455729ef8e08657",
+        "before": "d4a2d62d311072f5a94ab179af87342320d53a48436499b92fb08632096f69df",
+        "output": {
+          "state": "unavailable",
+          "reason": "尚未为 cpp 配置语言服务"
+        },
+        "originalReturned": true,
+        "after": "d4a2d62d311072f5a94ab179af87342320d53a48436499b92fb08632096f69df",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "6b1e3071-e633-4a51-8c77-73475c59730c",
+                "name": "Existing Apple clangd",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/usr/bin/clangd",
+                "args": [
+                  "--background-index=false",
+                  "--clang-tidy=false",
+                  "--enable-config=false"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423444768,
+        "inputHash": "4fd56e8f7de99c2874d5f14c458991454c1a5d37ff162a02f07001b8c02fa090",
+        "before": "57b5ca754c0945100aed88c150fb1cacb02b5139c5cb60aa466d9a859d69f73b",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "6b1e3071-e633-4a51-8c77-73475c59730c",
+              "name": "Existing Apple clangd",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/usr/bin/clangd",
+              "args": [
+                "--background-index=false",
+                "--clang-tidy=false",
+                "--enable-config=false"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "57b5ca754c0945100aed88c150fb1cacb02b5139c5cb60aa466d9a859d69f73b",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "3c1e92f2-83f3-4c31-b732-320b9f0117c5"
+        ],
+        "at": 1792423444769,
+        "inputHash": "f206ad7d1e4606a6544cbf5dcac009f4c704cc97b12ba5fa5ef196f8ba3018da",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "ref": {
+              "id": "eaafba52-672d-485e-909b-f0d3172f0af6",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "struct Base { virtual int value() = 0; };\nstruct Child : Base { int value() override { return 7; } };\nint main() { const char* s=\"中文🙂\"; Child c; Base* b=&c; return b->value(); }\n"
+          }
+        ],
+        "at": 1792423444769,
+        "inputHash": "1cf5cfcbc45225c45d9bf86de74fb0313a05d13ffb188501b24d9989d1488d09",
+        "before": "f571f53952ffcd8fc40a4cdbade83ba63c809777375b289105cb3648c441ce76",
+        "output": {
+          "state": "ready",
+          "id": "e0555184-1f74-4780-97da-fbae33373b34",
+          "server": "clangd Apple clangd version 21.0.0 (clang-2100.3.34.2) mac+xpc arm64-apple-darwin25.6.0",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "real.cpp"
+        },
+        "originalReturned": true,
+        "after": "f571f53952ffcd8fc40a4cdbade83ba63c809777375b289105cb3648c441ce76",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "requestId": "0fd46b6a-2273-44c3-aa2c-dbddc71f1c36",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423446037,
+        "inputHash": "d8e6af992c0a48ed74cf15885f9b1a6de974ed6b6c6d996b4c99a5e55ad0cffb",
+        "before": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "590248e37e09a5e022fa0a906a07f17fef7500dfe4b204e56a6089d20886c75e",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "requestId": "f3664501-d71f-4634-9557-34e04fdcf047",
+            "version": 1,
+            "kind": "implementation",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423447069,
+        "inputHash": "188c2f4fe15fa5193a99491c0adba018a6b7df44cace1097f127ebe506bb3b23",
+        "before": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "output": {
+          "kind": "implementation",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "d06563c7d0585aebfb86ded3619a762bced603d11c86be1f4e053a5a77d43775",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "requestId": "c2c8a501-c029-4ab1-9b21-98d14ef7d4bf",
+            "version": 1,
+            "kind": "references",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423448143,
+        "inputHash": "5dce04c6b18d65af98286464999f3194f5bb20d9667bb5a46f3cf6e76e667700",
+        "before": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "output": {
+          "kind": "references",
+          "locations": [
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 26
+                },
+                "end": {
+                  "line": 0,
+                  "character": 31
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 66
+                },
+                "end": {
+                  "line": 2,
+                  "character": 71
+                }
+              }
+            },
+            {
+              "relativePath": "real.cpp",
+              "displayPath": "real.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 26
+                },
+                "end": {
+                  "line": 1,
+                  "character": 31
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "9cec20babf735fa42d185227a29ef12e4d6ff25d1f0ee507f81c0ec74b36c870",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "e0555184-1f74-4780-97da-fbae33373b34",
+            "requestId": "329ddbe7-be44-4b83-8b04-73ec7072f1a1",
+            "version": 1,
+            "kind": "hover",
+            "position": {
+              "line": 2,
+              "character": 66
+            }
+          }
+        ],
+        "at": 1792423449127,
+        "inputHash": "972dfaed07fea909c0ce4ccd3957cba33a9bca3140ad5f2a339020f7b8266f86",
+        "before": "2f7d2036edd2e796855f6f8dcb56338df8cc67d26c21806b9743ccd8a066cbfb",
+        "output": {
+          "kind": "hover",
+          "text": "instance-method value\n\n→ int\n\n// In Base\npublic: virtual int value() = 0",
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 66
+            },
+            "end": {
+              "line": 2,
+              "character": 71
+            }
+          }
+        },
+        "originalReturned": true,
+        "after": "2f7d2036edd2e796855f6f8dcb56338df8cc67d26c21806b9743ccd8a066cbfb",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "e0555184-1f74-4780-97da-fbae33373b34"
+        ],
+        "at": 1792423449214,
+        "inputHash": "161efa4d0c5921acac4cc012aca7d90d0985f4382e416ded8e6bdde77578558a",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "5b11988d-7b9a-4b02-92ac-78079ef8c466",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423449248,
+        "inputHash": "f907765797a9f844a1ff83e793b64197aaabb891ae05fcfeef756d4420cb81f4",
+        "error": "Error: Pending response rejected since connection got disposed"
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "8eea5f1c-3949-44e7-a56c-deb804400724",
+                "name": "Isolated protocol peer none",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "none",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-none.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423449652,
+        "inputHash": "17311695a72dbd3e9e02aa4250dc5d971c6c4cf0cf4e5b1071eccf3452afb7e3",
+        "before": "03007fd7b8bbbcf8aaf0abd2db4e4584a55fde00b502fb90b2545918cc8ec4d0",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "8eea5f1c-3949-44e7-a56c-deb804400724",
+              "name": "Isolated protocol peer none",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "none",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-none.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "03007fd7b8bbbcf8aaf0abd2db4e4584a55fde00b502fb90b2545918cc8ec4d0",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "5b11988d-7b9a-4b02-92ac-78079ef8c466"
+        ],
+        "at": 1792423449654,
+        "inputHash": "d9a5aaca48b1e52bed4e691b5c2473a6e0d70bd3fadaa26bc16f0921b2c42d3a",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "6ff2c778-641b-48a6-8088-37b8e1aec65a",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423449654,
+        "inputHash": "8463c68eb01f3f51c5b7f0628874e10df7df1a674039e5bf5672bbe3aae753f8",
+        "before": "802ee8b6bcf74cd13e7477e06da07552fa89c44afe02d328acdfec378de40564",
+        "output": {
+          "state": "ready",
+          "id": "6ff2c778-641b-48a6-8088-37b8e1aec65a",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": false,
+            "locationKinds": []
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "802ee8b6bcf74cd13e7477e06da07552fa89c44afe02d328acdfec378de40564",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "61acb148-6b3a-4462-91a6-b262d593ce0f",
+                "name": "Isolated protocol peer definition",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "definition",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-definition.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423450267,
+        "inputHash": "ea011c58dbfc53c6ed72d9c4d39c9035e622e690262a774ac98e3e81c16d7742",
+        "before": "4d2bcf2faabdd246a3075738947211fb70daa725ab96355c4d21166be61642ac",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "61acb148-6b3a-4462-91a6-b262d593ce0f",
+              "name": "Isolated protocol peer definition",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "definition",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-definition.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "4d2bcf2faabdd246a3075738947211fb70daa725ab96355c4d21166be61642ac",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "6ff2c778-641b-48a6-8088-37b8e1aec65a"
+        ],
+        "at": 1792423450274,
+        "inputHash": "de2fe67fb7c41c6b12c5244a089fafbf1c7dba9636d74466967fa2d4ba245643",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "58541060-bb8d-4720-8d00-8e2746953041",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423450274,
+        "inputHash": "80adf9fddcf985e00f60ff019b1fc2561fbfbb7b59fc6569a061154dc9a58890",
+        "before": "074d58a15292cfbe681b1b2a6ccb4050e6dda426456cc665a8b16864facacfec",
+        "output": {
+          "state": "ready",
+          "id": "58541060-bb8d-4720-8d00-8e2746953041",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": false,
+            "locationKinds": [
+              "definition"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "074d58a15292cfbe681b1b2a6ccb4050e6dda426456cc665a8b16864facacfec",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "96e87c30-6909-48e3-a12b-433b72ef68f1",
+                "name": "Isolated protocol peer full",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "full",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423451025,
+        "inputHash": "b8ee9cef66eda405a0625e5e21f019863c21d177a7192165432da17ab4defa41",
+        "before": "73f6fbdb98ab0507968d6b661de04c76ebad13a096e1b009fa8a3ee74fcceab1",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "96e87c30-6909-48e3-a12b-433b72ef68f1",
+              "name": "Isolated protocol peer full",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "full",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "73f6fbdb98ab0507968d6b661de04c76ebad13a096e1b009fa8a3ee74fcceab1",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "58541060-bb8d-4720-8d00-8e2746953041"
+        ],
+        "at": 1792423451029,
+        "inputHash": "c88256e3b5e7f448ef48ac32c3e582e35717c90fc612e84fd2a6b2cf57fde232",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "4e6887d5-fe68-43e6-bb00-544e41ff271b",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423451029,
+        "inputHash": "7b8b5095477296fbffb41e729481bec5b238c3615ab95d762cbba5fcb9422aab",
+        "before": "9638c9e86c1c866f7f5875e080e0e7b2543bdd5af924619a72c5b7326495f2be",
+        "output": {
+          "state": "ready",
+          "id": "4e6887d5-fe68-43e6-bb00-544e41ff271b",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "9638c9e86c1c866f7f5875e080e0e7b2543bdd5af924619a72c5b7326495f2be",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "4e6887d5-fe68-43e6-bb00-544e41ff271b",
+            "requestId": "b25d8a45-739d-44e6-85fc-d402088ccc61",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423451428,
+        "inputHash": "640ec610fea9e6598afdd9d4f6cb7c9ef2f4202d32b962441e9e5465caba0a68",
+        "before": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "target.cpp",
+              "displayPath": "target.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 4
+                },
+                "end": {
+                  "line": 0,
+                  "character": 8
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "4e6887d5-fe68-43e6-bb00-544e41ff271b"
+        ],
+        "at": 1792423451442,
+        "inputHash": "5248fe13d17aa855b039e93817d2e3af2e8ff744fe42ff3908b4954d6764fd05",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "3954f1dd-c3f1-4400-a40c-bf315a66fb3c",
+            "ref": {
+              "id": "b7720c41-8c55-459f-b002-bba8f1d3963f",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\n"
+          }
+        ],
+        "at": 1792423451484,
+        "inputHash": "afcd693407a367a71d61c1b735b2e098fd1684cefe51f2a8847ec2e9410c7fd1",
+        "before": "30430e6cac8862db6b5e6e7473f1264a6541aae125a64815ccc6ec2a36b04e12",
+        "output": {
+          "state": "ready",
+          "id": "3954f1dd-c3f1-4400-a40c-bf315a66fb3c",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "target.cpp"
+        },
+        "originalReturned": true,
+        "after": "30430e6cac8862db6b5e6e7473f1264a6541aae125a64815ccc6ec2a36b04e12",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "3954f1dd-c3f1-4400-a40c-bf315a66fb3c"
+        ],
+        "at": 1792423451584,
+        "inputHash": "77720b52c14c870ea84de879140df4056b79460caca106a56f9b3fdf7eaf4190",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "e0cf89ab-d204-495b-bf9d-4143c75f10dc",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423451586,
+        "inputHash": "8084f57163d324ef0b8614a5916f53b470caa64e9b11149b03fa87181093896c",
+        "before": "a8c5bae05aa4866993fc70561e0ae09c6cb3c9d6eea869491cb8098b5c503a21",
+        "output": {
+          "state": "ready",
+          "id": "e0cf89ab-d204-495b-bf9d-4143c75f10dc",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "a8c5bae05aa4866993fc70561e0ae09c6cb3c9d6eea869491cb8098b5c503a21",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "ff53cc13-f91f-4101-9072-83fe6312b696",
+                "name": "Isolated protocol peer stall",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "stall",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-stall.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423452042,
+        "inputHash": "8086e3a6ef4f6cc1601402c7cf3a98b5fe3dc59568907f02c2cde6df15d5e6c2",
+        "before": "79cd671fdf858a9d578f0ff8d373084832c757f0d8bc78ff095f39e125538eb1",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "ff53cc13-f91f-4101-9072-83fe6312b696",
+              "name": "Isolated protocol peer stall",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "stall",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-stall.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "79cd671fdf858a9d578f0ff8d373084832c757f0d8bc78ff095f39e125538eb1",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "e0cf89ab-d204-495b-bf9d-4143c75f10dc"
+        ],
+        "at": 1792423452046,
+        "inputHash": "6f414bf798988221c0a69bfdd896d508c7b19aef5b09c4f1aebb231d326636d1",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "56f247e1-0892-42dc-b6ab-41fa62dbf963",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423452046,
+        "inputHash": "366bcbb032b827440ef91a92081d349bc526f50e9b1d4596143f671fca627381",
+        "before": "d75b6098632071c9fac677e5d28b17c61f932a0a1a52de2b36409835761f3ce4",
+        "output": {
+          "state": "ready",
+          "id": "56f247e1-0892-42dc-b6ab-41fa62dbf963",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "d75b6098632071c9fac677e5d28b17c61f932a0a1a52de2b36409835761f3ce4",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "56f247e1-0892-42dc-b6ab-41fa62dbf963",
+            "requestId": "9d3d4372-cd86-4c14-b235-10c0191d9686",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423452345,
+        "inputHash": "bbeaad316dafcb936ee6d8870d31b4dfb499adfa4c07500bb9d76b9ccbac87a6",
+        "error": "Error: 语言服务请求超时：textDocument/definition"
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "3b960e75-6cd3-4aa2-b52f-d0fd642837cd",
+                "name": "Isolated protocol peer full",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "full",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423457700,
+        "inputHash": "92d6291233b219bcfa87e963c79d5e856e0b6c0cd0aa658e85fe8ab23275dbb2",
+        "before": "b4bfec6c66a50f46ea9dd23289056eda5c10e8fe6b3f9f0032885f1eeb6da184",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "3b960e75-6cd3-4aa2-b52f-d0fd642837cd",
+              "name": "Isolated protocol peer full",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "full",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "b4bfec6c66a50f46ea9dd23289056eda5c10e8fe6b3f9f0032885f1eeb6da184",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "56f247e1-0892-42dc-b6ab-41fa62dbf963"
+        ],
+        "at": 1792423457706,
+        "inputHash": "2e9cc7a418074421421d61ad7d25ab0e12cc9de970e5f4199ec15478bcdffc27",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "f810582b-72f5-4e12-888f-61ebf86f3eec",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423457706,
+        "inputHash": "e962285285d2aa49f68840381759bea70b7f976956ee60c096659382f11a300b",
+        "before": "7636fd30de5cb2d2c0a9bdf2698782e29be089826d59dbc006aff5a6461677d1",
+        "output": {
+          "state": "ready",
+          "id": "f810582b-72f5-4e12-888f-61ebf86f3eec",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "7636fd30de5cb2d2c0a9bdf2698782e29be089826d59dbc006aff5a6461677d1",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "546508d4-7001-4483-82aa-43e4f2fe2b93",
+                "name": "Isolated protocol peer crash",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "crash",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-crash.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423458325,
+        "inputHash": "3627afb7fd37859807d77cec1730aad19759c7d0eb5c45a966d1b104b56e95a3",
+        "before": "d599b3701eda1b1cfc0d885164da55f9b8651d6c2804c11e8a0974851331c011",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "546508d4-7001-4483-82aa-43e4f2fe2b93",
+              "name": "Isolated protocol peer crash",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "crash",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-crash.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "d599b3701eda1b1cfc0d885164da55f9b8651d6c2804c11e8a0974851331c011",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "f810582b-72f5-4e12-888f-61ebf86f3eec"
+        ],
+        "at": 1792423458334,
+        "inputHash": "968628e6b01eb932a0ac1290154ad25aee67dc593981d44148056c2c68cfe0d5",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "0407d630-7e06-4a82-9f54-a65571e94792",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423458334,
+        "inputHash": "757eeca927e0cd8fa5473b479c7dfc5162f7958774a7b5761b24f57aeb8f7fc9",
+        "before": "1dd8b678ce8c394e7fe0ff5968ba5fb5ca1331743096bb59def3792348d9d4a4",
+        "output": {
+          "state": "ready",
+          "id": "0407d630-7e06-4a82-9f54-a65571e94792",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "1dd8b678ce8c394e7fe0ff5968ba5fb5ca1331743096bb59def3792348d9d4a4",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "0407d630-7e06-4a82-9f54-a65571e94792",
+            "requestId": "d545c335-a7ae-45aa-a7d7-4bc4dc26769f",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423458628,
+        "inputHash": "d804e7d3b7b89f6457a0e5a996f7ad36c53dbd33a4e13fa00438883d98fe7ea7",
+        "error": "Error: Pending response rejected since connection got disposed"
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "1d55b5b2-4d3d-44e4-acd2-d612a9a89209",
+                "name": "Isolated protocol peer full",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "full",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423459025,
+        "inputHash": "02c6fb48c95550758261ad4308d8c0ae7235a3ee241e5dc4576e2658828e178f",
+        "before": "1f2fb9cc70fa58802979513974902991c066810ef6546e843f2ae6e4dfe416ba",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "1d55b5b2-4d3d-44e4-acd2-d612a9a89209",
+              "name": "Isolated protocol peer full",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "full",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "1f2fb9cc70fa58802979513974902991c066810ef6546e843f2ae6e4dfe416ba",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "0407d630-7e06-4a82-9f54-a65571e94792"
+        ],
+        "at": 1792423459026,
+        "inputHash": "879d27f1081985ca63d76e2482150567a35db21110108176ee5cf1001f98931c",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "80135bf4-b2ec-413e-9259-27453134d67d",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423459026,
+        "inputHash": "4be7ff7713d2fcd46286fe0ee6bf3f603edf11b9f42af60ebd357af5ec12b491",
+        "before": "479ba754376203c1bbe3a225eeaeb8ddfd29da82942de54057a313e00708278e",
+        "output": {
+          "state": "ready",
+          "id": "80135bf4-b2ec-413e-9259-27453134d67d",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "479ba754376203c1bbe3a225eeaeb8ddfd29da82942de54057a313e00708278e",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "759683cd-3a8b-452d-81f9-d8a27d0ff72f",
+                "name": "Isolated protocol peer oversize",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "oversize",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-oversize.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423459650,
+        "inputHash": "f0bb75f56f1512947f8d47e738d6e7a1ff9f7dbf41c6ad95bdc938eb04e989e0",
+        "before": "95d64f858266dc9e5ee1541fd892f182e1773bd13deda6d31a6ec90daa56b35f",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "759683cd-3a8b-452d-81f9-d8a27d0ff72f",
+              "name": "Isolated protocol peer oversize",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "oversize",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-oversize.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "95d64f858266dc9e5ee1541fd892f182e1773bd13deda6d31a6ec90daa56b35f",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "80135bf4-b2ec-413e-9259-27453134d67d"
+        ],
+        "at": 1792423459654,
+        "inputHash": "0c8a044c1171a1b04e85ec5ba93a06a43eda823ea2f7180356146c25e8805595",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "5afc4a6e-70c1-4cf3-a551-2a59207bbcb7",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423459654,
+        "inputHash": "24a060c343259d2f57245435796244dc40961a5dd8f65bc2e406406ceca08f35",
+        "before": "a5e843b23fa82e3c4adf14f96292892f3fe60d6c69d30482de3bc985dee0e20f",
+        "output": {
+          "state": "ready",
+          "id": "5afc4a6e-70c1-4cf3-a551-2a59207bbcb7",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "a5e843b23fa82e3c4adf14f96292892f3fe60d6c69d30482de3bc985dee0e20f",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "5afc4a6e-70c1-4cf3-a551-2a59207bbcb7",
+            "requestId": "05ff09b1-44de-4574-8674-68e3b3161474",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423459953,
+        "inputHash": "fc733845b0796298da4eafdabc8be4fe5c3625221e7c6b05cbe51c20bf3d728f",
+        "error": "Error: Pending response rejected since connection got disposed"
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "97d6efa8-6bd4-4838-81d0-01f20b700696",
+                "name": "Isolated protocol peer full",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "full",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423460326,
+        "inputHash": "c8ed4f61fdbd118440a9b06209c0ee629c075b3f81da66075d4673556435b334",
+        "before": "f72f19fea386e6f9f75a818423cf246dc6db4c36b1abb6db1b93fcc5c19644f9",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "97d6efa8-6bd4-4838-81d0-01f20b700696",
+              "name": "Isolated protocol peer full",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "full",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "f72f19fea386e6f9f75a818423cf246dc6db4c36b1abb6db1b93fcc5c19644f9",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "5afc4a6e-70c1-4cf3-a551-2a59207bbcb7"
+        ],
+        "at": 1792423460326,
+        "inputHash": "594df871487c62a8973c08a16954c2c62118f977c18ad64718437a9284e8cc6e",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "9035a70a-11d4-47ad-84e4-f1bb6677979f",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423460326,
+        "inputHash": "cdc20154d91711bac9232538641cd59753f47de1c7d7643932a421813eb17d24",
+        "before": "c8d73d9942f79a748bdcd0585a6b34309c6e3f5407eb3c5d57cf80aecc51ea34",
+        "output": {
+          "state": "ready",
+          "id": "9035a70a-11d4-47ad-84e4-f1bb6677979f",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "c8d73d9942f79a748bdcd0585a6b34309c6e3f5407eb3c5d57cf80aecc51ea34",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "e2aa7ba6-83ec-4eb5-b813-e75818fe23af",
+                "name": "Isolated protocol peer utf8",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "utf8",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-utf8.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423460924,
+        "inputHash": "578515626c8f8c97896083a3b00aa8df1d0249b06477a3ce5401d8e1c3d2649b",
+        "before": "85c511f4635828195074e7b6f7dfe1a2fd5c730668116c495b121b0b41ffa3ad",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "e2aa7ba6-83ec-4eb5-b813-e75818fe23af",
+              "name": "Isolated protocol peer utf8",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "utf8",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-utf8.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "85c511f4635828195074e7b6f7dfe1a2fd5c730668116c495b121b0b41ffa3ad",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "9035a70a-11d4-47ad-84e4-f1bb6677979f"
+        ],
+        "at": 1792423460929,
+        "inputHash": "cf6dbec63eb9b72df156cd70dd02316a0742002ec3805b6236d8ebb559411588",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "10581faf-b7a2-4728-991c-ffb95c7a5d1e",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423460929,
+        "inputHash": "99ffe27f18d916deaf96c9f03d3f8990e9c9bbc48b9ef5e826e9a30901c37365",
+        "error": "Error: 语言服务未协商 UTF-16 位置编码"
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "c85a23b4-5a52-4fea-9e03-786e7e7a741b",
+                "name": "Isolated protocol peer full",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "full",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423461442,
+        "inputHash": "6e1255ccc59b9e744e5f49dfaa9404f43d11ec27dbfd18fe509ea0c4e2a75e9c",
+        "before": "eab91367c900601c88b4d43974e780f0e2ada0d7df79071dce75f500e88dc1ba",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "c85a23b4-5a52-4fea-9e03-786e7e7a741b",
+              "name": "Isolated protocol peer full",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "full",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "eab91367c900601c88b4d43974e780f0e2ada0d7df79071dce75f500e88dc1ba",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "10581faf-b7a2-4728-991c-ffb95c7a5d1e"
+        ],
+        "at": 1792423461444,
+        "inputHash": "99e455c9a2fc0b027826f5dc006fb516c0d37d6689ed2749435effbba961ac38",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "1e1398f9-8a88-4a6a-8d29-bd7b4ad99485",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423461444,
+        "inputHash": "bf43626c601d3d5c2a686a6225d6aef44cd326309600692d73b6d8cd0c3c70f9",
+        "before": "b3cb659c8a1d6ad071766b8d4dad4f0c9d56ea9f82533146246da510fd8962a9",
+        "output": {
+          "state": "ready",
+          "id": "1e1398f9-8a88-4a6a-8d29-bd7b4ad99485",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "b3cb659c8a1d6ad071766b8d4dad4f0c9d56ea9f82533146246da510fd8962a9",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "a6f0bb04-8e43-43d4-aabe-eea31d655344",
+                "name": "Isolated protocol peer init-stall",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "init-stall",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-init-stall.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423462084,
+        "inputHash": "9964c52d831cd0f7d0748eca52ba3dfcee53c0ea62c266d6aecb52625c4bf1e0",
+        "before": "24a8226d9c15545499893b0a30ef037276b7a27d2a60463c106e8b8b6d8eafc0",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "a6f0bb04-8e43-43d4-aabe-eea31d655344",
+              "name": "Isolated protocol peer init-stall",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "init-stall",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-init-stall.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "24a8226d9c15545499893b0a30ef037276b7a27d2a60463c106e8b8b6d8eafc0",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "1e1398f9-8a88-4a6a-8d29-bd7b4ad99485"
+        ],
+        "at": 1792423462089,
+        "inputHash": "14d644ddaf98252815fd5c7139e7fa2e9ba6f3bd76395610e720e3c35f3899f0",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "1e34a21d-965c-48d5-a7ef-59d68083ea99",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423462089,
+        "inputHash": "86efed78b70e1f588f1ebea5d3897628610ce35e8bd4d5b3cb12b6fc0b2c1389",
+        "error": "Error: 语言服务请求超时：initialize"
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "a42fc024-3bbd-4c30-94bd-a93f74a14620",
+                "name": "Isolated protocol peer full",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "full",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423472459,
+        "inputHash": "c9f9c670e9a654a3d8a3d9a41f7d6823223719b559de031ab238f7509f1d9ff4",
+        "before": "4ce90bca6ff8d10ffb151d407930b505126eff0a98a87940fdbf01eec8dd86e7",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "a42fc024-3bbd-4c30-94bd-a93f74a14620",
+              "name": "Isolated protocol peer full",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "full",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "4ce90bca6ff8d10ffb151d407930b505126eff0a98a87940fdbf01eec8dd86e7",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "1e34a21d-965c-48d5-a7ef-59d68083ea99"
+        ],
+        "at": 1792423472460,
+        "inputHash": "da1c18d17a5721744ceef841905460ab58fe375d070ab34c9bef04ec502e0f08",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423472460,
+        "inputHash": "3f48913cf5f1b9b27f9ebb9cf997190e502f4fb0bdee9b5beb093ea888258af3",
+        "before": "f94024302f8ea8e656968f5c938046a3000e85f622416a6d0b9ef29935097c74",
+        "output": {
+          "state": "ready",
+          "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "f94024302f8ea8e656968f5c938046a3000e85f622416a6d0b9ef29935097c74",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+            "requestId": "1869b6e3-70cc-40b1-8ac4-b0a12d0a8c4b",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423472928,
+        "inputHash": "4fe70be02c0f4158cc2eefea3f0facc3ba972b781a937139e52c5e4eecc1bec6",
+        "before": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "target.cpp",
+              "displayPath": "target.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 4
+                },
+                "end": {
+                  "line": 0,
+                  "character": 8
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+        "delivered": true
+      },
+      {
+        "method": "languageCancel",
+        "args": [
+          "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+          "1869b6e3-70cc-40b1-8ac4-b0a12d0a8c4b"
+        ],
+        "at": 1792423473001,
+        "inputHash": "5e91f0a229d816f0028babca166409bbd2f12780b5f10ad7dcf20bb613f9cf91",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageChange",
+        "args": [
+          {
+            "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+            "version": 2,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\nA"
+          }
+        ],
+        "at": 1792423473003,
+        "inputHash": "753368136978361562f7af22b331064e14c57bc92ced6fceba0a0d6c63f2d1bf",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageChange",
+        "args": [
+          {
+            "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+            "version": 3,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\nAB"
+          }
+        ],
+        "at": 1792423473016,
+        "inputHash": "58b17778594e9f142c25819eb3689fa8582d992a50cd052d919d7c188738ef74",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageChange",
+        "args": [
+          {
+            "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+            "version": 4,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423473024,
+        "inputHash": "d420345eac890c316222a2e8f3295186e005311b6a610e8641cfef3013679f99",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "ce9b6a03-49a3-42d1-b0cb-f7aceb68e41c",
+                "name": "Isolated protocol peer close-stall",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "close-stall",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-close-stall.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423473366,
+        "inputHash": "4e9a1a4d0b5e5fb11dcc24661be7eaaa67b5e6c0e15a335647ad39ab4a07085c",
+        "before": "44dfe7d2c9473092dbc9d5dba3c9cb7ab85cf853ab256cdd499bc9f2abbfca70",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "ce9b6a03-49a3-42d1-b0cb-f7aceb68e41c",
+              "name": "Isolated protocol peer close-stall",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "close-stall",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-close-stall.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "44dfe7d2c9473092dbc9d5dba3c9cb7ab85cf853ab256cdd499bc9f2abbfca70",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "ceeac90f-0829-4585-8fcb-78a9d40ebe4a"
+        ],
+        "at": 1792423473370,
+        "inputHash": "cd7169c7cfb6607cbf33d01708d855ee53ae55da9549d70d98abe64103b88247",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "829a763d-71ed-4f0b-9349-8d6a4cec78ae",
+            "ref": {
+              "id": "1b4058c0-f334-4098-8681-aa64d5817fd3",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423473370,
+        "inputHash": "4bd33287089f4ce4ce67a4ca4ae4b43f1bcd5ee8854aa80b5cb7652edca7ab1f",
+        "before": "1099b0144f7cb0b19eb957ab598cf6bbb959317f76c40eeee974ba0358fa2058",
+        "output": {
+          "state": "ready",
+          "id": "829a763d-71ed-4f0b-9349-8d6a4cec78ae",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "1099b0144f7cb0b19eb957ab598cf6bbb959317f76c40eeee974ba0358fa2058",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "829a763d-71ed-4f0b-9349-8d6a4cec78ae"
+        ],
+        "at": 1792423473589,
+        "inputHash": "b812f108ed8fbca18e839e7773a0b3e1a6511ea5e20ae81057ddab4e1de725ff",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "d5185b94-b15f-4f01-b07e-f00cbfc234f5",
+            "ref": {
+              "id": "b7720c41-8c55-459f-b002-bba8f1d3963f",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\n"
+          }
+        ],
+        "at": 1792423473590,
+        "inputHash": "01440c2a239621bff0b90ba753f366625e8328a13e6a2809f106e6afab1a6ef5",
+        "before": "f1a01126ce40c63d9f221a70539cff2134ca1f2840a53c269eb505a3d8bcbcbd",
+        "output": {
+          "state": "ready",
+          "id": "d5185b94-b15f-4f01-b07e-f00cbfc234f5",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "target.cpp"
+        },
+        "originalReturned": true,
+        "after": "f1a01126ce40c63d9f221a70539cff2134ca1f2840a53c269eb505a3d8bcbcbd",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "d5185b94-b15f-4f01-b07e-f00cbfc234f5"
+        ],
+        "at": 1792423473719,
+        "inputHash": "2dce0fd334006490dd3b4e186558ed915975dbd6d03ca1f63cbc58b81f428fd1",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "11760459-8175-4e1f-94cd-52f755df55fa",
+            "ref": {
+              "id": "d41a272a-00e0-4478-a574-df61bfa069fc",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423473775,
+        "inputHash": "3961d27f620dda92f506719d5664999281a968ac6c2593bc843b7499239fc2cc",
+        "before": "95c9b0e97083237d2b59fb12e7cf6f597345f5514ab94701552d8c28136dd339",
+        "output": {
+          "state": "ready",
+          "id": "11760459-8175-4e1f-94cd-52f755df55fa",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "95c9b0e97083237d2b59fb12e7cf6f597345f5514ab94701552d8c28136dd339",
+        "delivered": true
+      },
+      {
+        "method": "configureLanguages",
+        "args": [
+          {
+            "enabled": true,
+            "servers": [
+              {
+                "id": "5f7bb777-6f37-49ee-8a81-2cff5dc070e8",
+                "name": "Isolated protocol peer full",
+                "enabled": true,
+                "languages": [
+                  "cpp"
+                ],
+                "projectId": null,
+                "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+                "args": [
+                  "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                  "full",
+                  "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                  "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+                ]
+              }
+            ]
+          }
+        ],
+        "at": 1792423474142,
+        "inputHash": "d75cdc2128ca73ee53bcc623cece7f03e67a84976ecb6daea470c7116fec8f41",
+        "before": "8ab280c6320ab4b28818abef802fcc35e4432d3028e9e8943ee3579eb242c429",
+        "output": {
+          "enabled": true,
+          "servers": [
+            {
+              "id": "5f7bb777-6f37-49ee-8a81-2cff5dc070e8",
+              "name": "Isolated protocol peer full",
+              "enabled": true,
+              "languages": [
+                "cpp"
+              ],
+              "projectId": null,
+              "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+              "args": [
+                "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+                "full",
+                "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+                "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+              ]
+            }
+          ]
+        },
+        "originalReturned": true,
+        "after": "8ab280c6320ab4b28818abef802fcc35e4432d3028e9e8943ee3579eb242c429",
+        "delivered": true
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "11760459-8175-4e1f-94cd-52f755df55fa"
+        ],
+        "at": 1792423474146,
+        "inputHash": "1b30385b1c2a2d389fea245056406290d6b7cdd9f8945941782c6b4b9248cf34",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "687782ad-162f-4a4f-a8f8-57d5f4393e60",
+            "ref": {
+              "id": "d41a272a-00e0-4478-a574-df61bfa069fc",
+              "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int plus(int a, int b) { return a + b; }\nint main() { return plus(1, 2); }\n"
+          }
+        ],
+        "at": 1792423474146,
+        "inputHash": "e4a55c5a860bd7e6c29382c784ec2753229ae4cf34b846aea7e34a07a6ea7e78",
+        "before": "cedb45effcc3cd2d87899fbcbc047bb93868a5bb19df7fc834734b174e5e6ff2",
+        "output": {
+          "state": "ready",
+          "id": "687782ad-162f-4a4f-a8f8-57d5f4393e60",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "783a5fdd-4784-4e02-8749-b60e302acf9b",
+            "generation": 1
+          },
+          "relativePath": "protocol.cpp"
+        },
+        "originalReturned": true,
+        "after": "cedb45effcc3cd2d87899fbcbc047bb93868a5bb19df7fc834734b174e5e6ff2",
+        "delivered": true
+      },
+      {
+        "method": "languageQuery",
+        "args": [
+          {
+            "id": "687782ad-162f-4a4f-a8f8-57d5f4393e60",
+            "requestId": "d8276c18-982d-46ce-b6f5-3ad4e1c86b69",
+            "version": 1,
+            "kind": "definition",
+            "position": {
+              "line": 0,
+              "character": 1
+            }
+          }
+        ],
+        "at": 1792423474453,
+        "inputHash": "17841ad35355a9318e3c6239c59ef12ffe7d52f4cad0f3ca71d1e640ea45d124",
+        "before": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+        "output": {
+          "kind": "definition",
+          "locations": [
+            {
+              "relativePath": "target.cpp",
+              "displayPath": "target.cpp",
+              "outsideRoot": false,
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 4
+                },
+                "end": {
+                  "line": 0,
+                  "character": 8
+                }
+              }
+            }
+          ]
+        },
+        "originalReturned": true
+      },
+      {
+        "method": "languageCancel",
+        "args": [
+          "687782ad-162f-4a4f-a8f8-57d5f4393e60",
+          "d8276c18-982d-46ce-b6f5-3ad4e1c86b69"
+        ],
+        "at": 1792423474646,
+        "inputHash": "884a6e248512702eec47e6439c082585bd8325c2d729b946eae612fa7fd84ecd",
+        "error": "Error: 语言服务文档已关闭或不属于当前窗口"
+      },
+      {
+        "method": "languageClose",
+        "args": [
+          "687782ad-162f-4a4f-a8f8-57d5f4393e60"
+        ],
+        "at": 1792423474647,
+        "inputHash": "85eafd46a31f2f207b44d033a53a7143ce9504fd169638bd8de2f92d79916e67",
+        "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "originalReturned": true,
+        "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+        "delivered": true
+      },
+      {
+        "method": "languageOpen",
+        "args": [
+          {
+            "id": "ff2ac87e-485a-4bd7-b068-9b21bef79588",
+            "ref": {
+              "id": "7b388fb5-cef1-438d-930b-96d86fb17cbf",
+              "lease": "85ce2bf8-1a7e-4038-8e34-e2b2a8ff7e88",
+              "generation": 1
+            },
+            "version": 1,
+            "text": "int other_root = 13;\n"
+          }
+        ],
+        "at": 1792423474684,
+        "inputHash": "8db4fc96aeb25f2bc33d5fb7f198043f04e42eb60319ecd152e90ad2b6205916",
+        "before": "782197fe6f399c7e1b28c1a1393bf085f36e58720a97fde43076b2331607224f",
+        "output": {
+          "state": "ready",
+          "id": "ff2ac87e-485a-4bd7-b068-9b21bef79588",
+          "server": "isolated-protocol-peer 1",
+          "positionEncoding": "utf-16",
+          "capabilities": {
+            "hover": true,
+            "locationKinds": [
+              "definition",
+              "typeDefinition",
+              "implementation",
+              "references"
+            ]
+          },
+          "root": {
+            "lease": "85ce2bf8-1a7e-4038-8e34-e2b2a8ff7e88",
+            "generation": 1
+          },
+          "relativePath": "B.cpp"
+        },
+        "originalReturned": true,
+        "after": "782197fe6f399c7e1b28c1a1393bf085f36e58720a97fde43076b2331607224f",
+        "delivered": true
+      }
+    ],
+    "slots": [
+      {
+        "row": {
+          "method": "languageQuery",
+          "args": [
+            {
+              "id": "ceeac90f-0829-4585-8fcb-78a9d40ebe4a",
+              "requestId": "1869b6e3-70cc-40b1-8ac4-b0a12d0a8c4b",
+              "version": 1,
+              "kind": "definition",
+              "position": {
+                "line": 0,
+                "character": 1
+              }
+            }
+          ],
+          "at": 1792423472928,
+          "inputHash": "4fe70be02c0f4158cc2eefea3f0facc3ba972b781a937139e52c5e4eecc1bec6",
+          "before": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+          "output": {
+            "kind": "definition",
+            "locations": [
+              {
+                "relativePath": "target.cpp",
+                "displayPath": "target.cpp",
+                "outsideRoot": false,
+                "range": {
+                  "start": {
+                    "line": 0,
+                    "character": 4
+                  },
+                  "end": {
+                    "line": 0,
+                    "character": 8
+                  }
+                }
+              }
+            ]
+          },
+          "originalReturned": true,
+          "after": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+          "delivered": true
+        },
+        "waiting": false
+      },
+      {
+        "row": {
+          "method": "languageQuery",
+          "args": [
+            {
+              "id": "687782ad-162f-4a4f-a8f8-57d5f4393e60",
+              "requestId": "d8276c18-982d-46ce-b6f5-3ad4e1c86b69",
+              "version": 1,
+              "kind": "definition",
+              "position": {
+                "line": 0,
+                "character": 1
+              }
+            }
+          ],
+          "at": 1792423474453,
+          "inputHash": "17841ad35355a9318e3c6239c59ef12ffe7d52f4cad0f3ca71d1e640ea45d124",
+          "before": "e952539a1ac96e861418adbf4b4a704a320799b112c2c2e131163d0655e3c280",
+          "output": {
+            "kind": "definition",
+            "locations": [
+              {
+                "relativePath": "target.cpp",
+                "displayPath": "target.cpp",
+                "outsideRoot": false,
+                "range": {
+                  "start": {
+                    "line": 0,
+                    "character": 4
+                  },
+                  "end": {
+                    "line": 0,
+                    "character": 8
+                  }
+                }
+              }
+            ]
+          },
+          "originalReturned": true
+        },
+        "waiting": true
+      }
+    ],
+    "processes": [
+      {
+        "command": "/usr/bin/clangd",
+        "args": [
+          "--background-index=false",
+          "--clang-tidy=false",
+          "--enable-config=false"
+        ],
+        "pid": 90607,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423444810,
+        "exited": true,
+        "code": 0,
+        "signal": null,
+        "exitAt": 1792423449222
+      },
+      {
+        "command": "/usr/bin/clangd",
+        "args": [
+          "--background-index=false",
+          "--clang-tidy=false",
+          "--enable-config=false"
+        ],
+        "pid": 90701,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423449290,
+        "exited": true,
+        "code": null,
+        "signal": "SIGKILL",
+        "exitAt": 1792423449655
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "none",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-none.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90716,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423449697,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423450272
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "definition",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-definition.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90729,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423450305,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423451029
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90740,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423451055,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423451446
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90758,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423451513,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423451607
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90770,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423451677,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423452045
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "stall",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-stall.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90780,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423452074,
+        "exited": true,
+        "code": 0,
+        "signal": null,
+        "exitAt": 1792423457705
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90869,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423457739,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423458333
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "crash",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-crash.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90881,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423458358,
+        "exited": true,
+        "code": 7,
+        "signal": null,
+        "exitAt": 1792423458631
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90891,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423459049,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423459653
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "oversize",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-oversize.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90913,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423459683,
+        "exited": true,
+        "code": null,
+        "signal": "SIGKILL",
+        "exitAt": 1792423459956
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90925,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423460352,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423460928
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "utf8",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-utf8.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90936,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423460958,
+        "exited": true,
+        "code": 0,
+        "signal": null,
+        "exitAt": 1792423460994
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90945,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423461473,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423462089
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "init-stall",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-init-stall.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 90963,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423462121,
+        "exited": true,
+        "code": 0,
+        "signal": null,
+        "exitAt": 1792423472131
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 91053,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423472488,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423473369
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "close-stall",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-close-stall.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 91068,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423473401,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423473588
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "close-stall",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-close-stall.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 91079,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423473625,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423473723
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "close-stall",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-close-stall.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 91095,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423473809,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423474145
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 91105,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/A",
+        "at": 1792423474176,
+        "exited": true,
+        "code": 1,
+        "signal": null,
+        "exitAt": 1792423474648
+      },
+      {
+        "command": "/opt/homebrew/Cellar/node/26.5.0_1/bin/node",
+        "args": [
+          "/Users/hx/hx/hxWork/SmartDD/src/main/core/files/lsp/fixtures/server.cjs",
+          "full",
+          "/private/tmp/willyou-language-service-A-EePi0O/protocol-full.jsonl",
+          "/private/tmp/willyou-language-service-A-EePi0O/alias/target.cpp"
+        ],
+        "pid": 91140,
+        "cwd": "/private/tmp/willyou-language-service-A-EePi0O/B",
+        "at": 1792423474719,
+        "exited": false
+      }
+    ]
+  },
+  "restored": {
+    "files.languageOpen": true,
+    "files.languageQuery": true,
+    "files.languageChange": true,
+    "files.languageCancel": true,
+    "files.languageClose": true,
+    "files.configureLanguages": true,
+    "spawn": true
+  },
+  "finishedAt": "2026-10-19T15:24:45.045Z"
+}

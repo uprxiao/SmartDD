@@ -47,6 +47,13 @@ test('staleness: revision or text hash change is stale, missing blocks, unknown 
   assert.equal(referenceStaleness(ref, { revision: 'r1', selectedTextHash: 'h2' }), 'stale'); assert.equal(referenceStaleness(ref, { missing: true }), 'missing');
   assert.equal(referenceStaleness(ref, null), 'missing'); assert.equal(referenceStaleness({}, { revision: 'r9' }), 'fresh');
 });
+test('selection truncation never splits the emoji crossing UTF-16 position 4000', () => {
+  const ref = { kind: 'range', relativePath: 'a.ts', range: { startLine: 1, endLine: 1 } };
+  const result = formatReference(ref, { includeText: true, selectedText: 'a'.repeat(3999) + '🙂' });
+  assert.equal(result.truncated, true); assert.ok(result.text.includes('已截断'));
+  assert.equal(sanitizeTerminalText(result.text).changed, false);
+  assert.ok(!result.text.includes('🙂'));
+});
 test('terminal insertion validates ownership, running state, size, emptiness and reports sanitising', () => {
   const owners = new Map([['p1', 't1']]), running = new Set(['t1']);
   const ok = buildInsertion({ text: 'hi\u001b', bracketedPaste: true, ptyId: 'p1', taskId: 't1', owners, running }); assert.equal(ok.ok, true); assert.equal(ok.sanitized, true); assert.equal(ok.mode, 'bracketed');

@@ -1,0 +1,10 @@
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
+const base=realpathSync(mkdtempSync('/private/tmp/willyou-m9-tree-basic-')), root=join(base,'D02');
+const files={'.env':'ACCEPTANCE_SYNTHETIC=true\n','.gitignore':'node_modules/\n','.hidden/x':'hidden child\n','node_modules/x':'ordinary tree includes dependencies\n','level1/level2/level3/level4/level5/leaf.txt':'five-level lazy fixture\n','A.txt':'Tree A baseline\n','B.txt':'Tree B baseline\n'};
+mkdirSync(join(root,'empty'),{recursive:true});
+for(const [name,text] of Object.entries(files)){mkdirSync(join(root,name,'..'),{recursive:true});writeFileSync(join(root,name),text);}
+const stat=path=>{const s=statSync(path,{bigint:true});return{inode:String(s.ino),size:String(s.size),mtimeNs:String(s.mtimeNs),ctimeNs:String(s.ctimeNs)}};
+const manifest={createdAt:new Date().toISOString(),root,base,caseIds:['M9-T-B01','M9-T-B04','M9-T-B05','M9-T-B18'],synthetic:true,files:Object.keys(files).map(relativePath=>({relativePath,sha256:createHash('sha256').update(readFileSync(join(root,relativePath))).digest('hex'),...stat(join(root,relativePath))})),emptyDirectories:['empty'],appChecklist:[{case:'B01',steps:['登记这个 D02 为新的本机项目目录并打开文件树，初始保持所有目录折叠。','展开 level1，只出现 level2；展开 level2，只出现 level3；不展开更深层。','折叠并重新展开 level1，目录缓存复用且无重复加载。'],expected:'初始只列根、只显示单层。精确请求序列和并发去重由同份 fixture 的真实 I 记录提供；无额外 App 调试入口要求。'},{case:'B04',steps:['普通文件树保持查找为空、变化过滤关闭；确认 .env、.gitignore、.hidden、node_modules 均可见。','展开 .hidden 和 node_modules，各显示 x。'],expected:'隐藏项和依赖目录子项不被搜索排除规则隐藏。'},{case:'B05',steps:['展开 empty，确认明确空目录文字，无无限读取或伪文件；再单击折叠。'],expected:'空目录状态可读且可折叠。'},{case:'B18',steps:['首次单击 A.txt，确认预览标签及 Tree A baseline。','首次双击尚未打开的 B.txt，确认固定 B 和 Tree B baseline，无重复 B。','单击任一目录展开/收起，B 保持活动且标签内容不变。'],expected:'A 为预览、B 为固定；目录仅展开收起；双击无重复标签。'}],boundaries:['纯合成文本，无凭据、无 Git 仓库、无需模型/网络。','App 仅阅读/展开/折叠/切换标签；测试不写这些文件。','用户数据目录与此 root 分离；验收完成前不删除。']};
+writeFileSync('/private/tmp/willyou-tree-basic/fixtures.json',JSON.stringify(manifest,null,2)+'\n');console.log(root);

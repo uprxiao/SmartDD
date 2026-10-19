@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-H15",
+  "requirements": [
+    "M9-R07.5",
+    "M9-R07.19",
+    "M9-R08.2"
+  ],
+  "status": "passed",
+  "formalCasePassed": true,
+  "recordedAt": "2026-10-18T02:41:24.406335+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "caseDefinition": {
+    "requiredLayers": [
+      "U",
+      "I"
+    ],
+    "data": "D04+D11",
+    "steps": "Open a clean source document with cursor; ordinary external filesystem writes and a separate CLI process each modify in place or atomically replace the file. Independently verify native watch, reactivation and explicit refresh. Deliver stale successes and errors after a newer revision.",
+    "expected": "Current real bytes and revision replace the clean base, preserving a reasonable clamped cursor. No old-base save, dirty/conflict approval or CLI-specific approval; stale responses never overwrite newer content."
+  },
+  "layers": {
+    "U": {
+      "status": "passed",
+      "coverage": [
+        "Production FileBuffer selection preservation/clamping, clean and conflict state, hash/revision update.",
+        "Held real read/metadata delivery success and failure after a newer refresh are discarded by the production sequence guards."
+      ]
+    },
+    "I": {
+      "status": "passed",
+      "chain": "Actual macOS FSEvents -> FileWatchService -> bridged IPC event delivery -> FileWorkspaceStore -> FileBuffer -> FileService -> r4 packaged native broker -> independent filesystem bytes/stat checks",
+      "coverage": [
+        "2 writer forms x 2 modification forms x 3 trigger paths = 12 matrix branches.",
+        "4 late-delivery branches: read/metadata x success/error after newer real IO.",
+        "Native watcher branches receive actual OS event callbacks and production changed+native updates; other branches deliberately do not attach watchers, proving the intended reactivation/explicit-refresh entry.",
+        "Every branch checks source bytes/hash/mtime/inode remain exactly as the external writer left them, zero save and zero checkpoint calls, clean state and no conflict.",
+        "In-place writes preserve inode and cursor 22; atomic replacements change inode and clamp cursor to the new text length."
+      ]
+    }
+  },
+  "environment": {
+    "os": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "macOS": "26.6.1",
+    "machine": "arm64",
+    "testRuntime": "pnpm test -> scripts/run-tests.mjs -> Electron bundled Node; no GUI started",
+    "fixtures": "Only fresh willyou-clean-refresh-* directories under system temporary directory; removed by fixture cleanup."
+  },
+  "finalRun": {
+    "command": "SMARTDD_CLEAN_REFRESH_APP=/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app SMARTDD_H15_EVIDENCE=/private/tmp/willyou-h15-observations-final.json pnpm test src/renderer/features/files/clean-refresh-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-h15-tests-final.json",
+    "exitCode": 0,
+    "testsPassed": 14,
+    "testsFailed": 0,
+    "testsSkipped": 0,
+    "observedBranches": 16,
+    "nativeWatchBranches": 4,
+    "reports": {
+      "tests-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tests-r1.json",
+        "sha256": "3f926f9d89546bdd027f74dffe61cd952391e55ba8b5b8ec886238b0861222a9"
+      },
+      "tests-r1.log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tests-r1.log",
+        "sha256": "afb63a0a429afda60ca9b6d10b954c97e9f2cb841b4b68d2e78fbeec59dbec52"
+      },
+      "observations-r1.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/observations-r1.json",
+        "sha256": "33c298be59f8857f7cc8626cce96b27d419e52c2e0e94c18848aead2136b468d"
+      },
+      "tests-diagnostic.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tests-diagnostic.json",
+        "sha256": "8c7bb12708db42ddacf534352cefb71e192c1ea6fbec4f38218bed9f727cdd7b"
+      },
+      "tests-diagnostic.log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tests-diagnostic.log",
+        "sha256": "7c85503a30e22a31cafaeb7191ccbff3ed1880cf2289c31f57076c8440fd334d"
+      },
+      "observations-diagnostic.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/observations-diagnostic.json",
+        "sha256": "29fd34987b50982cf71060b5a285a7013521a181ca517606d5f255298ab7c9b1"
+      },
+      "watch-tests-r2.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/watch-tests-r2.json",
+        "sha256": "8ab76bbcebd34e0b0cca373574444d48613e305ebd107aa71de2404ff4a0326e"
+      },
+      "watch-tests-r2.log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/watch-tests-r2.log",
+        "sha256": "a73f94f11840c4c58ba9e66e7b0255d7caa609a56a11e29872d6acbb5a1ff1ba"
+      },
+      "watch-observations-r2.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/watch-observations-r2.json",
+        "sha256": "3f4aee9f5266530b67567e5a6b28d67ff0b6084d97d1f552ecebdd465be46ca5"
+      },
+      "tests-final.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tests-final.json",
+        "sha256": "84579cb646a7820efb5b7430b68dc1022969020650d5efe83da25cea43020d57"
+      },
+      "tests-final.log": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tests-final.log",
+        "sha256": "9528ec4ae1fe70e1733d2da5ca371fdd3175eaabfc31415a1c2372b37140f392"
+      },
+      "observations-final.json": {
+        "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/observations-final.json",
+        "sha256": "532cab91d4124a294fd3982164adb3e501fc78d99f2b7560afdfc7cd751d716a"
+      }
+    },
+    "sourceHashesUnchangedAfterTest": true
+  },
+  "failureHistory": [
+    {
+      "run": "r1",
+      "result": "10 passed, 4 failed",
+      "reason": "All four native-watch fixtures failed to initialize macOS FSEvents in the outer sandbox. A focused diagnostic recorded Error starting FSEvents stream and production poll fallback; no product defect was inferred."
+    },
+    {
+      "run": "diagnostic",
+      "result": "1 failed, 13 unselected",
+      "reason": "Added fixture cleanup and startup-state recording; confirmed the exact FSEvents environment error."
+    },
+    {
+      "run": "watch-r2",
+      "result": "4 passed, 10 unselected",
+      "reason": "The same native-watch branches passed after an authorized sandbox-free rerun; unselected tests are not counted as passed."
+    },
+    {
+      "run": "final",
+      "result": "14 passed, zero failed/skipped",
+      "reason": "All branches rerun once against the frozen DEV041 FileBuffer; source archive taken before test and all 20 hashes verified afterward."
+    }
+  ],
+  "sourceBaseline": {
+    "files": {
+      "src/renderer/features/files/clean-refresh-acceptance.test.ts": "8c5976a02b14fa24ac46723467bf3fc242ede8b0f7b0bdf73d8188fc0725caa0",
+      "src/renderer/features/files/file-buffer.ts": "150945a0f8413580cfa306b966e135d5a8fca66660ada839254e95b7304eb053",
+      "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+      "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/watch-service.ts": "7b3581d3be24d7d4e1131dac2b1691d774a041272965891359543313ad89928b",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-workspace.ts": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+      "src/shared/events.ts": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "src/shared/file-classification.ts": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+      "native/files/broker.mm": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "vitest.config.ts": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+      "tsconfig.web.json": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+      "scripts/run-tests.mjs": "c8eb4fda8cf33dc74d5c079776ad12fadd3e3716fa01203e82e3b214357b8543",
+      "package.json": "a16d1b930d6799d60d2bf3ad4fac47dc014688968f9757edacf3111b1bbdd28d",
+      "pnpm-lock.yaml": "ae9625ea3207d4e64ff7c9d4b5fa2f199b5a995b03e6e90b8e9a0c638f3787a7"
+    },
+    "manifest": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tested-source-manifest.json",
+    "manifestSha256": "1c4224871a3747ea79f712d0cb1e60a339495a6987ff59fff9c3127f5871d3cf",
+    "archive": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/tested-sources.tar.gz",
+    "sha256": "ed0410450f74a3ff378f8379bf633a15d5c3986cd84f966e50ebf2219e9c52cc",
+    "r4Comparison": {
+      "src/renderer/features/files/clean-refresh-acceptance.test.ts": {
+        "current": "8c5976a02b14fa24ac46723467bf3fc242ede8b0f7b0bdf73d8188fc0725caa0",
+        "r4": null,
+        "matches": false
+      },
+      "src/renderer/features/files/file-buffer.ts": {
+        "current": "150945a0f8413580cfa306b966e135d5a8fca66660ada839254e95b7304eb053",
+        "r4": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+        "matches": false
+      },
+      "src/renderer/features/files/editor-source.ts": {
+        "current": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+        "r4": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+        "matches": true
+      },
+      "src/renderer/features/files/workspace-store.ts": {
+        "current": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "r4": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "matches": true
+      },
+      "src/main/core/files/file-service.ts": {
+        "current": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "r4": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "matches": true
+      },
+      "src/main/core/files/watch-service.ts": {
+        "current": "7b3581d3be24d7d4e1131dac2b1691d774a041272965891359543313ad89928b",
+        "r4": "7b3581d3be24d7d4e1131dac2b1691d774a041272965891359543313ad89928b",
+        "matches": true
+      },
+      "src/main/core/files/native-broker.ts": {
+        "current": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "r4": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "matches": true
+      },
+      "src/main/core/files/roots.ts": {
+        "current": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "r4": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "matches": true
+      },
+      "src/main/core/files/recovery-store.ts": {
+        "current": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "r4": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "matches": true
+      },
+      "src/shared/files.ts": {
+        "current": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "r4": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "matches": true
+      },
+      "src/shared/file-workspace.ts": {
+        "current": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+        "r4": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+        "matches": true
+      },
+      "src/shared/events.ts": {
+        "current": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+        "r4": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+        "matches": true
+      },
+      "src/shared/file-text.ts": {
+        "current": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+        "r4": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+        "matches": true
+      },
+      "src/shared/file-classification.ts": {
+        "current": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+        "r4": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+        "matches": true
+      },
+      "native/files/broker.mm": {
+        "current": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+        "r4": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+        "matches": true
+      },
+      "vitest.config.ts": {
+        "current": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+        "r4": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+        "matches": true
+      },
+      "tsconfig.web.json": {
+        "current": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+        "r4": "d0bb927b8afe49ca6b185c490ce2924afa66c6d931de1b592d69709ea2eece70",
+        "matches": true
+      },
+      "scripts/run-tests.mjs": {
+        "current": "c8eb4fda8cf33dc74d5c079776ad12fadd3e3716fa01203e82e3b214357b8543",
+        "r4": "c8eb4fda8cf33dc74d5c079776ad12fadd3e3716fa01203e82e3b214357b8543",
+        "matches": true
+      },
+      "package.json": {
+        "current": "a16d1b930d6799d60d2bf3ad4fac47dc014688968f9757edacf3111b1bbdd28d",
+        "r4": "7d150a632bef37d37461851e20af5ed592fe640efe89892ddca286199daaa960",
+        "matches": false
+      },
+      "pnpm-lock.yaml": {
+        "current": "ae9625ea3207d4e64ff7c9d4b5fa2f199b5a995b03e6e90b8e9a0c638f3787a7",
+        "r4": "d1ffb8b15de4b3612674257513e9374ec2f39f8f4519b8efc0a9d214d511a7b5",
+        "matches": false
+      }
+    }
+  },
+  "nativePackage": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app",
+    "asarSha256": "3cf835c4c77c583ea698174b527dbe1a54e47d6f0e8f1b5df813a2af05271bc0",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "watcherVersion": "2.5.6"
+  },
+  "boundaries": [
+    "U+I are the explicit required layers in this case; no native App GUI or physical IME result is claimed.",
+    "The current TypeScript buffer/store run from the workspace; r4 contributes only packaged native broker/watcher resources. r4 itself does not contain DEV040/DEV041 and is not represented as the tested final App.",
+    "Ordinary external writes use the test host filesystem API independently of the production file client. CLI writes run a separate Electron-Node process with fixed script/argv. No model, shell profile, network, user repository or external resource is accessed.",
+    "IPC event delivery is bridged at the renderer boundary. OS filesystem events, FileWatchService, FileService, broker, file contents and revisions are real.",
+    "Delayed delivery errors are intentional transport-boundary injections after actual native IO, preserving both successful and failing response ordering.",
+    "No production files were changed for H15. Formal index and main milestone documents remain owned by the root agent."
+  ],
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exitCode": 0,
+    "result": "node and web tsc completed successfully in the shared DEV041 verification; clean-refresh-acceptance.test.ts was already present and unchanged.",
+    "executedBy": "acceptance_f10; success and inclusion confirmed in collaboration message, not rerun by this reviewer",
+    "log": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-clean-refresh/typecheck.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+  }
+}

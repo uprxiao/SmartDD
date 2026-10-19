@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T02:15:12.470608+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "dirtyWorkingTree": true,
+  "environment": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "runtime": "pnpm test uses Electron Node; jsdom renderer hook; native macOS arm64 packaged broker"
+  },
+  "basis": {
+    "cases": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+      "sha256": "d3131ee95b7a590eb7e872b7f837e038efd8881adc69b1616c22030c7bfad9a0"
+    },
+    "requirements": {
+      "path": "docs/里程碑/M9_文件浏览工作区/需求.md",
+      "sha256": "10b74851a524d8bad0a5305ddc0d12c0312080888a9f2717c01f4f1531f6e041"
+    },
+    "interfaceAllowance": "R03.4: SmartDD接口可不同但语义要保留；本证据明确映射实际request/cancel协议，不虚构sessionStart/update/stop。"
+  },
+  "cases": {
+    "M9-T-C11": {
+      "status": "passed",
+      "level": "I",
+      "originalSteps": "阻塞start，清空或卸载，再让start成功。",
+      "expected": "迟到会话立即stop；不留下后台搜索资源。",
+      "actualProtocol": "renderer在invoke前分配UUID，主进程先注册可取消job再等待真实broker；取消与请求使用同一ID，不存在迟到生成的独立session。",
+      "matrix": "name/content × clear/unmount × start pending/real success reply pending = 8",
+      "actual": "在start公共broker请求边界阻塞时，clear/unmount先触发真实cancelSearch并使AbortSignal中止；释放后请求归零。真实native成功结果在RPC回执边界阻塞时，clear/unmount先触发同ID取消；释放迟到成功结果后不恢复状态、不创建name Worker。所有8行requests/processes/listeners归零，源文件SHA不变。",
+      "semanticMapping": "请求ID预先创建，start等待时即可终止；成功回执迟到时原生进程已自然释放，renderer丢弃迟到结果。此实现无必须stop的迟到session，满足无遗留搜索资源语义。",
+      "fullCasePass": true
+    },
+    "M9-T-C10": {
+      "status": "partial",
+      "level": "I",
+      "fullCasePass": false,
+      "originalSteps": "模拟服务不支持会话协议，发起查询。",
+      "completed": "真实name/content一次性搜索分别通过；对隔离项目chmod000真实PERMISSION与隔离broker副本chmod000真实IO错误，hook保留原错误、不伪装UNSUPPORTED且只调用search一次。",
+      "remaining": "实际注册API仅files.search和files.cancelSearch，无会话能力探测及sessionStart失败转一次性查询分支。无法完成原步骤，不计正式通过。",
+      "policy": "未创建虚假API/回退mock；未擅自删减用例或判不适用。"
+    },
+    "M9-T-D20": {
+      "status": "not-complete",
+      "level": "read-only-source-audit",
+      "fullCasePass": false,
+      "originalSteps": "构造有onDownload/onClose特殊业务回调的附件tab并重启。",
+      "finding": "FileTab只有id/route/buffer/pinned/error/loading，open入口是本机root相对路径；fileRoute source仅project-directory/task-cwd。NotebookPreview存在组件onDownload prop，但没有带特殊业务callback的附件tab创建/重启链。",
+      "remaining": "原用例附件callback入口与不可恢复策略尚无可执行分支；未执行该重启步骤。合法route strict拒函数只证明序列化边界，不能代替此完整用例。",
+      "references": [
+        "src/renderer/features/files/workspace-store.ts",
+        "src/shared/file-workspace.ts",
+        "src/renderer/features/files/notebook/preview.tsx",
+        "docs/里程碑/M9_文件浏览工作区/调研/M9_项目会话与文件生命周期.md"
+      ]
+    }
+  },
+  "execution": {
+    "command": "SMARTDD_SEARCH_APP='/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app' SMARTDD_SEARCH_EVIDENCE=/private/tmp/willyou-search-session-matrix-r1.json pnpm test src/renderer/features/files/search-session-acceptance.test.tsx --reporter=json --outputFile=/private/tmp/willyou-search-session-tests-r1.json",
+    "exitCode": 0,
+    "tests": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "testBodySeconds": 4.148,
+    "startedAt": "2026-10-18T02:12:56.851Z",
+    "finishedAt": "2026-10-18T02:13:01.007Z",
+    "report": {
+      "path": "/private/tmp/willyou-search-session-tests-r1.json",
+      "sha256": "50edae567880dc7a851703f64187604da8bc9ab775e9451268beffc77c2a42ab"
+    },
+    "rawObservations": {
+      "path": "/private/tmp/willyou-search-session-matrix-r1.json",
+      "sha256": "a8fae9140afcd796323f39ba4548ddf63dc0c73a6acb8a73003b13d8900e38fa"
+    },
+    "log": {
+      "path": "/private/tmp/willyou-search-session-tests-r1.log",
+      "sha256": "27f18f2f583e6ee3080ce2ea3379615c2a10a73e8a3f89997cf7c8685757f5b2"
+    }
+  },
+  "checks": {
+    "rendererTypecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+      "exitCode": 0,
+      "path": "/private/tmp/willyou-search-session-typecheck-r1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  },
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app",
+    "asarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "executableBoundary": "byte-identical private executable copy; permissions fault changes only this disposable copy",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "searchApi": [
+    "files.search",
+    "files.cancelSearch"
+  ],
+  "observations": [
+    {
+      "case": "M9-T-C10",
+      "sample": "actual one-shot name",
+      "endpoint": "files.search",
+      "calls": 1,
+      "rows": 0,
+      "paths": [
+        "nested/needle.txt"
+      ],
+      "actualResultVerified": true,
+      "fullCasePass": false,
+      "remaining": "No production sessionStart capability negotiation/fallback branch exists; no missing API was fabricated."
+    },
+    {
+      "case": "M9-T-C10",
+      "sample": "actual one-shot content",
+      "endpoint": "files.search",
+      "calls": 1,
+      "rows": 2,
+      "paths": [],
+      "actualResultVerified": true,
+      "fullCasePass": false,
+      "remaining": "No production sessionStart capability negotiation/fallback branch exists; no missing API was fabricated."
+    },
+    {
+      "case": "M9-T-C10",
+      "sample": "actual filesystem/process PERMISSION",
+      "error": "[PERMISSION] open root: Permission denied",
+      "calls": 1,
+      "phase": "error",
+      "resources": {
+        "requests": 0,
+        "processes": 0
+      },
+      "actualResultVerified": true,
+      "fullCasePass": false
+    },
+    {
+      "case": "M9-T-C10",
+      "sample": "actual filesystem/process IO",
+      "error": "[IO] 无法启动文件 broker：spawn /private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-search-session-mGETEP/willyou-files EACCES",
+      "calls": 1,
+      "phase": "error",
+      "resources": {
+        "requests": 0,
+        "processes": 0
+      },
+      "actualResultVerified": true,
+      "fullCasePass": false
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "name",
+      "action": "clear",
+      "phase": "start pending",
+      "requestId": "fa3404d9-c988-4517-988f-e115426a1afe",
+      "cancelId": "fa3404d9-c988-4517-988f-e115426a1afe",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": false,
+      "resourcesBefore": {
+        "requests": 1,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "name",
+      "action": "clear",
+      "phase": "success reply pending",
+      "requestId": "00e284b5-308d-4538-9292-32b4213e63b6",
+      "cancelId": "00e284b5-308d-4538-9292-32b4213e63b6",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": true,
+      "resourcesBefore": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "name",
+      "action": "unmount",
+      "phase": "start pending",
+      "requestId": "ed3dcd6c-c0cd-4841-acff-b9fc0a581a4a",
+      "cancelId": "ed3dcd6c-c0cd-4841-acff-b9fc0a581a4a",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": false,
+      "resourcesBefore": {
+        "requests": 1,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "name",
+      "action": "unmount",
+      "phase": "success reply pending",
+      "requestId": "5e80e96a-86e1-4a62-a994-6edd34ab4b75",
+      "cancelId": "5e80e96a-86e1-4a62-a994-6edd34ab4b75",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": true,
+      "resourcesBefore": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "content",
+      "action": "clear",
+      "phase": "start pending",
+      "requestId": "2c8daed3-fc44-40eb-a25e-9088922fa4df",
+      "cancelId": "2c8daed3-fc44-40eb-a25e-9088922fa4df",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": false,
+      "resourcesBefore": {
+        "requests": 1,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "content",
+      "action": "clear",
+      "phase": "success reply pending",
+      "requestId": "73833d85-d00d-417a-882f-08d17a6154ff",
+      "cancelId": "73833d85-d00d-417a-882f-08d17a6154ff",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": true,
+      "resourcesBefore": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "content",
+      "action": "unmount",
+      "phase": "start pending",
+      "requestId": "8c519157-037d-4faf-af2c-a56056f230ce",
+      "cancelId": "8c519157-037d-4faf-af2c-a56056f230ce",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": false,
+      "resourcesBefore": {
+        "requests": 1,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-C11",
+      "kind": "content",
+      "action": "unmount",
+      "phase": "success reply pending",
+      "requestId": "2d7ab94b-5f17-456b-9306-a93d233f54cd",
+      "cancelId": "2d7ab94b-5f17-456b-9306-a93d233f54cd",
+      "cancelledBeforeGateReleased": true,
+      "actualSuccessfulReplyDeferred": true,
+      "resourcesBefore": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 1
+      },
+      "resourcesAfter": {
+        "requests": 0,
+        "processes": 0,
+        "listeners": 0,
+        "workersCreated": 0
+      },
+      "sourceSha256": "7c6abde27fd43318512426a45b4ba84b1a0c3c36f0f6219c16e386b68b30a34d",
+      "pass": true
+    }
+  ],
+  "sources": {
+    "archive": {
+      "path": "/private/tmp/willyou-search-session-sources-r1.tar.gz",
+      "sha256": "56904938c0ba88cd4029b5b1c6e6a3f85dd3f0775d0a89397573f13bc88130d5"
+    },
+    "files": {
+      "src/renderer/features/files/search-session-acceptance.test.tsx": "1c40b563665223853f77a3612f6afaf700a1c39e5c19e5713b7e25d8dbd97f4e",
+      "src/renderer/features/files/file-search.ts": "646b134c55efcbfcc547b83cef8dad431918fb32d508f822365637f4969d9e77",
+      "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+      "src/renderer/features/files/file-buffer.ts": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+      "src/renderer/features/files/notebook/preview.tsx": "4eb1d117e77a86eea2536d8e35528e317bf06bad08be502214ec58a93444cd89",
+      "src/main/core/files/controller.ts": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+      "src/main/core/files/search-service.ts": "677ff613e43656c35654173975ba1d1ff55a22d23f1b1d755b66a365b7de81f0",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/shared/file-workspace.ts": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/events.ts": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+      "src/shared/ipc/rpc.ts": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac"
+    },
+    "packageManifestComparison": {
+      "r2": {
+        "manifest": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.json",
+        "manifestSha256": "fc4975816ff701c6f8baff64f55ed2edb6a63dd3831cb092b9fb7874f103ef52",
+        "sourceArchiveSha256": "bd9a87402d2ab0609f26730a1f8158ad99da0eedce16e4231b40ac27f1b09d42",
+        "files": {
+          "src/renderer/features/files/search-session-acceptance.test.tsx": {
+            "currentSha256": "1c40b563665223853f77a3612f6afaf700a1c39e5c19e5713b7e25d8dbd97f4e",
+            "snapshotSha256": null,
+            "same": false
+          },
+          "src/renderer/features/files/file-search.ts": {
+            "currentSha256": "646b134c55efcbfcc547b83cef8dad431918fb32d508f822365637f4969d9e77",
+            "snapshotSha256": "646b134c55efcbfcc547b83cef8dad431918fb32d508f822365637f4969d9e77",
+            "same": true
+          },
+          "src/renderer/features/files/workspace-store.ts": {
+            "currentSha256": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+            "snapshotSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+            "same": false
+          },
+          "src/renderer/features/files/file-buffer.ts": {
+            "currentSha256": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+            "snapshotSha256": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+            "same": true
+          },
+          "src/renderer/features/files/notebook/preview.tsx": {
+            "currentSha256": "4eb1d117e77a86eea2536d8e35528e317bf06bad08be502214ec58a93444cd89",
+            "snapshotSha256": "4eb1d117e77a86eea2536d8e35528e317bf06bad08be502214ec58a93444cd89",
+            "same": true
+          },
+          "src/main/core/files/controller.ts": {
+            "currentSha256": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+            "snapshotSha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+            "same": false
+          },
+          "src/main/core/files/search-service.ts": {
+            "currentSha256": "677ff613e43656c35654173975ba1d1ff55a22d23f1b1d755b66a365b7de81f0",
+            "snapshotSha256": "677ff613e43656c35654173975ba1d1ff55a22d23f1b1d755b66a365b7de81f0",
+            "same": true
+          },
+          "src/main/core/files/native-broker.ts": {
+            "currentSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+            "snapshotSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+            "same": true
+          },
+          "src/main/core/files/file-service.ts": {
+            "currentSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+            "snapshotSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+            "same": true
+          },
+          "src/main/core/files/roots.ts": {
+            "currentSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+            "snapshotSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+            "same": true
+          },
+          "src/shared/file-workspace.ts": {
+            "currentSha256": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+            "snapshotSha256": "38943cbc479ea5a33a993243eeb8a45f9bdd9dbdfb7b575fc8ac43cded741815",
+            "same": false
+          },
+          "src/shared/files.ts": {
+            "currentSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+            "snapshotSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+            "same": true
+          },
+          "src/shared/events.ts": {
+            "currentSha256": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+            "snapshotSha256": "9a1b1acfe587eb7c4f82a842fa64e92466f48159bd0513fb0497acb9f496bbab",
+            "same": false
+          },
+          "src/shared/ipc/rpc.ts": {
+            "currentSha256": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac",
+            "snapshotSha256": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac",
+            "same": true
+          }
+        }
+      },
+      "r3": {
+        "manifest": "/private/tmp/willyou-m9-acceptance-batch-r3-sources.json",
+        "manifestSha256": "9b359af52187d8be576c05ee367475fdcd3f4da55387c8cf33419da3a9eaabf3",
+        "sourceArchiveSha256": "fc129143ab873d32a06e1948a743cce648503e5cf04375170f91e96eb3836b91",
+        "files": {
+          "src/renderer/features/files/search-session-acceptance.test.tsx": {
+            "currentSha256": "1c40b563665223853f77a3612f6afaf700a1c39e5c19e5713b7e25d8dbd97f4e",
+            "snapshotSha256": "1c40b563665223853f77a3612f6afaf700a1c39e5c19e5713b7e25d8dbd97f4e",
+            "same": true
+          },
+          "src/renderer/features/files/file-search.ts": {
+            "currentSha256": "646b134c55efcbfcc547b83cef8dad431918fb32d508f822365637f4969d9e77",
+            "snapshotSha256": "646b134c55efcbfcc547b83cef8dad431918fb32d508f822365637f4969d9e77",
+            "same": true
+          },
+          "src/renderer/features/files/workspace-store.ts": {
+            "currentSha256": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+            "snapshotSha256": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+            "same": true
+          },
+          "src/renderer/features/files/file-buffer.ts": {
+            "currentSha256": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+            "snapshotSha256": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+            "same": true
+          },
+          "src/renderer/features/files/notebook/preview.tsx": {
+            "currentSha256": "4eb1d117e77a86eea2536d8e35528e317bf06bad08be502214ec58a93444cd89",
+            "snapshotSha256": "4eb1d117e77a86eea2536d8e35528e317bf06bad08be502214ec58a93444cd89",
+            "same": true
+          },
+          "src/main/core/files/controller.ts": {
+            "currentSha256": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+            "snapshotSha256": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+            "same": true
+          },
+          "src/main/core/files/search-service.ts": {
+            "currentSha256": "677ff613e43656c35654173975ba1d1ff55a22d23f1b1d755b66a365b7de81f0",
+            "snapshotSha256": "677ff613e43656c35654173975ba1d1ff55a22d23f1b1d755b66a365b7de81f0",
+            "same": true
+          },
+          "src/main/core/files/native-broker.ts": {
+            "currentSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+            "snapshotSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+            "same": true
+          },
+          "src/main/core/files/file-service.ts": {
+            "currentSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+            "snapshotSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+            "same": true
+          },
+          "src/main/core/files/roots.ts": {
+            "currentSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+            "snapshotSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+            "same": true
+          },
+          "src/shared/file-workspace.ts": {
+            "currentSha256": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+            "snapshotSha256": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+            "same": true
+          },
+          "src/shared/files.ts": {
+            "currentSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+            "snapshotSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+            "same": true
+          },
+          "src/shared/events.ts": {
+            "currentSha256": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+            "snapshotSha256": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+            "same": true
+          },
+          "src/shared/ipc/rpc.ts": {
+            "currentSha256": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac",
+            "snapshotSha256": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac",
+            "same": true
+          }
+        }
+      }
+    }
+  },
+  "limitations": [
+    "生产renderer hook→已注册真实RPC handler→FileService/FileSearchService→真实原生broker链；Electron sender和IPC transport由测试桥接，jsdom不是真实App。",
+    "只对公共broker请求/RPC成功回执边界延迟，未直接操作私有job map或私有handler。",
+    "name正常成功直接核生产one-shot路径；只在迟到结果场景断言Worker未创建，没有伪造fuzzy ranking结果。",
+    "PERMISSION/IO仅对隔离fixture及字节一致的broker副本chmod，打包broker及用户项目未修改。",
+    "r2仅提供同哈希原生broker；当前生产JS来自源码并按清单关联r3，不声称执行了r2/r3包内GUI。",
+    "本批无生产代码改动；正式验收新增通过1条C11，C10和D20不计通过。"
+  ]
+}

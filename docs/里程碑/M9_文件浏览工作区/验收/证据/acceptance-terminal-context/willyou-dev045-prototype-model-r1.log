@@ -1,0 +1,26 @@
+✔ file drag resolves a complete path preserving Chinese, spaces, quotes and image extension (2.202458ms)
+✔ file drag rejects control/bidi/lone surrogate paths rather than sanitising another file (0.216792ms)
+✔ file drag rejects missing or ambiguous roots, traversal and foreign absolute paths (0.101125ms)
+✔ drag payload is an ephemeral catalog token and cannot be replayed or moved to another task (0.102042ms)
+✔ path insertion preserves input, separates successive paths, leaves space for typing and never Enter (0.287583ms)
+✔ path insertion refuses stopped or unrelated terminals without starting a task (0.179292ms)
+✔ a successful drop consumes its token and a newer drag invalidates the previous token (0.074541ms)
+✔ sanitizer keeps tab/newline and text, removes ESC, C0, DEL, C1 and bidi controls (1.092292ms)
+✔ sanitizer leaves normal Chinese, emoji and symbols untouched and replaces lone surrogates (0.148167ms)
+✔ an escape sequence cannot terminate the bracketed paste early (0.094334ms)
+✔ bracketed paste keeps line breaks; plain mode collapses them so it can never submit; no trailing CR in either (0.088791ms)
+✔ reference normalisation rejects traversal, drive paths, bad kinds and ranges (0.169917ms)
+✔ reference formatting: plain and @ styles, comment quoting, indented selected text, truncation and size cap (0.339708ms)
+✔ staleness: revision or text hash change is stale, missing blocks, unknown stays fresh (0.05775ms)
+✔ selection truncation never splits the emoji crossing UTF-16 position 4000 (0.116708ms)
+✔ terminal insertion validates ownership, running state, size, emptiness and reports sanitising (0.115625ms)
+✔ selection line ranges use 1-based lines and ignore a trailing newline (0.409333ms)
+✔ text fingerprint is stable, 8 hex chars, and sensitive to content (0.084875ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.219625

@@ -1,0 +1,34 @@
+{
+  "path": "src/shared/file-watch-budget.json",
+  "sha256": "71cb45102ad1ce09c31699b7d4ac437a9138a3bbe8454c34a981a0e981ef6a46",
+  "budget": {
+    "id": "M9-DEV129-WATCH-BUDGET-E1",
+    "frozenAt": "2026-10-19 06:43:04 UTC",
+    "revision": "R3.4 / R3.4-P1",
+    "caseIds": [
+      "M9-T-Y04",
+      "M9-T-Y05"
+    ],
+    "platform": "macOS arm64",
+    "fixtureFiles": 2000,
+    "distributionSamples": 20,
+    "maxSnapshotWallMs": 1000,
+    "softScanWarningMs": 200,
+    "targetWallDutyFraction": 0.1,
+    "minMeasuredDurationMs": 1,
+    "minPollIntervalMs": 1000,
+    "maxPollIntervalMs": 30000,
+    "nativeReconcileIntervalMs": 5000,
+    "nativeReconnectBackoffMs": 30000,
+    "eventDebounceMs": 100,
+    "basis": [
+      "Before formal Y05 execution, current r74 native list2000 plus open-file metadata baseline: first94.36ms;20warm p50=99.38ms,p95=104.17ms,max105.26ms. This exploratory baseline is not FileService/App acceptance and did not flush OS disk caches.",
+      "The1000ms per-snapshot bound retains the existing root-list engineering feasibility envelope; it is not a retrospective budget for the old8ms research stat-only result. All natural cold/warm samples must meet the bound and report p50/p95/max.",
+      "200ms is a pre-execution soft trigger with approximately2x native-baseline allowance for main-process/protocol/sorting overhead. Runtime crossing must reduce request frequency and show status; deliberately delayed original IO is recorded separately.",
+      "Per shared physical root use conservative measured wall time for at most10percent scheduled scan duty, min1s polling/max30s idle backoff. Wall duty is not a claim of measured process CPU utilization. Submillisecond model work is not a meaningful timing sample.",
+      "Cold App samples mean the first complete target-membership snapshot in a fresh App process; warm samples are later complete snapshots in one App/consumer. Service-I cold context is named separately. No OS disk-cache-cold claim."
+    ],
+    "changePolicy": "Freeze E1 before formal performance runs. Preserve failures; do not silently relax this file, change membership scope, or count throttled/partial results as the full expected tree."
+  },
+  "boundary": "Before any formal Y05 natural cold/warm or over-budget policy execution. Existing Y04 permission red test does not measure/freeze performance."
+}

@@ -1,0 +1,42 @@
+✔ file drag resolves a complete path preserving Chinese, spaces, quotes and image extension (3.366625ms)
+✔ file drag rejects control/bidi/lone surrogate paths rather than sanitising another file (0.460584ms)
+✔ file drag rejects missing or ambiguous roots, traversal and foreign absolute paths (0.253542ms)
+✔ drag payload is an ephemeral catalog token and cannot be replayed or moved to another task (0.252125ms)
+✔ path insertion preserves input, separates successive paths, leaves space for typing and never Enter (1.441333ms)
+✔ path insertion refuses stopped or unrelated terminals without starting a task (0.120958ms)
+✔ a successful drop consumes its token and a newer drag invalidates the previous token (0.070583ms)
+✔ default synthetic path accepts once, reports success and releases acknowledgement timer (1.992541ms)
+✔ 1500ms unknown never retries acceptance; original late success updates only its receipt (0.189959ms)
+✔ explicit failure and delayed original failure remain distinct from unknown and do not accept (1.035917ms)
+✔ stop/dispose reject a late acceptance and leave the new context status unchanged (0.150042ms)
+✔ transport rejection after dispatch stays unknown with no duplicate synthetic input (0.118459ms)
+✖ without an available target there is no synthetic request, input or false success (0.595417ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 133.972791
+
+✖ failing tests:
+
+test at prototypes/m6-codex/tests/file-path-delivery.test.mjs:11:1
+✖ without an available target there is no synthetic request, input or false success (0.595417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - null
+  
+      at TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/file-path-delivery.test.mjs:11:315)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

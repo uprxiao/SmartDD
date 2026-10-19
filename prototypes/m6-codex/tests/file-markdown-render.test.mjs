@@ -50,11 +50,11 @@ test('rendering is escaped and links are non-executable', () => {
   assert.match(html, /src="\/assets\/app-icon\.png"[^>]*data-md-src="https:\/\/example\.invalid\/t\.png"|data-md-src="https:\/\/example\.invalid\/t\.png"[^>]*src="\/assets\/app-icon\.png"/);
 });
 
-test('KaTeX renders inline and block math, bad math degrades without throwing', () => {
-  assert.match(render('x $a^2$ y'), /class="katex"/);
-  assert.match(render('$$\n\\frac{a}{b}\n$$\n'), /katex-display/);
+test('Math placeholders preserve inline/block source for the lazy real engine', () => {
+  assert.match(render('x $a^2$ y'), /data-md-math="inline"/);
+  assert.match(render('$$\n\\frac{a}{b}\n$$\n'), /data-md-math="block"/);
   assert.doesNotThrow(() => render('$\\unknowncommand{$'));
-  assert.ok(!render('price $5 and $6').includes('class="katex"'));
+  assert.ok(!render('price $5 and $6').includes('data-md-math='));
 });
 
 test('task toggles carry the exact absolute source line, including after frontmatter', () => {

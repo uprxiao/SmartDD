@@ -1,0 +1,16 @@
+const fs=require('node:fs'),v8=require('node:v8'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const r=JSON.parse(fs.readFileSync('/private/tmp/willyou-office-refresh-A-FlBvoz/result.json','utf8')),sha=x=>crypto.createHash('sha256').update(x).digest('hex');
+assert.equal(r.status,'passed');assert.equal(r.checks.length,10);const decoded=[];
+for(const row of r.rpc.rows){assert.equal(row.inputBefore,row.inputAfter);assert.equal(row.outputBefore,row.outputAfter);const bytes=Buffer.from(row.outputV8,'base64');assert.equal(sha(bytes),row.outputBefore);decoded.push({row,value:v8.deserialize(bytes)});}
+const ordered=[];
+for(const c of r.checks){const path=c.theme+'-'+c.scenario+'.xlsx',items=decoded.filter(x=>x.row.path===path);
+ if(c.scenario==='busy-edit'){
+  const held=decoded[r.rpc.slots.find(x=>x.id===c.held.id).rowIndex];assert.equal(held.row.method,'editOffice');assert(held.value.state.dirty);
+  const refresh=items.find(x=>x.row.method==='refresh'&&x.row.at>=held.row.deliveredAt&&x.value.revision.hash===c.writing.afterSha256);assert(refresh,'genuine disk metadata after edit drained');const save=items.find(x=>x.row.method==='saveOffice');assert(save&&save.value.receipt.state==='saved');assert(refresh.row.deliveredAt<save.row.at,'refresh conflict is established before any explicit native save');ordered.push({path,editDeliveredAt:held.row.deliveredAt,refreshAt:refresh.row.at,refreshDeliveredAt:refresh.row.deliveredAt,firstSaveAt:save.row.at,pass:true});
+ }
+ if(c.scenario==='old-stat-after-save'){
+  const held=decoded[r.rpc.slots.find(x=>x.id===c.held.id).rowIndex];assert.equal(held.row.method,'refresh');assert.equal(held.value.revision.hash,c.before.sha256);const save=items.find(x=>x.row.method==='saveOffice');assert.equal(save.value.receipt.state,'saved');assert(save.row.deliveredAt<=held.row.deliveredAt);const rescanned=items.find(x=>x.row.method==='refresh'&&x.row.at>=held.row.deliveredAt&&x.value.revision.hash===c.final.sha256);assert(rescanned,'real stat rescan observes own saved source');assert.equal(save.value.receipt.revision.hash,c.final.sha256);ordered.push({path,oldHash:held.value.revision.hash,savedHash:save.value.receipt.revision.hash,rescannedHash:rescanned.value.revision.hash,oldDeliveredAt:held.row.deliveredAt,rescanAt:rescanned.row.at,pass:true});
+ }
+}
+assert(r.watch.rows.every(x=>x.delivered&&!x.waiting&&x.before===x.after));assert(r.workers.rows.every(x=>x.exitedAt));assert(Object.values(r.rpcRestored).every(Boolean));assert.deepEqual({code:r.exit.code,signal:r.exit.signal},{code:0,signal:null});
+const result={at:new Date().toISOString(),status:'passed',originalV8Payloads:decoded.length,gates:r.rpc.slots.length,watchFrames:r.watch.rows.length,workersExited:r.workers.rows.length,rpcHandlersRestored:Object.keys(r.rpcRestored).length,ordered,scope:'Independent read-only decode and digest of original native outputs; confirms busy refresh precedes any save and old stat rescan matches actual saved hash, so autosave/initial stat cannot mask the required race.'};fs.writeFileSync('/private/tmp/willyou-dev156-v8-audit.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,payloads:decoded.length,ordered:ordered.length}));

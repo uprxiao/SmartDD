@@ -10,6 +10,7 @@ import {
   tasksChangedEvent,
   voiceStatusChangedEvent,
   voiceGlobalErrorEvent,
+  fileCloseEvent,
 } from '@shared/events';
 import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
@@ -34,9 +35,18 @@ import { VoiceService } from './core/voice/voice-service';
 import { TypelessAdapter } from './core/voice/typeless-adapter';
 import { configureAppIdentity } from './app/identity';
 import { ProjectTransferService } from './core/projects/transfer-service';
+import { NativeFileBroker } from './core/files/native-broker';
+import { FileSourceResolver } from './core/files/sources';
+import { FileRootsService } from './core/files/roots';
+import { FileRecoveryStore } from './core/files/recovery-store';
+import { FileService } from './core/files/file-service';
+import type { FileCloseRequest } from '@shared/files';
+import { FileDiagramRenderer } from './core/files/diagram-renderer';
+import { installMediaProtocol, installViewerAssets, registerViewerAssetScheme } from './core/files/viewer-assets';
 
 // Preserve both the existing data root and Electron's safeStorage identity.
 configureAppIdentity(app, process.env.SMARTDD_USER_DATA);
+registerViewerAssetScheme();
 
 const isProbeMode = process.env.SMARTDD_PROBE === '1';
 
@@ -52,7 +62,7 @@ function baseEnv(): Record<string, string> {
 
 const events = createEventEmitter({
   emit: (channel, data) => {
-    for (const w of BrowserWindow.getAllWindows()) w.webContents.send(channel, data);
+    getMainWindow()?.webContents.send(channel, data);
   },
   on: (channel, cb) => {
     const listener = (_e: Electron.IpcMainEvent, data: unknown) => cb(data);
@@ -76,6 +86,7 @@ function openDatabase(dbFile: string): DbClient {
 
 async function main(): Promise<void> {
   await app.whenReady();
+  installViewerAssets(join(app.getAppPath(), 'out/renderer/pdf-assets'));
   // Publish our own Chromium AX tree before first focus. This does not grant
   // macOS Accessibility permission; it lets the voice bridge see empty inputs
   // without waiting for an external screen reader to activate the tree.
@@ -127,6 +138,18 @@ async function main(): Promise<void> {
     onChanged: () => events.emit(tasksChangedEvent, undefined),
   });
 
+  const fileBroker = new NativeFileBroker(app.isPackaged ? join(process.resourcesPath, 'native/willyou-files') : join(app.getAppPath(), 'out/native/willyou-files'));
+  const fileSources = new FileSourceResolver(client.db);
+  const diagrams = new FileDiagramRenderer(join(app.getAppPath(), 'out/renderer'), process.env.ELECTRON_RENDERER_URL);
+  const engineConfiguration = (engine: 'tex' | 'office' | 'libreoffice') => process.platform === 'darwin' ? { directory: app.isPackaged ? join(process.resourcesPath, 'native', engine) : join(app.getAppPath(), 'out/native', engine), userData: app.getPath('userData'), packagePath: app.isPackaged ? join(process.resourcesPath, '../..') : undefined } : undefined;
+  const files = new FileService(new FileRootsService(fileSources, fileBroker), fileBroker, new FileRecoveryStore(fileBroker, app.getPath('userData'), fileSources), diagrams, { get: () => settings.get('fileOpener'), set: (value) => settings.update('fileOpener', value) }, engineConfiguration('tex'), engineConfiguration('office'), undefined, engineConfiguration('libreoffice'), undefined, undefined, { get: () => settings.get('fileViewers'), set: value => settings.update('fileViewers', value) }, { get: () => settings.get('fileLanguages'), set: value => settings.update('fileLanguages', value) });
+  void files.tex.recover().catch((error) => console.warn('[files/tex] Temporary compilation cleanup pending:', error));
+  void files.office.recover().catch((error) => console.warn('[files/office] Temporary calculation cleanup pending:', error));
+  // Isolated acceptance may exercise the bounded binary branch with the same
+  // packaged code. This changes transport only, never its file authorization.
+  if (process.env.SMARTDD_USER_DATA && process.env.SMARTDD_M9_MEDIA_BINARY === '1') console.info('[files] Isolated media acceptance: binary transport');
+  installMediaProtocol(files.media, files.resources, Boolean(process.env.SMARTDD_USER_DATA && process.env.SMARTDD_M9_MEDIA_BINARY === '1'));
+
   ptys.on('data', (ptyId: string, data: string) => events.emit(ptyDataEvent, { ptyId, data }));
   ptys.on('exit', (ptyId: string, code: number) => events.emit(ptyExitEvent, { ptyId, code }));
   const ptyAccess = new PtyAccess({
@@ -169,6 +192,8 @@ async function main(): Promise<void> {
 
   registerRPCRouter(
     createRpcRouter({
+      files,
+      trustedRenderer: isMainRenderer,
       projectTransfer,
       voice,
       client,
@@ -196,9 +221,12 @@ async function main(): Promise<void> {
 
   app.on('activate', () => void showWindow());
 
-  let quitConfirmed = false;
+  let quitConfirmed = false, quitPending = false;
   app.on('before-quit', (event) => {
-    if (!quitConfirmed && ptys.count > 0) {
+    if (quitConfirmed) return;
+    event.preventDefault();
+    if (quitPending) return;
+    if (ptys.count > 0) {
       const choice = dialog.showMessageBoxSync({
         type: 'warning',
         buttons: ['退出', '取消'],
@@ -208,17 +236,58 @@ async function main(): Promise<void> {
         detail: '退出 WillYou 会结束这些终端进程。重新打开后可在侧栏中点任务恢复（resume）。',
       });
       if (choice !== 0) {
-        event.preventDefault();
         return;
       }
     }
-    quitConfirmed = true;
-    markAppQuitting();
+    quitPending = true;
+    void (async () => {
+      const win = getMainWindow();
+      if (win) {
+        const contents = win.webContents, frame = contents.mainFrame;
+        const owner = `${contents.id}:${frame.processId}:${frame.routingId}`;
+        const send = (request: FileCloseRequest) => {
+          if (contents.isDestroyed() || contents.mainFrame !== frame) throw new Error('原文件界面已经关闭');
+          contents.send(fileCloseEvent.name, request);
+        };
+        const resume = () => { try { send({ id: '', action: 'resume' }); } catch { /* Original renderer is gone. */ } };
+        let reply = await files.closer.request(owner, 'save', send);
+        if (!reply.ready) {
+          const choice = await dialog.showMessageBox(win, {
+            type: 'warning', buttons: ['继续查看', '放弃修改并退出'], defaultId: 0, cancelId: 0,
+            message: '部分文件尚未保存',
+            detail: `${reply.failures.slice(0, 8).map((failure) => `${failure.name}\n${failure.message}`).join('\n\n')}\n\n放弃只结束当前编辑；存在版本冲突的恢复材料会保留。`,
+          });
+          if (choice.response !== 1) { resume(); return; }
+          reply = await files.closer.request(owner, 'discard', send);
+          if (!reply.ready) {
+            await dialog.showMessageBox(win, { type: 'warning', buttons: ['继续查看'], message: '未能确认放弃修改', detail: reply.failures.slice(0, 8).map((failure) => failure.message).join('\n') });
+            resume(); return;
+          }
+        }
+        // Await the renderer's unload permission, too. Sending without an ack
+        // can race Chromium's beforeunload and strand a confirmed quit.
+        const commit = await files.closer.request(owner, 'commit', send);
+        if (!commit.ready) { resume(); return; }
+      }
+      quitConfirmed = true; markAppQuitting(); app.quit();
+    })().catch((error) => {
+      const win = getMainWindow();
+      if (win) win.webContents.send(fileCloseEvent.name, { id: '', action: 'resume' });
+      dialog.showErrorBox('文件保存确认未完成', rpcErrorMessage(error));
+    }).finally(() => { quitPending = false; });
   });
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    files.tex.dispose();
+    files.office.dispose();
+    files.pptx.dispose();
+    files.officePages.dispose();
+    diagrams.dispose();
+    files.searcher.dispose();
+    void files.watcher.dispose();
+    fileBroker.dispose();
     projectTransfer.disposeAll();
     voice.dispose();
     tasks.dispose();

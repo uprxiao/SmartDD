@@ -33,6 +33,7 @@ export function PdfCanvasPage({ engine, doc, run, number, size, zoom, review = f
         if (!review && !thumbWidth) {
           const css = page.getViewport({ scale: plan.display });
           textHost.current.replaceChildren(); textHost.current.style.setProperty('--scale-factor', String(plan.display));
+          textHost.current.style.setProperty('--total-scale-factor', String(plan.display * page.userUnit));
           textLayer = new engine.TextLayer({ textContentSource: page.streamTextContent(), container: textHost.current, viewport: css });
           await guarded(textLayer.render()); if (cancelled) return;
           const found = [];

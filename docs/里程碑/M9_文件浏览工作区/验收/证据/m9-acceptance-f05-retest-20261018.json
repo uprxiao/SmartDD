@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-F05",
+  "originalCaseRow": "| **M9-T-F05 完整语言注册表**<br>M9-R06.1 | 本期本机 | 单元／集成／安装端到端<br>U+I / D05 | 按m9-viewers-source.json的345映射生成纯UTF-8样本，逐个调用classifier。 | 记录每个filename→languageId；覆盖无扩展、复合后缀、大小写；任何与基线差异有映射说明；不把识别等同编译。<br>依据：V F02 | P08；已有候选页面；本用例全部状态尚未核验 | 未执行 | — |",
+  "levelsAndEnvironmentsUnchanged": "单元／集成／安装端到端<br>U+I / D05",
+  "stepsUnchanged": "按m9-viewers-source.json的345映射生成纯UTF-8样本，逐个调用classifier。",
+  "expectedUnchanged": "记录每个filename→languageId；覆盖无扩展、复合后缀、大小写；任何与基线差异有映射说明；不把识别等同编译。<br>依据：V F02",
+  "recordedAt": "2026-10-18T02:28:02.092061+00:00",
+  "status": "passed",
+  "layerResults": {
+    "U": "passed",
+    "I": "passed"
+  },
+  "actual": "345/345 baseline filename language IDs match; all 1380 original/literal/lower/upper forms recorded with differences explicit. 228 distinct language IDs produce actual light/dark colored tokens and exact source recovery. 345 real UTF-8 fixtures were opened by production FileService/FileBuffer and the packaged native broker; two explicit artifact overrides (potx archive, wasm binary) preserve routing. Independent disk hash/inode/mtime/ctime remain unchanged. Recognition is not compilation.",
+  "commonEvidence": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-dev038-shared-highlighting-20261018.json",
+    "sha256": "1fb5708146f5af3a88222537d4e4c1386cca88f948a122e1d9161e0936722f85"
+  },
+  "testResults": {
+    "model-tests-final.json": {
+      "numTotalTests": 19,
+      "numPassedTests": 19,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "success": true
+    },
+    "registry-r2.json": {
+      "numTotalTests": 6,
+      "numPassedTests": 6,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "success": true
+    }
+  },
+  "previousFailure": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-f05-20261018.json",
+    "sha256": "470ea6be8d43564ee47ff76799fdd1d8bddde23c84a17bb05877e491bdea5576"
+  },
+  "defects": [
+    "M9-DEV-038"
+  ],
+  "remainingForThisExplicitCase": [],
+  "separateOpenWork": [
+    "DEV038 whole UI requirement still awaits new packaged App code/Markdown/Notebook light/dark display and affected editor interaction verification. F05 explicitly requires U+I, so no extra A gate was added.",
+    "The shared implementation evidence retains the Kusto public/reference keyword difference and Mermaid fenced grammar behavior; no universal grammar semantic equivalence or pixel parity claim.",
+    "No production MCP viewer delivery is inferred from this result. F28/J12 remain separately open."
+  ],
+  "noScopeOrDenominatorChange": true
+}

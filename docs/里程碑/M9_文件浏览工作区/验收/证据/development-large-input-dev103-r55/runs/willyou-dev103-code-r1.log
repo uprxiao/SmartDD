@@ -1,0 +1,56 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/large-input.test.ts src/renderer/features/files/text-editor.test.tsx src/renderer/features/files/file-buffer.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev103-code-r1.json
+
+[1019/052229.525017:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/052229.869287:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052229.869291:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052229.869371:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/renderer/features/files/file-buffer.test.ts (27 tests) 26ms
+ ❯ src/renderer/features/files/large-input.test.ts (12 tests | 1 failed) 60ms
+     ✓ uses one editor change for the complete text at each current selection 53ms
+     ✓ leaves 0-unit ordinary input on its original path 1ms
+     ✓ leaves 65535-unit ordinary input on its original path 0ms
+     ✓ leaves 65536-unit ordinary input on its original path 0ms
+     ✓ does not reinterpret insertFromPaste 0ms
+     ✓ does not reinterpret insertCompositionText 0ms
+     ✓ does not reinterpret deleteContentBackward 1ms
+     ✓ does not reinterpret historyUndo 0ms
+     ✓ preserves noncancelable, already handled, missing-data and composing events 0ms
+     ✓ cannot widen a readonly editor capability 0ms
+     ✓ cannot widen a readonly editor capability 0ms
+     × leaves an active real EditorView composition on the existing path 2ms
+ ✓ src/renderer/features/files/text-editor.test.tsx (15 tests) 776ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/large-input.test.ts > bounded routing of large ordinary text input > leaves an active real EditorView composition on the existing path
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/features/files/large-input.test.ts:35:150
+     33|   });
+     34|   it('leaves an active real EditorView composition on the existing pat…
+     35|     const current = view(); current.contentDOM.dispatchEvent(new Compo…
+       |                                                                                                                                                      ^
+     36|     const input = event(); expect(handleLargeTextInput(input, current)…
+     37|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 53 passed (54)
+   Start at  05:22:29
+   Duration  1.79s (transform 332ms, setup 0ms, import 801ms, tests 863ms, environment 752ms)
+
+JSON report written to /private/tmp/willyou-dev103-code-r1.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -16,6 +16,7 @@ import { ThemeProvider } from '@renderer/lib/theme';
 import { Toaster } from '@renderer/lib/ui/sonner';
 import { TooltipProvider } from '@renderer/lib/ui/tooltip';
 import { ProjectTransferHost } from './views/projects/project-transfer';
+import { installFileCloseHost } from './features/files/close-host';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } } });
 
@@ -34,6 +35,7 @@ function LanguageSync({ children }: { children: ReactNode }) {
 }
 
 export function App() {
+  useEffect(installFileCloseHost, []);
   useEffect(() => {
     void tasksStore.refresh();
     return events.on(menuOpenSettingsEvent, () => navigation.openSettings());

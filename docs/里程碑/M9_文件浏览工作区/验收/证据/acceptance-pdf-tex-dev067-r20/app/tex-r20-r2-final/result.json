@@ -1,0 +1,78 @@
+{
+  "caseId": "M9-T-F16",
+  "at": "2026-10-18T08:40:22.859Z",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r20-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "c9d7a9a62b8c77680a14cbaf816468daf29eeac61e318932d7d985a3071780ce",
+  "projectPath": "/private/tmp/willyou-tex-acceptance-_5tpof9h/project",
+  "before": {
+    "success.tex": {
+      "sha256": "f780604fe3bce0a7ec4d5de0d16c21a5bca7bcceff161f4dcbd358ae360b9d25",
+      "inode": "45594805",
+      "mtimeNs": "1792312711278216849",
+      "ctimeNs": "1792312711278216849"
+    },
+    "missing-package.tex": {
+      "sha256": "51c9302863efbf77e826c64577c24550cc4a30b4bf65f7e723f2e80250f37391",
+      "inode": "45594806",
+      "mtimeNs": "1792312711278368808",
+      "ctimeNs": "1792312711278368808"
+    },
+    "no-pages.tex": {
+      "sha256": "bd72ce2a1b6e20f1664cad026fa6bba943e1401b15a1c4a1c3abb11bec85023c",
+      "inode": "45594809",
+      "mtimeNs": "1792312711278698766",
+      "ctimeNs": "1792312711278698766"
+    }
+  },
+  "checks": [
+    {
+      "file": "success.tex",
+      "kind": "success",
+      "defaultSource": true,
+      "pdfText": "TEXF16SUCCESS a2 + b2 = c21",
+      "canvas": [
+        310,
+        401
+      ],
+      "exactSourceRoundTrip": true
+    },
+    {
+      "file": "missing-package.tex",
+      "kind": "failure",
+      "defaultSource": true,
+      "error": "[INVALID_INPUT] TeX 编译失败；源码保留，未采用残留产物\nnote: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"latex\"\nnote: Running TeX ...\nnote: Writing `<编译快照>/out/missing-package.log` (830 B)\nerror: missing-package.tex:1: ! LaTeX Error: File `willyoumissingpackagef16.sty' not found.\nerror: something bad happened inside XeTeX; its output follows:\n\n===============================================================================\n(missing-package.tex\nLaTeX2e <2021-11-15> patch level 1\nL3 programming layer <2022-02-24> (article.cls\nDocument Class: article 2021/10/04 v1.4n Standard LaTeX document class\n(size10.clo))\n! ! LaTeX Error: File `willyoumissingpackagef16.sty' not found..\n\\@missingfileerror ...or: File `#1.#2' not found.}\n                                                  \nl.1 ...\\usepackage{willyoumissingpackagef16}\\begin\n                                                  {document}MUST_NOT_RENDER\\...\nNo pages of output.\nTranscript written on missing-package.log.\n===============================================================================\nerror: the XeTeX engine had an unrecoverable error\ncaused by: halted on potentially-recoverable error as specified\n",
+      "exactSourceRoundTrip": true
+    },
+    {
+      "file": "no-pages.tex",
+      "kind": "no-output",
+      "defaultSource": true,
+      "error": "[INVALID_INPUT] TeX 编译失败；源码保留，未采用残留产物\nnote: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"latex\"\nnote: Running TeX ...\nnote: Rerunning TeX because \"no-pages.aux\" changed ...\nwarning: did not produce \"no-pages.xdv\"; this may mean that your document is empty\nnote: Running xdvipdfmx ...\nwarning: did not produce \"no-pages.xdv\"; this may mean that your document is empty\nnote: Writing `<编译快照>/out/no-pages.log` (2.0166015625 KiB)\nerror: something bad happened inside xdvipdfmx; its output follows:\n\n===============================================================================\n(no-pages.tex\nLaTeX2e <2021-11-15> patch level 1\nL3 programming layer <2022-02-24> (article.cls\nDocument Class: article 2021/10/04 v1.4n Standard LaTeX document class\n(size10.clo)) (l3backend-xetex.def) (no-pages.aux) (ts1cmr.fd) (no-pages.aux) )\n\nNo pages of output.\nTranscript written on no-pages.log.\n===============================================================================\nerror: the xdvipdfmx engine had an unrecoverable error\ncaused by: cannot open \"no-pages.xdv\"\n",
+      "exactSourceRoundTrip": true
+    }
+  ],
+  "status": "passed",
+  "after": {
+    "success.tex": {
+      "sha256": "f780604fe3bce0a7ec4d5de0d16c21a5bca7bcceff161f4dcbd358ae360b9d25",
+      "inode": "45594805",
+      "mtimeNs": "1792312711278216849",
+      "ctimeNs": "1792312711278216849"
+    },
+    "missing-package.tex": {
+      "sha256": "51c9302863efbf77e826c64577c24550cc4a30b4bf65f7e723f2e80250f37391",
+      "inode": "45594806",
+      "mtimeNs": "1792312711278368808",
+      "ctimeNs": "1792312711278368808"
+    },
+    "no-pages.tex": {
+      "sha256": "bd72ce2a1b6e20f1664cad026fa6bba943e1401b15a1c4a1c3abb11bec85023c",
+      "inode": "45594809",
+      "mtimeNs": "1792312711278698766",
+      "ctimeNs": "1792312711278698766"
+    }
+  },
+  "boundary": "Actual offline engine/PDF.js in packaged App; ordinary TeX opens as source, explicit compile success/error/no-pages preserve source and expose no arbitrary shell. Missing-provider rejection is independently tested at native I; this package has the fixed provider. Not native save, all TeX packages, full TeX resource/timeout or cross-platform acceptance.",
+  "privateJobEntries": [],
+  "finishedAt": "2026-10-18T08:40:35.217Z"
+}
