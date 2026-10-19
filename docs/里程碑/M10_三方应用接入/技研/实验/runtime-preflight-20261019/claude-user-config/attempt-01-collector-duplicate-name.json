@@ -1,0 +1,173 @@
+{
+  "schema": "m10-cc-real-user-config-summary-v1",
+  "status": "has-failures",
+  "assertions": {
+    "realDefaultNativeRootUsed": true,
+    "normalSourcesAndNoStrictMcp": true,
+    "all189BaselineCommandsPreservedWithIdenticalMetadata": false,
+    "managedSkillIsOnlyAddedCommand": true,
+    "sixUserMcpDefinitionsAndToolListsPreserved": true,
+    "managedMcpConnected": true,
+    "exactPluginCollisionReplacesOriginalEntry": true,
+    "exactPluginCollisionDropsSevenSiblingCommands": true,
+    "exactMcpCollisionReplacesOriginalUserToolList": true,
+    "noCollisionToolCalled": true,
+    "realNewAndNativeResumeSucceeded": true,
+    "bothTurnsUsedExactFixtureOnly": true,
+    "ownNativeHistoryPersisted": true,
+    "settingsBytesAndConfigDefinitionsPreserved": true,
+    "runSourceHashesResolvable": true,
+    "rawEvidenceHashesMatch": true,
+    "allProbeChildrenExited": true,
+    "noKnownCdshCredentialValueInEvidence": true
+  },
+  "assertionCount": 18,
+  "sourceArtifactsByHash": {
+    "2c2512a6da7de903f081aec8ec21dac1de2c6b2d043fb16fb0a040609e7ba25f": "probe-initial.py",
+    "4e93bf90c82f20fb3b2aaf69bc8db1bb48a72d2eafd79b885f95ab93cabe1823": "probe.py"
+  },
+  "environment": {
+    "cli": "2.1.303 (Claude Code)",
+    "binarySha256": "d2da3b003dc08b88b7230469014fe3e1dc6fe94bc8f648e89b34175d30269370",
+    "profile": "cdsh",
+    "model": "deepseek-flash",
+    "nativeRoot": "/Users/liubu/.claude",
+    "HOME": "/Users/liubu",
+    "CLAUDE_CONFIG_DIR": null
+  },
+  "runs": [
+    {
+      "mode": "inventory",
+      "startedAt": "2026-10-19T08:00:50.625851+00:00",
+      "endedAt": "2026-10-19T08:00:54.360230+00:00",
+      "commandCount": 190,
+      "report": "inventory-result.json"
+    },
+    {
+      "mode": "collision",
+      "startedAt": "2026-10-19T08:01:07.812579+00:00",
+      "endedAt": "2026-10-19T08:01:11.545092+00:00",
+      "commandCount": 183,
+      "report": "collision-result.json"
+    },
+    {
+      "mode": "real-new",
+      "startedAt": "2026-10-19T08:01:27.993456+00:00",
+      "endedAt": "2026-10-19T08:01:38.270592+00:00",
+      "commandCount": 190,
+      "report": "real-new-result.json"
+    },
+    {
+      "mode": "real-resume",
+      "startedAt": "2026-10-19T08:01:54.266318+00:00",
+      "endedAt": "2026-10-19T08:02:04.969354+00:00",
+      "commandCount": 190,
+      "report": "real-resume-result.json"
+    },
+    {
+      "mode": "baseline",
+      "startedAt": "2026-10-19T08:02:25.876715+00:00",
+      "endedAt": "2026-10-19T08:02:29.691864+00:00",
+      "commandCount": 189,
+      "report": "baseline-result.json"
+    }
+  ],
+  "collisionEvidence": {
+    "plugin": {
+      "namespace": "understand-anything",
+      "replacedCommand": "understand-anything:understand",
+      "lostSiblingCommands": [
+        "understand-anything:understand-chat",
+        "understand-anything:understand-dashboard",
+        "understand-anything:understand-diff",
+        "understand-anything:understand-domain",
+        "understand-anything:understand-explain",
+        "understand-anything:understand-knowledge",
+        "understand-anything:understand-onboard"
+      ]
+    },
+    "mcp": {
+      "serverName": "chatlog",
+      "original": {
+        "source": "user",
+        "toolNames": [
+          "query_contact",
+          "query_chat_room",
+          "query_recent_chat",
+          "chatlog"
+        ]
+      },
+      "collision": {
+        "source": "dynamic",
+        "toolNames": [
+          "version_check"
+        ]
+      }
+    }
+  },
+  "configPreservation": {
+    "/Users/liubu/.claude/settings.json": {
+      "bytesUnchanged": true,
+      "changedTopLevelKeys": [],
+      "allNonRuntimeValuesUnchanged": true
+    },
+    "/Users/liubu/.claude/settings.local.json": {
+      "bytesUnchanged": true,
+      "changedTopLevelKeys": [],
+      "allNonRuntimeValuesUnchanged": true
+    },
+    "/Users/liubu/.claude.json": {
+      "bytesUnchanged": false,
+      "changedTopLevelKeys": [
+        "pluginUsage",
+        "skillUsage"
+      ],
+      "allNonRuntimeValuesUnchanged": true
+    }
+  },
+  "nativeSession": {
+    "sessionId": "a124d47e-906f-44b7-85f6-d36e922cbc7f",
+    "file": "/Users/liubu/.claude/projects/-Users-liubu-Documents-ChatGPT-SmartDD-release-m10-research-runtime-preflight-20261019-claude-user-config-project-a/a124d47e-906f-44b7-85f6-d36e922cbc7f.jsonl",
+    "sha256": "25caa5b795ee9593b6704fc6c708413b62401db21ab86a5cf9d5ea3aa9540a6c",
+    "records": 88,
+    "userDailyHistoryResumed": false
+  },
+  "exactToolChecks": [
+    {
+      "mode": "real-new",
+      "exactSkill": true,
+      "onlyExactReference": true,
+      "onlySyntheticMcp": true,
+      "noOtherTools": true
+    },
+    {
+      "mode": "real-resume",
+      "exactSkill": true,
+      "onlyExactReference": true,
+      "onlySyntheticMcp": true,
+      "noOtherTools": true
+    }
+  ],
+  "credentialScan": {
+    "scannedFileCount": 34,
+    "knownCredentialValueMatchFiles": [],
+    "valuesNeverOutput": true
+  },
+  "scope": {
+    "realUserConfiguration": true,
+    "realNativeDefaultRoot": true,
+    "realModelTurns": 2,
+    "injectedPackagesAndTool": "synthetic",
+    "userMcpToolsInvoked": false,
+    "hooksDisabled": true,
+    "TUI": false,
+    "packagedWillYou": false
+  },
+  "remainingBoundaries": [
+    "Only CC 2.1.303 with the authorized cdsh/deepseek-flash profile on this macOS arm64 machine.",
+    "playwright retained as pending within the bounded discovery window in baseline and injected cases; no claim that all user MCP services are healthy.",
+    "Global settings/profile were real; project cwd was a new synthetic directory and daily historical conversations were not resumed.",
+    "Hooks disabled for probe safety; hook behavior, interactive TUI and final WillYou launcher/broker/upgrade remain implementation/acceptance work.",
+    "Same-name collisions are observed unsafe native precedence; the required fail-closed application injection guard is a design contract, not implemented production behavior."
+  ]
+}

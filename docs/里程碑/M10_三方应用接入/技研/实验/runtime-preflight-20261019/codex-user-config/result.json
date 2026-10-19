@@ -1,0 +1,859 @@
+{
+  "schema": "m10-codex-user-config-preflight-v1",
+  "startedAt": "2026-10-19T08:02:58.759Z",
+  "environment": {
+    "cliVersion": "codex-cli 0.162.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "HOME": "/Users/liubu",
+    "CODEX_HOME": "/Users/liubu/.codex",
+    "profile": null,
+    "profileNames": []
+  },
+  "isolation": {
+    "nativeHome": true,
+    "nativeCodexHome": true,
+    "temporaryProject": true,
+    "globalSkillsWritten": false,
+    "userConfigCopied": false,
+    "authCopied": false,
+    "originalHistoryResumed": false,
+    "userBusinessToolsCalled": false
+  },
+  "cases": [
+    {
+      "name": "actual-native-config-layer-and-user-mcp-definitions-preserved",
+      "status": "passed",
+      "userMcpCount": 8,
+      "effectiveMcpCount": 9,
+      "userConfigLayerSeen": true
+    },
+    {
+      "name": "actual-user-skills-present-and-version-filtered",
+      "status": "passed",
+      "userSkillCount": 196,
+      "userSkillEnabled": 196,
+      "managed": [
+        {
+          "name": "willyou-m10-native-probe-v1",
+          "path": "<fixture>/project/.agents/skills/v1/SKILL.md",
+          "enabled": true,
+          "scope": "repo"
+        },
+        {
+          "name": "willyou-m10-native-probe-v2",
+          "path": "<fixture>/project/.agents/skills/v2/SKILL.md",
+          "enabled": false,
+          "scope": "repo"
+        }
+      ]
+    },
+    {
+      "name": "actual-user-mcp-and-managed-mcp-native-discovery-no-calls",
+      "status": "passed",
+      "userMcp": [
+        {
+          "name": "memex",
+          "seen": true,
+          "toolCount": 0,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "openaiDeveloperDocs",
+          "seen": true,
+          "toolCount": 5,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "firecrawl",
+          "seen": true,
+          "toolCount": 3,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "scrapling",
+          "seen": true,
+          "toolCount": 0,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "node_repl",
+          "seen": true,
+          "toolCount": 4,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "computer-use",
+          "seen": true,
+          "toolCount": 0,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "rea",
+          "seen": true,
+          "toolCount": 207,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "clawchat",
+          "seen": true,
+          "toolCount": 15,
+          "authStatus": "unsupported"
+        }
+      ],
+      "managed": [
+        {
+          "name": "willyou_m10_preflight_native_3eec9d1a",
+          "toolCount": 1
+        }
+      ],
+      "toolsCalled": 0
+    },
+    {
+      "name": "prelaunch-name-collision-guard-detects-existing-user-skill",
+      "status": "passed",
+      "sameName": "agent-prompts-warmup",
+      "observedPaths": [
+        {
+          "name": "agent-prompts-warmup",
+          "path": "<fixture>/project/.agents/skills/collision/SKILL.md",
+          "enabled": true,
+          "scope": "repo"
+        },
+        {
+          "name": "agent-prompts-warmup",
+          "path": "/Users/liubu/.codex/skills/agent-prompts-warmup/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        }
+      ],
+      "scope": "probe-side guard; no production adapter yet"
+    },
+    {
+      "name": "post-start-addition-is-visible-and-needs-catalog-freeze",
+      "status": "passed",
+      "addedSkill": [
+        {
+          "name": "willyou-m10-native-probe-v3",
+          "path": "<fixture>/project/.agents/skills/v3/SKILL.md",
+          "enabled": true,
+          "scope": "repo"
+        }
+      ],
+      "inference": "Startup v1/v2 list is not a deny-default policy for later paths; freeze managed discovery changes while consumers live."
+    },
+    {
+      "name": "post-start-removal-is-observed-on-force-reload",
+      "status": "passed"
+    },
+    {
+      "name": "actual-user-skill-discovery-preserved-after-fixture-mutations",
+      "status": "passed",
+      "beforeCount": 196,
+      "afterCount": 292,
+      "missingOrChanged": [],
+      "added": [
+        {
+          "name": "chatcut-desktop:asset-import",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/asset-import/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:chatcut-plugin-basics",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/chatcut-plugin-basics/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:create-motion-graphics",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/create-motion-graphics/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:digital-human",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/digital-human/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:export",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/export/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:known-errors",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/known-errors/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:multicam-sync",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/multicam-sync/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:music",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/music/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:product-help",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/product-help/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:shader-gen",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/shader-gen/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:talking-head-guide",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/talking-head-guide/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:transcription",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/transcription/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:verification",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/verification/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:video-gen",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/video-gen/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:video-translation",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/video-translation/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:voice",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/voice/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "chatcut-desktop:widget-forms",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/chatcut-desktop/1.10.14/skills/widget-forms/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-code-connect",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-code-connect/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-code-workflows",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-code-workflows/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-create-new-file",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-create-new-file/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-design-to-code",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-design-to-code/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-generate-design",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-generate-design/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-generate-diagram",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-generate-diagram/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-generate-library",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-generate-library/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-generative-plugins",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-generative-plugins/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-implement-motion",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-implement-motion/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-shaders",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-shaders/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-spec",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-spec/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-swiftui",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-swiftui/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-use",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-use/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-use-figjam",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-use-figjam/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-use-motion",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-use-motion/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "figma:figma-use-slides",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/figma/16.0.0/skills/figma-use-slides/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "google-drive:google-docs",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/google-drive/0.1.22/skills/google-docs/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "google-drive:google-drive",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/google-drive/0.1.22/skills/google-drive/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "google-drive:google-drive-comments",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/google-drive/0.1.22/skills/google-drive-comments/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "google-drive:google-sheets",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/google-drive/0.1.22/skills/google-sheets/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "google-drive:google-slides",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/google-drive/0.1.22/skills/google-slides/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-analytics-dashboard",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-analytics-dashboard/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-annual-impact-report",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-annual-impact-report/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-brand-guidelines",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-brand-guidelines/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-business-review",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-business-review/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-calder-architecture",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-calder-architecture/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-creative-campaign-brief",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-creative-campaign-brief/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-design-report",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-design-report/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-experiment-analysis",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-experiment-analysis/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-financial-budget",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-financial-budget/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-growth-strategy",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-growth-strategy/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-investment-committee-memo",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-investment-committee-memo/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-legal-memorandum",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-legal-memorandum/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-market-trends-report",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-market-trends-report/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-minimal-letterhead",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-minimal-letterhead/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-next-generation-os",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-next-generation-os/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-operating-calendar",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-operating-calendar/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-photography-portfolio",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-photography-portfolio/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-product-pitch",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-product-pitch/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-product-strategy",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-product-strategy/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-project-kickoff",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-project-kickoff/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-project-tracker",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-project-tracker/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-sales-pipeline",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-sales-pipeline/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-state-of-art",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-state-of-art/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-strategy-memorandum",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-strategy-memorandum/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-system-design",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-system-design/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-three-statement-forecast",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-three-statement-forecast/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "openai-templates:artifact-template-weekly-business-review",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.6/skills/artifact-template-weekly-business-review/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "pages:maintain-space",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/pages/0.1.23/skills/maintain-space/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "pages:manage-schedules",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/pages/0.1.23/skills/manage-schedules/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "pages:organize-space",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/pages/0.1.23/skills/organize-space/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "pages:write-page",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/pages/0.1.23/skills/write-page/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "plugin-management:plugin-management",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/plugin-management/0.1.0/skills/plugin-management/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:audit",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/audit/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:design-qa",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/design-qa/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:get-context",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/get-context/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:ideate",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/ideate/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:image-to-code",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/image-to-code/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:index",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/index/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:research",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/research/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:share",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/share/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:url-to-code",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/url-to-code/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "product-design:user-context",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/product-design/0.1.56/skills/user-context/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-best-practices",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-best-practices/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-captions",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-captions/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-create",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-create/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-docs",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-docs/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-interactivity",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-interactivity/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-maps",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-maps/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-markup",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-markup/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-multimedia",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-multimedia/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-render",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-render/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-saas",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-saas/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-studio",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-studio/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "remotion:remotion-upgrade",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/remotion/4.0.534/skills/remotion-upgrade/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "sites:sites",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/sites/1.0.1/skills/sites/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "work-pets:create-pet",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/work-pets/0.1.6/skills/create-pet/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "work-pets:pets",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/work-pets/0.1.6/skills/pets/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        },
+        {
+          "name": "work-pets:update-pet",
+          "path": "/Users/liubu/.codex/plugins/cache/openai-curated-remote/work-pets/0.1.6/skills/update-pet/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        }
+      ],
+      "exactSortedMatch": false
+    },
+    {
+      "name": "actual-native-root-new-session-real-skill-and-mcp",
+      "status": "passed",
+      "ok": true,
+      "turnStatus": "completed",
+      "bodyMarkerSeen": true,
+      "nonceVerified": true,
+      "toolCalls": [
+        {
+          "type": "mcpToolCall",
+          "server": "willyou_m10_preflight_native_3eec9d1a",
+          "tool": "version_nonce",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "name": "actual-native-root-same-id-resume",
+      "status": "passed",
+      "priorTurns": 1,
+      "rolloutPath": "/Users/liubu/.codex/sessions/2026/10/19/rollout-2026-10-19T16-03-12-01a1532f-a053-7792-9413-e4af24f0c07e.jsonl"
+    },
+    {
+      "name": "actual-native-root-resumed-real-skill-and-mcp",
+      "status": "passed",
+      "ok": true,
+      "turnStatus": "completed",
+      "bodyMarkerSeen": true,
+      "nonceVerified": true,
+      "toolCalls": [
+        {
+          "type": "mcpToolCall",
+          "server": "willyou_m10_preflight_native_3eec9d1a",
+          "tool": "version_nonce",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "name": "immutable-fixture-files-unchanged",
+      "status": "passed"
+    }
+  ],
+  "configReadShape": [
+    "config",
+    "origins",
+    "layers"
+  ],
+  "userSkillInventorySha256": "fada81ef5dbddde304f3bb11aaf7d7beb9fbed7ef197349a229fd285336a3a38",
+  "ownNativeThreadId": "01a1532f-a053-7792-9413-e4af24f0c07e",
+  "ownProbeThreadArchived": true,
+  "status": "passed-with-boundaries",
+  "originalFiles": [
+    {
+      "path": "/Users/liubu/.codex/config.toml",
+      "before": "de2d8763c33d02ff9e697c24ba1e5245add91214dcbe86f4faa50f9ff5cdb4ce",
+      "after": "de2d8763c33d02ff9e697c24ba1e5245add91214dcbe86f4faa50f9ff5cdb4ce",
+      "unchanged": true
+    },
+    {
+      "path": "/Users/liubu/.codex/auth.json",
+      "before": "649d65518e238fd2aad31e99aefa4dba645779c1ba1d3c9be4bbfa23956f329f",
+      "after": "649d65518e238fd2aad31e99aefa4dba645779c1ba1d3c9be4bbfa23956f329f",
+      "unchanged": true
+    },
+    {
+      "path": "/Users/liubu/.codex/hooks.json",
+      "before": "ae2f3e12882037f03bf23b20f817691803b7fc86c32b4f4cf5951a1c609e51df",
+      "after": "ae2f3e12882037f03bf23b20f817691803b7fc86c32b4f4cf5951a1c609e51df",
+      "unchanged": true
+    }
+  ],
+  "clients": [
+    {
+      "name": "native-config-discovery",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list",
+        "thread/start",
+        "mcpServerStatus/list",
+        "skills/list",
+        "skills/list",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "exited": true
+    },
+    {
+      "name": "native-root-real-new-v1",
+      "methods": [
+        "initialize",
+        "thread/start",
+        "turn/start"
+      ],
+      "unexpectedRequests": [],
+      "exited": true
+    },
+    {
+      "name": "native-root-resume-v1",
+      "methods": [
+        "initialize",
+        "thread/resume",
+        "turn/start",
+        "thread/archive"
+      ],
+      "unexpectedRequests": [],
+      "exited": true
+    }
+  ],
+  "cleanup": {
+    "temporaryProjectRemoved": true,
+    "allChildrenExited": true,
+    "ownNativeHistoryArchivedRatherThanDeleted": true
+  },
+  "limitations": [
+    "Actual user HOME and CODEX_HOME, temporary project; no global managed Skill projection was installed.",
+    "No real user business MCP tool was called. Discovery preserves user servers; model-only phase disables them and plugins/hooks/shell/apps for bounded synthetic execution.",
+    "Uses app-server protocol, not TUI; own new native history only, not existing business conversations.",
+    "No configured user profiles on this machine; named profile combinations remain a future versioned compatibility check.",
+    "WillYou production launcher, shared global catalog lock, error UI, and package upgrade remain implementation/acceptance work."
+  ],
+  "sourceSha256": "29ab983f29957c9695b84442e5c73f82ca68ed8a418b4d865d45814d5bd4db22",
+  "finishedAt": "2026-10-19T08:03:41.532Z"
+}

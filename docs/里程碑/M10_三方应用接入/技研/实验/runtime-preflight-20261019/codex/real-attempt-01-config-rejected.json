@@ -1,0 +1,49 @@
+{
+  "schema": "m10-codex-real-model-preflight-v1",
+  "startedAt": "2026-10-19T07:30:32.984Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "cliVersion": "codex-cli 0.162.1",
+    "model": "gpt-6.1-sol"
+  },
+  "isolation": {
+    "temporaryHome": true,
+    "temporaryCodexHome": true,
+    "userConfigCopied": false,
+    "userChatRead": false,
+    "originalAuthModified": false,
+    "temporaryAuthCopy": true,
+    "refreshTokenRemoved": true,
+    "syntheticOnly": true
+  },
+  "cases": [],
+  "limitations": [
+    "Isolated user discovery root and native state; production global-root merge and packaged WillYou remain unverified.",
+    "This probe uses real model turns with synthetic inputs; it does not test business APIs or GUI terminal behavior."
+  ],
+  "status": "blocked",
+  "error": "new-v1 initialize timeout",
+  "clients": [
+    {
+      "name": "new-v1",
+      "methods": [
+        "initialize"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [],
+      "stderrTail": "Error: model_providers contains reserved built-in provider IDs: `openai`. Built-in providers cannot be overridden. Rename your custom provider (for example, `openai-custom`).\nin `model_providers`\n\n"
+    }
+  ],
+  "authUnchanged": true,
+  "cleanup": {
+    "allChildrenExited": true,
+    "temporaryAuthAndFixtureRemoved": true
+  },
+  "sourceHashes": {
+    "real-model-probe.mjs": "530289c18cb6ca49801e71d199328184b50ceaf12b4f2a94a1ad029c7dc81c59",
+    "probe.mjs": "0fc58cb5db88fdcd587bb8d4a40c39196e0be143cd48ff0302064046de2b9cad"
+  },
+  "finishedAt": "2026-10-19T07:30:48.023Z"
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "m10-static-design-review-v1",
+  "reviewedAt": "2026-10-19T04:43:57.169040+00:00",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "worktree": "uncommitted; existing prototype and document changes preserved",
+  "scope": "static design and source review; two synthetic in-memory model observations; no new product behavior changes",
+  "confirmedThisTurn": "R10-14 / V01-V09 accepted for first version; no overall production development authorization",
+  "findingCount": 20,
+  "findingCategories": {
+    "productDiscussion": 12,
+    "engineeringOrVerification": 6,
+    "confirmedRuleAlignment": 2
+  },
+  "observations": [
+    {
+      "id": "A02",
+      "method": "Node ESM import of existing prototype model, synthetic object only",
+      "before": [
+        "zt-second",
+        "fox-demo"
+      ],
+      "afterDisable": [
+        "fox-demo"
+      ],
+      "afterReenable": [
+        "fox-demo",
+        "zt-demo"
+      ],
+      "interpretation": "Turning app off and on replaces selected second connection with first eligible connection."
+    },
+    {
+      "id": "A08",
+      "method": "Same in-memory state, projectPackages with local mailbox and no SMTP",
+      "actualMailTools": [
+        "mail.search",
+        "mail.read"
+      ],
+      "interpretation": "mail.draft is absent without SMTP in current prototype model."
+    }
+  ],
+  "sourceFingerprints": [
+    {
+      "path": "docs/里程碑/M10_三方应用接入/调研/整体设计问题清单_R1.6_20261019.md",
+      "sha256": "4b63d47e158ec6f9b3c39f0939cfe8f96848062fd0ee37fa1058228acf8532e1"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/需求.md",
+      "sha256": "685bfdf0cdb0efb7514f05d6385c9f31dbca004e119e176608e700335f6c8b82"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/README.md",
+      "sha256": "6b04e9a99dca6b8b486a5cc883f54739d25efde913fd83eeac62ae38a47c963e"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/原型说明与变更.md",
+      "sha256": "b2af969d6f379fd3f5ef83307384dbe9134626e0127cb16dff3ec4523b13101f"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/调研/业务待决与后续验证V2.md",
+      "sha256": "20185405feed99ac4b6f6c9027504d5afbce8ed414ccb76d9f2ada212a2c0e67"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/技术方案.md",
+      "sha256": "084bf1d83a5100371341a3ef7728f4bdf6483b991bd5a079e747215f05829497"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/应用包与Agent运行时详细设计R1.6.md",
+      "sha256": "3304ed9f0819a73256d047eb2f0b2dc09534ae8163dcc54a4736956f372c666e"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/多Agent路径与扩展架构说明R1.6.md",
+      "sha256": "29c764761188076f45f78cca1b734548ba79a38842ee683b774f1d689d7008ce"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/MCP到主进程桥接候选V2.md",
+      "sha256": "010f2d6b9de6e3f03381588764e5b0ea4b7aeb1605a3fc5d45d55a73c56fc8e4"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/验收/测试用例.md",
+      "sha256": "91668a1ca7cb453d920258676f89ce93ec70908cca7c453e3d57f12a8eb41577"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/验收/执行与缺陷记录.md",
+      "sha256": "d512a9b9dcf26b14276d1044b33432f935633acf534351dd4bfa5aa454b430da"
+    },
+    {
+      "path": "prototypes/m6-codex/AGENTS.md",
+      "sha256": "68f2dab6a21d6ba0a75bbac4be18fc37b5788ec7e86dc915124e8c6070fe09cd"
+    },
+    {
+      "path": "prototypes/m6-codex/src/App.jsx",
+      "sha256": "c09431f8e4cc78aa0ac5f275b38ad50d33bf5402e1e4c31a26d55a8c278c4319"
+    },
+    {
+      "path": "prototypes/m6-codex/src/IntegrationPackageUI.jsx",
+      "sha256": "13c58917ab15878739da56e0f154ac4c0e3dfd8f6b8983a31c8021a243db82fb"
+    },
+    {
+      "path": "prototypes/m6-codex/src/IntegrationWorkspace.jsx",
+      "sha256": "1499c6ba6ddcea83b0bb6efa863a4ddda8a578b4b0064e82749a4f821949ce2e"
+    },
+    {
+      "path": "prototypes/m6-codex/src/integration-model.mjs",
+      "sha256": "374320700cbb15b23e3114c270949b7a4c22a059b11e4544661ea6b86e493f13"
+    },
+    {
+      "path": "src/main/core/tasks/task-service.ts",
+      "sha256": "4a75027b7d7d17378d1fbaa6a293174217e46c459c2439096eb3404b1be6b793"
+    }
+  ],
+  "notExecuted": [
+    "browser walkthrough or new screenshots",
+    "visual parity acceptance",
+    "native Agent discovery/resume/concurrency",
+    "real external business operations",
+    "SQLite migration or package cleanup",
+    "production tests or packaged application acceptance"
+  ],
+  "documentationValidation": {
+    "status": "passed",
+    "checkedAt": "2026-10-19T04:43:57.411730+00:00",
+    "localMarkdownFileTargets": 423,
+    "productCaseCount": 72,
+    "newProductTestsExecuted": 0,
+    "evidence": "docs/里程碑/M10_三方应用接入/验收/证据/m10-runtime-design-r16-20261019.json"
+  }
+}

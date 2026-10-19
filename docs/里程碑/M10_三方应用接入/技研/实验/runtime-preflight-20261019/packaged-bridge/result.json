@@ -1,0 +1,292 @@
+{
+  "schema": "willyou-a19-packaged-runtime-probe-v1",
+  "startedAt": "2026-10-19T07:30:16.095352+00:00",
+  "status": "passed",
+  "scope": "Existing packaged Electron runtime + analyst-owned harmless stdio bridge",
+  "notCovered": [
+    "Production M10 MCP bridge, packaging or packaged-app GUI lifecycle",
+    "Agent discovery, model invocation, skill loading, resume or authorization",
+    "Real ZenTao, Foxmail, SMTP, user data, credentials or business actions",
+    "Windows, Linux, macOS x64, other Electron builds or future host upgrades",
+    "Full MCP specification conformance or external client interoperability"
+  ],
+  "sourceHashes": {
+    "fixture-bridge.cjs": "f379a16a0606ad57bc1f02be93d82cca754d85bd43a54162eac48fa505f1dbaf",
+    "run_probe.py": "9c232d370d97bf3daf9fdf77f1347ee6fcd689c304c7eff510ccc50e7d562595"
+  },
+  "artifactBefore": {
+    "app": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app",
+    "bundleIdentifier": "com.smartdd.desktop",
+    "bundleName": "SmartDD",
+    "bundleVersion": "0.0.4",
+    "shortVersion": "0.0.4",
+    "executable": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD",
+    "artifacts": [
+      {
+        "path": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD",
+        "size": 33968,
+        "sha256": "d9a9add305ad5300278ae01231bc109a0a3468117653fbdf0971a5a2db63004c"
+      },
+      {
+        "path": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework",
+        "size": 190956272,
+        "sha256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709"
+      },
+      {
+        "path": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/Resources/app.asar",
+        "size": 21136163,
+        "sha256": "fd9e549e6a27519aac4ae4ca4c82455d4ad10f82b4b690caf2eae82c1744089b"
+      }
+    ],
+    "fileDescription": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD: Mach-O 64-bit executable arm64"
+  },
+  "processEnvironment": {
+    "mode": "allowlist",
+    "forwardedKeys": [
+      "PATH",
+      "LANG"
+    ],
+    "setKeys": [
+      "ELECTRON_RUN_AS_NODE=1",
+      "TMPDIR=<research work directory>"
+    ]
+  },
+  "checks": [
+    "Two concurrent processes used the selected packaged Electron executable",
+    "initialize + notifications/initialized + tools/list + tools/call completed per bridge",
+    "Each bridge returned only its supplied fixture version marker",
+    "Runtime identified Darwin arm64 and real Electron/Node versions",
+    "stdout contained exactly three JSON-RPC response lines per process; diagnostics only on stderr",
+    "Both processes exited with code 0 after stdin EOF"
+  ],
+  "runs": [
+    {
+      "marker": "fixture-v1",
+      "pid": 10373,
+      "command": [
+        "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD",
+        "/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/packaged-bridge/fixture-bridge.cjs",
+        "fixture-v1"
+      ],
+      "requests": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "method": "initialize",
+          "params": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {},
+            "clientInfo": {
+              "name": "a19-python-fixture-driver",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "notifications/initialized"
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "method": "tools/list",
+          "params": {}
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 3,
+          "method": "tools/call",
+          "params": {
+            "name": "will_you_preflight_version",
+            "arguments": {}
+          }
+        }
+      ],
+      "responses": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {
+              "tools": {
+                "listChanged": false
+              }
+            },
+            "serverInfo": {
+              "name": "willyou-a19-packaged-runtime-fixture",
+              "version": "fixture-v1"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "result": {
+            "tools": [
+              {
+                "name": "will_you_preflight_version",
+                "description": "Return this harmless fixture marker and runtime identity.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 3,
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"marker\":\"fixture-v1\",\"runtime\":{\"electron\":\"42.11.14\",\"node\":\"24.19.0\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"execPath\":\"/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD\"}}"
+              }
+            ],
+            "isError": false
+          }
+        }
+      ],
+      "stdout": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{\"listChanged\":false}},\"serverInfo\":{\"name\":\"willyou-a19-packaged-runtime-fixture\",\"version\":\"fixture-v1\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"will_you_preflight_version\",\"description\":\"Return this harmless fixture marker and runtime identity.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}]}}\n{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"marker\\\":\\\"fixture-v1\\\",\\\"runtime\\\":{\\\"electron\\\":\\\"42.11.14\\\",\\\"node\\\":\\\"24.19.0\\\",\\\"platform\\\":\\\"darwin\\\",\\\"arch\\\":\\\"arm64\\\",\\\"execPath\\\":\\\"/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD\\\"}}\"}],\"isError\":false}}\n",
+      "stderr": "bridge fixture started: fixture-v1\n",
+      "exitCode": 0
+    },
+    {
+      "marker": "fixture-v2",
+      "pid": 10374,
+      "command": [
+        "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD",
+        "/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/packaged-bridge/fixture-bridge.cjs",
+        "fixture-v2"
+      ],
+      "requests": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "method": "initialize",
+          "params": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {},
+            "clientInfo": {
+              "name": "a19-python-fixture-driver",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "notifications/initialized"
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "method": "tools/list",
+          "params": {}
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 3,
+          "method": "tools/call",
+          "params": {
+            "name": "will_you_preflight_version",
+            "arguments": {}
+          }
+        }
+      ],
+      "responses": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {
+              "tools": {
+                "listChanged": false
+              }
+            },
+            "serverInfo": {
+              "name": "willyou-a19-packaged-runtime-fixture",
+              "version": "fixture-v2"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "result": {
+            "tools": [
+              {
+                "name": "will_you_preflight_version",
+                "description": "Return this harmless fixture marker and runtime identity.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 3,
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"marker\":\"fixture-v2\",\"runtime\":{\"electron\":\"42.11.14\",\"node\":\"24.19.0\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"execPath\":\"/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD\"}}"
+              }
+            ],
+            "isError": false
+          }
+        }
+      ],
+      "stdout": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{\"listChanged\":false}},\"serverInfo\":{\"name\":\"willyou-a19-packaged-runtime-fixture\",\"version\":\"fixture-v2\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"will_you_preflight_version\",\"description\":\"Return this harmless fixture marker and runtime identity.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}]}}\n{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"marker\\\":\\\"fixture-v2\\\",\\\"runtime\\\":{\\\"electron\\\":\\\"42.11.14\\\",\\\"node\\\":\\\"24.19.0\\\",\\\"platform\\\":\\\"darwin\\\",\\\"arch\\\":\\\"arm64\\\",\\\"execPath\\\":\\\"/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD\\\"}}\"}],\"isError\":false}}\n",
+      "stderr": "bridge fixture started: fixture-v2\n",
+      "exitCode": 0
+    }
+  ],
+  "cleanup": [
+    {
+      "pid": 10373,
+      "action": "already-exited",
+      "returnCode": 0
+    },
+    {
+      "pid": 10374,
+      "action": "already-exited",
+      "returnCode": 0
+    }
+  ],
+  "artifactAfter": {
+    "app": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app",
+    "bundleIdentifier": "com.smartdd.desktop",
+    "bundleName": "SmartDD",
+    "bundleVersion": "0.0.4",
+    "shortVersion": "0.0.4",
+    "executable": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD",
+    "artifacts": [
+      {
+        "path": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD",
+        "size": 33968,
+        "sha256": "d9a9add305ad5300278ae01231bc109a0a3468117653fbdf0971a5a2db63004c"
+      },
+      {
+        "path": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework",
+        "size": 190956272,
+        "sha256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709"
+      },
+      {
+        "path": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/Resources/app.asar",
+        "size": 21136163,
+        "sha256": "fd9e549e6a27519aac4ae4ca4c82455d4ad10f82b4b690caf2eae82c1744089b"
+      }
+    ],
+    "fileDescription": "/Users/liubu/Documents/ChatGPT/SmartDD/release/mac-arm64/SmartDD.app/Contents/MacOS/SmartDD: Mach-O 64-bit executable arm64"
+  },
+  "artifactUnchanged": true,
+  "finishedAt": "2026-10-19T07:30:16.405251+00:00"
+}

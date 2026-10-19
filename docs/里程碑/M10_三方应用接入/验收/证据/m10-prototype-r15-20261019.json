@@ -1,0 +1,164 @@
+{
+  "schema": "m10-prototype-r15-evidence-v1",
+  "recorded_at": "2026-10-19T10:02:05.364542+08:00",
+  "requirement": "R1.5-20261019 / M10-R10",
+  "prototype": "V3",
+  "authorization": "本次会话用户明确要求优化原型并加入应用包设计；不含生产开发或发布",
+  "branch": "feature/0.0.1",
+  "base_commit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "worktree_uncommitted": true,
+  "environment": {
+    "os": "macOS 26.6.1",
+    "arch": "arm64",
+    "browser": "Google Chrome native UI via cua_repl",
+    "window_pixels": [
+      1675,
+      949
+    ]
+  },
+  "automated": {
+    "m10_plus_existing_models_and_sites": {
+      "tests": 22,
+      "pass": 22,
+      "fail": 0,
+      "skipped": 0
+    },
+    "shared_file_models": {
+      "tests": 192,
+      "pass": 192,
+      "fail": 0,
+      "skipped": 0
+    },
+    "build": {
+      "result": "passed",
+      "existing_warning": "chunk size over 500 kB",
+      "sites_artifacts": "dist/client/index.html, dist/server/index.js, dist/.openai/hosting.json"
+    }
+  },
+  "gui_checks": [
+    {
+      "id": "project-entry",
+      "result": "observed_pass",
+      "scope": "项目新增应用页签；应用版本、Skill归属、连接及使用入口可见"
+    },
+    {
+      "id": "binding-sync",
+      "result": "observed_pass",
+      "scope": "AIS邮件停用同步至全局并禁用使用按钮，恢复后可用"
+    },
+    {
+      "id": "package-content",
+      "result": "observed_pass",
+      "scope": "禅道2个Skill、邮件1个Skill；包内容展开区分候选工具"
+    },
+    {
+      "id": "skill-management",
+      "result": "observed_pass",
+      "scope": "项目Skill页显示应用包版本与配套Skill归属，无重复开关"
+    },
+    {
+      "id": "session-load",
+      "result": "observed_pass",
+      "scope": "项目选用不冒充会话加载；模拟加载后示例可插入"
+    },
+    {
+      "id": "input-preserved",
+      "result": "observed_pass",
+      "scope": "existing-prefix追加研发需求示例后保留，未自动回车，光标仍在同一输入行"
+    },
+    {
+      "id": "upgrade-failure",
+      "result": "observed_pass",
+      "scope": "迁移失败保持旧包1.0.0、3连接、3绑定、1记录，可重试"
+    },
+    {
+      "id": "upgrade-success",
+      "result": "observed_pass",
+      "scope": "成功到1.1.0，3连接／3绑定／1记录保留"
+    },
+    {
+      "id": "session-stale",
+      "result": "observed_pass",
+      "scope": "旧会话v1.0.0提示待同步；再次模拟加载后显示新版本已加载"
+    },
+    {
+      "id": "reload",
+      "result": "observed_pass",
+      "scope": "浏览器刷新后1.1.0及AIS配套Skill归属／选用仍恢复"
+    },
+    {
+      "id": "project-isolation",
+      "result": "observed_pass",
+      "scope": "WillYou项目仍只选禅道，邮件未启用"
+    },
+    {
+      "id": "no-running-session",
+      "result": "observed_pass",
+      "scope": "在WillYou使用示例只填入新任务描述，未自动启动"
+    },
+    {
+      "id": "visual-scoped",
+      "result": "observed_pass",
+      "scope": "浅色项目页、深色禅道包展开、1675x949窗口及150%浏览器放大的项目布局已查看；最终恢复100%"
+    },
+    {
+      "id": "repeat-upgrade-preview",
+      "result": "observed_pass",
+      "scope": "已升级状态显示当前v1.1.0；重置演示版本后回到1.0.0→1.1.0，3连接／3绑定／1记录保持，未执行真实降级"
+    },
+    {
+      "id": "source-project-context",
+      "result": "observed_pass",
+      "scope": "从WillYou项目应用卡进入禅道详情，当前应用项目仍为WillYou；没有回退至AIS"
+    }
+  ],
+  "new_screenshots_archived": false,
+  "screenshots_note": "通过工具实际查看图像，但未保存本轮PNG；V2旧截图不得冒充V3",
+  "not_verified": [
+    "真实SQLite迁移／程序安装升级",
+    "真实CLI／模型发现或调用新工具与Skill",
+    "全部明暗／悬停／焦点／长文案组合的像素验收",
+    "独立1024窗口和其他平台",
+    "R1.4流转写动作"
+  ],
+  "snapshots": {
+    "before": "release/m10-research/before-prototype-r15-20261019/",
+    "current": "release/m10-research/prototype-r15-baseline-20261019/"
+  },
+  "files": [
+    {
+      "path": "prototypes/m6-codex/src/App.jsx",
+      "sha256": "c09431f8e4cc78aa0ac5f275b38ad50d33bf5402e1e4c31a26d55a8c278c4319"
+    },
+    {
+      "path": "prototypes/m6-codex/src/ProjectWorkspace.jsx",
+      "sha256": "d6a8c723b4d166d29de769eb7fe9a3835c7ebf2cf1d6cd46b28df57ed0665629"
+    },
+    {
+      "path": "prototypes/m6-codex/src/CapabilitiesPanel.jsx",
+      "sha256": "6a0b0e7f80a4c662bdc37cd15f1af165675bfbb6481d4a11f3605051f751a567"
+    },
+    {
+      "path": "prototypes/m6-codex/src/IntegrationWorkspace.jsx",
+      "sha256": "1499c6ba6ddcea83b0bb6efa863a4ddda8a578b4b0064e82749a4f821949ce2e"
+    },
+    {
+      "path": "prototypes/m6-codex/src/IntegrationPackageUI.jsx",
+      "sha256": "13c58917ab15878739da56e0f154ac4c0e3dfd8f6b8983a31c8021a243db82fb"
+    },
+    {
+      "path": "prototypes/m6-codex/src/integration-model.mjs",
+      "sha256": "374320700cbb15b23e3114c270949b7a4c22a059b11e4544661ea6b86e493f13"
+    },
+    {
+      "path": "prototypes/m6-codex/src/integration.css",
+      "sha256": "e5187e1191e49e73caab65a182401ad93921d8ee02f3bcf2010a65af952630c9"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/integration-model.test.mjs",
+      "sha256": "df66eff6e996e2c74b8f833a0bb08298bd77cf11866285512679db8ebca07192"
+    }
+  ],
+  "final_route": "http://127.0.0.1:4176/?preview=m10#project/ais/apps",
+  "final_browser_zoom": "100%"
+}

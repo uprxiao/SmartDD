@@ -1,0 +1,485 @@
+{
+  "schema": "m10-mixed-discovery-preflight-v1",
+  "startedAt": "2026-10-19T07:39:15.621Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "codex": "codex-cli 0.162.1",
+    "claude": "2.1.303 (Claude Code)"
+  },
+  "isolation": {
+    "sharedSyntheticHome": true,
+    "separateNativeSubdirectories": true,
+    "realAuthRead": false,
+    "realModel": false,
+    "modelEndpoint": "http://127.0.0.1:1",
+    "settingsSourcesOverride": false,
+    "strictMcpConfig": false,
+    "bareMode": false,
+    "safeMode": false,
+    "originalUserRootsModified": false
+  },
+  "cases": [
+    {
+      "name": "codex-project-a-v1",
+      "level": "native-discovery",
+      "skills": [
+        {
+          "name": "user-shared-fixture",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/user-shared-fixture/SKILL.md"
+        },
+        {
+          "name": "willyou-codex-v1",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/willyou-codex-v1/SKILL.md"
+        },
+        {
+          "name": "willyou-codex-v2",
+          "enabled": false,
+          "path": "<fixture>/home/.agents/skills/willyou-codex-v2/SKILL.md"
+        }
+      ],
+      "mcp": {
+        "data": [
+          {
+            "name": "managed_codex_mcp",
+            "runtimeStatus": null,
+            "pluginId": null,
+            "httpOrigin": null,
+            "serverInfo": {
+              "name": "managed_codex_marker",
+              "title": null,
+              "version": "1.0.0",
+              "description": null,
+              "icons": null,
+              "websiteUrl": null
+            },
+            "serverCapabilities": {
+              "tools": {}
+            },
+            "tools": {
+              "managed_codex_marker": {
+                "name": "managed_codex_marker",
+                "description": "Synthetic read-only marker. No business data.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                },
+                "annotations": {
+                  "readOnlyHint": true,
+                  "destructiveHint": false,
+                  "idempotentHint": true,
+                  "openWorldHint": false
+                }
+              }
+            },
+            "toolsError": null,
+            "resources": [],
+            "resourceTemplates": [],
+            "authStatus": "unsupported"
+          },
+          {
+            "name": "user_codex_mcp",
+            "runtimeStatus": null,
+            "pluginId": null,
+            "httpOrigin": null,
+            "serverInfo": {
+              "name": "user_codex_marker",
+              "title": null,
+              "version": "1.0.0",
+              "description": null,
+              "icons": null,
+              "websiteUrl": null
+            },
+            "serverCapabilities": {
+              "tools": {}
+            },
+            "tools": {
+              "user_codex_marker": {
+                "name": "user_codex_marker",
+                "description": "Synthetic read-only marker. No business data.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                },
+                "annotations": {
+                  "readOnlyHint": true,
+                  "destructiveHint": false,
+                  "idempotentHint": true,
+                  "openWorldHint": false
+                }
+              }
+            },
+            "toolsError": null,
+            "resources": [],
+            "resourceTemplates": [],
+            "authStatus": "unsupported"
+          }
+        ],
+        "nextCursor": null
+      }
+    },
+    {
+      "name": "claude-project-a-v2",
+      "level": "native-control-initialize",
+      "initializeSucceeded": true,
+      "allCommandNames": [
+        "user-cc-fixture",
+        "deep-research",
+        "willyou-cc-v2:app-v2",
+        "dataviz",
+        "update-config",
+        "verify",
+        "debug",
+        "code-review",
+        "simplify",
+        "batch",
+        "fewer-permission-prompts",
+        "doctor",
+        "loop",
+        "claude-api",
+        "workflow-authoring",
+        "run",
+        "run-skill-generator",
+        "plugin-authoring",
+        "agents",
+        "auto-mode-setup",
+        "autocompact",
+        "clear",
+        "color",
+        "compact",
+        "config",
+        "output-style",
+        "context",
+        "effort",
+        "fast",
+        "focus",
+        "heapdump",
+        "init",
+        "mcp",
+        "model",
+        "__remote-workflow",
+        "workflow-launch-exec",
+        "reload-plugins",
+        "reload-skills",
+        "rename",
+        "security-review",
+        "usage",
+        "insights",
+        "recap",
+        "goal",
+        "list-agents",
+        "team-onboarding"
+      ],
+      "fixtureCommands": [
+        {
+          "name": "user-cc-fixture",
+          "description": "User-owned native Claude skill. (user)",
+          "argumentHint": ""
+        },
+        {
+          "name": "willyou-cc-v2:app-v2",
+          "description": "(willyou-cc-v2) Managed Claude fixture v2.",
+          "argumentHint": "",
+          "aliases": [
+            "app-v2"
+          ]
+        }
+      ],
+      "sessionState": "idle",
+      "authSource": "ANTHROPIC_API_KEY",
+      "mcpChecks": [
+        [
+          {
+            "name": "user_cc_mcp",
+            "status": "pending"
+          },
+          {
+            "name": "managed_cc_mcp",
+            "status": "pending"
+          }
+        ],
+        [
+          {
+            "name": "user_cc_mcp",
+            "status": "connected"
+          },
+          {
+            "name": "managed_cc_mcp",
+            "status": "connected"
+          }
+        ]
+      ],
+      "mcpServers": [
+        {
+          "name": "user_cc_mcp",
+          "status": "connected",
+          "scope": "user",
+          "source": "user",
+          "tools": [
+            {
+              "name": "user_cc_marker",
+              "annotations": {
+                "readOnly": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "managed_cc_mcp",
+          "status": "connected",
+          "scope": "dynamic",
+          "source": "dynamic",
+          "tools": [
+            {
+              "name": "managed_cc_marker",
+              "annotations": {
+                "readOnly": true
+              }
+            }
+          ]
+        }
+      ],
+      "stderr": "",
+      "processAlive": true,
+      "allEventTypes": [
+        "control_response",
+        "control_response",
+        "control_response"
+      ]
+    },
+    {
+      "name": "codex-project-b-disabled",
+      "level": "native-discovery",
+      "skills": [
+        {
+          "name": "user-shared-fixture",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/user-shared-fixture/SKILL.md"
+        },
+        {
+          "name": "willyou-codex-v1",
+          "enabled": false,
+          "path": "<fixture>/home/.agents/skills/willyou-codex-v1/SKILL.md"
+        },
+        {
+          "name": "willyou-codex-v2",
+          "enabled": false,
+          "path": "<fixture>/home/.agents/skills/willyou-codex-v2/SKILL.md"
+        }
+      ],
+      "mcp": {
+        "data": [
+          {
+            "name": "user_codex_mcp",
+            "runtimeStatus": null,
+            "pluginId": null,
+            "httpOrigin": null,
+            "serverInfo": {
+              "name": "user_codex_marker",
+              "title": null,
+              "version": "1.0.0",
+              "description": null,
+              "icons": null,
+              "websiteUrl": null
+            },
+            "serverCapabilities": {
+              "tools": {}
+            },
+            "tools": {
+              "user_codex_marker": {
+                "name": "user_codex_marker",
+                "description": "Synthetic read-only marker. No business data.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                },
+                "annotations": {
+                  "readOnlyHint": true,
+                  "destructiveHint": false,
+                  "idempotentHint": true,
+                  "openWorldHint": false
+                }
+              }
+            },
+            "toolsError": null,
+            "resources": [],
+            "resourceTemplates": [],
+            "authStatus": "unsupported"
+          }
+        ],
+        "nextCursor": null
+      }
+    },
+    {
+      "name": "claude-project-b-no-plugin",
+      "level": "native-control-initialize",
+      "initializeSucceeded": true,
+      "allCommandNames": [
+        "user-cc-fixture",
+        "deep-research",
+        "dataviz",
+        "update-config",
+        "verify",
+        "debug",
+        "code-review",
+        "simplify",
+        "batch",
+        "fewer-permission-prompts",
+        "doctor",
+        "loop",
+        "claude-api",
+        "workflow-authoring",
+        "run",
+        "run-skill-generator",
+        "plugin-authoring",
+        "agents",
+        "auto-mode-setup",
+        "autocompact",
+        "clear",
+        "color",
+        "compact",
+        "config",
+        "output-style",
+        "context",
+        "effort",
+        "fast",
+        "focus",
+        "heapdump",
+        "init",
+        "mcp",
+        "model",
+        "__remote-workflow",
+        "workflow-launch-exec",
+        "reload-plugins",
+        "reload-skills",
+        "rename",
+        "security-review",
+        "usage",
+        "insights",
+        "recap",
+        "goal",
+        "list-agents",
+        "team-onboarding"
+      ],
+      "fixtureCommands": [
+        {
+          "name": "user-cc-fixture",
+          "description": "User-owned native Claude skill. (user)",
+          "argumentHint": ""
+        }
+      ],
+      "sessionState": "idle",
+      "authSource": "ANTHROPIC_API_KEY",
+      "mcpChecks": [
+        [
+          {
+            "name": "user_cc_mcp",
+            "status": "pending"
+          }
+        ],
+        [
+          {
+            "name": "user_cc_mcp",
+            "status": "connected"
+          }
+        ]
+      ],
+      "mcpServers": [
+        {
+          "name": "user_cc_mcp",
+          "status": "connected",
+          "scope": "user",
+          "source": "user",
+          "tools": [
+            {
+              "name": "user_cc_marker",
+              "annotations": {
+                "readOnly": true
+              }
+            }
+          ]
+        }
+      ],
+      "stderr": "",
+      "processAlive": true,
+      "allEventTypes": [
+        "system",
+        "control_response",
+        "control_response",
+        "control_response"
+      ]
+    }
+  ],
+  "simultaneousProcessState": [
+    {
+      "name": "codex-project-a-v1",
+      "alive": true
+    },
+    {
+      "name": "codex-project-b-disabled",
+      "alive": true
+    },
+    {
+      "name": "claude-project-a-v2",
+      "alive": true
+    },
+    {
+      "name": "claude-project-b-no-plugin",
+      "alive": true
+    }
+  ],
+  "userConfigPreservation": {
+    "codexConfigUnchanged": true,
+    "claudeSettingsUnchanged": true,
+    "claudeUserMcpDefinitionUnchanged": true
+  },
+  "assertions": {
+    "allFourProcessesAlive": true,
+    "codexASelectedV1Only": true,
+    "codexBNoManagedSkills": true,
+    "codexUserSkillPreserved": true,
+    "codexUserMcpPreserved": true,
+    "codexBNoManagedMcp": true,
+    "claudeASelectedV2Only": true,
+    "claudeBNoManagedSkills": true,
+    "claudeUserSkillPreserved": true,
+    "claudeUserMcpPreserved": true,
+    "claudeBNoManagedMcp": true,
+    "claudeSharedAgentsSkillsNotDiscovered": true,
+    "userSettingsAndMcpDefinitionsPreserved": true
+  },
+  "status": "passed-with-boundaries",
+  "stderr": [
+    {
+      "name": "codex-project-a-v1",
+      "stderr": ""
+    },
+    {
+      "name": "codex-project-b-disabled",
+      "stderr": ""
+    },
+    {
+      "name": "claude-project-a-v2",
+      "stderr": ""
+    },
+    {
+      "name": "claude-project-b-no-plugin",
+      "stderr": ""
+    }
+  ],
+  "sourceHashes": {
+    "probe.mjs": "8202e272be884d5c48b10c63de5f3ccdf89cf38433d3a89ed2d9dee8d3738ee1",
+    "../codex/probe.mjs": "81dd4b6cb148b4e5d1300f7004eb99a9371d5bb81d6941b30e2057e877f8df78"
+  },
+  "cleanup": {
+    "temporaryRootRemoved": true,
+    "allChildrenExited": true
+  },
+  "finishedAt": "2026-10-19T07:39:16.960Z"
+}
