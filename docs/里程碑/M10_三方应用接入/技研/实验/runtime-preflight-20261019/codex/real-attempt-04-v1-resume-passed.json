@@ -1,0 +1,159 @@
+{
+  "schema": "m10-codex-real-model-preflight-v1",
+  "startedAt": "2026-10-19T07:32:24.270Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "cliVersion": "codex-cli 0.162.1",
+    "model": "gpt-6.1-sol"
+  },
+  "isolation": {
+    "temporaryHome": true,
+    "temporaryCodexHome": true,
+    "userConfigCopied": false,
+    "userChatRead": false,
+    "originalAuthModified": false,
+    "temporaryAuthCopy": true,
+    "refreshTokenRemoved": true,
+    "syntheticOnly": true
+  },
+  "cases": [
+    {
+      "name": "new-conversation-v1-real-model-read-and-mcp",
+      "status": "passed",
+      "turnStatus": "completed",
+      "error": null,
+      "skillBodySeenInAnswer": true,
+      "selectedToolMarkerSeen": true,
+      "forbiddenVersionMarkerSeen": false,
+      "events": [
+        {
+          "type": "mcpToolCall",
+          "server": "m10_fixture",
+          "tool": "fixture_marker",
+          "status": "completed",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"project\":\"project-a\",\"version\":\"v1\",\"marker\":\"M10_TOOL_v1\"}"
+              }
+            ],
+            "structuredContent": null,
+            "_meta": null
+          }
+        },
+        {
+          "type": "agentMessage",
+          "text": "M10_SKILL_BODY_v1\nM10_TOOL_v1"
+        }
+      ]
+    },
+    {
+      "name": "native-resume-same-id",
+      "status": "passed",
+      "previousTurnCount": 1
+    },
+    {
+      "name": "resumed-conversation-v1-real-model-read-and-mcp",
+      "status": "passed",
+      "turnStatus": "completed",
+      "error": null,
+      "skillBodySeenInAnswer": true,
+      "selectedToolMarkerSeen": true,
+      "forbiddenVersionMarkerSeen": false,
+      "events": [
+        {
+          "type": "mcpToolCall",
+          "server": "m10_fixture",
+          "tool": "fixture_marker",
+          "status": "completed",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"project\":\"project-a\",\"version\":\"v1\",\"marker\":\"M10_TOOL_v1\"}"
+              }
+            ],
+            "structuredContent": null,
+            "_meta": null
+          }
+        },
+        {
+          "type": "agentMessage",
+          "text": "M10_SKILL_BODY_v1\nM10_TOOL_v1"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Isolated user discovery root and native state; production global-root merge and packaged WillYou remain unverified.",
+    "This probe uses real model turns with synthetic inputs; it does not test business APIs or GUI terminal behavior."
+  ],
+  "nativeThreadId": "01a15313-6cb0-76a2-934a-2e4136bcfab3",
+  "status": "passed-with-boundaries",
+  "clients": [
+    {
+      "name": "new-v1",
+      "methods": [
+        "initialize",
+        "thread/start",
+        "turn/start"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [
+        "remoteControl/status/changed",
+        "account/updated",
+        "thread/started",
+        "mcpServer/startupStatus/updated",
+        "thread/status/changed",
+        "turn/started",
+        "item/started",
+        "item/completed",
+        "turn/moderationMetadata",
+        "thread/tokenUsage/updated",
+        "account/rateLimits/updated",
+        "item/agentMessage/delta",
+        "turn/completed"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "resume-v1",
+      "methods": [
+        "initialize",
+        "thread/resume",
+        "turn/start"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [
+        "remoteControl/status/changed",
+        "deprecationNotice",
+        "mcpServer/startupStatus/updated",
+        "thread/status/changed",
+        "thread/tokenUsage/updated",
+        "thread/goal/cleared",
+        "turn/started",
+        "account/updated",
+        "item/started",
+        "item/completed",
+        "turn/moderationMetadata",
+        "account/rateLimits/updated",
+        "item/agentMessage/delta",
+        "turn/completed"
+      ],
+      "stderrTail": ""
+    }
+  ],
+  "authUnchanged": true,
+  "cleanup": {
+    "allChildrenExited": true,
+    "temporaryAuthAndFixtureRemoved": true
+  },
+  "sourceHashes": {
+    "real-model-probe.mjs": "ff60a43ed848c00483e262f4b6bc1cc24a17c4cb5f08f15224c3f3aebc9ca2d3",
+    "probe.mjs": "81dd4b6cb148b4e5d1300f7004eb99a9371d5bb81d6941b30e2057e877f8df78"
+  },
+  "finishedAt": "2026-10-19T07:32:52.567Z"
+}

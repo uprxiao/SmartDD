@@ -1,0 +1,178 @@
+{
+  "schema": "m10-real-mixed-preflight-v1",
+  "startedAt": "2026-10-19T07:41:17.822012+00:00",
+  "environment": {
+    "codex": "codex-cli 0.162.1",
+    "claude": "2.1.303 (Claude Code)",
+    "claudeProfile": "cdsh",
+    "claudeModel": "deepseek-flash"
+  },
+  "isolation": {
+    "sharedSyntheticHome": true,
+    "defaultRootsModified": false,
+    "userChatRead": false,
+    "cdshStaticProfileOnly": true,
+    "temporaryCodexAuth0600": true,
+    "codexRefreshTokenRemoved": true,
+    "maximumUserTurns": 2,
+    "turnDeadlineSeconds": 75,
+    "resumeTested": false
+  },
+  "cases": [
+    {
+      "name": "codex-v2-real-turn",
+      "status": "passed",
+      "calls": [
+        {
+          "tool": "app_version",
+          "version": "v2",
+          "nonceMatch": true
+        }
+      ],
+      "turnStatus": "completed",
+      "mcpEvents": [
+        {
+          "server": "m10_mixed",
+          "tool": "app_version",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "name": "claude-v1-real-turn",
+      "status": "passed",
+      "calls": [
+        {
+          "tool": "app_version",
+          "version": "v1",
+          "nonceMatch": true
+        }
+      ],
+      "toolNames": [
+        "Skill",
+        "Read",
+        "mcp__m10_mixed__app_version"
+      ],
+      "referenceRead": true,
+      "resultSubtype": "success",
+      "resultIsError": false
+    }
+  ],
+  "limitations": [
+    "Synthetic HOME/config/skills/tools only; not production user-config compatibility.",
+    "Two native harnesses with real providers, not packaged WillYou/TUI or business acceptance."
+  ],
+  "discovery": {
+    "codexSkills": [
+      {
+        "name": "user-shared-fixture",
+        "enabled": true
+      },
+      {
+        "name": "willyou-mixed-v1",
+        "enabled": false
+      },
+      {
+        "name": "willyou-mixed-v2",
+        "enabled": true
+      }
+    ],
+    "codexMcpNames": [
+      "m10_mixed",
+      "user_codex_mcp"
+    ],
+    "claudeCommands": [
+      "user-cc-fixture",
+      "deep-research",
+      "willyou-mixed:check",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "plugin-authoring",
+      "agents",
+      "auto-mode-setup",
+      "autocompact",
+      "clear",
+      "color",
+      "compact",
+      "config",
+      "output-style",
+      "context",
+      "effort",
+      "fast",
+      "focus",
+      "heapdump",
+      "init",
+      "mcp",
+      "model",
+      "__remote-workflow",
+      "workflow-launch-exec",
+      "reload-plugins",
+      "reload-skills",
+      "rename",
+      "security-review",
+      "usage",
+      "insights",
+      "recap",
+      "goal",
+      "list-agents",
+      "team-onboarding"
+    ],
+    "claudeMcp": [
+      {
+        "name": "user_cc_mcp",
+        "status": "pending"
+      },
+      {
+        "name": "m10_mixed",
+        "status": "pending"
+      }
+    ],
+    "bothProcessesReadyAndAlive": true
+  },
+  "bothProcessesAliveAfterTurns": true,
+  "userToolsNotCalled": true,
+  "status": "passed-with-boundaries",
+  "processes": [
+    {
+      "name": "codex-v2",
+      "methods": [
+        "initialize",
+        "skills/list",
+        "mcpServerStatus/list",
+        "thread/start",
+        "turn/start"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "claude-v1",
+      "methods": [
+        "initialize",
+        "mcp_status"
+      ],
+      "stderrTail": "[claude-code:unrecognized_model] {\"model\":\"deepseek-flash\",\"query_source\":\"sdk\"}\n"
+    }
+  ],
+  "originalCodexAuthUnchanged": true,
+  "sourceHashes": {
+    "real-mixed-probe.py": "b339a52256b88631beab0d13639dc03a61f8b91359301cc689b7e6c2c34f8397",
+    "../claude/probe.py": "16bec2a06f3c1eb1efc9ac0f2fb560044027aad0618d1994226723df20d6360d"
+  },
+  "cleanup": {
+    "temporaryRootRemoved": true,
+    "allChildrenExited": true
+  },
+  "finishedAt": "2026-10-19T07:41:31.872067+00:00"
+}

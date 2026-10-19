@@ -4,7 +4,7 @@ import { Dialog, Field, PathField, SecretField, ConfirmDialog } from './PreviewU
 import { CapabilitiesPanel } from './CapabilitiesPanel';
 import { DB_VENDORS, removeResource, safeSecretFields, saveResource } from './preview-model.mjs';
 
-const TABS = [['overview', '概览'], ['code', '代码目录'], ['database', '数据库'], ['server', '服务器'], ['skills', 'Skill 与 MCP'], ['tasks', '项目任务']];
+const TABS = [['overview', '概览'], ['code', '代码目录'], ['database', '数据库'], ['server', '服务器'], ['apps', '应用'], ['skills', 'Skill 与 MCP'], ['tasks', '项目任务']];
 const COLLECTIONS = { code: 'dirs', database: 'databases', server: 'servers' };
 const NAMES = { dirs: '代码目录', databases: '数据库', servers: '服务器' };
 
@@ -54,7 +54,7 @@ function ResourceEditor({ kind, resource, onClose, onSave }) {
   </form></Dialog>;
 }
 
-export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, onNewTask, onOpenTask, onExport }) {
+export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, onNewTask, onOpenTask, onExport, applications, bundledApplications }) {
   const [modal, setModal] = useState(null);
   const collection = COLLECTIONS[tab];
   const update = next => onUpdate({ ...next, configVersion: Math.max(next.configVersion, project.configVersion + 1) });
@@ -75,7 +75,8 @@ export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, on
         <div className="resource-actions">{collection === 'dirs' && !row.isDefault && <button className="button small secondary" onClick={() => update(saveResource(project, collection, { ...row, isDefault: true }))}><Check size={16} strokeWidth={1.75} aria-hidden="true" />设为默认</button>}{collection !== 'dirs' && <button className="button small secondary" onClick={() => update(saveResource(project, collection, { ...row, lastTest: '示例：连接成功 · 12 ms，未连接实际资源' }))}><Plug size={16} strokeWidth={1.75} aria-hidden="true" />测试连接</button>}<button className="button small secondary" onClick={() => setModal({ type: 'resource', collection, resource: row })}><Pencil size={16} strokeWidth={1.75} aria-hidden="true" />编辑</button><button className="button small quiet-button" onClick={() => setModal({ type: 'delete-resource', collection, resource: row })}><Trash2 size={16} strokeWidth={1.75} aria-hidden="true" />{collection === 'dirs' ? '移除' : '删除'}</button></div>
       </div>)}
     </>}
-    {tab === 'skills' && <CapabilitiesPanel project={project} profiles={profiles} onChange={capabilities => update({ ...project, capabilities })} />}
+    {tab === 'apps' && applications}
+    {tab === 'skills' && <CapabilitiesPanel project={project} profiles={profiles} bundledApplications={bundledApplications} onManageApplications={() => onNavigate('apps')} onChange={capabilities => update({ ...project, capabilities })} />}
     {tab === 'tasks' && <><div className="group-heading"><h2>项目任务</h2><span>{projectTasks.length} 项</span></div>{projectTasks.length === 0 && <p className="section-description">还没有任务，可以从右上角新建。</p>}{projectTasks.map(t => <button className="recent-row" key={t.id} onClick={() => onOpenTask(t.id)}><div><span>{t.title}</span><small>{profiles.find(p => p.id === t.profile)?.name || t.profileName || '配置已删除'}</small></div><span>{t.archived ? '已归档' : t.status === 'running' ? '运行中' : '已停止'}</span></button>)}</>}
     {modal?.type === 'edit' && <ProjectEditor project={project} onClose={() => setModal(null)} onSave={values => { update({ ...project, ...values }); setModal(null); }} />}
     {modal?.type === 'resource' && <ResourceEditor kind={modal.collection} resource={modal.resource} onClose={() => setModal(null)} onSave={value => { update(saveResource(project, modal.collection, value)); setModal(null); }} />}

@@ -1,0 +1,225 @@
+{
+  "schema": "m10-codex-real-model-preflight-v1",
+  "startedAt": "2026-10-19T07:31:03.595Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "cliVersion": "codex-cli 0.162.1",
+    "model": "gpt-6.1-sol"
+  },
+  "isolation": {
+    "temporaryHome": true,
+    "temporaryCodexHome": true,
+    "userConfigCopied": false,
+    "userChatRead": false,
+    "originalAuthModified": false,
+    "temporaryAuthCopy": true,
+    "refreshTokenRemoved": true,
+    "syntheticOnly": true
+  },
+  "cases": [
+    {
+      "name": "new-conversation-v1-real-model-read-and-mcp",
+      "status": "blocked",
+      "turnStatus": "failed",
+      "error": {
+        "message": "workspace routing discovery failed",
+        "codexErrorInfo": "other",
+        "additionalDetails": null,
+        "misalignment": null
+      },
+      "skillBodySeenInAnswer": false,
+      "selectedToolMarkerSeen": false,
+      "forbiddenVersionMarkerSeen": false,
+      "events": [
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 2/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 3/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 4/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 5/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 1/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 2/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 3/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 4/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "Reconnecting... 5/5",
+            "codexErrorInfo": {
+              "responseStreamDisconnected": {
+                "httpStatusCode": null
+              }
+            },
+            "additionalDetails": "workspace routing discovery failed",
+            "misalignment": null
+          }
+        },
+        {
+          "type": "error",
+          "error": {
+            "message": "workspace routing discovery failed",
+            "codexErrorInfo": "other",
+            "additionalDetails": null,
+            "misalignment": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "native-resume-same-id",
+      "status": "passed",
+      "previousTurnCount": 1
+    }
+  ],
+  "limitations": [
+    "Isolated user discovery root and native state; production global-root merge and packaged WillYou remain unverified.",
+    "This probe uses real model turns with synthetic inputs; it does not test business APIs or GUI terminal behavior."
+  ],
+  "nativeThreadId": "01a15312-3197-72a2-ba92-b0abe24ae783",
+  "status": "partial",
+  "clients": [
+    {
+      "name": "new-v1",
+      "methods": [
+        "initialize",
+        "thread/start",
+        "turn/start"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [
+        "remoteControl/status/changed",
+        "thread/started",
+        "mcpServer/startupStatus/updated",
+        "thread/status/changed",
+        "turn/started",
+        "item/started",
+        "item/completed",
+        "error",
+        "warning",
+        "turn/completed"
+      ],
+      "stderrTail": "\u001b[2m2026-10-19T07:31:06.686682Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_models_manager::manager\u001b[0m\u001b[2m:\u001b[0m failed to refresh available models: Connection failed: error sending request\n\u001b[2m2026-10-19T07:31:06.705833Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mrmcp::transport::worker\u001b[0m\u001b[2m:\u001b[0m worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest(\"http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)\")))\n\u001b[2m2026-10-19T07:31:06.854244Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_models_manager::manager\u001b[0m\u001b[2m:\u001b[0m failed to refresh available models: Connection failed: error sending request\n\u001b[2m2026-10-19T07:31:06.958072Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mrmcp::transport::worker\u001b[0m\u001b[2m:\u001b[0m worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest(\"http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)\")))\n\u001b[2m2026-10-19T07:31:07.961958Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mrmcp::transport::worker\u001b[0m\u001b[2m:\u001b[0m worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest(\"http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)\")))\n\u001b[2m2026-10-19T07:31:07.963684Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mrmcp::transport::worker\u001b[0m\u001b[2m:\u001b[0m worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest(\"http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)\")))\n\u001b[2m2026-10-19T07:31:08.215492Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mrmcp::transport::worker\u001b[0m\u001b[2m:\u001b[0m worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest(\"http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)\")))\n\u001b[2m2026-10-19T07:31:09.218392Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mrmcp::transport::worker\u001b[0m\u001b[2m:\u001b[0m worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest(\"http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)\")))\n"
+    },
+    {
+      "name": "resume-v1",
+      "methods": [
+        "initialize",
+        "thread/resume"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [
+        "remoteControl/status/changed",
+        "deprecationNotice",
+        "mcpServer/startupStatus/updated",
+        "thread/status/changed"
+      ],
+      "stderrTail": "\u001b[2m2026-10-19T07:31:23.534358Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_models_manager::manager\u001b[0m\u001b[2m:\u001b[0m failed to refresh available models: Connection failed: error sending request\n\u001b[2m2026-10-19T07:31:23.654995Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_models_manager::manager\u001b[0m\u001b[2m:\u001b[0m failed to refresh available models: Connection failed: error sending request\n\u001b[2m2026-10-19T07:31:23.660665Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mrmcp::transport::worker\u001b[0m\u001b[2m:\u001b[0m worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest(\"http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)\")))\n"
+    }
+  ],
+  "authUnchanged": true,
+  "cleanup": {
+    "allChildrenExited": true,
+    "temporaryAuthAndFixtureRemoved": true
+  },
+  "sourceHashes": {
+    "real-model-probe.mjs": "19ce6bb5c371815bcad2bdf3382e9dd0beaf59c0ab74e37322851c3979ae6b70",
+    "probe.mjs": "0fc58cb5db88fdcd587bb8d4a40c39196e0be143cd48ff0302064046de2b9cad"
+  },
+  "finishedAt": "2026-10-19T07:31:23.685Z"
+}
