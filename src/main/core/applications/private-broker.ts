@@ -7,7 +7,7 @@ import { BRIDGE_LIMITS, boundedJson, bridgeRequestSchema, type BridgeBootstrap, 
 import { digest } from './manifest';
 import type { CapabilityRunRegistry, OwnedCapabilityRun, OwnedRunProcess } from './run-registry';
 import type { ApplicationToolService } from './tool-service';
-interface Ticket { runId: string;bridge: OwnedRunProcess;path: string;dev: number;ino: number;expiresAt: number }
+interface Ticket { runId: string;bridge: OwnedRunProcess;path: string;dev: number;ino: number;expiresAt: number;claiming?:boolean }
 interface Binding { runId: string;bridgeId: string;digest: string;expiresAt: number;revoked: boolean }
 interface Peer { socket: Socket;binding?: Binding;buffer: Buffer;controllers: Map<string,AbortController>;inFlight: number }
 const errorResponse = (id: string,error: unknown): BridgeResponse => ({ schema: 1,id,status: 'error',error: { code: error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE',message: error instanceof ApplicationError ? error.message : '本机应用通道不可用',layer: 'bridge',retryable: false,attemptCount: 0,retryExhausted: false,effectState: 'not-started',nextAction: '查看应用能力状态；不要自动重发外部写操作' } });
@@ -21,7 +21,7 @@ export class PrivateApplicationBroker {
   private readonly bindings = new Map<string,Binding>();
   private readonly peers = new Set<Peer>();
   private closed = false;
-  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number } = {}) {}
+  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
   private clock(): number { return this.options.now?.() ?? Date.now(); }
   get endpoint(): string { if (!this.server || this.closed) throw new ApplicationError('CAPABILITY_UNAVAILABLE','本机应用通道尚未启动'); return join(this.directory,'broker.sock'); }
   async start(): Promise<void> {
@@ -82,7 +82,7 @@ export class PrivateApplicationBroker {
       if (!boundedJson(input)) throw new ApplicationError('INVALID_INPUT','通道JSON结构超过预算');
       const parsed = bridgeRequestSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','通道请求包含未允许字段或格式无效');
       const request = parsed.data; id = request.id;
-      if (request.method === 'exchange') return this.exchange(peer,request);
+      if (request.method === 'exchange') return await this.exchange(peer,request);
       const binding = this.authenticate(peer,request.token);
       if (request.method === 'renew') { this.bindings.delete(binding.digest); const token = randomBytes(32).toString('hex'); binding.digest = digest(token); binding.expiresAt = this.clock() + Math.min(900000,Math.max(1,this.options.tokenTtlMs ?? 900000)); this.bindings.set(binding.digest,binding); return { schema: 1,id,status: 'ok',value: { token,expiresAt: binding.expiresAt,hostGeneration: this.hostGeneration } }; }
       if (request.method === 'cancel') { const current = peer.controllers.get(request.targetId); current?.abort(); return { schema: 1,id,status: 'ok',value: { cancellationRequested: !!current } }; }
@@ -95,11 +95,12 @@ export class PrivateApplicationBroker {
       } finally { peer.controllers.delete(id); }
     } catch (error) { return errorResponse(id,error); }
   }
-  private exchange(peer: Peer,request: Extract<BridgeRequest,{ method: 'exchange' }>): BridgeResponse {
+  private async exchange(peer: Peer,request: Extract<BridgeRequest,{ method: 'exchange' }>): Promise<BridgeResponse> {
     if (peer.binding) throw new ApplicationError('AUTH_REQUIRED','此连接已消费过启动票据');
     const hash = digest(request.secret), ticket = this.tickets.get(hash);
     if (!ticket || ticket.runId !== request.runId || ticket.bridge.processId !== request.bridgeId || ticket.expiresAt <= this.clock()) { if (ticket && ticket.expiresAt <= this.clock()) { this.tickets.delete(hash); this.cleanupTicket(ticket); } throw new ApplicationError('AUTH_REQUIRED','一次性运行票据无效或已消费'); }
-    this.runs.assertBridge(ticket.runId,ticket.bridge.processId); this.tickets.delete(hash); this.cleanupTicket(ticket);
+    if(ticket.claiming)throw new ApplicationError('AUTH_REQUIRED','此启动票据正在核验');ticket.claiming=true;
+    try{await this.options.attachPeer?.(peer.socket,ticket.runId,ticket.bridge);if(this.closed||peer.socket.destroyed||this.tickets.get(hash)!==ticket||ticket.expiresAt<=this.clock())throw new ApplicationError('AUTH_REQUIRED','启动核验期间票据已撤销或失效');this.runs.assertBridge(ticket.runId,ticket.bridge.processId);this.tickets.delete(hash);this.cleanupTicket(ticket);}finally{ticket.claiming=false;}
     const token = randomBytes(32).toString('hex'), binding: Binding = { runId: ticket.runId,bridgeId: ticket.bridge.processId,digest: digest(token),expiresAt: this.clock() + Math.min(900000,Math.max(1,this.options.tokenTtlMs ?? 900000)),revoked: false };
     peer.binding = binding; this.bindings.set(binding.digest,binding); peer.socket.setTimeout(0);
     return { schema: 1,id: request.id,status: 'ok',value: { token,expiresAt: binding.expiresAt,hostGeneration: this.hostGeneration } };

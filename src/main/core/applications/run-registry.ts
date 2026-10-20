@@ -33,7 +33,7 @@ export interface OwnedRunProcess {
   /** Persist the fork window BEFORE asking the OS to spawn. */
   arm(): Promise<void>;
   /** PID comes from this owned native handle, never from tool arguments. */
-  attach(pid: number): Promise<void>;
+  attach(pid: number,expectedStartedAt?:string): Promise<void>;
   /** Call only from the exit event of that same owned native handle. */
   exited(): Promise<void>;
   cancelBeforeLaunch(): Promise<void>;
@@ -179,12 +179,14 @@ export class CapabilityRunRegistry {
         this.current(row,session); this.checkProtection(row,owned);
         this.store.sqlite.prepare("UPDATE capability_run_processes SET state='armed',armed_at=? WHERE process_id=? AND state='reserved'").run(now(),id);
       }).immediate());
-    },attach: async pid => {
+    },attach: async (pid,expectedStartedAt) => {
+      if(expectedStartedAt!==undefined&&!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(expectedStartedAt))throw new ApplicationError('INVALID_INPUT','预期进程启动身份无效');
       const identity = this.deps.processes.read(pid); let identityUnknown = false;
       await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
         const { row } = this.mine(runId), child = this.processRow(runId,id);
         if (child.state === 'exited') return; // Owned exit callback won the attachment race.
         if (!['armed','active','unknown'].includes(child.state)) throw new ApplicationError('RESOURCE_STATE_CHANGED','尚未登记启动窗口或已经取消');
+        if(expectedStartedAt!==undefined&&identity?.startedAt!==expectedStartedAt){if(child.pid===null)this.store.sqlite.prepare("UPDATE capability_run_processes SET state='unknown' WHERE process_id=?").run(id);identityUnknown=true;return;}
         if (child.state === 'active') { if (identity && child.pid === pid && child.process_started_at === identity.startedAt) return; throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生进程身份已经固定'); }
         if (!Number.isSafeInteger(pid) || pid < 1 || !identity || identity.pid !== pid) {
           this.store.sqlite.prepare("UPDATE capability_run_processes SET state='unknown' WHERE process_id=?").run(id);
