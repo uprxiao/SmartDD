@@ -1,6 +1,6 @@
 import { VoiceSettingsSection, readableVoiceKey } from './settings/voice';
 import { voiceStore } from '@renderer/core/voice-store';
-import { ChevronDown, Info, Keyboard, Mic, Search, Settings, ShieldCheck, SquareTerminal, Sun, Zap } from 'lucide-react';
+import { ChevronDown, Info, Keyboard, Mic, Search, Settings, ShieldCheck, SquareTerminal, Sun, Zap, Puzzle } from 'lucide-react';
 import { toast } from 'sonner';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { useAiProfiles, useRefreshAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
@@ -28,6 +28,7 @@ const SECTIONS = [
   { id: 'terminal', Icon: SquareTerminal, group: 'personal' },
   { id: 'voice', Icon: Mic, group: 'personal' },
   { id: 'shortcuts', Icon: Keyboard, group: 'personal' },
+  { id: 'applications', Icon: Puzzle, group: 'integrations' },
   { id: 'capabilities', Icon: Zap, group: 'integrations' },
   { id: 'about', Icon: Info, group: 'application' },
 ] as const;
@@ -35,6 +36,7 @@ const SECTIONS = [
 export const SettingsView = observer(function SettingsView() {
   const { t } = useTranslation();
   const section = navigation.settingsSection;
+  useEffect(()=>{if(section==='applications')navigation.openApplications();},[section]);
   const [search, setSearch] = useState('');
   const label = (id: SettingsSectionId) => t(id === 'about' || id === 'shortcuts' ? `m6.${id}` : `settings.sections.${id}`);
   return <div className="settings-shell">
@@ -43,7 +45,7 @@ export const SettingsView = observer(function SettingsView() {
       <label className="settings-search"><Search size={15} /><input aria-label={t('m6.searchSettings')} placeholder={t('m6.search')} value={search} onChange={(e) => setSearch(e.target.value)} /></label>
       {(['personal', 'integrations', 'application'] as const).map((group) => {
         const items = SECTIONS.filter((item) => item.group === group && label(item.id).toLowerCase().includes(search.toLowerCase()));
-        return items.length > 0 && <div className="settings-nav-group" key={group}><h3>{t(`m6.${group}`)}</h3>{items.map(({ id, Icon }) => <button key={id} className={`nav-row ${section === id ? 'selected' : ''}`} aria-current={section === id ? 'page' : undefined} onClick={() => navigation.openSettings(id)}><Icon size={16} /><span>{label(id)}</span></button>)}</div>;
+        return items.length > 0 && <div className="settings-nav-group" key={group}><h3>{t(`m6.${group}`)}</h3>{items.map(({ id, Icon }) => <button key={id} className={`nav-row ${section === id ? 'selected' : ''}`} aria-current={section === id ? 'page' : undefined} onClick={() => id==='applications'?navigation.openApplications():navigation.openSettings(id)}><Icon size={16} /><span>{label(id)}</span></button>)}</div>;
       })}
       {!SECTIONS.some((item) => label(item.id).toLowerCase().includes(search.toLowerCase())) && <p className="settings-search-empty">{t('m6.noSettings')}</p>}
     </nav>

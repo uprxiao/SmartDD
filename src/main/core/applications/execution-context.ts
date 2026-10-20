@@ -30,7 +30,7 @@ interface ContextRecord {context:ApplicationExecutionContext;active:boolean;abor
 interface OperationRow {scope_hash:string;targets_json:string;state:string;semantics:'read'|'write';attempt_count:number}
 const actionSchema=z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
 const targetSchema=z.object({slot:z.enum(['zentao','foxmail','smtp']),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional()}).strict();
-const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.save','connection.enable','connection.disconnect']);
+const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
 
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
 export class ApplicationExecutionContexts {

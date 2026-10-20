@@ -1,0 +1,492 @@
+diff --git a/src/main/core/applications/__tests__/application-controller.test.ts b/src/main/core/applications/__tests__/application-controller.test.ts
+index 75752db..d8980af 100644
+--- a/src/main/core/applications/__tests__/application-controller.test.ts
++++ b/src/main/core/applications/__tests__/application-controller.test.ts
+@@ -8,7 +8,7 @@ import { PtyAccess } from '../../../pty-access';
+ import { createApplicationController } from '../controller';
+ import type { ApplicationService } from '../application-service';
+ let handlers:Map<string,(...args:any[])=>any>,sender:IpcMainInvokeEvent,access:PtyAccess,service:ReturnType<typeof fakeService>;
+-function fakeService(){return{viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
++function fakeService(){return{prepareSend:vi.fn(),executeSend:vi.fn(),mailStatus:vi.fn(),viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),discardConnectionTest:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
+ const event=(id:number)=>{const wc=Object.assign(new EventEmitter(),{id,mainFrame:{},isDestroyed:()=>false});return{sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;};
+ function register(current:ApplicationService|undefined){handlers=new Map();registerRPCRouter({applications:createApplicationController(current,e=>access.requireSender(e))},{handle:(name:string,handler:(...args:any[])=>any)=>handlers.set(name,handler)} as never);}
+ const invoke=(name:string,e=sender,...args:unknown[])=>handlers.get('applications.'+name)!(e,...args);
+@@ -27,7 +27,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+   service.setAdded.mockRejectedValueOnce(new ApplicationError('REVISION_CONFLICT','应用状态已变化，请重新载入'));expect(await invoke('setAdded',sender,'mail',true,0)).toEqual({ok:false,code:'REVISION_CONFLICT',message:'应用状态已变化，请重新载入'});
+  });
+  it('exposes explicit business endpoints without generic SQL,secret,scope or caller-supplied approval flags',()=>{
+-  expect([...handlers.keys()].sort()).toEqual(['send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
++  expect([...handlers.keys()].sort()).toEqual(['prepareSend','executeSend','send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','discardConnectionTest','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailStatus','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
+  });
+  it('keeps cache inspection and reclamation as explicit main-frame-only management endpoints',async()=>{
+   service.mailCacheStatus.mockResolvedValueOnce({limit:500000000});service.clearMailCache.mockResolvedValueOnce({activeLeases:1});
+@@ -36,7 +36,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+   expect(await invoke('clearMailCache')).toEqual({ok:true,value:{activeLeases:1}});expect(service.clearMailCache).toHaveBeenCalledWith(sender);
+  });
+  it('routes mail reads through the actual trusted sender and denies alternate windows before business execution',async()=>{
+-  for(const [name,method,args] of [['mailQuery','mailQuery',['p1',{}]],['mailRead','mailMessage',['p1',{nativeId:'1'}]],['mailResource','mailResource',['p1',{resource:{}}]]] as const){
++  for(const [name,method,args] of [['mailQuery','mailQuery',['p1',{}]],['mailStatus','mailStatus',['p1',{}]],['mailRead','mailMessage',['p1',{nativeId:'1'}]],['mailResource','mailResource',['p1',{resource:{}}]]] as const){
+    expect(await invoke(name,event(82),...args)).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({complete:true});expect(await invoke(name,sender,...args)).toEqual({ok:true,value:{complete:true}});expect(service[method]).toHaveBeenCalledWith(sender,...args);
+   }
+  });
+@@ -44,7 +44,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+   for(const name of ['captureAttachment','replyDraft','importAttachment'] as const){expect(await invoke(name,event(82),'p1',{})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[name]).not.toHaveBeenCalled();service[name].mockResolvedValueOnce({saved:true});expect(await invoke(name,sender,'p1',{})).toEqual({ok:true,value:{saved:true}});expect(service[name]).toHaveBeenCalledWith(sender,'p1',{});}
+  });
+  it('binds sending review,confirmation and cancellation to the actual main frame',async()=>{
+-  for(const [name,method] of [['send','viewSend'],['reviewSend','reviewSend'],['authorizeSend','authorizeSend'],['cancelSend','cancelSend']] as const){
++  for(const [name,method] of [['prepareSend','prepareSend'],['executeSend','executeSend'],['send','viewSend'],['reviewSend','reviewSend'],['authorizeSend','authorizeSend'],['cancelSend','cancelSend']] as const){
+    expect(await invoke(name,event(82),'p1',{})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({state:'awaiting-authorization'});expect(await invoke(name,sender,'p1',{})).toEqual({ok:true,value:{state:'awaiting-authorization'}});expect(service[method]).toHaveBeenCalledWith(sender,'p1',{});
+   }
+  });
+diff --git a/src/main/core/applications/__tests__/business-data.test.ts b/src/main/core/applications/__tests__/business-data.test.ts
+index f07ebbe..5cf95b4 100644
+--- a/src/main/core/applications/__tests__/business-data.test.ts
++++ b/src/main/core/applications/__tests__/business-data.test.ts
+@@ -234,3 +234,14 @@ describe('actual host composition for U-local mail cache management',()=>{
+   let closed=false;const closing=app.dispose().then(()=>{closed=true;});await Promise.resolve();try{expect(closed).toBe(false);await expect(app.mailCache()).rejects.toMatchObject({code:'CANCELED'});}finally{release();}await expect(held).rejects.toMatchObject({code:'CANCELED'});await closing;expect(closed).toBe(true);
+  });
+ });
++
++
++describe('trusted connection form candidate lifecycle',()=>{
++ it('discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection',async()=>{
++  vi.spyOn(ProviderConnectionVerifier.prototype,'verify').mockImplementation(async config=>({providerId:config.kind,serviceId:'private-form-service',accountId:'private-form-account',contractMajor:1}));
++  const input={name:'Private SMTP form',expectedRevision:0,config:smtpConfig(),secret:'form-only-canary'},candidate=await app.testConnection(sender,input),row=f.sqlite.prepare('SELECT new_secret_ref AS ref FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId) as {ref:string};expect(secrets.has(row.ref)).toBe(true);expect(app.connections.list()).toEqual([]);
++  await expect(Promise.resolve().then(()=>app.discardConnectionTest({...sender,senderFrame:{}} as IpcMainInvokeEvent,'mail',candidate.operationId))).rejects.toThrow('TERMINAL_SENDER_DENIED');expect(secrets.has(row.ref)).toBe(true);
++  await app.discardConnectionTest(sender,'mail',candidate.operationId);expect(secrets.has(row.ref)).toBe(false);expect(app.connections.list()).toEqual([]);expect(f.sqlite.prepare('SELECT state,error_code FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId)).toEqual({state:'failed',error_code:'CANCELED'});
++  const saved=await app.testConnection(sender,{...input,name:'Saved SMTP form'});await app.saveConnection(sender,'mail',saved.operationId,saved.candidateHash);await app.discardConnectionTest(sender,'mail',saved.operationId);expect(app.connections.get(saved.connectionId)).toMatchObject({authorization:'connected',hasSecret:true});
++ });
++});
+diff --git a/src/main/core/applications/__tests__/mail-read-data.test.ts b/src/main/core/applications/__tests__/mail-read-data.test.ts
+index 1bfa28b..af0a050 100644
+--- a/src/main/core/applications/__tests__/mail-read-data.test.ts
++++ b/src/main/core/applications/__tests__/mail-read-data.test.ts
+@@ -81,6 +81,10 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
+   reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);
+  });
+  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();fox.close();files.closeOwner(fileOwner);await files.watcher.dispose();fileBroker.dispose();vi.restoreAllMocks();f.cleanup();});
++ nativeIt('exposes actual scan progress and last complete refresh to UI without extending the original v1 tool result',async()=>{
++  add(1);const status=await app.mailStatus(sender,'p1',{limit:1});expect(status.refresh).toMatchObject({scanned:1,total:1,finished:true,problemCount:0,lastSuccessfulRefreshAt:expect.any(String)});expect(status.query).toMatchObject({complete:true,matched:1});
++  const original=await query();expect(Object.keys(original).sort()).toEqual(['checkedAt','complete','items','matched','nextCursor','problems','range']);
++ });
+  nativeIt('uses real CJS contracts for current-source search,read,UTF-8 chunks and exact attachment bytes without modifying the source',async()=>{
+   const revision=add(1,clock,'中文正文 body-needle',true),before=hashes(),page=await query({text:'body-needle'});expect(page).toMatchObject({complete:true,matched:1,nextCursor:null});expect(page.items[0].reference.contentRevision).toBe(revision);
+   const mail=await read(page.items[0].reference,codex);expect(mail).toMatchObject({complete:true,attachments:[{filename:'fixture.bin',size:5}]});const body=await call('resource_read',{resource:mail.text,offset:0,length:262144},codex);expect(body).toMatchObject({status:'ok',value:{encoding:'utf8',data:'中文正文 body-needle',eof:true}});
+diff --git a/src/main/core/applications/__tests__/mail-send-data.test.ts b/src/main/core/applications/__tests__/mail-send-data.test.ts
+index 49c678f..05a4956 100644
+--- a/src/main/core/applications/__tests__/mail-send-data.test.ts
++++ b/src/main/core/applications/__tests__/mail-send-data.test.ts
+@@ -67,6 +67,14 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+   reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);messages.length=0;authentications.length=0;decrypts=0;
+  });
+  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();for(const close of closers.splice(0))await close();vi.restoreAllMocks();f.cleanup();});
++ it('uses the same frozen send engine from explicit trusted UI preparation,review and execution',async()=>{
++  const d=await draft();const prepared=await app.prepareSend(sender,'p1',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});
++  await expect(app.executeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash})).rejects.toMatchObject({code:'AUTHORIZATION_REQUIRED'});expect(messages).toHaveLength(0);
++  const display=await app.reviewSend(sender,'p1',prepared.intent.id);expect(display.review.content.bcc).toEqual(['private@example.test']);
++  await app.authorizeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash,displayReceiptId:display.displayReceiptId,reviewedUnknownExecutionIds:[]});
++  expect(await app.executeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash})).toMatchObject({intent:{state:'server-accepted'}});expect(messages).toHaveLength(1);
++  expect(await app.executeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash})).toMatchObject({intent:{state:'server-accepted'}});expect(messages).toHaveLength(1);
++ });
+  it('records only the trusted owned PTY input across first native binding and never turns origin evidence into a send grant',async()=>{
+   const initial=runs.assertActive(cc.runId),target={taskId:initial.run.taskId,ptyId:cc.ptyId},write=vi.fn(),input=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:id=>id===target.taskId?target.ptyId:null,alive:id=>id===target.ptyId,write,resize:()=>{},killTask:()=>{},observedInput:(event,target,data)=>app.observeInput(event,target,data)}),at=Date.now();
+   expect(input.input(sender,{...target,data:'发送当前明确草稿\r',runId:codex.runId})).toBe(true);expect(write).toHaveBeenCalledOnce();expect(app.nativeInputs.match(initial,'发送当前明确草稿',at)).toBeNull();const saved=await f.sessions.get(target.taskId);await f.sessions.bindNativeSession(target.taskId,saved.pointer.snapshotHash,{...saved.snapshot.native,runner:saved.snapshot.runner,sessionId:'private-native-input-1'});const current=runs.assertActive(cc.runId);expect(app.nativeInputs.match(current,'发送当前明确草稿',at)).toMatchObject({runId:cc.runId,taskId:target.taskId,projectId:'p1',ptyId:cc.ptyId});expect(app.nativeInputs.match(runs.assertActive(codex.runId),'发送当前明确草稿',at)).toBeNull();expect((await prepare()).authorized).toBe(false);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);expect(messages).toHaveLength(0);
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index 4296c1b..3f563ac 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -1,3 +1,4 @@
++import type {MailDraftDataView,MailDraftListData} from '@shared/application-data';
+ import { dirname, join } from 'node:path';
+ import { z } from 'zod';
+ import { ApplicationError } from '@shared/applications';
+@@ -91,10 +92,17 @@ export class ApplicationService {
+       if(providerApplication(candidate.config.kind)!==appId)throw new ApplicationError('SCOPE_DENIED','测试结果不属于当前应用');return this.connections.commitCandidate(operationId,candidateHash,acceptedImpactHash);
+     });
+   }
++  discardConnectionTest(sender:ApplicationUiSender,appId:ApplicationId,operationId:string){
++    uuid.parse(operationId);return this.management(sender,appId,'connection.test.discard','write',async()=>{
++      const row=this.store.sqlite.prepare('SELECT candidate_json FROM application_secret_changes WHERE operation_id=?').get(operationId) as {candidate_json:string}|undefined;
++      if(!row)throw new ApplicationError('NOT_FOUND','该连接测试不存在');const candidate=JSON.parse(row.candidate_json) as {config:{kind:'zentao'|'foxmail'|'smtp'}};
++      if(providerApplication(candidate.config.kind)!==appId)throw new ApplicationError('SCOPE_DENIED','测试结果不属于当前应用');await this.connections.discardCandidate(operationId);
++    });
++  }
+   setConnectionEnabled(sender:ApplicationUiSender,id:string,enabled:boolean,expectedRevision:number){const connection=this.connections.get(uuid.parse(id));return this.management(sender,connection.appId,'connection.enable','write',()=>this.connections.setEnabled(id,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision)));}
+   disconnect(sender:ApplicationUiSender,id:string,expectedRevision:number){const connection=this.connections.get(uuid.parse(id));return this.management(sender,connection.appId,'connection.disconnect','write',()=>this.connections.disconnect(id,z.number().int().nonnegative().parse(expectedRevision)));}
+-  viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.list',input));}
+-  viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}));}
++  viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},async context=>await this.data.mail.execute(context,'mail.draft.list',input) as MailDraftListData);}
++  viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},async context=>await this.data.mail.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}) as {draft:MailDraftDataView});}
+   readBusinessResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource.read',operations:['mail.draft'],semantics:'read'},context=>this.resources.read(context,input));}
+   private mailExecution():Promise<MailExecutionService>{
+     if(this.closed)return Promise.reject(new ApplicationError('CANCELED','发送服务已关闭'));if(this.executionPromise)return this.executionPromise;
+@@ -102,6 +110,8 @@ export class ApplicationService {
+       const engine=new MailExecutionService(this.store,this.drafts,this.connections,this.selections,{requireDrafts:actor=>this.contexts.requireActor(actor),requireSend:actor=>{this.contexts.sendScope(actor);},allowUiAuthorization:(actor,intent)=>this.mailAuthorizations.allowUi(actor,intent),verifyUserAction:(actor,id,intent)=>this.mailAuthorizations.verify(actor,id,intent),ownerState:owner=>processes.state({pid:owner.pid,startedAt:owner.startedAt})},{...this.options.mailSend,hostIdentity:identity,activity:(actor,id,work)=>this.contexts.retainSendActivity(actor,id,identity,work)});await engine.recover();if(this.closed){await engine.dispose();throw new ApplicationError('CANCELED','发送服务已关闭');}return engine;
+     })();this.executionPromise=opening;void opening.catch(()=>{if(this.executionPromise===opening)this.executionPromise=undefined;});return opening;
+   }
++  prepareSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.prepare',operations:['mail.send'],semantics:'write'},context=>this.mailSends.execute(context,'mail.send.prepare',input));}
++  executeSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.execute',operations:['mail.send'],semantics:'write'},context=>this.mailSends.execute(context,'mail.send.execute',input));}
+   viewSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.get',operations:['mail.draft'],semantics:'read'},context=>this.mailSends.execute(context,'mail.send.get',{intentId}));}
+   reviewSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.review',operations:['mail.draft'],semantics:'read'},context=>this.mailSends.review(context,sender,intentId));}
+   authorizeSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.authorize',operations:['mail.send'],semantics:'write'},context=>this.mailSends.confirm(context,sender,input));}
+@@ -110,6 +120,7 @@ export class ApplicationService {
+   replyDraft(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reply.create',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.mail.execute(scope,'mail.reply.create',input));}
+   importAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.import',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.mail.execute(scope,'mail.attachment.import',input));}
+   mailQuery(sender:ApplicationUiSender,projectId:string,input:unknown={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.query',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.query(scope,input));}
++  mailStatus(sender:ApplicationUiSender,projectId:string,input:unknown={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.status',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.queryStatus(scope,input));}
+   mailMessage(sender:ApplicationUiSender,projectId:string,reference:MailSourceRef){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.read',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.read(scope,{reference}));}
+   mailResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.resource(scope,input));}
+   zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read'},scope=>this.data.zentao.execute(scope,'zentao.work.list',input));}
+diff --git a/src/main/core/applications/controller.ts b/src/main/core/applications/controller.ts
+index fca4ec8..9932ec3 100644
+--- a/src/main/core/applications/controller.ts
++++ b/src/main/core/applications/controller.ts
+@@ -26,6 +26,7 @@ export function createApplicationController(service:ApplicationService|undefined
+     select:(event,input:ProjectApplicationSelectionInput)=>run(event,current=>current.select(event,input)),
+     connections:(event,appId:ApplicationId)=>run(event,current=>current.listConnections(event,appId)),
+     testConnection:(event,input:SaveApplicationConnection)=>run(event,current=>current.testConnection(event,input)),
++    discardConnectionTest:(event,appId:ApplicationId,operationId:string)=>run(event,current=>current.discardConnectionTest(event,appId,operationId)),
+     saveConnection:(event,appId:ApplicationId,operationId:string,candidateHash:string,acceptedImpactHash?:string)=>run(event,current=>current.saveConnection(event,appId,operationId,candidateHash,acceptedImpactHash)),
+     setConnectionEnabled:(event,id:string,enabled:boolean,revision:number)=>run(event,current=>current.setConnectionEnabled(event,id,enabled,revision)),
+     disconnect:(event,id:string,revision:number)=>run(event,current=>current.disconnect(event,id,revision)),
+@@ -34,6 +35,8 @@ export function createApplicationController(service:ApplicationService|undefined
+     zentaoWork:(event,projectId:string,input:ZentaoWorkInput)=>run(event,current=>current.zentaoWork(event,projectId,input)),
+     zentaoObject:(event,projectId:string,input:ZentaoDetailInput)=>run(event,current=>current.zentaoObject(event,projectId,input)),
+     zentaoResource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.zentaoResource(event,projectId,input)),
++    prepareSend:(event,projectId:string,input:unknown)=>run(event,current=>current.prepareSend(event,projectId,input)),
++    executeSend:(event,projectId:string,input:unknown)=>run(event,current=>current.executeSend(event,projectId,input)),
+     send:(event,projectId:string,intentId:string)=>run(event,current=>current.viewSend(event,projectId,intentId)),
+     reviewSend:(event,projectId:string,intentId:string)=>run(event,current=>current.reviewSend(event,projectId,intentId)),
+     authorizeSend:(event,projectId:string,input:unknown)=>run(event,current=>current.authorizeSend(event,projectId,input)),
+@@ -42,6 +45,7 @@ export function createApplicationController(service:ApplicationService|undefined
+     replyDraft:(event,projectId:string,input:unknown)=>run(event,current=>current.replyDraft(event,projectId,input)),
+     importAttachment:(event,projectId:string,input:unknown)=>run(event,current=>current.importAttachment(event,projectId,input)),
+     mailQuery:(event,projectId:string,input?:unknown)=>run(event,current=>current.mailQuery(event,projectId,input)),
++    mailStatus:(event,projectId:string,input?:unknown)=>run(event,current=>current.mailStatus(event,projectId,input)),
+     mailRead:(event,projectId:string,reference:MailSourceRef)=>run(event,current=>current.mailMessage(event,projectId,reference)),
+     mailResource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.mailResource(event,projectId,input)),
+     mailCacheStatus:(event)=>run(event,current=>current.mailCacheStatus(event)),
+diff --git a/src/main/core/applications/execution-context.ts b/src/main/core/applications/execution-context.ts
+index a79dd06..de5d33a 100644
+--- a/src/main/core/applications/execution-context.ts
++++ b/src/main/core/applications/execution-context.ts
+@@ -30,7 +30,7 @@ interface ContextRecord {context:ApplicationExecutionContext;active:boolean;abor
+ interface OperationRow {scope_hash:string;targets_json:string;state:string;semantics:'read'|'write';attempt_count:number}
+ const actionSchema=z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
+ const targetSchema=z.object({slot:z.enum(['zentao','foxmail','smtp']),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional()}).strict();
+-const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.save','connection.enable','connection.disconnect']);
++const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
+ 
+ /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
+ export class ApplicationExecutionContexts {
+diff --git a/src/main/core/applications/mail-read-data-service.ts b/src/main/core/applications/mail-read-data-service.ts
+index 536a5fe..50dca95 100644
+--- a/src/main/core/applications/mail-read-data-service.ts
++++ b/src/main/core/applications/mail-read-data-service.ts
+@@ -58,7 +58,8 @@ export class MailReadDataService implements ApplicationDataHost {
+   this.contexts.require(target.context,'mail.read');const cache=await this.cache(),hash=digest(bytes),id=resourceId(canonicalJson({project:target.context.projectId,source:target.sourceKey,reference,part,hash,mediaType})),resource={id,revision:hash,mediaType,size:bytes.byteLength};
+   await cache.put(target.sourceKey,bytes,{signal:target.context.signal});await cache.putRecord(target.sourceKey,'resource:'+target.context.projectId+':'+id,{schema:1,reference,part,resource},[]);this.contexts.require(target.context,'mail.read');return resource;
+  }
+- async query(context:ApplicationExecutionContext,input:unknown):Promise<MailQueryData>{
++ async query(context:ApplicationExecutionContext,input:unknown):Promise<MailQueryData>{return(await this.queryStatus(context,input)).query;}
++ async queryStatus(context:ApplicationExecutionContext,input:unknown){
+   const parsed=querySchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件查询参数无效');const args=parsed.data,target=await this.target(context,args.connectionId??null),cache=await this.cache(),scope=this.scope(target);let cursor:z.infer<typeof cursorSchema>|null=null;
+   if(args.cursor){if(!z.uuid().safeParse(args.cursor).success)throw new ApplicationError('INVALID_INPUT','邮件游标无效');cursor=await cache.withRecord(target.sourceKey,'cursor:'+args.cursor,async value=>cursorSchema.parse(value));if(!cursor||cursor.scope!==scope||cursor.expiresAt<=this.now().getTime()||args.text!==undefined&&args.text!==cursor.text||args.limit!==undefined&&args.limit!==cursor.limit)throw new ApplicationError('REVISION_CONFLICT','邮件游标的项目、来源、条件或期限已变化，请重新查询');}
+   const text=args.text??cursor?.text??'',limit=args.limit??cursor?.limit??50,result=await this.queries.run(target,text,!cursor||args.refresh),state=result.state;
+@@ -68,7 +69,8 @@ export class MailReadDataService implements ApplicationDataHost {
+   if(!done||offset+values.length<ordered.length){nextCursor=randomUUID();await cache.putRecord(target.sourceKey,'cursor:'+nextCursor,{schema:1,scope,text,limit,stateId:state.id,sourceRevision:state.sourceRevision,offset:done?offset+values.length:0,expiresAt:this.now().getTime()+600000},[]);}
+   const problems=state.problems.map(p=>({code:p.code,objectId:p.id}));if(!done||state.problemCount>state.problems.length)problems.push({code:'INCOMPLETE_RESULT',objectId:null});
+   await this.audit(context,target,'query',state.sourceRevision,{range:state.range});this.contexts.require(context,'mail.read');
+-  return{items:values.map(({subject,from,to,date,messageId,hasAttachments,id,sourceRevision})=>({subject,from,to,date,messageId,hasAttachments,reference:{connectionId:target.connection.id,identityRevision:target.connection.identityRevision,nativeId:id,contentRevision:sourceRevision}})),nextCursor,complete:done&&state.problemCount===0,matched:state.items.length,range:state.range,checkedAt:result.checkedAt,problems};
++  const query:MailQueryData={items:values.map(({subject,from,to,date,messageId,hasAttachments,id,sourceRevision})=>({subject,from,to,date,messageId,hasAttachments,reference:{connectionId:target.connection.id,identityRevision:target.connection.identityRevision,nativeId:id,contentRevision:sourceRevision}})),nextCursor,complete:done&&state.problemCount===0,matched:state.items.length,range:state.range,checkedAt:result.checkedAt,problems};
++  return{query,refresh:{scanned:state.nextOffset,total:state.total,finished:done,problemCount:state.problemCount,lastSuccessfulRefreshAt:state.lastSuccessfulRefreshAt}};
+  }
+  async read(context:ApplicationExecutionContext,input:unknown):Promise<MailReadData>{
+   const parsed=readSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件来源引用无效');const reference=parsed.data.reference,target=await this.target(context,reference.connectionId),value=await this.nativeRead(target,reference);this.summary(value);
+diff --git a/src/main/core/applications/mail-send-data-service.ts b/src/main/core/applications/mail-send-data-service.ts
+index b719d58..84e9860 100644
+--- a/src/main/core/applications/mail-send-data-service.ts
++++ b/src/main/core/applications/mail-send-data-service.ts
+@@ -14,7 +14,8 @@ const prepareSchema=z.object({draftId:z.uuid(),expectedRevision:z.number().int()
+ const getSchema=z.object({intentId:z.uuid()}).strict();
+ const executeSchema=getSchema.extend({expectedReviewHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+ const methods=new Set(['mail.send.prepare','mail.send.get','mail.send.cancel','mail.send.execute']);
+-export interface MailSendData {id:string;draftId:string;draftRevision:number;state:MailSendIntent['state'];reviewHash:string|null;review:ApplicationResourceRef|null;authorized:boolean;executionId:string|null;result:MailSendIntent['result'];errorCode:string|null;createdAt:string;updatedAt:string}
++export type {MailSendData} from '@shared/mail-execution';
++import type {MailSendData} from '@shared/mail-execution';
+ export class MailSendDataService implements ApplicationDataHost {
+  private readonly views:PackageConfigViews;
+  constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations){
+diff --git a/src/renderer/core/navigation.ts b/src/renderer/core/navigation.ts
+index 1ca8c6f..779b256 100644
+--- a/src/renderer/core/navigation.ts
++++ b/src/renderer/core/navigation.ts
+@@ -2,13 +2,18 @@ import { makeAutoObservable } from 'mobx';
+ import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
+ 
+ /** The view registry: every top-level view the main area can show. */
+-export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled'] as const;
++export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
+ export type ViewId = (typeof VIEW_IDS)[number];
+ 
+-export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about';
++export type ApplicationPage = 'catalog' | 'zentao' | 'mail' | 'projects';
++export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
++
++export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';
+ 
+ class NavigationStore {
+   currentViewId: ViewId = 'home';
++  applicationPage: ApplicationPage = 'catalog';
++  projectSection: ProjectSectionId = 'overview';
+   /** The project the 'project' view shows. */
+   currentProjectId: string | null = null;
+   /** The task the 'task' view shows. */
+@@ -67,7 +72,15 @@ class NavigationStore {
+     this.currentViewId = 'settings';
+   }
+ 
+-  openProject(id: string): void {
++  openApplications(page:ApplicationPage='catalog',projectId?:string):void {
++    if(projectId)this.currentProjectId=projectId;
++    this.applicationPage=page;this.currentViewId='apps';
++  }
++
++  setProjectSection(section:ProjectSectionId):void{this.projectSection=section;}
++
++  openProject(id: string,section:ProjectSectionId='overview'): void {
++    this.projectSection=section;
+     this.currentProjectId = id;
+     this.currentViewId = 'project';
+   }
+diff --git a/src/renderer/lib/i18n/locales.ts b/src/renderer/lib/i18n/locales.ts
+index 83bf7dc..985966e 100644
+--- a/src/renderer/lib/i18n/locales.ts
++++ b/src/renderer/lib/i18n/locales.ts
+@@ -214,7 +214,7 @@ export const zhCN = {
+   },
+   settings: {
+     title: '设置',
+-    sections: { voice: '语音输入', general: '常规', aiProfiles: 'AI 配置', capabilities: 'Skill 与 MCP', appearance: '外观', terminal: '终端' },
++    sections: { applications: '应用', voice: '语音输入', general: '常规', aiProfiles: 'AI 配置', capabilities: 'Skill 与 MCP', appearance: '外观', terminal: '终端' },
+     descriptions: {
+       general: '语言、数据存放位置与环境自检。',
+       aiProfiles: '运行器与账号：每个配置是一个程序加一组环境变量和启动参数。令牌加密保存，不出现在界面和日志中。',
+@@ -246,7 +246,7 @@ export const zhCN = {
+     new: '新建项目',
+     none: '还没有项目',
+     archived: '已归档（{{count}}）',
+-    sections: { overview: '概览', dirs: '代码目录', databases: '数据库', servers: '服务器', capabilities: 'Skill 与 MCP', tasks: '任务' },
++    sections: { applications: '应用', overview: '概览', dirs: '代码目录', databases: '数据库', servers: '服务器', capabilities: 'Skill 与 MCP', tasks: '任务' },
+     descriptions: {
+       overview: '名称、别名、说明与项目规则文件。',
+       dirs: '一个项目可登记多个代码目录；同一目录只能属于一个未归档的项目。',
+@@ -596,7 +596,7 @@ export const en: Widen<typeof zhCN> = {
+   },
+   settings: {
+     title: 'Settings',
+-    sections: { voice: 'Voice input', general: 'General', aiProfiles: 'AI profiles', capabilities: 'Skills & MCP', appearance: 'Appearance', terminal: 'Terminal' },
++    sections: { applications: 'Apps', voice: 'Voice input', general: 'General', aiProfiles: 'AI profiles', capabilities: 'Skills & MCP', appearance: 'Appearance', terminal: 'Terminal' },
+     descriptions: {
+       general: 'Language, data location and environment self-check.',
+       aiProfiles: 'Runners and accounts: each profile is a program plus environment variables and arguments. Tokens are stored encrypted and never shown in the UI or logs.',
+@@ -628,7 +628,7 @@ export const en: Widen<typeof zhCN> = {
+     new: 'New project',
+     none: 'No projects yet',
+     archived: 'Archived ({{count}})',
+-    sections: { overview: 'Overview', dirs: 'Code folders', databases: 'Databases', servers: 'Servers', capabilities: 'Skills & MCP', tasks: 'Tasks' },
++    sections: { applications: 'Apps', overview: 'Overview', dirs: 'Code folders', databases: 'Databases', servers: 'Servers', capabilities: 'Skills & MCP', tasks: 'Tasks' },
+     descriptions: {
+       overview: 'Name, aliases, description and the project rules file.',
+       dirs: 'A project can have several code folders; a folder belongs to at most one active project.',
+diff --git a/src/renderer/lib/layout/left-sidebar.tsx b/src/renderer/lib/layout/left-sidebar.tsx
+index c42ecae..c03f364 100644
+--- a/src/renderer/lib/layout/left-sidebar.tsx
++++ b/src/renderer/lib/layout/left-sidebar.tsx
+@@ -1,4 +1,4 @@
+-import { ChevronDown, History, Search, Settings, SquarePen } from 'lucide-react';
++import { ChevronDown, History, Search, Settings, SquarePen, Puzzle } from 'lucide-react';
+ import { observer } from 'mobx-react-lite';
+ import { useTranslation } from 'react-i18next';
+ import { navigation } from '@renderer/core/navigation';
+@@ -17,6 +17,7 @@ export const LeftSidebar = observer(function LeftSidebar() {
+     <nav className="reference-primary">
+       <button className="nav-row" data-testid="nav-new-task" onClick={() => navigation.newTask()}><SquarePen size={17} /><span>{t('nav.newTask')}</span><kbd>⌘N</kbd></button>
+       <button className="nav-row" onClick={() => navigation.setSearchOpen(true)}><History size={17} /><span>{t('m6.history')}</span>{running > 0 && <span className="history-count">{running}</span>}</button>
++      <button className="nav-row" data-testid="nav-apps" onClick={()=>navigation.openApplications()}><Puzzle size={17}/><span>{t('settings.sections.applications')}</span></button>
+     </nav>
+     <SidebarProjects />
+     <button className="reference-sidebar-settings" data-testid="nav-settings" onClick={() => navigation.openSettings()}><Settings size={17} />{t('nav.settings')}</button>
+diff --git a/src/renderer/lib/layout/workspace.tsx b/src/renderer/lib/layout/workspace.tsx
+index 51406df..f43f735 100644
+--- a/src/renderer/lib/layout/workspace.tsx
++++ b/src/renderer/lib/layout/workspace.tsx
+@@ -14,6 +14,8 @@ import { useProject } from '@renderer/lib/hooks/useProjects';
+ import { useTheme } from '@renderer/lib/theme';
+ import { HomeView } from '@renderer/views/home-view';
+ import { ProjectView } from '@renderer/views/project-view';
++import { ApplicationsWorkspace } from '@renderer/features/applications/workspace';
++import { useApplicationEvents } from '@renderer/features/applications/api';
+ import { SettingsView } from '@renderer/views/settings-view';
+ import { RuntimeBar, TaskHeader } from '@renderer/views/task-chrome';
+ import { TaskView } from '@renderer/views/task-view';
+@@ -26,6 +28,8 @@ export const Workspace = observer(function Workspace() {
+   const width = navigation.sidebarWidth;
+   useEffect(() => events.on(menuToggleLeftSidebarEvent, () => setIsLeftOpen((v) => !v)), []);
+   const view = navigation.currentViewId;
++  useApplicationEvents();
++  const apps=view==='apps';
+   const settings = view === 'settings';
+   const scheduled = view === 'scheduled';
+   const resize = (value: number) => navigation.setSidebarWidth(value);
+@@ -34,15 +38,15 @@ export const Workspace = observer(function Workspace() {
+   const railSelection: RailIconName | null = view === 'home' || view === 'task' ? 'home'
+     : scheduled ? 'clock' : view === 'project' ? 'branch'
+     : settings && navigation.settingsSection === 'aiProfiles' ? 'bot'
+-    : settings && navigation.settingsSection === 'capabilities' ? 'grid'
++    : apps || settings && navigation.settingsSection === 'capabilities' ? 'grid'
+     : settings && navigation.settingsSection === 'about' ? 'more' : null;
+   const railButton = (name: RailIconName, label: string, onClick: () => void) => <button type="button" className={`rail-link ${name === 'home' ? 'rail-home' : ''}`} aria-label={label} aria-current={railSelection === name ? 'page' : undefined} title={label} onClick={onClick}><RailIcon name={name} selected={railSelection === name} /></button>;
+   return (
+-    <div className={`app codex-frame ${settings ? 'settings-mode' : scheduled ? 'scheduled-mode' : view === 'home' ? 'home-mode' : ''} ${!isLeftOpen ? 'sidebar-collapsed' : ''} ${navigation.filePanelOpen && (view === 'task' || view === 'project') ? 'm9-active' : ''}`} style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
++    <div className={`app codex-frame ${apps ? 'apps-mode' : settings ? 'settings-mode' : scheduled ? 'scheduled-mode' : view === 'home' ? 'home-mode' : ''} ${!isLeftOpen ? 'sidebar-collapsed' : ''} ${navigation.filePanelOpen && (view === 'task' || view === 'project') ? 'm9-active' : ''}`} style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
+       <div className="m6-window-drag app-drag" />
+       <div className="window-navigation m6-native-navigation">
+         <button data-testid="nav-home" className="icon-button" title={t('nav.home')} onClick={() => navigation.newTask()}><ArrowLeft size={17} /></button>
+-        {!settings && <button className="icon-button" title={t('nav.toggleSidebar')} onClick={() => setIsLeftOpen((v) => !v)}><PanelLeft size={16} /></button>}
++        {!settings && !apps && <button className="icon-button" title={t('nav.toggleSidebar')} onClick={() => setIsLeftOpen((v) => !v)}><PanelLeft size={16} /></button>}
+       </div>
+       {view === 'task' && tasksStore.current && <TaskHeader task={tasksStore.current} />}
+       <nav className="app-rail" aria-label={t('m6.navigation')}><div className="rail-links">
+@@ -52,14 +56,14 @@ export const Workspace = observer(function Workspace() {
+         {railButton('more', t('m6.about'), () => navigation.openSettings('about'))}
+         <span className="rail-divider" />
+         {railButton('branch', t('m6.projectResources'), () => resourceProject ? navigation.openProject(resourceProject) : navigation.newTask())}
+-        {railButton('grid', t('settings.sections.capabilities'), () => navigation.openSettings('capabilities'))}
++        {railButton('grid', t('settings.sections.applications'), () => navigation.openApplications('catalog',resourceProject??undefined))}
+         </div><div className="rail-bottom">
+           <button className="rail-download" title={t('m6.about')} onClick={() => navigation.openSettings('about')}><Download size={18} /></button>
+           <button className="rail-avatar" title={t('nav.settings')} onClick={() => navigation.openSettings()}><img src={appIcon} alt="WillYou" /></button>
+         </div>
+       </nav>
+-      {!settings && !scheduled && isLeftOpen && <LeftSidebar key="sidebar" />}
+-      {!settings && !scheduled && isLeftOpen && <div className="sidebar-resizer" role="separator" aria-label={t('m6.resizeSidebar')} aria-orientation="vertical" aria-valuenow={width} aria-valuemin={240} aria-valuemax={420} tabIndex={0}
++      {!settings && !scheduled && !apps && isLeftOpen && <LeftSidebar key="sidebar" />}
++      {!settings && !scheduled && !apps && isLeftOpen && <div className="sidebar-resizer" role="separator" aria-label={t('m6.resizeSidebar')} aria-orientation="vertical" aria-valuenow={width} aria-valuemin={240} aria-valuemax={420} tabIndex={0}
+         onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+         onPointerMove={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) resize(e.clientX - 52); }}
+         onPointerUp={(e) => { e.currentTarget.releasePointerCapture(e.pointerId); localStorage.setItem('smartdd-sidebar-width', String(width)); }}
+@@ -91,6 +95,7 @@ const MainContent = observer(function MainContent() {
+     <div ref={split} className="m9-workspace-split" style={{ '--file-panel-width': `${fileWidth}px` } as CSSProperties}><div data-testid="main-body" className="m6-main-body">
+       <ViewSlot active={view === 'home'}><HomeView /></ViewSlot>
+       <ViewSlot active={view === 'task'} keepMounted><TaskView /></ViewSlot>
++      <ViewSlot active={view === 'apps'}><ApplicationsWorkspace /></ViewSlot>
+       <ViewSlot active={view === 'settings'}><SettingsView /></ViewSlot>
+       <ViewSlot active={view === 'project'}><ProjectView key={navigation.currentProjectId ?? ''} /></ViewSlot>
+       <ViewSlot active={view === 'scheduled'}><div className="scheduled-placeholder"><div className="scheduled-clock">🕘</div><h1>{t('m6.arrangeTasks')}</h1><p>{t('m6.scheduleDescription')}</p><span className="scheduled-planned">{t('m6.planned')}</span><p className="scheduled-note">{t('m6.scheduleNote')}</p></div></ViewSlot>
+diff --git a/src/renderer/views/project-view.tsx b/src/renderer/views/project-view.tsx
+index 67d7906..dabdede 100644
+--- a/src/renderer/views/project-view.tsx
++++ b/src/renderer/views/project-view.tsx
+@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
+ import { toast } from 'sonner';
+ import { rpcErrorMessage } from '@shared/ipc/rpc';
+ import { DB_VENDORS, isProdEnv, type DatabaseView, type ProjectDetail, type ProjectDirView, type ServerView } from '@shared/projects';
+-import { navigation } from '@renderer/core/navigation';
++import { navigation,type ProjectSectionId } from '@renderer/core/navigation';
++import { ProjectApplications } from '@renderer/features/applications/project-applications';
++import '@renderer/features/applications/style.css';
+ import { tasksStore } from '@renderer/core/tasks-store';
+ import { useProject, useRefreshProjects } from '@renderer/lib/hooks/useProjects';
+ import { rpc } from '@renderer/lib/ipc';
+@@ -19,8 +21,8 @@ import { DatabaseDialog, ServerDialog } from './projects/resource-dialogs';
+ import { CapabilitiesSection } from './capabilities';
+ import { projectTransferNavigation } from '@renderer/core/project-transfer';
+ 
+-type SectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'tasks';
+-const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'capabilities', 'tasks'];
++type SectionId = ProjectSectionId;
++const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'applications', 'capabilities', 'tasks'];
+ 
+ /** Dialog state: which item a dialog is open for (`null` = create). Closed when undefined. */
+ function useDialogTarget<T>() {
+@@ -45,7 +47,7 @@ export const ProjectView = observer(function ProjectView() {
+   const { t } = useTranslation();
+   const id = navigation.currentProjectId;
+   const { data: project, error, isLoading } = useProject(id);
+-  const [section, setSection] = useState<SectionId>('overview');
++  const section=navigation.projectSection,setSection=(value:SectionId)=>navigation.setProjectSection(value);
+ 
+   if (!id) return null;
+   if (isLoading) return null;
+@@ -75,6 +77,7 @@ export const ProjectView = observer(function ProjectView() {
+       {section === 'dirs' && <Dirs project={project} />}
+       {section === 'databases' && <Databases project={project} />}
+       {section === 'servers' && <Servers project={project} />}
++      {section === 'applications' && <ProjectApplications key={project.id} project={project} />}
+       {section === 'capabilities' && <CapabilitiesSection key={project.id} projectId={project.id} />}
+       {section === 'tasks' && <Tasks project={project} />}
+     </SectionPage>
+diff --git a/src/renderer/views/settings-view.tsx b/src/renderer/views/settings-view.tsx
+index fff406b..e8c5925 100644
+--- a/src/renderer/views/settings-view.tsx
++++ b/src/renderer/views/settings-view.tsx
+@@ -1,6 +1,6 @@
+ import { VoiceSettingsSection, readableVoiceKey } from './settings/voice';
+ import { voiceStore } from '@renderer/core/voice-store';
+-import { ChevronDown, Info, Keyboard, Mic, Search, Settings, ShieldCheck, SquareTerminal, Sun, Zap } from 'lucide-react';
++import { ChevronDown, Info, Keyboard, Mic, Search, Settings, ShieldCheck, SquareTerminal, Sun, Zap, Puzzle } from 'lucide-react';
+ import { toast } from 'sonner';
+ import { rpcErrorMessage } from '@shared/ipc/rpc';
+ import { useAiProfiles, useRefreshAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
+@@ -28,6 +28,7 @@ const SECTIONS = [
+   { id: 'terminal', Icon: SquareTerminal, group: 'personal' },
+   { id: 'voice', Icon: Mic, group: 'personal' },
+   { id: 'shortcuts', Icon: Keyboard, group: 'personal' },
++  { id: 'applications', Icon: Puzzle, group: 'integrations' },
+   { id: 'capabilities', Icon: Zap, group: 'integrations' },
+   { id: 'about', Icon: Info, group: 'application' },
+ ] as const;
+@@ -35,6 +36,7 @@ const SECTIONS = [
+ export const SettingsView = observer(function SettingsView() {
+   const { t } = useTranslation();
+   const section = navigation.settingsSection;
++  useEffect(()=>{if(section==='applications')navigation.openApplications();},[section]);
+   const [search, setSearch] = useState('');
+   const label = (id: SettingsSectionId) => t(id === 'about' || id === 'shortcuts' ? `m6.${id}` : `settings.sections.${id}`);
+   return <div className="settings-shell">
+@@ -43,7 +45,7 @@ export const SettingsView = observer(function SettingsView() {
+       <label className="settings-search"><Search size={15} /><input aria-label={t('m6.searchSettings')} placeholder={t('m6.search')} value={search} onChange={(e) => setSearch(e.target.value)} /></label>
+       {(['personal', 'integrations', 'application'] as const).map((group) => {
+         const items = SECTIONS.filter((item) => item.group === group && label(item.id).toLowerCase().includes(search.toLowerCase()));
+-        return items.length > 0 && <div className="settings-nav-group" key={group}><h3>{t(`m6.${group}`)}</h3>{items.map(({ id, Icon }) => <button key={id} className={`nav-row ${section === id ? 'selected' : ''}`} aria-current={section === id ? 'page' : undefined} onClick={() => navigation.openSettings(id)}><Icon size={16} /><span>{label(id)}</span></button>)}</div>;
++        return items.length > 0 && <div className="settings-nav-group" key={group}><h3>{t(`m6.${group}`)}</h3>{items.map(({ id, Icon }) => <button key={id} className={`nav-row ${section === id ? 'selected' : ''}`} aria-current={section === id ? 'page' : undefined} onClick={() => id==='applications'?navigation.openApplications():navigation.openSettings(id)}><Icon size={16} /><span>{label(id)}</span></button>)}</div>;
+       })}
+       {!SECTIONS.some((item) => label(item.id).toLowerCase().includes(search.toLowerCase())) && <p className="settings-search-empty">{t('m6.noSettings')}</p>}
+     </nav>
+diff --git a/src/shared/application-data.ts b/src/shared/application-data.ts
+index 3d6e702..e6fbb4f 100644
+--- a/src/shared/application-data.ts
++++ b/src/shared/application-data.ts
+@@ -13,3 +13,6 @@ export interface MailDraftDataView {
+   attachments:{id:string;filename:string;contentType:string;size:number;contentHash:string}[];
+   activeIntentId:string|null;lastExecutionId:string|null;sourceTaskId:string|null;copiedFromDraftId:string|null;createdAt:string;updatedAt:string;
+ }
++
++/** Trusted UI views reuse the existing host services; these are not v1 tool contracts. */
++export interface MailDraftListData {items:{id:string;revision:number;state:MailDraftDataView['state'];subject:string;attachmentCount:number;createdAt:string;updatedAt:string}[];nextCursor:string|null}
+diff --git a/src/shared/mail-execution.ts b/src/shared/mail-execution.ts
+index 2f1c4cd..da5a97e 100644
+--- a/src/shared/mail-execution.ts
++++ b/src/shared/mail-execution.ts
+@@ -1,3 +1,4 @@
++import type {ApplicationResourceRef} from './application-data';
+ import { z } from 'zod';
+ import type { MailActor, MailDraftContent, MailAttachment } from './mail-drafts';
+ export interface MailSendActor extends MailActor { runId: string | null }
+@@ -19,3 +20,5 @@ export interface VerifiedMailUserAction {
+   id: string;source: 'renderer-confirmation' | 'native-user-message';sourceHash: string;intentId: string;reviewHash: string;
+   projectId: string;taskId: string | null;runId: string | null;createdAt: string;expiresAt: string;reviewedUnknownExecutionIds: string[];
+ }
++
++export interface MailSendData {id:string;draftId:string;draftRevision:number;state:MailSendIntent['state'];reviewHash:string|null;review:ApplicationResourceRef|null;authorized:boolean;executionId:string|null;result:MailSendIntent['result'];errorCode:string|null;createdAt:string;updatedAt:string}

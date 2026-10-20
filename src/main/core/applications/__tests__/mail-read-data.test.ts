@@ -81,6 +81,10 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
   reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);
  });
  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();fox.close();files.closeOwner(fileOwner);await files.watcher.dispose();fileBroker.dispose();vi.restoreAllMocks();f.cleanup();});
+ nativeIt('exposes actual scan progress and last complete refresh to UI without extending the original v1 tool result',async()=>{
+  add(1);const status=await app.mailStatus(sender,'p1',{limit:1});expect(status.refresh).toMatchObject({scanned:1,total:1,finished:true,problemCount:0,lastSuccessfulRefreshAt:expect.any(String)});expect(status.query).toMatchObject({complete:true,matched:1});
+  const original=await query();expect(Object.keys(original).sort()).toEqual(['checkedAt','complete','items','matched','nextCursor','problems','range']);
+ });
  nativeIt('uses real CJS contracts for current-source search,read,UTF-8 chunks and exact attachment bytes without modifying the source',async()=>{
   const revision=add(1,clock,'中文正文 body-needle',true),before=hashes(),page=await query({text:'body-needle'});expect(page).toMatchObject({complete:true,matched:1,nextCursor:null});expect(page.items[0].reference.contentRevision).toBe(revision);
   const mail=await read(page.items[0].reference,codex);expect(mail).toMatchObject({complete:true,attachments:[{filename:'fixture.bin',size:5}]});const body=await call('resource_read',{resource:mail.text,offset:0,length:262144},codex);expect(body).toMatchObject({status:'ok',value:{encoding:'utf8',data:'中文正文 body-needle',eof:true}});

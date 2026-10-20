@@ -1,0 +1,621 @@
+{
+  "schema": "m10-partial-packaged-ui-v1",
+  "startedAt": "2026-10-20T11:45:32.475Z",
+  "branch": "feature/0.0.2",
+  "commit": "43d7cb389104bb42218c8ef1c0c0e44393a34a08",
+  "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+  "app": "/private/tmp/m10-dev006-b-package-20261020/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "3116679735954ce6223d6a37c58cbd92e4d6278ab698c482c2cb97361f56122a",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-m10-management-ui-GOcgrB",
+  "userData": "/private/tmp/willyou-m10-management-ui-GOcgrB/userdata",
+  "checks": [
+    {
+      "name": "P01 catalog add via actual pointer",
+      "at": "2026-10-20T11:45:33.894Z",
+      "passed": true
+    },
+    {
+      "name": "P03 edit invalidates old host test receipt",
+      "at": "2026-10-20T11:45:34.110Z",
+      "passed": true
+    },
+    {
+      "name": "P03 real test and UI save persisted one verified ZenTao connection",
+      "at": "2026-10-20T11:45:34.297Z",
+      "passed": true
+    },
+    {
+      "name": "P04 project enabled and explicit single ZenTao source persisted",
+      "at": "2026-10-20T11:45:34.531Z",
+      "passed": true
+    },
+    {
+      "name": "P05 real readonly list and separate detail/body/history through UI",
+      "at": "2026-10-20T11:45:34.870Z",
+      "passed": true
+    }
+  ],
+  "providers": {
+    "zentaoRequests": [
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v2/my/work?mode=bug&type=assignedTo&param=0&orderBy=id_desc&recTotal=0&recPerPage=50&pageID=1",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/bugs/12"
+    ],
+    "smtpCommands": [],
+    "smtpDataSubmissions": 0
+  },
+  "status": "failed",
+  "appPid": 8180,
+  "setup": {
+    "projectId": "e4866577-b1c0-4aad-9d54-4c56e3c4ae4c",
+    "method": "projects.create only prepares unrelated project prerequisite; not counted as UI project creation"
+  },
+  "lastAction": {
+    "selector": "[aria-label=\"SMTP 端口\"]"
+  },
+  "choiceTrace": [
+    {
+      "label": "当前应用项目",
+      "keyName": "Home",
+      "value": "e4866577-b1c0-4aad-9d54-4c56e3c4ae4c",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "ArrowDown",
+      "value": "e4866577-b1c0-4aad-9d54-4c56e3c4ae4c",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "Enter",
+      "value": "e4866577-b1c0-4aad-9d54-4c56e3c4ae4c",
+      "active": "SELECT"
+    },
+    {
+      "label": "SMTP 连接方式",
+      "keyName": "Home",
+      "value": "implicit-tls",
+      "active": "SELECT"
+    },
+    {
+      "label": "SMTP 连接方式",
+      "keyName": "ArrowDown",
+      "value": "implicit-tls",
+      "active": "SELECT"
+    },
+    {
+      "label": "SMTP 连接方式",
+      "keyName": "ArrowDown",
+      "value": "implicit-tls",
+      "active": "SELECT"
+    },
+    {
+      "label": "SMTP 连接方式",
+      "keyName": "Enter",
+      "value": "implicit-tls",
+      "active": "SELECT"
+    }
+  ],
+  "failedStage": "mail-add-smtp",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'implicit-tls'\n- 'plain'\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'implicit-tls'\n- 'plain'\n\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/scripts/applications/management-ui.mjs:37:365",
+  "dom": "自定义\n应用\n技能\n已添加\n禅道\n邮件\n管理\n项目选用\nWillYou\n全部应用\n邮件v1.0.0\n\n在项目 Agent 中查询、准备草稿与获准发送邮件\n\n添加连接\n应用包\nv1.0.0\n随 WillYou 交付\n\n连接、工具与 1 个 Skill 一起提供，在项目中选用后使用。\n\n邮件工作助手\n随应用启用\n\n搜索本地邮件、总结来往内容和待办，准备草稿及经授权的新邮件、回复或回复全部。\n\n查看工具与包内容\n连接\n0 个连接\n\n添加应用后，还需要连接你的账号或本地邮件来源。\n\n配置连接\n邮件发送\n待配置 · 与本地读取分别连接\n配置发件通道\n项目中使用\n选择项目\nM10 隔离验收项目\n\n为当前项目显式启用应用，并分别选用来源。启用不代表已有会话已经加载，旧会话保持原固定能力。\n\n管理项目选用\n当前项目尚未启用邮件应用\n\n启用后可准备草稿；读取来源与发件账号分别选用。\n\n项目选用\n应用能力\nmail.read\n读取\nmail.draft\n本地准备 · 无需 SMTP\nmail.send\nSMTP 发送 · 需具体授权\n作用范围\n\n连接统一管理，项目按需选用。停用后不再用于新调用，已发出的操作保留实际结果。\n\n本地数据\n\n配置与记录保存在本机，升级后继续使用。移除应用保留业务数据与历史包。\n\n添加SMTP 发件连接\n\n认证信息由本机加密存储管理。连接测试不发送邮件。\n\n连接名称\n\n通过独立 SMTP 服务器发送，在 WillYou 保留结果，不写入 Foxmail 已发送。\n\n服务主机\n端口\n连接方式\n隐式 TLS\nSTARTTLS\n不加密（按服务配置）\n登录账号\n发件地址\n认证密码\n不会从 Foxmail 或其他连接中提取密码。\n保存前请测试；修改字段后需要重新测试。\n取消\n测试连接\n保存连接",
+  "inputTrace": [
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "text": "应用",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "text": "应用",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "path",
+      "label": "添加禅道",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "path",
+      "label": "添加禅道",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "添加连接",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "添加连接",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "禅道服务地址",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "禅道服务地址",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "禅道服务地址",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "禅道账号",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "禅道账号",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "禅道账号",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "认证凭据",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "认证凭据",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "认证凭据",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "添加禅道连接",
+      "text": "测试连接",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "添加禅道连接",
+      "text": "测试连接",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "添加禅道连接",
+      "text": "测试连接",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "添加禅道连接",
+      "text": "测试连接",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "添加禅道连接",
+      "text": "保存连接",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "添加禅道连接",
+      "text": "保存连接",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "管理项目选用",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "管理项目选用",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "target": "BODY",
+      "text": "\n    没有选中的任务。从左侧选择，或按 ⌘N 新建。自定义应用技能已添加禅道管理项目选用Will",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Home",
+      "target": "SELECT",
+      "label": "当前应用项目",
+      "text": "选择项目M10 隔离验收项目",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "target": "SELECT",
+      "label": "当前应用项目",
+      "text": "选择项目M10 隔离验收项目",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Enter",
+      "target": "SELECT",
+      "label": "当前应用项目",
+      "text": "选择项目M10 隔离验收项目",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "target": "SELECT",
+      "label": "当前应用项目",
+      "text": "选择项目M10 隔离验收项目",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "SPAN",
+      "label": "为M10 隔离验收项目启用禅道",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "SPAN",
+      "label": "为M10 隔离验收项目启用禅道",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "为M10 隔离验收项目选用M10 禅道已编辑",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "为M10 隔离验收项目选用M10 禅道已编辑",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "禅道",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "禅道",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "SPAN",
+      "label": "我的禅道工作",
+      "text": "#12 · testerM10 isolated Bug",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "SPAN",
+      "label": "我的禅道工作",
+      "text": "#12 · testerM10 isolated Bug",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "Bug #12",
+      "text": "关闭",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "Bug #12",
+      "text": "关闭",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "全部应用",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "全部应用",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "path",
+      "label": "添加邮件",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "path",
+      "label": "添加邮件",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "添加连接",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "添加连接",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "SMTP 发件账号",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "应用工作区",
+      "text": "SMTP 发件账号",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "连接名称",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "SMTP 服务主机",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "SMTP 服务主机",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "SMTP 服务主机",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "pointerdown",
+      "target": "INPUT",
+      "label": "SMTP 端口",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "click",
+      "target": "INPUT",
+      "label": "SMTP 端口",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "target": "INPUT",
+      "label": "SMTP 端口",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "target": "INPUT",
+      "label": "SMTP 端口",
+      "text": "",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Home",
+      "target": "SELECT",
+      "label": "SMTP 连接方式",
+      "text": "隐式 TLSSTARTTLS不加密（按服务配置）",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "target": "SELECT",
+      "label": "SMTP 连接方式",
+      "text": "隐式 TLSSTARTTLS不加密（按服务配置）",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "ArrowDown",
+      "target": "SELECT",
+      "label": "SMTP 连接方式",
+      "text": "隐式 TLSSTARTTLS不加密（按服务配置）",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Enter",
+      "target": "SELECT",
+      "label": "SMTP 连接方式",
+      "text": "隐式 TLSSTARTTLS不加密（按服务配置）",
+      "disabled": false
+    },
+    {
+      "type": "keydown",
+      "key": "Tab",
+      "target": "SELECT",
+      "label": "SMTP 连接方式",
+      "text": "隐式 TLSSTARTTLS不加密（按服务配置）",
+      "disabled": false
+    }
+  ],
+  "projectState": {
+    "ok": true,
+    "value": {
+      "projectId": "e4866577-b1c0-4aad-9d54-4c56e3c4ae4c",
+      "appId": "zentao",
+      "enabled": true,
+      "revision": 2,
+      "pendingOperationId": null,
+      "connections": {
+        "zentao": "06b71150-49a9-410a-a5e3-32d9b67b2cc6"
+      },
+      "slotRevisions": {
+        "zentao": 2
+      }
+    }
+  },
+  "rendererErrors": [],
+  "finishedAt": "2026-10-20T11:45:35.337Z"
+}

@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { DB_VENDORS, isProdEnv, type DatabaseView, type ProjectDetail, type ProjectDirView, type ServerView } from '@shared/projects';
-import { navigation } from '@renderer/core/navigation';
+import { navigation,type ProjectSectionId } from '@renderer/core/navigation';
+import { ProjectApplications } from '@renderer/features/applications/project-applications';
+import '@renderer/features/applications/style.css';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useProject, useRefreshProjects } from '@renderer/lib/hooks/useProjects';
 import { rpc } from '@renderer/lib/ipc';
@@ -19,8 +21,8 @@ import { DatabaseDialog, ServerDialog } from './projects/resource-dialogs';
 import { CapabilitiesSection } from './capabilities';
 import { projectTransferNavigation } from '@renderer/core/project-transfer';
 
-type SectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'tasks';
-const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'capabilities', 'tasks'];
+type SectionId = ProjectSectionId;
+const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'applications', 'capabilities', 'tasks'];
 
 /** Dialog state: which item a dialog is open for (`null` = create). Closed when undefined. */
 function useDialogTarget<T>() {
@@ -45,7 +47,7 @@ export const ProjectView = observer(function ProjectView() {
   const { t } = useTranslation();
   const id = navigation.currentProjectId;
   const { data: project, error, isLoading } = useProject(id);
-  const [section, setSection] = useState<SectionId>('overview');
+  const section=navigation.projectSection,setSection=(value:SectionId)=>navigation.setProjectSection(value);
 
   if (!id) return null;
   if (isLoading) return null;
@@ -75,6 +77,7 @@ export const ProjectView = observer(function ProjectView() {
       {section === 'dirs' && <Dirs project={project} />}
       {section === 'databases' && <Databases project={project} />}
       {section === 'servers' && <Servers project={project} />}
+      {section === 'applications' && <ProjectApplications key={project.id} project={project} />}
       {section === 'capabilities' && <CapabilitiesSection key={project.id} projectId={project.id} />}
       {section === 'tasks' && <Tasks project={project} />}
     </SectionPage>

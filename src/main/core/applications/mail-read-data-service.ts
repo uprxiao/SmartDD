@@ -58,7 +58,8 @@ export class MailReadDataService implements ApplicationDataHost {
   this.contexts.require(target.context,'mail.read');const cache=await this.cache(),hash=digest(bytes),id=resourceId(canonicalJson({project:target.context.projectId,source:target.sourceKey,reference,part,hash,mediaType})),resource={id,revision:hash,mediaType,size:bytes.byteLength};
   await cache.put(target.sourceKey,bytes,{signal:target.context.signal});await cache.putRecord(target.sourceKey,'resource:'+target.context.projectId+':'+id,{schema:1,reference,part,resource},[]);this.contexts.require(target.context,'mail.read');return resource;
  }
- async query(context:ApplicationExecutionContext,input:unknown):Promise<MailQueryData>{
+ async query(context:ApplicationExecutionContext,input:unknown):Promise<MailQueryData>{return(await this.queryStatus(context,input)).query;}
+ async queryStatus(context:ApplicationExecutionContext,input:unknown){
   const parsed=querySchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件查询参数无效');const args=parsed.data,target=await this.target(context,args.connectionId??null),cache=await this.cache(),scope=this.scope(target);let cursor:z.infer<typeof cursorSchema>|null=null;
   if(args.cursor){if(!z.uuid().safeParse(args.cursor).success)throw new ApplicationError('INVALID_INPUT','邮件游标无效');cursor=await cache.withRecord(target.sourceKey,'cursor:'+args.cursor,async value=>cursorSchema.parse(value));if(!cursor||cursor.scope!==scope||cursor.expiresAt<=this.now().getTime()||args.text!==undefined&&args.text!==cursor.text||args.limit!==undefined&&args.limit!==cursor.limit)throw new ApplicationError('REVISION_CONFLICT','邮件游标的项目、来源、条件或期限已变化，请重新查询');}
   const text=args.text??cursor?.text??'',limit=args.limit??cursor?.limit??50,result=await this.queries.run(target,text,!cursor||args.refresh),state=result.state;
@@ -68,7 +69,8 @@ export class MailReadDataService implements ApplicationDataHost {
   if(!done||offset+values.length<ordered.length){nextCursor=randomUUID();await cache.putRecord(target.sourceKey,'cursor:'+nextCursor,{schema:1,scope,text,limit,stateId:state.id,sourceRevision:state.sourceRevision,offset:done?offset+values.length:0,expiresAt:this.now().getTime()+600000},[]);}
   const problems=state.problems.map(p=>({code:p.code,objectId:p.id}));if(!done||state.problemCount>state.problems.length)problems.push({code:'INCOMPLETE_RESULT',objectId:null});
   await this.audit(context,target,'query',state.sourceRevision,{range:state.range});this.contexts.require(context,'mail.read');
-  return{items:values.map(({subject,from,to,date,messageId,hasAttachments,id,sourceRevision})=>({subject,from,to,date,messageId,hasAttachments,reference:{connectionId:target.connection.id,identityRevision:target.connection.identityRevision,nativeId:id,contentRevision:sourceRevision}})),nextCursor,complete:done&&state.problemCount===0,matched:state.items.length,range:state.range,checkedAt:result.checkedAt,problems};
+  const query:MailQueryData={items:values.map(({subject,from,to,date,messageId,hasAttachments,id,sourceRevision})=>({subject,from,to,date,messageId,hasAttachments,reference:{connectionId:target.connection.id,identityRevision:target.connection.identityRevision,nativeId:id,contentRevision:sourceRevision}})),nextCursor,complete:done&&state.problemCount===0,matched:state.items.length,range:state.range,checkedAt:result.checkedAt,problems};
+  return{query,refresh:{scanned:state.nextOffset,total:state.total,finished:done,problemCount:state.problemCount,lastSuccessfulRefreshAt:state.lastSuccessfulRefreshAt}};
  }
  async read(context:ApplicationExecutionContext,input:unknown):Promise<MailReadData>{
   const parsed=readSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件来源引用无效');const reference=parsed.data.reference,target=await this.target(context,reference.connectionId),value=await this.nativeRead(target,reference);this.summary(value);

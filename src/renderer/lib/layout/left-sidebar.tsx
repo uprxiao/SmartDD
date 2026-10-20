@@ -1,4 +1,4 @@
-import { ChevronDown, History, Search, Settings, SquarePen } from 'lucide-react';
+import { ChevronDown, History, Search, Settings, SquarePen, Puzzle } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { navigation } from '@renderer/core/navigation';
@@ -17,6 +17,7 @@ export const LeftSidebar = observer(function LeftSidebar() {
     <nav className="reference-primary">
       <button className="nav-row" data-testid="nav-new-task" onClick={() => navigation.newTask()}><SquarePen size={17} /><span>{t('nav.newTask')}</span><kbd>⌘N</kbd></button>
       <button className="nav-row" onClick={() => navigation.setSearchOpen(true)}><History size={17} /><span>{t('m6.history')}</span>{running > 0 && <span className="history-count">{running}</span>}</button>
+      <button className="nav-row" data-testid="nav-apps" onClick={()=>navigation.openApplications()}><Puzzle size={17}/><span>{t('settings.sections.applications')}</span></button>
     </nav>
     <SidebarProjects />
     <button className="reference-sidebar-settings" data-testid="nav-settings" onClick={() => navigation.openSettings()}><Settings size={17} />{t('nav.settings')}</button>

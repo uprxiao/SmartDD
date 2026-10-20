@@ -14,7 +14,8 @@ const prepareSchema=z.object({draftId:z.uuid(),expectedRevision:z.number().int()
 const getSchema=z.object({intentId:z.uuid()}).strict();
 const executeSchema=getSchema.extend({expectedReviewHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
 const methods=new Set(['mail.send.prepare','mail.send.get','mail.send.cancel','mail.send.execute']);
-export interface MailSendData {id:string;draftId:string;draftRevision:number;state:MailSendIntent['state'];reviewHash:string|null;review:ApplicationResourceRef|null;authorized:boolean;executionId:string|null;result:MailSendIntent['result'];errorCode:string|null;createdAt:string;updatedAt:string}
+export type {MailSendData} from '@shared/mail-execution';
+import type {MailSendData} from '@shared/mail-execution';
 export class MailSendDataService implements ApplicationDataHost {
  private readonly views:PackageConfigViews;
  constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations){

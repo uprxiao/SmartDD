@@ -2,13 +2,18 @@ import { makeAutoObservable } from 'mobx';
 import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
 
 /** The view registry: every top-level view the main area can show. */
-export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled'] as const;
+export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
-export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about';
+export type ApplicationPage = 'catalog' | 'zentao' | 'mail' | 'projects';
+export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
+
+export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';
 
 class NavigationStore {
   currentViewId: ViewId = 'home';
+  applicationPage: ApplicationPage = 'catalog';
+  projectSection: ProjectSectionId = 'overview';
   /** The project the 'project' view shows. */
   currentProjectId: string | null = null;
   /** The task the 'task' view shows. */
@@ -67,7 +72,15 @@ class NavigationStore {
     this.currentViewId = 'settings';
   }
 
-  openProject(id: string): void {
+  openApplications(page:ApplicationPage='catalog',projectId?:string):void {
+    if(projectId)this.currentProjectId=projectId;
+    this.applicationPage=page;this.currentViewId='apps';
+  }
+
+  setProjectSection(section:ProjectSectionId):void{this.projectSection=section;}
+
+  openProject(id: string,section:ProjectSectionId='overview'): void {
+    this.projectSection=section;
     this.currentProjectId = id;
     this.currentViewId = 'project';
   }

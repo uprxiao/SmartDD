@@ -234,3 +234,14 @@ describe('actual host composition for U-local mail cache management',()=>{
   let closed=false;const closing=app.dispose().then(()=>{closed=true;});await Promise.resolve();try{expect(closed).toBe(false);await expect(app.mailCache()).rejects.toMatchObject({code:'CANCELED'});}finally{release();}await expect(held).rejects.toMatchObject({code:'CANCELED'});await closing;expect(closed).toBe(true);
  });
 });
+
+
+describe('trusted connection form candidate lifecycle',()=>{
+ it('discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection',async()=>{
+  vi.spyOn(ProviderConnectionVerifier.prototype,'verify').mockImplementation(async config=>({providerId:config.kind,serviceId:'private-form-service',accountId:'private-form-account',contractMajor:1}));
+  const input={name:'Private SMTP form',expectedRevision:0,config:smtpConfig(),secret:'form-only-canary'},candidate=await app.testConnection(sender,input),row=f.sqlite.prepare('SELECT new_secret_ref AS ref FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId) as {ref:string};expect(secrets.has(row.ref)).toBe(true);expect(app.connections.list()).toEqual([]);
+  await expect(Promise.resolve().then(()=>app.discardConnectionTest({...sender,senderFrame:{}} as IpcMainInvokeEvent,'mail',candidate.operationId))).rejects.toThrow('TERMINAL_SENDER_DENIED');expect(secrets.has(row.ref)).toBe(true);
+  await app.discardConnectionTest(sender,'mail',candidate.operationId);expect(secrets.has(row.ref)).toBe(false);expect(app.connections.list()).toEqual([]);expect(f.sqlite.prepare('SELECT state,error_code FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId)).toEqual({state:'failed',error_code:'CANCELED'});
+  const saved=await app.testConnection(sender,{...input,name:'Saved SMTP form'});await app.saveConnection(sender,'mail',saved.operationId,saved.candidateHash);await app.discardConnectionTest(sender,'mail',saved.operationId);expect(app.connections.get(saved.connectionId)).toMatchObject({authorization:'connected',hasSecret:true});
+ });
+});

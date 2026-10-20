@@ -14,6 +14,8 @@ import { useProject } from '@renderer/lib/hooks/useProjects';
 import { useTheme } from '@renderer/lib/theme';
 import { HomeView } from '@renderer/views/home-view';
 import { ProjectView } from '@renderer/views/project-view';
+import { ApplicationsWorkspace } from '@renderer/features/applications/workspace';
+import { useApplicationEvents } from '@renderer/features/applications/api';
 import { SettingsView } from '@renderer/views/settings-view';
 import { RuntimeBar, TaskHeader } from '@renderer/views/task-chrome';
 import { TaskView } from '@renderer/views/task-view';
@@ -26,6 +28,8 @@ export const Workspace = observer(function Workspace() {
   const width = navigation.sidebarWidth;
   useEffect(() => events.on(menuToggleLeftSidebarEvent, () => setIsLeftOpen((v) => !v)), []);
   const view = navigation.currentViewId;
+  useApplicationEvents();
+  const apps=view==='apps';
   const settings = view === 'settings';
   const scheduled = view === 'scheduled';
   const resize = (value: number) => navigation.setSidebarWidth(value);
@@ -34,15 +38,15 @@ export const Workspace = observer(function Workspace() {
   const railSelection: RailIconName | null = view === 'home' || view === 'task' ? 'home'
     : scheduled ? 'clock' : view === 'project' ? 'branch'
     : settings && navigation.settingsSection === 'aiProfiles' ? 'bot'
-    : settings && navigation.settingsSection === 'capabilities' ? 'grid'
+    : apps || settings && navigation.settingsSection === 'capabilities' ? 'grid'
     : settings && navigation.settingsSection === 'about' ? 'more' : null;
   const railButton = (name: RailIconName, label: string, onClick: () => void) => <button type="button" className={`rail-link ${name === 'home' ? 'rail-home' : ''}`} aria-label={label} aria-current={railSelection === name ? 'page' : undefined} title={label} onClick={onClick}><RailIcon name={name} selected={railSelection === name} /></button>;
   return (
-    <div className={`app codex-frame ${settings ? 'settings-mode' : scheduled ? 'scheduled-mode' : view === 'home' ? 'home-mode' : ''} ${!isLeftOpen ? 'sidebar-collapsed' : ''} ${navigation.filePanelOpen && (view === 'task' || view === 'project') ? 'm9-active' : ''}`} style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
+    <div className={`app codex-frame ${apps ? 'apps-mode' : settings ? 'settings-mode' : scheduled ? 'scheduled-mode' : view === 'home' ? 'home-mode' : ''} ${!isLeftOpen ? 'sidebar-collapsed' : ''} ${navigation.filePanelOpen && (view === 'task' || view === 'project') ? 'm9-active' : ''}`} style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
       <div className="m6-window-drag app-drag" />
       <div className="window-navigation m6-native-navigation">
         <button data-testid="nav-home" className="icon-button" title={t('nav.home')} onClick={() => navigation.newTask()}><ArrowLeft size={17} /></button>
-        {!settings && <button className="icon-button" title={t('nav.toggleSidebar')} onClick={() => setIsLeftOpen((v) => !v)}><PanelLeft size={16} /></button>}
+        {!settings && !apps && <button className="icon-button" title={t('nav.toggleSidebar')} onClick={() => setIsLeftOpen((v) => !v)}><PanelLeft size={16} /></button>}
       </div>
       {view === 'task' && tasksStore.current && <TaskHeader task={tasksStore.current} />}
       <nav className="app-rail" aria-label={t('m6.navigation')}><div className="rail-links">
@@ -52,14 +56,14 @@ export const Workspace = observer(function Workspace() {
         {railButton('more', t('m6.about'), () => navigation.openSettings('about'))}
         <span className="rail-divider" />
         {railButton('branch', t('m6.projectResources'), () => resourceProject ? navigation.openProject(resourceProject) : navigation.newTask())}
-        {railButton('grid', t('settings.sections.capabilities'), () => navigation.openSettings('capabilities'))}
+        {railButton('grid', t('settings.sections.applications'), () => navigation.openApplications('catalog',resourceProject??undefined))}
         </div><div className="rail-bottom">
           <button className="rail-download" title={t('m6.about')} onClick={() => navigation.openSettings('about')}><Download size={18} /></button>
           <button className="rail-avatar" title={t('nav.settings')} onClick={() => navigation.openSettings()}><img src={appIcon} alt="WillYou" /></button>
         </div>
       </nav>
-      {!settings && !scheduled && isLeftOpen && <LeftSidebar key="sidebar" />}
-      {!settings && !scheduled && isLeftOpen && <div className="sidebar-resizer" role="separator" aria-label={t('m6.resizeSidebar')} aria-orientation="vertical" aria-valuenow={width} aria-valuemin={240} aria-valuemax={420} tabIndex={0}
+      {!settings && !scheduled && !apps && isLeftOpen && <LeftSidebar key="sidebar" />}
+      {!settings && !scheduled && !apps && isLeftOpen && <div className="sidebar-resizer" role="separator" aria-label={t('m6.resizeSidebar')} aria-orientation="vertical" aria-valuenow={width} aria-valuemin={240} aria-valuemax={420} tabIndex={0}
         onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
         onPointerMove={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) resize(e.clientX - 52); }}
         onPointerUp={(e) => { e.currentTarget.releasePointerCapture(e.pointerId); localStorage.setItem('smartdd-sidebar-width', String(width)); }}
@@ -91,6 +95,7 @@ const MainContent = observer(function MainContent() {
     <div ref={split} className="m9-workspace-split" style={{ '--file-panel-width': `${fileWidth}px` } as CSSProperties}><div data-testid="main-body" className="m6-main-body">
       <ViewSlot active={view === 'home'}><HomeView /></ViewSlot>
       <ViewSlot active={view === 'task'} keepMounted><TaskView /></ViewSlot>
+      <ViewSlot active={view === 'apps'}><ApplicationsWorkspace /></ViewSlot>
       <ViewSlot active={view === 'settings'}><SettingsView /></ViewSlot>
       <ViewSlot active={view === 'project'}><ProjectView key={navigation.currentProjectId ?? ''} /></ViewSlot>
       <ViewSlot active={view === 'scheduled'}><div className="scheduled-placeholder"><div className="scheduled-clock">🕘</div><h1>{t('m6.arrangeTasks')}</h1><p>{t('m6.scheduleDescription')}</p><span className="scheduled-planned">{t('m6.planned')}</span><p className="scheduled-note">{t('m6.scheduleNote')}</p></div></ViewSlot>

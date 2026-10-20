@@ -13,3 +13,6 @@ export interface MailDraftDataView {
   attachments:{id:string;filename:string;contentType:string;size:number;contentHash:string}[];
   activeIntentId:string|null;lastExecutionId:string|null;sourceTaskId:string|null;copiedFromDraftId:string|null;createdAt:string;updatedAt:string;
 }
+
+/** Trusted UI views reuse the existing host services; these are not v1 tool contracts. */
+export interface MailDraftListData {items:{id:string;revision:number;state:MailDraftDataView['state'];subject:string;attachmentCount:number;createdAt:string;updatedAt:string}[];nextCursor:string|null}

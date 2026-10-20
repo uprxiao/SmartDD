@@ -1,3 +1,4 @@
+import type {ApplicationResourceRef} from './application-data';
 import { z } from 'zod';
 import type { MailActor, MailDraftContent, MailAttachment } from './mail-drafts';
 export interface MailSendActor extends MailActor { runId: string | null }
@@ -19,3 +20,5 @@ export interface VerifiedMailUserAction {
   id: string;source: 'renderer-confirmation' | 'native-user-message';sourceHash: string;intentId: string;reviewHash: string;
   projectId: string;taskId: string | null;runId: string | null;createdAt: string;expiresAt: string;reviewedUnknownExecutionIds: string[];
 }
+
+export interface MailSendData {id:string;draftId:string;draftRevision:number;state:MailSendIntent['state'];reviewHash:string|null;review:ApplicationResourceRef|null;authorized:boolean;executionId:string|null;result:MailSendIntent['result'];errorCode:string|null;createdAt:string;updatedAt:string}

@@ -1,0 +1,29 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/renderer/features/applications/workspace.test.tsx src/main/core/applications/__tests__/application-controller.test.ts src/main/core/applications/__tests__/business-data.test.ts src/renderer/lib/i18n/locales.test.ts --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/business-data.test.ts (30 tests | 1 failed) 9150ms
+     × discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection 223ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/business-data.test.ts > trusted connection form candidate lifecycle > discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection
+ApplicationError: 连接管理只允许明确的配置动作
+ ❯ ApplicationExecutionContexts.withManagement src/main/core/applications/execution-context.ts:145:83
+
+ ❯ ApplicationService.management src/main/core/applications/application-service.ts:78:26
+ ❯ ApplicationService.discardConnectionTest src/main/core/applications/application-service.ts:95:41
+ ❯ src/main/core/applications/__tests__/business-data.test.ts:244:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 49 passed (50)
+   Start at  19:23:40
+   Duration  9.79s (transform 423ms, setup 0ms, import 839ms, tests 9.43s, environment 225ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
