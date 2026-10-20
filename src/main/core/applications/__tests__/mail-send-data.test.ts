@@ -1,3 +1,4 @@
+import type {ProcessIdentityReader} from '../process-identity';
 import {execFileSync} from 'node:child_process';
 import {EventEmitter} from 'node:events';
 import {randomUUID} from 'node:crypto';
@@ -33,7 +34,7 @@ let build:string,bundles:CapabilityBundleSource,f:Awaited<ReturnType<typeof agen
 const owned:OwnedCapabilityRun[]=[],closers:(()=>Promise<void>)[]=[];
 let messages:Buffer[],authentications:string[],decrypts:number,loseReceipt:boolean;
 const content=(over:Partial<MailDraftContent>={}):MailDraftContent=>({mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['receiver@example.test'],cc:[],bcc:['private@example.test'],subject:'private send data integration',text:'正文 exact integration content',html:null,inReplyTo:null,references:[],attachmentIds:[],...over});
-function setup(mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>){return new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(build,'unused-mail-worker.cjs'),foxmailNative:join(build,'unused-foxmail'),mailSend});}
+function setup(mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>,processes?:ProcessIdentityReader){return new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(build,'unused-mail-worker.cjs'),foxmailNative:join(build,'unused-foxmail'),mailSend,processes});}
 function connectTools(){app.attachRuns(runs);tools=new ApplicationToolService(f.store,runs,new ApplicationAdapterRegistry(f.store,app.data),{retryDelays:[0,0]});}
 async function smtp(){
  const sockets=new Set<Socket>(),server=createServer(socket=>{
@@ -67,6 +68,39 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
   reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);messages.length=0;authentications.length=0;decrypts=0;
  });
  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();for(const close of closers.splice(0))await close();vi.restoreAllMocks();f.cleanup();});
+ for(const proof of ['stopped','unknown'] as const)it('checks old send ownership on App startup without network replay: '+proof,async()=>{
+  await app.dispose();let birth='controlled-host-one';const recoverySubmit=vi.fn();
+  const processReader:ProcessIdentityReader={read:pid=>pid===process.pid?{pid,startedAt:birth}:null,state:identity=>{expect(f.sqlite.inTransaction).toBe(false);return identity.startedAt===birth?'running':proof;}};
+  app=setup({checkpoint:phase=>{if(phase==='claimed')throw new Error('controlled host exit after execution claim');}},processReader);connectTools();const intent=await prepare();await confirm(intent);await execute(intent);expect(messages).toHaveLength(0);expect(f.sqlite.prepare('SELECT state FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual({state:'executing'});
+  await app.dispose();birth='controlled-host-two';app=setup({submit:recoverySubmit},processReader);await app.recover();
+  const history=app.listActivity(sender,{appId:'mail'}),record=history.items.find(row=>row.kind==='send'&&row.id===intent.id)!;
+  if(proof==='stopped'){expect(record.state).toBe('unknown');expect(app.activityDetail(sender,'send',intent.id).send?.result).toMatchObject({state:'unknown',errorCode:'HOST_INTERRUPTED'});expect(history.recoveryIssue).toBeNull();}
+  else{expect(record.state).toBe('executing');expect(history.recoveryIssue?.code).toBe('RESOURCE_RECOVERY_REQUIRED');}
+  expect(messages).toHaveLength(0);expect(recoverySubmit).not.toHaveBeenCalled();
+ });
+ it('refuses to display success when a persisted execution and its send intent disagree',async()=>{
+  const intent=await prepare();await confirm(intent);await execute(intent);expect(messages).toHaveLength(1);f.sqlite.prepare("UPDATE mail_send_executions SET state='unknown' WHERE intent_id=?").run(intent.id);
+  expect(()=>app.listActivity(sender)).toThrow(/不一致/);expect(()=>app.activityDetail(sender,'send',intent.id)).toThrow(/不一致/);expect(messages).toHaveLength(1);
+ });
+ it('reads unknown SMTP history with original frozen content after app removal and never replays a send',async()=>{
+  const intent=await prepare();await confirm(intent);loseReceipt=true;await execute(intent);expect(messages).toHaveLength(1);
+  const added=app.selections.catalogState('mail');await app.setAdded(sender,'mail',false,added.revision);
+  const count=()=>f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_data_operations').get();const before=count();const first=app.listActivity(sender,{appId:'mail',connectionId:smtpId});
+  expect(first.items.find(item=>item.kind==='send'&&item.id===intent.id)).toMatchObject({state:'unknown',send:{state:'unknown',executionState:'unknown',authorizationSource:'renderer-confirmation'}});
+  const detail=app.activityDetail(sender,'send',intent.id);expect(detail.send).toMatchObject({content:{text:'正文 exact integration content',bcc:['private@example.test']},result:{state:'unknown'}});expect(detail.send?.messageId).toMatch(/^</);
+  app.listActivity(sender);app.activityDetail(sender,'send',intent.id);expect(count()).toEqual(before);expect(messages).toHaveLength(1);
+  expect(JSON.stringify(detail)).not.toContain('smtp-secret-canary');expect(JSON.stringify(detail)).not.toContain('grant_id');
+ });
+ it('rejects a corrupted frozen review instead of showing the current draft as the historical send',async()=>{
+  const intent=await prepare();const row=f.sqlite.prepare('SELECT review_json FROM mail_send_intents WHERE id=?').get(intent.id) as {review_json:string};const changed=JSON.parse(row.review_json);changed.content.text='replaced corrupt history';f.sqlite.prepare('UPDATE mail_send_intents SET review_json=? WHERE id=?').run(JSON.stringify(changed),intent.id);
+  expect(()=>app.activityDetail(sender,'send',intent.id)).toThrow(/缺失或损坏/);expect(messages).toHaveLength(0);
+ });
+ it('migrates only the provable original prepare identity and leaves frozen sends unchanged on replay',async()=>{
+  const intent=await prepare();const before=f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id);
+  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects']);
+  expect(f.sqlite.prepare('SELECT kind,subject_id FROM application_activity_subjects').all()).toEqual([{kind:'mail-send',subject_id:intent.id}]);expect(f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);
+  f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>20');runBundledMigrations(f.sqlite);expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_activity_subjects').get()).toEqual({n:1});expect(messages).toHaveLength(0);
+ });
  it('uses the same frozen send engine from explicit trusted UI preparation,review and execution',async()=>{
   const d=await draft();const prepared=await app.prepareSend(sender,'p1',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});
   await expect(app.executeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash})).rejects.toMatchObject({code:'AUTHORIZATION_REQUIRED'});expect(messages).toHaveLength(0);
@@ -129,8 +163,8 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
  });
  it('upgrades v18 send records and retains metadata-only user-source provenance on migration replay',async()=>{
   const intent=await prepare();await confirm(intent);const before=f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id),source=f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get() as Record<string,string>;
-  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
-  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
+  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
   expect(()=>f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(randomUUID(),randomUUID(),'renderer-confirmation','hash','metadata','now')).toThrow(/FOREIGN KEY/);expect(()=>f.sqlite.exec("UPDATE mail_user_action_sources SET source_kind='model-approved'")).toThrow(/CHECK/);expect(f.sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);expect(messages).toHaveLength(0);
  });
  it('uses the current rotated secret for the same identity without changing the reviewed bytes',async()=>{

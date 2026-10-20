@@ -29,6 +29,7 @@ export class MailSendDataService implements ApplicationDataHost {
  }
  private async preflight(context:ApplicationExecutionContext){const connection=await this.contexts.sendConnection(context),view=this.views.get(context,connection);if(view.kind!=='smtp')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前原包不能使用此发件配置');}
  async view(context:ApplicationExecutionContext,intent:MailSendIntent):Promise<MailSendData>{
+  await this.contexts.subject(context,'mail-send',intent.id);await this.contexts.subject(context,'mail-draft',intent.draftId);
   let review:ApplicationResourceRef|null=null;if(intent.review&&intent.reviewHash)review=await this.resources.register(context,{kind:'mail-send-review-v1',objectId:intent.id,objectRevision:intent.reviewHash,part:'review'},'application/json',Buffer.from(canonicalJson(intent.review)));
   return{id:intent.id,draftId:intent.draftId,draftRevision:intent.draftRevision,state:intent.state,reviewHash:intent.reviewHash,review,authorized:intent.authorized&&this.authorizations.hasLive(intent),executionId:intent.executionId,result:intent.result,errorCode:intent.errorCode,createdAt:intent.createdAt,updatedAt:intent.updatedAt};
  }

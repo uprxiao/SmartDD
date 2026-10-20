@@ -1,0 +1,1166 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/db/migrations.test.ts src/main/core/applications/__tests__/activity.test.ts src/main/core/applications/__tests__/application-controller.test.ts src/main/core/applications/__tests__/business-data.test.ts src/main/core/applications/__tests__/mail-send-data.test.ts src/renderer/features/applications --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/renderer/features/applications/activity.test.tsx (5 tests | 2 failed) 2113ms
+     × keeps frozen target,body and Message-ID readable without offering replay on the unknown result 1005ms
+     × shows a frozen-history error without substituting another draft or current send configuration 1004ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/applications/activity.test.tsx > persistent activity UI > keeps frozen target,body and Message-ID readable without offering replay on the unknown result
+TestingLibraryElementError: Unable to find role="button" and name `/邮件发送 SMTP 发送/`
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"m10-page-head"[39m
+    [36m>[39m
+      [36m<div>[39m
+        [36m<h1>[39m
+          [0m调用记录[0m
+        [36m</h1>[39m
+        [36m<p>[39m
+          [0m查看操作来源、当前阶段和需要恢复的事项。[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-button secondary"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-refresh-cw"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 3v5h-5"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M8 16H3v5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0m刷新记录[0m
+      [36m</button>[39m
+    [36m</header>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-filters"[39m
+    [36m>[39m
+      [36m<label>[39m
+        [0m应用[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按应用筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部应用[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"zentao"[39m
+          [36m>[39m
+            [0m禅道[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"mail"[39m
+          [36m>[39m
+            [0m邮件[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m连接[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按连接筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部连接[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000011"[39m
+          [36m>[39m
+            [0m私有发件账号[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000012"[39m
+          [36m>[39m
+            [0m私有禅道[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m项目[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按项目筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部项目[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p1"[39m
+          [36m>[39m
+            [0m项目一[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p2"[39m
+          [36m>[39m
+            [0m项目二[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-list"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m提交发送请求[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0m发送请求[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state ready"[39m
+        [36m>[39m
+          [0m调用完成[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m邮件发送[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0mSMTP 发送[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state "[39m
+        [36m>[39m
+          [0m结果未知 · 不自动重发[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"m10-muted"[39m
+    [36m>[39m
+      [0m调用完成、授权依据和实际发送结果分别记录。SMTP 服务器接受不代表送达或已读；未知结果先核实，刷新不会重发。[0m
+    [36m</p>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"m10-page-head"[39m
+    [36m>[39m
+      [36m<div>[39m
+        [36m<h1>[39m
+          [0m调用记录[0m
+        [36m</h1>[39m
+        [36m<p>[39m
+          [0m查看操作来源、当前阶段和需要恢复的事项。[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-button secondary"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-refresh-cw"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 3v5h-5"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M8 16H3v5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0m刷新记录[0m
+      [36m</button>[39m
+    [36m</header>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-filters"[39m
+    [36m>[39m
+      [36m<label>[39m
+        [0m应用[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按应用筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部应用[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"zentao"[39m
+          [36m>[39m
+            [0m禅道[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"mail"[39m
+          [36m>[39m
+            [0m邮件[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m连接[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按连接筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部连接[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000011"[39m
+          [36m>[39m
+            [0m私有发件账号[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000012"[39m
+          [36m>[39m
+            [0m私有禅道[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m项目[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按项目筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部项目[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p1"[39m
+          [36m>[39m
+            [0m项目一[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p2"[39m
+          [36m>[39m
+            [0m项目二[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-list"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m提交发送请求[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0m发送请求[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state ready"[39m
+        [36m>[39m
+          [0m调用完成[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m邮件发送[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0mSMTP 发送[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state "[39m
+        [36m>[39m
+          [0m结果未知 · 不自动重发[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"m10-muted"[39m
+    [36m>[39m
+      [0m调用完成、授权依据和实际发送结果分别记录。SMTP 服务器接受不代表送达或已读；未知结果先核实，刷新不会重发。[0m
+    [36m</p>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/features/applications/activity.test.tsx:22:40
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/applications/activity.test.tsx > persistent activity UI > shows a frozen-history error without substituting another draft or current send configuration
+TestingLibraryElementError: Unable to find role="button" and name `/邮件发送 SMTP 发送/`
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"m10-page-head"[39m
+    [36m>[39m
+      [36m<div>[39m
+        [36m<h1>[39m
+          [0m调用记录[0m
+        [36m</h1>[39m
+        [36m<p>[39m
+          [0m查看操作来源、当前阶段和需要恢复的事项。[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-button secondary"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-refresh-cw"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 3v5h-5"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M8 16H3v5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0m刷新记录[0m
+      [36m</button>[39m
+    [36m</header>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-filters"[39m
+    [36m>[39m
+      [36m<label>[39m
+        [0m应用[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按应用筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部应用[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"zentao"[39m
+          [36m>[39m
+            [0m禅道[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"mail"[39m
+          [36m>[39m
+            [0m邮件[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m连接[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按连接筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部连接[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000011"[39m
+          [36m>[39m
+            [0m私有发件账号[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000012"[39m
+          [36m>[39m
+            [0m私有禅道[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m项目[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按项目筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部项目[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p1"[39m
+          [36m>[39m
+            [0m项目一[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p2"[39m
+          [36m>[39m
+            [0m项目二[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-list"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m提交发送请求[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0m发送请求[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state ready"[39m
+        [36m>[39m
+          [0m调用完成[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m邮件发送[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0mSMTP 发送[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state "[39m
+        [36m>[39m
+          [0m结果未知 · 不自动重发[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"m10-muted"[39m
+    [36m>[39m
+      [0m调用完成、授权依据和实际发送结果分别记录。SMTP 服务器接受不代表送达或已读；未知结果先核实，刷新不会重发。[0m
+    [36m</p>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"m10-page-head"[39m
+    [36m>[39m
+      [36m<div>[39m
+        [36m<h1>[39m
+          [0m调用记录[0m
+        [36m</h1>[39m
+        [36m<p>[39m
+          [0m查看操作来源、当前阶段和需要恢复的事项。[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-button secondary"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-refresh-cw"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 3v5h-5"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M8 16H3v5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0m刷新记录[0m
+      [36m</button>[39m
+    [36m</header>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-filters"[39m
+    [36m>[39m
+      [36m<label>[39m
+        [0m应用[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按应用筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部应用[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"zentao"[39m
+          [36m>[39m
+            [0m禅道[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"mail"[39m
+          [36m>[39m
+            [0m邮件[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m连接[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按连接筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部连接[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000011"[39m
+          [36m>[39m
+            [0m私有发件账号[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000012"[39m
+          [36m>[39m
+            [0m私有禅道[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+      [36m<label>[39m
+        [0m项目[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"按项目筛选记录"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部项目[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p1"[39m
+          [36m>[39m
+            [0m项目一[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"p2"[39m
+          [36m>[39m
+            [0m项目二[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</label>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"m10-activity-list"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m提交发送请求[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0m发送请求[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state ready"[39m
+        [36m>[39m
+          [0m调用完成[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"m10-activity-row"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-appmark mail"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-mail"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"23"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"1.7"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"23"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+            [36m/>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"20"[39m
+              [33mx[39m=[32m"2"[39m
+              [33my[39m=[32m"4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-activity-copy"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0m邮件发送[0m
+            [36m<small[39m
+              [33mclass[39m=[32m"m10-inline-label"[39m
+            [36m>[39m
+              [0mSMTP 发送[0m
+            [36m</small>[39m
+          [36m</strong>[39m
+          [36m<small>[39m
+            [0m项目一[0m
+            [0m · [0m
+            [0m私有发件账号[0m
+            [0m · [0m
+            [0m界面操作[0m
+          [36m</small>[39m
+          [36m<small>[39m
+            [0m10/20/2026, 8:00:00 PM[0m
+            [0m · 1 次尝试[0m
+          [36m</small>[39m
+        [36m</span>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"m10-state "[39m
+        [36m>[39m
+          [0m结果未知 · 不自动重发[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"14"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"14"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m9 18 6-6-6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"m10-muted"[39m
+    [36m>[39m
+      [0m调用完成、授权依据和实际发送结果分别记录。SMTP 服务器接受不代表送达或已读；未知结果先核实，刷新不会重发。[0m
+    [36m</p>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/features/applications/activity.test.tsx:31:140
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  2 failed | 106 passed (108)
+   Start at  20:33:01
+   Duration  15.31s (transform 594ms, setup 0ms, import 1.49s, tests 26.30s, environment 853ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

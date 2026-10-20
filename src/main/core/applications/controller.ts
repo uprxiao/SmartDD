@@ -1,3 +1,4 @@
+import type {ApplicationActivityQuery} from '@shared/application-activity';
 import type { IpcMainInvokeEvent } from 'electron';
 import { ZodError } from 'zod';
 import { createScopedRPCController } from '@shared/ipc/rpc';
@@ -19,6 +20,8 @@ export function createApplicationController(service:ApplicationService|undefined
     }
   };
   return createScopedRPCController({
+    activity:(event,input?:ApplicationActivityQuery)=>run(event,current=>current.listActivity(event,input)),
+    activityDetail:(event,kind:'operation'|'send',id:string)=>run(event,current=>current.activityDetail(event,kind,id)),
     catalog:(event)=>run(event,current=>current.catalog(event)),
     setAdded:(event,appId:ApplicationId,added:boolean,revision:number)=>run(event,current=>current.setAdded(event,appId,added,revision)),
     setEnabled:(event,appId:ApplicationId,enabled:boolean,revision:number)=>run(event,current=>current.setEnabled(event,appId,enabled,revision)),

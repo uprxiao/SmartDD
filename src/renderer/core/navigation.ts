@@ -1,3 +1,4 @@
+import type {ApplicationActivityQuery} from '@shared/application-activity';
 import { makeAutoObservable } from 'mobx';
 import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
 
@@ -5,7 +6,7 @@ import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/
 export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
-export type ApplicationPage = 'catalog' | 'zentao' | 'mail' | 'projects';
+export type ApplicationPage = 'catalog' | 'zentao' | 'mail' | 'projects' | 'activity';
 export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
 
 export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';
@@ -13,6 +14,7 @@ export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfi
 class NavigationStore {
   currentViewId: ViewId = 'home';
   applicationPage: ApplicationPage = 'catalog';
+  activityFilter:ApplicationActivityQuery={};
   projectSection: ProjectSectionId = 'overview';
   /** The project the 'project' view shows. */
   currentProjectId: string | null = null;
@@ -76,6 +78,8 @@ class NavigationStore {
     if(projectId)this.currentProjectId=projectId;
     this.applicationPage=page;this.currentViewId='apps';
   }
+
+  openApplicationActivity(filter:ApplicationActivityQuery={}):void{this.activityFilter=filter;this.applicationPage='activity';this.currentViewId='apps';}
 
   setProjectSection(section:ProjectSectionId):void{this.projectSection=section;}
 

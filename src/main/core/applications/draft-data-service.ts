@@ -51,6 +51,7 @@ export class MailDraftDataService implements ApplicationDataHost {
     return{semantics,retry:'never',authorize:context=>this.authorize(context,binding),authorizeReceipt:(context,operationId)=>this.contexts.assertAgentReceipt(context,binding,operationId),execute:(context,args,operation)=>this.contexts.withAgent(context,binding,operation,semantics,scope=>this.execute(scope,method,args))};
   }
   async view(context:ApplicationExecutionContext,draft:MailDraft):Promise<MailDraftDataView>{
+    await this.contexts.subject(context,'mail-draft',draft.id);
     const text=await this.resources.register(context,{kind:'mail-draft-v1',objectId:draft.id,objectRevision:String(draft.revision),part:'text'},'text/plain;charset=utf-8',Buffer.from(draft.content.text));
     const html=draft.content.html===null?null:await this.resources.register(context,{kind:'mail-draft-v1',objectId:draft.id,objectRevision:String(draft.revision),part:'html'},'text/html;charset=utf-8',Buffer.from(draft.content.html));
     return{id:draft.id,revision:draft.revision,state:draft.state,contentHash:draft.contentHash,content:{...draft.content,text,html},attachments:draft.attachments.map(({id,filename,contentType,size,contentHash})=>({id,filename,contentType,size,contentHash})),activeIntentId:draft.activeIntentId,lastExecutionId:draft.lastExecutionId,sourceTaskId:draft.sourceTaskId,copiedFromDraftId:draft.copiedFromDraftId,createdAt:draft.createdAt,updatedAt:draft.updatedAt};

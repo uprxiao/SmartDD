@@ -54,6 +54,10 @@ export class ApplicationExecutionContexts {
     if(record.abort.signal.aborted||context.signal.aborted)throw new ApplicationError('CANCELED','本次业务操作已取消');
     record.check();for(const target of record.targets.values())this.checkTarget(context,target);return record;
   }
+  async subject(context:ApplicationExecutionContext,kind:'connection'|'mail-send'|'mail-draft',subjectId:string):Promise<void>{
+    this.assertActive(context);if(!['connection','mail-send','mail-draft'].includes(kind)||!z.uuid().safeParse(subjectId).success)throw new ApplicationError('INVALID_INPUT','业务记录关联身份无效');
+    await withResourceLock(this.store.root,()=>{this.assertActive(context);this.store.sqlite.prepare('INSERT OR IGNORE INTO application_activity_subjects VALUES(?,?,?)').run(context.operationId,kind,subjectId);});
+  }
   assertActive(context:ApplicationExecutionContext):void{this.record(context);}
   require(context:ApplicationExecutionContext,permission:string):void{
     const record=this.record(context);

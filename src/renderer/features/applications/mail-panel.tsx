@@ -21,7 +21,7 @@ export function MailPanel({projectId,app}:{projectId:string;app:CatalogItem}){
  return <div className="m10-mail-workspace" key={projectId+':'+settings.data.revision}><div className="m10-mail-agent"><h3>在项目 Agent 中处理邮件</h3><p>查询、阅读、总结、撰写、回复和附件处理，从 WillYou 终端发起。这里管理配置、草稿与发送结果。</p><button className="m10-button secondary" onClick={()=>navigation.newTask(projectId)}>新建项目任务</button></div>
  <section className="m10-mail-config"><h3>查询范围</h3><p>{source?.config.kind==='foxmail'?`默认最近 ${source.config.queryDays} 天`:'尚未选用读取来源'} · 含当天，按本机时区计算。最多100天，无匹配不扩大范围。</p><button className="m10-button secondary" onClick={()=>navigation.openApplications('projects',projectId)}>管理项目来源与发件账号</button><p>当前发件：{sender?.config.kind==='smtp'?sender.config.fromAddress:'尚未选用 SMTP · 仍可准备草稿'}</p></section>
  {source?.enabled&&source.authorization==='connected'?<MailRefresh key={source.id+':'+source.revision} projectId={projectId} sourceName={source.name}/>:<AppEmpty title="未选用可用的读取来源" text="本地读取与 SMTP 发件独立配置；不会自动匹配账号。" action="项目选用" onAction={()=>navigation.openApplications('projects',projectId)}/>}
- <MailCachePanel/><DraftList projectId={projectId}/></div>;
+ <MailCachePanel/><DraftList projectId={projectId}/><button className="m10-button secondary" onClick={()=>navigation.openApplicationActivity({appId:'mail',projectId})}>查看本项目邮件调用记录</button></div>;
 }
 function MailRefresh({projectId,sourceName}:{projectId:string;sourceName:string}){
  const [status,setStatus]=useState<Awaited<ReturnType<typeof load>>|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),sequence=useRef(0),active=useRef(true);
