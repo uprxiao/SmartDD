@@ -9,6 +9,9 @@ async function active(): Promise<OwnedCapabilityRun> { const run = await f.creat
 beforeEach(async () => { reader = new FixtureProcessReader(); f = await runFixture(reader); });
 afterEach(() => f.cleanup());
 describe('capability run resource registration, revocation and conservative recovery', () => {
+  it('joins input only to one actual active task/PTY owned by this registry',async()=>{
+    const run=await f.create();expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();await run.prepare();await run.cli.arm();reader.identities.set(200001,'darwin-proc-v1:200:1');await run.cli.attach(200001);expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)?.run.runId).toBe(run.runId);expect(f.runs.inputContext('other-task',run.ptyId)).toBeNull();expect(f.runs.inputContext(f.snapshot.taskId,'other-pty')).toBeNull();expect(f.registry().inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();await run.cli.exited();expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();
+  });
   it('protects the complete transitive dependency closure before any source bytes are consumed', async () => {
     const run = await f.create(); expect(f.runs.get(run.runId).state).toBe('preparing'); expect(protection(run.runId)).toHaveLength(3);
     f.setVerify(r => { expect(protection(run.runId)).toContainEqual({ resource_id: r.resourceId }); expect(leases(run.runId)).toEqual([{ state: 'preparing' }]); });

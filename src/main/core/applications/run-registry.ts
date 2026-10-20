@@ -213,6 +213,11 @@ export class CapabilityRunRegistry {
       }).immediate());
     } };
   }
+  /** Input provenance may only join an actual owned task/PTY, never renderer run claims. */
+  inputContext(taskId:string,ptyId:string):RunContext|null{
+    const rows=this.store.sqlite.prepare("SELECT run_id FROM capability_runs WHERE task_id=? AND pty_id=? AND owner_instance_id=? AND state='active'").all(taskId,ptyId,this.instanceId) as {run_id:string}[];
+    if(rows.length!==1)return null;const context=this.assertActive(rows[0].run_id);return context.run.taskId===taskId?context:null;
+  }
   /** Synchronous host policy hook; tools never choose their project/task/package context. */
   assertActive(runId: string): RunContext {
     const { row,owned,session } = this.mine(runId);

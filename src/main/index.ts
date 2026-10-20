@@ -168,6 +168,7 @@ async function main(): Promise<void> {
     write: (id, data) => ptys.write(id, data),
     resize: (id, cols, rows) => ptys.resize(id, cols, rows),
     killTask: (id) => tasks.kill(id),
+    observedInput:(event,target,data)=>applications?.observeInput(event,target,data),
   });
   registerPtyInput(ipcMain, ptyAccess);
 

@@ -17,6 +17,8 @@ export class PtyAccess {
     write: (ptyId: string, data: string) => void;
     resize: (ptyId: string, cols: number, rows: number) => void;
     killTask: (taskId: string) => void;
+    /** Main-only observer, called only after the owned write succeeded. Never changes transport success. */
+    observedInput?: (event: SenderEvent,target: Readonly<Target>,data:string) => void;
   }) {}
 
   requireSender(event: SenderEvent): void {
@@ -44,6 +46,7 @@ export class PtyAccess {
       // has a separate sanitization contract and may not reuse raw input blindly.
       if (typeof data !== 'string' || Buffer.byteLength(data, 'utf8') > 1024 * 1024) return false;
       this.deps.write(t.ptyId, data);
+      try { this.deps.observedInput?.(event,Object.freeze({taskId:t.taskId,ptyId:t.ptyId}),data); } catch { /* Observing evidence must not duplicate an already accepted input. */ }
       return true;
     } catch { return false; }
   }
