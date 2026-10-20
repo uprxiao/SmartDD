@@ -263,7 +263,7 @@ export const capabilitySessionRefs = sqliteTable('capability_session_refs', {
   taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), refKind: text('ref_kind').notNull(), refId: text('ref_id').notNull().references(() => capabilityResources.resourceId), refHash: text('ref_hash').notNull(), relativePath: text('relative_path').notNull(),
 }, t => ({ pk: primaryKey({ columns: [t.taskId, t.refKind, t.refId] }), byResource: index('capability_session_refs_resource_idx').on(t.refId) }));
 export const capabilityRuns = sqliteTable('capability_runs', {
-  runId: text('run_id').primaryKey(), taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), projectId: text('project_id').notNull(), runner: text('runner').notNull(), pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), startedAt: text('started_at').notNull(), endedAt: text('ended_at'), errorCode: text('error_code'), snapshotHash: text('snapshot_hash'),ownerInstanceId: text('owner_instance_id'),ownerPid: integer('owner_pid'),ownerStartedAt: text('owner_started_at'),bindingsJson: text('bindings_json').notNull().default('[]'),ptyId: text('pty_id'),
+  runId: text('run_id').primaryKey(), taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), projectId: text('project_id').notNull(), runner: text('runner').notNull(), pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), startedAt: text('started_at').notNull(), endedAt: text('ended_at'), errorCode: text('error_code'), snapshotHash: text('snapshot_hash'),ownerInstanceId: text('owner_instance_id'),ownerPid: integer('owner_pid'),ownerStartedAt: text('owner_started_at'),bindingsJson: text('bindings_json').notNull().default('[]'),ptyId: text('pty_id'),revocationState: text('revocation_state').notNull().default('open'),
 });
 export const capabilitySchemaMigrations = sqliteTable('capability_schema_migrations', {
   appId: text('app_id').notNull(), migrationId: text('migration_id').notNull(), checksum: text('checksum').notNull(), fromVersion: integer('from_version').notNull(), toVersion: integer('to_version').notNull(), appliedAt: text('applied_at').notNull(), hostBuild: text('host_build').notNull(),
@@ -343,4 +343,17 @@ export const capabilitySnapshotVersions = sqliteTable('capability_snapshot_versi
 });
 export const capabilitySessionHolds = sqliteTable('capability_session_holds', {
   taskId: text('task_id').primaryKey().references(() => capabilitySessionSnapshots.taskId),previousRetention: text('previous_retention').notNull(),reason: text('reason').notNull(),createdAt: text('created_at').notNull(),
+});
+
+export const capabilityLeaseResources = sqliteTable('capability_lease_resources', {
+  leaseId: text('lease_id').notNull().references(() => capabilityResourceLeases.leaseId),resourceId: text('resource_id').notNull().references(() => capabilityResources.resourceId),contentHash: text('content_hash').notNull(),generation: integer('generation').notNull(),
+},t => ({ pk: primaryKey({ columns: [t.leaseId,t.resourceId] }) }));
+export const capabilityRunProcesses = sqliteTable('capability_run_processes', {
+  processId: text('process_id').primaryKey(),runId: text('run_id').notNull().references(() => capabilityRuns.runId),kind: text('kind').notNull(),launchKey: text('launch_key').notNull().unique(),state: text('state').notNull(),pid: integer('pid'),processStartedAt: text('process_started_at'),armedAt: text('armed_at'),attachedAt: text('attached_at'),endedAt: text('ended_at'),
+},t => ({ byRun: index('capability_run_processes_run_idx').on(t.runId),oneCli: uniqueIndex('capability_run_one_cli_idx').on(t.runId).where(sql`${t.kind} = 'cli'`) }));
+export const capabilityRunActivities = sqliteTable('capability_run_activities', {
+  activityId: text('activity_id').primaryKey(),runId: text('run_id').notNull().references(() => capabilityRuns.runId),state: text('state').notNull(),startedAt: text('started_at').notNull(),endedAt: text('ended_at'),
+});
+export const capabilityStoreState = sqliteTable('capability_store_state', {
+  singleton: integer('singleton').primaryKey(),storeId: text('store_id').notNull(),resourceGeneration: integer('resource_generation').notNull().default(1),maintenanceState: text('maintenance_state').notNull(),maintenanceOperationId: text('maintenance_operation_id'),
 });

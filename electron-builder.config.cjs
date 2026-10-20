@@ -19,11 +19,12 @@ module.exports = {
       { from: 'out/native/smartdd-voice', to: 'native/smartdd-voice' },
       { from: 'out/native/willyou-files', to: 'native/willyou-files' },
       { from: 'out/native/willyou-foxmail', to: 'native/willyou-foxmail' },
+      { from: 'out/native/willyou-process-identity', to: 'native/willyou-process-identity' },
       { from: 'out/native/tex', to: 'native/tex' },
       { from: 'out/native/office', to: 'native/office' },
       { from: 'out/native/libreoffice', to: 'native/libreoffice' },
     ],
-    binaries: ['Contents/Resources/native/smartdd-voice', 'Contents/Resources/native/willyou-files', 'Contents/Resources/native/tex/tectonic', 'Contents/Resources/native/office/jre/bin/java'],
+    binaries: ['Contents/Resources/native/smartdd-voice', 'Contents/Resources/native/willyou-files', 'Contents/Resources/native/willyou-foxmail', 'Contents/Resources/native/willyou-process-identity', 'Contents/Resources/native/tex/tectonic', 'Contents/Resources/native/office/jre/bin/java'],
     // Preserve the complete vendor-signed LibreOffice bundle, including its
     // nested launch constraints. The enclosing WillYou signature still seals
     // this resource, and runtime verification checks both seals and file hashes.

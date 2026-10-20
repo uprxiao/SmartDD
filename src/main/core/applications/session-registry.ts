@@ -87,6 +87,8 @@ export class CapabilitySessionRegistry {
       throw new ApplicationError('SNAPSHOT_CORRUPT','固定能力快照、引用或原生身份损坏，保留现场不重建选择');
     }
   }
+  /** Internal coordinated callers already hold C and a short SQLite transaction. */
+  inspectCoordinated(taskId: string): StoredCapabilitySession { return this.read(taskId); }
   async get(taskId: string): Promise<StoredCapabilitySession> {
     return withResourceLock(this.store.root,() => {
       try { return this.read(taskId); }

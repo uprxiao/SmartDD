@@ -32,6 +32,13 @@ if (process.platform === 'darwin') {
   assert.equal(execFileSync('/usr/bin/lipo', ['-archs', fileBroker], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'File broker architecture');
   const fileInspection = JSON.parse(execFileSync(fileBroker, [], { input: JSON.stringify({ operation: 'inspect-root', path: resources }), encoding: 'utf8', timeout: 8000 }));
   assert(fileInspection.result?.identity?.inode, 'File broker read-only startup');
+  const processProbe = path.join(resources, 'native/willyou-process-identity');
+  assert(fs.existsSync(processProbe), 'Packaged process identity probe');
+  assert.equal(execFileSync('/usr/bin/lipo', ['-archs', processProbe], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'Process identity probe architecture');
+  const ownProcess = JSON.parse(execFileSync(processProbe, [String(process.pid)], { encoding: 'utf8', timeout: 3000 }));
+  assert.equal(ownProcess.state, 'running', 'Read-only own process probe');
+  assert.equal(ownProcess.pid, process.pid, 'Probe matches own PID');
+  assert.match(ownProcess.startedAt, /^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/, 'Kernel process start identity');
   const mailReader = path.join(resources, 'native/willyou-foxmail');
   assert(fs.existsSync(mailReader), 'Packaged Foxmail readonly reader');
   assert.equal(execFileSync('/usr/bin/lipo', ['-archs', mailReader], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'Foxmail reader architecture');
