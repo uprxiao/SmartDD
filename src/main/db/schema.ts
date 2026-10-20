@@ -365,3 +365,7 @@ export const applicationInvocations = sqliteTable('application_invocations', {
 export const capabilityPackageContracts = sqliteTable('capability_package_contracts', {
   packageHash: text('package_hash').notNull().references(() => capabilityPackages.packageHash),toolName: text('tool_name').notNull(),inputSource: text('input_source').notNull(),outputSource: text('output_source').notNull(),
 },t => ({ pk: primaryKey({ columns: [t.packageHash,t.toolName] }) }));
+
+export const capabilityAgentAdapters = sqliteTable('capability_agent_adapters', {
+  agentId: text('agent_id').notNull(),version: text('version').notNull(),adapterHash: text('adapter_hash').notNull().unique(),resourceId: text('resource_id').notNull().references(() => capabilityResources.resourceId),manifestJson: text('manifest_json').notNull(),
+},t => ({ pk: primaryKey({ columns: [t.agentId,t.version] }) }));

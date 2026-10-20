@@ -50,6 +50,11 @@ if (process.platform === 'darwin') {
   } finally { fs.rmSync(mailScratch, { recursive: true, force: true }); }
   assert(fs.existsSync(path.join(asar, 'out/main/m10-mail-reader.js')), 'Packaged mail Worker');
   assert(fs.existsSync(path.join(asar, 'out/applications/mcp-bridge.cjs')), 'Packaged standalone application MCP bridge');
+  const capabilityIndex = JSON.parse(fs.readFileSync(path.join(resources, 'capability-bundles/index.json'), 'utf8'));
+  assert.equal(capabilityIndex.schema, 'willyou-capability-bundles-v1', 'Packaged capability bundle index');
+  assert.equal(capabilityIndex.build.appVersion, expectedVersion, 'Capability resources match App version');
+  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId).sort(), ['claude-code', 'codex'], 'Both target Agent adapters packaged');
+  for (const record of [...capabilityIndex.adapters, ...capabilityIndex.runtimes]) assert(fs.existsSync(path.join(resources, 'capability-bundles', record.path)), 'Indexed capability resource directory');
   for (const notice of ['mcp-server-LICENSE.txt', 'mcp-core-LICENSE.txt', 'zod-LICENSE.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10/bridge', notice)), 'Packaged bridge library notice');
   assert.equal(packagedRequire('nodemailer/package.json').version, '10.1.7', 'Fixed SMTP dependency');
   assert.equal(packagedRequire('postal-mime/package.json').version, '4.0.11', 'Fixed MIME dependency');

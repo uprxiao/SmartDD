@@ -25,6 +25,7 @@ export default defineConfig({
       execFileSync(process.execPath, ['scripts/files/build.mjs'], { stdio: 'inherit' });
       execFileSync(process.execPath, ['scripts/applications/build.mjs'], { stdio: 'inherit' });
       execFileSync(process.execPath, ['scripts/applications/build-runtime.mjs'], { stdio: 'inherit' });
+      execFileSync(process.execPath, ['scripts/applications/build-bundles.mjs'], { stdio: 'inherit' });
       if (process.platform === 'darwin') {
         execFileSync('python3', ['scripts/files/prepare-tex.py'], { stdio: 'inherit' });
         execFileSync('python3', ['scripts/files/prepare-office.py'], { stdio: 'inherit' });

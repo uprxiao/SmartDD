@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
 import { and, eq, sql } from 'drizzle-orm';
@@ -16,6 +16,7 @@ import { stateRootFor } from '../tasks/native-sessions';
 import { BUNDLED_SKILLS, runtimeFiles, sha256, treeHash, type BundledSkill } from './assets';
 import { discoverCapabilities } from './discovery';
 import { readOwnedTree, writeOwnedTree } from './files';
+import { projectSkillName } from '../applications/session-projector';
 
 export const MCP_CAPABILITY = 'smartdd-project-context';
 export const RUNTIME_ISOLATION = ['SMARTDD_', 'PROJECT_DB_CONFIG', 'REMOTE_SERVERS_CONFIG'];
@@ -28,6 +29,15 @@ export interface PreparedRuntime {
   wrap: (command: string, args: string[]) => { command: string; args: string[] };
   check: () => RuntimeSnapshot['selfCheck'] | null;
   release: () => void;
+}
+
+/** Trusted M10 caller has already reserved resources and projected these exact source versions. */
+export interface ManagedCapabilityPlacement {
+  runId: string;
+  runtimeHash: string;
+  mcpName: string | null;
+  skills: RuntimeSkill[];
+  projections: Record<string,{ path: string;nativeName: string;files: Readonly<Record<string,Uint8Array>> }>;
 }
 
 export interface CapabilityDeps {
@@ -47,6 +57,7 @@ export class CapabilityService {
   private readonly backupRoot: string;
   private readonly runtimeRoot: string;
   private readonly activeRuns = new Set<string>();
+  private readonly managedRuns = new Set<string>();
 
   constructor(private readonly d: CapabilityDeps) {
     this.bundles = d.bundles ?? BUNDLED_SKILLS;
@@ -130,23 +141,35 @@ export class CapabilityService {
         claudeConfigExplicit: Boolean(env.CLAUDE_CONFIG_DIR), path: env.PATH ?? '', args: profile.args }) };
   }
 
-  prepare(input: { projectId: string; taskId: string; runner: Runner; cwd: string; home: string; profileArgs: string[]; previous?: RuntimeSnapshot | null }): PreparedRuntime {
+  selection(projectId: string,previous?: RuntimeSnapshot | null): RuntimeSkill[] {
+    if (previous?.projectId === projectId) return previous.skills.map(s => ({ ...s }));
+    return this.list(projectId).map(s => ({ skillId: s.id,name: s.name,versionId: s.current.id,version: s.current.version,hash: s.current.hash,path: '',enabled: s.enabled,loaded: 'unverified' as const }));
+  }
+  runtimeIdentity(): { hash: string;path: string } { return { hash: this.runtimeRoot.split('/').at(-1)!,path: realpathSync(this.runtimeRoot) }; }
+
+  prepare(input: { projectId: string; taskId: string; runner: Runner; cwd: string; home: string; profileArgs: string[]; previous?: RuntimeSnapshot | null; managed?: ManagedCapabilityPlacement }): PreparedRuntime {
     const project = this.d.projects.getProject(input.projectId);
     if (!isAbsolute(input.home)) throw new Error('HOME 必须是绝对路径');
     // A profile with its own skills.config would replace our per-session disable list.
-    if (input.runner === 'codex' && input.profileArgs.some((a) => /^skills(?:\.|\s*=)/.test(a.trim()))) throw new Error('AI 配置包含 skills 覆盖参数，请移除后使用项目能力开关');
+    if (!input.managed && input.runner === 'codex' && input.profileArgs.some((a) => /^skills(?:\.|\s*=)/.test(a.trim()))) throw new Error('AI 配置包含 skills 覆盖参数，请移除后使用项目能力开关');
     const previous = input.previous?.projectId === project.id ? input.previous : null;
-    const selected = previous ? previous.skills.map((s) => ({ ...s })) : this.list(project.id).map((s) => ({ skillId: s.id, name: s.name, versionId: s.current.id, version: s.current.version, hash: s.current.hash, path: '', enabled: s.enabled, loaded: 'unverified' as const }));
+    const selected = input.managed ? input.managed.skills.map(s => ({ ...s })) : this.selection(project.id,previous);
+    const capabilityRoot = input.managed ? realpathSync(this.root) : this.root;
+    if (input.managed && (!/^[a-f0-9-]{36}$/.test(input.managed.runId) || !/^[a-f0-9]{64}$/.test(input.managed.runtimeHash) || (input.managed.mcpName !== null && !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(input.managed.mcpName)))) throw new Error('受管运行或原上下文桥身份无效');
+    const runtimeRoot = input.managed ? join(capabilityRoot,'runtime',input.managed.runtimeHash) : this.runtimeRoot;
+    const scriptFiles = input.managed ? readOwnedTree(runtimeRoot) : runtimeFiles();
+    if (input.managed && treeHash(scriptFiles) !== input.managed.runtimeHash) throw new Error('原标准运行资源已改变，不能使用当前版本替代');
     const packages = selected.map((s) => {
+      if (input.managed && !s.enabled) return { selection: s,files: {} as Record<string,string> };
       const v = this.d.db.select().from(skillVersions).where(eq(skillVersions.id, s.versionId)).get();
       if (!v || v.skillId !== s.skillId || v.hash !== s.hash) throw new Error('原任务的 Skill 版本不可用，不能静默替换');
       const files = readOwnedTree(this.packageRoot(v.id));
       if (treeHash(files) !== v.hash) throw new Error(`Skill 版本内容已改变：${v.name}`);
       return { selection: s, files };
     });
-    const runId = randomUUID();
-    const runRoot = join(this.root, 'runs', project.id, input.taskId, runId);
-    const auditPath = join(this.root, 'resource-audit', project.id, `${input.taskId}.jsonl`);
+    const runId = input.managed?.runId ?? randomUUID();
+    const runRoot = join(capabilityRoot, 'runs', project.id, input.taskId, runId);
+    const auditPath = join(capabilityRoot, 'resource-audit', project.id, `${input.taskId}.jsonl`);
     mkdirSync(dirname(auditPath), { recursive: true, mode: 0o700 });
     const hasSkill = (id: string) => selected.some((s) => s.skillId === id && s.enabled);
     const env: Record<string, string> = {};
@@ -198,7 +221,17 @@ export class CapabilityService {
       pathEnv.REMOTE_SERVERS_CONFIG = join(runRoot, 'servers.json');
     }
     const args: string[] = [];
-    if (input.runner === 'claude') {
+    if (input.managed) {
+      for (const { selection,files: source } of packages) if (selection.enabled) {
+        const projection = input.managed.projections[selection.versionId];
+        if (!projection || !isAbsolute(projection.path) || !projection.path.endsWith('/SKILL.md') || !/^[a-z][a-z0-9-]{0,63}$/.test(projection.nativeName) || Object.keys(projection.files).sort().join('\n') !== Object.keys(source).sort().join('\n')) throw new Error('原标准Skill完整投影未准备好');
+        for (const [name,text] of Object.entries(source)) {
+          const expected = name === 'SKILL.md' ? projectSkillName(Buffer.from(text),projection.nativeName) : Buffer.from(text);
+          if (!expected.equals(Buffer.from(projection.files[name])) || !readFileSync(join(dirname(projection.path),name)).equals(expected)) throw new Error('原标准Skill投影内容不同');
+        }
+        selection.name = projection.nativeName; selection.path = projection.path;
+      }
+    } else if (input.runner === 'claude') {
       files['plugin/.claude-plugin/plugin.json'] = json({ name: 'smartdd', version: '1.0.0', description: 'WillYou project capabilities' });
       for (const { selection, files: source } of packages) if (selection.enabled) {
         for (const [path, content] of Object.entries(source)) files[`plugin/skills/${selection.skillId}/${path}`] = content;
@@ -229,8 +262,9 @@ export class CapabilityService {
       const config = all.map((path) => `{path=${JSON.stringify(path)},enabled=${selected.some((s) => s.enabled && s.path === path)}}`).join(',');
       if (all.length) args.push('-c', `skills.config=[${config}]`);
     }
-    const mcpEnabled = previous ? previous.mcp.length > 0 : this.enabled(project.id, MCP_CAPABILITY);
-    const mcpName = `smartdd_project_${runId.replaceAll('-', '').slice(0, 12)}`;
+    const mcpEnabled = input.managed ? input.managed.mcpName !== null && this.enabled(project.id,MCP_CAPABILITY) : previous ? previous.mcp.length > 0 : this.enabled(project.id,MCP_CAPABILITY);
+    const mcpName = input.managed?.mcpName ?? previous?.mcp[0]?.name ?? `smartdd_project_${runId.replaceAll('-', '').slice(0, 12)}`;
+    if (mcpEnabled && !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(mcpName)) throw new Error('原上下文桥名称无效，不能改名重建');
     files['context.json'] = json({ ...metadata, name: project.name,
       databases: databases.map(({ resourceId, environment, type, host, port, database, schema, username, accessLevel }) => ({ resourceId, environment, type, host, port, database, schema, username, accessLevel })),
       servers: servers.map(({ resourceId, environment, ip, port, username, appRoot, logsPath }) => ({ resourceId, environment, host: ip, port, username, appRoot, logsPath })),
@@ -238,8 +272,8 @@ export class CapabilityService {
     });
     pathEnv.SMARTDD_PROJECT_CONTEXT = join(runRoot, 'context.json');
     pathEnv.SMARTDD_RESOURCE_AUDIT = auditPath;
-    if (mcpEnabled) {
-      const mcpArgs = [join(this.runtimeRoot, 'context_mcp.py'), join(runRoot, 'context.json')];
+    if (mcpEnabled && !input.managed) {
+      const mcpArgs = [join(runtimeRoot, 'context_mcp.py'), join(runRoot, 'context.json')];
       if (input.runner === 'claude') {
         files['mcp.json'] = json({ mcpServers: { [mcpName]: { command: 'python3', args: mcpArgs } } });
         args.push('--mcp-config', join(runRoot, 'mcp.json'));
@@ -250,21 +284,22 @@ export class CapabilityService {
     Object.assign(env, pathEnv, { SMARTDD_PROJECT_ID: project.id, SMARTDD_CONFIG_VERSION: String(project.configVersion) });
     const hashes = Object.fromEntries(Object.entries(files).map(([path, content]) => [join(runRoot, path), sha256(content)]));
     // Also verify immutable runtime code and Codex's external skill projection in the child.
-    for (const [name, content] of Object.entries(runtimeFiles())) hashes[join(this.runtimeRoot, name)] = sha256(content);
-    for (const { selection, files: source } of packages) if (input.runner === 'codex' && selection.enabled) for (const [name, content] of Object.entries(source)) hashes[join(dirname(selection.path), name)] = sha256(content);
+    for (const [name,content] of Object.entries(scriptFiles)) hashes[join(runtimeRoot,name)] = sha256(content);
+    if (input.managed) for (const selection of selected) if (selection.enabled) { const p = input.managed.projections[selection.versionId]; for (const [name,bytes] of Object.entries(p.files)) hashes[join(dirname(p.path),name)] = sha256(Buffer.from(bytes)); }
+    for (const { selection, files: source } of packages) if (!input.managed && input.runner === 'codex' && selection.enabled) for (const [name, content] of Object.entries(source)) hashes[join(dirname(selection.path), name)] = sha256(content);
     const manifestPath = join(runRoot, 'manifest.json');
     const manifest = json({ ...metadata, runId, files: hashes, requiredEnv: Object.keys(env), pathEnv: { ...pathEnv, SMARTDD_PROJECT_ID: project.id, SMARTDD_CONFIG_VERSION: String(project.configVersion) },
       pythonModules: [...new Set(databases.map((d) => d.type === 'mysql' ? 'pymysql' : 'psycopg2'))], commands: servers.length ? ['ssh'] : [], readablePaths });
     files['manifest.json'] = manifest;
     writeOwnedTree(runRoot, files, this.backupRoot);
-    this.activeRuns.add(runRoot);
+    this.activeRuns.add(runRoot); if (input.managed) this.managedRuns.add(runRoot);
     const snapshot: RuntimeSnapshot = { runId, projectId: project.id, configVersion: project.configVersion, configHash, manifestPath, auditPath, skills: selected,
       mcp: mcpEnabled ? [{ name: mcpName, loaded: 'unverified' }] : [], selfCheck: { status: 'pending', issues: [], at: null } };
     const allowedIssues = new Set(['file_hash_mismatch', 'file_unreadable', 'resource_path_unreadable', 'manifest_hash_mismatch', 'manifest_invalid', 'runner_not_found', 'self_check_report_failed',
       ...Object.keys(env).map((n) => `missing_env:${n}`), ...Object.keys(pathEnv).concat(['SMARTDD_PROJECT_ID', 'SMARTDD_CONFIG_VERSION']).map((n) => `wrong_path_env:${n}`),
       'missing_dependency:pymysql', 'missing_dependency:psycopg2', 'missing_command:ssh']);
     return { args, env, secretValues, snapshot,
-      wrap: (command, cliArgs) => ({ command: 'python3', args: [join(this.runtimeRoot, 'launch.py'), manifestPath, sha256(manifest), command, ...cliArgs] }),
+      wrap: (command, cliArgs) => ({ command: 'python3', args: [join(runtimeRoot, 'launch.py'), manifestPath, sha256(manifest), command, ...cliArgs] }),
       check: () => {
         const file = join(runRoot, 'self-check.json');
         if (!existsSync(file)) return null;
@@ -274,12 +309,12 @@ export class CapabilityService {
           return { status: report.status, issues: report.issues, at: typeof report.at === 'number' ? report.at : Date.now() };
         } catch { return { status: 'failed', issues: ['self_check_report_invalid'], at: Date.now() }; }
       },
-      release: () => { rmSync(runRoot, { recursive: true, force: true }); this.activeRuns.delete(runRoot); },
+      release: () => { rmSync(runRoot, { recursive: true, force: true }); this.activeRuns.delete(runRoot); this.managedRuns.delete(runRoot); },
     };
   }
 
   dispose(): void {
-    for (const root of this.activeRuns) rmSync(root, { recursive: true, force: true });
-    this.activeRuns.clear();
+    for (const root of this.activeRuns) if (!this.managedRuns.has(root)) { rmSync(root,{ recursive: true,force: true }); this.activeRuns.delete(root); }
+    // Managed T is released only by the run owner after actual CLI/bridge/executor exit.
   }
 }

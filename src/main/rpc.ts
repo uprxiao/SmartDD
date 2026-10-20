@@ -2,7 +2,7 @@ import { createVoiceController } from './core/voice/controller';
 import type { VoiceService } from './core/voice/voice-service';
 import { app, BrowserWindow, dialog, shell, type IpcMainInvokeEvent } from 'electron';
 import type { AppSettingsKey } from '@shared/app-settings';
-import { createRPCController, createRPCRouter } from '@shared/ipc/rpc';
+import { createRPCController, createRPCRouter, createScopedRPCController } from '@shared/ipc/rpc';
 import { createAiProfileController } from './core/ai/controller';
 import type { AiProfileService } from './core/ai/ai-profile-service';
 import type { ProfileHealth } from './core/ai/profile-health';
@@ -14,6 +14,8 @@ import { createAppSettingsController } from './core/settings/controller';
 import type { SettingsStore } from './core/settings/settings-service';
 import { createTaskController } from './core/tasks/controller';
 import type { TaskService } from './core/tasks/task-service';
+import type { AgentSupportService } from './core/applications/agent-support-service';
+import type { AgentSupportState } from '@shared/capability-bundles';
 import type { DbClient } from './db/client';
 import { runProbes } from './probes';
 import type { PtyManager } from './pty-manager';
@@ -38,6 +40,7 @@ export interface RpcDeps {
   health: ProfileHealth;
   tasks: TaskService;
   capabilities: CapabilityService;
+  agentSupport?: AgentSupportService;
   ptys: PtyManager;
   ptyAccess: PtyAccess;
   baseEnv: () => Record<string, string>;
@@ -65,6 +68,7 @@ export function createRpcRouter(d: RpcDeps) {
         await shell.openExternal(url);
       },
     }),
+    agentSupport: createScopedRPCController({ status: (event) => { d.ptyAccess.requireSender(event); return d.agentSupport?.status() ?? { state: 'unavailable',errorCode: 'CAPABILITY_UNAVAILABLE',legacyResourceCount: 0,runtimeHash: null,adapters: [] } as AgentSupportState; } }),
     voice: createVoiceController(d.voice),
     projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),

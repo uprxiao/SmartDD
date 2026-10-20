@@ -1,0 +1,12 @@
+
+> smartdd@0.0.5 typecheck /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/__tests__/agent-fixture.ts(49,234): error TS2322: Type '{ kind: "applications" | "legacy-project-context"; serverName: string; command: string; args: string[]; env: { ELECTRON_RUN_AS_NODE: string; } | { ELECTRON_RUN_AS_NODE?: undefined; }; }[]' is not assignable to type '{ kind: "applications" | "legacy-project-context"; serverName: string; command: string; args: string[]; env: Record<string, string>; }[]'.
+  Type '{ kind: "applications" | "legacy-project-context"; serverName: string; command: string; args: string[]; env: { ELECTRON_RUN_AS_NODE: string; } | { ELECTRON_RUN_AS_NODE?: undefined; }; }' is not assignable to type '{ kind: "applications" | "legacy-project-context"; serverName: string; command: string; args: string[]; env: Record<string, string>; }'.
+    Types of property 'env' are incompatible.
+      Type '{ ELECTRON_RUN_AS_NODE: string; } | { ELECTRON_RUN_AS_NODE?: undefined; }' is not assignable to type 'Record<string, string>'.
+        Type '{ ELECTRON_RUN_AS_NODE?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'ELECTRON_RUN_AS_NODE' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+ ELIFECYCLE  Command failed with exit code 2.

@@ -6,7 +6,7 @@ module.exports = {
   productName: 'WillYou',
   directories: { output: 'release' },
   artifactName: 'WillYou-${version}-${os}-${arch}.${ext}',
-  files: ['out/**', '!out/native/**', 'NOTICE', 'licenses/**'],
+  files: ['out/**', '!out/native/**', '!out/capability-bundles/**', 'NOTICE', 'licenses/**'],
   asarUnpack: ['node_modules/better-sqlite3/**', 'node_modules/node-pty/**', '**/*.node'],
   // Rebuild these two modules explicitly, using the target Electron ABI.
   npmRebuild: false,
@@ -20,6 +20,7 @@ module.exports = {
       { from: 'out/native/willyou-files', to: 'native/willyou-files' },
       { from: 'out/native/willyou-foxmail', to: 'native/willyou-foxmail' },
       { from: 'out/native/willyou-process-identity', to: 'native/willyou-process-identity' },
+      { from: 'out/capability-bundles', to: 'capability-bundles' },
       { from: 'out/native/tex', to: 'native/tex' },
       { from: 'out/native/office', to: 'native/office' },
       { from: 'out/native/libreoffice', to: 'native/libreoffice' },
