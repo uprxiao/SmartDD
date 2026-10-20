@@ -1,0 +1,9 @@
+{
+  "schema": "m10-command-evidence-v1",
+  "checkpoint": "DEV005-I",
+  "recordedAt": "2026-10-20T09:06:49.791681+00:00",
+  "exitCode": 1,
+  "status": "failed",
+  "sourceLog": "/private/tmp/m10-dev005-i-smtp-drain-20261020.log",
+  "output": "\n> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10\n> node scripts/run-tests.mjs src/main/core/applications/__tests__/smtp.test.ts src/main/core/applications/__tests__/smtp-tls.test.ts --maxWorkers=2\n\n\n RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10\n\n ❯ src/main/core/applications/__tests__/smtp.test.ts (8 tests | 1 failed) 87ms\n     × drains the actual SMTP callback and owned socket when canceled while DATA receipt is withheld 56ms\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/main/core/applications/__tests__/smtp.test.ts > SMTP adapter over an isolated local protocol server > drains the actual SMTP callback and owned socket when canceled while DATA receipt is withheld\nAssertionError: expected { complete: false, accepted: [], …(5) } to match object { state: 'unknown', …(2) }\n(4 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n    \"complete\": false,\n-   \"errorCode\": \"CANCELED\",\n+   \"errorCode\": \"ESOCKET\",\n    \"state\": \"unknown\",\n  }\n\n ❯ src/main/core/applications/__tests__/smtp.test.ts:73:155\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n\n Test Files  1 failed | 1 passed (2)\n      Tests  1 failed | 11 passed (12)\n   Start at  16:59:16\n   Duration  331ms (transform 94ms, setup 0ms, import 237ms, tests 211ms, environment 0ms)\n\n ELIFECYCLE  Test failed. See above for more details.\n"
+}

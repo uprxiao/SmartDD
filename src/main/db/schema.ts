@@ -416,3 +416,7 @@ export const applicationIndexWaiters=sqliteTable('application_index_waiters',{
 export const applicationMailOperationSources=sqliteTable('application_mail_operation_sources',{
  operationId:text('operation_id').primaryKey().references(()=>applicationDataOperations.operationId),sourceKey:text('source_key').notNull(),sourceRevision:text('source_revision').notNull(),operationKind:text('operation_kind').notNull(),provenanceJson:text('provenance_json').notNull(),createdAt:text('created_at').notNull(),
 });
+
+export const mailUserActionSources=sqliteTable('mail_user_action_sources',{
+  evidenceId:text('evidence_id').primaryKey(),intentId:text('intent_id').notNull().references(()=>mailSendIntents.id),sourceKind:text('source_kind').notNull(),sourceHash:text('source_hash').notNull(),provenanceJson:text('provenance_json').notNull(),createdAt:text('created_at').notNull(),
+});

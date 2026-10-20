@@ -8,7 +8,7 @@ import { PtyAccess } from '../../../pty-access';
 import { createApplicationController } from '../controller';
 import type { ApplicationService } from '../application-service';
 let handlers:Map<string,(...args:any[])=>any>,sender:IpcMainInvokeEvent,access:PtyAccess,service:ReturnType<typeof fakeService>;
-function fakeService(){return{captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
+function fakeService(){return{viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
 const event=(id:number)=>{const wc=Object.assign(new EventEmitter(),{id,mainFrame:{},isDestroyed:()=>false});return{sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;};
 function register(current:ApplicationService|undefined){handlers=new Map();registerRPCRouter({applications:createApplicationController(current,e=>access.requireSender(e))},{handle:(name:string,handler:(...args:any[])=>any)=>handlers.set(name,handler)} as never);}
 const invoke=(name:string,e=sender,...args:unknown[])=>handlers.get('applications.'+name)!(e,...args);
@@ -26,8 +26,8 @@ describe('main-renderer application RPC authority and safe replies',()=>{
   service.catalog.mockImplementationOnce(()=>z.array(z.never()).parse([{secret:'must-not-echo'}]));expect(await invoke('catalog')).toEqual({ok:false,code:'INVALID_INPUT',message:'应用操作字段无效，请核对表单后重试'});
   service.setAdded.mockRejectedValueOnce(new ApplicationError('REVISION_CONFLICT','应用状态已变化，请重新载入'));expect(await invoke('setAdded',sender,'mail',true,0)).toEqual({ok:false,code:'REVISION_CONFLICT',message:'应用状态已变化，请重新载入'});
  });
- it('exposes explicit business endpoints without a generic SQL,secret,scope or send-approval method',()=>{
-  expect([...handlers.keys()].sort()).toEqual(['catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
+ it('exposes explicit business endpoints without generic SQL,secret,scope or caller-supplied approval flags',()=>{
+  expect([...handlers.keys()].sort()).toEqual(['send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
  });
  it('keeps cache inspection and reclamation as explicit main-frame-only management endpoints',async()=>{
   service.mailCacheStatus.mockResolvedValueOnce({limit:500000000});service.clearMailCache.mockResolvedValueOnce({activeLeases:1});
@@ -42,6 +42,11 @@ describe('main-renderer application RPC authority and safe replies',()=>{
  });
  it('protects reply,resource import and workspace capture with actual main-frame authority',async()=>{
   for(const name of ['captureAttachment','replyDraft','importAttachment'] as const){expect(await invoke(name,event(82),'p1',{})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[name]).not.toHaveBeenCalled();service[name].mockResolvedValueOnce({saved:true});expect(await invoke(name,sender,'p1',{})).toEqual({ok:true,value:{saved:true}});expect(service[name]).toHaveBeenCalledWith(sender,'p1',{});}
+ });
+ it('binds sending review,confirmation and cancellation to the actual main frame',async()=>{
+  for(const [name,method] of [['send','viewSend'],['reviewSend','reviewSend'],['authorizeSend','authorizeSend'],['cancelSend','cancelSend']] as const){
+   expect(await invoke(name,event(82),'p1',{})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({state:'awaiting-authorization'});expect(await invoke(name,sender,'p1',{})).toEqual({ok:true,value:{state:'awaiting-authorization'}});expect(service[method]).toHaveBeenCalledWith(sender,'p1',{});
+  }
  });
  it('checks sender authority even when the optional service is unavailable',async()=>{
   register(undefined);expect(await invoke('catalog',event(82))).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(await invoke('catalog')).toMatchObject({ok:false,code:'CAPABILITY_UNAVAILABLE'});

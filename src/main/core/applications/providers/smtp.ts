@@ -37,18 +37,19 @@ export async function prepareSmtpMessage(config: SmtpConfig, input: FrozenMailIn
 
 async function withSmtp<T>(config: SmtpConfig, secret: string, signal: AbortSignal, action: (transport: ReturnType<typeof nodemailer.createTransport>) => Promise<T>): Promise<T> {
   if (signal.aborted) throw new ApplicationError('CANCELED', '发件操作已取消');
-  const sockets = new Set<Socket>(); let abortReject: ((error: ApplicationError) => void) | undefined;
+  const sockets = new Map<Socket,Promise<void>>(); let abortReject: ((error: ApplicationError) => void) | undefined;
   const abort = () => {
     const error = signal.reason instanceof ApplicationError ? signal.reason : new ApplicationError('CANCELED', '发件操作已取消');
-    for (const socket of sockets) socket.destroy(error);
+    // Nodemailer rewrites socket error.code; do not share the host cause with it.
     abortReject?.(error);
+    for (const socket of sockets.keys()) socket.destroy();
   };
   const getSocket: NonNullable<SMTPTransportOptions['getSocket']> = (_options, callback) => {
     if (signal.aborted) { callback(new ApplicationError('CANCELED', '发件操作已取消')); return; }
     let handed = false;
     const secure = config.mode === 'implicit-tls';
     const socket = secure ? tlsConnect({ host: config.host, port: config.port, servername: isIP(config.host) ? undefined : config.host, rejectUnauthorized: true }) : createConnection({ host: config.host, port: config.port });
-    sockets.add(socket);
+    sockets.set(socket,new Promise<void>(resolve=>socket.once('close',resolve)));
     socket.once(secure ? 'secureConnect' : 'connect', () => { if (!handed) { handed = true; callback(null, { connection: socket, secured: secure }); } });
     socket.once('error', error => { if (!handed) { handed = true; callback(error); } });
     socket.once('close', () => sockets.delete(socket));
@@ -60,11 +61,14 @@ async function withSmtp<T>(config: SmtpConfig, secret: string, signal: AbortSign
     disableFileAccess: true, disableUrlAccess: true, getSocket };
   const transport = nodemailer.createTransport(options);
   signal.addEventListener('abort', abort, { once: true });
-  const timer = setTimeout(() => { const error = new ApplicationError('TIMEOUT', 'SMTP操作超时'); for (const socket of sockets) socket.destroy(error); abortReject?.(error); }, 8000);
+  const timer = setTimeout(() => { const error = new ApplicationError('TIMEOUT', 'SMTP操作超时'); abortReject?.(error); for (const socket of sockets.keys()) socket.destroy(); }, 8000);
+  let active:Promise<T>|undefined;
   try {
-    return await Promise.race([action(transport), new Promise<never>((_, reject) => { abortReject = reject; if (signal.aborted) abort(); })]);
+    active=Promise.resolve().then(()=>action(transport));
+    return await Promise.race([active, new Promise<never>((_, reject) => { abortReject = reject; if (signal.aborted) abort(); })]);
   } finally {
-    clearTimeout(timer); signal.removeEventListener('abort', abort); for (const socket of sockets) socket.destroy(); transport.close();
+    clearTimeout(timer); signal.removeEventListener('abort', abort); const owned=[...sockets.entries()];for (const [socket] of owned) socket.destroy(); transport.close();
+    await Promise.allSettled([...(active?[active]:[]),...owned.map(([,closed])=>closed)]);
   }
 }
 export async function verifySmtp(config: SmtpConfig, secret: string | null, signal: AbortSignal): Promise<VerifiedConnectionIdentity> {

@@ -11,6 +11,7 @@ import type { ApplicationConnectionService } from './connection-service';
 import type { ApplicationSelectionService } from './selection-service';
 import type { MailDraftService } from './mail-draft-service';
 import type { MailPolicy } from './mail-blob-store';
+import type { ProcessIdentity } from './process-identity';
 import { prepareSmtpMessage, submitSmtp, type PreparedSmtpMessage } from './providers/smtp';
 
 type SmtpConfig = Extract<ConnectionConfig,{ kind: 'smtp' }>;
@@ -25,10 +26,13 @@ interface GrantRow { id: string;intent_id: string;source: VerifiedMailUserAction
 export interface MailSendPolicy extends MailPolicy {
   requireSend(actor: MailSendActor): void;
   verifyUserAction(actor: MailSendActor,evidenceRef: string,intent: MailSendIntent): VerifiedMailUserAction;
+  allowUiAuthorization?(actor:MailSendActor,intent:MailSendIntent):boolean;
   ownerState(owner: { instanceId: string;pid: number;startedAt: string }): 'running' | 'stopped' | 'unknown';
 }
 export interface MailExecutionOptions {
   submit?: typeof submitSmtp;
+  hostIdentity?:ProcessIdentity;
+  activity?:(actor:MailSendActor,intentId:string,work:()=>Promise<unknown>)=>Promise<unknown>;
   submissionTimeoutMs?: number;
   checkpoint?: (phase: 'prepared' | 'claimed' | 'submitted',intentId: string) => void;
 }
@@ -38,12 +42,16 @@ const actionSchema = z.object({ id: z.string().min(1).max(512),source: z.enum(['
 
 /** Host-owned orchestration. Tools supply references, never their own approval assertions. */
 export class MailExecutionService {
+  private readonly instanceId=randomUUID();
   private readonly running = new Map<string,AbortController>();
   private readonly preparing = new Set<string>();
   private readonly operations = new Set<Promise<MailSendIntent>>();
   private readonly shutdown = new AbortController();
-  private readonly born = new Date(Date.now() - process.uptime() * 1000).toISOString();
-  constructor(readonly store: ResourceStore,private readonly drafts: MailDraftService,private readonly connections: ApplicationConnectionService,private readonly selections: ApplicationSelectionService,private readonly policy: MailSendPolicy,private readonly options: MailExecutionOptions = {}) {}
+  private readonly executing=new Set<string>();
+  private readonly producers=new Map<string,Promise<unknown>>();
+  private readonly settled=new Set<string>();
+  private readonly born:string;
+  constructor(readonly store: ResourceStore,private readonly drafts: MailDraftService,private readonly connections: ApplicationConnectionService,private readonly selections: ApplicationSelectionService,private readonly policy: MailSendPolicy,private readonly options: MailExecutionOptions = {}) {if(options.hostIdentity&&options.hostIdentity.pid!==process.pid)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','发送宿主进程身份不一致');this.born=options.hostIdentity?.startedAt??new Date(Date.now()-process.uptime()*1000).toISOString();}
   private row(actor: MailSendActor,id: string): IntentRow {
     this.policy.requireDrafts(actor); const row = this.store.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=? AND project_id=?').get(id,actor.projectId) as IntentRow | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND','当前项目没有此发送意图'); return row;
@@ -67,8 +75,8 @@ export class MailExecutionService {
     if (connection.providerId !== 'smtp' || connection.config.kind !== 'smtp' || !connection.enabled || connection.authorization !== 'connected') throw new ApplicationError('AUTH_REQUIRED','当前发件连接未启用或已断开');
     return { connection,config: connection.config,bindingRevision: binding.revision };
   }
-  private assertCurrent(actor: MailSendActor,row: IntentRow): ReturnType<MailExecutionService['current']> {
-    this.origin(actor,row); let current: ReturnType<MailExecutionService['current']>;
+  private assertCurrent(actor: MailSendActor,row: IntentRow,checkOrigin=true): ReturnType<MailExecutionService['current']> {
+    if(checkOrigin)this.origin(actor,row); let current: ReturnType<MailExecutionService['current']>;
     try { current = this.current(actor); } catch { throw new ApplicationError('INTENT_STALE','当前应用、运行或发件授权已改变，旧发送意图失效'); }
     const c = current.connection;
     if (c.id !== row.connection_id || c.identityRevision !== row.identity_revision || c.configRevision !== row.config_revision || c.policyRevision !== row.policy_revision || current.bindingRevision !== row.binding_revision || canonicalJson(c.identity) !== row.identity_json || canonicalJson(c.config) !== row.smtp_config_json) throw new ApplicationError('INTENT_STALE','发件身份、配置或项目选用已改变，请重新明确操作');
@@ -76,8 +84,8 @@ export class MailExecutionService {
     if (draft.revision !== row.draft_revision || draft.contentHash !== row.draft_content_hash || draft.activeIntentId !== row.id) throw new ApplicationError('INTENT_STALE','草稿或发送占用已改变，旧发送意图失效');
     return current;
   }
-  private ancestry(draftId: string,projectId: string): { id: string;state: string }[] {
-    return this.store.sqlite.prepare(`WITH RECURSIVE ancestors(id) AS (VALUES(?) UNION SELECT d.copied_from_draft_id FROM mail_drafts d JOIN ancestors a ON a.id=d.id WHERE d.project_id=? AND d.copied_from_draft_id IS NOT NULL) SELECT e.id,e.state FROM mail_send_executions e JOIN ancestors a ON a.id=e.draft_id WHERE e.project_id=? AND e.state IN ('executing','unknown')`).all(draftId,projectId,projectId) as { id: string;state: string }[];
+  private ancestry(draftId: string,projectId: string): { id: string;state: string;intent_id:string }[] {
+    return this.store.sqlite.prepare(`WITH RECURSIVE ancestors(id) AS (VALUES(?) UNION SELECT d.copied_from_draft_id FROM mail_drafts d JOIN ancestors a ON a.id=d.id WHERE d.project_id=? AND d.copied_from_draft_id IS NOT NULL) SELECT e.id,e.state,e.intent_id FROM mail_send_executions e JOIN ancestors a ON a.id=e.draft_id WHERE e.project_id=? AND e.state IN ('executing','unknown')`).all(draftId,projectId,projectId) as { id: string;state: string;intent_id:string }[];
   }
   prepare(actor: MailSendActor,input: z.infer<typeof prepareMailSendSchema>,signal?: AbortSignal): Promise<MailSendIntent> {
     if (this.shutdown.signal.aborted) return Promise.reject(new ApplicationError('CANCELED','邮件服务已停止'));
@@ -95,10 +103,10 @@ export class MailExecutionService {
       if (draft.revision !== value.expectedRevision || draft.contentHash !== value.expectedContentHash) throw new ApplicationError('REVISION_CONFLICT','草稿修订已变化，请先查看当前内容');
       if (draft.activeIntentId || ['sending','sent','unknown'].includes(draft.state)) throw new ApplicationError('DRAFT_LOCKED','此草稿已被发送意图占用或已有结果，请先查看原记录');
       if (this.store.sqlite.prepare('SELECT 1 FROM mail_send_executions WHERE draft_id=? AND draft_revision=?').get(draft.id,draft.revision)) throw new ApplicationError('EXECUTION_ALREADY_ATTEMPTED','此修订已经尝试发送，请核对原结果，不能自动生成新意图重发');
-      if (this.ancestry(draft.id,actor.projectId).some(a => a.state === 'executing')) throw new ApplicationError('EXECUTION_ALREADY_ATTEMPTED','来源草稿仍在发送，请先等待并核对原结果');
+      if (this.ancestry(draft.id,actor.projectId).some(a => a.state === 'executing'||this.producers.has(a.intent_id)||Boolean(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_kind='mail-send' AND owner_id=? AND state='active'").get(a.intent_id)))) throw new ApplicationError('EXECUTION_ALREADY_ATTEMPTED','来源草稿仍在发送，请先等待并核对原结果');
       if (draft.content.senderConnectionId && draft.content.senderConnectionId !== current.connection.id) throw new ApplicationError('INTENT_STALE','草稿发件人与项目当前选用不同，请明确选择后更新草稿');
       const id = randomUUID(), now = new Date().toISOString();
-      this.store.sqlite.prepare(`INSERT INTO mail_send_intents(id,project_id,source_task_id,source_run_id,operation_id,request_hash,draft_id,draft_revision,draft_content_hash,connection_id,identity_revision,config_revision,policy_revision,binding_revision,identity_json,smtp_config_json,raw_write_id,message_id,state,owner_instance_id,owner_pid,owner_started_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'preparing',?,?,?,?,?)`).run(id,actor.projectId,actor.taskId,actor.runId,value.operationId,requestHash,draft.id,draft.revision,draft.contentHash,current.connection.id,current.connection.identityRevision,current.connection.configRevision,current.connection.policyRevision,current.bindingRevision,canonicalJson(current.connection.identity),canonicalJson(current.config),randomUUID(),'<wy-' + id + '@willyou.local>',this.store.instanceId,process.pid,this.born,now,now);
+      this.store.sqlite.prepare(`INSERT INTO mail_send_intents(id,project_id,source_task_id,source_run_id,operation_id,request_hash,draft_id,draft_revision,draft_content_hash,connection_id,identity_revision,config_revision,policy_revision,binding_revision,identity_json,smtp_config_json,raw_write_id,message_id,state,owner_instance_id,owner_pid,owner_started_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'preparing',?,?,?,?,?)`).run(id,actor.projectId,actor.taskId,actor.runId,value.operationId,requestHash,draft.id,draft.revision,draft.contentHash,current.connection.id,current.connection.identityRevision,current.connection.configRevision,current.connection.policyRevision,current.bindingRevision,canonicalJson(current.connection.identity),canonicalJson(current.config),randomUUID(),'<wy-' + id + '@willyou.local>',this.instanceId,process.pid,this.born,now,now);
       this.store.sqlite.prepare('UPDATE mail_drafts SET active_intent_id=?,updated_at=? WHERE id=?').run(id,now,draft.id); row = this.row(actor,id); created = true; this.preparing.add(id);
     }).immediate());
     if (!created) return this.view(row);
@@ -115,7 +123,7 @@ export class MailExecutionService {
       this.options.checkpoint?.('prepared',row.id); return this.get(actor,row.id);
     } catch (error) {
       await this.failPreparation(row.id,error instanceof ApplicationError ? error.code : 'PREPARATION_FAILED'); throw error instanceof ApplicationError ? error : new ApplicationError('RESOURCE_RECOVERY_REQUIRED','邮件准备未完成，未提交到服务器');
-    } finally { this.preparing.delete(row.id); }
+    } finally { this.preparing.delete(row.id);this.settled.add(row.id); }
   }
   private compose(draft: MailDraft,config: SmtpConfig,messageId: string,date: string,actor: MailSendActor): Promise<PreparedSmtpMessage> {
     const c = draft.content;
@@ -141,13 +149,14 @@ export class MailExecutionService {
   async authorize(actor: MailSendActor,id: string,evidenceRef: string): Promise<MailSendIntent> {
     try {
       return await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
-        const row = this.row(actor,id); this.assertCurrent(actor,row);
+        const row = this.row(actor,id); this.assertCurrent(actor,row,this.policy.allowUiAuthorization?.(actor,this.view(row))!==true);
         if (!['awaiting-authorization','authorized'].includes(row.state) || !row.review_hash) throw new ApplicationError('INTENT_STALE','此发送意图已取消、执行或不可授权');
         const action = this.evidence(actor,row,evidenceRef), hash = digest(canonicalJson(action));
         const old = this.store.sqlite.prepare('SELECT * FROM mail_send_grants WHERE source=? AND evidence_id=?').get(action.source,action.id) as GrantRow | undefined;
         if (old && (old.intent_id !== id || old.state !== 'active' || old.evidence_hash !== hash)) throw new ApplicationError('AUTHORIZATION_REQUIRED','此用户证据已用于其他执行或已撤销');
         const grantId = old?.id ?? randomUUID();
         if (!old) this.store.sqlite.prepare("INSERT INTO mail_send_grants(id,intent_id,source,evidence_id,evidence_hash,review_hash,evidence_json,state,expires_at,created_at) VALUES(?,?,?,?,?,?,?,'active',?,?)").run(grantId,id,action.source,action.id,hash,row.review_hash,canonicalJson(action),action.expiresAt,new Date().toISOString());
+        this.store.sqlite.prepare("UPDATE mail_send_grants SET state='revoked' WHERE intent_id=? AND id<>? AND state='active'").run(id,grantId);
         this.store.sqlite.prepare("UPDATE mail_send_intents SET state='authorized',grant_id=?,updated_at=? WHERE id=?").run(grantId,new Date().toISOString(),id);
         return this.get(actor,id);
       }).immediate());
@@ -168,16 +177,21 @@ export class MailExecutionService {
     if (value.messageId !== row.message_id || [...accepted,...rejected].some(a => !expected.has(a)) || accepted.some(a => rejected.includes(a)) || (value.state === 'server-accepted' && !accepted.length) || (value.state === 'failed' && accepted.length > 0)) return this.unknown(row,'INVALID_RECEIPT');
     return { ...value,accepted,rejected,complete: value.state === 'server-accepted' && rejected.length === 0 && accepted.length === expected.size,errorCode: value.errorCode && /^[A-Z][A-Z0-9_]{0,63}$/.test(value.errorCode) ? value.errorCode : value.errorCode ? 'PROVIDER_FAILURE' : null };
   }
-  execute(actor: MailSendActor,id: string): Promise<MailSendIntent> {
+  execute(actor: MailSendActor,id: string,signal?:AbortSignal): Promise<MailSendIntent> {
     if (this.shutdown.signal.aborted) return Promise.reject(new ApplicationError('CANCELED','邮件服务已停止'));
-    return this.track(this.executeOnce(actor,id));
+    return this.track(this.executeOnce(actor,id,signal));
   }
   private track(promise: Promise<MailSendIntent>): Promise<MailSendIntent> { this.operations.add(promise); promise.then(() => this.operations.delete(promise),() => this.operations.delete(promise)); return promise; }
-  async dispose(): Promise<void> { this.shutdown.abort(); for (const c of this.running.values()) c.abort(); await Promise.allSettled([...this.operations]); }
-  private async executeOnce(actor: MailSendActor,id: string): Promise<MailSendIntent> {
+  async dispose(): Promise<void> {
+    this.shutdown.abort();for(const controller of this.running.values())controller.abort();
+    await Promise.allSettled([...this.operations,...this.producers.values()]);
+    const rows=this.store.sqlite.prepare("SELECT id FROM mail_send_intents WHERE owner_instance_id=? AND state IN ('preparing','awaiting-authorization','authorized')").all(this.instanceId) as {id:string}[];
+    await this.invalidate(rows.map(row=>row.id),'stale','HOST_CLOSED');
+  }
+  private async executeOnce(actor: MailSendActor,id: string,signal?:AbortSignal): Promise<MailSendIntent> {
     this.policy.requireSend(actor); const preliminary = this.row(actor,id); this.origin(actor,preliminary);
     if (preliminary.execution_id) return this.view(preliminary);
-    const frozen = this.frozen(actor,preliminary), controller = new AbortController(); let claimed: IntentRow | null = null, credentials: { config: SmtpConfig;secret: string } | null = null;
+    const frozen = this.frozen(actor,preliminary), controller = new AbortController(),cancel=()=>controller.abort();signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();let claimed: IntentRow | null = null, credentials: { config: SmtpConfig;secret: string } | null = null;
     try {
       await withResourceLock(this.store.root,() => {
         this.store.sqlite.transaction(() => {
@@ -192,23 +206,23 @@ export class MailExecutionService {
           if (!authentication.secret || authentication.config.kind !== 'smtp') throw new ApplicationError('AUTH_REQUIRED','当前发件凭据不可用');
           credentials = { config: authentication.config,secret: authentication.secret };
           const executionId = randomUUID(), now = new Date().toISOString();
-          this.store.sqlite.prepare("INSERT INTO mail_send_executions(id,intent_id,project_id,draft_id,draft_revision,review_hash,state,secret_revision,owner_instance_id,started_at) VALUES(?,?,?,?,?,?,'executing',?,?,?)").run(executionId,row.id,row.project_id,row.draft_id,row.draft_revision,row.review_hash,c.secretRevision,this.store.instanceId,now);
+          this.store.sqlite.prepare("INSERT INTO mail_send_executions(id,intent_id,project_id,draft_id,draft_revision,review_hash,state,secret_revision,owner_instance_id,started_at) VALUES(?,?,?,?,?,?,'executing',?,?,?)").run(executionId,row.id,row.project_id,row.draft_id,row.draft_revision,row.review_hash,c.secretRevision,this.instanceId,now);
           this.store.sqlite.prepare("UPDATE mail_send_grants SET state='used' WHERE id=? AND state='active'").run(grant.id);
-          this.store.sqlite.prepare("UPDATE mail_send_intents SET state='executing',execution_id=?,owner_instance_id=?,owner_pid=?,owner_started_at=?,updated_at=? WHERE id=?").run(executionId,this.store.instanceId,process.pid,this.born,now,row.id);
+          this.store.sqlite.prepare("UPDATE mail_send_intents SET state='executing',execution_id=?,owner_instance_id=?,owner_pid=?,owner_started_at=?,updated_at=? WHERE id=?").run(executionId,this.instanceId,process.pid,this.born,now,row.id);
           this.store.sqlite.prepare("UPDATE mail_drafts SET state='sending',last_execution_id=?,updated_at=? WHERE id=? AND active_intent_id=?").run(executionId,now,row.draft_id,row.id);
           claimed = this.row(actor,id);
         }).immediate();
         if (claimed) { this.running.set(id,controller); if (this.shutdown.signal.aborted) controller.abort(); }
       });
-    } catch (error) { credentials = null; if (error instanceof ApplicationError && error.code === 'INTENT_STALE') await this.invalidate([id],'stale','INTENT_STALE'); throw error; }
-    if (!claimed || !credentials) return this.get(actor,id);
-    const row = claimed as IntentRow, auth = credentials as { config: SmtpConfig;secret: string };
+    } catch (error) { credentials = null;signal?.removeEventListener('abort',cancel); if (error instanceof ApplicationError && error.code === 'INTENT_STALE') await this.invalidate([id],'stale','INTENT_STALE'); throw error; }
+    if (!claimed || !credentials){signal?.removeEventListener('abort',cancel);return this.get(actor,id);}
+    this.executing.add(id);const row = claimed as IntentRow, auth = credentials as { config: SmtpConfig;secret: string };
     try {
       this.options.checkpoint?.('claimed',id);
       let result: MailSendResult;
       if (controller.signal.aborted) result = { ...this.unknown(row,'CANCELED_BEFORE_SUBMISSION'),state: 'failed' };
       else {
-        try { result = this.receipt(row,await this.submitBounded(auth.config,auth.secret,frozen,controller),frozen); }
+        try { result = this.receipt(row,await this.submitBounded(actor,row.id,auth.config,auth.secret,frozen,controller),frozen); }
         catch { result = this.unknown(row,'SUBMISSION_UNCONFIRMED'); }
       }
       auth.secret = ''; credentials = null;
@@ -216,15 +230,17 @@ export class MailExecutionService {
       await this.record(row,result);
       const saved = this.store.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(id) as IntentRow;
       return this.view(saved);
-    } finally { auth.secret = ''; credentials = null; this.running.delete(id); }
+    } finally { auth.secret = ''; credentials = null;signal?.removeEventListener('abort',cancel);this.executing.delete(id);if(!this.producers.has(id)){this.running.delete(id);this.settled.add(id);} }
   }
-  private async submitBounded(config: SmtpConfig,secret: string,frozen: PreparedSmtpMessage,controller: AbortController): Promise<unknown> {
+  private async submitBounded(actor:MailSendActor,id:string,config: SmtpConfig,secret: string,frozen: PreparedSmtpMessage,controller: AbortController): Promise<unknown> {
     let rejectAbort!: (error: Error) => void;
     const abort = () => rejectAbort(new ApplicationError('CANCELED','发送等待已取消，需核对实际结果'));
     const pending = new Promise<never>((_,reject) => { rejectAbort = reject; });
     controller.signal.addEventListener('abort',abort,{ once: true });
     const timer = setTimeout(() => controller.abort(),Math.max(1,Math.min(60000,this.options.submissionTimeoutMs ?? 60000)));
-    try { return await Promise.race([(this.options.submit ?? submitSmtp)(config,secret,frozen,controller.signal),pending]); }
+    const work=()=>{if(controller.signal.aborted)throw new ApplicationError('CANCELED','发送工作在提交前已取消');return Promise.resolve((this.options.submit??submitSmtp)(config,secret,frozen,controller.signal));},producer=Promise.resolve().then(()=>this.options.activity?this.options.activity(actor,id,work):work());this.producers.set(id,producer);
+    void producer.finally(()=>{if(this.producers.get(id)===producer){this.producers.delete(id);if(!this.executing.has(id)){this.running.delete(id);this.settled.add(id);}}}).catch(()=>{});
+    try { return await Promise.race([producer,pending]); }
     finally { clearTimeout(timer); controller.signal.removeEventListener('abort',abort); }
   }
   private async record(row: IntentRow,result: MailSendResult): Promise<void> {
@@ -253,24 +269,39 @@ export class MailExecutionService {
   async cancel(actor: MailSendActor,id: string): Promise<MailSendIntent> { this.row(actor,id); await this.invalidate([id],'canceled','USER_CANCELED'); return this.get(actor,id); }
   async invalidateRun(runId: string): Promise<void> { const ids = this.store.sqlite.prepare('SELECT id FROM mail_send_intents WHERE source_run_id=?').all(runId) as { id: string }[]; await this.invalidate(ids.map(r => r.id),'stale','RUN_ENDED'); }
   async invalidateConnection(id: string): Promise<void> { const ids = this.store.sqlite.prepare('SELECT id FROM mail_send_intents WHERE connection_id=?').all(id) as { id: string }[]; await this.invalidate(ids.map(r => r.id),'stale','CONNECTION_REVOKED'); }
+  /** Recheck public policy only; never decrypt credentials or probe native processes inside C. */
+  async invalidatePolicies():Promise<void>{
+    const rows=this.store.sqlite.prepare("SELECT * FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing')").all() as IntentRow[];
+    const ids=rows.filter(row=>{try{const binding=this.selections.connectionSlot(row.project_id,'mail','smtp'),connection=this.connections.get(row.connection_id);return binding.connectionId!==row.connection_id||binding.revision!==row.binding_revision||!connection.enabled||connection.authorization!=='connected'||connection.identityRevision!==row.identity_revision||connection.configRevision!==row.config_revision||connection.policyRevision!==row.policy_revision||canonicalJson(connection.identity)!==row.identity_json||canonicalJson(connection.config)!==row.smtp_config_json;}catch{return true;}}).map(row=>row.id);
+    await this.invalidate(ids,'stale','POLICY_CHANGED');
+  }
   /** Never resumes a submission. Only proven stopped owners may have an interrupted operation finalized. */
   async recover(): Promise<{ recovered: string[];pending: string[] }> {
     const result = { recovered: [] as string[],pending: [] as string[] };
+    const candidates=this.store.sqlite.prepare("SELECT * FROM mail_send_intents i WHERE state IN ('preparing','awaiting-authorization','authorized','executing') OR EXISTS(SELECT 1 FROM capability_resource_leases l WHERE l.owner_kind='mail-send' AND l.owner_id=i.id AND l.state='active')").all() as IntentRow[],states=new Map<string,'running'|'stopped'|'unknown'>();
+    // Kernel identity queries and provider settlement checks precede the C/DB write boundary.
+    for(const row of candidates){const owned=row.owner_instance_id===this.instanceId;states.set(row.id,owned&&(this.preparing.has(row.id)||this.running.has(row.id)||this.producers.has(row.id))?'running':owned&&this.settled.has(row.id)&&!['awaiting-authorization','authorized'].includes(row.state)?'stopped':this.policy.ownerState({instanceId:row.owner_instance_id,pid:row.owner_pid,startedAt:row.owner_started_at}));}
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
-      const rows = this.store.sqlite.prepare("SELECT * FROM mail_send_intents WHERE state IN ('preparing','executing')").all() as IntentRow[];
-      for (const row of rows) {
-        const owned = row.owner_instance_id === this.store.instanceId, live = owned && (this.preparing.has(row.id) || this.running.has(row.id)) ? 'running' : this.policy.ownerState({ instanceId: row.owner_instance_id,pid: row.owner_pid,startedAt: row.owner_started_at });
+      for (const observed of candidates) {
+        const row=this.store.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(observed.id) as IntentRow|undefined;
+        if(!row||row.state!==observed.state||row.owner_instance_id!==observed.owner_instance_id||row.owner_pid!==observed.owner_pid||row.owner_started_at!==observed.owner_started_at||row.execution_id!==observed.execution_id||row.updated_at!==observed.updated_at)continue;
+        const owned=row.owner_instance_id===this.instanceId,live=owned&&(this.preparing.has(row.id)||this.running.has(row.id)||this.producers.has(row.id))?'running':states.get(row.id)!;
         if (live !== 'stopped') { result.pending.push(row.id); continue; }
         const now = new Date().toISOString();
         if (row.state === 'preparing') {
           this.store.sqlite.prepare("UPDATE mail_send_intents SET state='failed',error_code='PREPARATION_INTERRUPTED',updated_at=? WHERE id=?").run(now,row.id);
           this.store.sqlite.prepare('UPDATE mail_drafts SET active_intent_id=NULL,updated_at=? WHERE active_intent_id=?').run(now,row.id);
-        } else {
+        } else if(row.state==='awaiting-authorization'||row.state==='authorized') {
+          this.store.sqlite.prepare("UPDATE mail_send_intents SET state='stale',error_code='HOST_INTERRUPTED',updated_at=? WHERE id=?").run(now,row.id);
+          if(row.grant_id)this.store.sqlite.prepare("UPDATE mail_send_grants SET state='revoked' WHERE id=? AND state='active'").run(row.grant_id);
+          this.store.sqlite.prepare('UPDATE mail_drafts SET active_intent_id=NULL,updated_at=? WHERE active_intent_id=?').run(now,row.id);
+        } else if(row.state==='executing') {
           const unknown = this.unknown(row,'HOST_INTERRUPTED');
           this.store.sqlite.prepare("UPDATE mail_send_executions SET state='unknown',result_json=?,ended_at=? WHERE id=? AND state='executing'").run(canonicalJson(unknown),now,row.execution_id);
           this.store.sqlite.prepare("UPDATE mail_send_intents SET state='unknown',error_code='HOST_INTERRUPTED',updated_at=? WHERE id=?").run(now,row.id);
           this.store.sqlite.prepare("UPDATE mail_drafts SET state='unknown',active_intent_id=NULL,updated_at=? WHERE active_intent_id=? AND last_execution_id=?").run(now,row.id,row.execution_id);
         }
+        this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_kind='mail-send' AND owner_id=? AND pid=? AND process_started_at=? AND state='active'").run(now,row.id,row.owner_pid,row.owner_started_at);
         result.recovered.push(row.id);
       }
     }).immediate()); return result;

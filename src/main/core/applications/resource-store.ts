@@ -70,11 +70,11 @@ export class ResourceStore {
   private assertIdentity(row: ResourceRecord, spec: PublishResource): void {
     if (row.pathScope !== 'C' || row.kind !== spec.kind || row.contentHash !== spec.contentHash || row.relativePath !== spec.relativePath) throw new ApplicationError('OWNERSHIP_CONFLICT', '资源标识与发布身份不一致');
   }
-  private lease(resourceId: string, operationId: string, kind = 'install'): string {
+  private lease(resourceId: string, operationId: string, kind = 'install',identity?:{pid:number;startedAt:string}): string {
     const leaseId = randomUUID();
     this.sqlite.prepare(`INSERT INTO capability_resource_leases
       (lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at)
-      VALUES(?,?,?,?,?,?,?, 'active',?)`).run(leaseId, resourceId, kind, operationId, this.instanceId, process.pid, new Date(Date.now() - process.uptime() * 1000).toISOString(), new Date().toISOString());
+      VALUES(?,?,?,?,?,?,?, 'active',?)`).run(leaseId, resourceId, kind, operationId, this.instanceId, process.pid, identity?.startedAt??new Date(Date.now() - process.uptime() * 1000).toISOString(), new Date().toISOString());
     return leaseId;
   }
   private endLease(leaseId: string): void {
@@ -85,7 +85,8 @@ export class ResourceStore {
     this.sqlite.prepare('UPDATE capability_resource_operations SET state=?,error_code=?,updated_at=? WHERE operation_id=? AND owner_store_id=?').run(state, code, now, operationId, this.storeId);
     this.sqlite.prepare('UPDATE capability_install_journal SET state=?,error_code=?,updated_at=? WHERE install_id=?').run(state, code, now, operationId);
   }
-  async use<T>(resourceId: string, ownerKind: string, ownerId: string, action: (directory: string) => T | Promise<T>): Promise<T> {
+  async use<T>(resourceId: string, ownerKind: string, ownerId: string, action: (directory: string) => T | Promise<T>,options:{identity?:{pid:number;startedAt:string}}={}): Promise<T> {
+    if(options.identity&&(options.identity.pid!==process.pid||!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(options.identity.startedAt)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','资源活动进程身份无效');
     let leaseId = '', directory = '';
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
       const rows = this.sqlite.prepare(`WITH RECURSIVE needed(id) AS (VALUES(?) UNION SELECT d.dependency_id FROM capability_resource_dependencies d JOIN needed n ON d.resource_id=n.id) SELECT id FROM needed`).all(resourceId) as { id: string }[];
@@ -93,7 +94,7 @@ export class ResourceStore {
       const resource = this.get(resourceId);
       if (resource.pathScope !== 'C') throw new ApplicationError('OWNERSHIP_CONFLICT','共享发现资源须先取得对应H目录占用');
       directory = this.directory(resource);
-      leaseId = this.lease(resourceId, ownerId, ownerKind);
+      leaseId = this.lease(resourceId, ownerId, ownerKind,options.identity);
     }).immediate());
     try { return await action(directory); }
     finally { await withResourceLock(this.root, () => this.endLease(leaseId)); }

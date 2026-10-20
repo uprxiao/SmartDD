@@ -19,6 +19,9 @@ import { MailCache } from './mail-cache';
 import { MacProcessIdentityReader,type ProcessIdentityReader } from './process-identity';
 import { MailBlobStore } from './mail-blob-store';
 import { MailDraftService } from './mail-draft-service';
+import { MailExecutionService,type MailExecutionOptions } from './mail-execution-service';
+import { MailSendDataService } from './mail-send-data-service';
+import { MailUserAuthorizations } from './mail-user-authorizations';
 import { MailReadDataService } from './mail-read-data-service';
 import { MailDraftDataService } from './draft-data-service';
 import { ZentaoDataService } from './zentao-data-service';
@@ -37,13 +40,16 @@ export class ApplicationService {
   readonly data:ApplicationBusinessDataService;
   readonly mailReads:MailReadDataService;
   readonly fileAttachments:WorkspaceAttachmentReferences;
+  readonly mailSends:MailSendDataService;
+  readonly mailAuthorizations:MailUserAuthorizations;
+  private executionPromise?:Promise<MailExecutionService>;
   readonly builtin:BuiltinPackageRegistry;
   private runs?:CapabilityRunRegistry;
   private cachePromise?:Promise<MailCache>;
   private closed=false;private closing?:Promise<void>;
   constructor(readonly store:ResourceStore,private readonly options:{
     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
-    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};changed?():void;
+    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};changed?():void;
   }){
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
@@ -53,7 +59,7 @@ export class ApplicationService {
     }});
     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
-    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads);
+    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
   }
   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
   async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();}
@@ -65,7 +71,7 @@ export class ApplicationService {
   }
   private management<T>(sender:ApplicationUiSender,appId:ApplicationId,action:string,semantics:'read'|'write',work:()=>Promise<T>,projectId?:string):Promise<T>{
     applicationIdSchema.parse(appId);if(projectId)this.options.projects.getProject(projectId);
-    return this.contexts.withManagement(sender,{appId,action,semantics,projectId},async()=>{const value=await work();if(semantics==='write'){this.contexts.invalidate();this.options.changed?.();}return value;});
+    return this.contexts.withManagement(sender,{appId,action,semantics,projectId},async()=>{const value=await work();if(semantics==='write'){this.contexts.invalidate();if(this.executionPromise)await(await this.executionPromise).invalidatePolicies();this.options.changed?.();}return value;});
   }
   setAdded(sender:ApplicationUiSender,appId:ApplicationId,added:boolean,expectedRevision:number){return this.management(sender,appId,'application.add','write',()=>this.selections.setAdded(appId,z.boolean().parse(added),z.number().int().nonnegative().parse(expectedRevision)));}
   setEnabled(sender:ApplicationUiSender,appId:ApplicationId,enabled:boolean,expectedRevision:number){return this.management(sender,appId,'application.enable','write',()=>this.selections.setGlobalEnabled(appId,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision)));}
@@ -86,6 +92,16 @@ export class ApplicationService {
   viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.list',input));}
   viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}));}
   readBusinessResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource.read',operations:['mail.draft'],semantics:'read'},context=>this.resources.read(context,input));}
+  private mailExecution():Promise<MailExecutionService>{
+    if(this.closed)return Promise.reject(new ApplicationError('CANCELED','发送服务已关闭'));if(this.executionPromise)return this.executionPromise;
+    const opening=(async()=>{const processes=this.options.processes??new MacProcessIdentityReader(join(dirname(this.options.foxmailNative),'willyou-process-identity')),identity=processes.read(process.pid);if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','无法核验发送宿主进程身份');
+      const engine=new MailExecutionService(this.store,this.drafts,this.connections,this.selections,{requireDrafts:actor=>this.contexts.requireActor(actor),requireSend:actor=>{this.contexts.sendScope(actor);},allowUiAuthorization:(actor,intent)=>this.mailAuthorizations.allowUi(actor,intent),verifyUserAction:(actor,id,intent)=>this.mailAuthorizations.verify(actor,id,intent),ownerState:owner=>processes.state({pid:owner.pid,startedAt:owner.startedAt})},{...this.options.mailSend,hostIdentity:identity,activity:(actor,id,work)=>this.contexts.retainSendActivity(actor,id,identity,work)});await engine.recover();if(this.closed){await engine.dispose();throw new ApplicationError('CANCELED','发送服务已关闭');}return engine;
+    })();this.executionPromise=opening;void opening.catch(()=>{if(this.executionPromise===opening)this.executionPromise=undefined;});return opening;
+  }
+  viewSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.get',operations:['mail.draft'],semantics:'read'},context=>this.mailSends.execute(context,'mail.send.get',{intentId}));}
+  reviewSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.review',operations:['mail.draft'],semantics:'read'},context=>this.mailSends.review(context,sender,intentId));}
+  authorizeSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.authorize',operations:['mail.send'],semantics:'write'},context=>this.mailSends.confirm(context,sender,input));}
+  cancelSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.cancel',operations:['mail.draft'],semantics:'write'},context=>this.mailSends.execute(context,'mail.send.cancel',{intentId}));}
   captureAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.capture',operations:['mail.draft'],semantics:'read'},scope=>this.fileAttachments.capture(scope,sender,input));}
   replyDraft(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reply.create',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.mail.execute(scope,'mail.reply.create',input));}
   importAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.import',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.mail.execute(scope,'mail.attachment.import',input));}
@@ -107,7 +123,7 @@ export class ApplicationService {
   mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);return cache.usage();});}
   clearMailCache(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.clear',semantics:'write'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);const result=await cache.clear(context.signal);this.options.changed?.();return result;});}
   dispose():Promise<void>{
-    if(this.closing)return this.closing;this.closed=true;this.fileAttachments.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
-    this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
+    if(this.closing)return this.closing;this.closed=true;this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
+    this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
   }
 }

@@ -1,9 +1,9 @@
 import { createServer, type Server, type Socket } from 'node:net';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ConnectionConfig } from '@shared/application-connections';
 import { prepareSmtpMessage, submitSmtp, verifySmtp, type FrozenMailInput } from '../providers/smtp';
 let server: Server, sockets: Set<Socket>, commands: string[], messages: Buffer[], port: number;
-let options: { rejectAuth?: boolean; rejectRecipient?: string; advertiseTls?: boolean; dropReceipt?: boolean };
+let options: { rejectAuth?: boolean; rejectRecipient?: string; advertiseTls?: boolean; dropReceipt?: boolean; holdReceipt?: boolean };
 const config = (mode: 'plain' | 'starttls' | 'implicit-tls' = 'plain'): Extract<ConnectionConfig, { kind: 'smtp' }> => ({ kind: 'smtp', host: '127.0.0.1', port, username: 'fixture@example.test', fromAddress: 'fixture@example.test', authMode: 'password', mode });
 const input = (): FrozenMailInput => ({ to: ['to@example.test'], cc: [], bcc: ['private@example.test'], subject: '隔离邮件', text: 'fixture body\n.dot line', messageId: '<fixed-fixture@example.test>', date: '2026-10-20T00:00:00Z', attachments: [{ filename: 'fixture.txt', contentType: 'text/plain', content: Buffer.from('isolated attachment') }] });
 const signal = () => new AbortController().signal;
@@ -17,7 +17,7 @@ beforeEach(async () => {
       while (pending.includes('\r\n')) {
         const end = pending.indexOf('\r\n'), line = pending.slice(0, end); pending = pending.slice(end + 2);
         if (data) {
-          if (line === '.') { messages.push(Buffer.from(raw.join('\r\n') + '\r\n')); raw = []; data = false; if (options.dropReceipt) socket.destroy(); else socket.write('250 2.0.0 queued fixture\r\n'); }
+          if (line === '.') { messages.push(Buffer.from(raw.join('\r\n') + '\r\n')); raw = []; data = false; if (options.dropReceipt) socket.destroy(); else if(!options.holdReceipt)socket.write('250 2.0.0 queued fixture\r\n'); }
           else raw.push(line.startsWith('..') ? line.slice(1) : line);
           continue;
         }
@@ -67,6 +67,10 @@ describe('SMTP adapter over an isolated local protocol server', () => {
     options.dropReceipt = true;
     const result = await submitSmtp(config(), 'fixture-private-password', await prepareSmtpMessage(config(), input()), signal());
     expect(result.state).toBe('unknown'); expect(result.complete).toBe(false); expect(messages).toHaveLength(1); expect(commands.filter(c => c === 'DATA')).toHaveLength(1);
+  });
+  it('drains the actual SMTP callback and owned socket when canceled while DATA receipt is withheld',async()=>{
+    options.holdReceipt=true;const controller=new AbortController(),prepared=await prepareSmtpMessage(config(),input()),pending=submitSmtp(config(),'fixture-private-password',prepared,controller.signal);await vi.waitFor(()=>expect(messages).toHaveLength(1));
+    const closed=Promise.all([...sockets].map(socket=>new Promise<void>(done=>socket.once('close',()=>done()))));controller.abort();expect(await pending).toMatchObject({state:'unknown',complete:false,errorCode:'CANCELED'});await closed;expect(sockets.size).toBe(0);expect(commands.filter(command=>command==='DATA')).toHaveLength(1);expect(messages[0]).toEqual(prepared.raw);
   });
   it('rejects changed bytes, envelope or cancellation before opening a connection', async () => {
     const prepared = await prepareSmtpMessage(config(), input()), controller = new AbortController(); controller.abort();

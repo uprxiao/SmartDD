@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createServer, type Socket } from 'node:net';
@@ -200,8 +200,8 @@ describe('durable specific mail intents and one-attempt execution', () => {
     finish(); await Promise.resolve(); expect(service.get(actor,intent.id).state).toBe('unknown'); expect(submit).toHaveBeenCalledTimes(1);
   });
   it('bounds a provider that never finishes and keeps an interrupted claimed attempt unknown on recovery', async () => {
-    const bounded = make({ submissionTimeoutMs: 20 }), first = await prepare({},bounded); await authorize(first.intent,bounded); submit.mockImplementationOnce(async () => new Promise<never>(() => {}));
-    expect((await bounded.execute(actor,first.intent.id)).state).toBe('unknown'); expect(submit).toHaveBeenCalledTimes(1);
+    const bounded = make({ submissionTimeoutMs: 20 }), first = await prepare({},bounded); await authorize(first.intent,bounded); let finish!:()=>void;const held=new Promise<void>(resolve=>finish=resolve);submit.mockImplementationOnce(async()=>{await held;throw new Error('private late provider completion');});
+    try{expect((await bounded.execute(actor,first.intent.id)).state).toBe('unknown');}finally{finish();} expect(submit).toHaveBeenCalledTimes(1);
     const interrupted = make({ checkpoint: phase => { if (phase === 'claimed') throw new Error('synthetic host exit before submission'); } }), second = await prepare({},interrupted); await authorize(second.intent,interrupted);
     await expect(interrupted.execute(actor,second.intent.id)).rejects.toThrow('synthetic host exit'); expect(service.get(actor,second.intent.id).state).toBe('executing');
     const next = make({},new ResourceStore(sqlite,join(root,'capabilities'))); expect(await next.recover()).toEqual({ recovered: [],pending: [second.intent.id] }); owner = 'stopped'; expect(await next.recover()).toEqual({ recovered: [second.intent.id],pending: [] });
@@ -213,10 +213,24 @@ describe('durable specific mail intents and one-attempt execution', () => {
     const second = await prepare(); await authorize(second.intent); submit.mockResolvedValueOnce({ state: 'server-accepted',complete: true,accepted: ['outside@example.test'],rejected: [],errorCode: null,smtpCode: 250,messageId: second.intent.review!.messageId });
     expect(await service.execute(actor,second.intent.id)).toMatchObject({ state: 'unknown',result: { errorCode: 'INVALID_RECEIPT' } });
   });
+  it('expires abandoned waiting grants only after an outside-lock process proof and preserves unknown owners',async()=>{
+    const {intent}=await prepare();await authorize(intent);const original=policy.ownerState;policy.ownerState=()=>{expect(sqlite.inTransaction).toBe(false);expect(existsSync(join(store.root,'locks/resource.lock'))).toBe(false);return owner;};
+    const next=make();expect(await next.recover()).toEqual({recovered:[],pending:[intent.id]});expect(next.get(actor,intent.id).authorized).toBe(true);owner='stopped';expect(await next.recover()).toEqual({recovered:[intent.id],pending:[]});expect(next.get(actor,intent.id)).toMatchObject({state:'stale',authorized:false,errorCode:'HOST_INTERRUPTED'});expect(drafts.get(actor,intent.draftId).activeIntentId).toBeNull();expect(sqlite.prepare('SELECT state FROM mail_send_grants').get()).toEqual({state:'revoked'});policy.ownerState=original;expect(submit).not.toHaveBeenCalled();
+  });
+  it('keeps live prepared work through same-service recovery and revokes its grant on graceful close',async()=>{
+    const {intent}=await prepare();await authorize(intent);owner='running';expect(await service.recover()).toEqual({recovered:[],pending:[intent.id]});expect(service.get(actor,intent.id).authorized).toBe(true);await service.dispose();expect(service.get(actor,intent.id)).toMatchObject({state:'stale',authorized:false,errorCode:'HOST_CLOSED'});expect(drafts.get(actor,intent.draftId).activeIntentId).toBeNull();expect(submit).not.toHaveBeenCalled();
+  });
+  it('cleans a stopped terminal producer lease by exact PID/start identity without rewriting an unknown result',async()=>{
+    const {intent}=await prepare();await authorize(intent);submit.mockResolvedValueOnce({state:'unknown',complete:false,accepted:[],rejected:[],errorCode:'PRIVATE_LOST_RECEIPT',smtpCode:null,messageId:intent.review!.messageId});await service.execute(actor,intent.id);
+    const row=sqlite.prepare('SELECT owner_pid,owner_started_at FROM mail_send_intents WHERE id=?').get(intent.id) as {owner_pid:number;owner_started_at:string};
+    sqlite.exec("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity) VALUES('retained-mail-package','application-package','hash','store','C','apps/mail/fixture','ready',1,'valid')");
+    const put=sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,'retained-mail-package','mail-send',?,'old-host',?,?,'active','now')");put.run('exact',intent.id,row.owner_pid,row.owner_started_at);put.run('different-birth',intent.id,row.owner_pid,'different process birth');
+    const next=make();expect(await next.recover()).toEqual({recovered:[],pending:[intent.id]});owner='stopped';expect(await next.recover()).toEqual({recovered:[intent.id],pending:[]});expect(sqlite.prepare('SELECT lease_id,state FROM capability_resource_leases ORDER BY lease_id').all()).toEqual([{lease_id:'different-birth',state:'active'},{lease_id:'exact',state:'released'}]);expect(next.get(actor,intent.id)).toMatchObject({state:'unknown',result:{errorCode:'PRIVATE_LOST_RECEIPT'}});expect(submit).toHaveBeenCalledOnce();
+  });
   it('rejects modified frozen bytes before claiming and closes active operations before disposal returns', async () => {
     const first = await prepare(); await authorize(first.intent); const hash = (sqlite.prepare('SELECT raw_hash FROM mail_send_intents WHERE id=?').get(first.intent.id) as { raw_hash: string }).raw_hash; writeFileSync(join(blobs.root,'blobs',hash),'tampered');
     await expect(service.execute(actor,first.intent.id)).rejects.toMatchObject({ code: 'HASH_MISMATCH' }); expect(sqlite.prepare('SELECT * FROM mail_send_executions').all()).toHaveLength(0);
-    const next = await prepare(); await authorize(next.intent); submit.mockImplementationOnce(async () => new Promise<never>(() => {})); const pending = service.execute(actor,next.intent.id); await vi.waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
-    await service.dispose(); expect((await pending).state).toBe('unknown'); await expect(service.execute(actor,next.intent.id)).rejects.toMatchObject({ code: 'CANCELED' });
+    const next = await prepare(); await authorize(next.intent); let finish!:()=>void;const held=new Promise<void>(resolve=>finish=resolve);submit.mockImplementationOnce(async()=>{await held;throw new Error('private late provider completion');});const pending = service.execute(actor,next.intent.id); await vi.waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
+    let closed=false;const closing=service.dispose().then(()=>{closed=true;});expect((await pending).state).toBe('unknown');try{expect(closed).toBe(false);}finally{finish();}await closing; await expect(service.execute(actor,next.intent.id)).rejects.toMatchObject({ code: 'CANCELED' });
   });
 });

@@ -3,6 +3,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 import { z } from 'zod';
 import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
 import type { ApplicationId, ApplicationProvider, ApplicationConnection } from '@shared/application-connections';
+import type { MailSendActor } from '@shared/mail-execution';
+import type { ProcessIdentity } from './process-identity';
 import type { MailActor } from '@shared/mail-drafts';
 import { BuiltinPackageRegistry } from './builtin-package-registry';
 import type { ApplicationConnectionService } from './connection-service';
@@ -36,6 +38,7 @@ export class ApplicationExecutionContexts {
   private readonly sharedIndexes=new WeakSet<object>();
   private readonly active=new Set<ContextRecord>();
   private readonly actors=new WeakMap<MailActor,ApplicationExecutionContext>();
+  private readonly sendActors=new WeakMap<MailSendActor,'mail.send'|'mail.draft'>();
   private readonly pending=new Set<Promise<unknown>>();
   private readonly builtin:BuiltinPackageRegistry;
   private closed=false;
@@ -63,12 +66,28 @@ export class ApplicationExecutionContexts {
     const actor=Object.freeze({projectId:context.projectId,taskId:context.taskId});this.actors.set(actor,context);return actor;
   }
   requireActor(actor:MailActor,permission='mail.draft'):void{
-    const context=this.actors.get(actor);if(!context)throw new ApplicationError('SCOPE_DENIED','业务调用者不是当前宿主签发的身份');this.assertActor(context,actor,permission);
+    const context=this.actors.get(actor);if(!context)throw new ApplicationError('SCOPE_DENIED','业务调用者不是当前宿主签发的身份');this.assertActor(context,actor,permission==='mail.draft'&&this.sendActors.get(actor as MailSendActor)==='mail.send'?'mail.send':permission);
   }
   assertActor(context:ApplicationExecutionContext,actor:MailActor,permission='mail.draft'):void{
     const current=this.actor(context,permission);
     if(actor.projectId!==current.projectId||actor.taskId!==current.taskId)throw new ApplicationError('SCOPE_DENIED','业务对象不能替换宿主作用域');
   }
+  sendActor(context:ApplicationExecutionContext,permission:'mail.send'|'mail.draft'='mail.send'):MailSendActor{
+    this.require(context,permission);if(context.scopeKind!=='project'||context.appId!=='mail'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','发送业务需要真实邮件项目');
+    const actor=Object.freeze({projectId:context.projectId,taskId:context.taskId,runId:context.runId});this.actors.set(actor,context);this.sendActors.set(actor,permission);return actor;
+  }
+  sendScope(actor:MailSendActor,permission:'mail.send'|'mail.draft'='mail.send'):ApplicationExecutionContext{
+    const context=this.actors.get(actor);if(!context||!this.sendActors.has(actor)||actor.runId!==context.runId)throw new ApplicationError('SCOPE_DENIED','发送身份不是当前宿主签发');this.require(context,permission==='mail.draft'&&this.sendActors.get(actor)==='mail.send'?'mail.send':permission);this.assertActor(context,actor,permission==='mail.draft'&&this.sendActors.get(actor)==='mail.send'?'mail.send':permission);return context;
+  }
+  assertSendOrigin(projectId:string,taskId:string|null,runId:string|null):AbortSignal|null{
+    if(runId===null){if(taskId!==null)throw new ApplicationError('SCOPE_DENIED','发送来源运行缺失');return null;}
+    const current=this.deps.assertRun(runId);if(current.run.projectId!==projectId||current.run.taskId!==taskId||!current.snapshot.packages.some(pack=>pack.appId==='mail'&&pack.allowedOperations.includes('mail.send')))throw new ApplicationError('SCOPE_DENIED','原发送运行或邮件权限已失效');return current.signal;
+  }
+  retainSendActivity(actor:MailSendActor,intentId:string,identity:ProcessIdentity,work:()=>Promise<unknown>):Promise<unknown>{
+    const context=this.sendScope(actor),application=this.builtin.assertTrusted(context.packageHash);
+    const activity=this.store.use(application.resourceId,'mail-send',intentId,()=>{this.assertActive(context);return work();},{identity});this.pending.add(activity);void activity.finally(()=>this.pending.delete(activity)).catch(()=>{});return activity;
+  }
+  async sendConnection(context:ApplicationExecutionContext):Promise<ApplicationConnection>{this.require(context,'mail.send');return this.pinConnection(context,'smtp',null,false);}
   private checkTarget(context:ApplicationExecutionContext,target:Target):void{
     if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','来源使用需要真实项目');
     const selected=this.selections.connectionSlot(context.projectId,context.appId,target.slot),current=this.connections.get(target.id);

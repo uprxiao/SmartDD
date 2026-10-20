@@ -26,13 +26,13 @@ export class ApplicationDataResources {
   }
   private provider(context:ApplicationExecutionContext,kind:string):ApplicationResourceProvider{
     const provider=this.providers.get(kind);
-    if(!provider||provider.appId!==context.appId)throw new ApplicationError('HOST_INCOMPATIBLE','当前宿主不支持该业务资源契约');this.contexts.require(context,provider.permission);return provider;
+    if(!provider||provider.appId!==context.appId)throw new ApplicationError('HOST_INCOMPATIBLE','当前宿主不支持该业务资源契约');if(provider.kind==='mail-send-review-v1'){try{this.contexts.require(context,provider.permission);}catch{this.contexts.require(context,'mail.send');}}else this.contexts.require(context,provider.permission);return provider;
   }
   async register(context:ApplicationExecutionContext,input:ApplicationResourceBacking,mediaType:string,bytes:Uint8Array):Promise<ApplicationResourceRef>{
     const parsed=backingSchema.safeParse(input);if(!parsed.success||!(bytes instanceof Uint8Array)||!mediaType||mediaType.length>200||/[\x00-\x1f\x7f]/.test(mediaType))throw new ApplicationError('INVALID_INPUT','业务资源引用字段无效');
-    const backing=parsed.data,provider=this.provider(context,backing.kind),actor=this.contexts.actor(context,provider.permission),hash=digest(bytes),size=bytes.byteLength;
+    const backing=parsed.data,provider=this.provider(context,backing.kind),actor=this.contexts.actor(context,provider.kind==='mail-send-review-v1'&&context.allowedOperations.includes('mail.send')?'mail.send':provider.permission),hash=digest(bytes),size=bytes.byteLength;
     return withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
-      this.contexts.require(context,provider.permission);
+      this.provider(context,backing.kind);
       const old=this.store.sqlite.prepare('SELECT * FROM application_data_resources WHERE project_id=? AND app_id=? AND backing_kind=? AND object_id=? AND object_revision=? AND part=? AND data_contract_major=?').get(actor.projectId,context.appId,backing.kind,backing.objectId,backing.objectRevision,backing.part,provider.contractMajor) as ResourceRow|undefined;
       if(old){if(old.content_hash!==hash||old.byte_size!==size||old.media_type!==mediaType||old.permission!==provider.permission)throw new ApplicationError('HASH_MISMATCH','同一业务修订已有其他资源内容，未覆盖原引用');return{id:old.resource_id,revision:old.content_hash,mediaType:old.media_type,size:old.byte_size};}
       const id=randomUUID();this.store.sqlite.prepare('INSERT INTO application_data_resources VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(id,actor.projectId,context.appId,backing.kind,backing.objectId,backing.objectRevision,backing.part,provider.contractMajor,provider.permission,hash,size,mediaType,context.packageHash,context.operationId,new Date().toISOString());return{id,revision:hash,mediaType,size};
@@ -56,7 +56,7 @@ export class ApplicationDataResources {
     if(row.content_hash!==resource.revision||row.byte_size!==resource.size||row.media_type!==resource.mediaType)throw new ApplicationError('HASH_MISMATCH','资源引用不能替换原内容修订或类型');
     if(row.byte_size>limit)throw new ApplicationError('TOO_LARGE','业务资源超过附件导入预算');
     const bytes=Buffer.from(await provider.read(context,{kind:row.backing_kind,objectId:row.object_id,objectRevision:row.object_revision,part:row.part}));
-    this.contexts.require(context,provider.permission);
+    this.provider(context,row.backing_kind);
     if(bytes.length!==row.byte_size||digest(bytes)!==row.content_hash)throw new ApplicationError('HASH_MISMATCH','原业务资源缺失或内容已变化');
     return bytes;
   }
