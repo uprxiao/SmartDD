@@ -54,7 +54,7 @@ if (process.platform === 'darwin') {
   const capabilityIndex = JSON.parse(fs.readFileSync(path.join(resources, 'capability-bundles/index.json'), 'utf8'));
   assert.equal(capabilityIndex.schema, 'willyou-capability-bundles-v1', 'Packaged capability bundle index');
   assert.equal(capabilityIndex.build.appVersion, expectedVersion, 'Capability resources match App version');
-  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId).sort(), ['claude-code', 'codex'], 'Both target Agent adapters packaged');
+  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'codex@1.0.0', 'codex@1.1.0'], 'Both original and legacy-preserving Agent adapters packaged');
   assert.deepEqual(capabilityIndex.apps.map(a => a.appId).sort(), ['mail', 'zentao'], 'Both built-in application packages packaged');
   for (const record of [...capabilityIndex.adapters, ...capabilityIndex.runtimes, ...capabilityIndex.apps]) assert(fs.existsSync(path.join(resources, 'capability-bundles', record.path)), 'Indexed capability resource directory');
   for (const notice of ['mcp-server-LICENSE.txt', 'mcp-core-LICENSE.txt', 'zod-LICENSE.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10/bridge', notice)), 'Packaged bridge library notice');

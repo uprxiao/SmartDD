@@ -102,7 +102,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     return rows.map(({appId})=>{const active=this.applications.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','选用应用尚无可用的默认版本');return{appId,packageHash:active.packageHash};});
   }
   private createSnapshot(input:TaskLaunchInput,native:NativeLaunchContext|undefined,generation:string):CapabilitySessionSnapshotV2{
-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner);
+    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner&&a.version==='1.0.0');
     if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本版本未准备此Agent适配资源');
     const skillPath=(name:string)=>join(runner==='codex'?join(canonicalFuturePath(input.home),'.agents/skills'):join(this.support.store.root,'sessions',input.taskId,'claude/plugin/skills'),name,'SKILL.md');
     const appMcp=applicationMcpServerName(digest(input.taskId)),bindings=this.bindings(input.projectId,this.selectedApps(input.projectId).map(a=>a.appId));
@@ -176,7 +176,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
   private async prepareNativeHistory(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner);if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
+    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner&&a.version==='1.0.0');if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
     const collection=await catalog.snapshot(),knownVersion=native&&this.support.adapters.get(adapter.hash).metadata.cliVersions.includes(native.version);
     if(runner==='codex'&&collection.entries.length&&(!native||unavailable||!knownVersion))throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','尚不能保留此原生配置并隔离共享应用Skill，未改写原任务');
     const record=this.support.store.sqlite.prepare("SELECT snapshot_hash AS hash FROM capability_session_snapshots WHERE task_id=? AND schema_version=0 AND retention_state='hold'").get(input.taskId) as {hash:string}|undefined;if(!record)throw new ApplicationError('SESSION_ON_HOLD','缺少原历史保留依据');

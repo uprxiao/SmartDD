@@ -1,0 +1,33 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-agent-load.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts (27 tests | 2 failed) 4712ms
+     × rejects a current-format own projection whose reference is no longer authoritative 268ms
+     × rejects a current-format own projection whose projection-state is no longer authoritative 282ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a current-format own projection whose reference is no longer authoritative
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a current-format own projection whose projection-state is no longer authoritative
+AssertionError: expected [Function] to throw an error
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:57:89
+     55|   if(kind==='projection-state')sqlite.prepare("UPDATE capability_resou…
+     56|   if(kind==='source-state')sqlite.prepare("UPDATE capability_resources…
+     57|   const before=hashes();expect(()=>adapters.planLegacy(value.adapter.h…
+       |                                                                                         ^
+     58|  });
+     59|  it.each(['plugin','skill','mcp'] as const)('does not replace or renam…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 25 passed (27)
+   Start at  02:45:06
+   Duration  5.19s (transform 229ms, setup 0ms, import 393ms, tests 4.71s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

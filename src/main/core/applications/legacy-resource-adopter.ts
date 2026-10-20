@@ -1,25 +1,32 @@
-import { lstatSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { closeSync,constants,fstatSync,lstatSync,openSync,readSync,readdirSync } from 'node:fs';
+import { dirname, join,relative } from 'node:path';
 import { ApplicationError } from '@shared/applications';
 import { treeHash } from '../capabilities/assets';
-import { readOwnedTree, writeOwnedTree } from '../capabilities/files';
-import { fileNames, ensureStoreDirectory } from './package-files';
+import { writeOwnedTree } from '../capabilities/files';
+import { ensureStoreDirectory } from './package-files';
 import type { ResourceRecord, ResourceStore } from './resource-store';
+/** Read legacy bytes without changing the schema1 marker, names, paths or hash algorithm. */
+export function readLegacyOwnedTree(root:string,expectedHash:string):Record<string,string>{
+ try{
+  const files:Record<string,string>=Object.create(null);let count=0,total=0,visited=0;
+  const walk=(directory:string,depth:number)=>{
+   const dir=lstatSync(directory);if(!dir.isDirectory()||dir.isSymbolicLink()||depth>32||++visited>4096)throw Error('legacy directory');
+   for(const name of readdirSync(directory)){
+    const path=join(directory,name),stat=lstatSync(path);if(stat.isSymbolicLink()||(!stat.isDirectory()&&!stat.isFile()))throw Error('legacy file');if(stat.isDirectory()){walk(path,depth+1);continue;}
+    if(++count>4096||stat.nlink!==1||(stat.mode&0o111)!==0||stat.size>4*1024*1024||(total+=stat.size)>32*1024*1024)throw Error('legacy budget/ownership');
+    const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);try{const before=fstatSync(fd);if(before.dev!==stat.dev||before.ino!==stat.ino||before.size!==stat.size||before.ctimeMs!==stat.ctimeMs)throw Error('legacy changed');const buffer=Buffer.alloc(stat.size+1);let length=0;while(length<buffer.length){const n=readSync(fd,buffer,length,buffer.length-length,null);if(!n)break;length+=n;}const bytes=buffer.subarray(0,length),after=fstatSync(fd),text=bytes.toString('utf8');if(length!==stat.size||after.size!==stat.size||after.ino!==stat.ino||after.mtimeMs!==stat.mtimeMs||after.ctimeMs!==stat.ctimeMs||!Buffer.from(text).equals(bytes))throw Error('legacy changed bytes');files[relative(root,path)]=text;}finally{closeSync(fd);}
+   }
+  };walk(root,0);const marker=JSON.parse(files['.smartdd-owned.json']);if(marker.owner!=='SmartDD'||marker.schema!==1||Object.keys(marker).length!==2)throw Error('legacy marker');delete files['.smartdd-owned.json'];if(treeHash(files)!==expectedHash)throw Error('legacy hash');return files;
+ }catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4完整资源或归属无法核验，不能从当前版本猜测补齐');}
+}
+
 /** Preserve the original M4 paths, bytes, marker and legacy-tree-v1 algorithm. */
 export class LegacyCapabilityResourceAdopter {
   constructor(readonly store: ResourceStore) {}
   private read(relative: string,expectedHash: string): Record<string,string> {
     ensureStoreDirectory(this.store.root,dirname(relative)); return this.readDirectory(join(this.store.root,relative),expectedHash);
   }
-  private readDirectory(root: string,expectedHash: string): Record<string,string> {
-    try {
-      const names = fileNames(root);
-      if (!names.includes('.smartdd-owned.json') || names.some(n => lstatSync(join(root,n)).nlink !== 1)) throw new Error('legacy ownership');
-      const marker = JSON.parse(readFileSync(join(root,'.smartdd-owned.json'),'utf8')); if (marker.owner !== 'SmartDD' || marker.schema !== 1 || Object.keys(marker).length !== 2) throw new Error('legacy marker');
-      const files = readOwnedTree(root);
-      if (Object.entries(files).some(([path,text]) => !Buffer.from(text,'utf8').equals(readFileSync(join(root,path)))) || treeHash(files) !== expectedHash) throw new Error('legacy full hash'); return files;
-    } catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4完整资源或归属无法核验，不能从当前版本猜测补齐'); }
-  }
+  private readDirectory(root:string,expectedHash:string):Record<string,string>{return readLegacyOwnedTree(root,expectedHash);}
   async adoptStandard(skillId: string,hash: string): Promise<ResourceRecord> { if (!/^[a-z][a-z0-9-]{0,63}$/.test(skillId) || !/^[a-f0-9]{64}$/.test(hash)) throw new ApplicationError('INVALID_INPUT','标准Skill身份无效'); return this.adopt('standard-skill',`standard-skill:${skillId}:${hash}`,`packages/${skillId}/${hash}`,hash); }
   async adoptRuntime(hash: string): Promise<ResourceRecord> { if (!/^[a-f0-9]{64}$/.test(hash)) throw new ApplicationError('INVALID_INPUT','历史运行资源摘要无效'); return this.adopt('legacy-runtime','legacy-runtime:' + hash,'runtime/' + hash,hash); }
   private async adopt(kind: string,resourceId: string,relativePath: string,hash: string): Promise<ResourceRecord> {
