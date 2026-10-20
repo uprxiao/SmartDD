@@ -1,7 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { ApplicationError } from '@shared/applications';
-import { z } from 'zod';
 import type { AgentLoadRequest } from '@shared/agent-adapters';
 import { applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import type { RuntimeSkill, RuntimeSnapshot } from '@shared/capabilities';
@@ -21,7 +20,7 @@ import { MacProcessIdentityReader, type ProcessIdentityReader } from './process-
 import { MacUnixPeerIdentityReader, type UnixPeerIdentityReader } from './unix-peer-identity';
 import { inspectNativeLaunch, type NativeLaunchContext, type TaskLaunchInput } from './native-launch-context';
 import { canonicalJson, digest } from './manifest';
-const legacyRuntimeMetadata=z.object({runId:z.uuid(),projectId:z.string().min(1).max(128),configVersion:z.number().int().nonnegative(),configHash:z.string().regex(/^[a-f0-9]{64}$/),manifestPath:z.string().min(1).max(4096),auditPath:z.string().min(1).max(4096),skills:z.array(z.object({skillId:z.string(),name:z.string(),versionId:z.string(),version:z.string(),hash:z.string().regex(/^[a-f0-9]{64}$/),path:z.string(),enabled:z.boolean(),loaded:z.literal('unverified')}).strict()).max(64),mcp:z.array(z.object({name:z.string(),loaded:z.literal('unverified')}).strict()).max(16),selfCheck:z.object({status:z.enum(['pending','passed','failed']),issues:z.array(z.string().max(256)).max(256),at:z.number().nullable()}).strict()}).strict();
+import {legacyRuntimeMetadata} from './legacy-task-evidence';
 interface ActiveLaunch {run:OwnedCapabilityRun;hold?:DiscoveryReservation;runtime?:PreparedRuntime;releasing?:Promise<void>}
 export interface TaskCapabilityLauncherOptions {
   helper: string;
