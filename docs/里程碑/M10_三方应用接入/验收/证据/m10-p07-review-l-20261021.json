@@ -1,0 +1,199 @@
+{
+  "schema": "m10-p07-review-l-checkpoint-v1",
+  "recordedAt": "2026-10-20T17:53:04.975942+00:00",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "baseCommit": "75e06bfb87996ca7434bc7b2715fe49aa621efe4",
+  "requirements": "R1.6 incl12.21; no scope reduction",
+  "implementation": "P07 reuses active Agent intent, UI confirms only, original run executes; existing review close preserves original; manual new UI path retained",
+  "sourceRecovery": "p07-review-l-20261021/final-source.json",
+  "buildSource": "p07-review-l-20261021/build-source.json",
+  "software": {
+    "files": 5,
+    "passed": 108,
+    "failed": 0,
+    "log": "p07-review-l-20261021/related-final.txt",
+    "subsets": [
+      {
+        "files": 4,
+        "passed": 34
+      },
+      {
+        "files": 1,
+        "passed": 11
+      }
+    ],
+    "overlap": "subsets included in 108; overlaps prior K473; do not add",
+    "typecheck": "passed",
+    "red": {
+      "frontendBefore": {
+        "failed": 3,
+        "passed": 8,
+        "log": "frontend-before.txt"
+      },
+      "firstImplementation": {
+        "failed": 3,
+        "passed": 8,
+        "reason": "fixture queried review button before async existing-send query settled; wait for condition, original business assertions retained",
+        "log": "frontend-first.txt"
+      },
+      "sourceBoundary": "initial-source base bytes plus red-source test; postimplementation source unchanged through build except added tests"
+    }
+  },
+  "integrationBoundary": "actual immutable mail package, host services/SQLite/private SMTP; synthetic owned CLI identity and fake cipher; no actual Agent/model/native secure storage acceptance",
+  "prototype": {
+    "build": "passed; existing >500kB warning",
+    "setup": "npm ci --offline --ignore-scripts from existing package-lock; pnpm attempt rejected absent pnpm lock, initial build had no node_modules",
+    "headless": "p07-review-l-20261021/prototype-headless/result.json",
+    "checks": 4,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "viewport": [
+      1440,
+      1000
+    ],
+    "screenshotsInspected": true,
+    "fixtureSelectorUsed": true,
+    "notPackagedApp": true,
+    "nativeFocus": false
+  },
+  "package": {
+    "recordedAt": "2026-10-20T17:50:10.667037+00:00",
+    "appPath": "/private/tmp/m10-p07-review-l-package-20261021/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "system": "macOS 26.6.1",
+    "arch": "arm64",
+    "sourceUnchanged": true,
+    "sourceEntries": 4,
+    "asar": {
+      "sha256": "9885a32f8727c43036607f7feb3ebde419a62046b2d06d64b2c624851cbc7deb",
+      "bytes": 93205021
+    },
+    "native": {
+      "native/willyou-files": {
+        "sha256": "75049c1606d6303f8bf37df829740440a18c5f67d2765b74ce6afdae695d8b82",
+        "bytes": 385168
+      },
+      "native/smartdd-voice": {
+        "sha256": "0c2480cfcce5516e7cd92bb7112b5670b672fb524bcc10c1dcabaedb6bae7bfd",
+        "bytes": 75264
+      },
+      "native/willyou-foxmail": {
+        "sha256": "afa916c9b90304768df5a17e1e63142e940f8e0b946bfc3724735f716d281a80",
+        "bytes": 76688
+      },
+      "native/willyou-process-identity": {
+        "sha256": "fac5446e2c21bfb71888c5f69b36321e512e65999901fb745558a69b268fc9a0",
+        "bytes": 55136
+      }
+    },
+    "nativeModules": {
+      "app.asar.unpacked/node_modules/@parcel/watcher-darwin-arm64/watcher.node": {
+        "sha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+        "bytes": 342368
+      },
+      "app.asar.unpacked/node_modules/better-sqlite3/bin/darwin-arm64-146/better-sqlite3.node": {
+        "sha256": "bf93bd6667ca8f1aa5e6395842464780d4cd1bbd196d75ea1e181b05a4c0dceb",
+        "bytes": 1973040
+      },
+      "app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node": {
+        "sha256": "823ff66e5f135a5c5fe6540e43f6fb8cd82596f13796d98e7379ec8100b6d559",
+        "bytes": 1973040
+      },
+      "app.asar.unpacked/node_modules/better-sqlite3/build/Release/test_extension.node": {
+        "sha256": "1fde025a336912035af8d023505f29bfd7a0ba731dd74da6b798ebe31a546af1",
+        "bytes": 34928
+      },
+      "app.asar.unpacked/node_modules/node-pty/bin/darwin-arm64-146/node-pty.node": {
+        "sha256": "61b7383f66fb0b2550d6ca195e4866a6d0d583c0229c1d15f3bd8528ff960f16",
+        "bytes": 104304
+      },
+      "app.asar.unpacked/node_modules/node-pty/build/Release/pty.node": {
+        "sha256": "87a9e0f0159b3e89d4f1e44c6819e483914b76bc4c4a3830032c6e456d8dda04",
+        "bytes": 104288
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/darwin-arm64/pty.node": {
+        "sha256": "ca3d8d9dc259998c1ae4391fc88ef66503a43e4982b82aceddb6c01a6b0027a9",
+        "bytes": 103152
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/darwin-x64/pty.node": {
+        "sha256": "f6737ec9e9a1551b071ccf6b5b10999e12674817656f37be78e8d5be214cc5a7",
+        "bytes": 71984
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/win32-arm64/conpty.node": {
+        "sha256": "25a06916c5cb1a3aac7acc401424d8e6a6a9e8eea441a3604cd657a0619555cd",
+        "bytes": 302592
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/win32-arm64/conpty_console_list.node": {
+        "sha256": "fda76b16afb3bf9a4de085c943b5fb4138ecbeb08e8254c09d5555ea5426bd4e",
+        "bytes": 122368
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/win32-arm64/pty.node": {
+        "sha256": "eae1266e3c34f4c7b67a756a6ff342b699847deaf29c944b7a6bed190ec61982",
+        "bytes": 293376
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty.node": {
+        "sha256": "ee8f4e6f4dad71939eecfda11de249400e34bfefe4c8b48af13f3b5476f4035b",
+        "bytes": 312320
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty_console_list.node": {
+        "sha256": "879dd94cfc79f1e263a00077597ae9448a5394b7d193381aaa50d992a1f91090",
+        "bytes": 134656
+      },
+      "app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/pty.node": {
+        "sha256": "ae323edd0835ee7b9e18cc96a7b2bb4b8173ff768317d178af2788406feb71ff",
+        "bytes": 303104
+      }
+    }
+  },
+  "packagedBuild": {
+    "mainSha256": "2300a36a6fd9c90e7b865a0fe8a864c2c5140195f52625c497ad7708db5bcb3b",
+    "rendererFilesVerified": 320,
+    "rendererFilesSha256Inventory": "p07-review-l-20261021/packaged-main.json",
+    "mainAndAllRendererMatchesOut": true,
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "nativeLoadChecks": [
+      "sqlite",
+      "pty",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ],
+    "guiExecuted": false
+  },
+  "unresolved": "K management UI connection.test Input dispatch timeout; later native diagnostic yielded before encrypt/decrypt; no root cause assigned, no regression pass claimed",
+  "isolation": {
+    "dailyCredentials": false,
+    "actualModels": false,
+    "externalBusinessSend": false,
+    "M9Mutation": false,
+    "ownHeadlessChromeOnly": true,
+    "ownStaticServerClosed": true,
+    "foregroundReacquire": false,
+    "staleOwnGitRead": "unbounded readonly status inspected as own M10 cwd; SIGTERM sent only to own PID17538, no M9 process touched; exact manifests used for checkpoint Git staging"
+  },
+  "formalCaseLedger": {
+    "total": 72,
+    "fullyPassed": 1,
+    "fullyPassedIds": [
+      "M10-T42"
+    ],
+    "thisCheckpointAddsFullCases": 0,
+    "partialEvidenceIds": [
+      "M10-T07",
+      "M10-T18",
+      "M10-T19"
+    ]
+  },
+  "goal": "active",
+  "release": "not published; no merge/main/push/tag",
+  "next": [
+    "M4 original path/native Skill name/MCP identity migration",
+    "complete config and C/H maintenance",
+    "broader unique context/names and actual Agents/Foxmail",
+    "native-focus gap: diagnose connection timeout then run P07 real App and remaining system cases"
+  ]
+}
