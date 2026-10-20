@@ -93,7 +93,7 @@ export class AgentAdapterRegistry {
     const input=parsed.data,installed=this.verify(hash),meta=installed.metadata;
     if(meta.projectionFormatVersion!==2||meta.agentId!==input.native.runner)throw new ApplicationError('HOST_INCOMPATIBLE','原M4来源必须使用相应的旧格式适配器');
     if(!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64')||!meta.cliVersions.includes(input.cliVersion))throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此原生版本尚未验证旧能力加载机制');
-    const prepared=legacyPlannerInput(this.store,input);
+    const prepared=legacyPlannerInput(this.store,input,installed.hash);
     try{const module=loader(join(this.store.root,installed.resource.relativePath,meta.entry)) as {api:number;agentId:string;version:string;prepare(value:unknown):unknown};if(module.api!==2||module.agentId!==meta.agentId||module.version!==meta.version||typeof module.prepare!=='function')throw Error('legacy adapter');const plan=agentLoadPlanSchema.parse(module.prepare(prepared));if(plan.agentId!==meta.agentId)throw Error('legacy agent');return plan;}
     catch(error){if((error as {code?:string}).code==='AGENT_CAPABILITY_NAME_CONFLICT')throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停配置与原M4选择冲突，保留原配置');throw new ApplicationError('HOST_INCOMPATIBLE','原M4适配器无法生成本次加载计划');}
   }

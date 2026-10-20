@@ -21,11 +21,14 @@ export const capabilitySessionSnapshotSchema = z.object({
   }).strict()).max(32),
   standardSkills: z.array(z.object({ skillId: name,versionId: z.string().min(1).max(512),hash,hashAlgorithm: z.literal('legacy-tree-v1'),projectionPath: absolute.refine(p => p.endsWith('/SKILL.md')) }).strict()).max(64),
   mcp: z.array(z.object({ kind: z.enum(['applications','legacy-project-context']),serverName: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/),protocolMajor: z.number().int().positive(),runtimeHash: hash }).strict()).max(2),
+  legacyBinding: z.object({ sourceSnapshotHash: hash,sourceRecordHash: hash,identityHash: hash,manifestHash: hash,logicalEvidenceHash: hash }).strict().optional(),
   provenance: z.enum(['created','migrated-known-legacy']),
 }).strict().superRefine((snapshot,ctx) => {
   const fail = (message: string) => ctx.addIssue({ code: 'custom',message });
   if (Object.keys(snapshot.adapterBinding.nativeToolNames).length > 512 || new Set(Object.values(snapshot.adapterBinding.nativeToolNames)).size !== Object.keys(snapshot.adapterBinding.nativeToolNames).length) fail('原生工具名称映射重复或超过预算');
   if (snapshot.provenance === 'migrated-known-legacy' && snapshot.packages.length) fail('既有M4历史不能自动增加M10应用');
+  if (snapshot.legacyBinding && (snapshot.provenance !== 'migrated-known-legacy' || snapshot.adapterBinding.projectionFormatVersion !== 2)) fail('原M4来源绑定仅属于旧格式迁移');
+  if (snapshot.adapterBinding.projectionFormatVersion === 2 && !snapshot.legacyBinding) fail('旧格式迁移须固定原M4来源依据');
   if (snapshot.adapterBinding.id !== snapshot.runner) fail('Agent适配器与原生运行器不同');
   if (new Set(snapshot.packages.map(p => p.appId)).size !== snapshot.packages.length) fail('同一应用不能在会话中选择两个版本');
   if (new Set(snapshot.standardSkills.map(s => s.skillId)).size !== snapshot.standardSkills.length) fail('同一标准Skill不能选择两个版本');

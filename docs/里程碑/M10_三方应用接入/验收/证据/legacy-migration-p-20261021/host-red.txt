@@ -1,0 +1,35 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (29 tests | 2 failed) 31666ms
+     × keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending 315ms
+     × keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending 388ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending
+ApplicationError: 此投影入口只处理有新会话依据的Claude能力；旧历史不猜测重建
+ ❯ SessionCapabilityProjector.claude src/main/core/applications/session-projector.ts:52:87
+
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:152:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending
+ApplicationError: 原共享投影未按相同身份登记
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:151:311
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 27 passed (29)
+   Start at  03:04:26
+   Duration  32.25s (transform 350ms, setup 0ms, import 522ms, tests 31.67s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

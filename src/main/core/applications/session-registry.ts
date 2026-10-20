@@ -10,6 +10,7 @@ import type { ResourceRecord, ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import { PackageRegistry } from './package-registry';
 import { RuntimeRegistry } from './runtime-registry';
+import {assertLegacySessionSource} from './legacy-session-source';
 interface SnapshotRow { task_id: string;schema_version: number;snapshot_json: string;snapshot_hash: string;created_at: string;legacy_status: string;retention_state: 'active' | 'tombstone' | 'hold' }
 interface IdentityRow { task_id: string;runner: string;identity_root: string;session_id: string | null;cwd: string;discovery_home: string;selection_hash: string }
 export interface SessionRegistryDeps {
@@ -20,7 +21,7 @@ export interface SessionRegistryDeps {
 }
 export interface StoredCapabilitySession { snapshot: CapabilitySessionSnapshotV2;pointer: CapabilitySessionPointer;selectionHash: string;discoveryHome: string;retention: SnapshotRow['retention_state'];legacyStatus: string }
 const SELECT = 'SELECT * FROM capability_session_snapshots WHERE task_id=?';
-const selectionHash = (snapshot: CapabilitySessionSnapshotV2): string => digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
+export const selectionHash = (snapshot: CapabilitySessionSnapshotV2): string => digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
 export function canonicalFuturePath(path: string): string {
   if (!isAbsolute(path)) throw new ApplicationError('INVALID_INPUT','原生身份目录必须为绝对路径');
   const remainder: string[] = []; let parent = resolve(path);
@@ -41,6 +42,7 @@ export class CapabilitySessionRegistry {
     const requested = new Map<string,{ kind: string;hash: string }>();
     const add = (id: string,kind: string,hash: string) => { const previous = requested.get(id); if (previous && (previous.kind !== kind || previous.hash !== hash)) throw new ApplicationError('SNAPSHOT_CORRUPT','快照资源身份冲突'); requested.set(id,{ kind,hash }); };
     add(`agent-adapter:${snapshot.runner}:${snapshot.adapterBinding.hash}`,'agent-adapter',snapshot.adapterBinding.hash);
+    if(snapshot.legacyBinding){const original=assertLegacySessionSource(this.store,snapshot);for(const skill of original.snapshot.skills)add(`standard-skill:${skill.skillId}:${skill.hash}`,'standard-skill',skill.hash);add('legacy-runtime:'+original.evidence.runtimeHash,'legacy-runtime',original.evidence.runtimeHash);}
     for (const p of snapshot.packages) { add('app:' + p.packageHash,'application-package',p.packageHash); add('runtime:' + p.runtimeHash,'runtime',p.runtimeHash); }
     for (const s of snapshot.standardSkills) add(`standard-skill:${s.skillId}:${s.hash}`,'standard-skill',s.hash);
     for (const m of snapshot.mcp) add((m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash,m.kind === 'applications' ? 'runtime' : 'legacy-runtime',m.runtimeHash);
@@ -72,6 +74,7 @@ export class CapabilitySessionRegistry {
     try {
       const snapshot = capabilitySessionSnapshotSchema.parse(JSON.parse(row.snapshot_json)), identity = this.store.sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId) as IdentityRow | undefined;
       if (snapshot.taskId !== taskId || digest(canonicalJson(snapshot)) !== row.snapshot_hash || !identity || identity.runner !== snapshot.runner || identity.session_id !== snapshot.native.sessionId || identity.cwd !== snapshot.native.cwd || identity.selection_hash !== selectionHash(snapshot)) throw new Error('snapshot integrity');
+      if(snapshot.legacyBinding&&identity.discovery_home!==assertLegacySessionSource(this.store,snapshot).identity.home)throw new Error('legacy discovery identity');
       const actual = this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId) as SessionResourceReference[];
       const expected = this.expectedSources(snapshot);
       if ([...expected].some(([id,s]) => !actual.some(r => r.refId === id && r.refKind === s.kind && r.refHash === s.hash)) || actual.some(r => !isPackagePath(r.relativePath) || (!expected.has(r.refId) && !['session-projection','agent-projection','legacy-runtime'].includes(r.refKind)))) throw new Error('reference integrity');
@@ -126,6 +129,7 @@ export class CapabilitySessionRegistry {
       if (!parsed.success) throw new ApplicationError('INVALID_INPUT','原生会话ID无效'); const next = parsed.data;
       if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=? AND task_id<>?').get(native.runner,identity.identity_root,native.sessionId,taskId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已属于另一任务');
       const bytes = canonicalJson(next), hash = digest(bytes), now = new Date().toISOString();
+      if(snapshot.legacyBinding){const original=assertLegacySessionSource(this.store,snapshot);const result=this.store.sqlite.prepare("UPDATE capability_legacy_migration_preparations SET bound_native_session_id=?,updated_at=? WHERE task_id=? AND source_snapshot_hash=? AND state='migrated' AND bound_native_session_id IS NULL").run(native.sessionId,now,taskId,original.row.source_snapshot_hash);if(result.changes!==1)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原M4迁移的原生身份已经绑定');}
       this.store.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,snapshot_hash=? WHERE task_id=? AND snapshot_hash=?').run(bytes,hash,taskId,expectedHash);
       this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_snapshot_versions(snapshot_hash,task_id,snapshot_json,selection_hash,created_at) VALUES(?,?,?,?,?)').run(hash,taskId,bytes,selectionHash(next),now);
       this.store.sqlite.prepare('UPDATE capability_session_identities SET session_id=?,updated_at=? WHERE task_id=?').run(native.sessionId,now,taskId);

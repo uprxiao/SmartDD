@@ -1,0 +1,180 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts -t 'pins the original' --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (31 tests | 2 failed | 29 skipped) 334ms
+     × pins the original retained identity bytes independently of mutable registry rows 191ms
+     × pins the original retained record bytes independently of mutable registry rows 142ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > atomic known-M4 schema conversion; no original owner claim or native activation > pins the original retained identity bytes independently of mutable registry rows
+AssertionError: promise resolved "{ snapshot: { schema: 2, …(13) }, …(5) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "discoveryHome": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-n7fmq6/different-home",
++   "legacyStatus": "migrated-known-legacy",
++   "pointer": {
++     "schema": 2,
++     "snapshotHash": "5361e13cfdcc891e9b84b92fca6004c92816edb39f9d6ce12931c5db754edff3",
++     "taskId": "4ebec158-7d24-4eb1-a323-13c6f932c9f2",
++   },
++   "retention": "active",
++   "selectionHash": "ce81100978a252a4dcdfc6fba6ac0325c5e4a4f04f0c43e6e114b466c5bdc9c5",
++   "snapshot": {
++     "adapterBinding": {
++       "hash": "7284d69ee91989050dbcae769df0db4b6465620a0e6bac2fce04382cf2f54478",
++       "id": "claude-code",
++       "nativeToolNames": {},
++       "projectionFormatVersion": 2,
++       "version": "1.1.0",
++     },
++     "agentAtCreation": {
++       "adapterRevision": 2,
++       "version": "2.1.303",
++     },
++     "catalogGeneration": "1131e3db9002565a5e03d8d899161671ee437541aff72bd5503465c55b12ce45",
++     "createdAt": "2026-10-20T19:11:23.371Z",
++     "legacyBinding": {
++       "logicalEvidenceHash": "209c9ee57096636538253651f48e08dfce451b1ce45f012d803634dc1365d621",
++       "manifestHash": "5c75a20de2789c2fceec54f17d46a1b880e0e132ca0c013a4d4fb2ebcdafeb48",
++       "sourceSnapshotHash": "cd6fc023e028605479491f64dbd7d4af5dc26257fc5a2983ecd823803692938a",
++     },
++     "mcp": [
++       {
++         "kind": "legacy-project-context",
++         "protocolMajor": 1,
++         "runtimeHash": "70c32e91da49eb11fb26ac32d000a45bd1df1de05cbea8b899ec3fa216ced795",
++         "serverName": "smartdd_project_4cab596c58b5",
++       },
++     ],
++     "native": {
++       "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-n7fmq6/project",
++       "sessionId": "5245d2b9-827f-421c-8d83-60f4d7154456",
++       "stateRoot": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-n7fmq6/home/.claude",
++     },
++     "packages": [],
++     "projectId": "f81a46de-2cd3-425a-924d-12207d8331ad",
++     "provenance": "migrated-known-legacy",
++     "runner": "claude-code",
++     "schema": 2,
++     "standardSkills": [
++       {
++         "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         "hashAlgorithm": "legacy-tree-v1",
++         "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-n7fmq6/capabilities/runs/f81a46de-2cd3-425a-924d-12207d8331ad/4ebec158-7d24-4eb1-a323-13c6f932c9f2/4cab596c-58b5-4c7d-af37-73a14e3d102d/plugin/skills/project-db-diagnostics/SKILL.md",
++         "skillId": "project-db-diagnostics",
++         "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++       },
++       {
++         "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         "hashAlgorithm": "legacy-tree-v1",
++         "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-n7fmq6/capabilities/runs/f81a46de-2cd3-425a-924d-12207d8331ad/4ebec158-7d24-4eb1-a323-13c6f932c9f2/4cab596c-58b5-4c7d-af37-73a14e3d102d/plugin/skills/remote-password-ssh/SKILL.md",
++         "skillId": "remote-password-ssh",
++         "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++       },
++     ],
++     "taskId": "4ebec158-7d24-4eb1-a323-13c6f932c9f2",
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:100:32
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > atomic known-M4 schema conversion; no original owner claim or native activation > pins the original retained record bytes independently of mutable registry rows
+AssertionError: promise resolved "{ snapshot: { schema: 2, …(13) }, …(5) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "discoveryHome": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-Uc3hOS/home",
++   "legacyStatus": "migrated-known-legacy",
++   "pointer": {
++     "schema": 2,
++     "snapshotHash": "74ba2f2a2a236f6678ed5bdc25cf4d54e3d0f3065e62a7d95557e2bcf4b0666a",
++     "taskId": "62d79482-9aee-4209-9b62-3b90015fc9e7",
++   },
++   "retention": "active",
++   "selectionHash": "96e1da9f0fe54b1301e5085184b5c2679291703405ce3bddd60e3bc07da282f0",
++   "snapshot": {
++     "adapterBinding": {
++       "hash": "7284d69ee91989050dbcae769df0db4b6465620a0e6bac2fce04382cf2f54478",
++       "id": "claude-code",
++       "nativeToolNames": {},
++       "projectionFormatVersion": 2,
++       "version": "1.1.0",
++     },
++     "agentAtCreation": {
++       "adapterRevision": 2,
++       "version": "2.1.303",
++     },
++     "catalogGeneration": "6b9ef8dde93f044cdb5e18b0bff493e02e1a0e8063a99ff20f4f05458f94bf9d",
++     "createdAt": "2026-10-20T19:11:23.515Z",
++     "legacyBinding": {
++       "logicalEvidenceHash": "1c46c8252f254c03a821920231cfcdd140df5e6ec37c2480e18d453f0efbbd42",
++       "manifestHash": "c8c7a92669c7419716a7d2c0786f81d8fa44de4982ce61f838deb77e1d7df945",
++       "sourceSnapshotHash": "d6268f8c50d9873c1d4825bb1d6372ddf45669104ec43156c536107f69aa6e9e",
++     },
++     "mcp": [
++       {
++         "kind": "legacy-project-context",
++         "protocolMajor": 1,
++         "runtimeHash": "70c32e91da49eb11fb26ac32d000a45bd1df1de05cbea8b899ec3fa216ced795",
++         "serverName": "smartdd_project_d285d5fb33c1",
++       },
++     ],
++     "native": {
++       "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-Uc3hOS/project",
++       "sessionId": "2f39fd7c-2524-4277-b62b-80214c52c6d2",
++       "stateRoot": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-Uc3hOS/home/.claude",
++     },
++     "packages": [],
++     "projectId": "32f74c83-bd5f-4405-acbb-41b452288688",
++     "provenance": "migrated-known-legacy",
++     "runner": "claude-code",
++     "schema": 2,
++     "standardSkills": [
++       {
++         "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         "hashAlgorithm": "legacy-tree-v1",
++         "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-Uc3hOS/capabilities/runs/32f74c83-bd5f-4405-acbb-41b452288688/62d79482-9aee-4209-9b62-3b90015fc9e7/d285d5fb-33c1-429f-89e5-c63dfe198a17/plugin/skills/project-db-diagnostics/SKILL.md",
++         "skillId": "project-db-diagnostics",
++         "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++       },
++       {
++         "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         "hashAlgorithm": "legacy-tree-v1",
++         "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-Uc3hOS/capabilities/runs/32f74c83-bd5f-4405-acbb-41b452288688/62d79482-9aee-4209-9b62-3b90015fc9e7/d285d5fb-33c1-429f-89e5-c63dfe198a17/plugin/skills/remote-password-ssh/SKILL.md",
++         "skillId": "remote-password-ssh",
++         "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++       },
++     ],
++     "taskId": "62d79482-9aee-4209-9b62-3b90015fc9e7",
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:100:32
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 29 skipped (31)
+   Start at  03:11:22
+   Duration  816ms (transform 232ms, setup 0ms, import 408ms, tests 334ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

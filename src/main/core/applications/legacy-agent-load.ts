@@ -3,6 +3,8 @@ import {dirname,join,relative} from 'node:path';
 import {parseDocument} from 'yaml';
 import {ApplicationError} from '@shared/applications';
 import type {LegacyAgentLoadRequest,AgentLoadRequest} from '@shared/agent-adapters';
+import {capabilitySessionSnapshotSchema} from '@shared/application-session';
+import {assertLegacySessionSource} from './legacy-session-source';
 import type {ResourceStore} from './resource-store';
 import {canonicalJson,digest} from './manifest';
 import {verifyOwnedBundle} from './owned-bundle';
@@ -24,15 +26,22 @@ function nativeName(files:Record<string,string>):string{
 /** Read-only host validation for API2 legacy planning. It grants no run/bridge and
  * does not publish schema2 or repair/claim old T/H. Activation must coordinate and recheck.
  */
-export function legacyPlannerInput(store:ResourceStore,input:LegacyAgentLoadRequest):LegacyPlannerInput{
+export function legacyPlannerInput(store:ResourceStore,input:LegacyAgentLoadRequest,adapterHash:string):LegacyPlannerInput{
  try{
   const row=store.sqlite.prepare('SELECT * FROM capability_legacy_migration_preparations WHERE task_id=?').get(input.taskId) as Source|undefined;
-  if(!row||row.state!=='prepared'||row.source_snapshot_hash!==input.sourceSnapshotHash||!row.evidence_json||!row.manifest_json)problem('RESOURCE_RECOVERY_REQUIRED','旧M4来源尚未完成保留');
+  if(!row||!['prepared','migrated'].includes(row.state)||row.source_snapshot_hash!==input.sourceSnapshotHash||!row.evidence_json||!row.manifest_json)problem('RESOURCE_RECOVERY_REQUIRED','旧M4来源尚未完成保留');
   const source=row!,snapshot=legacyRuntimeMetadata.parse(JSON.parse(source.source_snapshot_json)),record=legacyRuntimeMetadata.parse(JSON.parse(source.source_record_json)),originalIdentity=JSON.parse(source.source_identity_json),originalEvidence=JSON.parse(source.evidence_json) as LegacyTaskEvidence;
   if(canonicalJson(snapshot)!==source.source_snapshot_json||digest(source.source_snapshot_json)!==input.sourceSnapshotHash||canonicalJson(record)!==source.source_snapshot_json||digest(source.manifest_json)!==source.manifest_hash)problem('RESOURCE_RECOVERY_REQUIRED','旧M4来源登记摘要不符');
   const home=realpathSync(input.native.home);if(home!==input.native.home||originalIdentity.home!==home||originalIdentity.taskId!==input.taskId||originalIdentity.projectId!==input.projectId||originalIdentity.runner!==input.native.runner||originalIdentity.stateRoot!==input.native.stateRoot||originalIdentity.cwd!==input.native.cwd||originalIdentity.sessionId!==null&&originalIdentity.sessionId!==input.native.sessionId||source.bound_native_session_id!==null&&source.bound_native_session_id!==input.native.sessionId)problem('NATIVE_IDENTITY_CONFLICT','旧能力必须沿用原任务、原生根及身份');
   const task=store.sqlite.prepare('SELECT project_id,runner,state_root,cwd,native_session_id,runtime_snapshot FROM tasks WHERE id=?').get(input.taskId) as {project_id:string;runner:string;state_root:string;cwd:string;native_session_id:string|null;runtime_snapshot:string}|undefined;
-  if(!task||task.project_id!==input.projectId||task.runner!==(input.native.runner==='codex'?'codex':'claude')||task.state_root!==input.native.stateRoot||task.cwd!==input.native.cwd||task.native_session_id!==input.native.sessionId||task.runtime_snapshot!==source.source_record_json)problem('NATIVE_IDENTITY_CONFLICT','原任务在加载计划准备前已变化');
+  if(!task||task.project_id!==input.projectId||task.runner!==(input.native.runner==='codex'?'codex':'claude')||task.state_root!==input.native.stateRoot||task.cwd!==input.native.cwd||task.native_session_id!==input.native.sessionId||source.state==='prepared'&&task.runtime_snapshot!==source.source_record_json)return problem('NATIVE_IDENTITY_CONFLICT','原任务在加载计划准备前已变化');
+  if(source.state==='migrated'){
+   const fixed=store.sqlite.prepare('SELECT schema_version,snapshot_json,snapshot_hash,retention_state FROM capability_session_snapshots WHERE task_id=?').get(input.taskId) as {schema_version:number;snapshot_json:string;snapshot_hash:string;retention_state:string}|undefined;
+   if(!fixed||fixed.schema_version!==2||fixed.retention_state!=='active')return problem('RESOURCE_RECOVERY_REQUIRED','原M4迁移快照尚未可用');const snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(fixed.snapshot_json)),pointer=JSON.parse(task.runtime_snapshot).sessionCapabilities;assertLegacySessionSource(store,snapshot);
+   if(digest(canonicalJson(snapshot))!==fixed.snapshot_hash||snapshot.adapterBinding.hash!==adapterHash||!pointer||canonicalJson(pointer)!==canonicalJson({schema:2,taskId:input.taskId,snapshotHash:fixed.snapshot_hash}))problem('RESOURCE_RECOVERY_REQUIRED','原M4迁移指针或固定适配器不同');
+   const resource=store.get('agent-adapter:'+input.native.runner+':'+adapterHash),ref=store.sqlite.prepare("SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind='agent-adapter' AND ref_id=?").get(input.taskId,resource.resourceId) as {ref_hash:string;relative_path:string}|undefined;
+   if(!ref||resource.state!=='ready'||resource.integrity!=='valid'||ref.ref_hash!==resource.contentHash||ref.relative_path!==resource.relativePath)problem('RESOURCE_RECOVERY_REQUIRED','原M4固定适配器引用缺失');
+  }
   const reader=new LegacyTaskEvidenceReader(store.root,home,id=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(id) as LegacySkillVersion|undefined),inspected=reader.inspect({taskId:input.taskId,projectId:input.projectId,runner:input.native.runner},snapshot);
   if(inspected.state!=='verified')return problem('RESOURCE_RECOVERY_REQUIRED','原M4文件仍需核查或修复');const evidence=inspected.evidence,logical=(value:LegacyTaskEvidence)=>{const{evidenceHash,...identity}=value;return identity;};
   if(canonicalJson(logical(evidence))!==canonicalJson(logical(originalEvidence))||evidence.manifestHash!==source.manifest_hash)problem('RESOURCE_RECOVERY_REQUIRED','原M4逻辑来源、名称或路径不符');

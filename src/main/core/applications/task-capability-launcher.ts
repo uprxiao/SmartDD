@@ -22,6 +22,7 @@ import { inspectNativeLaunch, type NativeLaunchContext, type TaskLaunchInput } f
 import { canonicalJson, digest } from './manifest';
 import {legacyRuntimeMetadata} from './legacy-task-evidence';
 import {LegacyTaskRetention} from './legacy-task-retention';
+import {LegacySessionMigration} from './legacy-session-migration';
 interface ActiveLaunch {run:OwnedCapabilityRun;hold?:DiscoveryReservation;runtime?:PreparedRuntime;releasing?:Promise<void>}
 export interface TaskCapabilityLauncherOptions {
   helper: string;
@@ -35,6 +36,7 @@ export interface TaskCapabilityLauncherOptions {
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly sessions:CapabilitySessionRegistry;
   readonly projector:SessionCapabilityProjector;
+  readonly legacyMigration:LegacySessionMigration;
   readonly runs:CapabilityRunRegistry;
   readonly bridges:AgentBridgeProcesses;
   readonly broker:PrivateApplicationBroker;
@@ -55,6 +57,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       else if(resource.kind==='agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原生发现根缺失');this.catalog(identity.home).verifyReference(resource,snapshot);}
       else support.legacy.verify(resource);
     }});
+    this.legacyMigration=new LegacySessionMigration(store,this.sessions);
     this.projector=new SessionCapabilityProjector(store,this.sessions);
     this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,assertCurrent:snapshot=>{
       // Application enablement and current slots belong to each business call, not Agent liveness.
@@ -144,6 +147,9 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       current=await this.sessions.create(planned,input.home);
       await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);
     }
+    // Persistent conversion does not prove original T/H ownership or native restoration.
+    // Keep the ordinary Agent available without substituting new-format projections.
+    if(current.snapshot.legacyBinding)unavailable??='RESOURCE_RECOVERY_REQUIRED';
     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
     let pluginRoot:string|null=null,pluginHash:string|null=null;
@@ -156,8 +162,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     try{
       const legacy=(await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime');if(legacy.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原启动资源身份缺失或重复');
       const mcpName=snapshot.mcp.find(m=>m.kind==='legacy-project-context')?.serverName??null;
-      const sources=this.projector.sourceSkills(snapshot),skills:RuntimeSkill[]=snapshot.standardSkills.map(s=>{const known=this.capabilities.selection(input.projectId,input.previous).find(v=>v.versionId===s.versionId);if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失');return{...known,enabled:true};});
-      const projections=Object.fromEntries(snapshot.standardSkills.map(s=>{const source=sources.find(v=>v.path===s.projectionPath)!;return[s.versionId,{path:s.projectionPath,nativeName:source.nativeName,files:source.files}];}));
+      const sources=unavailable?[]:this.projector.sourceSkills(snapshot),skills:RuntimeSkill[]=unavailable?[]:snapshot.standardSkills.map(s=>{const known=this.capabilities.selection(input.projectId,input.previous).find(v=>v.versionId===s.versionId);if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失');return{...known,enabled:true};});
+      const projections=unavailable?{}:Object.fromEntries(snapshot.standardSkills.map(s=>{const source=sources.find(v=>v.path===s.projectionPath)!;return[s.versionId,{path:s.projectionPath,nativeName:source.nativeName,files:source.files}];}));
       let request:AgentLoadRequest|undefined;
       if(!unavailable&&native){
         const collection=hold?.catalog??null;
