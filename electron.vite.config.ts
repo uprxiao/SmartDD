@@ -29,7 +29,7 @@ export default defineConfig({
       if (process.platform === 'darwin') {
         execFileSync('python3', ['scripts/files/prepare-tex.py'], { stdio: 'inherit' });
         execFileSync('python3', ['scripts/files/prepare-office.py'], { stdio: 'inherit' });
-        execFileSync('python3', ['scripts/files/prepare-libreoffice.py'], { stdio: 'inherit' });
+        execFileSync('python3', ['scripts/files/prepare-libreoffice.py', '--node-executable', process.execPath], { stdio: 'inherit' });
       }
     } }],
     resolve: { alias },

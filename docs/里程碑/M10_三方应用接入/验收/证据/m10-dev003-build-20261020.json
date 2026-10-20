@@ -1,0 +1,159 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-BUILD",
+  "recordedAt": "2026-10-20T04:48:32.828963+00:00",
+  "requirementBaseline": "R1.6 incl12.21; necessary production build preparation, no product scope change",
+  "baseCommit": "0813f4236c5d8363011b6ae596b2d510b35050d7",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64"
+  },
+  "implemented": [
+    "Reuse existing generated-bundle metadata cleanup only on owned generated copies, preserving quarantine/security attributes and original code/signature",
+    "Pass the actual build-host Node executable to the shared cleanup helper; native version probes receive isolated HOME/TMPDIR/UserInstallation",
+    "Enforce the fixed original LibreOffice vendor signing requirement; when the known metadata failure occurs, verify a full byte-and-link-identical independent private copy with the same strict requirement; all other signature failures still fail",
+    "Reuse a separately copied fixed-hash public asset after the original download process terminated; original M9 cache was read-only, no node_modules/out/user data shared"
+  ],
+  "checks": [
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev003-build-20261020/final-complete-build.json",
+      "scope": "Production main/preload/renderer/native build and indexed resources, includes0014; not a packaged-App acceptance"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-build-20261020/types.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev003-build-20261020/release-rules.txt"
+    },
+    {
+      "command": "Supplementary build-resource and compile-input assertions",
+      "status": "passed",
+      "evidence": "dev003-build-20261020/resources-verified.json"
+    }
+  ],
+  "failures": [
+    {
+      "sessionId": 46034,
+      "exitCode": 1,
+      "reason": "Three fixed public LibreOffice download timeouts",
+      "log": "dev003-build-20261020/original-build-failed.json"
+    },
+    {
+      "sessionId": 76943,
+      "exitCode": 1,
+      "reason": "Copied generated App inherited metadata rejected by codesign",
+      "log": "dev003-build-20261020/generated-copy-build-failed.json"
+    },
+    {
+      "sessionId": 17792,
+      "exitCode": 0,
+      "reason": "First full build passed after cleanup; supplementary direct checks on the provider directory still failed after metadata was restored",
+      "log": "dev003-build-20261020/first-complete-build.json",
+      "supplementaryObservation": "dev003-build-20261020/metadata-observations.json"
+    }
+  ],
+  "artifacts": {
+    "schema": "m10-build-resource-check-v1",
+    "buildCommit": "0813f4236c5d8363011b6ae596b2d510b35050d7",
+    "buildDirty": true,
+    "appVersion": "0.0.5",
+    "indexHash": "d94a0e1a1b95e9a770084715ec4c05204edabfb444eb8a49c3ae04b678b2561b",
+    "resourceSetHash": "697b3c79725ddad06314e4524c9c5b2532614e6489d9966d538736030302d71f",
+    "adapters": [
+      {
+        "agentId": "claude-code",
+        "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+        "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+        "version": "1.0.0"
+      },
+      {
+        "agentId": "codex",
+        "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+        "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+        "version": "1.0.0"
+      }
+    ],
+    "runtimes": [
+      {
+        "bridgeEntry": "mcp-bridge.cjs",
+        "hash": "8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+        "id": "applications",
+        "path": "runtimes/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+        "protocolMajor": 1
+      }
+    ],
+    "applicationBundleCount": 0,
+    "libreoffice": {
+      "version": "26.2.4.2",
+      "files": 17610,
+      "bytes": 791208986,
+      "originalVendorVerification": {
+        "signatureVerification": "independent-private-copy",
+        "matchedFiles": 17610,
+        "matchedBytes": 791208986,
+        "vendorRequirement": "org.libreoffice.script / 7P5S3ZLCN7",
+        "sourceMetadata": "file-provider FinderInfo may be restored; use non-synced package output"
+      }
+    },
+    "productionMigration0014Present": true,
+    "artifacts": {
+      "out/main/index.js": {
+        "bytes": 1210682,
+        "sha256": "a6a02909c50a9ccc0c7415249f8f0347f8e0ec633637a5375c5dc527f7529d0d"
+      },
+      "out/preload/index.js": {
+        "bytes": 480,
+        "sha256": "63eedf45352d719515e04c49fb7eb29d57fd99433519fb91e15c44192aa03908"
+      },
+      "out/renderer/index.html": {
+        "bytes": 857,
+        "sha256": "ba8d239399e08201cb7b79a9f1348963be72d756f1acb106402d060941fb1660"
+      },
+      "out/applications/mcp-bridge.cjs": {
+        "bytes": 764761,
+        "sha256": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428"
+      },
+      "out/capability-bundles/index.json": {
+        "bytes": 993,
+        "sha256": "73c2d1e072b0cc255062a5ea7a5000f8a65db813c50c559fbcfd84ce05a6f20f"
+      },
+      "out/native/libreoffice/resources.json": {
+        "bytes": 3698576,
+        "sha256": "0a53a75d19bebd9cd140d9e19b37436b32e7b81ee03f18413c730fb268aec323"
+      }
+    },
+    "scope": "Production compile/resources only; no packaged App launch or product acceptance"
+  },
+  "boundaries": [
+    "All signature requirements remain in force; the original mounted public source is verified directly and never cleaned or re-signed",
+    "Current source directory may receive FinderInfo again; final packaged App must use the existing non-synced output-directory option and receive its own native/signature acceptance",
+    "No M10 packaged App/UI/real-Agent/formal T-case was executed; application bundle index is still empty and TaskService integration remains unfinished",
+    "No main merge, push, tag or release; 303 relevant code tests/79 project regressions belong to0813f42 and are not recounted for this build-only fix"
+  ],
+  "sourceHashes": {
+    "electron.vite.config.ts": "8553207f4236ff1fc70258fead1ea48eb1225ce8ac552b0871fca33eed3af4a5",
+    "scripts/files/prepare-libreoffice.py": "ca239ec5bb25b3b273a909cb2351ab63c4ba225543dc6c1b6d1e74ac7a694efc"
+  },
+  "logHashes": {
+    "dev003-build-20261020/asset-copy.json": "f747ab9eff2155f5f55f9c5db45649e29480e0c8a1735503a91d148e7c15826d",
+    "dev003-build-20261020/final-complete-build.json": "1874dacf11285604379ee5c7c750c3e0ba7dfd41fed2a0af4181b90c70103eb5",
+    "dev003-build-20261020/first-complete-build.json": "36d41d278aacc263f010a74e84d570ad98f94776b30ae88669720e9f0b506ec7",
+    "dev003-build-20261020/generated-copy-build-failed.json": "48101946faca9eaa5fb63a4a9e9cd4cd6b9c7488063928c20968e7f10e66d13c",
+    "dev003-build-20261020/metadata-observations.json": "db027c6433c81d2d4349f80cec052e017cfe093db775ce536dbd452af4174d66",
+    "dev003-build-20261020/original-build-failed.json": "85e248587afb5156d0ba08686789a6d0078c83015c6c1879e3a9f1bd3bde56d9",
+    "dev003-build-20261020/release-rules.txt": "dc9675f62046d5dc6c678cc1cbe343c66f0d430f545f2ae67e82c1ef2772bb75",
+    "dev003-build-20261020/resources-verified.json": "c806f4cb9a4e24ceb00b70f08dfd539f9b7a9be0a3aa855c4f4f17991d805817",
+    "dev003-build-20261020/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9"
+  },
+  "logEncoding": "Build logs are lossless JSON wrappers with original raw SHA256; supplementary tool observations are explicitly structured, not fabricated raw logs"
+}
