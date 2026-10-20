@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
 }
 afterEach(() => open.splice(0).forEach((db) => db.close()));
 
-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle'];
+const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle', '0012_application_invocations'];
 
 const tables = (db: Database.Database) =>
   (
@@ -46,12 +46,14 @@ describe('bundled migrations', () => {
       'application_binding_slot_revisions',
       'application_catalog_state',
       'application_connections',
+      'application_invocations',
       'application_project_bindings',
       'application_project_settings',
       'application_secret_changes',
       'capability_active_packages',
       'capability_install_journal',
       'capability_lease_resources',
+      'capability_package_contracts',
       'capability_packages',
       'capability_resource_dependencies',
       'capability_resource_leases',
@@ -97,7 +99,7 @@ describe('bundled migrations', () => {
     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('old-project','kept',1,1)");
     db.exec("INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,updated_at) VALUES('old-project','mail',1,7,'2026-10-20T00:00:00Z')");
     db.exec("INSERT INTO mail_blob_objects VALUES('old-content',3,'2026-10-20T00:00:00Z'); INSERT INTO mail_attachment_objects(id,project_id,content_hash,filename,content_type,byte_size,created_at) VALUES('old-attachment','old-project','old-content','old.txt','text/plain',3,'2026-10-20T00:00:00Z')");
-    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle']);
+    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle','0012_application_invocations']);
     expect(db.prepare('SELECT id,kind,filename FROM mail_attachment_objects').all()).toEqual([{ id: 'old-attachment',kind: 'attachment',filename: 'old.txt' }]);
     expect(db.prepare('SELECT slot,revision FROM application_binding_slot_revisions ORDER BY slot').all()).toEqual([{ slot: 'foxmail',revision: 7 },{ slot: 'smtp',revision: 7 }]);
     db.exec('DELETE FROM __drizzle_migrations WHERE id>=10'); runBundledMigrations(db); expect(db.prepare('SELECT count(*) AS n FROM mail_attachment_objects').get()).toEqual({ n: 1 });

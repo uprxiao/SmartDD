@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { boundedJson, BRIDGE_LIMITS } from '@shared/application-bridge';
 import { APP_DATA_API, APP_HOST_API, ApplicationError, applicationManifestSchema, type ApplicationManifest } from '@shared/applications';
 
 export const digest = (value: string | Uint8Array): string => createHash('sha256').update(value).digest('hex');
@@ -46,7 +47,9 @@ export function validateBundle(bundle: ApplicationBundle): ValidatedBundle {
   }
   for (const path of new Set([...manifest.connectionContracts.map(c => c.inputSchemaPath), ...manifest.tools.flatMap(t => [t.inputSchemaPath, t.outputSchemaPath])])) {
     try {
+      if (files[path].length > BRIDGE_LIMITS.requestBytes || !Buffer.from(files[path].toString('utf8'),'utf8').equals(files[path])) throw new Error();
       const schema: unknown = JSON.parse(files[path].toString('utf8'));
+      if (!boundedJson(schema)) throw new Error();
       if (!schema || typeof schema !== 'object' || Array.isArray(schema)) throw new Error();
     } catch { throw new ApplicationError('INVALID_PACKAGE', '工具或连接JSON Schema无效'); }
   }

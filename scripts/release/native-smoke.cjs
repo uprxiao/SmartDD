@@ -49,6 +49,8 @@ if (process.platform === 'darwin') {
     assert.deepEqual(fs.readdirSync(mailScratch), [], 'Mail reader must not create source files');
   } finally { fs.rmSync(mailScratch, { recursive: true, force: true }); }
   assert(fs.existsSync(path.join(asar, 'out/main/m10-mail-reader.js')), 'Packaged mail Worker');
+  assert(fs.existsSync(path.join(asar, 'out/applications/mcp-bridge.cjs')), 'Packaged standalone application MCP bridge');
+  for (const notice of ['mcp-server-LICENSE.txt', 'mcp-core-LICENSE.txt', 'zod-LICENSE.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10/bridge', notice)), 'Packaged bridge library notice');
   assert.equal(packagedRequire('nodemailer/package.json').version, '10.1.7', 'Fixed SMTP dependency');
   assert.equal(packagedRequire('postal-mime/package.json').version, '4.0.11', 'Fixed MIME dependency');
   for (const notice of ['nodemailer-10.1.7-MIT-0.txt', 'postal-mime-4.0.11-MIT-0.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10', notice)), 'Packaged mail library notice');

@@ -219,6 +219,16 @@ export class CapabilityRunRegistry {
     const bindings = this.current(row,session); this.checkProtection(row,owned);
     return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal };
   }
+  bridgePreparation(runId: string): RunContext {
+    const { row,owned,session } = this.mine(runId);
+    if (owned.abort.signal.aborted || !['prepared','active'].includes(row.state)) throw new ApplicationError('SCOPE_DENIED','当前运行不能准备工具桥');
+    const bindings = this.current(row,session); this.checkProtection(row,owned); return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal };
+  }
+  assertBridge(runId: string,processId: string): RunContext {
+    const context = this.assertActive(runId), child = this.processRow(runId,processId);
+    if (child.kind !== 'bridge' || !['armed','active'].includes(child.state)) throw new ApplicationError('SCOPE_DENIED','工具桥尚未获得此运行的启动登记');
+    return context;
+  }
   async withActivity<T>(runId: string,action: (context: RunContext) => Promise<T>): Promise<T> {
     const id = randomUUID(), context = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       const context = this.assertActive(runId); this.store.sqlite.prepare("INSERT INTO capability_run_activities(activity_id,run_id,state,started_at) VALUES(?,?,'active',?)").run(id,runId,now()); return context;

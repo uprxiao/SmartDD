@@ -357,3 +357,11 @@ export const capabilityRunActivities = sqliteTable('capability_run_activities', 
 export const capabilityStoreState = sqliteTable('capability_store_state', {
   singleton: integer('singleton').primaryKey(),storeId: text('store_id').notNull(),resourceGeneration: integer('resource_generation').notNull().default(1),maintenanceState: text('maintenance_state').notNull(),maintenanceOperationId: text('maintenance_operation_id'),
 });
+
+export const applicationInvocations = sqliteTable('application_invocations', {
+  operationId: text('operation_id').primaryKey(),runId: text('run_id').notNull().references(() => capabilityRuns.runId),requestId: text('request_id').notNull(),requestHash: text('request_hash').notNull(),projectId: text('project_id').notNull(),taskId: text('task_id').notNull(),appId: text('app_id').notNull(),packageHash: text('package_hash').notNull(),toolName: text('tool_name').notNull(),contractMajor: integer('contract_major').notNull(),connectionId: text('connection_id'),semantics: text('semantics').notNull(),state: text('state').notNull(),attemptCount: integer('attempt_count').notNull().default(0),errorCode: text('error_code'),effectState: text('effect_state').notNull(),startedAt: text('started_at').notNull(),endedAt: text('ended_at'),
+},t => ({ request: uniqueIndex('application_invocations_run_request').on(t.runId,t.requestId),project: index('application_invocations_project_idx').on(t.projectId,t.startedAt) }));
+
+export const capabilityPackageContracts = sqliteTable('capability_package_contracts', {
+  packageHash: text('package_hash').notNull().references(() => capabilityPackages.packageHash),toolName: text('tool_name').notNull(),inputSource: text('input_source').notNull(),outputSource: text('output_source').notNull(),
+},t => ({ pk: primaryKey({ columns: [t.packageHash,t.toolName] }) }));

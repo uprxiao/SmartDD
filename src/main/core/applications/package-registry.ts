@@ -29,6 +29,22 @@ export class PackageRegistry {
   active(appId: string): { packageHash: string; generation: number } | null {
     return (this.store.sqlite.prepare('SELECT package_hash AS packageHash,activation_generation AS generation FROM capability_active_packages WHERE app_id=?').get(appId) as { packageHash: string; generation: number } | undefined) ?? null;
   }
+  private storeContracts(bundle: ValidatedBundle): void {
+    for (const tool of bundle.manifest.tools) {
+      const input = bundle.files[tool.inputSchemaPath].toString('utf8'), output = bundle.files[tool.outputSchemaPath].toString('utf8');
+      const old = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(bundle.packageHash,tool.name) as { input_source: string;output_source: string } | undefined;
+      if (old && (old.input_source !== input || old.output_source !== output)) throw new ApplicationError('HASH_MISMATCH','固定工具契约记录已改变，不能静默覆盖');
+      if (!old) this.store.sqlite.prepare('INSERT INTO capability_package_contracts VALUES(?,?,?,?)').run(bundle.packageHash,tool.name,input,output);
+    }
+  }
+  /** Retained exact source text is independently bound to the original manifest file hashes. */
+  toolContractSources(hash: string,toolName: string): { input: string;output: string } {
+    const application = this.get(hash), tool = application.manifest.tools.find(t => t.name === toolName);
+    const row = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,toolName) as { input_source: string;output_source: string } | undefined;
+    if (!tool || !row) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
+    for (const [path,source] of [[tool.inputSchemaPath,row.input_source],[tool.outputSchemaPath,row.output_source]]) if (digest(source) !== application.manifest.files.find(f => f.path === path)?.sha256) throw new ApplicationError('HASH_MISMATCH','原工具契约记录摘要不符，保留现场');
+    return { input: row.input_source,output: row.output_source };
+  }
   private specification(bundle: ValidatedBundle): PublishResource {
     assertHostCompatible(bundle.manifest);
     this.runtimes.verify(bundle.manifest.runtime.hash, bundle.manifest.runtime);
@@ -41,6 +57,7 @@ export class PackageRegistry {
         if (old && old.hash !== bundle.packageHash) throw new ApplicationError('VERSION_CONFLICT', '同一应用版本已有其他内容，需使用新版本');
         const now = new Date().toISOString();
         this.store.sqlite.prepare(`INSERT INTO capability_packages(package_hash,app_id,version,hash_algorithm,relative_path,manifest_json,resource_id,installed_at) VALUES(?,?,?,'app-manifest-v1',?,?,?,?)`).run(bundle.packageHash, appId, version, relativePath, canonicalJson(bundle.manifest), 'app:' + bundle.packageHash, now);
+        this.storeContracts(bundle);
         this.store.sqlite.prepare(`INSERT INTO capability_install_journal(install_id,host_build,from_generation,state,plan_json,updated_at) VALUES(?,?,?,'preparing',?,?)`).run(operationId, this.hostBuild, this.active(appId)?.generation ?? 0, canonicalJson({ appId, version, packageHash: bundle.packageHash }), now);
       } };
   }
@@ -49,12 +66,15 @@ export class PackageRegistry {
     const old = this.store.sqlite.prepare('SELECT package_hash AS hash FROM capability_packages WHERE app_id=? AND version=?').get(bundle.manifest.appId, bundle.manifest.version) as { hash: string } | undefined;
     if (old && old.hash !== bundle.packageHash) throw new ApplicationError('VERSION_CONFLICT', '同一应用版本已有其他内容，需使用新版本');
     await this.store.publish(this.specification(bundle));
+    // Same-hash verified reinstall also supplies missing contracts from pre-ledger development data.
+    await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => this.storeContracts(bundle)).immediate());
     return this.get(bundle.packageHash);
   }
   async recoverInstall(source: ApplicationBundle, operationId: string): Promise<InstalledApplicationPackage> {
     const bundle = validateBundle(source), recorded = this.get(bundle.packageHash);
     if (recorded.resourceId !== 'app:' + bundle.packageHash) throw new ApplicationError('OWNERSHIP_CONFLICT', '恢复目标与原版本不一致');
     await this.store.recover(this.specification(bundle), operationId);
+    await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => this.storeContracts(bundle)).immediate());
     return this.get(bundle.packageHash);
   }
   async activate(hash: string, expectedGeneration: number): Promise<{ packageHash: string; generation: number }> {
