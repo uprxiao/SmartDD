@@ -1,0 +1,33 @@
+import {ApplicationTerminalButton} from './terminal-insertion';
+import {useState} from 'react';
+import {useInfiniteQuery,useQuery} from '@tanstack/react-query';
+import {ChevronRight,FileText,RefreshCw} from 'lucide-react';
+import type {ZentaoWorkData,ZentaoSourceRef} from '@shared/application-zentao';
+import {rpc} from '@renderer/lib/ipc';
+import {navigation} from '@renderer/core/navigation';
+import {unwrap,useConnections,useProjectApplication,type CatalogItem} from './api';
+import {AppDialog,AppEmpty,timeText} from './controls';
+import {ResourceView} from './resource-view';
+export function ZentaoPanel({projectId,app}:{projectId:string;app:CatalogItem}){
+ const settings=useProjectApplication(projectId,'zentao'),connections=useConnections('zentao');
+ if(settings.isPending||connections.isPending)return <p role="status">正在核对项目禅道连接…</p>;
+ if(settings.error||connections.error)return <AppEmpty error title="项目连接读取失败" text={(settings.error??connections.error)!.message}/>;
+ const connection=connections.data?.find(c=>c.id===settings.data?.connections.zentao);
+ if(!app.added||!app.enabled||!settings.data?.enabled||!connection?.enabled||connection.authorization!=='connected')return <AppEmpty title="当前项目尚未选用可用的禅道连接" text="在项目中启用应用并明确选用连接，再查看本人指派范围。" action="项目选用" onAction={()=>navigation.openApplications('projects',projectId)}/>;
+ return <ZentaoList key={projectId+':'+settings.data.revision+':'+connection.revision} projectId={projectId} sourceName={connection.name} account={connection.config.kind==='zentao'?connection.config.username:''} source={connection.id}/>;
+}
+function ZentaoList({projectId,account,source,sourceName}:{projectId:string;account:string;source:string;sourceName:string}){
+ const [kind,setKind]=useState<'bug'|'story'>('bug'),[selected,setSelected]=useState<ZentaoSourceRef|null>(null);
+ const query=useInfiniteQuery({queryKey:['applications','zentao-work',projectId,source,kind],initialPageParam:null as string|null,queryFn:async({pageParam})=>unwrap(await rpc.applications.zentaoWork(projectId,{kind,cursor:pageParam,limit:50})),getNextPageParam:last=>last.nextCursor??undefined,retry:false,refetchOnWindowFocus:false});
+ const pages=query.data?.pages as ZentaoWorkData[]|undefined,items=pages?.flatMap(p=>p.items)??[],latest=pages?.at(-1),problems=pages?.flatMap(p=>p.problems)??[];
+ return <section aria-label="我的禅道工作"><div className="m10-section-heading"><h2>指派给我</h2><button className="m10-button secondary" disabled={query.isFetching} onClick={()=>void query.refetch()}><RefreshCw size={13}/>刷新列表</button></div><p className="m10-muted">当前连接账号：{account} · 只读本人指派的 Bug 与研发需求</p><div className="m10-tabs" role="tablist" aria-label="禅道对象类型">{(['bug','story'] as const).map(k=><button key={k} role="tab" aria-selected={kind===k} onClick={()=>{setKind(k);setSelected(null);}}>{k==='bug'?'Bug':'研发需求'}</button>)}</div>
+ {query.isPending?<AppEmpty loading title="正在读取本人列表" text="正在核对当前账号与项目选用。"/>:query.error?<AppEmpty error title="列表读取未完成" text={query.error.message} action="重试" onAction={()=>void query.refetch()}/>:<>{problems.length>0&&<p className="m10-note" role="alert">当前结果不完整：{[...new Set(problems.map(p=>p.code))].join('、')}。未读数据不能据此判断为空。</p>}<div className="m10-object-list">{items.map(item=><button key={item.id} onClick={()=>setSelected(item.reference)}><span className="m10-object-title"><small>#{item.id} · {item.assignedTo}</small><strong>{item.title}</strong></span><span className="m10-pill">{item.status}</span><ChevronRight size={15}/></button>)}</div>{items.length===0&&!query.hasNextPage&&problems.length===0&&<AppEmpty title={'当前没有指派给你的'+(kind==='bug'?' Bug':'研发需求')} text="已核对当前范围，不扩大到其他账号。"/>}{query.hasNextPage&&<button className="m10-button secondary" disabled={query.isFetchingNextPage} onClick={()=>void query.fetchNextPage()}>读取下一页</button>}<p className="m10-data-time">最近检查：{timeText(latest?.checkedAt)}{query.hasNextPage?' · 仍有后续页':''}</p></>}
+ {selected&&<ZentaoDetail key={kind+':'+selected.nativeId} projectId={projectId} kind={kind} reference={selected} sourceName={sourceName} onClose={()=>setSelected(null)}/>}
+ </section>;
+}
+function ZentaoDetail({projectId,kind,reference,onClose,sourceName}:{sourceName:string;projectId:string;kind:'bug'|'story';reference:ZentaoSourceRef;onClose:()=>void}){
+ const detail=useQuery({queryKey:['applications','zentao-detail',projectId,kind,reference],queryFn:async()=>unwrap(await rpc.applications.zentaoObject(projectId,{kind,reference})),retry:false,refetchOnWindowFocus:false});
+ const value=detail.data,labels:Record<string,string>={id:'编号',status:'状态',assignedTo:'指派给',pri:'优先级',severity:'严重程度',openedBy:'创建人',openedDate:'创建时间',product:'产品',project:'项目',deadline:'截止日期',module:'模块',plan:'计划',type:'类型'};
+ const fieldText=(field:unknown)=>{if(field&&typeof field==='object'&&!Array.isArray(field)){const row=field as Record<string,unknown>;return String(row.realname??row.name??row.account??JSON.stringify(field));}return String(field??'—');};
+ return <AppDialog title={(kind==='bug'?'Bug':'研发需求')+' #'+reference.nativeId} wide onClose={onClose}>{detail.isPending?<AppEmpty loading title="正在核对原对象" text="详情以当前服务返回与来源修订为准。"/>:detail.error?<AppEmpty error title="详情不可用" text={detail.error.message} action="重试" onAction={()=>void detail.refetch()}/>:value&&<div className="m10-object-detail"><h2>{String(value.fields.title??'#'+value.id)}</h2><div className="m10-detail-props">{Object.entries(value.fields).filter(([k])=>k!=='title').map(([key,field])=><span key={key}>{labels[key]??key}<strong>{fieldText(field)}</strong></span>)}</div>{!value.complete&&<p className="m10-note" role="alert">详情尚不完整：{value.missing.join('、')}</p>}<h3>{kind==='bug'?'重现步骤与说明':'需求描述与验收标准'}</h3>{value.body?<ResourceView format="zentao-body" resource={value.body} scope={projectId} read={offset=>rpc.applications.zentaoResource(projectId,{resource:value.body!,offset,length:65536}).then(unwrap)}/>:<p>当前对象未提供正文。</p>}<h3>历史记录</h3>{value.history?<ResourceView format="zentao-history" resource={value.history} scope={projectId} read={offset=>rpc.applications.zentaoResource(projectId,{resource:value.history!,offset,length:65536}).then(unwrap)}/>:<p>当前对象未提供历史。</p>}{value.attachments.map(file=><div className="m10-attachment" key={file.resource.id}><FileText size={16}/>{file.filename}<span>{file.resource.size} 字节 · 原对象附件</span></div>)}<p className="m10-muted">来源：{sourceName} · 本人指派范围</p></div>}<footer>{value&&<ApplicationTerminalButton key={value.reference.contentRevision} projectId={projectId} source={{kind:'zentao',objectKind:kind,reference:value.reference}} onInserted={onClose}/>}<button className="m10-button secondary" onClick={onClose}>关闭</button></footer></AppDialog>;
+}

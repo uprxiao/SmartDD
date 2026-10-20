@@ -60,6 +60,8 @@ export class NativeUserInputs {
   const first=completed.length===this.maxReceipts?next:0;for(let index=0;index<completed.length;index++){this.capture(sender,target,context,completed[(first+index)%completed.length],stamp);this.prune();}
   this.prune();
  }
+ /** A partial native controlled write makes this editable line unprovable until reset/submission. */
+ uncertain(sender:ApplicationUiSender,target:NativeInputTarget):void{this.observe(sender,target,'');const editor=this.editors.get(target.ptyId);if(editor){editor.text='';editor.bytes=0;editor.escape='';editor.paste=false;editor.known=false;}}
  private append(editor:Editor,text:string){const joinedSurrogate=/[\uD800-\uDBFF]/.test(editor.text.at(-1)??'')&&/[\uDC00-\uDFFF]/.test(text[0]??'');editor.bytes+=Buffer.byteLength(text)-(joinedSurrogate?2:0);editor.text+=text;}
  private capture(sender:ApplicationUiSender,target:NativeInputTarget,context:RunContext,text:string,stamp:string){
   const frame=sender.senderFrame;if(!frame||!Number.isSafeInteger(frame.processId)||!Number.isSafeInteger(frame.routingId))return;

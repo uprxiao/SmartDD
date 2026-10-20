@@ -1,3 +1,6 @@
+import {PtyAccess} from '../../../pty-access';
+import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
+import type {ApplicationUiSender} from '../execution-context';
 import {EventEmitter} from 'node:events';
 import {randomUUID} from 'node:crypto';
 import {parse as parseToml} from 'smol-toml';
@@ -84,12 +87,14 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
  it('connects the complete production launcher through a real OS PTY, kernel-owned CLI and original CJS MCP child',async()=>{
   await managed.dispose();await applications.dispose();tasks.dispose();
   const real=new PtyManager(),processes=new MacProcessIdentityReader(resolve('out/native/willyou-process-identity')),db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});
-  const report=join(root,'native-report.json'),stop=join(root,'stop-native'),command=join(root,'native-cli-fixture'),quote=(value:string)=>"'"+value.replaceAll("'","'\\''")+"'",script=resolve('src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs');
+  const inputReport=join(root,'native-input.bin'),report=join(root,'native-report.json'),stop=join(root,'stop-native'),command=join(root,'native-cli-fixture'),quote=(value:string)=>"'"+value.replaceAll("'","'\\''")+"'",script=resolve('src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs');
   writeFileSync(command,'#!/bin/sh\nexec '+quote(process.execPath)+' '+quote(script)+' "$@"\n',{mode:0o700});
-  const profile=profiles.create({name:'private actual process fixture',runner:'codex',executable:command,args:[],env:[{name:'ELECTRON_RUN_AS_NODE',value:'1',secret:false},{name:'WY_M10_TEST_REPORT',value:report,secret:false},{name:'WY_M10_TEST_STOP',value:stop,secret:false}],color:null,isDefault:false});
+  const profile=profiles.create({name:'private actual process fixture',runner:'codex',executable:command,args:[],env:[{name:'WY_M10_TEST_INPUT_REPORT',value:inputReport,secret:false},{name:'ELECTRON_RUN_AS_NODE',value:'1',secret:false},{name:'WY_M10_TEST_REPORT',value:report,secret:false},{name:'WY_M10_TEST_STOP',value:stop,secret:false}],color:null,isDefault:false});
   for(const skill of capabilities.list(projectId))capabilities.setEnabled(projectId,skill.id,false);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);
   tasks=new TaskService({db,ptys:real,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',SHELL:'/bin/sh'}),onChanged:()=>{}});
-  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
+  const frame={},sender={sender:{mainFrame:frame,isDestroyed:()=>false},senderFrame:frame} as unknown as ApplicationUiSender;
+  const access=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:id=>tasks.activePty(id),alive:id=>real.has(id),write:(id,data)=>real.writeControlled(id,data),resize:()=>{},killTask:()=>{}});
+  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),terminal:{access,bracketedPaste:id=>real.bracketedPaste(id),write:(id,data)=>real.writeControlled(id,data)},requireSender:e=>access.requireSender(e),mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
   managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:resolve('out/native/willyou-process-identity'),stopPty:id=>real.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const oldShell=process.env.SHELL;process.env.SHELL='/bin/sh';let transcript='';real.on('data',(_id,data)=>{transcript+=data;});
@@ -98,6 +103,24 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
    await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const observed=JSON.parse(readFileSync(report,'utf8')) as {cliPid:number;bridgePid:number;result:{isError?:boolean}};
    expect(observed.result.isError).not.toBe(true);expect(managed.runs.get(runId).pid).toBe(observed.cliPid);const child=sqlite.prepare("SELECT state,pid FROM capability_run_processes WHERE run_id=? AND kind='bridge'").get(runId);expect(child).toEqual({state:'active',pid:observed.bridgePid});expect(consumers()).toHaveLength(1);
    const diagnostic=await applications.sessionDiagnostics.inspect(first.task.id);expect(diagnostic.currentRun).toMatchObject({id:runId,current:true,preparation:{state:'prepared',cliVersion:'0.162.1'},bridge:{connected:true,observedAt:expect.any(String)}});expect(diagnostic.applications.find(a=>a.appId==='mail')).toMatchObject({fixedVersion:'1.0.0',resourceState:'verified',evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:1,successfulToolRequests:1}});
+   const target={taskId:first.task.id,ptyId:first.ptyId},source={kind:'skill' as const,appId:'mail' as const,skillId:'work-assistant'};
+   await expect(applications.bindTerminal(sender,{projectId:'different-project',target,source})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+   await expect(applications.bindTerminal(sender,{projectId,target,source:{...source,skillId:'not-in-original-package'}})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+   const untouched=join(root,'other-pty-input.bin'),otherPty=randomUUID();real.spawn({id:otherPty,command:process.execPath,args:['-e',"const fs=require('fs');fs.writeFileSync(process.argv[1],'',{flag:'wx'});process.stdin.setRawMode(true);process.stdin.on('data',data=>fs.appendFileSync(process.argv[1],data));process.stdin.resume();",untouched],cwd:home,env:{HOME:home,PATH:'/usr/bin:/bin',ELECTRON_RUN_AS_NODE:'1'}});await vi.waitFor(()=>expect(existsSync(untouched)).toBe(true));
+   real.writeControlled(first.ptyId,'existing-prefix ');await vi.waitFor(()=>expect(readFileSync(inputReport,'utf8')).toBe('existing-prefix '));
+   const binding=await applications.bindTerminal(sender,{projectId,target,source}),request={bindingId:binding.id,operationId:randomUUID()};
+   const inserted=await applications.insertTerminal(sender,request);expect(inserted).toMatchObject({state:'inserted',bracketed:false});expect(await applications.insertTerminal(sender,request)).toEqual(inserted);
+   const expected='existing-prefix '+APPLICATION_SKILL_EXAMPLES['mail:work-assistant'];await vi.waitFor(()=>expect(readFileSync(inputReport,'utf8')).toBe(expected));expect(readFileSync(inputReport).includes(13)).toBe(false);expect(readFileSync(inputReport).includes(10)).toBe(false);
+   expect(readFileSync(untouched).length).toBe(0);expect(real.has(otherPty)).toBe(true);
+   const content={mode:'new' as const,sourceMessageRef:null,senderConnectionId:null,to:['private@example.test'],cc:[],bcc:[],subject:'private draft reference',text:'body',html:null,inReplyTo:null,references:[],attachmentIds:[]};
+   const draft=await applications.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.fixture',operations:['mail.draft'],semantics:'write'},async context=>applications.drafts.create(applications.contexts.actor(context),{operationId:randomUUID(),content}));
+   await expect(applications.bindTerminal(sender,{projectId,target,source:{kind:'draft',draftId:draft.id,revision:draft.revision,contentHash:'0'.repeat(64)}})).rejects.toMatchObject({code:'REVISION_CONFLICT'});
+   const draftBinding=await applications.bindTerminal(sender,{projectId,target,source:{kind:'draft',draftId:draft.id,revision:draft.revision,contentHash:draft.contentHash}});
+   await applications.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.fixture',operations:['mail.draft'],semantics:'write'},async context=>applications.drafts.update(applications.contexts.actor(context),{operationId:randomUUID(),draftId:draft.id,expectedRevision:draft.revision,content:{...content,text:'new revision'}}));
+   await expect(async()=>applications.insertTerminal(sender,{bindingId:draftBinding.id,operationId:randomUUID()})).rejects.toMatchObject({code:'REVISION_CONFLICT'});expect(readFileSync(inputReport,'utf8')).toBe(expected);expect(readFileSync(untouched).length).toBe(0);
+   expect(sqlite.prepare('SELECT COUNT(*) AS n FROM mail_send_grants').get()).toEqual({n:0});
+   const revoked=await applications.bindTerminal(sender,{projectId,target,source});await applications.selections.setGlobalEnabled('mail',false,1);
+   await expect(async()=>applications.insertTerminal(sender,{bindingId:revoked.id,operationId:randomUUID()})).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(readFileSync(inputReport,'utf8')).toBe(expected);expect(real.has(first.ptyId)).toBe(true);
    writeFileSync(stop,'owned fixture exit');await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'),{timeout:10000});await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(existsSync(first.task.runtimeSnapshot!.manifestPath)).toBe(false);
   }finally{tasks.dispose();real.killAll();if(oldShell===undefined)delete process.env.SHELL;else process.env.SHELL=oldShell;}
  },20000);

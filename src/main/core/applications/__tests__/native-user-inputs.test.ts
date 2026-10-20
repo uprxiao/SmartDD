@@ -18,6 +18,7 @@ describe('bounded host-observed native user input origin; no send grant',()=>{
  it('captures only submitted lines with exact text,scope,frame,time and digest;unsubmitted input cannot match',()=>{
   input('发送这封邮件');expect(match('发送这封邮件')).toBeNull();input('\r');const receipt=match('发送这封邮件')!;expect(receipt).toMatchObject({projectId:'project-one',taskId:target.taskId,ptyId:target.ptyId,runId:current.run.runId,senderId:101,frameProcessId:9,frameRoutingId:1,observedAt:now});expect(receipt.textHash).toMatch(/^[a-f0-9]{64}$/);expect(Object.keys(receipt)).not.toContain('text');expect(Object.isFrozen(receipt)).toBe(true);expect(match('发送另一封邮件')).toBeNull();
  });
+ it('does not certify a partially accepted controlled paste or a suffix on its unknown line',()=>{input('known prefix');ledger.uncertain(sender,target);input('approved-looking suffix\r');expect(match('approved-looking suffix')).toBeNull();expect(match('known prefixapproved-looking suffix')).toBeNull();input('new fully observed line\r');expect(match('new fully observed line')).not.toBeNull();});
  it('handles Unicode editing and CRLF without manufacturing a duplicate receipt',()=>{
   input('send😀\x7f字\bmessage\r\n');const first=match('sendmessage');expect(first).not.toBeNull();input('\n');expect(match('sendmessage')).toBe(first);input('do not send\x15发送指定草稿\r');expect(match('发送指定草稿')).not.toBeNull();input('send wrong\x17right\r');expect(match('send right')).not.toBeNull();
  });

@@ -1,3 +1,4 @@
+import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
 import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
 import type {ApplicationActivityQuery} from '@shared/application-activity';
 import type { IpcMainInvokeEvent } from 'electron';
@@ -21,6 +22,9 @@ export function createApplicationController(service:ApplicationService|undefined
     }
   };
   return createScopedRPCController({
+    terminalBind:(event,input:ApplicationTerminalBind)=>run(event,current=>current.bindTerminal(event,input)),
+    terminalInsert:(event,input:ApplicationTerminalInsert)=>run(event,current=>current.insertTerminal(event,input)),
+    terminalRelease:(event,id:string)=>run(event,current=>current.releaseTerminal(event,id)),
     session:(event,taskId:string)=>run(event,current=>current.diagnoseSession(event,taskId)),
     versions:(event,appId:ApplicationId)=>run(event,current=>current.listVersions(event,appId)),
     cleanupVersion:(event,input:ApplicationVersionCleanup)=>run(event,current=>current.cleanupVersion(event,input)),

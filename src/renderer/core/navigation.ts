@@ -21,7 +21,7 @@ class NavigationStore {
   /** The task the 'task' view shows. */
   currentTaskId: string | null = null;
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
-  homePreset: { projectId: string; seq: number } | null = null;
+  homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
   settingsSection: SettingsSectionId = 'general';
   /** ⌘K task search. */
   searchOpen = false;
@@ -46,6 +46,9 @@ class NavigationStore {
     if (projectId) this.homePreset = { projectId, seq: (this.homePreset?.seq ?? 0) + 1 };
     this.currentViewId = 'home';
   }
+
+  prepareApplicationTask(projectId:string,prompt:string):void{this.newTask(projectId);this.homePreset={...this.homePreset!,applicationPrompt:prompt};}
+  consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
 
   openTask(id: string): void {
     this.currentTaskId = id;

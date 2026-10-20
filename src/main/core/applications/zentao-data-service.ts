@@ -99,10 +99,12 @@ export class ZentaoDataService implements ApplicationDataHost {
       this.store.sqlite.prepare('INSERT OR IGNORE INTO application_zentao_operation_objects VALUES(?,?)').run(context.operationId,key);return this.store.sqlite.prepare('SELECT * FROM application_zentao_revisions WHERE object_key=?').get(key) as ObjectRow;
     }).immediate());
   }
-  private known(context:ApplicationExecutionContext,kind:ZentaoKind,reference:ZentaoSourceRef):ObjectRow{
+  private known(context:Pick<ApplicationExecutionContext,'projectId'>,kind:ZentaoKind,reference:ZentaoSourceRef):ObjectRow{
     const row=this.store.sqlite.prepare('SELECT * FROM application_zentao_revisions WHERE project_id=? AND connection_id=? AND identity_revision=? AND object_kind=? AND native_id=? AND content_revision=? LIMIT 1').get(context.projectId,reference.connectionId,reference.identityRevision,kind,reference.nativeId,reference.contentRevision) as ObjectRow|undefined;
     if(!row)throw new ApplicationError('NOT_FOUND','当前项目没有该原来源对象引用，请先从本人列表查询');try{const value=JSON.parse(row.payload_json);if(!boundedJson(value)||digest(canonicalJson(value))!==row.content_revision||value.kind!==row.object_kind||value.id!==row.native_id)throw new Error();}catch{throw new ApplicationError('HASH_MISMATCH','原禅道来源引用内容损坏');}return row;
   }
+  /** Local identity/hash check; callers must separately enforce current project policy. */
+  assertStoredReference(projectId:string,kind:ZentaoKind,reference:ZentaoSourceRef):void{this.known({projectId},kind,reference);}
   execute(context:ApplicationExecutionContext,method:'zentao.work.list',input:unknown):Promise<ZentaoWorkData>;
   execute(context:ApplicationExecutionContext,method:'zentao.object.get',input:unknown):Promise<ZentaoDetailData>;
   execute(context:ApplicationExecutionContext,method:'zentao.resource.read',input:unknown):Promise<ApplicationResourceChunk>;

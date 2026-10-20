@@ -65,6 +65,8 @@ export const HomeView = observer(function HomeView() {
   useEffect(() => {
     if (!preset || appliedPreset.current === preset.seq || !projects?.some((p) => p.id === preset.projectId)) return;
     appliedPreset.current = preset.seq;
+    const applicationPrompt=navigation.consumeApplicationPrompt(preset.seq);
+    if(applicationPrompt)setMessage(existing=>existing?existing+'\n'+applicationPrompt:applicationPrompt);
     setProjectId(preset.projectId);
     setDirId(null);
     inputRef.current?.focus();

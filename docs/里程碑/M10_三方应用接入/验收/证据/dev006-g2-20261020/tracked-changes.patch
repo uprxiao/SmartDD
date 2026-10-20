@@ -1,0 +1,329 @@
+diff --git a/src/main/core/applications/__tests__/application-controller.test.ts b/src/main/core/applications/__tests__/application-controller.test.ts
+index 4df74cc9..5471bcef 100644
+--- a/src/main/core/applications/__tests__/application-controller.test.ts
++++ b/src/main/core/applications/__tests__/application-controller.test.ts
+@@ -8,7 +8,7 @@ import { PtyAccess } from '../../../pty-access';
+ import { createApplicationController } from '../controller';
+ import type { ApplicationService } from '../application-service';
+ let handlers:Map<string,(...args:any[])=>any>,sender:IpcMainInvokeEvent,access:PtyAccess,service:ReturnType<typeof fakeService>;
+-function fakeService(){return{diagnoseSession:vi.fn(),listVersions:vi.fn(),cleanupVersion:vi.fn(),listActivity:vi.fn(),activityDetail:vi.fn(),prepareSend:vi.fn(),executeSend:vi.fn(),mailStatus:vi.fn(),viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),discardConnectionTest:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
++function fakeService(){return{bindTerminal:vi.fn(),insertTerminal:vi.fn(),releaseTerminal:vi.fn(),diagnoseSession:vi.fn(),listVersions:vi.fn(),cleanupVersion:vi.fn(),listActivity:vi.fn(),activityDetail:vi.fn(),prepareSend:vi.fn(),executeSend:vi.fn(),mailStatus:vi.fn(),viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),discardConnectionTest:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
+ const event=(id:number)=>{const wc=Object.assign(new EventEmitter(),{id,mainFrame:{},isDestroyed:()=>false});return{sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;};
+ function register(current:ApplicationService|undefined){handlers=new Map();registerRPCRouter({applications:createApplicationController(current,e=>access.requireSender(e))},{handle:(name:string,handler:(...args:any[])=>any)=>handlers.set(name,handler)} as never);}
+ const invoke=(name:string,e=sender,...args:unknown[])=>handlers.get('applications.'+name)!(e,...args);
+@@ -27,7 +27,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+   service.setAdded.mockRejectedValueOnce(new ApplicationError('REVISION_CONFLICT','应用状态已变化，请重新载入'));expect(await invoke('setAdded',sender,'mail',true,0)).toEqual({ok:false,code:'REVISION_CONFLICT',message:'应用状态已变化，请重新载入'});
+  });
+  it('exposes explicit business endpoints without generic SQL,secret,scope or caller-supplied approval flags',()=>{
+-  expect([...handlers.keys()].sort()).toEqual(['session','versions','cleanupVersion','activity','activityDetail','prepareSend','executeSend','send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','discardConnectionTest','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailStatus','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
++  expect([...handlers.keys()].sort()).toEqual(['terminalBind','terminalInsert','terminalRelease','session','versions','cleanupVersion','activity','activityDetail','prepareSend','executeSend','send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','discardConnectionTest','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailStatus','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
+  });
+  it('keeps cache inspection and reclamation as explicit main-frame-only management endpoints',async()=>{
+   service.mailCacheStatus.mockResolvedValueOnce({limit:500000000});service.clearMailCache.mockResolvedValueOnce({activeLeases:1});
+@@ -51,6 +51,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+  it('keeps history metadata and frozen results behind the main-frame gate without enabling an app',async()=>{
+   for(const[name,method]of[['activity','listActivity'],['activityDetail','activityDetail']] as const){expect(await invoke(name,event(82),{})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockReturnValueOnce({items:[]});expect(await invoke(name,sender,{})).toMatchObject({ok:true,value:{items:[]}});expect(service[method]).toHaveBeenCalledWith(sender,{},...(name==='activityDetail'?[undefined]:[]));}
+  });
++ it('protects all terminal reference entrypoints with the actual main frame before source parsing',async()=>{for(const [name,method,arg] of [['terminalBind','bindTerminal',{}],['terminalInsert','insertTerminal',{}],['terminalRelease','releaseTerminal','id']] as const){expect(await invoke(name,event(82),arg)).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({checked:true});expect(await invoke(name,sender,arg)).toEqual({ok:true,value:{checked:true}});expect(service[method]).toHaveBeenCalledWith(sender,arg);}});
+  it('allows read-only session diagnostics only from the real main frame',async()=>{expect(await invoke('session',event(82),'t1')).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service.diagnoseSession).not.toHaveBeenCalled();service.diagnoseSession.mockResolvedValueOnce({selection:'unknown-history'});expect(await invoke('session',sender,'t1')).toEqual({ok:true,value:{selection:'unknown-history'}});expect(service.diagnoseSession).toHaveBeenCalledWith(sender,'t1');});
+  it('gates version inspection and cleanup before parsing any renderer plan',async()=>{
+   for(const[name,method]of[['versions','listVersions'],['cleanupVersion','cleanupVersion']] as const){expect(await invoke(name,event(82),{sql:'invalid'})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({items:[]});expect(await invoke(name,sender,'mail')).toMatchObject({ok:true,value:{items:[]}});expect(service[method]).toHaveBeenCalledWith(sender,'mail');}
+diff --git a/src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs b/src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs
+index 688d6153..2358704f 100644
+--- a/src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs
++++ b/src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs
+@@ -1,6 +1,6 @@
+ // Private OS integration fixture. Parses real host argv and drives the immutable
+ // MCP child; it never loads CC/Codex, a model, external mail or user credentials.
+-import {existsSync,writeFileSync} from 'node:fs';
++import {existsSync,writeFileSync,appendFileSync} from 'node:fs';
+ import {parse} from 'smol-toml';
+ import {Client} from '@modelcontextprotocol/client';
+ import {StdioClientTransport} from '@modelcontextprotocol/client/stdio';
+@@ -13,8 +13,10 @@ for(let i=2;i<process.argv.length;i++)if(process.argv[i]==='-c'){
+ const server=Object.values(servers).find(value=>value.args?.includes('--bootstrap'));
+ if(!server)throw new Error('private bridge config missing');
+ const client=new Client({name:'private-native-cli-fixture',version:'1.0.0'}),transport=new StdioClientTransport({...server,env:{...process.env,...server.env},stderr:'pipe'});
++// Optional raw byte observer for controlled-paste integration; never an actual model.
++if(process.env.WY_M10_TEST_INPUT_REPORT){writeFileSync(process.env.WY_M10_TEST_INPUT_REPORT,'',{flag:'wx',mode:0o600});process.stdin.setRawMode(true);process.stdin.on('data',data=>appendFileSync(process.env.WY_M10_TEST_INPUT_REPORT,data));process.stdin.resume();}
+ let closing;
+-const close=()=>closing??=(async()=>{clearInterval(timer);await client.close();process.exitCode=0;})();
++const close=()=>closing??=(async()=>{clearInterval(timer);if(process.env.WY_M10_TEST_INPUT_REPORT)process.stdin.pause();await client.close();process.exitCode=0;})();
+ const timer=setInterval(()=>{if(existsSync(process.env.WY_M10_TEST_STOP))void close();},20);
+ process.once('SIGTERM',()=>void close());
+ try{
+diff --git a/src/main/core/applications/__tests__/native-user-inputs.test.ts b/src/main/core/applications/__tests__/native-user-inputs.test.ts
+index 3f006a6b..0d6d7693 100644
+--- a/src/main/core/applications/__tests__/native-user-inputs.test.ts
++++ b/src/main/core/applications/__tests__/native-user-inputs.test.ts
+@@ -18,6 +18,7 @@ describe('bounded host-observed native user input origin; no send grant',()=>{
+  it('captures only submitted lines with exact text,scope,frame,time and digest;unsubmitted input cannot match',()=>{
+   input('发送这封邮件');expect(match('发送这封邮件')).toBeNull();input('\r');const receipt=match('发送这封邮件')!;expect(receipt).toMatchObject({projectId:'project-one',taskId:target.taskId,ptyId:target.ptyId,runId:current.run.runId,senderId:101,frameProcessId:9,frameRoutingId:1,observedAt:now});expect(receipt.textHash).toMatch(/^[a-f0-9]{64}$/);expect(Object.keys(receipt)).not.toContain('text');expect(Object.isFrozen(receipt)).toBe(true);expect(match('发送另一封邮件')).toBeNull();
+  });
++ it('does not certify a partially accepted controlled paste or a suffix on its unknown line',()=>{input('known prefix');ledger.uncertain(sender,target);input('approved-looking suffix\r');expect(match('approved-looking suffix')).toBeNull();expect(match('known prefixapproved-looking suffix')).toBeNull();input('new fully observed line\r');expect(match('new fully observed line')).not.toBeNull();});
+  it('handles Unicode editing and CRLF without manufacturing a duplicate receipt',()=>{
+   input('send😀\x7f字\bmessage\r\n');const first=match('sendmessage');expect(first).not.toBeNull();input('\n');expect(match('sendmessage')).toBe(first);input('do not send\x15发送指定草稿\r');expect(match('发送指定草稿')).not.toBeNull();input('send wrong\x17right\r');expect(match('send right')).not.toBeNull();
+  });
+diff --git a/src/main/core/applications/__tests__/task-capability-launcher.test.ts b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+index 17956acd..f0eee501 100644
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -1,3 +1,6 @@
++import {PtyAccess} from '../../../pty-access';
++import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
++import type {ApplicationUiSender} from '../execution-context';
+ import {EventEmitter} from 'node:events';
+ import {randomUUID} from 'node:crypto';
+ import {parse as parseToml} from 'smol-toml';
+@@ -84,12 +87,14 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
+  it('connects the complete production launcher through a real OS PTY, kernel-owned CLI and original CJS MCP child',async()=>{
+   await managed.dispose();await applications.dispose();tasks.dispose();
+   const real=new PtyManager(),processes=new MacProcessIdentityReader(resolve('out/native/willyou-process-identity')),db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});
+-  const report=join(root,'native-report.json'),stop=join(root,'stop-native'),command=join(root,'native-cli-fixture'),quote=(value:string)=>"'"+value.replaceAll("'","'\\''")+"'",script=resolve('src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs');
++  const inputReport=join(root,'native-input.bin'),report=join(root,'native-report.json'),stop=join(root,'stop-native'),command=join(root,'native-cli-fixture'),quote=(value:string)=>"'"+value.replaceAll("'","'\\''")+"'",script=resolve('src/main/core/applications/__tests__/fixtures/managed-native-cli.mjs');
+   writeFileSync(command,'#!/bin/sh\nexec '+quote(process.execPath)+' '+quote(script)+' "$@"\n',{mode:0o700});
+-  const profile=profiles.create({name:'private actual process fixture',runner:'codex',executable:command,args:[],env:[{name:'ELECTRON_RUN_AS_NODE',value:'1',secret:false},{name:'WY_M10_TEST_REPORT',value:report,secret:false},{name:'WY_M10_TEST_STOP',value:stop,secret:false}],color:null,isDefault:false});
++  const profile=profiles.create({name:'private actual process fixture',runner:'codex',executable:command,args:[],env:[{name:'WY_M10_TEST_INPUT_REPORT',value:inputReport,secret:false},{name:'ELECTRON_RUN_AS_NODE',value:'1',secret:false},{name:'WY_M10_TEST_REPORT',value:report,secret:false},{name:'WY_M10_TEST_STOP',value:stop,secret:false}],color:null,isDefault:false});
+   for(const skill of capabilities.list(projectId))capabilities.setEnabled(projectId,skill.id,false);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);
+   tasks=new TaskService({db,ptys:real,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',SHELL:'/bin/sh'}),onChanged:()=>{}});
+-  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
++  const frame={},sender={sender:{mainFrame:frame,isDestroyed:()=>false},senderFrame:frame} as unknown as ApplicationUiSender;
++  const access=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:id=>tasks.activePty(id),alive:id=>real.has(id),write:(id,data)=>real.writeControlled(id,data),resize:()=>{},killTask:()=>{}});
++  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),terminal:{access,bracketedPaste:id=>real.bracketedPaste(id),write:(id,data)=>real.writeControlled(id,data)},requireSender:e=>access.requireSender(e),mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
+   managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:resolve('out/native/willyou-process-identity'),stopPty:id=>real.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+   const oldShell=process.env.SHELL;process.env.SHELL='/bin/sh';let transcript='';real.on('data',(_id,data)=>{transcript+=data;});
+@@ -98,6 +103,24 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
+    await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const observed=JSON.parse(readFileSync(report,'utf8')) as {cliPid:number;bridgePid:number;result:{isError?:boolean}};
+    expect(observed.result.isError).not.toBe(true);expect(managed.runs.get(runId).pid).toBe(observed.cliPid);const child=sqlite.prepare("SELECT state,pid FROM capability_run_processes WHERE run_id=? AND kind='bridge'").get(runId);expect(child).toEqual({state:'active',pid:observed.bridgePid});expect(consumers()).toHaveLength(1);
+    const diagnostic=await applications.sessionDiagnostics.inspect(first.task.id);expect(diagnostic.currentRun).toMatchObject({id:runId,current:true,preparation:{state:'prepared',cliVersion:'0.162.1'},bridge:{connected:true,observedAt:expect.any(String)}});expect(diagnostic.applications.find(a=>a.appId==='mail')).toMatchObject({fixedVersion:'1.0.0',resourceState:'verified',evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:1,successfulToolRequests:1}});
++   const target={taskId:first.task.id,ptyId:first.ptyId},source={kind:'skill' as const,appId:'mail' as const,skillId:'work-assistant'};
++   await expect(applications.bindTerminal(sender,{projectId:'different-project',target,source})).rejects.toMatchObject({code:'SCOPE_DENIED'});
++   await expect(applications.bindTerminal(sender,{projectId,target,source:{...source,skillId:'not-in-original-package'}})).rejects.toMatchObject({code:'SCOPE_DENIED'});
++   const untouched=join(root,'other-pty-input.bin'),otherPty=randomUUID();real.spawn({id:otherPty,command:process.execPath,args:['-e',"const fs=require('fs');fs.writeFileSync(process.argv[1],'',{flag:'wx'});process.stdin.setRawMode(true);process.stdin.on('data',data=>fs.appendFileSync(process.argv[1],data));process.stdin.resume();",untouched],cwd:home,env:{HOME:home,PATH:'/usr/bin:/bin',ELECTRON_RUN_AS_NODE:'1'}});await vi.waitFor(()=>expect(existsSync(untouched)).toBe(true));
++   real.writeControlled(first.ptyId,'existing-prefix ');await vi.waitFor(()=>expect(readFileSync(inputReport,'utf8')).toBe('existing-prefix '));
++   const binding=await applications.bindTerminal(sender,{projectId,target,source}),request={bindingId:binding.id,operationId:randomUUID()};
++   const inserted=await applications.insertTerminal(sender,request);expect(inserted).toMatchObject({state:'inserted',bracketed:false});expect(await applications.insertTerminal(sender,request)).toEqual(inserted);
++   const expected='existing-prefix '+APPLICATION_SKILL_EXAMPLES['mail:work-assistant'];await vi.waitFor(()=>expect(readFileSync(inputReport,'utf8')).toBe(expected));expect(readFileSync(inputReport).includes(13)).toBe(false);expect(readFileSync(inputReport).includes(10)).toBe(false);
++   expect(readFileSync(untouched).length).toBe(0);expect(real.has(otherPty)).toBe(true);
++   const content={mode:'new' as const,sourceMessageRef:null,senderConnectionId:null,to:['private@example.test'],cc:[],bcc:[],subject:'private draft reference',text:'body',html:null,inReplyTo:null,references:[],attachmentIds:[]};
++   const draft=await applications.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.fixture',operations:['mail.draft'],semantics:'write'},async context=>applications.drafts.create(applications.contexts.actor(context),{operationId:randomUUID(),content}));
++   await expect(applications.bindTerminal(sender,{projectId,target,source:{kind:'draft',draftId:draft.id,revision:draft.revision,contentHash:'0'.repeat(64)}})).rejects.toMatchObject({code:'REVISION_CONFLICT'});
++   const draftBinding=await applications.bindTerminal(sender,{projectId,target,source:{kind:'draft',draftId:draft.id,revision:draft.revision,contentHash:draft.contentHash}});
++   await applications.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.fixture',operations:['mail.draft'],semantics:'write'},async context=>applications.drafts.update(applications.contexts.actor(context),{operationId:randomUUID(),draftId:draft.id,expectedRevision:draft.revision,content:{...content,text:'new revision'}}));
++   await expect(async()=>applications.insertTerminal(sender,{bindingId:draftBinding.id,operationId:randomUUID()})).rejects.toMatchObject({code:'REVISION_CONFLICT'});expect(readFileSync(inputReport,'utf8')).toBe(expected);expect(readFileSync(untouched).length).toBe(0);
++   expect(sqlite.prepare('SELECT COUNT(*) AS n FROM mail_send_grants').get()).toEqual({n:0});
++   const revoked=await applications.bindTerminal(sender,{projectId,target,source});await applications.selections.setGlobalEnabled('mail',false,1);
++   await expect(async()=>applications.insertTerminal(sender,{bindingId:revoked.id,operationId:randomUUID()})).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(readFileSync(inputReport,'utf8')).toBe(expected);expect(real.has(first.ptyId)).toBe(true);
+    writeFileSync(stop,'owned fixture exit');await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'),{timeout:10000});await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(existsSync(first.task.runtimeSnapshot!.manifestPath)).toBe(false);
+   }finally{tasks.dispose();real.killAll();if(oldShell===undefined)delete process.env.SHELL;else process.env.SHELL=oldShell;}
+  },20000);
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index 2fff941c..bac54455 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -1,3 +1,7 @@
++import {ApplicationTerminalInsertion} from './terminal-insertion';
++import {resolveApplicationTerminalSource} from './terminal-sources';
++import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
++import type {PtyAccess} from '../../pty-access';
+ import {ApplicationSessionDiagnostics} from './session-diagnostics';
+ import {ApplicationVersionMaintenance} from './version-maintenance';
+ import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
+@@ -38,6 +42,7 @@ import type { CapabilityRunRegistry } from './run-registry';
+ const uuid=z.uuid();
+ /** Main-process composition for actual local business services. Agent runtime attachment is explicit. */
+ export class ApplicationService {
++  readonly terminal?:ApplicationTerminalInsertion;
+   readonly sessionDiagnostics:ApplicationSessionDiagnostics;
+   readonly versions:ApplicationVersionMaintenance;
+   readonly activity:ApplicationActivityService;
+@@ -61,6 +66,7 @@ export class ApplicationService {
+   private closed=false;private closing?:Promise<void>;
+   constructor(readonly store:ResourceStore,private readonly options:{
+     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
++    terminal?:{access:PtyAccess;bracketedPaste(ptyId:string):Promise<boolean>;write(ptyId:string,data:string):void};
+     requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;changed?():void;
+   }){
+     this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
+@@ -76,7 +82,12 @@ export class ApplicationService {
+     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
+     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
+     this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
++    if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.nativeInputs.observe(sender,target,data),uncertain:(sender,target)=>this.nativeInputs.uncertain(sender,target)});}
+   }
++  private terminalService(){if(!this.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端投递服务不可用');return this.terminal;}
++  bindTerminal(sender:ApplicationUiSender,input:ApplicationTerminalBind){return this.terminalService().bind(sender,input);}
++  insertTerminal(sender:ApplicationUiSender,input:ApplicationTerminalInsert){return this.terminalService().insert(sender,input);}
++  releaseTerminal(sender:ApplicationUiSender,id:string){this.terminalService().release(sender,id);return{released:true};}
+   observeInput(sender:ApplicationUiSender,target:NativeInputTarget,data:string):void{this.nativeInputs.observe(sender,target,data);}
+   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
+   async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();await this.versions.recover();
+@@ -158,7 +169,7 @@ export class ApplicationService {
+   mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);return cache.usage();});}
+   clearMailCache(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.clear',semantics:'write'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);const result=await cache.clear(context.signal);this.options.changed?.();return result;});}
+   dispose():Promise<void>{
+-    if(this.closing)return this.closing;this.closed=true;this.nativeInputs.dispose();this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
++    if(this.closing)return this.closing;this.closed=true;this.terminal?.dispose();this.nativeInputs.dispose();this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
+     this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
+   }
+ }
+diff --git a/src/main/core/applications/controller.ts b/src/main/core/applications/controller.ts
+index a5d871c9..b27869d8 100644
+--- a/src/main/core/applications/controller.ts
++++ b/src/main/core/applications/controller.ts
+@@ -1,3 +1,4 @@
++import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
+ import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
+ import type {ApplicationActivityQuery} from '@shared/application-activity';
+ import type { IpcMainInvokeEvent } from 'electron';
+@@ -21,6 +22,9 @@ export function createApplicationController(service:ApplicationService|undefined
+     }
+   };
+   return createScopedRPCController({
++    terminalBind:(event,input:ApplicationTerminalBind)=>run(event,current=>current.bindTerminal(event,input)),
++    terminalInsert:(event,input:ApplicationTerminalInsert)=>run(event,current=>current.insertTerminal(event,input)),
++    terminalRelease:(event,id:string)=>run(event,current=>current.releaseTerminal(event,id)),
+     session:(event,taskId:string)=>run(event,current=>current.diagnoseSession(event,taskId)),
+     versions:(event,appId:ApplicationId)=>run(event,current=>current.listVersions(event,appId)),
+     cleanupVersion:(event,input:ApplicationVersionCleanup)=>run(event,current=>current.cleanupVersion(event,input)),
+diff --git a/src/main/core/applications/native-user-inputs.ts b/src/main/core/applications/native-user-inputs.ts
+index a7cc1750..7e62ae2b 100644
+--- a/src/main/core/applications/native-user-inputs.ts
++++ b/src/main/core/applications/native-user-inputs.ts
+@@ -60,6 +60,8 @@ export class NativeUserInputs {
+   const first=completed.length===this.maxReceipts?next:0;for(let index=0;index<completed.length;index++){this.capture(sender,target,context,completed[(first+index)%completed.length],stamp);this.prune();}
+   this.prune();
+  }
++ /** A partial native controlled write makes this editable line unprovable until reset/submission. */
++ uncertain(sender:ApplicationUiSender,target:NativeInputTarget):void{this.observe(sender,target,'');const editor=this.editors.get(target.ptyId);if(editor){editor.text='';editor.bytes=0;editor.escape='';editor.paste=false;editor.known=false;}}
+  private append(editor:Editor,text:string){const joinedSurrogate=/[\uD800-\uDBFF]/.test(editor.text.at(-1)??'')&&/[\uDC00-\uDFFF]/.test(text[0]??'');editor.bytes+=Buffer.byteLength(text)-(joinedSurrogate?2:0);editor.text+=text;}
+  private capture(sender:ApplicationUiSender,target:NativeInputTarget,context:RunContext,text:string,stamp:string){
+   const frame=sender.senderFrame;if(!frame||!Number.isSafeInteger(frame.processId)||!Number.isSafeInteger(frame.routingId))return;
+diff --git a/src/main/core/applications/zentao-data-service.ts b/src/main/core/applications/zentao-data-service.ts
+index ef4ae3b2..3f63e00e 100644
+--- a/src/main/core/applications/zentao-data-service.ts
++++ b/src/main/core/applications/zentao-data-service.ts
+@@ -99,10 +99,12 @@ export class ZentaoDataService implements ApplicationDataHost {
+       this.store.sqlite.prepare('INSERT OR IGNORE INTO application_zentao_operation_objects VALUES(?,?)').run(context.operationId,key);return this.store.sqlite.prepare('SELECT * FROM application_zentao_revisions WHERE object_key=?').get(key) as ObjectRow;
+     }).immediate());
+   }
+-  private known(context:ApplicationExecutionContext,kind:ZentaoKind,reference:ZentaoSourceRef):ObjectRow{
++  private known(context:Pick<ApplicationExecutionContext,'projectId'>,kind:ZentaoKind,reference:ZentaoSourceRef):ObjectRow{
+     const row=this.store.sqlite.prepare('SELECT * FROM application_zentao_revisions WHERE project_id=? AND connection_id=? AND identity_revision=? AND object_kind=? AND native_id=? AND content_revision=? LIMIT 1').get(context.projectId,reference.connectionId,reference.identityRevision,kind,reference.nativeId,reference.contentRevision) as ObjectRow|undefined;
+     if(!row)throw new ApplicationError('NOT_FOUND','当前项目没有该原来源对象引用，请先从本人列表查询');try{const value=JSON.parse(row.payload_json);if(!boundedJson(value)||digest(canonicalJson(value))!==row.content_revision||value.kind!==row.object_kind||value.id!==row.native_id)throw new Error();}catch{throw new ApplicationError('HASH_MISMATCH','原禅道来源引用内容损坏');}return row;
+   }
++  /** Local identity/hash check; callers must separately enforce current project policy. */
++  assertStoredReference(projectId:string,kind:ZentaoKind,reference:ZentaoSourceRef):void{this.known({projectId},kind,reference);}
+   execute(context:ApplicationExecutionContext,method:'zentao.work.list',input:unknown):Promise<ZentaoWorkData>;
+   execute(context:ApplicationExecutionContext,method:'zentao.object.get',input:unknown):Promise<ZentaoDetailData>;
+   execute(context:ApplicationExecutionContext,method:'zentao.resource.read',input:unknown):Promise<ApplicationResourceChunk>;
+diff --git a/src/main/index.ts b/src/main/index.ts
+index cc751d26..281bb10f 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -177,7 +177,7 @@ async function main(): Promise<void> {
+   let managedTasks:ManagedTaskCapabilities|undefined;
+   try {
+     if(agentSupport){
+-      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
++      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
+       await applications.recover();
+       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
+         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),stopPty:id=>ptys.kill(id)});
+diff --git a/src/renderer/core/navigation.ts b/src/renderer/core/navigation.ts
+index e12da7a9..65053cb6 100644
+--- a/src/renderer/core/navigation.ts
++++ b/src/renderer/core/navigation.ts
+@@ -21,7 +21,7 @@ class NavigationStore {
+   /** The task the 'task' view shows. */
+   currentTaskId: string | null = null;
+   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
+-  homePreset: { projectId: string; seq: number } | null = null;
++  homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
+   settingsSection: SettingsSectionId = 'general';
+   /** ⌘K task search. */
+   searchOpen = false;
+@@ -47,6 +47,9 @@ class NavigationStore {
+     this.currentViewId = 'home';
+   }
+ 
++  prepareApplicationTask(projectId:string,prompt:string):void{this.newTask(projectId);this.homePreset={...this.homePreset!,applicationPrompt:prompt};}
++  consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
++
+   openTask(id: string): void {
+     this.currentTaskId = id;
+     this.currentViewId = 'task';
+diff --git a/src/renderer/features/applications/mail-panel.tsx b/src/renderer/features/applications/mail-panel.tsx
+index 6de07e1f..8373765c 100644
+--- a/src/renderer/features/applications/mail-panel.tsx
++++ b/src/renderer/features/applications/mail-panel.tsx
+@@ -1,3 +1,4 @@
++import {ApplicationTerminalButton} from './terminal-insertion';
+ import {useEffect,useRef,useState} from 'react';
+ import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
+ import {ChevronRight,RefreshCw} from 'lucide-react';
+@@ -51,5 +52,5 @@ function DraftDetail({projectId,id,revision,onClose}:{projectId:string;id:string
+  const intent=result??current.data?.intent;
+  const close=async()=>{if(busy)return;if(review){setBusy(true);try{unwrap(await rpc.applications.cancelSend(projectId,review.intent.id));onClose();}catch(e){setError(rpcErrorMessage(e));}finally{setBusy(false);}}else onClose();};
+  return <AppDialog title="草稿审阅与发送结果" wide closingDisabled={busy} onClose={()=>void close()}>{query.isPending?<AppEmpty loading title="正在读取草稿" text="读取选定修订的内容与稳定附件。"/>:query.error?<AppEmpty error title="草稿不可用" text={query.error.message}/>:draft&&<><p className="m10-modal-copy">项目 {projectId} · 修订 r{draft.revision} · {draftState[draft.state]}<br/>修改内容请交给项目 Agent。当前页查看与审阅已保存修订。</p><div className="m10-review"><span>收件人<strong>{draft.content.to.join('、')||'未填写'}</strong></span><span>抄送<strong>{draft.content.cc.join('、')||'无'}</strong></span><span>密送<strong>{draft.content.bcc.join('、')||'无'}</strong></span><span>主题<strong>{draft.content.subject||'（无主题）'}</strong></span><ResourceView resource={draft.content.text} scope={projectId} read={offset=>rpc.applications.resource(projectId,{resource:draft.content.text,offset,length:65536}).then(unwrap)}/>{draft.attachments.map(a=><small key={a.id}>{a.filename} · {a.size} 字节 · {a.contentHash}</small>)}{!draft.attachments.length&&<small>无附件</small>}</div>{current.error&&<p role="alert">发送记录读取失败：{current.error.message}</p>}{intent&&<div className="m10-note"><strong>{sendState[intent.state]}</strong><p>原意图 {intent.id} · {timeText(intent.updatedAt)}</p>{intent.result&&<p>服务器接受：{intent.result.accepted.join('、')||'无'}；拒绝：{intent.result.rejected.join('、')||'无'}{intent.result.errorCode?' · '+intent.result.errorCode:''}</p>}{intent.state==='unknown'&&<p>先核实原操作；刷新、重连或恢复均不会重新发送。</p>}</div>}
+- {review&&<div className="m10-review"><h3>本次发送内容</h3><span>发件人<strong>{review.review.fromAddress}</strong></span><span>目标<strong>{review.review.content.to.join('、')}</strong></span><p>固定草稿 r{review.review.draftRevision}，正文与附件以本次审阅内容为准。</p><pre>{review.review.content.text}</pre>{review.review.content.html&&<p>含 HTML 正文，需同时核对：<span className="m10-raw-html">{review.review.content.html}</span></p>}{review.review.priorUnknownExecutionIds.length>0&&<label><input type="checkbox" checked={unknownChecked} onChange={e=>setUnknownChecked(e.target.checked)}/>我已核实原未知执行 {review.review.priorUnknownExecutionIds.join('、')}，仍明确另行发送本次内容</label>}<p>点击发送明确授权本次目标与内容。服务器接受不代表送达或已读；不写入 Foxmail 已发送。</p></div>}</>}{error&&<p className="m10-note" role="alert">{error}</p>}<footer><button className="m10-button secondary" disabled={busy} onClick={()=>void close()}>关闭</button>{draft&&!['sending','sent','unknown'].includes(draft.state)&&!result&&(review?<button className="m10-button primary" disabled={busy||review.review.priorUnknownExecutionIds.length>0&&!unknownChecked} onClick={()=>void submit()}>{busy?'正在提交…':'发送此修订'}</button>:<button className="m10-button secondary" disabled={busy} onClick={()=>void startReview()}>{busy?'正在准备审阅…':'审阅发送内容'}</button>)}</footer></AppDialog>;
++ {review&&<div className="m10-review"><h3>本次发送内容</h3><span>发件人<strong>{review.review.fromAddress}</strong></span><span>目标<strong>{review.review.content.to.join('、')}</strong></span><p>固定草稿 r{review.review.draftRevision}，正文与附件以本次审阅内容为准。</p><pre>{review.review.content.text}</pre>{review.review.content.html&&<p>含 HTML 正文，需同时核对：<span className="m10-raw-html">{review.review.content.html}</span></p>}{review.review.priorUnknownExecutionIds.length>0&&<label><input type="checkbox" checked={unknownChecked} onChange={e=>setUnknownChecked(e.target.checked)}/>我已核实原未知执行 {review.review.priorUnknownExecutionIds.join('、')}，仍明确另行发送本次内容</label>}<p>点击发送明确授权本次目标与内容。服务器接受不代表送达或已读；不写入 Foxmail 已发送。</p></div>}</>}{error&&<p className="m10-note" role="alert">{error}</p>}<footer>{draft&&!review&&<ApplicationTerminalButton key={draft.id+':'+draft.revision} projectId={projectId} source={{kind:'draft',draftId:draft.id,revision:draft.revision,contentHash:draft.contentHash}} onInserted={onClose} label="交给 Agent 继续处理"/>}{draft?.content.sourceMessageRef&&!review&&<ApplicationTerminalButton key={draft.content.sourceMessageRef.contentRevision} projectId={projectId} source={{kind:'mail',reference:draft.content.sourceMessageRef}} onInserted={onClose} label="插入原邮件引用"/>}<button className="m10-button secondary" disabled={busy} onClick={()=>void close()}>关闭</button>{draft&&!['sending','sent','unknown'].includes(draft.state)&&!result&&(review?<button className="m10-button primary" disabled={busy||review.review.priorUnknownExecutionIds.length>0&&!unknownChecked} onClick={()=>void submit()}>{busy?'正在提交…':'发送此修订'}</button>:<button className="m10-button secondary" disabled={busy} onClick={()=>void startReview()}>{busy?'正在准备审阅…':'审阅发送内容'}</button>)}</footer></AppDialog>;
+ }
+diff --git a/src/renderer/features/applications/session-applications.tsx b/src/renderer/features/applications/session-applications.tsx
+index efe03a3d..5fe58a12 100644
+--- a/src/renderer/features/applications/session-applications.tsx
++++ b/src/renderer/features/applications/session-applications.tsx
+@@ -1,3 +1,4 @@
++import {ApplicationTerminalButton} from './terminal-insertion';
+ import {useState} from 'react';
+ import {useQuery} from '@tanstack/react-query';
+ import {RefreshCw} from 'lucide-react';
+@@ -25,7 +26,7 @@ export function SessionApplicationsPanel({taskId,onClose,runIdentity=''}:{taskId
+  <p>Agent 发现 Skill：未验证<br/>Agent 读取 Skill：未验证<br/>本次运行工具请求：{app.evidence.toolRequests} 次，调用完成 {app.evidence.successfulToolRequests} 次</p><p className="m10-muted">文件或工具桥准备不证明 Agent 发现／读取 Skill；调用完成也不代表外部写操作已成功。</p>
+  {app.evidence.latestErrorCode&&<p className="m10-note" role="status">最近调用：{app.evidence.latestErrorCode} · {app.evidence.latestEffectState==='unknown'?'结果未知，先核实原执行，不自动重发':'核对本次错误及原连接条件'}</p>}
+  {app.connections.map(connection=><p key={connection.slot}>{connection.slot==='smtp'?'发件账号':connection.slot==='foxmail'?'邮件来源':'禅道连接'}：{connection.name??(connection.id?'原连接':'未选用')} · {healthLabel[connection.health]??'待核查'}<br/><small>创建时：{connection.originalName??(connection.originalId?'原连接身份 '+connection.originalId:'未选用')}<br/>相对创建时选用：{connection.selection==='same'?'原身份':connection.selection==='changed'?'已变化':connection.selection==='missing'?'未选用':'待核查'} · 原包配置{connection.compatibility==='compatible'?'兼容':connection.compatibility==='incompatible'?'不兼容':'兼容性待核查'}{connection.issueCode?' · '+connection.issueCode:''}</small></p>)}
+- <details><summary>固定包与 Skill 来源</summary><p className="m10-message-id">包：{app.packageHash??'本会话未选用'}</p>{app.skills.map(skill=><p className="m10-message-id" key={skill.id}>{skillNames[skill.id]??skill.id}<br/>内容：{skill.sourceHash}<br/>原投影：{skill.projectionPath}</p>)}</details><button className="m10-button secondary" onClick={()=>configure(app.appId)}>检查{app.name}与连接</button>{value.projectId&&<button className="m10-button secondary" onClick={()=>{onClose();navigation.openApplicationActivity({appId:app.appId,projectId:value.projectId!});}}>查看项目调用记录</button>}</section>)}
++ {value.projectId&&app.skills.map(skill=><ApplicationTerminalButton key={skill.id} projectId={value.projectId!} source={{kind:'skill',appId:app.appId,skillId:skill.id}} onInserted={onClose} disabled={app.resourceState!=='verified'||value.currentRun?.preparation?.state!=='prepared'} label="插入示例到终端"/>)}<details><summary>固定包与 Skill 来源</summary><p className="m10-message-id">包：{app.packageHash??'本会话未选用'}</p>{app.skills.map(skill=><p className="m10-message-id" key={skill.id}>{skillNames[skill.id]??skill.id}<br/>内容：{skill.sourceHash}<br/>原投影：{skill.projectionPath}</p>)}</details><button className="m10-button secondary" onClick={()=>configure(app.appId)}>检查{app.name}与连接</button>{value.projectId&&<button className="m10-button secondary" onClick={()=>{onClose();navigation.openApplicationActivity({appId:app.appId,projectId:value.projectId!});}}>查看项目调用记录</button>}</section>)}
+  {!!value.recentRuns.length&&<details><summary>最近 {value.recentRuns.length} 次{value.recentRuns.some(run=>!['stopped','failed'].includes(run.state))?'其他运行记录':'历史运行证据'}</summary>{value.recentRuns.map(run=><section className="m10-session-history" key={run.id}><RunEvidence run={run}/></section>)}</details>}
+  <p className="m10-muted">创建时 CLI：{value.createdCliVersion??'未记录'} · 最近检查：{timeText(value.checkedAt)}</p>
+  </>}{notice&&<p className="m10-note" role="status">{notice}</p>}
+diff --git a/src/renderer/features/applications/style.css b/src/renderer/features/applications/style.css
+index aebb37e0..c4760c97 100644
+--- a/src/renderer/features/applications/style.css
++++ b/src/renderer/features/applications/style.css
+@@ -135,3 +135,5 @@
+ .m10-version-summary>span{margin-left:0}.m10-version-summary .m10-inline-label{margin-left:8px}
+ 
+ .m10-session-applications{display:flex;flex-direction:column;gap:14px;max-height:62vh;overflow:auto;padding:3px 1px}.m10-session-applications p{margin:6px 0;line-height:1.65;overflow-wrap:anywhere}.m10-session-applications h3{margin:4px 0;font-size:13px;font-weight:600}.m10-session-app{border:1px solid var(--border);border-radius:10px;padding:16px}.m10-session-app>header{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.m10-session-app>button{margin:10px 8px 0 0}.m10-run-evidence{font-size:12px;line-height:1.7}.m10-session-history{border-top:1px solid var(--border);padding:12px 0}.m10-session-applications details>summary{cursor:pointer;color:var(--secondary);font-size:12px}.m10-session-applications small{font-size:11px;color:var(--muted)}
++
++.m10-terminal-insertion{display:flex;flex-direction:column;align-items:flex-start;gap:8px;max-width:100%}.m10-terminal-insertion>p{margin:0;overflow-wrap:anywhere}.m10-terminal-insertion>small{font-size:11px;line-height:1.5}.m10-session-app>.m10-terminal-insertion{margin-top:14px}
+diff --git a/src/renderer/features/applications/zentao-panel.tsx b/src/renderer/features/applications/zentao-panel.tsx
+index 89e41ec9..46b4a610 100644
+--- a/src/renderer/features/applications/zentao-panel.tsx
++++ b/src/renderer/features/applications/zentao-panel.tsx
+@@ -1,3 +1,4 @@
++import {ApplicationTerminalButton} from './terminal-insertion';
+ import {useState} from 'react';
+ import {useInfiniteQuery,useQuery} from '@tanstack/react-query';
+ import {ChevronRight,FileText,RefreshCw} from 'lucide-react';
+@@ -28,5 +29,5 @@ function ZentaoDetail({projectId,kind,reference,onClose,sourceName}:{sourceName:
+  const detail=useQuery({queryKey:['applications','zentao-detail',projectId,kind,reference],queryFn:async()=>unwrap(await rpc.applications.zentaoObject(projectId,{kind,reference})),retry:false,refetchOnWindowFocus:false});
+  const value=detail.data,labels:Record<string,string>={id:'编号',status:'状态',assignedTo:'指派给',pri:'优先级',severity:'严重程度',openedBy:'创建人',openedDate:'创建时间',product:'产品',project:'项目',deadline:'截止日期',module:'模块',plan:'计划',type:'类型'};
+  const fieldText=(field:unknown)=>{if(field&&typeof field==='object'&&!Array.isArray(field)){const row=field as Record<string,unknown>;return String(row.realname??row.name??row.account??JSON.stringify(field));}return String(field??'—');};
+- return <AppDialog title={(kind==='bug'?'Bug':'研发需求')+' #'+reference.nativeId} wide onClose={onClose}>{detail.isPending?<AppEmpty loading title="正在核对原对象" text="详情以当前服务返回与来源修订为准。"/>:detail.error?<AppEmpty error title="详情不可用" text={detail.error.message} action="重试" onAction={()=>void detail.refetch()}/>:value&&<div className="m10-object-detail"><h2>{String(value.fields.title??'#'+value.id)}</h2><div className="m10-detail-props">{Object.entries(value.fields).filter(([k])=>k!=='title').map(([key,field])=><span key={key}>{labels[key]??key}<strong>{fieldText(field)}</strong></span>)}</div>{!value.complete&&<p className="m10-note" role="alert">详情尚不完整：{value.missing.join('、')}</p>}<h3>{kind==='bug'?'重现步骤与说明':'需求描述与验收标准'}</h3>{value.body?<ResourceView format="zentao-body" resource={value.body} scope={projectId} read={offset=>rpc.applications.zentaoResource(projectId,{resource:value.body!,offset,length:65536}).then(unwrap)}/>:<p>当前对象未提供正文。</p>}<h3>历史记录</h3>{value.history?<ResourceView format="zentao-history" resource={value.history} scope={projectId} read={offset=>rpc.applications.zentaoResource(projectId,{resource:value.history!,offset,length:65536}).then(unwrap)}/>:<p>当前对象未提供历史。</p>}{value.attachments.map(file=><div className="m10-attachment" key={file.resource.id}><FileText size={16}/>{file.filename}<span>{file.resource.size} 字节 · 原对象附件</span></div>)}<p className="m10-muted">来源：{sourceName} · 本人指派范围</p></div>}<footer><button className="m10-button secondary" onClick={onClose}>关闭</button></footer></AppDialog>;
++ return <AppDialog title={(kind==='bug'?'Bug':'研发需求')+' #'+reference.nativeId} wide onClose={onClose}>{detail.isPending?<AppEmpty loading title="正在核对原对象" text="详情以当前服务返回与来源修订为准。"/>:detail.error?<AppEmpty error title="详情不可用" text={detail.error.message} action="重试" onAction={()=>void detail.refetch()}/>:value&&<div className="m10-object-detail"><h2>{String(value.fields.title??'#'+value.id)}</h2><div className="m10-detail-props">{Object.entries(value.fields).filter(([k])=>k!=='title').map(([key,field])=><span key={key}>{labels[key]??key}<strong>{fieldText(field)}</strong></span>)}</div>{!value.complete&&<p className="m10-note" role="alert">详情尚不完整：{value.missing.join('、')}</p>}<h3>{kind==='bug'?'重现步骤与说明':'需求描述与验收标准'}</h3>{value.body?<ResourceView format="zentao-body" resource={value.body} scope={projectId} read={offset=>rpc.applications.zentaoResource(projectId,{resource:value.body!,offset,length:65536}).then(unwrap)}/>:<p>当前对象未提供正文。</p>}<h3>历史记录</h3>{value.history?<ResourceView format="zentao-history" resource={value.history} scope={projectId} read={offset=>rpc.applications.zentaoResource(projectId,{resource:value.history!,offset,length:65536}).then(unwrap)}/>:<p>当前对象未提供历史。</p>}{value.attachments.map(file=><div className="m10-attachment" key={file.resource.id}><FileText size={16}/>{file.filename}<span>{file.resource.size} 字节 · 原对象附件</span></div>)}<p className="m10-muted">来源：{sourceName} · 本人指派范围</p></div>}<footer>{value&&<ApplicationTerminalButton key={value.reference.contentRevision} projectId={projectId} source={{kind:'zentao',objectKind:kind,reference:value.reference}} onInserted={onClose}/>}<button className="m10-button secondary" onClick={onClose}>关闭</button></footer></AppDialog>;
+ }
+diff --git a/src/renderer/views/home-view.tsx b/src/renderer/views/home-view.tsx
+index 1dff3b31..6a9f4df7 100644
+--- a/src/renderer/views/home-view.tsx
++++ b/src/renderer/views/home-view.tsx
+@@ -65,6 +65,8 @@ export const HomeView = observer(function HomeView() {
+   useEffect(() => {
+     if (!preset || appliedPreset.current === preset.seq || !projects?.some((p) => p.id === preset.projectId)) return;
+     appliedPreset.current = preset.seq;
++    const applicationPrompt=navigation.consumeApplicationPrompt(preset.seq);
++    if(applicationPrompt)setMessage(existing=>existing?existing+'\n'+applicationPrompt:applicationPrompt);
+     setProjectId(preset.projectId);
+     setDirId(null);
+     inputRef.current?.focus();

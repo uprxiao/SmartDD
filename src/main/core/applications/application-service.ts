@@ -1,3 +1,7 @@
+import {ApplicationTerminalInsertion} from './terminal-insertion';
+import {resolveApplicationTerminalSource} from './terminal-sources';
+import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
+import type {PtyAccess} from '../../pty-access';
 import {ApplicationSessionDiagnostics} from './session-diagnostics';
 import {ApplicationVersionMaintenance} from './version-maintenance';
 import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
@@ -38,6 +42,7 @@ import type { CapabilityRunRegistry } from './run-registry';
 const uuid=z.uuid();
 /** Main-process composition for actual local business services. Agent runtime attachment is explicit. */
 export class ApplicationService {
+  readonly terminal?:ApplicationTerminalInsertion;
   readonly sessionDiagnostics:ApplicationSessionDiagnostics;
   readonly versions:ApplicationVersionMaintenance;
   readonly activity:ApplicationActivityService;
@@ -61,6 +66,7 @@ export class ApplicationService {
   private closed=false;private closing?:Promise<void>;
   constructor(readonly store:ResourceStore,private readonly options:{
     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
+    terminal?:{access:PtyAccess;bracketedPaste(ptyId:string):Promise<boolean>;write(ptyId:string,data:string):void};
     requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;changed?():void;
   }){
     this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
@@ -76,7 +82,12 @@ export class ApplicationService {
     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
     this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
+    if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.nativeInputs.observe(sender,target,data),uncertain:(sender,target)=>this.nativeInputs.uncertain(sender,target)});}
   }
+  private terminalService(){if(!this.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端投递服务不可用');return this.terminal;}
+  bindTerminal(sender:ApplicationUiSender,input:ApplicationTerminalBind){return this.terminalService().bind(sender,input);}
+  insertTerminal(sender:ApplicationUiSender,input:ApplicationTerminalInsert){return this.terminalService().insert(sender,input);}
+  releaseTerminal(sender:ApplicationUiSender,id:string){this.terminalService().release(sender,id);return{released:true};}
   observeInput(sender:ApplicationUiSender,target:NativeInputTarget,data:string):void{this.nativeInputs.observe(sender,target,data);}
   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
   async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();await this.versions.recover();
@@ -158,7 +169,7 @@ export class ApplicationService {
   mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);return cache.usage();});}
   clearMailCache(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.clear',semantics:'write'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);const result=await cache.clear(context.signal);this.options.changed?.();return result;});}
   dispose():Promise<void>{
-    if(this.closing)return this.closing;this.closed=true;this.nativeInputs.dispose();this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
+    if(this.closing)return this.closing;this.closed=true;this.terminal?.dispose();this.nativeInputs.dispose();this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
     this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
   }
 }
