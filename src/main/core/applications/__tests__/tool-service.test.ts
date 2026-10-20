@@ -85,3 +85,19 @@ describe('fixed-package tools, exact request receipts, semantic retries and reso
     execute = async () => ({ wrong: true }); expect(await service.call(run.runId,randomUUID(),call())).toMatchObject({ status: 'error',error: { code: 'INVALID_RESPONSE' } }); let deep: unknown = null; for (let i = 0; i < 100; i++) deep = { value: deep }; expect(boundedJson(deep)).toBe(false); expect(boundedJson(JSON.parse('{"__proto__":{}}'))).toBe(false);
   });
 });
+
+
+describe('asynchronous current authorization for cached business receipts',()=>{
+ it('awaits the real receipt check and never returns its old payload after asynchronous denial',async()=>{
+  const host={resolve:()=>({semantics:'read' as const,retry:'never' as const,authorize:()=>{},execute,authorizeReceipt:async()=>{await Promise.resolve();throw new ApplicationError('SCOPE_DENIED','current object no longer assigned');}})};
+  const current=new ApplicationToolService(f.store,f.runs,host),id=randomUUID(),first=await current.call(run.runId,id,call());expect(first.status).toBe('ok');
+  expect(await current.call(run.runId,id,call())).toMatchObject({status:'error',operationId:first.operationId,error:{code:'SCOPE_DENIED',effectState:'read-only',attemptCount:1}});expect(f.sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:1});
+ });
+ it.each([false,true])('keeps the owned activity until an ignoring receipt checker settles with write=%s and never replays its effect',async(write)=>{
+  let release!:()=>void,entered!:()=>void,checking=false;const ready=new Promise<void>(r=>entered=r);
+  const current=new ApplicationToolService(f.store,f.runs,{resolve:()=>({semantics:write?'write':'read',retry:'never',timeoutMs:checking?80:5000,authorize:()=>{},execute,authorizeReceipt:async()=>{entered();await new Promise<void>(r=>release=r);}})}),id=randomUUID();
+  const input=call('cached original',write),first=await current.call(run.runId,id,input);expect(first.status).toBe('ok');checking=true;const cached=current.call(run.runId,id,input);await ready;
+  try{expect(await cached).toMatchObject({status:'error',operationId:first.operationId,error:{code:'TIMEOUT',attemptCount:1,effectState:write?'completed':'read-only',retryable:!write}});expect(f.sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:1});await run.cli.exited();expect(f.runs.get(run.runId).state).toBe('stopping');}
+  finally{release();}await vi.waitFor(()=>expect(f.runs.get(run.runId).state).toBe('stopped'));
+ });
+});

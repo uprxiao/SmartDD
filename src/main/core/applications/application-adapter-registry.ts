@@ -98,7 +98,7 @@ export class ApplicationAdapterRegistry implements ApplicationToolHost {
       retry:handler.retry === 'never' ? 'never' : route.retry,
       timeoutMs:Math.min(route.timeoutMs,handler.timeoutMs ?? route.timeoutMs),
       authorize,
-      authorizeReceipt:handler.authorizeReceipt?(context,operationId,connectionId)=>{authorize(context,connectionId);handler.authorizeReceipt!(context,operationId,connectionId);}:undefined,
+      authorizeReceipt:handler.authorizeReceipt?(context,operationId,connectionId,signal)=>{authorize(context,connectionId);return handler.authorizeReceipt!(context,operationId,connectionId,signal);}:undefined,
       execute:async (context,input,operation) => {
         this.load(packageHash); // Verify original bytes and provenance even when the module was cached.
         if (operation.packageHash !== packageHash || operation.appId !== application.appId || operation.toolName !== toolName || operation.contractMajor !== contractMajor) throw new ApplicationError('SCOPE_DENIED','执行上下文不能替换原包或工具');

@@ -232,6 +232,14 @@ export class ApplicationConnectionService {
     }
   }
   /** Internal authentication boundary. Never exported by the renderer controller or MCP. */
+  async reportHealth(id:string,expected:Pick<ApplicationConnection,'identityRevision'|'configRevision'|'secretRevision'|'policyRevision'>,code:ApplicationError['code']|null):Promise<boolean>{
+    return withResourceLock(this.store.root,()=>{
+      const current=this.row(id);if(current.identity_revision!==expected.identityRevision||current.config_revision!==expected.configRevision||current.secret_revision!==expected.secretRevision||current.policy_revision!==expected.policyRevision||!current.enabled||current.auth_state!=='connected')return false;
+      const message=code?safeVerificationError(new ApplicationError(code,'')).message:null;
+      if(current.health===(code?'unavailable':'healthy')&&current.health_code===code&&current.health_message===message)return false;
+      this.store.sqlite.prepare('UPDATE application_connections SET health=?,health_code=?,health_message=?,updated_at=? WHERE id=?').run(code?'unavailable':'healthy',code,message,new Date().toISOString(),id);return true;
+    });
+  }
   authentication(id: string, expected: { identityRevision: number; configRevision: number; secretRevision: number; policyRevision: number }): { config: ConnectionConfig; secret: string | null } {
     const row = this.row(id);
     if (!row.enabled || row.auth_state !== 'connected') throw new ApplicationError('AUTH_REQUIRED', '此连接当前未获授权');

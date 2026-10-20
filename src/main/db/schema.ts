@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { foreignKey, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { blob, foreignKey, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // Column layout of `sessions` / `app_secrets` matches the M0 tables so the first
 // migration (CREATE TABLE IF NOT EXISTS) adopts existing databases unchanged.
@@ -387,3 +387,24 @@ export const applicationDataOperations = sqliteTable('application_data_operation
 export const applicationDataResources = sqliteTable('application_data_resources', {
   resourceId:text('resource_id').primaryKey(),projectId:text('project_id').notNull(),appId:text('app_id').notNull(),backingKind:text('backing_kind').notNull(),objectId:text('object_id').notNull(),objectRevision:text('object_revision').notNull(),part:text('part').notNull(),dataContractMajor:integer('data_contract_major').notNull(),permission:text('permission').notNull(),contentHash:text('content_hash').notNull(),byteSize:integer('byte_size').notNull(),mediaType:text('media_type').notNull(),mintedPackageHash:text('minted_package_hash').notNull(),mintedOperationId:text('minted_operation_id').notNull(),createdAt:text('created_at').notNull(),
 },t=>({businessIdentity:uniqueIndex('application_data_resources_identity').on(t.projectId,t.appId,t.backingKind,t.objectId,t.objectRevision,t.part,t.dataContractMajor)}));
+
+// Fetched ZenTao history remains source-scoped; original package references do not own business data.
+export const applicationZentaoRevisions=sqliteTable('application_zentao_revisions',{
+  objectKey:text('object_key').primaryKey(),projectId:text('project_id').notNull(),connectionId:text('connection_id').notNull(),identityRevision:integer('identity_revision').notNull(),objectKind:text('object_kind').notNull(),nativeId:text('native_id').notNull(),contentRevision:text('content_revision').notNull(),representation:text('representation').notNull(),payloadJson:text('payload_json').notNull(),fetchedAt:text('fetched_at').notNull(),
+},t=>({identity:uniqueIndex('application_zentao_revisions_identity').on(t.projectId,t.connectionId,t.identityRevision,t.objectKind,t.nativeId,t.contentRevision,t.representation)}));
+export const applicationZentaoFiles=sqliteTable('application_zentao_files',{
+  objectKey:text('object_key').notNull().references(()=>applicationZentaoRevisions.objectKey),fileId:text('file_id').notNull(),contentHash:text('content_hash').notNull(),bytes:blob('bytes',{mode:'buffer'}).notNull(),mediaType:text('media_type').notNull(),byteSize:integer('byte_size').notNull(),fetchedAt:text('fetched_at').notNull(),
+},t=>({pk:primaryKey({columns:[t.objectKey,t.fileId,t.contentHash]})}));
+export const applicationZentaoCursors=sqliteTable('application_zentao_cursors',{
+  cursorId:text('cursor_id').primaryKey(),projectId:text('project_id').notNull(),targetJson:text('target_json').notNull(),objectKind:text('object_kind').notNull(),pageSize:integer('page_size').notNull(),pageNo:integer('page_no').notNull(),expectedTotal:integer('expected_total').notNull(),seenJson:text('seen_json').notNull(),expiresAt:text('expires_at').notNull(),
+});
+export const applicationZentaoOperationObjects=sqliteTable('application_zentao_operation_objects',{
+  operationId:text('operation_id').notNull(),objectKey:text('object_key').notNull().references(()=>applicationZentaoRevisions.objectKey),
+},t=>({pk:primaryKey({columns:[t.operationId,t.objectKey]})}));
+export const applicationReadReceiptChecks=sqliteTable('application_read_receipt_checks',{
+  checkOperationId:text('check_operation_id').primaryKey(),originalOperationId:text('original_operation_id').notNull(),checkedAt:text('checked_at').notNull(),
+});
+
+export const applicationZentaoOperationResources=sqliteTable('application_zentao_operation_resources',{
+  operationId:text('operation_id').primaryKey(),backingJson:text('backing_json').notNull(),
+});

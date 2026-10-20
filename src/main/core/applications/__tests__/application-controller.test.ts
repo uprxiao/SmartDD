@@ -27,7 +27,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
   service.setAdded.mockRejectedValueOnce(new ApplicationError('REVISION_CONFLICT','应用状态已变化，请重新载入'));expect(await invoke('setAdded',sender,'mail',true,0)).toEqual({ok:false,code:'REVISION_CONFLICT',message:'应用状态已变化，请重新载入'});
  });
  it('exposes explicit business endpoints without a generic SQL,secret,scope or send-approval method',()=>{
-  expect([...handlers.keys()].sort()).toEqual(['catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource'].map(n=>'applications.'+n).sort());
+  expect([...handlers.keys()].sort()).toEqual(['catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
  });
  it('checks sender authority even when the optional service is unavailable',async()=>{
   register(undefined);expect(await invoke('catalog',event(82))).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(await invoke('catalog')).toMatchObject({ok:false,code:'CAPABILITY_UNAVAILABLE'});

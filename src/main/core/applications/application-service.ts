@@ -2,6 +2,7 @@ import { dirname, join } from 'node:path';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import { applicationIdSchema, projectApplicationSelectionSchema, providerApplication, saveConnectionSchema, type ApplicationId, type ProjectApplicationSelectionInput, type SaveApplicationConnection } from '@shared/application-connections';
+import type { ZentaoWorkInput,ZentaoDetailInput } from '@shared/application-zentao';
 import type { SecretsStore } from '../../secrets';
 import type { ProjectService } from '../projects/project-service';
 import type { TaskService } from '../tasks/task-service';
@@ -14,6 +15,8 @@ import { ApplicationDataResources } from './data-resources';
 import { MailBlobStore } from './mail-blob-store';
 import { MailDraftService } from './mail-draft-service';
 import { MailDraftDataService } from './draft-data-service';
+import { ZentaoDataService } from './zentao-data-service';
+import { ApplicationBusinessDataService } from './business-data-service';
 import { BuiltinPackageRegistry } from './builtin-package-registry';
 import type { CapabilityRunRegistry } from './run-registry';
 const uuid=z.uuid();
@@ -25,7 +28,7 @@ export class ApplicationService {
   readonly resources:ApplicationDataResources;
   readonly blobs:MailBlobStore;
   readonly drafts:MailDraftService;
-  readonly data:MailDraftDataService;
+  readonly data:ApplicationBusinessDataService;
   readonly builtin:BuiltinPackageRegistry;
   private runs?:CapabilityRunRegistry;
   constructor(readonly store:ResourceStore,private readonly options:{
@@ -35,12 +38,12 @@ export class ApplicationService {
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
     this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id),runningInProject:id=>options.tasks.runningInProject(id)});
-    this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,assertRun:id=>{
+    this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,changed:options.changed,assertRun:id=>{
       if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前Agent运行通道尚未完成初始化');return this.runs.assertActive(id);
     }});
     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
-    this.resources=new ApplicationDataResources(store,this.contexts);this.data=new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections);
+    this.resources=new ApplicationDataResources(store,this.contexts);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections),new ZentaoDataService(this.contexts,this.resources,this.selections));
   }
   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
   async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();}
@@ -73,5 +76,8 @@ export class ApplicationService {
   viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.list',input));}
   viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}));}
   readBusinessResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource.read',operations:['mail.draft'],semantics:'read'},context=>this.resources.read(context,input));}
+  zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read'},scope=>this.data.zentao.execute(scope,'zentao.work.list',input));}
+  zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read'},scope=>this.data.zentao.execute(scope,'zentao.object.get',input));}
+  zentaoResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.resource',operations:['zentao.read'],semantics:'read'},scope=>this.resources.read(scope,input));}
   async dispose():Promise<void>{await this.contexts.dispose();}
 }

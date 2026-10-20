@@ -2,7 +2,7 @@
 import type { ConnectionConfig, VerifiedConnectionIdentity } from '@shared/application-connections';
 import { ApplicationError } from '@shared/applications';
 import { canonicalJson, digest } from '../manifest';
-import { requestJson } from './json-http';
+import { requestBytes, requestJson, type HttpBytes } from './json-http';
 
 type ZentaoConfig = Extract<ConnectionConfig, { kind: 'zentao' }>;
 export type ZentaoKind = 'bug' | 'story';
@@ -38,6 +38,14 @@ export function parseWorkPage(value: unknown, kind: ZentaoKind, account: string,
 }
 export interface ZentaoCollection { kind: ZentaoKind; records: Record<string, unknown>[]; total: number | null; complete: boolean; pages: number; errorCode: string | null; message: string | null }
 export interface ZentaoDetail { kind: ZentaoKind; id: string; fields: Record<string, unknown>; actions: unknown; files: unknown; contentRevision: string; complete: boolean; missing: string[] }
+
+/** Parser completeness is derived metadata; it is not part of the immutable source payload hash. */
+export function zentaoDetailRevision(kind:ZentaoKind,id:string,fields:Record<string,unknown>,actions:unknown,files:unknown):ZentaoDetail{
+  const missing:string[]=[];
+  if(!['steps','spec','description'].some(key=>typeof fields[key]==='string')&&!(record(fields.spec)&&typeof fields.spec.spec==='string'))missing.push('description');
+  if(!Array.isArray(actions)&&!record(actions))missing.push('history');if(!Array.isArray(files)&&!record(files))missing.push('attachments');
+  const payload={kind,id,fields,actions,files};return{...payload,contentRevision:digest(canonicalJson(payload)),complete:missing.length===0,missing};
+}
 
 export class ZentaoClient {
   private token: string | null;
@@ -113,12 +121,11 @@ export class ZentaoClient {
     }
     if (!item || zentaoId(item.id) !== id) throw new ApplicationError('INVALID_RESPONSE', '禅道详情身份缺失或与请求不符');
     if (assignee(item.assignedTo) !== this.account || (kind === 'bug' && item.status === 'closed')) throw new ApplicationError('SCOPE_DENIED', '该对象当前不在本人工作范围');
-    const missing: string[] = [];
-    if (!['steps', 'spec', 'description'].some(key => typeof item![key] === 'string')) missing.push('description');
-    const actions = container.actions ?? item.actions ?? null, files = item.files ?? container.files ?? null;
-    if (actions === null) missing.push('history'); if (files === null) missing.push('attachments');
-    const payload = { kind, id, fields: item, actions, files };
-    return { ...payload, contentRevision: digest(canonicalJson(payload)), complete: missing.length === 0, missing };
+    return zentaoDetailRevision(kind,id,item,container.actions??item.actions??null,item.files??container.files??null);
+  }
+  async file(inputId:string,signal:AbortSignal,maxBytes=25*1024*1024):Promise<HttpBytes>{
+    const id=zentaoId(inputId);if(!Number.isSafeInteger(maxBytes)||maxBytes<0||maxBytes>25*1024*1024)throw new ApplicationError('INVALID_INPUT','禅道附件读取预算无效');if(!this.account)await this.verify(signal);
+    return requestBytes(new URL('api.php/v1/files/'+id,this.base),{signal,token:this.token??undefined,maxBytes});
   }
   close(): void { this.secret = null; this.token = null; this.account = null; }
 }

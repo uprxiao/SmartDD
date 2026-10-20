@@ -4,6 +4,7 @@ import { createScopedRPCController } from '@shared/ipc/rpc';
 import { ApplicationError } from '@shared/applications';
 import type { ApplicationId, ProjectApplicationSelectionInput, SaveApplicationConnection } from '@shared/application-connections';
 import type { ApplicationDataReply, ApplicationResourceRead } from '@shared/application-data';
+import type { ZentaoWorkInput,ZentaoDetailInput } from '@shared/application-zentao';
 import type { ApplicationService } from './application-service';
 export function createApplicationController(service:ApplicationService|undefined,requireSender:(sender:IpcMainInvokeEvent)=>void){
   const run=async<T>(event:IpcMainInvokeEvent,work:(current:ApplicationService)=>T|Promise<T>):Promise<ApplicationDataReply<T>>=>{
@@ -29,6 +30,9 @@ export function createApplicationController(service:ApplicationService|undefined
     disconnect:(event,id:string,revision:number)=>run(event,current=>current.disconnect(event,id,revision)),
     drafts:(event,projectId:string,input?:{limit?:number;cursor?:string|null})=>run(event,current=>current.viewDrafts(event,projectId,input)),
     draft:(event,projectId:string,draftId:string,revision?:number)=>run(event,current=>current.viewDraft(event,projectId,draftId,revision)),
+    zentaoWork:(event,projectId:string,input:ZentaoWorkInput)=>run(event,current=>current.zentaoWork(event,projectId,input)),
+    zentaoObject:(event,projectId:string,input:ZentaoDetailInput)=>run(event,current=>current.zentaoObject(event,projectId,input)),
+    zentaoResource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.zentaoResource(event,projectId,input)),
     resource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.readBusinessResource(event,projectId,input)),
   });
 }

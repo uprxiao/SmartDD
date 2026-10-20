@@ -41,7 +41,7 @@ export class ApplicationExecutionContexts {
   constructor(readonly store:ResourceStore,private readonly selections:ApplicationSelectionService,private readonly connections:ApplicationConnectionService,private readonly deps:{
     requireSender(sender:ApplicationUiSender):void;
     assertRun(runId:string):RunContext;
-    now?:()=>number;
+    now?:()=>number;changed?:()=>void;
   }){this.builtin=new BuiltinPackageRegistry(store);}
   private now():number{return this.deps.now?.()??Date.now();}
   private record(context:ApplicationExecutionContext):ContextRecord{
@@ -91,6 +91,9 @@ export class ApplicationExecutionContexts {
     }).immediate());
     const authenticated=this.connections.authentication(connection.id,connection);
     return {connection,secret:authenticated.secret};
+  }
+  async connectionHealth(context:ApplicationExecutionContext,connection:ApplicationConnection,code:ApplicationError['code']|null):Promise<void>{
+    this.assertActive(context);const target=this.record(context).targets.get(connection.providerId);if(!target||target.id!==connection.id)throw new ApplicationError('SCOPE_DENIED','健康结果不属于本次已固定来源');const changed=await this.connections.reportHealth(connection.id,connection,code);this.assertActive(context);if(changed)this.deps.changed?.();
   }
   private activePackage(appId:ApplicationId):InstalledApplicationPackage{
     const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前应用没有已准备的默认版本');return this.builtin.packages.get(active.packageHash);
@@ -148,6 +151,14 @@ export class ApplicationExecutionContexts {
     if(hash!==row.scope_hash)throw new ApplicationError('SCOPE_DENIED','原回执对应的应用授权代次已变化');
     let targets:Target[];try{targets=z.array(targetSchema).parse(JSON.parse(row.targets_json));}catch{throw new ApplicationError('HASH_MISMATCH','原回执来源记录已损坏');}
     for(const target of targets)this.checkTarget({projectId:row.project_id,appId:row.app_id} as ApplicationExecutionContext,target);
+  }
+  withReadReceipt<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,originalOperationId:string,work:(context:ApplicationExecutionContext)=>Promise<T>,signal?:AbortSignal):Promise<T>{
+    this.assertAgentReceipt(claim,binding,originalOperationId);
+    const known=this.deps.assertRun(claim.run.runId),application=this.builtin.assertTrusted(binding.packageHash),id=randomUUID();
+    const check=()=>this.assertAgentReceipt(known,binding,originalOperationId);
+    return this.begin(application,{operationId:id,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId:application.appId as ApplicationId,packageHash:application.packageHash,dataApi:1,action:binding.toolName+'.receipt',semantics:'read',allowedOperations:[binding.permission],signal:AbortSignal.any([known.signal,...(signal?[signal]:[])]),startedAt:new Date(this.now()).toISOString()},check,{receiptOf:originalOperationId},async context=>{
+      await withResourceLock(this.store.root,()=>{this.assertActive(context);this.store.sqlite.prepare('INSERT INTO application_read_receipt_checks VALUES(?,?,?)').run(id,originalOperationId,new Date(this.now()).toISOString());});return work(context);
+    },false);
   }
   invalidate():void{for(const record of this.active)try{this.record(record.context);}catch{record.abort.abort();}}
   async dispose():Promise<void>{this.closed=true;for(const record of this.active)record.abort.abort();await Promise.allSettled([...this.pending]);}

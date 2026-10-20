@@ -19,7 +19,7 @@ export interface HostToolOperation {
   retry: 'safe-read' | 'never';timeoutMs?: number;
   authorize(context: RunContext,connectionId: string | null): void;
   /** Revalidate the original operation target before returning a cached receipt. */
-  authorizeReceipt?(context: RunContext,operationId: string,connectionId: string | null): void;
+  authorizeReceipt?(context: RunContext,operationId: string,connectionId: string | null,signal?:AbortSignal): void|Promise<void>;
   execute(context: RunContext,args: Record<string,unknown>,operation: ApplicationOperationContext): Promise<unknown>;
 }
 export interface ApplicationToolHost {
@@ -86,10 +86,7 @@ export class ApplicationToolService {
       const hash = digest(canonicalJson(call)), key = runId + ':' + requestId, previous = this.pending.get(key) ?? this.cache.get(key);
       if (previous) {
         if (previous.hash !== hash) throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已经用于其他输入');
-        return ('work' in previous ? previous.work : Promise.resolve(previous.response)).then(response => {
-          try { const fresh=this.runs.assertActive(runId);handler.authorize(fresh,call.connectionId);if(response.operationId)handler.authorizeReceipt?.(fresh,response.operationId,call.connectionId);return response; }
-          catch(error){const recorded=response.operationId?this.store.sqlite.prepare('SELECT attempt_count FROM application_invocations WHERE operation_id=? AND run_id=?').get(response.operationId,runId) as {attempt_count:number}|undefined:undefined;const effect=response.status==='error'?response.error.effectState:response.effectState??(handler.semantics==='read'?'read-only':'unknown');return{schema:1 as const,id:requestId,status:'error' as const,error:failure(error,response.status==='error'?response.error.attemptCount:recorded?.attempt_count??0,effect),...(response.operationId?{operationId:response.operationId}:{})};}
-        });
+        return ('work' in previous ? previous.work : Promise.resolve(previous.response)).then(response=>this.receipt(runId,requestId,call,handler,response,signal));
       }
       handler.authorize(context,call.connectionId);
       const budget = Math.min(120000,Math.max(1,handler.timeoutMs ?? (handler.semantics === 'read' ? 30000 : 60000))), timeout = AbortSignal.timeout(budget), operationSignal = AbortSignal.any([context.signal,timeout,...(signal ? [signal] : [])]), deadline = this.clock() + budget;
@@ -100,6 +97,23 @@ export class ApplicationToolService {
       void work.then(response => { const bytes = Buffer.byteLength(JSON.stringify(response)); this.cache.set(key,{ hash,response,bytes }); this.cacheBytes += bytes; while (this.cache.size > 256 || this.cacheBytes > 16 * 1024 * 1024) { const first = this.cache.keys().next().value!; this.cacheBytes -= this.cache.get(first)!.bytes; this.cache.delete(first); } },() => undefined).finally(() => this.pending.delete(key));
       return work;
     } catch (error) { return Promise.resolve({ schema: 1,id: requestId,status: 'error',error: failure(error) }); }
+  }
+  private receipt(runId:string,requestId:string,call:BridgeToolCall,handler:HostToolOperation,response:BridgeResponse,callerSignal?:AbortSignal):Promise<BridgeResponse>{
+    const recorded=response.operationId?this.store.sqlite.prepare('SELECT attempt_count FROM application_invocations WHERE operation_id=? AND run_id=?').get(response.operationId,runId) as {attempt_count:number}|undefined:undefined;
+    const effect=response.status==='error'?response.error.effectState:response.effectState??(handler.semantics==='read'?'read-only':'unknown'),attempts=response.status==='error'?response.error.attemptCount:recorded?.attempt_count??0;
+    const failed=(error:unknown):BridgeResponse=>{const detail=failure(error,attempts,effect);if(handler.semantics==='write'){detail.retryable=false;detail.nextAction='核对原业务执行记录或继续读取回执，不重新提交外部写操作';}return{schema:1,id:requestId,status:'error',error:detail,...(response.operationId?{operationId:response.operationId}:{})};};
+    try{
+      const current=this.runs.assertActive(runId),timeout=AbortSignal.timeout(Math.min(30000,handler.timeoutMs??30000)),signal=AbortSignal.any([current.signal,timeout,...(callerSignal?[callerSignal]:[])]);
+      if(signal.aborted)return Promise.resolve(failed(new ApplicationError('CANCELED','本次回执核对已取消')));
+      let onAbort!:()=>void;
+      const interrupted=new Promise<BridgeResponse>(resolve=>{onAbort=()=>resolve(failed(new ApplicationError(timeout.aborted?'TIMEOUT':'CANCELED','本次回执核对未完成，原执行记录保留')));signal.addEventListener('abort',onAbort,{once:true});});
+      const verification=this.runs.withActivity(runId,async fresh=>{
+        if(signal.aborted)throw new ApplicationError('CANCELED','本次回执核对已取消');handler.authorize(fresh,call.connectionId);
+        if(response.operationId)await handler.authorizeReceipt?.(fresh,response.operationId,call.connectionId,signal);
+        if(signal.aborted)throw new ApplicationError(timeout.aborted?'TIMEOUT':'CANCELED','本次回执核对已取消');handler.authorize(this.runs.assertActive(runId),call.connectionId);return response;
+      }).catch(failed);
+      return Promise.race([verification,interrupted]).finally(()=>signal.removeEventListener('abort',onAbort));
+    }catch(error){return Promise.resolve(failed(error));}
   }
   private async execute(runId: string,requestId: string,call: BridgeToolCall,hash: string,control: { signal: AbortSignal;deadline: number;timeout: AbortSignal }): Promise<BridgeResponse> {
     let operationId: string | undefined, attempts = 0, effect: BridgeFailure['effectState'] = 'not-started', exhausted = false;
