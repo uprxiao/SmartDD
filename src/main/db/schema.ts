@@ -263,7 +263,7 @@ export const capabilitySessionRefs = sqliteTable('capability_session_refs', {
   taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), refKind: text('ref_kind').notNull(), refId: text('ref_id').notNull().references(() => capabilityResources.resourceId), refHash: text('ref_hash').notNull(), relativePath: text('relative_path').notNull(),
 }, t => ({ pk: primaryKey({ columns: [t.taskId, t.refKind, t.refId] }), byResource: index('capability_session_refs_resource_idx').on(t.refId) }));
 export const capabilityRuns = sqliteTable('capability_runs', {
-  runId: text('run_id').primaryKey(), taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), projectId: text('project_id').notNull().references(() => projects.id), runner: text('runner').notNull(), pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), startedAt: text('started_at').notNull(), endedAt: text('ended_at'), errorCode: text('error_code'),
+  runId: text('run_id').primaryKey(), taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), projectId: text('project_id').notNull(), runner: text('runner').notNull(), pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), startedAt: text('started_at').notNull(), endedAt: text('ended_at'), errorCode: text('error_code'), snapshotHash: text('snapshot_hash'),ownerInstanceId: text('owner_instance_id'),ownerPid: integer('owner_pid'),ownerStartedAt: text('owner_started_at'),bindingsJson: text('bindings_json').notNull().default('[]'),ptyId: text('pty_id'),
 });
 export const capabilitySchemaMigrations = sqliteTable('capability_schema_migrations', {
   appId: text('app_id').notNull(), migrationId: text('migration_id').notNull(), checksum: text('checksum').notNull(), fromVersion: integer('from_version').notNull(), toVersion: integer('to_version').notNull(), appliedAt: text('applied_at').notNull(), hostBuild: text('host_build').notNull(),
@@ -330,3 +330,17 @@ export const mailSendExecutions = sqliteTable('mail_send_executions', {
 export const applicationBindingSlotRevisions = sqliteTable('application_binding_slot_revisions', {
   projectId: text('project_id').notNull(),appId: text('app_id').notNull(),slot: text('slot').notNull(),revision: integer('revision').notNull(),
 },t => ({ pk: primaryKey({ columns: [t.projectId,t.appId,t.slot] }),projectScope: foreignKey({ columns: [t.projectId,t.appId],foreignColumns: [applicationProjectSettings.projectId,applicationProjectSettings.appId] }).onDelete('cascade') }));
+
+export const capabilitySessionIdentities = sqliteTable('capability_session_identities', {
+  taskId: text('task_id').primaryKey().references(() => capabilitySessionSnapshots.taskId),runner: text('runner').notNull(),identityRoot: text('identity_root').notNull(),sessionId: text('session_id'),cwd: text('cwd').notNull(),discoveryHome: text('discovery_home').notNull(),selectionHash: text('selection_hash').notNull(),createdAt: text('created_at').notNull(),updatedAt: text('updated_at').notNull(),
+},t => ({ nativeIdentity: uniqueIndex('capability_session_native_identity').on(t.runner,t.identityRoot,t.sessionId) }));
+export const capabilitySessionMcpNames = sqliteTable('capability_session_mcp_names', {
+  serverName: text('server_name').primaryKey(),taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId),kind: text('kind').notNull(),
+},t => ({ taskKind: uniqueIndex('capability_session_mcp_task_kind').on(t.taskId,t.kind) }));
+
+export const capabilitySnapshotVersions = sqliteTable('capability_snapshot_versions', {
+  snapshotHash: text('snapshot_hash').primaryKey(),taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId),snapshotJson: text('snapshot_json').notNull(),selectionHash: text('selection_hash').notNull(),createdAt: text('created_at').notNull(),
+});
+export const capabilitySessionHolds = sqliteTable('capability_session_holds', {
+  taskId: text('task_id').primaryKey().references(() => capabilitySessionSnapshots.taskId),previousRetention: text('previous_retention').notNull(),reason: text('reason').notNull(),createdAt: text('created_at').notNull(),
+});

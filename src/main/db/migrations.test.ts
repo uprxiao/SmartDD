@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
 }
 afterEach(() => open.splice(0).forEach((db) => db.close()));
 
-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution'];
+const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity'];
 
 const tables = (db: Database.Database) =>
   (
@@ -58,8 +58,12 @@ describe('bundled migrations', () => {
       'capability_resources',
       'capability_runs',
       'capability_schema_migrations',
+      'capability_session_holds',
+      'capability_session_identities',
+      'capability_session_mcp_names',
       'capability_session_refs',
       'capability_session_snapshots',
+      'capability_snapshot_versions',
       'imported_keys',
       'mail_attachment_objects',
       'mail_blob_objects',
@@ -89,10 +93,21 @@ describe('bundled migrations', () => {
     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('old-project','kept',1,1)");
     db.exec("INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,updated_at) VALUES('old-project','mail',1,7,'2026-10-20T00:00:00Z')");
     db.exec("INSERT INTO mail_blob_objects VALUES('old-content',3,'2026-10-20T00:00:00Z'); INSERT INTO mail_attachment_objects(id,project_id,content_hash,filename,content_type,byte_size,created_at) VALUES('old-attachment','old-project','old-content','old.txt','text/plain',3,'2026-10-20T00:00:00Z')");
-    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution']);
+    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity']);
     expect(db.prepare('SELECT id,kind,filename FROM mail_attachment_objects').all()).toEqual([{ id: 'old-attachment',kind: 'attachment',filename: 'old.txt' }]);
     expect(db.prepare('SELECT slot,revision FROM application_binding_slot_revisions ORDER BY slot').all()).toEqual([{ slot: 'foxmail',revision: 7 },{ slot: 'smtp',revision: 7 }]);
-    db.exec('DELETE FROM __drizzle_migrations WHERE id=10'); runBundledMigrations(db); expect(db.prepare('SELECT count(*) AS n FROM mail_attachment_objects').get()).toEqual({ n: 1 });
+    db.exec('DELETE FROM __drizzle_migrations WHERE id>=10'); runBundledMigrations(db); expect(db.prepare('SELECT count(*) AS n FROM mail_attachment_objects').get()).toEqual({ n: 1 });
+  });
+
+  it('retains native run history after project deletion and skips its completed FK rebuild on replay', () => {
+    const db = memoryDb(); runMigrations(db,bundledMigrations().slice(0,10));
+    db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('retained-project','history',1,1)");
+    db.exec("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES('history-task',2,'{}','fixture-hash','2026-10-20T00:00:00Z','created','tombstone')");
+    db.exec("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at) VALUES('historical-run','history-task','retained-project','codex','stopped','2026-10-20T00:00:00Z')");
+    runBundledMigrations(db); db.exec("DELETE FROM projects WHERE id='retained-project'");
+    expect(db.prepare('SELECT run_id,project_id,state FROM capability_runs').all()).toEqual([{ run_id: 'historical-run',project_id: 'retained-project',state: 'stopped' }]);
+    db.exec('DELETE FROM __drizzle_migrations WHERE id=11'); runBundledMigrations(db);
+    expect(db.prepare('SELECT count(*) AS n FROM capability_runs').get()).toEqual({ n: 1 }); expect(tables(db)).not.toContain('capability_runs_retained');
   });
 
   it('is a no-op the second time', () => {

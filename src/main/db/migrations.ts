@@ -51,6 +51,14 @@ export function columnAlreadyExists(connection: BetterSqlite3.Database, stmt: st
   return cols.some((c) => c.name.toLowerCase() === m[2].toLowerCase());
 }
 
+/** A guarded table rebuild is replayed only while the old foreign key still exists. */
+export function guardedRebuildAlreadyApplied(connection: BetterSqlite3.Database,statement: string): boolean {
+  const guard = /^-- @smartdd-rebuild-if-foreign-key (\w+) (\w+)\s*$/m.exec(statement);
+  if (!guard) return false;
+  const keys = connection.prepare('SELECT "from" AS source FROM pragma_foreign_key_list(?)').all(guard[1]) as { source: string }[];
+  return !keys.some(key => key.source === guard[2]);
+}
+
 /**
  * Applies every migration past the recorded count, all inside one transaction: either the
  * whole batch lands or the database is left exactly as it was. Returns the applied tags.
@@ -67,7 +75,7 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
     for (const m of pending) {
       for (const stmt of m.sql.split('--> statement-breakpoint')) {
         const trimmed = stmt.trim();
-        if (trimmed && !columnAlreadyExists(connection, trimmed)) connection.exec(trimmed);
+        if (trimmed && !columnAlreadyExists(connection, trimmed) && !guardedRebuildAlreadyApplied(connection,trimmed)) connection.exec(trimmed);
       }
       record.run(m.hash, m.when);
     }
