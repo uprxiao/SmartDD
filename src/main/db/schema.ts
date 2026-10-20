@@ -433,3 +433,11 @@ export const capabilityRunPreparations = sqliteTable('capability_run_preparation
 export const capabilityBridgeObservations = sqliteTable('capability_bridge_observations', {
  runId:text('run_id').notNull().references(()=>capabilityRuns.runId),bridgeId:text('bridge_id').notNull().references(()=>capabilityRunProcesses.processId),evidenceJson:text('evidence_json').notNull(),evidenceHash:text('evidence_hash').notNull(),observedAt:text('observed_at').notNull(),
 },t=>({pk:primaryKey({columns:[t.runId,t.bridgeId]})}));
+
+// M4 source preservation is distinct from the later schema2 migration/Agent resume.
+export const capabilityLegacyMigrationPreparations = sqliteTable('capability_legacy_migration_preparations', {
+ taskId: text('task_id').primaryKey().references(() => capabilitySessionSnapshots.taskId),
+ sourceSnapshotJson: text('source_snapshot_json').notNull(),sourceRecordJson: text('source_record_json').notNull(),sourceSnapshotHash: text('source_snapshot_hash').notNull(),sourceIdentityJson: text('source_identity_json').notNull(),boundNativeSessionId: text('bound_native_session_id'),
+ evidenceJson: text('evidence_json'),evidenceHash: text('evidence_hash'),manifestJson: text('manifest_json'),manifestHash: text('manifest_hash'),
+ state: text('state',{enum:['held','prepared','migrated']}).notNull(),issueCode: text('issue_code'),createdAt: text('created_at').notNull(),updatedAt: text('updated_at').notNull(),
+}, t=>({byState:index('capability_legacy_preparation_state').on(t.state,t.taskId)}));

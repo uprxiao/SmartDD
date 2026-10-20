@@ -21,6 +21,7 @@ import { MacUnixPeerIdentityReader, type UnixPeerIdentityReader } from './unix-p
 import { inspectNativeLaunch, type NativeLaunchContext, type TaskLaunchInput } from './native-launch-context';
 import { canonicalJson, digest } from './manifest';
 import {legacyRuntimeMetadata} from './legacy-task-evidence';
+import {LegacyTaskRetention} from './legacy-task-retention';
 interface ActiveLaunch {run:OwnedCapabilityRun;hold?:DiscoveryReservation;runtime?:PreparedRuntime;releasing?:Promise<void>}
 export interface TaskCapabilityLauncherOptions {
   helper: string;
@@ -43,9 +44,11 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly processes:ProcessIdentityReader;
   private readonly timer:ReturnType<typeof setInterval>;
   readonly recoveryWarnings:{homeId:string;code:string}[]=[];
+  readonly legacyPreparationWarnings=new Map<string,string>();
+  private readonly legacyRetention:LegacyTaskRetention;
   private closed=false;private closing?:Promise<void>;private sweeping=false;
   private constructor(private readonly support:AgentSupportService,private readonly capabilities:CapabilityService,private readonly applications:ApplicationService,private readonly options:TaskCapabilityLauncherOptions){
-    const store=support.store;this.processes=options.processes??new MacProcessIdentityReader(options.helper);
+    const store=support.store;this.legacyRetention=new LegacyTaskRetention(store);this.processes=options.processes??new MacProcessIdentityReader(options.helper);
     this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:snapshot=>this.assertInitialSelection(snapshot),verifyExtraResource:(resource,snapshot)=>{
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
@@ -125,6 +128,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         const recorded=this.support.store.sqlite.prepare('SELECT schema_version,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(input.taskId) as {schema_version:number;legacy_status:string}|undefined;
         if(recorded&&(recorded.schema_version!==0||recorded.legacy_status!=='history-unknown'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针缺失或原历史已待核查，保留原登记且不降级重建');
         await this.sessions.holdUnknown({taskId:input.taskId,projectId:input.projectId,runner:input.profile.runner==='claude'?'claude-code':'codex',stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,reason:'history-unknown'});
+        if(input.previous){
+          try{await this.legacyRetention.prepare({taskId:input.taskId,projectId:input.projectId,runner:input.profile.runner==='claude'?'claude-code':'codex',stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home},input.previous,input.signal);this.legacyPreparationWarnings.delete(input.taskId);}
+          catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(this.legacyPreparationWarnings.size>=256&&!this.legacyPreparationWarnings.has(input.taskId))this.legacyPreparationWarnings.delete(this.legacyPreparationWarnings.keys().next().value!);this.legacyPreparationWarnings.set(input.taskId,error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED');}
+        }
         return this.prepareNativeHistory(input,native,unavailable,catalog);
       }
       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
