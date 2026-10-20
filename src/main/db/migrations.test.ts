@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
 }
 afterEach(() => open.splice(0).forEach((db) => db.close()));
 
-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages'];
+const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections'];
 
 const tables = (db: Database.Database) =>
   (
@@ -42,6 +42,12 @@ describe('bundled migrations', () => {
       'ai_profiles',
       'app_secrets',
       'app_settings',
+      'application_binding_changes',
+      'application_catalog_state',
+      'application_connections',
+      'application_project_bindings',
+      'application_project_settings',
+      'application_secret_changes',
       'capability_active_packages',
       'capability_install_journal',
       'capability_packages',

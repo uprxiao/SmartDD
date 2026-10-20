@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { foreignKey, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // Column layout of `sessions` / `app_secrets` matches the M0 tables so the first
 // migration (CREATE TABLE IF NOT EXISTS) adopts existing databases unchanged.
@@ -268,3 +268,24 @@ export const capabilityRuns = sqliteTable('capability_runs', {
 export const capabilitySchemaMigrations = sqliteTable('capability_schema_migrations', {
   appId: text('app_id').notNull(), migrationId: text('migration_id').notNull(), checksum: text('checksum').notNull(), fromVersion: integer('from_version').notNull(), toVersion: integer('to_version').notNull(), appliedAt: text('applied_at').notNull(), hostBuild: text('host_build').notNull(),
 }, t => ({ pk: primaryKey({ columns: [t.appId, t.migrationId] }) }));
+
+export const applicationConnections = sqliteTable('application_connections', {
+  id: text('id').primaryKey(), appId: text('app_id').notNull(), providerId: text('provider_id').notNull(), name: text('name').notNull(), configSchemaVersion: integer('config_schema_version').notNull().default(1), configJson: text('config_json').notNull(),
+  revision: integer('revision').notNull(), configRevision: integer('config_revision').notNull(), identityRevision: integer('identity_revision').notNull(), verifiedIdentityJson: text('verified_identity_json').notNull(), identityHash: text('identity_hash').notNull(),
+  secretRef: text('secret_ref'), secretRevision: integer('secret_revision').notNull(), policyRevision: integer('policy_revision').notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), authState: text('auth_state').notNull(), health: text('health').notNull(), healthCode: text('health_code'), healthMessage: text('health_message'), testedAt: text('tested_at'), cleanupPending: integer('cleanup_pending', { mode: 'boolean' }).notNull().default(false), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
+}, t => ({ byProvider: index('application_connections_provider_idx').on(t.providerId, t.appId), identityKey: uniqueIndex('application_connections_identity_key').on(t.id, t.providerId, t.appId) }));
+export const applicationSecretChanges = sqliteTable('application_secret_changes', {
+  operationId: text('operation_id').primaryKey(), connectionId: text('connection_id').notNull(), expectedRevision: integer('expected_revision').notNull(), oldSecretRef: text('old_secret_ref'), newSecretRef: text('new_secret_ref'), candidateHash: text('candidate_hash').notNull(), candidateJson: text('candidate_json').notNull(), verifiedIdentityJson: text('verified_identity_json'), compatibilityPlanJson: text('compatibility_plan_json'), expiresAt: text('expires_at').notNull(), state: text('state').notNull(), errorCode: text('error_code'), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
+});
+export const applicationCatalogState = sqliteTable('application_catalog_state', {
+  appId: text('app_id').primaryKey(), added: integer('added', { mode: 'boolean' }).notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), revision: integer('revision').notNull(), updatedAt: text('updated_at').notNull(),
+});
+export const applicationProjectSettings = sqliteTable('application_project_settings', {
+  projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }), appId: text('app_id').notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), bindingRevision: integer('binding_revision').notNull(), pendingOperationId: text('pending_operation_id'), updatedAt: text('updated_at').notNull(),
+}, t => ({ pk: primaryKey({ columns: [t.projectId, t.appId] }) }));
+export const applicationProjectBindings = sqliteTable('application_project_bindings', {
+  projectId: text('project_id').notNull(), appId: text('app_id').notNull(), slot: text('slot').notNull(), connectionId: text('connection_id').notNull(), identityRevision: integer('identity_revision').notNull(),
+}, t => ({ pk: primaryKey({ columns: [t.projectId, t.appId, t.slot] }), connectionRole: foreignKey({ columns: [t.connectionId, t.slot, t.appId], foreignColumns: [applicationConnections.id, applicationConnections.providerId, applicationConnections.appId] }), projectScope: foreignKey({ columns: [t.projectId, t.appId], foreignColumns: [applicationProjectSettings.projectId, applicationProjectSettings.appId] }).onDelete('cascade') }));
+export const applicationBindingChanges = sqliteTable('application_binding_changes', {
+  operationId: text('operation_id').primaryKey(), projectId: text('project_id').notNull(), appId: text('app_id').notNull(), fromRevision: integer('from_revision').notNull(), toRevision: integer('to_revision'), previousJson: text('previous_json').notNull(), nextJson: text('next_json').notNull(), state: text('state').notNull(), errorCode: text('error_code'), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
+});

@@ -1,0 +1,93 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "at": "2026-10-20T02:17:54.659645+00:00",
+  "checkpoint": "DEV002-A",
+  "requirements": "R1.6 + 12.21",
+  "branch": "feature/0.0.2",
+  "baseCommit": "953fe14",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "results": [
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test src/main/core/applications src/main/db/migrations.test.ts",
+      "files": 7,
+      "passed": 74,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "files": 3,
+      "passed": 30,
+      "failed": 0,
+      "exitCode": 0
+    }
+  ],
+  "retainedFailures": [
+    {
+      "at": "2026-10-20T10:14:53+08:00",
+      "kind": "test-fixture",
+      "test": "keeps independent nullable mail source and sender slots while draft use remains enabled",
+      "passed": 73,
+      "failed": 1,
+      "cause": "Fixture spread a returned state object with extra revision/pendingOperationId into strict request schema",
+      "fix": "Construct the exact allowed request; production validation and expected behavior unchanged"
+    },
+    {
+      "kind": "negative-test-type",
+      "cause": "Intentional unknown password property requires an explicit unknown cast before typed invalid-input test",
+      "fix": "Corrected the test cast; parser still rejects the input"
+    }
+  ],
+  "boundaries": [
+    "Real temporary SQLite and private files",
+    "Fake SecretCipher, controlled provider verifier and controlled project-run fixture",
+    "No real mailbox, SMTP send, ZenTao service, model or packaged App acceptance",
+    "Code test numbers never change product T-case results"
+  ],
+  "files": [
+    {
+      "path": "src/shared/application-connections.ts",
+      "sha256": "af63a2258824bed4233ee740a14fb984325014d4c4ba7c93b57fa290844cd519"
+    },
+    {
+      "path": "src/shared/applications.ts",
+      "sha256": "f4335b24f8bf2daceaac51ab895d9a50ce43b86544efaa701bc9702b1950d062"
+    },
+    {
+      "path": "drizzle/0007_application_connections.sql",
+      "sha256": "9380e0ef13b50a2746ab230d5356ceff496a5c73ed7635f6e5cffad9565fa981"
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "sha256": "7d99ad65d61d72bfb054e33525997a4f10c92ac430d640f17c3ac602b8fa00ed"
+    },
+    {
+      "path": "src/main/db/schema.ts",
+      "sha256": "4f997a590cd7d0afbf7c9bd511d1ba8f572fa4370fe22889ad67a34ea8d7959d"
+    },
+    {
+      "path": "src/main/db/migrations.test.ts",
+      "sha256": "f7b71b0dea071ec61a11b74aad227d64977d8960c03882f74ebb1a153b296117"
+    },
+    {
+      "path": "src/main/core/applications/connection-service.ts",
+      "sha256": "339c3477aab0d93f086a79a2c559f6e01af1a970a01b8cf7fc590ee581cce623"
+    },
+    {
+      "path": "src/main/core/applications/selection-service.ts",
+      "sha256": "d0a1c6d1db4e60b3f96a5b2b5da66b441b7962fab1f2fcdf2cbbf0f6809cae66"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/connection-service.test.ts",
+      "sha256": "e2a4a45c8db9b7367e6e84c01847495f96219c279e155d8c85d4e4eab63b9786"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/selection-service.test.ts",
+      "sha256": "0d1d634eddcee22850e93a7df5dae1a3979a3c1ef82c351718c6e12f2f390437"
+    }
+  ]
+}

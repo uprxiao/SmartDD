@@ -70,7 +70,7 @@ export const applicationManifestSchema = z.object({
   }
 });
 export type ApplicationManifest = z.infer<typeof applicationManifestSchema>;
-export type ApplicationErrorCode = 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND';
+export type ApplicationErrorCode = 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT';
 export class ApplicationError extends Error {
   constructor(public readonly code: ApplicationErrorCode, message: string) { super(message); this.name = 'ApplicationError'; }
 }
