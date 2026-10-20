@@ -22,6 +22,8 @@ export const MCP_CAPABILITY = 'smartdd-project-context';
 export const RUNTIME_ISOLATION = ['SMARTDD_', 'PROJECT_DB_CONFIG', 'REMOTE_SERVERS_CONFIG'];
 
 export interface PreparedRuntime {
+  /** Native-only historical runs must retain the original task evidence verbatim. */
+  persistSnapshot?: false;
   args: string[];
   env: Record<string, string>;
   secretValues: string[];

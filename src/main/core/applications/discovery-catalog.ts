@@ -439,7 +439,15 @@ export class DiscoveryCatalog {
         hash.parse(generation);
         const runId = randomUUID(), ptyId = randomUUID(), record: Consumer = { schema: 1, consumerId: randomUUID(), runId, ptyId, homeId: this.homeId, generation, runner, phase: 'preparing', owner: this.owner }, path = join(this.root, 'catalog-consumers', this.consumerName(record));
         let run!: OwnedCapabilityRun, catalog!: Catalog;
-        await this.lock(async () => { if (this.pending())
+        await this.lock(async () => {
+            // Persist the exact native HOME even for an empty catalog/history
+            // guard, before publishing its H consumer intent.
+            await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
+                const known=this.store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(this.homeId) as {home:string}|undefined;
+                if(known&&known.home!==this.home)throw new ApplicationError('OWNERSHIP_CONFLICT','发现根登记已属于另一目录');
+                this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_discovery_roots VALUES(?,?)').run(this.homeId,this.home);
+            }).immediate());
+            if (this.pending())
             throw new ApplicationError('RESOURCE_BUSY', '共享目录正在维护，暂不接受新消费者'); catalog = this.catalog(); if (catalog.generation !== generation)
             throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享目录代次已变化，重新准备能力'); atomicJson(path, record); try {
             run = await register({ runId, ptyId });
@@ -476,6 +484,29 @@ export class DiscoveryCatalog {
     } }
     async releaseRecovered(runId: string): Promise<void> { uuid.parse(runId); await this.lock(() => { const path = join(this.root, 'catalog-consumers', this.store.storeId + '-' + runId + '.json'), c = jsonFile(path, consumerSchema); if (c.homeId !== this.homeId || c.owner.storeId !== this.store.storeId || c.owner.uFingerprint !== this.owner.uFingerprint || this.processes.state({ pid: c.owner.pid, startedAt: c.owner.startedAt }) !== 'stopped')
         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原消费者所有者仍存活或无法证明退出'); this.assertRun(c, true); unlinkSync(path); durableDirectory(dirname(path)); }); }
+    /** Only this store's exact dead owners; no age/PID-only cleanup or foreign adoption. */
+    async recoverConsumers():Promise<{runId:string;state:'released'|'retained'|'unknown'}[]>{
+        return this.lock(()=>{
+            const results:{runId:string;state:'released'|'retained'|'unknown'}[]=[];
+            for(const c of this.consumers()){
+                if(c.owner.storeId!==this.store.storeId)continue;
+                if(c.owner.uFingerprint!==this.owner.uFingerprint){results.push({runId:c.runId,state:'unknown'});continue;}
+                const owner=this.processes.state({pid:c.owner.pid,startedAt:c.owner.startedAt});
+                if(owner!=='stopped'){results.push({runId:c.runId,state:owner==='unknown'?'unknown':'retained'});continue;}
+                const row=this.store.sqlite.prepare('SELECT 1 FROM capability_runs WHERE run_id=?').get(c.runId);
+                if(!row){
+                    // H preparing is durable before the C-only reserve callback.
+                    // No run row means that callback never committed; it cannot
+                    // have handed an OS fork to the later launcher phase.
+                    if(c.phase!=='preparing'){results.push({runId:c.runId,state:'unknown'});continue;}
+                }else{
+                    try{this.assertRun(c,true);}catch{results.push({runId:c.runId,state:'retained'});continue;}
+                }
+                unlinkSync(join(this.root,'catalog-consumers',this.consumerName(c)));durableDirectory(join(this.root,'catalog-consumers'));results.push({runId:c.runId,state:'released'});
+            }
+            return results;
+        });
+    }
     verifyReference(resource: ResourceRecord, snapshot: CapabilitySessionSnapshotV2): void { if (resource.kind !== 'agent-projection' || resource.pathScope !== 'H' || resource.scopeIdentity !== this.homeId || resource.state !== 'ready' || resource.integrity !== 'valid')
         throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享投影资源未就绪或实际HOME不同'); const manifest = verifyOwnedBundle(this.store.directory(resource), resource.contentHash, this.store.storeId); if (manifest.metadata.homeId !== this.homeId)
         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影属于其他发现根'); const selections = [...snapshot.packages.flatMap(p => p.skills.map(s => ({ path: s.projectionPath, hash: s.contentHash }))), ...snapshot.standardSkills.map(s => ({ path: s.projectionPath, hash: s.hash }))]; if (snapshot.runner !== 'codex' || !selections.some(s => s.path === join(this.store.directory(resource), 'SKILL.md') && s.hash === manifest.metadata.sourceHash))

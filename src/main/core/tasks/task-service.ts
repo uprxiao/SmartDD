@@ -242,7 +242,7 @@ export class TaskService {
           aiProfileId: profile.id,
           aiProfileName: profile.name,
           injectedEnvNames: JSON.stringify(injectedNames),
-          runtimeSnapshot: runtime ? JSON.stringify(runtime.snapshot) : null,
+          runtimeSnapshot: runtime?.persistSnapshot === false ? row.runtimeSnapshot : runtime ? JSON.stringify(runtime.snapshot) : null,
           stateRoot,
           configVersion: project?.configVersion ?? row.configVersion,
           lastLaunchedAt: launchedAt,
@@ -525,7 +525,7 @@ export class TaskService {
 
   private saveRuntimeCheck(taskId: string, runtime: PreparedRuntime, report: RuntimeSnapshot['selfCheck']): void {
     runtime.snapshot.selfCheck = report;
-    this.d.db.update(tasks).set({ runtimeSnapshot: JSON.stringify(runtime.snapshot) }).where(eq(tasks.id, taskId)).run();
+    if (runtime.persistSnapshot !== false) this.d.db.update(tasks).set({ runtimeSnapshot: JSON.stringify(runtime.snapshot) }).where(eq(tasks.id, taskId)).run();
     this.d.onChanged();
   }
 
@@ -582,7 +582,7 @@ export class TaskService {
           if(this.codexWatchers.get(taskId)!==w)return;
           this.stopWatch(taskId);
           const currentRuntime=this.runtimes.get(ptyId)?.runtime??managed?.launch.runtime;
-          this.d.db.update(tasks).set({ ...(currentRuntime?{runtimeSnapshot:JSON.stringify(currentRuntime.snapshot)}:{}),nativeSessionId: found.id, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
+          this.d.db.update(tasks).set({ ...(currentRuntime&&currentRuntime.persistSnapshot!==false?{runtimeSnapshot:JSON.stringify(currentRuntime.snapshot)}:{}),nativeSessionId: found.id, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
         }catch{this.stopWatch(taskId);this.d.onChanged();return;}
         finally{if(this.nativeClaims.get(found.id)===claim)this.nativeClaims.delete(found.id);}
         if (w.finalTail) this.pollFollow(w.finalTail);
@@ -706,6 +706,7 @@ export class TaskService {
   private toView(row: TaskRow, projectName: string | null, projectVersion: number | null, color: string | null): TaskView {
     const ptyId = this.running.get(row.id) ?? null;
     const { recovery, reason } = this.recoveryOf(row);
+    const currentRuntime=ptyId?(this.runtimes.get(ptyId)?.runtime??this.managed.get(ptyId)?.launch.runtime):undefined;
     return {
       id: row.id,
       projectId: row.projectId,
@@ -720,7 +721,7 @@ export class TaskService {
       title: row.title,
       firstMessage: row.firstMessage,
       injectedEnvNames: parseNames(row.injectedEnvNames),
-      runtimeSnapshot: this.runtimeOf(row),
+      runtimeSnapshot: currentRuntime?.persistSnapshot===false?currentRuntime.snapshot:this.runtimeOf(row),
       configVersion: row.configVersion,
       projectConfigVersion: projectVersion,
       archivedAt: row.archivedAt,
