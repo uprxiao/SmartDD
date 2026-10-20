@@ -331,3 +331,16 @@ test('Foxmail partial, unsupported and failed reads never masquerade as a comple
  assert.equal(mailSourceDiagnostic('ready',false,false).title,'未选用读取来源');
  assert.match(mailSourceDiagnostic('unsupported',true).reason,/不提供导出后导入/);
 });
+
+
+test('mail reading and SMTP slot revisions change independently and retain a clear/reselect tombstone', () => {
+ let state=projectIntegrationState(initialIntegrationState());
+ state.connections.push({id:'smtp-slot',app:'mail',kind:'smtp',enabled:true,validation:'ready'}, {id:'fox-slot',app:'mail',kind:'local',enabled:true,validation:'ready'});
+ state=selectProjectMailConnection(state,'ais','smtp','smtp-slot');
+ const created=saveDemoDraft(state,'ais'), readChanged=selectProjectMailConnection(created.state,'ais','local','fox-slot');
+ assert.equal(demoDraftSendEligibility(readChanged,'ais',created.draft).ok,true);
+ assert.equal(projectIntegrationState(readChanged).mailSlotRevisions.ais.smtp,created.draft.mailSendSlotRevision);
+ const cleared=selectProjectMailConnection(readChanged,'ais','smtp',''),reselected=selectProjectMailConnection(cleared,'ais','smtp','smtp-slot');
+ assert.equal(demoDraftSendEligibility(reselected,'ais',created.draft).changed,true);
+ assert.ok(reselected.mailSlotRevisions.ais.smtp>created.draft.mailSendSlotRevision);
+});

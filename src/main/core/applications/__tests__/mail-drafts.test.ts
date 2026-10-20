@@ -29,7 +29,7 @@ beforeEach(async () => {
   await selection.setAdded('mail',true,0);
   for (const projectId of ['p1','p2']) await selection.select({ projectId,appId: 'mail',enabled: true,expectedRevision: 0,connections: { foxmail: null,smtp: null } });
   // Actor labels are host-supplied unit fixtures, not real CLI loading evidence.
-  policy = { requireDrafts: actor => { selection.requireEnabled(actor.projectId,'mail'); } };
+  policy = { requireDrafts: actor => { selection.requireApplicationEnabled(actor.projectId,'mail'); } };
   blobs = new MailBlobStore(store,join(root,'app-data','mail'),policy); drafts = new MailDraftService(store,blobs,policy);
 });
 afterEach(() => { sqlite.close(); rmSync(root,{ recursive: true,force: true }); });

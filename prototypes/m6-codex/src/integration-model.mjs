@@ -30,6 +30,7 @@ export function projectIntegrationState(value) {
   const projectApps = Object.fromEntries(projectIds.map(projectId => [projectId, Object.fromEntries(APP_DEFINITIONS.map(app => [app.id, typeof value?.projectApps?.[projectId]?.[app.id] === 'boolean' ? value.projectApps[projectId][app.id] : connections.some(c => c.app === app.id && (Array.isArray(value?.bindings?.[projectId]) ? value.bindings[projectId] : []).includes(c.id))]))]));
   return { version: 2, packages, projectApps, mailQueryDays: validMailDays(value?.mailQueryDays) ? Number(value.mailQueryDays) : 30, drafts: projectDrafts(value?.drafts), installedVersions: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, [...new Set(['1.0.0', packages[a.id], ...(value?.installedVersions?.[a.id] || []).filter(v => ['1.0.0','1.1.0'].includes(v))])]])), dataSchema: value?.dataSchema === 2 ? 2 : 1, installed: [...new Set((value?.installed || []).filter(id => known.has(id)))], connections,
     bindings: Object.fromEntries(Object.entries(value?.bindings || {}).filter(([k]) => typeof k === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k, v]) => [k, [...new Set((Array.isArray(v) ? v : []).filter(id => ids.has(id)))]])),
+    mailSlotRevisions: Object.fromEntries(Object.entries(value?.mailSlotRevisions || {}).filter(([k]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k,v]) => [k,Object.fromEntries(['local','smtp'].map(slot => [slot,Number.isSafeInteger(v?.[slot]) && v[slot] >= 0 ? v[slot] : Number.isSafeInteger(value?.mailBindingRevisions?.[k]) ? value.mailBindingRevisions[k] : 0]))])),
     mailBindingRevisions: Object.fromEntries(Object.entries(value?.mailBindingRevisions || {}).filter(([k, v]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k) && Number.isSafeInteger(v) && v >= 0)),
     // Activity contains only fixed synthetic fixture identifiers and labels.
     activity: (Array.isArray(value?.activity) ? value.activity : []).slice(0, 40).map(a => ({ id: String(a.id), app: known.has(a.app) ? a.app : 'mail', operation: String(a.operation || ''), status: ['success', 'failed', 'unknown', 'handoff', 'draft', 'sending'].includes(a.status) ? a.status : 'unknown', project: typeof a.project === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(a.project) ? a.project : 'ais', connectionId: String(a.connectionId || ''), at: String(a.at || ''), actor: String(a.actor || ''), draftId: String(a.draftId || ''), revision: Number(a.revision) || null })),
@@ -62,12 +63,13 @@ export function selectedConnections(state, projectId, appId) {
   // Resolve each explicit selection independently; ambiguous legacy groups never pick an account.
   return matches.filter(c => matches.filter(x => x.app === c.app && (c.app === 'zentao' || x.kind === c.kind)).length === 1);
 }
+const mailSlotRevision = (state,project,kind) => state.mailSlotRevisions?.[project]?.[kind] ?? state.mailBindingRevisions?.[project] ?? 0;
 export function selectProjectMailConnection(state, projectId, kind, connectionId) {
   if (!['local', 'smtp'].includes(kind)) return state;
   if (connectionId && !state.connections.some(c => c.id === connectionId && c.app === 'mail' && c.kind === kind)) return state;
   const old = state.connections.filter(c => c.app === 'mail' && c.kind === kind && (state.bindings[projectId] || []).includes(c.id));
   if ((!connectionId && !old.length) || (old.length === 1 && old[0].id === connectionId)) return state;
-  return { ...state, projectApps: { ...state.projectApps, [projectId]: { ...state.projectApps?.[projectId], mail: projectAppEnabled(state, projectId, 'mail') } }, mailBindingRevisions: { ...state.mailBindingRevisions, [projectId]: (state.mailBindingRevisions?.[projectId] || 0) + 1 }, bindings: { ...state.bindings, [projectId]: [
+  return { ...state, projectApps: { ...state.projectApps, [projectId]: { ...state.projectApps?.[projectId], mail: projectAppEnabled(state, projectId, 'mail') } }, mailBindingRevisions: { ...state.mailBindingRevisions, [projectId]: (state.mailBindingRevisions?.[projectId] || 0) + 1 }, mailSlotRevisions: { ...state.mailSlotRevisions,[projectId]: { local: mailSlotRevision(state,projectId,'local'),smtp: mailSlotRevision(state,projectId,'smtp'),[kind]: mailSlotRevision(state,projectId,kind) + 1 } }, bindings: { ...state.bindings, [projectId]: [
     ...(state.bindings[projectId] || []).filter(id => !state.connections.some(c => c.id === id && c.app === 'mail' && c.kind === kind)),
     ...(connectionId ? [connectionId] : []),
   ] } };
@@ -175,21 +177,21 @@ export function mailQueryWindow(days, now = new Date()) {
 export const DEMO_MAIL_DRAFT = { to: 'team@example.invalid', subject: 'M10 接入方案评审', body: '大家好，\n\n应用连接和项目选用方案已整理，请查看账号配置、本地邮件读取与结果恢复流程。\n\n谢谢。', attachment: false };
 function projectDrafts(drafts) {
   // Persist only a fixture identity and lifecycle metadata; never user-entered mail text.
-  return (Array.isArray(drafts) ? drafts : []).filter(d => d.fixture === 'm10-review').map(d => ({ id: String(d.id), project: String(d.project), fixture: 'm10-review', revision: Number(d.revision) || 1, senderId: typeof d.senderId === 'string' ? d.senderId : '', mailBindingRevision: Number.isSafeInteger(d.mailBindingRevision) ? d.mailBindingRevision : -1, status: ['draft','sending','success','failed','unknown'].includes(d.status) ? d.status : 'draft', at: String(d.at || '') }));
+  return (Array.isArray(drafts) ? drafts : []).filter(d => d.fixture === 'm10-review').map(d => ({ id: String(d.id), project: String(d.project), fixture: 'm10-review', revision: Number(d.revision) || 1, senderId: typeof d.senderId === 'string' ? d.senderId : '', mailBindingRevision: Number.isSafeInteger(d.mailBindingRevision) ? d.mailBindingRevision : -1,mailSendSlotRevision: Number.isSafeInteger(d.mailSendSlotRevision) ? d.mailSendSlotRevision : -1, status: ['draft','sending','success','failed','unknown'].includes(d.status) ? d.status : 'draft', at: String(d.at || '') }));
 }
 export function saveDemoDraft(state, project, existingId, expectedRevision) {
   const old = state.drafts?.find(d => d.id === existingId);
   if (old && old.project !== project) return { ok: false, state, reason: '不能覆盖其他项目的草稿。' };
   if (old && old.revision !== expectedRevision) return { ok: false, state, reason: '草稿已由其他会话修改，请重新打开。' };
   if (old && ['sending','success','unknown'].includes(old.status)) return { ok: false, state, reason: '发送中、已发送或结果未知的记录不能覆盖；先核实结果。' };
-  const draft = { id: old?.id || 'draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), project, fixture: 'm10-review', revision: (old?.revision || 0) + 1, senderId: selectedConnections(state, project, 'mail').find(c => c.kind === 'smtp')?.id || '', mailBindingRevision: state.mailBindingRevisions?.[project] || 0, status: 'draft', at: new Date().toLocaleString('zh-CN') };
+  const draft = { id: old?.id || 'draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), project, fixture: 'm10-review', revision: (old?.revision || 0) + 1, senderId: selectedConnections(state, project, 'mail').find(c => c.kind === 'smtp')?.id || '', mailBindingRevision: state.mailBindingRevisions?.[project] || 0,mailSendSlotRevision: mailSlotRevision(state,project,'smtp'), status: 'draft', at: new Date().toLocaleString('zh-CN') };
   return { ok: true, state: { ...state, drafts: [draft, ...(state.drafts || []).filter(d => d.id !== draft.id)] }, draft };
 }
 export function demoDraftSendEligibility(state, projectId, draft) {
   const sender = selectedConnections(state, projectId, 'mail').find(c => c.kind === 'smtp');
   if (!draft || draft.project !== projectId || !['draft','failed'].includes(draft.status)) return { ok: false, reason: '草稿状态不允许提交。' };
   if (!projectAppEnabled(state, projectId, 'mail')) return { ok: false, reason: '当前项目未启用邮件，草稿保留。' };
-  const changed = draft.senderId !== (sender?.id || '') || draft.mailBindingRevision !== (state.mailBindingRevisions?.[projectId] || 0);
+  const changed = draft.senderId !== (sender?.id || '') || (draft.mailSendSlotRevision >= 0 ? draft.mailSendSlotRevision !== mailSlotRevision(state,projectId,'smtp') : draft.mailBindingRevision !== (state.mailBindingRevisions?.[projectId] || 0));
   if (changed) return { ok: false, changed: true, sender, reason: '项目邮件设置已变化，请重新核对来源与发件账号；原草稿未被改写，明确采用当前设置后更新草稿修订。' };
   return connectionReady(sender) ? { ok: true, sender } : { ok: false, sender, reason: '当前项目未配置可用SMTP；草稿仍保留，不改用其他账号。' };
 }

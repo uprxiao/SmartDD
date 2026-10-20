@@ -45,6 +45,7 @@ export type ProjectApplicationSelectionInput = z.infer<typeof projectApplication
 export interface ProjectApplicationSelection {
   projectId: string; appId: ApplicationId; enabled: boolean; revision: number; pendingOperationId: string | null;
   connections: Partial<Record<ApplicationProvider, string | null>>;
+  slotRevisions: Partial<Record<ApplicationProvider, number>>;
 }
 export const providerApplication = (provider: ApplicationProvider): ApplicationId => provider === 'zentao' ? 'zentao' : 'mail';
 

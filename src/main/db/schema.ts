@@ -297,7 +297,7 @@ export const mailBlobObjects = sqliteTable('mail_blob_objects', {
 });
 export const mailAttachmentObjects = sqliteTable('mail_attachment_objects', {
   id: text('id').primaryKey(), projectId: text('project_id').notNull(), contentHash: text('content_hash').notNull().references(() => mailBlobObjects.contentHash),
-  filename: text('filename').notNull(), contentType: text('content_type').notNull(), byteSize: integer('byte_size').notNull(), createdAt: text('created_at').notNull(),
+  filename: text('filename').notNull(), contentType: text('content_type').notNull(), byteSize: integer('byte_size').notNull(), kind: text('kind', { enum: ['attachment','message'] }).notNull().default('attachment'), createdAt: text('created_at').notNull(),
 });
 export const mailBlobWrites = sqliteTable('mail_blob_writes', {
   operationId: text('operation_id').primaryKey(), attachmentId: text('attachment_id').notNull(), projectId: text('project_id').notNull(), requestHash: text('request_hash').notNull(), metadataJson: text('metadata_json').notNull(), state: text('state').notNull(), errorCode: text('error_code'), cleanupPending: integer('cleanup_pending', { mode: 'boolean' }).notNull().default(false), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
@@ -312,3 +312,21 @@ export const mailDraftRevisions = sqliteTable('mail_draft_revisions', {
 export const mailDraftMutations = sqliteTable('mail_draft_mutations', {
   projectId: text('project_id').notNull(), operationId: text('operation_id').notNull(), requestHash: text('request_hash').notNull(), draftId: text('draft_id').notNull().references(() => mailDrafts.id), resultJson: text('result_json').notNull(), createdAt: text('created_at').notNull(),
 },t => ({ pk: primaryKey({ columns: [t.projectId,t.operationId] }) }));
+
+export const mailSendIntents = sqliteTable('mail_send_intents', {
+  id: text('id').primaryKey(),projectId: text('project_id').notNull(),sourceTaskId: text('source_task_id'),sourceRunId: text('source_run_id'),operationId: text('operation_id').notNull(),requestHash: text('request_hash').notNull(),
+  draftId: text('draft_id').notNull(),draftRevision: integer('draft_revision').notNull(),draftContentHash: text('draft_content_hash').notNull(),connectionId: text('connection_id').notNull().references(() => applicationConnections.id),
+  identityRevision: integer('identity_revision').notNull(),configRevision: integer('config_revision').notNull(),policyRevision: integer('policy_revision').notNull(),bindingRevision: integer('binding_revision').notNull(),identityJson: text('identity_json').notNull(),smtpConfigJson: text('smtp_config_json').notNull(),
+  rawWriteId: text('raw_write_id').notNull(),rawObjectId: text('raw_object_id').references(() => mailAttachmentObjects.id),rawHash: text('raw_hash'),frozenHash: text('frozen_hash'),envelopeJson: text('envelope_json'),messageId: text('message_id').notNull(),reviewJson: text('review_json'),reviewHash: text('review_hash'),state: text('state').notNull(),grantId: text('grant_id'),executionId: text('execution_id'),cancelRequestedAt: text('cancel_requested_at'),
+  ownerInstanceId: text('owner_instance_id').notNull(),ownerPid: integer('owner_pid').notNull(),ownerStartedAt: text('owner_started_at').notNull(),errorCode: text('error_code'),createdAt: text('created_at').notNull(),updatedAt: text('updated_at').notNull(),
+},t => ({ operation: uniqueIndex('mail_send_intents_operation').on(t.projectId,t.operationId),byProject: index('mail_send_intents_project_updated').on(t.projectId,t.updatedAt,t.id),revision: foreignKey({ columns: [t.draftId,t.draftRevision],foreignColumns: [mailDraftRevisions.draftId,mailDraftRevisions.revision] }) }));
+export const mailSendGrants = sqliteTable('mail_send_grants', {
+  id: text('id').primaryKey(),intentId: text('intent_id').notNull().references(() => mailSendIntents.id),source: text('source').notNull(),evidenceId: text('evidence_id').notNull(),evidenceHash: text('evidence_hash').notNull(),reviewHash: text('review_hash').notNull(),evidenceJson: text('evidence_json').notNull(),state: text('state').notNull(),expiresAt: text('expires_at').notNull(),createdAt: text('created_at').notNull(),
+},t => ({ sourceEvent: uniqueIndex('mail_send_grants_source_event').on(t.source,t.evidenceId) }));
+export const mailSendExecutions = sqliteTable('mail_send_executions', {
+  id: text('id').primaryKey(),intentId: text('intent_id').notNull().references(() => mailSendIntents.id),projectId: text('project_id').notNull(),draftId: text('draft_id').notNull(),draftRevision: integer('draft_revision').notNull(),reviewHash: text('review_hash').notNull(),state: text('state').notNull(),resultJson: text('result_json'),secretRevision: integer('secret_revision').notNull(),ownerInstanceId: text('owner_instance_id').notNull(),startedAt: text('started_at').notNull(),endedAt: text('ended_at'),
+},t => ({ oncePerIntent: uniqueIndex('mail_send_executions_intent').on(t.intentId),oncePerRevision: uniqueIndex('mail_send_executions_draft_revision').on(t.draftId,t.draftRevision) }));
+
+export const applicationBindingSlotRevisions = sqliteTable('application_binding_slot_revisions', {
+  projectId: text('project_id').notNull(),appId: text('app_id').notNull(),slot: text('slot').notNull(),revision: integer('revision').notNull(),
+},t => ({ pk: primaryKey({ columns: [t.projectId,t.appId,t.slot] }),projectScope: foreignKey({ columns: [t.projectId,t.appId],foreignColumns: [applicationProjectSettings.projectId,applicationProjectSettings.appId] }).onDelete('cascade') }));

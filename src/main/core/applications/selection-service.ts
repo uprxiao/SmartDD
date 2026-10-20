@@ -29,6 +29,7 @@ export class ApplicationSelectionService {
       if (state.revision !== expectedRevision) throw new ApplicationError('REVISION_CONFLICT', '应用状态已变化，请重新载入');
       const now = new Date().toISOString();
       this.store.sqlite.prepare(`INSERT INTO application_catalog_state(app_id,added,enabled,revision,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(app_id) DO UPDATE SET added=excluded.added,enabled=excluded.enabled,revision=excluded.revision,updated_at=excluded.updated_at`).run(appId, added ? 1 : 0, added ? 1 : 0, state.revision + 1, now);
+      if (state.added !== added || state.enabled !== added) this.store.sqlite.prepare('UPDATE application_binding_slot_revisions SET revision=revision+1 WHERE app_id=?').run(appId);
       if (!added) {
         this.store.sqlite.prepare("UPDATE application_binding_changes SET state='cancelled',error_code='SCOPE_DENIED',updated_at=? WHERE app_id=? AND state='stopping'").run(now, appId);
         this.store.sqlite.prepare('UPDATE application_project_settings SET enabled=0,binding_revision=binding_revision+1,pending_operation_id=NULL,updated_at=? WHERE app_id=?').run(now, appId);
@@ -40,6 +41,7 @@ export class ApplicationSelectionService {
       const state = this.catalogState(appId);
       if (!state.added) throw new ApplicationError('SCOPE_DENIED', '请先添加此应用');
       if (state.revision !== expectedRevision) throw new ApplicationError('REVISION_CONFLICT', '应用状态已变化，请重新载入');
+      if (state.enabled !== enabled) this.store.sqlite.prepare('UPDATE application_binding_slot_revisions SET revision=revision+1 WHERE app_id=?').run(appId);
       this.store.sqlite.prepare('UPDATE application_catalog_state SET enabled=?,revision=revision+1,updated_at=? WHERE app_id=?').run(enabled ? 1 : 0, new Date().toISOString(), appId);
     }).immediate()); return this.catalogState(appId);
   }
@@ -54,7 +56,13 @@ export class ApplicationSelectionService {
       if (connection.providerId !== binding.slot || connection.appId !== appId || connection.identityRevision !== binding.identityRevision) throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED', '已保存来源身份与当前连接不一致，请明确重新选择');
       selected[binding.slot] = binding.connectionId;
     }
-    return { projectId, appId, enabled: row?.enabled === 1, revision: row?.revision ?? 0, pendingOperationId: row?.pendingOperationId ?? null, connections: selected };
+    const slotRevisions: Partial<Record<ApplicationProvider, number>> = appId === 'zentao' ? { zentao: 0 } : { foxmail: 0,smtp: 0 };
+    if (row) {
+      const versions = this.store.sqlite.prepare('SELECT slot,revision FROM application_binding_slot_revisions WHERE project_id=? AND app_id=?').all(projectId,appId) as { slot: ApplicationProvider;revision: number }[];
+      if (versions.length !== Object.keys(slotRevisions).length || versions.some(v => !Object.hasOwn(slotRevisions,v.slot))) throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','项目连接槽修订缺失或类别异常，不能沿用旧授权');
+      for (const v of versions) slotRevisions[v.slot] = v.revision;
+    }
+    return { projectId, appId, enabled: row?.enabled === 1, revision: row?.revision ?? 0, pendingOperationId: row?.pendingOperationId ?? null, connections: selected,slotRevisions };
   }
   private validateSelection(value: ProjectApplicationSelectionInput): void {
     if (!this.catalogState(value.appId).added) throw new ApplicationError('SCOPE_DENIED', '请先在应用目录添加此应用');
@@ -100,8 +108,13 @@ export class ApplicationSelectionService {
     }
   }
   private commitSelection(value: ProjectApplicationSelectionInput, operationId: string): void {
-    const now = new Date().toISOString(), revision = value.expectedRevision + 1;
+    const now = new Date().toISOString(), revision = value.expectedRevision + 1, previous = this.projectSettings(value.projectId,value.appId);
     this.store.sqlite.prepare(`INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,pending_operation_id,updated_at) VALUES(?,?,?,?,NULL,?) ON CONFLICT(project_id,app_id) DO UPDATE SET enabled=excluded.enabled,binding_revision=excluded.binding_revision,pending_operation_id=NULL,updated_at=excluded.updated_at`).run(value.projectId, value.appId, value.enabled ? 1 : 0, revision, now);
+    for (const [slot,id] of Object.entries(value.connections)) {
+      const role = slot as ApplicationProvider, changed = previous.enabled !== value.enabled || previous.connections[role] !== id;
+      const next = (previous.slotRevisions[role] ?? 0) + (changed ? 1 : 0);
+      this.store.sqlite.prepare('INSERT INTO application_binding_slot_revisions(project_id,app_id,slot,revision) VALUES(?,?,?,?) ON CONFLICT(project_id,app_id,slot) DO UPDATE SET revision=excluded.revision').run(value.projectId,value.appId,slot,next);
+    }
     this.store.sqlite.prepare('DELETE FROM application_project_bindings WHERE project_id=? AND app_id=?').run(value.projectId, value.appId);
     for (const [slot, id] of Object.entries(value.connections)) {
       if (!id) continue;
@@ -109,6 +122,24 @@ export class ApplicationSelectionService {
       this.store.sqlite.prepare('INSERT INTO application_project_bindings(project_id,app_id,slot,connection_id,identity_revision) VALUES(?,?,?,?,?)').run(value.projectId, value.appId, slot, id, connection.identityRevision);
     }
     this.store.sqlite.prepare("UPDATE application_binding_changes SET state='committed',to_revision=?,updated_at=? WHERE operation_id=?").run(revision, now, operationId);
+  }
+  /** Local draft operations depend only on application policy, not unrelated external slots. */
+  requireApplicationEnabled(projectId: string,appId: ApplicationId): void {
+    this.deps.requireProject(projectId); const catalog = this.catalogState(appId);
+    const row = this.store.sqlite.prepare('SELECT enabled,pending_operation_id FROM application_project_settings WHERE project_id=? AND app_id=?').get(projectId,appId) as { enabled: number;pending_operation_id: string | null } | undefined;
+    if (!catalog.added || !catalog.enabled || row?.enabled !== 1) throw new ApplicationError('SCOPE_DENIED','当前项目未启用此应用');
+    if (appId === 'zentao' && row.pending_operation_id) throw new ApplicationError('RESOURCE_BUSY','禅道选择变更中，请稍后重试');
+  }
+  connectionSlot(projectId: string,appId: ApplicationId,slot: ApplicationProvider): { connectionId: string | null;identityRevision: number | null;revision: number } {
+    this.requireApplicationEnabled(projectId,appId);
+    if (providerApplication(slot) !== appId) throw new ApplicationError('SCOPE_DENIED','连接槽不属于本应用');
+    const version = this.store.sqlite.prepare('SELECT revision FROM application_binding_slot_revisions WHERE project_id=? AND app_id=? AND slot=?').get(projectId,appId,slot) as { revision: number } | undefined;
+    if (!version) throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','此连接槽的修订缺失，不能沿用旧授权');
+    const row = this.store.sqlite.prepare('SELECT connection_id,identity_revision FROM application_project_bindings WHERE project_id=? AND app_id=? AND slot=?').get(projectId,appId,slot) as { connection_id: string;identity_revision: number } | undefined;
+    if (!row) return { connectionId: null,identityRevision: null,revision: version.revision };
+    const c = this.connections.get(row.connection_id);
+    if (c.appId !== appId || c.providerId !== slot || c.identityRevision !== row.identity_revision) throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','此连接槽的来源身份不一致，请明确重新选择');
+    return { connectionId: c.id,identityRevision: c.identityRevision,revision: version.revision };
   }
   /** Main-process caller checks this before creating or delivering a business operation. */
   requireEnabled(projectId: string, appId: ApplicationId): ProjectApplicationSelection {
