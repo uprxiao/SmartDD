@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // Column layout of `sessions` / `app_secrets` matches the M0 tables so the first
 // migration (CREATE TABLE IF NOT EXISTS) adopts existing databases unchanged.
@@ -222,3 +222,49 @@ export const importedKeys = sqliteTable('imported_keys', {
   path: text('path').notNull(),
   createdAt: integer('created_at').notNull(),
 });
+
+// ---- M10: immutable application packages and durable session/resource ownership ----
+// Session snapshots intentionally have no FK to tasks: native-history tombstones retain resources.
+export const capabilityResources = sqliteTable('capability_resources', {
+  resourceId: text('resource_id').primaryKey(), kind: text('kind').notNull(), contentHash: text('content_hash').notNull(),
+  ownerStoreId: text('owner_store_id').notNull(), pathScope: text('path_scope', { enum: ['C', 'H'] }).notNull(),
+  relativePath: text('relative_path').notNull(),
+  state: text('state', { enum: ['staged', 'verified', 'ready', 'deleting', 'removed', 'recovery-required'] }).notNull(),
+  generation: integer('generation').notNull().default(1), integrity: text('integrity', { enum: ['unknown', 'valid', 'invalid'] }).notNull(), operationId: text('operation_id'),
+}, t => ({ ownedPath: uniqueIndex('capability_resources_owned_path').on(t.ownerStoreId, t.pathScope, t.relativePath) }));
+export const capabilityResourceDependencies = sqliteTable('capability_resource_dependencies', {
+  resourceId: text('resource_id').notNull().references(() => capabilityResources.resourceId),
+  dependencyId: text('dependency_id').notNull().references(() => capabilityResources.resourceId),
+}, t => ({ pk: primaryKey({ columns: [t.resourceId, t.dependencyId] }) }));
+export const capabilityResourceLeases = sqliteTable('capability_resource_leases', {
+  leaseId: text('lease_id').primaryKey(), resourceId: text('resource_id').notNull().references(() => capabilityResources.resourceId),
+  ownerKind: text('owner_kind').notNull(), ownerId: text('owner_id').notNull(), hostInstanceId: text('host_instance_id').notNull(),
+  pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), createdAt: text('created_at').notNull(), endedAt: text('ended_at'),
+}, t => ({ byResource: index('capability_resource_leases_resource_idx').on(t.resourceId, t.state) }));
+export const capabilityResourceOperations = sqliteTable('capability_resource_operations', {
+  operationId: text('operation_id').primaryKey(), kind: text('kind').notNull(), ownerStoreId: text('owner_store_id').notNull(),
+  state: text('state').notNull(), planJson: text('plan_json').notNull(), errorCode: text('error_code'), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
+});
+export const capabilityPackages = sqliteTable('capability_packages', {
+  packageHash: text('package_hash').primaryKey(), appId: text('app_id').notNull(), version: text('version').notNull(), hashAlgorithm: text('hash_algorithm').notNull(),
+  relativePath: text('relative_path').notNull(), manifestJson: text('manifest_json').notNull(), resourceId: text('resource_id').notNull().references(() => capabilityResources.resourceId), installedAt: text('installed_at').notNull(),
+}, t => ({ identity: uniqueIndex('capability_packages_identity').on(t.appId, t.version) }));
+export const capabilityActivePackages = sqliteTable('capability_active_packages', {
+  appId: text('app_id').primaryKey(), packageHash: text('package_hash').notNull().references(() => capabilityPackages.packageHash), activationGeneration: integer('activation_generation').notNull(), activatedAt: text('activated_at').notNull(),
+});
+export const capabilityInstallJournal = sqliteTable('capability_install_journal', {
+  installId: text('install_id').primaryKey().references(() => capabilityResourceOperations.operationId), hostBuild: text('host_build').notNull(), fromGeneration: integer('from_generation'), toGeneration: integer('to_generation'),
+  state: text('state').notNull(), planJson: text('plan_json').notNull(), backupPath: text('backup_path'), errorCode: text('error_code'), updatedAt: text('updated_at').notNull(),
+});
+export const capabilitySessionSnapshots = sqliteTable('capability_session_snapshots', {
+  taskId: text('task_id').primaryKey(), schemaVersion: integer('schema_version').notNull(), snapshotJson: text('snapshot_json').notNull(), snapshotHash: text('snapshot_hash').notNull(), createdAt: text('created_at').notNull(), legacyStatus: text('legacy_status').notNull(), retentionState: text('retention_state', { enum: ['active', 'tombstone', 'hold'] }).notNull(),
+});
+export const capabilitySessionRefs = sqliteTable('capability_session_refs', {
+  taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), refKind: text('ref_kind').notNull(), refId: text('ref_id').notNull().references(() => capabilityResources.resourceId), refHash: text('ref_hash').notNull(), relativePath: text('relative_path').notNull(),
+}, t => ({ pk: primaryKey({ columns: [t.taskId, t.refKind, t.refId] }), byResource: index('capability_session_refs_resource_idx').on(t.refId) }));
+export const capabilityRuns = sqliteTable('capability_runs', {
+  runId: text('run_id').primaryKey(), taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), projectId: text('project_id').notNull().references(() => projects.id), runner: text('runner').notNull(), pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), startedAt: text('started_at').notNull(), endedAt: text('ended_at'), errorCode: text('error_code'),
+});
+export const capabilitySchemaMigrations = sqliteTable('capability_schema_migrations', {
+  appId: text('app_id').notNull(), migrationId: text('migration_id').notNull(), checksum: text('checksum').notNull(), fromVersion: integer('from_version').notNull(), toVersion: integer('to_version').notNull(), appliedAt: text('applied_at').notNull(), hostBuild: text('host_build').notNull(),
+}, t => ({ pk: primaryKey({ columns: [t.appId, t.migrationId] }) }));
