@@ -1,0 +1,221 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-H",
+  "recordedAt": "2026-10-20T10:36:29.031958+00:00",
+  "requirementBaseline": "R1.6 incl12.21;full M10 scope remains active",
+  "baseCommit": "c557c92c507ee4912345ebedb9f1d6bd471c00ef",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "applicationVersion": "0.0.5",
+  "prototypeBaseline": "8466734",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Production ManagedTaskCapabilities composes original registries/projectors/catalog,business Tool/Data services,broker and kernel peer supervisor;main macOS arm64 startup now instantiates and attaches it",
+    "Fixed initial project package/standard selection with coordinated SQL recheck;native roots,selection and package paths retained on v2 resume",
+    "Complete Codex H consumer for every managed Codex task including no-app tasks;stable Claude S projection;actual creation catalog generation",
+    "Legacy launch runtime remains an immutable source reference and Run lease even if project-context MCP disabled",
+    "Only actual native handle exit/kernel-proven bridge exit releases H/T;late completion sweep;application disable rejects calls while Agent remains active",
+    "Read-only native config details and actual executable --version preflight;user Skill flags/extra fields and MCP/plugin configuration preserved;unknown configuration or namespace conflict emits unavailable metadata without managed arguments/secrets",
+    "Real private OS PTY,synthetic native CLI,original CJS child and MCP SDK execute Mail draft list through actual production host;actual CLI/bridge PIDs and exit/resource release asserted"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/capabilities/discovery.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects --maxWorkers=2",
+      "status": "passed",
+      "files": 53,
+      "tests": 686,
+      "passed": 686,
+      "failed": 0,
+      "m10AndRelatedRuntime": 607,
+      "projectsAndM8": 79,
+      "durationSeconds": 170.65,
+      "log": "dev003-h-20261020/related-20261020.json"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-h-20261020/types-final-20261020.json"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev003-h-20261020/build-20261020.json"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed",
+      "tests": 14,
+      "log": "dev003-h-20261020/release-20261020.json"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "log": "dev003-h-20261020/resources-20261020.json"
+    }
+  ],
+  "testAccounting": {
+    "previousRelated": 665,
+    "newProductionComposition": 10,
+    "newHostNativeDiscovery": 3,
+    "existingDiscoveryAddedToScope": 8,
+    "currentRelated": 686,
+    "note": "665+10+3+8=686;repeated 45/46/49/10/11 scope runs are not accumulated"
+  },
+  "retainedFailures": [
+    {
+      "phase": "integration-first",
+      "tests": 45,
+      "passed": 44,
+      "failed": 1,
+      "classification": "assertion serialization assumption",
+      "cause": "quoted TOML key is valid;substring enabled=false was not a semantic check",
+      "fix": "parse actual TOML and retain false/extra-field assertion"
+    },
+    {
+      "phase": "types-second",
+      "classification": "test TypeScript unknown access",
+      "fix": "explicitly narrow private database row"
+    },
+    {
+      "phase": "os-first",
+      "tests": 10,
+      "passed": 9,
+      "failed": 1,
+      "classification": "fixture schema",
+      "cause": "profile env used key instead of name;rejected before native fork",
+      "fix": "use existing schema name;keep original OS assertions and timeout"
+    }
+  ],
+  "immutableResources": {
+    "indexHash": "029b62d8753cd22a4dad345ec4c66c5742074eb189abf061875eafe800c65363",
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "adapters": 2,
+    "runtimes": 1,
+    "apps": [
+      {
+        "appId": "zentao",
+        "version": "1.0.0",
+        "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+        "skills": 2,
+        "tools": 3,
+        "files": 13
+      },
+      {
+        "appId": "mail",
+        "version": "1.0.0",
+        "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+        "skills": 1,
+        "tools": 14,
+        "files": 34
+      }
+    ]
+  },
+  "bridgeSha256": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+  "boundaries": {
+    "actualOsIntegration": {
+      "pty": "actual node-pty OS process",
+      "cli": "private synthetic parser/SDK client,not actual CC/Codex",
+      "bridge": "immutable original CJS child",
+      "identity": "actual kernel PID/birth/image/parent proof",
+      "business": "real private SQLite Mail draft list,without SMTP",
+      "externalWrites": false
+    },
+    "otherCompositionCases": "controlled PTY/PID and cipher/sender fixtures;real private DB/source trees/services",
+    "unknownForkWindow": "controlled Mail case never forks;armed null-PID bridge and stopping Run/consumer retained,not reported exited",
+    "userDailyResources": "not read or copied",
+    "gui": "not run",
+    "actualCcCodex": "not run",
+    "packagedAppCases": 0
+  },
+  "remaining": [
+    "known M4 and unknown legacy native-only run classification/guard;current no-v2 history holds without guessing new apps",
+    "complete native configuration/profile/trust precedence and real CC/Codex validation",
+    "startup maintenance,cross-host interruption,H recovered-consumer release,GC and failure-shutdown completion",
+    "native user role/firstMessage/clear send intent authorization without redundant confirmation",
+    "P01-P09 production UI and complete packaged App/system acceptance",
+    "versioned Mail refresh-status output contract;do not rewrite1.0.0"
+  ],
+  "formalProductCases": {
+    "total": 72,
+    "packagedAppPassed": 0,
+    "scopeUnchanged": true
+  },
+  "release": {
+    "published": false,
+    "mergedMain": false,
+    "tagged": false
+  },
+  "evidence": [
+    {
+      "path": "dev003-h-20261020/build-20261020.json",
+      "sha256": "e255d062df142597272360f34b93d1d875baa9dbed6e49009201e26cf525e41b"
+    },
+    {
+      "path": "dev003-h-20261020/discovery-20261020.json",
+      "sha256": "9b8396da0dd7146d7fde437bf67ab1baae70a948ad5cf2d42f830606c6e22239"
+    },
+    {
+      "path": "dev003-h-20261020/integration-first-20261020.json",
+      "sha256": "c434ebba88f09580661ae311c8e4815d2f5535acde86e54c950a425a673d5312"
+    },
+    {
+      "path": "dev003-h-20261020/integration-second-20261020.json",
+      "sha256": "c856dd59846d15c1e8e7411d1e74ff86f8ed5b41abfa84fdd84d576ff86342bd"
+    },
+    {
+      "path": "dev003-h-20261020/integration-third-20261020.json",
+      "sha256": "a1a7d256c59bda90b32f7cf174e0478386934741c3504a8af514c9a1f205f6d4"
+    },
+    {
+      "path": "dev003-h-20261020/main-composition-20261020.json",
+      "sha256": "aa5d2597eac50b338ed3cdfd6ae2ab455ed3842c8da53b3eca0c1d6f3af88841"
+    },
+    {
+      "path": "dev003-h-20261020/os-first-20261020.json",
+      "sha256": "9b67e0e72190efa6e01e65f6f656d3b7cd5adc1f79684ff27a6556ba25558299"
+    },
+    {
+      "path": "dev003-h-20261020/os-second-20261020.json",
+      "sha256": "764ce1cb99195205fb0b9faf76ea3bc553aa79d0c65a486979a4f773c3100032"
+    },
+    {
+      "path": "dev003-h-20261020/related-20261020.json",
+      "sha256": "313cfea3aeb42fe8f14b1d5562514db9d074ea576dd47ae78ea77c7ae7c50060"
+    },
+    {
+      "path": "dev003-h-20261020/release-20261020.json",
+      "sha256": "c49ef667d556655a894d93829339d79ac025d2dbf19d049e29b558ca06f87c34"
+    },
+    {
+      "path": "dev003-h-20261020/resources-20261020.json",
+      "sha256": "59a93e05fdb336a7699ac61864dde1fd033bc5ef585184c9f4eeb3a4d71ac999"
+    },
+    {
+      "path": "dev003-h-20261020/source-and-build-manifest.json",
+      "sha256": "1cdd755aa3ab5e983f88a979cc78a202e18158a82748d8bbf6f2a8cc286c791d"
+    },
+    {
+      "path": "dev003-h-20261020/types-final-20261020.json",
+      "sha256": "88f1021436a33075c54a8c188e77a424eb14bf34c08503902d91c7475acce046"
+    },
+    {
+      "path": "dev003-h-20261020/types-first-20261020.json",
+      "sha256": "88f1021436a33075c54a8c188e77a424eb14bf34c08503902d91c7475acce046"
+    },
+    {
+      "path": "dev003-h-20261020/types-second-20261020.json",
+      "sha256": "15977d7134934c7aa68d1e59c3b464bc81dfe454ae477a4578857b936c0b3d3d"
+    },
+    {
+      "path": "dev003-h-20261020/types-third-20261020.json",
+      "sha256": "88f1021436a33075c54a8c188e77a424eb14bf34c08503902d91c7475acce046"
+    }
+  ]
+}

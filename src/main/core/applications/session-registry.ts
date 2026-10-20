@@ -74,7 +74,7 @@ export class CapabilitySessionRegistry {
       if (snapshot.taskId !== taskId || digest(canonicalJson(snapshot)) !== row.snapshot_hash || !identity || identity.runner !== snapshot.runner || identity.session_id !== snapshot.native.sessionId || identity.cwd !== snapshot.native.cwd || identity.selection_hash !== selectionHash(snapshot)) throw new Error('snapshot integrity');
       const actual = this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId) as SessionResourceReference[];
       const expected = this.expectedSources(snapshot);
-      if ([...expected].some(([id,s]) => !actual.some(r => r.refId === id && r.refKind === s.kind && r.refHash === s.hash)) || actual.some(r => !isPackagePath(r.relativePath) || (!expected.has(r.refId) && !['session-projection','agent-projection'].includes(r.refKind)))) throw new Error('reference integrity');
+      if ([...expected].some(([id,s]) => !actual.some(r => r.refId === id && r.refKind === s.kind && r.refHash === s.hash)) || actual.some(r => !isPackagePath(r.relativePath) || (!expected.has(r.refId) && !['session-projection','agent-projection','legacy-runtime'].includes(r.refKind)))) throw new Error('reference integrity');
       for (const ref of actual) {
         const resource = this.store.get(ref.refId);
         if (resource.contentHash !== ref.refHash || resource.relativePath !== ref.relativePath || resource.kind !== ref.refKind) throw new Error('resource reference identity');
@@ -165,6 +165,19 @@ export class CapabilitySessionRegistry {
       this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_session_refs(task_id,ref_kind,ref_id,ref_hash,relative_path) VALUES(?,?,?,?,?)').run(taskId,resource.kind,resourceId,resource.contentHash,resource.relativePath);
       const ref = this.store.sqlite.prepare('SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind=? AND ref_id=?').get(taskId,resource.kind,resourceId) as { ref_hash: string;relative_path: string };
       if (ref.ref_hash !== resource.contentHash || ref.relative_path !== resource.relativePath) throw new ApplicationError('SNAPSHOT_CORRUPT','已有投影引用与本次资源不同');
+    }).immediate());
+  }
+  /** The old launcher also consumes its fixed runtime when the context MCP is disabled. */
+  async addLegacyRuntimeReference(taskId: string,expectedHash: string,hash: string): Promise<void> {
+    const current = await this.get(taskId), resource = this.store.get('legacy-runtime:' + hash);
+    if (resource.kind !== 'legacy-runtime' || resource.contentHash !== hash || resource.relativePath !== 'runtime/' + hash || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','原启动资源未就绪');
+    this.deps.verifyExtraResource(resource,current.snapshot);
+    await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+      const known = this.read(taskId), fresh = this.store.get(resource.resourceId);
+      if (known.retention !== 'active' || known.pointer.snapshotHash !== expectedHash || fresh.generation !== resource.generation || fresh.state !== 'ready') throw new ApplicationError('RESOURCE_STATE_CHANGED','登记启动资源期间原快照已变化');
+      const prior = this.store.sqlite.prepare("SELECT ref_hash FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-runtime'").all(taskId) as {ref_hash:string}[];
+      if (prior.some(ref=>ref.ref_hash!==hash)) throw new ApplicationError('SNAPSHOT_IMMUTABLE','原启动资源已经固定，不能替换');
+      this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_session_refs VALUES(?,?,?,?,?)').run(taskId,'legacy-runtime',resource.resourceId,hash,resource.relativePath);
     }).immediate());
   }
   async tombstone(taskId: string): Promise<void> {

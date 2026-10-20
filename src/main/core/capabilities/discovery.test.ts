@@ -90,3 +90,20 @@ describe('read-only capability discovery', () => {
     expect(entry?.issues).toEqual(expect.arrayContaining(['mcp_args_invalid', 'mcp_env_invalid']));
   });
 });
+
+describe('host-only native launch details',()=>{
+  it('preserves the final whole Skill configuration array, including fields unrelated to managed Skills',()=>{
+    file('custom/config.toml','[skills]\nconfig=[{path="/old-user",enabled=true}]\n');
+    file('repo/.codex/config.toml','[skills]\nconfig=[{path="/project-user",enabled=false,custom="unchanged"}]\n');
+    const details={userSkillConfig:[],plugins:[],issues:[]};discoverCapabilities({...c,details});expect(details.userSkillConfig).toEqual([{path:'/project-user',enabled:false,custom:'unchanged'}]);
+    const cli={userSkillConfig:[],plugins:[],issues:[]};discoverCapabilities({...c,args:['-c','skills.config=[{path="/profile-user",enabled=true,tag="keep"}]'],details:cli});expect(cli.userSkillConfig).toEqual([{path:'/profile-user',enabled:true,tag:'keep'}]);expect(cli.issues).toEqual([]);
+  });
+  it('reads the actual plugin namespace independently of its marketplace key and reports unsupported profile precedence',()=>{
+    c.runner='claude';file('custom/plugins/installed_plugins.json',JSON.stringify({plugins:{'different-market-key':[{installPath:join(tmp,'plugin')}]}}));file('plugin/.claude-plugin/plugin.json',JSON.stringify({name:'actual-namespace'}));
+    const details={userSkillConfig:[],plugins:[],issues:[]};discoverCapabilities({...c,details});expect(details.plugins).toEqual([{name:'actual-namespace',path:join(tmp,'plugin')}]);
+    c.runner='codex';const unsupported={userSkillConfig:[],plugins:[],issues:[]};discoverCapabilities({...c,args:['--profile=private'],details:unsupported});expect(unsupported.issues).toContain('profile_configuration_unverified');
+  });
+  it('does not expose raw host-only configuration through the renderer discovery rows',()=>{
+    file('custom/config.toml','[skills]\nconfig=[{path="/user",enabled=false,private_field="host-only-marker"}]\n[mcp_servers.existing]\ncommand="/usr/bin/true"\n');const details={userSkillConfig:[],plugins:[],issues:[]},rows=discoverCapabilities({...c,details});expect(JSON.stringify(details)).toContain('host-only-marker');expect(JSON.stringify(rows)).not.toContain('host-only-marker');
+  });
+});

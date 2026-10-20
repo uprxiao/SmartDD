@@ -21,7 +21,7 @@ export interface TaskCapabilityLauncher {
     projectId: string;taskId: string;profile: ResolvedProfile;cwd: string;
     home: string;stateRoot: string;claudeConfigExplicit: boolean;
     mode: LaunchMode;sessionId: string | null;previous: RuntimeSnapshot | null;
-    newTask: boolean;signal: AbortSignal;
+    newTask: boolean;signal: AbortSignal;environment: Record<string,string>;
   }): Promise<TaskCapabilityLaunch>;
   tombstone(taskId: string): Promise<void>;
   activeTaskIds?(projectId: string): ReadonlySet<string>;

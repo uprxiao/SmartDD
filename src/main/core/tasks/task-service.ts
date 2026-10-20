@@ -116,6 +116,12 @@ export class TaskService {
     d.ptys.on('exit', this.onPtyExit);
   }
 
+  /** Startup-only composition: no live or preparing task can switch registries. */
+  attachManagedCapabilities(launcher: TaskCapabilityLauncher): void {
+    if (this.closed || this.running.size || this.launching.size || this.opening.size || this.managed.size || this.d.managedCapabilities && this.d.managedCapabilities !== launcher) throw new Error('任务运行时已经固定，不能替换');
+    this.d.managedCapabilities = launcher;
+  }
+
   list(opts: { includeArchived?: boolean } = {}): TaskView[] {
     const rows = this.d.db
       .select({ task: tasks, projectName: projects.name, projectVersion: projects.configVersion, color: aiProfiles.color })
@@ -431,7 +437,7 @@ export class TaskService {
           projectId: context.projectId, taskId: context.taskId, profile, cwd,
           home: env.HOME ?? base.HOME ?? homedir(), stateRoot: stateRootFor(profile.runner, env, base),
           claudeConfigExplicit: Boolean(env.CLAUDE_CONFIG_DIR || base.CLAUDE_CONFIG_DIR),
-          mode, sessionId, previous: context.previous ?? null, newTask: context.newTask, signal: abort.signal,
+          mode, sessionId, previous: context.previous ?? null, newTask: context.newTask, signal: abort.signal, environment: { ...base, ...env },
         });
       }
       if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');

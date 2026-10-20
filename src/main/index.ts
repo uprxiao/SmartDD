@@ -24,6 +24,7 @@ import { CapabilityService } from './core/capabilities/capability-service';
 import { ResourceStore } from './core/applications/resource-store';
 import { AgentSupportService } from './core/applications/agent-support-service';
 import { ApplicationService } from './core/applications/application-service';
+import { ManagedTaskCapabilities } from './core/applications/task-capability-launcher';
 import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
 import { TaskService } from './core/tasks/task-service';
@@ -173,10 +174,15 @@ async function main(): Promise<void> {
   registerPtyInput(ipcMain, ptyAccess);
 
   let applications:ApplicationService|undefined;
+  let managedTasks:ManagedTaskCapabilities|undefined;
   try {
     if(agentSupport){
       applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,workspaceFiles:files,requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
       await applications.recover();
+      if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
+        managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),stopPty:id=>ptys.kill(id)});
+        tasks.attachManagedCapabilities(managedTasks);
+      }
     }
   } catch {console.warn('[applications] Local business recovery pending; check application diagnostics');}
 
@@ -292,6 +298,7 @@ async function main(): Promise<void> {
       tasks.dispose();
       ptys.killAll();
       await applications?.dispose();
+      await managedTasks?.dispose();
       quitConfirmed = true; markAppQuitting(); app.quit();
     })().catch((error) => {
       const win = getMainWindow();

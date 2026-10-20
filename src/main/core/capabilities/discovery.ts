@@ -13,6 +13,12 @@ const object = (v: unknown): Obj => isObject(v) ? v : {};
 const strings = (v: unknown): string[] => Array.isArray(v) ? v.filter((s): s is string => typeof s === 'string') : [];
 const LIMIT = 1024 * 1024;
 
+export interface NativeDiscoveryDetails {
+  userSkillConfig: Obj[];
+  plugins: { name: string; path: string }[];
+  issues: string[];
+}
+
 export interface DiscoveryContext {
   runner: Runner;
   cwd: string;
@@ -22,6 +28,8 @@ export interface DiscoveryContext {
   claudeConfigExplicit?: boolean;
   path: string;
   args?: string[];
+  /** Main-process only: raw Skill flags never enter the renderer discovery result. */
+  details?: NativeDiscoveryDetails;
 }
 
 function textFile(path: string): string {
@@ -58,6 +66,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
   const badFile = (kind: 'skill' | 'mcp', path: string, source: string, issue: string) => {
     const r = row(kind, kind === 'mcp' ? 'MCP config' : 'Skill', path, source);
     r.validity = 'invalid'; r.issues = [issue]; rows.push(r);
+    c.details?.issues.push(issue);
   };
   const scanSkill = (file: string, source: string, command = false, enabled: boolean | null = null, version: string | null = null) => {
     if (rows.length >= 2000) return;
@@ -105,6 +114,11 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       return config;
     }
     catch { badFile('mcp', path, 'configuration', 'config_parse_failed'); return null; }
+  };
+  const plugin = (root: string) => {
+    const manifest = readConfig(join(root, '.claude-plugin', 'plugin.json'));
+    if (typeof manifest?.name !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(manifest.name)) { c.details?.issues.push('plugin_namespace_unverified'); return; }
+    c.details?.plugins.push({ name: manifest.name, path: root });
   };
   const addMcp = (servers: unknown, path: string, source: string, enabled: boolean | null = null) => {
     if (servers === undefined) return;
@@ -169,6 +183,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       for (const entry of Array.isArray(entries) ? entries : [entries]) {
         const p = object(entry);
         if (typeof p.installPath !== 'string' || (typeof p.projectPath === 'string' && !layers.includes(p.projectPath))) continue;
+        plugin(p.installPath);
         const enabled = typeof enabledPlugins[name] === 'boolean' ? enabledPlugins[name] as boolean : null;
         const version = typeof p.version === 'string' ? p.version : null;
         scanDir(join(p.installPath, 'skills'), `plugin:${name}`, false, enabled, version);
@@ -181,7 +196,8 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     for (const s of settings) for (const name of strings(s.disabledMcpServers)) for (const r of rows) if (r.kind === 'mcp' && r.name === name) r.enabled = false;
     const args = c.args ?? [];
     for (let i = 0; i < args.length; i++) {
-      if (args[i] === '--plugin-dir' && args[i + 1]) scanDir(join(resolve(c.cwd, args[++i]), 'skills'), 'profile plugin', false, true);
+      if (args[i] === '--plugin-dir' && args[i + 1]) { const root = resolve(c.cwd, args[++i]); plugin(root); scanDir(join(root, 'skills'), 'profile plugin', false, true); }
+      else if (/^--(?:settings|setting-sources|settings-sources|plugin-dir|mcp-config)=|^--(?:settings|setting-sources|settings-sources)$/.test(args[i])) c.details?.issues.push('profile_configuration_unverified');
       else if (args[i] === '--mcp-config' && args[i + 1]) {
         const value = args[++i];
         if (value.trim().startsWith('{')) {
@@ -204,16 +220,25 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     for (const file of configs) {
       const config = readConfig(file.path);
       if (!config) continue;
+      if (typeof config.profile === 'string') c.details?.issues.push('profile_configuration_unverified');
       addMcp(config.mcp_servers, file.path, file.source);
       overrides.push(config);
     }
     const args = c.args ?? [];
+    if (args.some(a => /^(-p|--profile)(=|$)|^--config=|^-c.+/.test(a))) c.details?.issues.push('profile_configuration_unverified');
     for (let i = 0; i < args.length; i++) if ((args[i] === '-c' || args[i] === '--config') && args[i + 1]) {
       try {
         const config = object(parseToml(args[++i]));
         addMcp(config.mcp_servers, 'profile arguments', 'profile');
         overrides.push(config);
       } catch { badFile('mcp', 'profile arguments', 'profile', 'config_parse_failed'); }
+    }
+    for (const config of overrides) {
+      const flags = object(config.skills).config;
+      if (flags !== undefined) {
+        if (!Array.isArray(flags) || flags.some(v => !isObject(v) || typeof v.path !== 'string' || typeof v.enabled !== 'boolean')) c.details?.issues.push('skill_configuration_unverified');
+        else if (c.details) c.details.userSkillConfig = structuredClone(flags) as Obj[];
+      }
     }
     for (const config of overrides) for (const item of Array.isArray(object(config.skills).config) ? object(config.skills).config as unknown[] : []) {
       const o = object(item);
