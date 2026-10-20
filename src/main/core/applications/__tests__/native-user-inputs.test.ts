@@ -69,4 +69,22 @@ describe('bounded host-observed native user input origin; no send grant',()=>{
   expect(()=>ledger.observeLaunch({...sender},target,'forged')).toThrow('untrusted sender');ledger.observeLaunch(sender,{...target,taskId:'foreign-task'},'foreign');ledger.observeLaunch(sender,target,'x'.repeat(1024*1024+1));expect(match('foreign')).toBeNull();ledger.dispose();ledger.observeLaunch(sender,target,'after close');expect(match('after close')).toBeNull();
  });
 
+ it('keeps only the latest submitted turn live, without losing older origin matches',()=>{
+  input('send exact\r');const first=match('send exact')!;expect(first.inputSequence).toBe(1);expect(ledger.isLatest(first)).toBe(true);expect(ledger.isLatest({...first})).toBe(false);
+  input('\n\r');expect(ledger.isLatest(first)).toBe(true);input('replacement\r');const next=match('replacement')!;expect(ledger.isLatest(first)).toBe(false);expect(match('send exact')).toBe(first);expect(ledger.isLatest(next)).toBe(true);
+ });
+ it.each([['cancel','\x03'],['history','\x1b[A\r'],['completion','\t\r'],['oversize','x'.repeat(1024*1024+1)]])('invalidates a prior live turn on cancellation or unprovable submission: %s',(_kind,data)=>{
+  input('send exact\r');const receipt=match('send exact')!;expect(ledger.isLatest(receipt)).toBe(true);input(data);expect(ledger.isLatest(receipt)).toBe(false);
+ });
+ it('invalidates uncertain transport and the launch argument after another submitted turn',()=>{
+  ledger.observeLaunch(sender,target,'initial');const receipt=match('initial')!;expect(receipt.inputSequence).toBe(0);expect(ledger.isLatest(receipt)).toBe(true);input('\x1b[200~another\nline\x1b[201~');expect(ledger.isLatest(receipt)).toBe(true);input('\r');expect(ledger.isLatest(receipt)).toBe(false);const next=match('another\nline')!;expect(ledger.isLatest(next)).toBe(true);ledger.uncertain(sender,target);expect(ledger.isLatest(next)).toBe(false);
+ });
+
+ it('stores only immutable non-secret input-time send identity and policy hashes',()=>{
+  const supplied={connectionHash:'a'.repeat(64),policyHash:'b'.repeat(64)};ledger=make({mailSendScope:()=>supplied});input('send exact\r');const receipt=match('send exact')!;expect(receipt.mailSendScope).toEqual(supplied);expect(Object.isFrozen(receipt.mailSendScope)).toBe(true);supplied.connectionHash='c'.repeat(64);expect(receipt.mailSendScope?.connectionHash).toBe('a'.repeat(64));
+ });
+ it.each(['throw','malformed'] as const)('retains origin but cannot create send scope when its observation is %s',kind=>{
+  ledger=make({mailSendScope:()=>{if(kind==='throw')throw new Error('unavailable');return{connectionHash:'bad',policyHash:'bad'};}});input('observed\r');expect(match('observed')?.mailSendScope).toBeNull();
+ });
+
 });

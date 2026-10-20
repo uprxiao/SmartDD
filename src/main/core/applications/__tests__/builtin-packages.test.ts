@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, delimiter } from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { AjvJsonSchemaValidator } from '@modelcontextprotocol/server/validators/ajv';
@@ -75,6 +75,14 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    const apps=source.applications();expect(apps.map(a=>a.manifest.appId).sort()).toEqual(['mail','zentao']);expect(apps.reduce((n,a)=>n+a.manifest.skills.length,0)).toBe(3);expect(apps.reduce((n,a)=>n+a.manifest.tools.length,0)).toBe(17);
    for(const app of apps){expect(app.manifest.runtime.hash).toBe(source.index.runtimes[0].hash);expect(app.manifest.files.some(f=>f.path.endsWith('/references/'+(app.manifest.appId==='mail'?'sending.md':'scope.md')))).toBe(true);expect(app.files['adapter/operations.json']).toBeInstanceOf(Buffer);for(const skill of app.manifest.skills)expect(app.files[skill.entry].toString('utf8')).toContain('smartdd_');}
    const again=join(build,'second-bundles');execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',again,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});expect(new CapabilityBundleSource(again).index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);
+ });
+
+ it('finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls',()=>{
+   const bin=join(root,'private-metadata-bin'),observation=join(root,'metadata-lock-mode.txt');mkdirSync(bin);
+   const script=['#!/bin/sh','printf "%s" "$GIT_OPTIONAL_LOCKS" > "$WY_METADATA_LOCK_OBSERVATION"','exec /bin/sleep 20',''].join('\n');
+   writeFileSync(join(bin,'git'),script,{mode:0o700});const target=join(root,'bounded-metadata-bundles');
+   execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',target,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',PATH:bin+delimiter+process.env.PATH,WY_METADATA_LOCK_OBSERVATION:observation},timeout:10000,stdio:'pipe'});
+   expect(readFileSync(observation,'utf8')).toBe('0');const prepared=new CapabilityBundleSource(target);expect(prepared.index.build.commit).toBeNull();expect(prepared.index.build.dirty).toBe(true);expect(prepared.index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);expect(verifyBundles(target,source.index.build.appVersion).apps).toHaveLength(2);
  });
 
  it('keeps model-visible built-in tool identities within the64-byte portable budget without changing the fixed server name',()=>{

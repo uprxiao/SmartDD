@@ -1,0 +1,261 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/native-mail-intent.test.ts src/main/core/applications/__tests__/native-user-inputs.test.ts src/main/core/applications/__tests__/native-user-messages.test.ts src/main/core/applications/__tests__/mail-send-data.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (53 tests | 19 failed) 25138ms
+     × uses a matched claude-code explicit fixed-revision instruction without a redundant UI confirmation 338ms
+     × uses a matched codex explicit fixed-revision instruction without a redundant UI confirmation 365ms
+     × authorizes an already frozen intent when the subsequent exact native user instruction arrives 376ms
+     × invalidates a native send authorization before SMTP on cancel 337ms
+     × invalidates a native send authorization before SMTP on new-input 337ms
+     × invalidates a native send authorization before SMTP on unknown-input 321ms
+     × invalidates a native send authorization before SMTP on tampered-file 328ms
+     × keeps the existing draft lock when two different prepare operations race 352ms
+     × deduplicates concurrent late native authorization and execute for one existing intent 427ms
+     × returns the existing execution when a second source claim completes after SMTP has settled 3355ms
+     × rechecks the latest user turn synchronously in C while all native file verification stays outside C 392ms
+     × cannot reuse the same native turn for a second send intent after canceling the first 425ms
+     × never autoauthorizes an unknown send ancestry from a simple repeated native send instruction 371ms
+     × cannot revive a persistent native source after run-exit 333ms
+     × cannot revive a persistent native source after restart 340ms
+     × cannot revive a persistent native source after expiry 351ms
+     × binds native approval to the whole frozen draft including stable attachment bytes and BCC envelope 344ms
+     × does not authorize an old native instruction after binding-roundtrip before prepare 392ms
+     × does not authorize an old native instruction after policy-roundtrip before prepare 422ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 19 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > uses a matched claude-code explicit fixed-revision instruction without a redundant UI confirmation
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > uses a matched codex explicit fixed-revision instruction without a redundant UI confirmation
+AssertionError: expected { schema: 1, …(5) } to match object { status: 'ok', value: { …(1) } }
+(18 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "status": "ok",
+    "value": {
+      "intent": {
+-       "authorized": true,
+-       "state": "authorized",
++       "authorized": false,
++       "state": "awaiting-authorization",
+      },
+    },
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:144:143
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > authorizes an already frozen intent when the subsequent exact native user instruction arrives
+AssertionError: expected { schema: 1, …(4) } to match object { status: 'ok', value: { …(1) } }
+(12 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "intent": {
+-       "state": "server-accepted",
+-     },
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:153:104
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > invalidates a native send authorization before SMTP on cancel
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > invalidates a native send authorization before SMTP on new-input
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > invalidates a native send authorization before SMTP on unknown-input
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > invalidates a native send authorization before SMTP on tampered-file
+AssertionError: expected { schema: 1, …(5) } to match object { status: 'ok', value: { …(1) } }
+(19 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "status": "ok",
+    "value": {
+      "intent": {
+-       "authorized": true,
++       "authorized": false,
+      },
+    },
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:161:210
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > keeps the existing draft lock when two different prepare operations race
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:171:331
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > deduplicates concurrent late native authorization and execute for one existing intent
+AssertionError: [{"schema":1,"id":"ef8c7237-7146-41e6-b1dd-a44bd9f37fc5","status":"error","error":{"code":"AUTHORIZATION_REQUIRED","message":"本次具体邮件尚无可核验的用户授权，请审阅原意图或核对明确用户指令来源","layer":"auth","retryable":false,"attemptCount":1,"retryExhausted":false,"effectState":"unknown","nextAction":"查看已有业务执行记录并核实结果，不要自动重发"},"operationId":"23750e61-1b95-47bf-8d1c-f2e733a910ff"},{"schema":1,"id":"4ae15efc-1e4f-4c44-95d9-c3cab17eed1a","status":"error","error":{"code":"AUTHORIZATION_REQUIRED","message":"本次具体邮件尚无可核验的用户授权，请审阅原意图或核对明确用户指令来源","layer":"auth","retryable":false,"attemptCount":1,"retryExhausted":false,"effectState":"unknown","nextAction":"查看已有业务执行记录并核实结果，不要自动重发"},"operationId":"669e5539-6e85-4c0d-8d2c-3efba190dd6d"}]: expected { schema: 1, …(4) } to match object { status: 'ok', value: { …(1) } }
+(12 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "intent": {
+-       "executionId": Any<String>,
+-     },
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:176:137
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > returns the existing execution when a second source claim completes after SMTP has settled
+Error: second source claim did not reach the gate
+ ❯ Timeout.<anonymous> src/main/core/applications/__tests__/mail-send-data.test.ts:183:130
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > rechecks the latest user turn synchronously in C while all native file verification stays outside C
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:190:208
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > cannot reuse the same native turn for a second send intent after canceling the first
+AssertionError: expected { schema: 1, …(5) } to match object { status: 'error', …(1) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "error": {
+-     "code": "AUTHORIZATION_REQUIRED",
+-   },
+-   "status": "error",
++   "status": "ok",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:194:43
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > never autoauthorizes an unknown send ancestry from a simple repeated native send instruction
+AssertionError: expected { schema: 1, …(4) } to match object { status: 'ok', value: { …(1) } }
+(12 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "intent": {
+-       "state": "unknown",
+-     },
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:197:303
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > cannot revive a persistent native source after run-exit
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > cannot revive a persistent native source after restart
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > cannot revive a persistent native source after expiry
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:201:282
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > binds native approval to the whole frozen draft including stable attachment bytes and BCC envelope
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:216:214
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > does not authorize an old native instruction after binding-roundtrip before prepare
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > does not authorize an old native instruction after policy-roundtrip before prepare
+AssertionError: expected { schema: 1, …(4) } to match object { status: 'ok', value: { …(1) } }
+(12 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "intent": {
+-       "state": "server-accepted",
+-     },
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:227:85
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/19]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  19 failed | 126 passed (145)
+   Start at  00:34:28
+   Duration  27.03s (transform 381ms, setup 0ms, import 679ms, tests 26.08s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

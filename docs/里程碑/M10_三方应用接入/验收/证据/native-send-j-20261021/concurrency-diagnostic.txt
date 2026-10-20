@@ -1,0 +1,41 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/mail-send-data.test.ts --maxWorkers=1 -t 'shares one native source'
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (39 tests | 1 failed | 38 skipped) 1416ms
+     × shares one native source and one grant across concurrent prepares of the same frozen revision 438ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > shares one native source and one grant across concurrent prepares of the same frozen revision
+AssertionError: [{"schema":1,"id":"99fbc25a-a6cd-4438-a3cb-61d7047d02a4","status":"ok","value":{"intent":{"id":"b1445773-dd87-4968-9bbf-25ba69cec160","draftId":"c74e9544-23e3-4fce-a870-a5ad706999b3","draftRevision":1,"state":"authorized","reviewHash":"efc9e619a47f3f0ece416f8eeb0eb25419b74202d855b9c111b2233380242e88","review":{"id":"384e5645-0484-48f9-9876-d1c7b350a4a4","revision":"efc9e619a47f3f0ece416f8eeb0eb25419b74202d855b9c111b2233380242e88","mediaType":"application/json","size":1262},"authorized":true,"executionId":null,"result":null,"errorCode":null,"createdAt":"2026-10-20T16:26:58.537Z","updatedAt":"2026-10-20T16:26:58.601Z"}},"operationId":"2df4839f-8c4a-4822-9b42-da8ac37d8833","effectState":"completed"},{"schema":1,"id":"08309017-d8e0-4170-9c85-c15fdf282d5f","status":"error","error":{"code":"DRAFT_LOCKED","message":"此草稿已被发送意图占用或已有结果，请先查看原记录","layer":"provider","retryable":false,"attemptCount":1,"retryExhausted":false,"effectState":"unknown","nextAction":"查看已有业务执行记录并核实结果，不要自动重发"},"operationId":"6a9e34e7-e46e-4499-b1e7-612a067d0d94"}]: expected { schema: 1, …(4) } to match object { status: 'ok', value: { …(1) } }
+(12 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "intent": {
+-       "authorized": true,
+-     },
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:171:70
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 38 skipped (39)
+   Start at  00:26:56
+   Duration  1.96s (transform 290ms, setup 0ms, import 474ms, tests 1.42s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -38,7 +38,10 @@ try {
     writeTree(join(stage,path),{ ...files, 'manifest.json': Buffer.from(canonical(manifest) + '\n') });
     apps.push({ appId: metadata.appId, version: metadata.version, hash, path });
   }
-  let commit=null,dirty=true;try { commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();dirty=!!execFileSync('git',['status','--porcelain','--untracked-files=normal'],{encoding:'utf8'}).trim(); }catch{}
+  // Source metadata is optional. A stalled shared Git directory must not block
+  // complete immutable-resource preparation; unknown status remains dirty.
+  const gitOptions={encoding:'utf8',timeout:2000,killSignal:'SIGKILL',env:{...process.env,GIT_OPTIONAL_LOCKS:'0'}};
+  let commit=null,dirty=true;try { commit=execFileSync('git',['rev-parse','HEAD'],gitOptions).trim();dirty=!!execFileSync('git',['status','--porcelain','--untracked-files=normal'],gitOptions).trim(); }catch{}
   const build={appVersion:JSON.parse(readFileSync('package.json','utf8')).version,commit,dirty,resourceSetHash:digest(canonical({adapters,runtimes,apps}))},index={schema:'willyou-capability-bundles-v1',build,adapters,runtimes,apps};index.indexHash=digest(canonical(index));
   writeFileSync(join(stage,'index.json'),canonical(index)+'\n',{mode:0o600,flag:'wx'});writeFileSync(join(stage,'.willyou-build.json'),JSON.stringify({schema:1,kind:'capability-bundles'})+'\n',{mode:0o600,flag:'wx'});
   bundleVerifier.verifyCapabilityBundles(stage,build.appVersion);

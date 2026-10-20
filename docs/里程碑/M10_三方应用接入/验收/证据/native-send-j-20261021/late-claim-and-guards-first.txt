@@ -1,0 +1,41 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/mail-send-data.test.ts --maxWorkers=1 -t 'source claim completes|synchronously in C|same native turn|unknown send ancestry'
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (44 tests | 1 failed | 40 skipped) 3086ms
+     × returns the existing execution when a second source claim completes after SMTP has settled 542ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > returns the existing execution when a second source claim completes after SMTP has settled
+AssertionError: {"schema":1,"id":"60b5a4d7-afcd-4007-a749-65e77e458f61","status":"error","error":{"code":"INTENT_STALE","message":"草稿或发送占用已改变，旧发送意图失效","layer":"provider","retryable":false,"attemptCount":1,"retryExhausted":false,"effectState":"unknown","nextAction":"查看已有业务执行记录并核实结果，不要自动重发"},"operationId":"ff047544-d9ff-4491-944c-d3e11050d56e"}: expected { schema: 1, …(4) } to match object { status: 'ok', value: { …(1) } }
+(12 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "intent": {
+-       "executionId": Any<String>,
+-     },
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:184:89
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed | 40 skipped (44)
+   Start at  00:28:23
+   Duration  3.58s (transform 286ms, setup 0ms, import 433ms, tests 3.09s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

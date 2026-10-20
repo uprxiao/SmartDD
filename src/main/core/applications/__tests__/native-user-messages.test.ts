@@ -69,6 +69,12 @@ for (const runner of ['claude-code', 'codex'] as const) describe(runner + ' nati
   it('matches the owned launch argument through native user role without requiring a terminal Enter', async () => {
     inputs.observeLaunch(sender,{taskId:'owned-task',ptyId:'owned-pty'},text);write(user());expect(await messages.read(current.run.runId)).toMatchObject({status:'matched',messages:[{text,receipt:{transport:'launch-argument'}}]});
   });
+  it('checks live source identity and latest input in RAM without invoking current-run IO', async () => {
+    input();write(user());const value=(await messages.read(current.run.runId)).messages[0],checks=currentChecks;
+    expect(messages.isLive(value)).toBe(true);expect(messages.isLive({...value})).toBe(false);expect(currentChecks).toBe(checks);
+    inputs.observe(sender,{taskId:'owned-task',ptyId:'owned-pty'},'\x03');expect(messages.isLive(value)).toBe(false);expect(currentChecks).toBe(checks);
+    expect(await messages.verify(value)).toBe(true); // historical origin remains authentic; it no longer grants authority.
+  });
   it('does not expose a batched read after the run aborts during asynchronous file IO', async () => {
     input();write(user());const pending=messages.read(current.run.runId);abort.abort();expect((await pending).messages).toEqual([]);
   });

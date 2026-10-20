@@ -1,0 +1,58 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/native-mail-intent.test.ts src/main/core/applications/__tests__/native-user-inputs.test.ts src/main/core/applications/__tests__/native-user-messages.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/native-mail-intent.test.ts (36 tests | 8 failed) 5ms
+     × binds a direct instruction to the complete referenced revision: 请原样发送此草稿。 3ms
+     × binds a direct instruction to the complete referenced revision: 请把此草稿按当前修订发送。 0ms
+     × binds a direct instruction to the complete referenced revision: 立即发送这封邮件 0ms
+     × binds a direct instruction to the complete referenced revision: 发送 0ms
+     × binds a direct instruction to the complete referenced revision: 请帮我原样发出这份邮件草稿 0ms
+     × also accepts the unquoted exact URI form Please send this draft as-is mail-draft://6b1a7015-61d8-4cc7-96d4-c3b8585a430a?revision=3&contentHash=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 0ms
+     × also accepts the unquoted exact URI form [邮件草稿 mail-draft://6b1a7015-61d8-4cc7-96d4-c3b8585a430a?revision=3&contentHash=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] 请发送此草稿。 0ms
+     × also accepts the unquoted exact URI form [邮件草稿 mail-draft://6b1a7015-61d8-4cc7-96d4-c3b8585a430a?revision=3&contentHash=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] 请读取此草稿并继续处理。并请原样发送此草稿。 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > binds a direct instruction to the complete referenced revision: 请原样发送此草稿。
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > binds a direct instruction to the complete referenced revision: 请把此草稿按当前修订发送。
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > binds a direct instruction to the complete referenced revision: 立即发送这封邮件
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > binds a direct instruction to the complete referenced revision: 发送
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > binds a direct instruction to the complete referenced revision: 请帮我原样发出这份邮件草稿
+AssertionError: expected null to match object { …(4) }
+
+- Expected:
+{
+  "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "draftId": "6b1a7015-61d8-4cc7-96d4-c3b8585a430a",
+  "revision": 3,
+  "schema": "native-mail-reference-v1",
+}
+
++ Received:
+null
+
+ ❯ src/main/core/applications/__tests__/native-mail-intent.test.ts:9:74
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > also accepts the unquoted exact URI form Please send this draft as-is mail-draft://6b1a7015-61d8-4cc7-96d4-c3b8585a430a?revision=3&contentHash=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > also accepts the unquoted exact URI form [邮件草稿 mail-draft://6b1a7015-61d8-4cc7-96d4-c3b8585a430a?revision=3&contentHash=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] 请发送此草稿。
+ FAIL  src/main/core/applications/__tests__/native-mail-intent.test.ts > explicit send imperative on one exact existing draft reference > also accepts the unquoted exact URI form [邮件草稿 mail-draft://6b1a7015-61d8-4cc7-96d4-c3b8585a430a?revision=3&contentHash=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] 请读取此草稿并继续处理。并请原样发送此草稿。
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ src/main/core/applications/__tests__/native-mail-intent.test.ts:12:68
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  8 failed | 84 passed (92)
+   Start at  00:25:10
+   Duration  1.32s (transform 67ms, setup 0ms, import 144ms, tests 971ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

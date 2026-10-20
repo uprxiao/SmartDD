@@ -1,3 +1,4 @@
+import {canonicalJson,digest} from './manifest';
 import {ApplicationTerminalInsertion} from './terminal-insertion';
 import {resolveApplicationTerminalSource} from './terminal-sources';
 import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
@@ -32,6 +33,7 @@ import { MailDraftService } from './mail-draft-service';
 import { MailExecutionService,type MailExecutionOptions } from './mail-execution-service';
 import { MailSendDataService } from './mail-send-data-service';
 import { NativeUserInputs,type NativeInputTarget } from './native-user-inputs';
+import {nativeMailConnectionHash,type NativeMailSendScope} from './native-mail-intent';
 import { NativeUserMessages } from './native-user-messages';
 import { MailUserAuthorizations } from './mail-user-authorizations';
 import { MailReadDataService } from './mail-read-data-service';
@@ -73,7 +75,7 @@ export class ApplicationService {
   }){
     this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
     this.activity=new ApplicationActivityService(store);
-    this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null});
+    this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null,mailSendScope:context=>this.nativeMailScope(context.run.projectId)});
     this.nativeMessages=new NativeUserMessages(this.nativeInputs,id=>{if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原生消息来源尚未初始化');return this.runs.assertActive(id);});
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
@@ -84,13 +86,20 @@ export class ApplicationService {
     }});
     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
-    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations,async context=>{this.contexts.require(context,'mail.send');if(context.callerKind==='agent-run'&&context.runId)await this.nativeMessages.read(context.runId);this.contexts.require(context,'mail.send');});this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
+    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages,projectId=>{try{return digest(canonicalJson(this.selections.policyStamp(projectId,'mail')));}catch{return null;}});this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
     if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.nativeInputs.observe(sender,target,data),uncertain:(sender,target)=>this.nativeInputs.uncertain(sender,target)});}
   }
   private terminalService(){if(!this.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端投递服务不可用');return this.terminal;}
   bindTerminal(sender:ApplicationUiSender,input:ApplicationTerminalBind){return this.terminalService().bind(sender,input);}
   insertTerminal(sender:ApplicationUiSender,input:ApplicationTerminalInsert){return this.terminalService().insert(sender,input);}
   releaseTerminal(sender:ApplicationUiSender,id:string){this.terminalService().release(sender,id);return{released:true};}
+  private nativeMailScope(projectId:string):NativeMailSendScope|null{
+    try{
+      const policy=this.selections.policyStamp(projectId,'mail'),slot=this.selections.connectionSlot(projectId,'mail','smtp');if(!slot.connectionId)return null;
+      const c=this.connections.get(slot.connectionId);if(c.config.kind!=='smtp'||!c.enabled||c.authorization!=='connected')return null;
+      return{connectionHash:nativeMailConnectionHash({connectionId:c.id,identityRevision:c.identityRevision,configRevision:c.configRevision,policyRevision:c.policyRevision,bindingRevision:slot.revision,identityHash:digest(canonicalJson(c.identity)),smtpConfigHash:digest(canonicalJson(c.config))}),policyHash:digest(canonicalJson(policy))};
+    }catch{return null;}
+  }
   observeInput(sender:ApplicationUiSender,target:NativeInputTarget,data:string):void{this.nativeInputs.observe(sender,target,data);}
   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
   async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();await this.versions.recover();

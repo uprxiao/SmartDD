@@ -1,0 +1,69 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/mail-send-data.test.ts --maxWorkers=1 -t 'old native instruction after|reports a superseded'
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (53 tests | 3 failed | 50 skipped) 2195ms
+     × does not authorize an old native instruction after binding-roundtrip before prepare 426ms
+     × does not authorize an old native instruction after policy-roundtrip before prepare 344ms
+     × reports a superseded native grant as awaiting authorization in the shared UI and agent data view 371ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > does not authorize an old native instruction after binding-roundtrip before prepare
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > does not authorize an old native instruction after policy-roundtrip before prepare
+AssertionError: expected { schema: 1, …(5) } to match object { status: 'ok', value: { …(1) } }
+(18 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "status": "ok",
+    "value": {
+      "intent": {
+-       "authorized": false,
+-       "state": "awaiting-authorization",
++       "authorized": true,
++       "state": "authorized",
+      },
+    },
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:226:135
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > reports a superseded native grant as awaiting authorization in the shared UI and agent data view
+AssertionError: expected { schema: 1, …(5) } to match object { status: 'ok', value: { …(1) } }
+(18 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "status": "ok",
+    "value": {
+      "intent": {
+        "authorized": false,
+-       "state": "awaiting-authorization",
++       "state": "authorized",
+      },
+    },
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:231:55
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 50 skipped (53)
+   Start at  00:33:29
+   Duration  2.78s (transform 352ms, setup 0ms, import 521ms, tests 2.20s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
