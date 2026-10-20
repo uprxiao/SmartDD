@@ -75,6 +75,13 @@ for (const runner of ['claude-code', 'codex'] as const) describe(runner + ' nati
     inputs.observe(sender,{taskId:'owned-task',ptyId:'owned-pty'},'\x03');expect(messages.isLive(value)).toBe(false);expect(currentChecks).toBe(checks);
     expect(await messages.verify(value)).toBe(true); // historical origin remains authentic; it no longer grants authority.
   });
+  it('keeps a prior branded user proof available as context without making it latest authority',async()=>{
+    input('exact reference');write(user('exact reference'));const previous=(await messages.read(current.run.runId)).messages[0];input('send that draft');write(user('send that draft'));const result=await messages.read(current.run.runId),latest=result.messages.find(value=>messages.isLive(value))!,checks=currentChecks;
+    expect(messages.isRetained(previous)).toBe(true);expect(messages.isLive(previous)).toBe(false);expect(messages.isLive(latest)).toBe(true);expect(messages.isRetained({...previous})).toBe(false);expect(currentChecks).toBe(checks);expect(await messages.verify(previous)).toBe(true);abort.abort();expect(messages.isRetained(previous)).toBe(false);
+  });
+  it('expires an old context proof even when a fresh latest command is valid',async()=>{
+    input('old reference');write(user('old reference'));const previous=(await messages.read(current.run.runId)).messages[0];now+=600001;input('send it');write(user('send it'));const result=await messages.read(current.run.runId);expect(result.messages).toHaveLength(1);expect(messages.isLive(result.messages[0])).toBe(true);expect(messages.isRetained(previous)).toBe(false);expect(await messages.verify(previous)).toBe(false);
+  });
   it('does not expose a batched read after the run aborts during asynchronous file IO', async () => {
     input();write(user());const pending=messages.read(current.run.runId);abort.abort();expect((await pending).messages).toEqual([]);
   });

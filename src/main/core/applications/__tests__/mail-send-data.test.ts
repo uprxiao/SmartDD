@@ -2,7 +2,7 @@ import type {ProcessIdentityReader} from '../process-identity';
 import {execFileSync} from 'node:child_process';
 import {EventEmitter} from 'node:events';
 import {randomUUID} from 'node:crypto';
-import {mkdtempSync,rmSync,mkdirSync,writeFileSync,appendFileSync,existsSync} from 'node:fs';
+import {mkdtempSync,rmSync,mkdirSync,writeFileSync,appendFileSync,existsSync,readFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createServer,type Socket} from 'node:net';
@@ -36,7 +36,7 @@ let build:string,bundles:CapabilityBundleSource,f:Awaited<ReturnType<typeof agen
 const owned:OwnedCapabilityRun[]=[],closers:(()=>Promise<void>)[]=[];
 let messages:Buffer[],authentications:string[],decrypts:number,loseReceipt:boolean;
 const content=(over:Partial<MailDraftContent>={}):MailDraftContent=>({mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['receiver@example.test'],cc:[],bcc:['private@example.test'],subject:'private send data integration',text:'正文 exact integration content',html:null,inReplyTo:null,references:[],attachmentIds:[],...over});
-function setup(mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>,processes?:ProcessIdentityReader){return new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(build,'unused-mail-worker.cjs'),foxmailNative:join(build,'unused-foxmail'),mailSend,processes});}
+function setup(mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>,processes?:ProcessIdentityReader,changed?:()=>void){return new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(build,'unused-mail-worker.cjs'),foxmailNative:join(build,'unused-foxmail'),mailSend,processes,changed});}
 function connectTools(){app.attachRuns(runs);tools=new ApplicationToolService(f.store,runs,new ApplicationAdapterRegistry(f.store,app.data),{retryDelays:[0,0]});}
 async function smtp(){
  const sockets=new Set<Socket>(),server=createServer(socket=>{
@@ -229,6 +229,55 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
  it('reports a superseded native grant as awaiting authorization in the shared UI and agent data view',async()=>{
   const d=await draft(),source=await nativeTurn(cc,sendReference(d)+'\n请原样发送此草稿。'),output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash}),intent=(output as {value:{intent:MailSendData}}).value.intent;app.observeInput(sender,source.target,'\x03');
   expect(await call('send_get',{intentId:intent.id})).toMatchObject({status:'ok',value:{intent:{authorized:false,state:'awaiting-authorization'}}});expect(await app.viewSend(sender,'p1',intent.id)).toMatchObject({intent:{authorized:false,state:'awaiting-authorization'}});expect(messages).toHaveLength(0);
+ });
+ it.each(['claude-code','codex'] as const)('resolves the immediately preceding genuine %s draft reference for a later explicit send command',async runner=>{
+  const run=runner==='codex'?codex:cc,d=await draft({},run);await nativeTurn(run,sendReference(d));await nativeTurn(run,runner==='codex'?'Please send it as-is':'请把刚才那份草稿原样发送。');
+  const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash},run);expect(output).toMatchObject({status:'ok',value:{intent:{authorized:true}}});const intent=(output as {value:{intent:MailSendData}}).value.intent;
+  expect(await execute(intent,run)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});expect(await execute(intent,run)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});expect(messages).toHaveLength(1);expect(decrypts).toBe(1);
+ });
+ it.each(['missing','other-run','multiple','stale','intervening','cancel-gap','history-gap','policy-change','binding-change','unobserved'] as const)('refuses to infer a contextual send from %s history',async kind=>{
+  let d=await draft();let previous:Awaited<ReturnType<typeof nativeTurn>>|undefined;
+  if(kind!=='missing'){
+   let text=sendReference(d);if(kind==='multiple'){const other=await draft({subject:'another distinct reference'});text+='\n'+sendReference(other);}
+   if(kind==='unobserved')vi.spyOn(app,'observeInput').mockImplementationOnce(()=>{});
+   previous=await nativeTurn(kind==='other-run'?codex:cc,text);
+  }
+  if(kind==='stale'){const changed=await call('draft_update',{draftId:d.id,expectedRevision:d.revision,content:content({text:'new revision must be explicitly selected'})});expect(changed.status).toBe('ok');d=(changed as {value:{draft:{id:string;revision:number;contentHash:string}}}).value.draft;}
+  if(kind==='intervening')await nativeTurn(cc,'先分析可能的回复，不要发送');
+  if(kind==='cancel-gap'||kind==='history-gap')app.observeInput(sender,previous!.target,kind==='cancel-gap'?'\x03':'\x1b[A\r');
+  if(kind==='policy-change'){let state=app.selections.catalogState('mail');await app.setEnabled(sender,'mail',false,state.revision);state=app.selections.catalogState('mail');await app.setEnabled(sender,'mail',true,state.revision);}
+  if(kind==='binding-change'){let state=app.selections.projectSettings('p1','mail');await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:state.revision,connections:{foxmail:null,smtp:null}});state=app.selections.projectSettings('p1','mail');await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:state.revision,connections:{foxmail:null,smtp:smtpId}});}
+  await nativeTurn(cc,'请把刚才那份草稿原样发送。');const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});expect(output,JSON.stringify(output)).toMatchObject({status:'ok',value:{intent:{authorized:false}}});const intent=(output as {value:{intent:MailSendData}}).value.intent;
+  expect(await execute(intent)).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});expect(messages).toHaveLength(0);expect(decrypts).toBe(0);expect(f.sqlite.prepare('SELECT COUNT(*) n FROM mail_user_action_sources').get()).toEqual({n:0});
+ });
+ it.each(['claude-code','codex'] as const)('rechecks the previous %s user row even when the latest command row is still authentic',async runner=>{
+  const run=runner==='codex'?codex:cc,d=await draft({},run),previous=await nativeTurn(run,sendReference(d));await nativeTurn(run,'请把刚才那份草稿原样发送。');const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash},run),intent=(output as {value:{intent:MailSendData}}).value.intent;expect(intent.authorized).toBe(true);
+  const current=(await app.nativeMessages.read(run.runId)).messages.find(value=>app.nativeMessages.isLive(value))!;const original=readFileSync(previous.file,'utf8'),changed=original.replace('请读取此草稿并继续处理。','请读取此草稿并继续核对。');expect(changed).not.toBe(original);expect(Buffer.byteLength(changed)).toBe(Buffer.byteLength(original));writeFileSync(previous.file,changed);expect(await app.nativeMessages.verify(current)).toBe(true);
+  expect(await execute(intent,run)).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});expect(messages).toHaveLength(0);expect(decrypts).toBe(0);
+ });
+ it('checks both source objects in C and verifies both original rows outside C for contextual authorization',async()=>{
+  const d=await draft();await nativeTurn(cc,sendReference(d));await nativeTurn(cc,'Could you please send it as-is?');const verify=app.nativeMessages.verify.bind(app.nativeMessages),retained=app.nativeMessages.isRetained.bind(app.nativeMessages),verified:number[]=[],checks:{sequence:number;inC:boolean}[]=[];
+  vi.spyOn(app.nativeMessages,'verify').mockImplementation(async value=>{expect(f.sqlite.inTransaction).toBe(false);verified.push(value.receipt.inputSequence);return verify(value);});vi.spyOn(app.nativeMessages,'isRetained').mockImplementation(value=>{checks.push({sequence:value.receipt.inputSequence,inC:f.sqlite.inTransaction});return retained(value);});
+  const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash}),intent=(output as {value:{intent:MailSendData}}).value.intent;expect(intent.authorized).toBe(true);expect(await execute(intent)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});expect(verified).toContain(1);expect(verified).toContain(2);expect(checks).toContainEqual({sequence:1,inC:true});expect(messages).toHaveLength(1);
+  const journal=JSON.stringify(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all());expect(journal).toContain('contextSources');expect(journal).not.toContain('请读取此草稿');expect(journal).not.toContain('Could you please');expect(journal).not.toContain(content().text);
+ });
+ it('does not grant contextual authority if cancel arrives immediately after the previous row is verified',async()=>{
+  const d=await draft(),previous=await nativeTurn(cc,sendReference(d));await nativeTurn(cc,'请发送刚才那份草稿');const verify=app.nativeMessages.verify.bind(app.nativeMessages);vi.spyOn(app.nativeMessages,'verify').mockImplementation(async value=>{const authentic=await verify(value);if(value.receipt.inputSequence===1)app.observeInput(sender,previous.target,'\x03');return authentic;});
+  const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});expect(output).toMatchObject({status:'ok',value:{intent:{authorized:false}}});expect(messages).toHaveLength(0);expect(decrypts).toBe(0);expect(f.sqlite.prepare('SELECT COUNT(*) n FROM mail_send_grants').get()).toEqual({n:0});
+ });
+ it('binds contextual explicit recipient requests to the original exact frozen message and envelope',async()=>{
+  const d=await draft({to:['alice@example.test'],cc:[],bcc:[]});await nativeTurn(cc,sendReference(d));await nativeTurn(cc,'请把刚才那份草稿原样发送给alice@EXAMPLE.TEST');const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash}),intent=(output as {value:{intent:MailSendData}}).value.intent;expect(intent.authorized).toBe(true);
+  expect(await execute(intent)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted',result:{accepted:['alice@example.test']}}}});expect(messages).toHaveLength(1);const row=f.sqlite.prepare('SELECT raw_hash FROM mail_send_intents WHERE id=?').get(intent.id) as {raw_hash:string};expect(digest(messages[0])).toBe(row.raw_hash);
+ });
+ it('notifies the UI when a user cancellation invalidates native authority without emitting on every keystroke',async()=>{
+  await app.dispose();const changed=vi.fn();app=setup(undefined,undefined,changed);connectTools();const d=await draft(),previous=await nativeTurn(cc,sendReference(d));await nativeTurn(cc,'请把刚才那份草稿原样发送。');const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash}),intent=(output as {value:{intent:MailSendData}}).value.intent;expect(intent.authorized).toBe(true);changed.mockClear();
+  app.observeInput(sender,previous.target,'正在编辑');expect(changed).not.toHaveBeenCalled();app.observeInput(sender,previous.target,'\x03');expect(changed).toHaveBeenCalledOnce();app.observeInput(sender,previous.target,'x');expect(changed).toHaveBeenCalledOnce();expect(await app.viewSend(sender,'p1',intent.id)).toMatchObject({intent:{state:'awaiting-authorization',authorized:false}});expect(messages).toHaveLength(0);
+ });
+ it('deduplicates contextual provenance and returns the existing SMTP execution when a second claim arrives late',async()=>{
+  const d=await draft(),output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash}),intent=(output as {value:{intent:MailSendData}}).value.intent;await nativeTurn(cc,sendReference(d));await nativeTurn(cc,'请把刚才那份草稿原样发送。');
+  let release!:()=>void,entered!:()=>void,count=0,timer:ReturnType<typeof setTimeout>|undefined;const gate=new Promise<void>(done=>release=done),waiting=new Promise<void>(done=>entered=done),claim=app.nativeMessages.claim.bind(app.nativeMessages),timeout=new Promise<never>((_done,reject)=>timer=setTimeout(()=>reject(new Error('context claim gate not reached')),10000));
+  vi.spyOn(app.nativeMessages,'claim').mockImplementation(async(message,id)=>{const index=++count;await claim(message,id);if(index===2){entered();await gate;}});const requests=[execute(intent),execute(intent)];try{await Promise.race([waiting,timeout]);expect(await Promise.race(requests)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});}finally{release();clearTimeout(timer);}
+  const results=await Promise.all(requests);for(const result of results)expect(result,JSON.stringify(results)).toMatchObject({status:'ok',value:{intent:{executionId:expect.any(String)}}});expect(new Set(results.map(value=>(value as {value:{intent:MailSendData}}).value.intent.executionId)).size).toBe(1);expect(messages).toHaveLength(1);expect(f.sqlite.prepare('SELECT COUNT(*) n FROM mail_user_action_sources').get()).toEqual({n:1});expect(f.sqlite.prepare('SELECT COUNT(*) n FROM mail_send_grants').get()).toEqual({n:1});
  });
  it('freezes without decrypting SMTP secrets and rejects fabricated model approval before network work',async()=>{
   const intent=await prepare();expect(intent).toMatchObject({state:'awaiting-authorization',authorized:false,executionId:null,result:null});expect(decrypts).toBe(0);expect(messages).toHaveLength(0);expect(authentications).toHaveLength(0);

@@ -1,0 +1,59 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/native-mail-context.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/native-mail-context.test.ts (46 tests | 5 failed) 10ms
+     × binds unambiguous request to the complete prior revision: 请把这份邮件发出去 2ms
+     × binds unambiguous request to the complete prior revision: Could you please send it? 0ms
+     × binds unambiguous request to the complete prior revision: Can you send that draft unchanged? 0ms
+     × accepts explicit recipients only when equivalent to the frozen complete envelope: 请把那份邮件寄给alice@EXAMPLE.TEST 0ms
+     × keeps all original CC/BCC targets in explicit-recipient checks and accepts only the same set 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/native-mail-context.test.ts > explicit user turn grounded by a single preceding immutable user reference > binds unambiguous request to the complete prior revision: 请把这份邮件发出去
+ FAIL  src/main/core/applications/__tests__/native-mail-context.test.ts > explicit user turn grounded by a single preceding immutable user reference > binds unambiguous request to the complete prior revision: Could you please send it?
+ FAIL  src/main/core/applications/__tests__/native-mail-context.test.ts > explicit user turn grounded by a single preceding immutable user reference > binds unambiguous request to the complete prior revision: Can you send that draft unchanged?
+AssertionError: expected null to match object { …(5) }
+
+- Expected:
+{
+  "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "draftId": "6b1a7015-61d8-4cc7-96d4-c3b8585a430a",
+  "recipientSetHash": null,
+  "revision": 3,
+  "schema": "native-mail-context-v1",
+}
+
++ Received:
+null
+
+ ❯ src/main/core/applications/__tests__/native-mail-context.test.ts:8:54
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/main/core/applications/__tests__/native-mail-context.test.ts > explicit user turn grounded by a single preceding immutable user reference > accepts explicit recipients only when equivalent to the frozen complete envelope: 请把那份邮件寄给alice@EXAMPLE.TEST
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ src/main/core/applications/__tests__/native-mail-context.test.ts:11:72
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/main/core/applications/__tests__/native-mail-context.test.ts > explicit user turn grounded by a single preceding immutable user reference > keeps all original CC/BCC targets in explicit-recipient checks and accepts only the same set
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ src/main/core/applications/__tests__/native-mail-context.test.ts:20:125
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 41 passed (46)
+   Start at  01:03:52
+   Duration  180ms (transform 55ms, setup 0ms, import 94ms, tests 10ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

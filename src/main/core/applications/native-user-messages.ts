@@ -166,11 +166,14 @@ export class NativeUserMessages {
       } finally { await file.close(); }
     } catch { return false; }
   }
-  /** Pure RAM liveness/ordering guard. Full file/process verification remains asynchronous. */
-  isLive(message: NativeUserMessage): boolean {
+  /** Historical origin remains branded and bounded; it is never latest-turn authority by itself. */
+  isRetained(message: NativeUserMessage): boolean {
     this.prune();const proof=this.proofs.get(message),registration=this.registrations.get(message.runId);
-    return !this.closed&&!!proof&&!!registration&&!registration.signal.aborted&&registration.version===message.cliVersion&&this.inputs.isLatest(message.receipt);
+    return !this.closed&&!!proof&&!!registration&&!registration.signal.aborted&&registration.version===message.cliVersion&&this.inputs.isRetained(message.receipt);
   }
+  /** Pure RAM liveness/ordering guard. Full file/process verification remains asynchronous. */
+  isLive(message: NativeUserMessage): boolean {return this.isRetained(message)&&this.inputs.isLatest(message.receipt);}
+
   async claim(message: NativeUserMessage, intentId: string): Promise<void> {
     if (!z.uuid().safeParse(intentId).success) throw new ApplicationError('INVALID_INPUT', '具体发送意图编号无效');
     if (!await this.verify(message)) throw new ApplicationError('AUTHORIZATION_REQUIRED', '原生用户消息来源已变化或失效');

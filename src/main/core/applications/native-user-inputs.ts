@@ -85,11 +85,14 @@ export class NativeUserInputs {
   const normalized=normalize(text),hash=digest(normalized);
   const candidates=[...this.captured.values()].reverse().filter(value=>(value.boundSessionId===null||value.boundSessionId===context.snapshot.native.sessionId)&&value.receipt.runId===context.run.runId&&value.receipt.taskId===context.run.taskId&&value.receipt.projectId===context.run.projectId&&value.receipt.textHash===hash&&value.text===normalized&&nativeTimestamp>=value.receipt.observedAt-5000&&nativeTimestamp<=value.receipt.observedAt+120000);if(!candidates.length)return null;const stamp=selection(context),matched=candidates.find(value=>value.receipt.selectionHash===stamp);if(!matched)return null;matched.boundSessionId=context.snapshot.native.sessionId;return matched.receipt;
  }
- /** Pure RAM guard: safe inside the send authorization transaction, with no process/filesystem IO. */
- isLatest(receipt:HostUserInputReceipt):boolean{
+ /** Retained origin can support later context; it cannot itself grant a new send. */
+ isRetained(receipt:HostUserInputReceipt):boolean{
   this.prune();const value=this.captured.get(receipt.id),editor=this.editors.get(receipt.ptyId);
-  return !this.closed&&value?.receipt===receipt&&!value.signal.aborted&&value.boundSessionId!==null&&!!editor&&!editor.signal.aborted&&editor.runId===receipt.runId&&editor.selectionHash===receipt.selectionHash&&editor.inputSequence===receipt.inputSequence;
+  return !this.closed&&value?.receipt===receipt&&!value.signal.aborted&&value.boundSessionId!==null&&!!editor&&!editor.signal.aborted&&editor.runId===receipt.runId&&editor.selectionHash===receipt.selectionHash;
  }
+ /** Pure RAM guard: safe inside the send authorization transaction, with no process/filesystem IO. */
+ isLatest(receipt:HostUserInputReceipt):boolean{return this.isRetained(receipt)&&this.editors.get(receipt.ptyId)!.inputSequence===receipt.inputSequence;}
+
  claim(receipt:HostUserInputReceipt,context:RunContext,intentId:string):void{
   this.prune();const value=this.captured.get(receipt.id);
   if(this.closed||!this.eligible(context)||!value||value.receipt!==receipt||!context.snapshot.native.sessionId||value.boundSessionId!==context.snapshot.native.sessionId||receipt.runId!==context.run.runId||receipt.projectId!==context.run.projectId||receipt.taskId!==context.run.taskId||receipt.selectionHash!==selection(context)||value.usedBy&&value.usedBy!==intentId)throw new ApplicationError('AUTHORIZATION_REQUIRED','本次原生用户输入来源已失效或用于其他意图');value.usedBy=intentId;

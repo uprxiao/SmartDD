@@ -87,4 +87,8 @@ describe('bounded host-observed native user input origin; no send grant',()=>{
   ledger=make({mailSendScope:()=>{if(kind==='throw')throw new Error('unavailable');return{connectionHash:'bad',policyHash:'bad'};}});input('observed\r');expect(match('observed')?.mailSendScope).toBeNull();
  });
 
+ it('retains an authentic earlier turn as data while only the newest turn can grant authority',()=>{
+  input('reference only\r');const previous=match('reference only')!;input('send it\r');const latest=match('send it')!;expect(ledger.isRetained(previous)).toBe(true);expect(ledger.isLatest(previous)).toBe(false);expect(ledger.isLatest(latest)).toBe(true);expect(ledger.isRetained({...previous})).toBe(false);now+=600001;expect(ledger.isRetained(previous)).toBe(false);expect(ledger.isRetained(latest)).toBe(false);
+ });
+
 });
