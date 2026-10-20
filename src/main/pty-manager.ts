@@ -5,6 +5,8 @@ import { LAUNCH_SCRIPT } from './launch-env';
 import { TerminalModes } from './terminal-modes';
 
 export interface SpawnOptions {
+  /** Optional identity reserved by the host before forking; never accepted from renderer input. */
+  id?: string;
   command: string;
   args: string[];
   cwd: string;
@@ -34,7 +36,8 @@ export class PtyManager extends EventEmitter {
   private readonly modes = new Map<string, TerminalModes>();
 
   spawn(opts: SpawnOptions): string {
-    const id = randomUUID();
+    const id = opts.id ?? randomUUID();
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id) || this.ptys.has(id)) throw new Error('PTY_IDENTITY_CONFLICT');
     const { file, args } = shellWrapped(opts.command, opts.args, opts.scriptArgs);
     const p = pty.spawn(file, args, {
       name: 'xterm-256color',
@@ -55,6 +58,9 @@ export class PtyManager extends EventEmitter {
   }
 
   has(id: string): boolean { return this.ptys.has(id); }
+
+  /** Native handle receipt, main-process only. Never infer a PID from terminal output. */
+  nativePid(id: string): number | null { return this.ptys.get(id)?.pid ?? null; }
 
   write(id: string, data: string): void {
     this.ptys.get(id)?.write(data);

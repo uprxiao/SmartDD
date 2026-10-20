@@ -143,10 +143,10 @@ const writeCodexRollout = (cwd: string, id: string, at: number) => {
 const claudeSessionPath = (cwd: string, id: string) => join(claudeRoot(), 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'), `${id}.jsonl`);
 
 describe('TaskService.create', () => {
-  it('launches in the project directory with the profile env injected and records only names', () => {
+  it('launches in the project directory with the profile env injected and records only names', async () => {
     const p = project();
     const prof = claudeProfile();
-    const { task, ptyId } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '  修复登录\n细节  ' });
+    const { task, ptyId } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '  修复登录\n细节  ' }));
 
     const s = ptys.last;
     expect(s.cwd).toBe(p.dirs[0].path);
@@ -181,7 +181,7 @@ describe('TaskService.create', () => {
     expect(raw).toContain(claudeRoot()); // state_root recorded
   });
 
-  it('uses the chosen directory; refuses unavailable directories and archived projects', () => {
+  it('uses the chosen directory; refuses unavailable directories and archived projects', async () => {
     const a = mk('a');
     const b = mk('b');
     const p = project([
@@ -190,45 +190,45 @@ describe('TaskService.create', () => {
     ]);
     const prof = claudeProfile();
     const dirB = p.dirs.find((d) => d.path === b)!;
-    svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' });
+    (await svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' }));
     expect(ptys.last.cwd).toBe(b);
 
     rmSync(b, { recursive: true });
-    expect(() => svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' })).toThrow(`代码目录不可用：${b}`);
+    await expect(svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' })).rejects.toThrow(`代码目录不可用：${b}`);
     projects.setArchived(p.id, true);
-    expect(() => svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).toThrow('已归档');
+    await expect(svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).rejects.toThrow('已归档');
     expect(ptys.spawned).toHaveLength(1);
   });
 
-  it('records nothing when the profile lacks a token or the CLI fails to start', () => {
+  it('records nothing when the profile lacks a token or the CLI fails to start', async () => {
     const p = project();
     const noTok = claudeProfile({ name: 'NoTok', env: [{ name: 'ANTHROPIC_AUTH_TOKEN', secret: true }] });
-    expect(() => svc.create({ projectId: p.id, dirId: null, aiProfileId: noTok.id, firstMessage: 'x' })).toThrow('缺少令牌');
+    await expect(svc.create({ projectId: p.id, dirId: null, aiProfileId: noTok.id, firstMessage: 'x' })).rejects.toThrow('缺少令牌');
     ptys.fail = new Error('spawn failed');
-    expect(() => svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'x' })).toThrow('spawn failed');
+    await expect(svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'x' })).rejects.toThrow('spawn failed');
     expect(svc.list()).toEqual([]);
     expect(changed).toBe(0);
   });
 
-  it('names an untitled task after the profile and time', () => {
+  it('names an untitled task after the profile and time', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '   ' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '   ' }));
     expect(task.title).toMatch(/^CC-DS \d+-\d\d \d\d:\d\d$/);
     expect(ptys.last.args).toEqual(['--model', 'ds', '--session-id', task.id]);
   });
 });
 
 describe('running state', () => {
-  it('tracks the pty until it exits; several tasks per project may run at once', () => {
+  it('tracks the pty until it exits; several tasks per project may run at once', async () => {
     const p = project();
     const prof = claudeProfile();
-    const t1 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'a' }).task;
-    const t2 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'b' }).task;
+    const t1 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'a' })).task;
+    const t2 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'b' })).task;
     expect(svc.runningCount()).toBe(2);
     expect(svc.activePty(t1.id)).toBe('pty-1');
     expect(svc.activePty('unknown')).toBeNull();
     // A running task reopens to the same terminal instead of a second CLI.
-    expect(svc.open({ taskId: t1.id }).ptyId).toBe('pty-1');
+    expect((await svc.open({ taskId: t1.id })).ptyId).toBe('pty-1');
     expect(ptys.spawned).toHaveLength(2);
 
     const before = changed;
@@ -241,19 +241,19 @@ describe('running state', () => {
     expect(changed).toBe(before + 1);
   });
 
-  it('revokes input while stop waits for exit, then accepts only the reopened PTY', () => {
-    const created = svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '' });
+  it('revokes input while stop waits for exit, then accepts only the reopened PTY', async () => {
+    const created = (await svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '' }));
     svc.kill(created.task.id);
     expect(svc.activePty(created.task.id)).toBeNull();
     ptys.emit('exit', created.ptyId, 0);
-    const reopened = svc.open({ taskId: created.task.id });
+    const reopened = (await svc.open({ taskId: created.task.id }));
     expect(reopened.ptyId).not.toBe(created.ptyId);
     expect(svc.activePty(created.task.id)).toBe(reopened.ptyId);
   });
 
-  it('refuses to archive a running task; delete kills it and keeps the CLI files', () => {
+  it('refuses to archive a running task; delete kills it and keeps the CLI files', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
     writeClaudeSession(task.cwd, task.id);
     expect(() => svc.setArchived(task.id, true)).toThrow('正在运行');
     svc.delete(task.id);
@@ -265,11 +265,11 @@ describe('running state', () => {
 });
 
 describe('TaskService archive lifecycle', () => {
-  const running = () => svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '保留归档记录' });
+  const running = async () => (await svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '保留归档记录' }));
 
   it('stops only the selected task, preserves its native file and identity, then restores without starting', async () => {
-    const a = running();
-    const b = svc.create({ projectId: a.task.projectId!, dirId: null, aiProfileId: a.task.aiProfileId!, firstMessage: 'other' });
+    const a = (await running());
+    const b = (await svc.create({ projectId: a.task.projectId!, dirId: null, aiProfileId: a.task.aiProfileId!, firstMessage: 'other' }));
     writeClaudeSession(a.task.cwd, a.task.id);
     const original = readFileSync(claudeSessionPath(a.task.cwd, a.task.id), 'utf8');
     const archived = await svc.stopAndArchive(a.task.id);
@@ -279,23 +279,23 @@ describe('TaskService archive lifecycle', () => {
     expect(svc.get(b.task.id).ptyId).toBe(b.ptyId);
     expect(svc.list().map(t => t.id)).toEqual([b.task.id]);
     expect(svc.list({ includeArchived: true })).toHaveLength(2);
-    expect(() => svc.open({ taskId: a.task.id })).toThrow('先取消归档');
+    await expect(svc.open({ taskId: a.task.id })).rejects.toThrow('先取消归档');
     expect(readFileSync(claudeSessionPath(a.task.cwd, a.task.id), 'utf8')).toBe(original);
     const restored = svc.setArchived(a.task.id, false);
     expect(restored).toMatchObject({ projectId: a.task.projectId, archivedAt: null, ptyId: null, recovery: 'resumable' });
     expect(ptys.spawned).toHaveLength(2);
-    svc.open({ taskId: a.task.id });
+    (await svc.open({ taskId: a.task.id }));
     expect(ptys.last.args).toContain('--resume');
     expect(ptys.last.args).toContain(a.task.id);
   });
 
   it('waits for the exact PTY exit and prevents reopen or competing archive mutations during the wait', async () => {
-    const a = running();
+    const a = (await running());
     vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
     const pending = svc.stopAndArchive(a.task.id);
     expect(svc.get(a.task.id)).toMatchObject({ archivedAt: null, ptyId: a.ptyId });
     ptys.emit('exit', 'unrelated-pty', 0);
-    expect(() => svc.open({ taskId: a.task.id })).toThrow('正在结束并归档');
+    await expect(svc.open({ taskId: a.task.id })).rejects.toThrow('正在结束并归档');
     expect(() => svc.setArchived(a.task.id, false)).toThrow('正在结束并归档');
     await expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('正在结束并归档');
     ptys.emit('exit', a.ptyId, 0);
@@ -305,7 +305,7 @@ describe('TaskService archive lifecycle', () => {
 
   it('keeps the task visible after a stop timeout and allows a later retry', async () => {
     vi.useFakeTimers();
-    const a = running();
+    const a = (await running());
     const kill = vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
     const pending = expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('未归档');
     await vi.advanceTimersByTimeAsync(ARCHIVE_STOP_TIMEOUT_MS);
@@ -317,7 +317,7 @@ describe('TaskService archive lifecycle', () => {
   });
 
   it('keeps the task visible and releases its guard if stopping throws', async () => {
-    const a = running();
+    const a = (await running());
     const kill = vi.spyOn(ptys, 'kill').mockImplementation(() => { throw new Error('stop failed'); });
     await expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('stop failed');
     expect(svc.get(a.task.id).archivedAt).toBeNull();
@@ -327,7 +327,7 @@ describe('TaskService archive lifecycle', () => {
   });
 
   it('cleans up a pending archive when the application exits', async () => {
-    const a = running();
+    const a = (await running());
     vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
     const pending = expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('归档未完成');
     svc.dispose();
@@ -338,32 +338,32 @@ describe('TaskService archive lifecycle', () => {
 });
 
 describe('TaskService.open (resume after restart)', () => {
-  const stopped = (prof = claudeProfile(), msg = 'hello') => {
+  const stopped = async (prof = claudeProfile(), msg = 'hello') => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: msg });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: msg }));
     ptys.emit('exit', 'pty-1', 0);
     return { task, prof, p };
   };
 
-  it('Claude with a session file resumes with --resume and no first message', () => {
-    const { task } = stopped();
+  it('Claude with a session file resumes with --resume and no first message', async () => {
+    const { task } = (await stopped());
     writeClaudeSession(task.cwd, task.id);
     expect(svc.get(task.id).recovery).toBe('resumable');
-    const r = svc.open({ taskId: task.id });
+    const r = (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual(['--model', 'ds', '--resume', task.id]);
     expect(ptys.last.cwd).toBe(task.cwd);
     expect(r.task.ptyId).toBe(r.ptyId);
   });
 
-  it('Claude without a session file reopens under the same id with --session-id', () => {
-    const { task } = stopped();
+  it('Claude without a session file reopens under the same id with --session-id', async () => {
+    const { task } = (await stopped());
     expect(svc.get(task.id).recovery).toBe('fresh');
-    svc.open({ taskId: task.id });
+    (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual(['--model', 'ds', '--session-id', task.id]);
   });
 
-  it('resumes with another profile of the same runner and refreshes the snapshot', () => {
-    const { task } = stopped();
+  it('resumes with another profile of the same runner and refreshes the snapshot', async () => {
+    const { task } = (await stopped());
     writeClaudeSession(task.cwd, task.id);
     const other = claudeProfile({
       name: 'CC-Claude',
@@ -374,26 +374,26 @@ describe('TaskService.open (resume after restart)', () => {
         { name: 'CLAUDE_CONFIG_DIR', secret: false, value: claudeRoot() },
       ],
     });
-    const r = svc.open({ taskId: task.id, aiProfileId: other.id });
+    const r = (await svc.open({ taskId: task.id, aiProfileId: other.id }));
     expect(ptys.last.env.__SMARTDD_V_ANTHROPIC_API_KEY).toBe('k-claude');
     expect(ptys.last.env.__SMARTDD_V_ANTHROPIC_AUTH_TOKEN).toBeUndefined();
     expect(r.task).toMatchObject({ aiProfileName: 'CC-Claude', aiProfileColor: '#ef4444', injectedEnvNames: ['ANTHROPIC_API_KEY', 'CLAUDE_CONFIG_DIR'] });
   });
 
-  it('refuses a profile of another runner, a deleted profile and a vanished directory', () => {
-    const { task, prof } = stopped();
-    expect(() => svc.open({ taskId: task.id, aiProfileId: codexProfile().id })).toThrow('不能用 codex 的 AI 配置恢复 claude 任务');
+  it('refuses a profile of another runner, a deleted profile and a vanished directory', async () => {
+    const { task, prof } = (await stopped());
+    await expect(svc.open({ taskId: task.id, aiProfileId: codexProfile().id })).rejects.toThrow('不能用 codex 的 AI 配置恢复 claude 任务');
     profiles.delete(prof.id);
     const v = svc.get(task.id);
     expect(v.aiProfileId).toBeNull();
     expect(v.aiProfileName).toBe('CC-DS'); // snapshot survives
-    expect(() => svc.open({ taskId: task.id })).toThrow('原 AI 配置已删除');
+    await expect(svc.open({ taskId: task.id })).rejects.toThrow('原 AI 配置已删除');
     const again = claudeProfile({ name: 'Again' });
     rmSync(task.cwd, { recursive: true });
-    expect(() => svc.open({ taskId: task.id, aiProfileId: again.id })).toThrow('工作目录不存在');
+    await expect(svc.open({ taskId: task.id, aiProfileId: again.id })).rejects.toThrow('工作目录不存在');
   });
 
-  it('marks records without a native id as unrecoverable (e.g. migrated M0 sessions)', () => {
+  it('marks records without a native id as unrecoverable (e.g. migrated M0 sessions)', async () => {
     const cwd = mk('old');
     sqlite
       .prepare("INSERT INTO tasks (id, cwd, runner, title, created_at, updated_at) VALUES ('old', ?, 'claude', '旧会话', 1, 1)")
@@ -401,7 +401,7 @@ describe('TaskService.open (resume after restart)', () => {
     const v = svc.get('old');
     expect(v.recovery).toBe('unrecoverable');
     expect(v.recoveryReason).toContain('session ID');
-    expect(() => svc.open({ taskId: 'old', aiProfileId: claudeProfile().id })).toThrow('无法恢复');
+    await expect(svc.open({ taskId: 'old', aiProfileId: claudeProfile().id })).rejects.toThrow('无法恢复');
   });
 });
 
@@ -409,7 +409,7 @@ describe('Codex', () => {
   it('discovers the session id once Codex writes its rollout, then resumes with --cd', async () => {
     const p = project();
     const prof = codexProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看代码' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看代码' }));
     expect(ptys.last.args).toEqual(['看看代码']);
     expect(task).toMatchObject({ nativeSessionId: null, recovery: 'not-started' });
 
@@ -423,17 +423,17 @@ describe('Codex', () => {
     expect(svc.get(task.id).recovery).toBe('resumable');
 
     ptys.emit('exit', 'pty-1', 0);
-    svc.open({ taskId: task.id });
+    (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual(['resume', '--cd', task.cwd, 'mine']);
     expect(ptys.last.env.CODEX_HOME).toBeUndefined();
     expect(ptys.last.env.__SMARTDD_V_CODEX_HOME).toBe(codexRoot());
   });
 
-  it('a Codex task that never got a message starts fresh without the old first message', () => {
+  it('a Codex task that never got a message starts fresh without the old first message', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: codexProfile().id, firstMessage: '第一句' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: codexProfile().id, firstMessage: '第一句' }));
     ptys.emit('exit', 'pty-1', 0);
-    svc.open({ taskId: task.id });
+    (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual([]);
   });
 });
@@ -445,7 +445,7 @@ describe('profile health from running tasks', () => {
   it('reports the API errors Claude writes into the session file, and a later reply', async () => {
     const p = project();
     const prof = claudeProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' }));
     writeClaudeSession(task.cwd, task.id);
     appendFileSync(claudeSessionPath(task.cwd, task.id), apiError(402, 'API Error: 402 Insufficient Balance'));
     await vi.waitFor(() => expect(reports).toHaveLength(1), { timeout: 2000 });
@@ -457,30 +457,30 @@ describe('profile health from running tasks', () => {
     expect(reports).toHaveLength(2);
   });
 
-  it('reads the error written just before the CLI exits', () => {
+  it('reads the error written just before the CLI exits', async () => {
     const p = project();
     const prof = claudeProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' }));
     writeClaudeSession(task.cwd, task.id);
     appendFileSync(claudeSessionPath(task.cwd, task.id), apiError(401, 'Invalid API key'));
     ptys.emit('exit', 'pty-1', 1);
     expect(reports.map((r) => r.ev.category)).toEqual(['auth']);
   });
 
-  it('flags a CLI that dies right after launch, but not a normal quit or our own kill', () => {
+  it('flags a CLI that dies right after launch, but not a normal quit or our own kill', async () => {
     const p = project();
     const prof = claudeProfile();
-    svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' });
+    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }));
     ptys.emit('exit', 'pty-1', 127);
-    svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' });
+    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }));
     ptys.emit('exit', 'pty-2', 1);
     expect(reports.map((r) => [r.ev.category, r.ev.message])).toEqual([
       ['not_found', '找不到 CLI 命令（退出码 127）'],
       ['other', 'CLI 启动后 1 秒退出（退出码 1）'],
     ]);
-    const t3 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }).task;
+    const t3 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).task;
     ptys.emit('exit', 'pty-3', 0);
-    const t4 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }).task;
+    const t4 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).task;
     svc.kill(t4.id);
     expect(reports).toHaveLength(2);
     expect(t3.id).not.toBe(t4.id);
@@ -489,7 +489,7 @@ describe('profile health from running tasks', () => {
   it('follows the Codex rollout once its session id is known', async () => {
     const p = project();
     const prof = codexProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看' }));
     const file = writeCodexRollout(task.cwd, 'mine', clock);
     await vi.waitFor(() => expect(svc.get(task.id).nativeSessionId).toBe('mine'), { timeout: 2000 });
     const done = { type: 'event_msg', payload: { type: 'task_complete', last_agent_message: null, error: { message: 'unexpected status 401 Unauthorized', codex_error_info: { http_connection_failed: { http_status_code: 401 } } } } };
@@ -500,9 +500,9 @@ describe('profile health from running tasks', () => {
 });
 
 describe('rename / archive / list', () => {
-  it('renames, archives and filters archived tasks', () => {
+  it('renames, archives and filters archived tasks', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
     expect(svc.rename(task.id, '  新标题 ').title).toBe('新标题');
     expect(() => svc.rename(task.id, ' ')).toThrow('不能为空');
     ptys.emit('exit', 'pty-1', 0);
@@ -513,9 +513,9 @@ describe('rename / archive / list', () => {
     expect(svc.list()).toHaveLength(1);
   });
 
-  it('deleting the project deletes its tasks', () => {
+  it('deleting the project deletes its tasks', async () => {
     const p = project();
-    svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' });
+    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
     ptys.emit('exit', 'pty-1', 0);
     projects.deleteProject(p.id, { deleteSecrets: true });
     expect(svc.list({ includeArchived: true })).toEqual([]);
