@@ -17,7 +17,7 @@ export function ensureStoreDirectory(root: string, path: string): string {
   }
   return dir;
 }
-function fileNames(root: string, dir = root): string[] {
+export function fileNames(root: string, dir = root): string[] {
   if (lstatSync(dir).isSymbolicLink() || !lstatSync(dir).isDirectory()) throw new ApplicationError('OWNERSHIP_CONFLICT', '应用目录不属于受管文件树');
   return readdirSync(dir).flatMap(name => {
     const path = join(dir, name), stat = lstatSync(path);

@@ -45,7 +45,7 @@ export const applicationManifestSchema = z.object({
   if (manifest.hostApi.min > manifest.hostApi.max) issue('宿主API范围无效');
   const paths = new Set<string>(), folded = new Set<string>();
   for (const f of manifest.files) {
-    if (f.path === 'manifest.json' || f.path === PACKAGE_OWNER_FILE || paths.has(f.path) || folded.has(f.path.toLowerCase())) issue('包路径重复、大小写冲突或使用保留名称');
+    if (['manifest.json', PACKAGE_OWNER_FILE].includes(f.path.split('/')[0].toLowerCase()) || paths.has(f.path) || folded.has(f.path.toLowerCase())) issue('包路径重复、大小写冲突或使用保留名称');
     paths.add(f.path); folded.add(f.path.toLowerCase());
   }
   const required = [manifest.adapter.entry, ...manifest.connectionContracts.map(c => c.inputSchemaPath), ...manifest.tools.flatMap(t => [t.inputSchemaPath, t.outputSchemaPath]), ...manifest.skills.map(s => s.entry), ...manifest.migrations.map(m => m.file)];
