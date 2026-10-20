@@ -11,6 +11,7 @@ export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:da
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
 export const tasksChangedEvent = defineEvent<void>('tasks:changed');
+export const applicationsChangedEvent = defineEvent<void>('applications:changed');
 export const fileWatchEvent = defineEvent<FileWatchUpdate>('files:watch');
 export const fileSearchEvent = defineEvent<FileSearchProgress>('files:search');
 export const fileCloseEvent = defineEvent<FileCloseRequest>('files:close-request');

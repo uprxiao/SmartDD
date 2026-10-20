@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
@@ -145,4 +145,20 @@ describe('current connection revisions, tested candidates and encrypted secret c
     await expect(service.commitCandidate(tested.operationId, tested.candidateHash)).rejects.toMatchObject({ code: 'CONFIG_PLAN_STALE' });
     expect(service.get(saved.id)).toEqual(saved); expect(secretCount()).toBe(1);
   });
+});
+
+
+describe('host-parent connection verification cancellation',()=>{
+ it('does not invoke a provider or stage credentials for an already cancelled parent',async()=>{
+  const parent=new AbortController();parent.abort();await expect(service.testCandidate(input(),parent.signal)).rejects.toMatchObject({code:'CANCELED'});expect(verify).not.toHaveBeenCalled();expect(secretCount()).toBe(0);expect(sqlite.prepare('SELECT count(*) n FROM application_secret_changes').get()).toEqual({n:0});
+ });
+ it('does not stage a credential or start a provider after cancellation while C acquisition was queued',async()=>{
+  const lock=join(store.root,'locks/resource.lock');mkdirSync(lock,{recursive:true});writeFileSync(join(lock,'owner.json'),JSON.stringify({token:'private-parent-cancel-fixture',pid:process.pid}));
+  const parent=new AbortController(),testing=service.testCandidate(input(),parent.signal);parent.abort();rmSync(lock,{recursive:true});await expect(testing).rejects.toMatchObject({code:'CANCELED'});expect(verify).not.toHaveBeenCalled();expect(secretCount()).toBe(0);expect(sqlite.prepare('SELECT count(*) n FROM application_secret_changes').get()).toEqual({n:0});
+ });
+ it('propagates a parent cancellation and discards only its candidate despite a late successful provider result',async()=>{
+  let release!:()=>void,entered!:()=>void;const gate=new Promise<void>(r=>release=r),ready=new Promise<void>(r=>entered=r);verify.mockImplementationOnce(async c=>{entered();await gate;return identity(c);});
+  const parent=new AbortController(),testing=service.testCandidate(input(),parent.signal),rejected=expect(testing).rejects.toMatchObject({code:'CANCELED'});await ready;parent.abort();await rejected;release();await Promise.resolve();
+  expect(service.list()).toEqual([]);expect(secretCount()).toBe(0);expect(sqlite.prepare("SELECT state,error_code FROM application_secret_changes").get()).toEqual({state:'failed',error_code:'CANCELED'});
+ });
 });

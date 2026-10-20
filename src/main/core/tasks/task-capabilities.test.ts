@@ -90,3 +90,14 @@ describe('actual TaskService with fixed session/catalog/run registries and a con
  it('discovers a native session flushed before a slow PID attachment completes by using the actual fork time',async()=>{const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));let release!:()=>void;afterAttach=()=>new Promise<void>(r=>{release=r;});const forkTime=clock,opening=svc.open({taskId:first.task.id});await vi.waitFor(()=>expect(release).toBeTypeOf('function'));const date=new Date(forkTime),root=join(f.home,'.codex/sessions',String(date.getFullYear()),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0'));mkdirSync(root,{recursive:true});writeFileSync(join(root,'rollout-fixture-before-attachment.jsonl'),JSON.stringify({type:'session_meta',payload:{id:'native-before-attachment',cwd:f.cwd,timestamp:new Date(forkTime+50).toISOString(),originator:'codex_cli_rs'}})+'\n');clock+=5000;release();const second=await opening;expect(second.task.lastLaunchedAt).toBe(forkTime);await vi.waitFor(()=>expect(svc.get(first.task.id).nativeSessionId).toBe('native-before-attachment'));});
 
 });
+
+
+describe('project stop while managed preparation is pending',()=>{
+ it('aborts the owned preparation and waits for its real settlement before reporting stopped',async()=>{
+  const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+  let release!:()=>void;gate=()=>new Promise<void>(r=>{release=r;});
+  const opening=svc.open({taskId:first.task.id});await vi.waitFor(()=>expect(release).toBeTypeOf('function'));
+  const rejected=expect(opening).rejects.toThrow('取消');const stopping=svc.stopProject(projectId,1000);
+  expect(svc.runningInProject(projectId)).toBe(1);release();await rejected;expect(await stopping).toBe(true);expect(ptys.launches).toHaveLength(1);expect(consumers()).toEqual([]);
+ });
+});

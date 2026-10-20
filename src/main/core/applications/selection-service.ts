@@ -32,7 +32,7 @@ export class ApplicationSelectionService {
       if (state.added !== added || state.enabled !== added) this.store.sqlite.prepare('UPDATE application_binding_slot_revisions SET revision=revision+1 WHERE app_id=?').run(appId);
       if (!added) {
         this.store.sqlite.prepare("UPDATE application_binding_changes SET state='cancelled',error_code='SCOPE_DENIED',updated_at=? WHERE app_id=? AND state='stopping'").run(now, appId);
-        this.store.sqlite.prepare('UPDATE application_project_settings SET enabled=0,binding_revision=binding_revision+1,pending_operation_id=NULL,updated_at=? WHERE app_id=?').run(now, appId);
+        this.store.sqlite.prepare('UPDATE application_project_settings SET policy_revision=policy_revision+CASE WHEN enabled<>0 THEN 1 ELSE 0 END,enabled=0,binding_revision=binding_revision+1,pending_operation_id=NULL,updated_at=? WHERE app_id=?').run(now, appId);
       }
     }).immediate()); return this.catalogState(appId);
   }
@@ -109,7 +109,9 @@ export class ApplicationSelectionService {
   }
   private commitSelection(value: ProjectApplicationSelectionInput, operationId: string): void {
     const now = new Date().toISOString(), revision = value.expectedRevision + 1, previous = this.projectSettings(value.projectId,value.appId);
-    this.store.sqlite.prepare(`INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,pending_operation_id,updated_at) VALUES(?,?,?,?,NULL,?) ON CONFLICT(project_id,app_id) DO UPDATE SET enabled=excluded.enabled,binding_revision=excluded.binding_revision,pending_operation_id=NULL,updated_at=excluded.updated_at`).run(value.projectId, value.appId, value.enabled ? 1 : 0, revision, now);
+    const policy = this.store.sqlite.prepare('SELECT policy_revision AS revision FROM application_project_settings WHERE project_id=? AND app_id=?').get(value.projectId,value.appId) as {revision:number}|undefined;
+    const policyRevision=(policy?.revision??0)+(previous.enabled!==value.enabled?1:0);
+    this.store.sqlite.prepare(`INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,policy_revision,pending_operation_id,updated_at) VALUES(?,?,?,?,?,NULL,?) ON CONFLICT(project_id,app_id) DO UPDATE SET enabled=excluded.enabled,binding_revision=excluded.binding_revision,policy_revision=excluded.policy_revision,pending_operation_id=NULL,updated_at=excluded.updated_at`).run(value.projectId, value.appId, value.enabled ? 1 : 0, revision, policyRevision, now);
     for (const [slot,id] of Object.entries(value.connections)) {
       const role = slot as ApplicationProvider, changed = previous.enabled !== value.enabled || previous.connections[role] !== id;
       const next = (previous.slotRevisions[role] ?? 0) + (changed ? 1 : 0);
@@ -129,6 +131,12 @@ export class ApplicationSelectionService {
     const row = this.store.sqlite.prepare('SELECT enabled,pending_operation_id FROM application_project_settings WHERE project_id=? AND app_id=?').get(projectId,appId) as { enabled: number;pending_operation_id: string | null } | undefined;
     if (!catalog.added || !catalog.enabled || row?.enabled !== 1) throw new ApplicationError('SCOPE_DENIED','当前项目未启用此应用');
     if (appId === 'zentao' && row.pending_operation_id) throw new ApplicationError('RESOURCE_BUSY','禅道选择变更中，请稍后重试');
+  }
+  /** Local business operations depend on enablement, not unrelated source/SMTP slot edits. */
+  policyStamp(projectId: string,appId: ApplicationId): {globalRevision:number;projectPolicyRevision:number} {
+    this.requireApplicationEnabled(projectId,appId);
+    const row=this.store.sqlite.prepare('SELECT policy_revision FROM application_project_settings WHERE project_id=? AND app_id=?').get(projectId,appId) as {policy_revision:number};
+    return {globalRevision:this.catalogState(appId).revision,projectPolicyRevision:row.policy_revision};
   }
   connectionSlot(projectId: string,appId: ApplicationId,slot: ApplicationProvider): { connectionId: string | null;identityRevision: number | null;revision: number } {
     this.requireApplicationEnabled(projectId,appId);

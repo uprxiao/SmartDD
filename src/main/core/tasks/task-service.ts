@@ -333,6 +333,16 @@ export class TaskService {
     catch (error) { if (!alreadyStopping) this.killedPtys.delete(ptyId); throw error; }
   }
 
+  /** Stop only this project's owned tasks/preparations; uncertain owners keep the project busy. */
+  async stopProject(projectId:string,timeoutMs=5000):Promise<boolean>{
+    const ids=new Set(this.d.db.select({id:tasks.id}).from(tasks).where(eq(tasks.projectId,projectId)).all().map(r=>r.id));
+    for(const [id,launch] of this.launching)if(launch.projectId===projectId)ids.add(id);
+    for(const id of ids)this.kill(id);
+    const deadline=performance.now()+timeoutMs;
+    while(this.runningInProject(projectId)>0){if(performance.now()>=deadline)return false;await new Promise<void>(resolve=>setTimeout(resolve,Math.min(20,Math.max(1,deadline-performance.now()))));}
+    return true;
+  }
+
   runningCount(): number {
     return new Set([...this.running.keys(),...this.launching.keys()]).size;
   }

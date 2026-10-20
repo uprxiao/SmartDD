@@ -521,3 +521,19 @@ describe('rename / archive / list', () => {
     expect(svc.list({ includeArchived: true })).toEqual([]);
   });
 });
+
+
+describe('project-scoped application connection stop',()=>{
+ it('stops only tasks belonging to the selected project and keeps another project running',async()=>{
+  const firstProject=project(),secondProject=projects.createProject({name:'Independent M9 fixture',aliases:[],description:'',rulesPath:null},[{label:'other',path:mk('independent-code')}]),profile=claudeProfile();
+  const first=await svc.create({projectId:firstProject.id,dirId:null,aiProfileId:profile.id,firstMessage:''});
+  const second=await svc.create({projectId:secondProject.id,dirId:null,aiProfileId:profile.id,firstMessage:''});
+  expect(await svc.stopProject(firstProject.id,200)).toBe(true);expect(ptys.killed).toEqual([first.ptyId]);expect(svc.activePty(second.task.id)).toBe(second.ptyId);expect(svc.runningInProject(secondProject.id)).toBe(1);
+ });
+ it('reports a bounded unsuccessful stop until its owned PTY actually exits',async()=>{
+  const p=project(),profile=claudeProfile(),first=await svc.create({projectId:p.id,dirId:null,aiProfileId:profile.id,firstMessage:''});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{ptys.killed.push(id);});
+  expect(await svc.stopProject(p.id,25)).toBe(false);expect(svc.activePty(first.task.id)).toBeNull();expect(svc.runningInProject(p.id)).toBe(1);
+  ptys.emit('exit',first.ptyId,0);expect(await svc.stopProject(p.id,25)).toBe(true);
+ });
+});

@@ -15,6 +15,8 @@ import type { SettingsStore } from './core/settings/settings-service';
 import { createTaskController } from './core/tasks/controller';
 import type { TaskService } from './core/tasks/task-service';
 import type { AgentSupportService } from './core/applications/agent-support-service';
+import { createApplicationController } from './core/applications/controller';
+import type { ApplicationService } from './core/applications/application-service';
 import type { AgentSupportState } from '@shared/capability-bundles';
 import type { DbClient } from './db/client';
 import { runProbes } from './probes';
@@ -41,6 +43,7 @@ export interface RpcDeps {
   tasks: TaskService;
   capabilities: CapabilityService;
   agentSupport?: AgentSupportService;
+  applications?: ApplicationService;
   ptys: PtyManager;
   ptyAccess: PtyAccess;
   baseEnv: () => Record<string, string>;
@@ -69,6 +72,7 @@ export function createRpcRouter(d: RpcDeps) {
       },
     }),
     agentSupport: createScopedRPCController({ status: (event) => { d.ptyAccess.requireSender(event); return d.agentSupport?.status() ?? { state: 'unavailable',errorCode: 'CAPABILITY_UNAVAILABLE',legacyResourceCount: 0,runtimeHash: null,adapters: [],applications: [] } as AgentSupportState; } }),
+    applications: createApplicationController(d.applications,event=>d.ptyAccess.requireSender(event)),
     voice: createVoiceController(d.voice),
     projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),

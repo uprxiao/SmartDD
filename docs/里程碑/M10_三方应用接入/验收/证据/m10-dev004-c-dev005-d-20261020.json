@@ -1,0 +1,233 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV004-C / DEV005-D",
+  "recordedAt": "2026-10-20T06:13:13.885414+00:00",
+  "requirementBaseline": "R1.6 incl12.21; no scope expansion; approved formal development continues",
+  "baseCommit": "168730abb809cbfe32fa0ef21d21fa802a0303a4",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "previousGoalTurnClassification": "progress: complete immutable builtins and original-hash CJS dispatch committed as168730a; M10 goal remains active",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Host-minted non-serializable UI,connection-management,actual-run and parent-triggered read-only index contexts,with distinct audit roles and no fake model task for UI/index work",
+    "Separate project enablement policy epoch from individual source slots; revoked generations and source ABA deny in-flight and cached receipts; unchanged identity secret rotations use current credentials without logging secrets",
+    "Original CJS to actual draft list/get/create/update/copy and business resource read,using real SQLite revisions,CAS,mutation idempotence,durable blobs and stable cross-run resource identities",
+    "0016 upgrade/replay preserves original selections,drafts,revision contents and business reference history; role constraints prevent UI/task/index confusion without pinning obsolete packages or blocking project deletion",
+    "Main ApplicationService composition,recovery and13 explicit trusted-renderer RPC endpoints,with safe structured replies; no generic SQL,scope injection or send-approval endpoint",
+    "Project-scoped stop waits for preparing and actual owned task settlement; queued operations recheck shutdown/cancellation before starting; connection tests propagate the host parent signal"
+  ],
+  "businessMethods": [
+    "mail.draft.list",
+    "mail.draft.get",
+    "mail.draft.create",
+    "mail.draft.update",
+    "mail.draft.copy",
+    "mail.resource.read"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects",
+      "status": "passed",
+      "files": 43,
+      "tests": 500,
+      "passed": 500,
+      "failed": 0,
+      "breakdown": {
+        "m10AndRelatedRuntime": 421,
+        "projectsAndM8": 79
+      },
+      "log": "dev004-c-dev005-d-20261020/final-tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev004-c-dev005-d-20261020/final-types.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev004-c-dev005-d-20261020/release-rules.txt"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev004-c-dev005-d-20261020/final-build.txt"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "scope": "production output only,not a packaged App result",
+      "log": "dev004-c-dev005-d-20261020/resource-verification.json"
+    }
+  ],
+  "newTests": {
+    "businessContextsAndDraftResources": 24,
+    "trustedController": 5,
+    "hostParentCancellation": 3,
+    "projectStops": 3,
+    "upgradeAndRoleConstraints": 2,
+    "totalIncludedIn500": 37,
+    "note": "Earlier384/107/19/84/496 and local47 overlap and are not added. Focused red runs intentionally select one case and skip the other23; formal product cases were not skipped or removed."
+  },
+  "findingsAndCorrections": [
+    {
+      "finding": "Second project used the same AIS fixture name,so the isolation test failed at project creation",
+      "correction": "Create a separate named project and directory,retaining assertions that its PTY remains active",
+      "redLog": "dev004-c-dev005-d-20261020/red-project-fixture.json"
+    },
+    {
+      "finding": "A configuration callback queued before C acquisition could start after host shutdown; observed started=1 instead of0",
+      "correction": "Recheck closed and aborted at execution entry and inside the registration transaction,before business work; preserve actual in-flight wait and release behavior",
+      "redLogs": [
+        "dev004-c-dev005-d-20261020/red-queued-shutdown-code.json",
+        "dev004-c-dev005-d-20261020/red-queued-provider-start.json"
+      ]
+    },
+    {
+      "finding": "New parent-cancel fixture omitted its locks parent directory and assumed an existing failed candidate log becomes cleaned",
+      "correction": "Create only the private fixture parent; verify original failed/CANCELED audit together with zero secret rows and zero late provider calls. No cancellation or cleanup requirement relaxed.",
+      "redLog": "dev004-c-dev005-d-20261020/red-cancel-fixtures.json"
+    }
+  ],
+  "actualBoundary": [
+    "Actual immutable package trees,CJS routing,Session/Run/ToolService ledgers,SQLite,draft/blob/resource services and RPC registration participate",
+    "Two Agent runners are logical fixed sessions,not actual Claude/Codex model or native child runs; kernel process identity,cipher,connection identity and UI WebContents are explicit private fixtures",
+    "Single-parent index context is implemented; shared refresh consumers,persistent index/quota and actual worker/child-exit coordination remain separate unfinished work",
+    "Production main exposes configuration and read-only local business RPC; no renderer page or actual production TaskCapabilityLauncher/MCP business runtime has been attached",
+    "No daily HOME,credentials,mailboxes,real accounts,external mail submission,model calls,M9 edits/process operations,main merge,push,tag or release"
+  ],
+  "remaining": [
+    "Production TaskCapabilityLauncher,effective native configuration/provenance,Agent-created bridge PID proof and binding actual run registry into main business/MCP service",
+    "Complete ZenTao/mail read APIs,mail cache500MB/30day quota,persistent incremental refresh,multiple waiting consumers,reply and attachment import",
+    "Actual trusted user authorization source and production send Data API,lightweight UI,all72 formal cases including both real Agents and system-layer acceptance",
+    "Startup migration fencing,old H lock recovery,GC,native-ID/Task pointer reconciliation and actual multi-process crash recovery; provider wait cancellation is not proof of Worker/native-child exit"
+  ],
+  "productAcceptance": {
+    "formalCases": 72,
+    "newPackagedAppPasses": 0,
+    "status": "not executed in this checkpoint; full M10 remains development in progress"
+  },
+  "build": {
+    "appVersion": "0.0.5",
+    "index": {
+      "adapters": [
+        {
+          "agentId": "claude-code",
+          "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "version": "1.0.0"
+        },
+        {
+          "agentId": "codex",
+          "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "version": "1.0.0"
+        }
+      ],
+      "apps": [
+        {
+          "appId": "zentao",
+          "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "path": "apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "version": "1.0.0"
+        },
+        {
+          "appId": "mail",
+          "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "path": "apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "version": "1.0.0"
+        }
+      ],
+      "build": {
+        "appVersion": "0.0.5",
+        "commit": "168730abb809cbfe32fa0ef21d21fa802a0303a4",
+        "dirty": true,
+        "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d"
+      },
+      "indexHash": "b9380724dc422f8e88197d771b5062ebc7e0f21c09d8f37560cee6b69d65cfa9",
+      "runtimes": [
+        {
+          "bridgeEntry": "mcp-bridge.cjs",
+          "hash": "8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "id": "applications",
+          "path": "runtimes/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "protocolMajor": 1
+        }
+      ],
+      "schema": "willyou-capability-bundles-v1"
+    },
+    "artifacts": {
+      "out/main/index.js": "a631829cbb53091bcfb76e5aa76f4227b302902fb1017c4522e4d803331d981b",
+      "out/preload/index.js": "63eedf45352d719515e04c49fb7eb29d57fd99433519fb91e15c44192aa03908",
+      "out/main/m10-mail-reader.js": "f25eed2d3d01fc7955d33337f5f81321650bad81f124c27b2f5aed9211ce942f",
+      "out/applications/mcp-bridge.cjs": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+      "out/capability-bundles/index.json": "3f2a41474d04bdfd15fc5bba134490bb313a8fdb44d75584fc43d91aab1a1093",
+      "out/native/willyou-process-identity": "29e6e838c5a221beaa6dc4ba342465993274451595f349944d69c0738d5e92d5",
+      "out/native/willyou-foxmail": "483678fb21961b724917f0bdbc754da026708af4ed16abc9836d5aa151d9bfde"
+    },
+    "note": "Built with base168730a plus the exact production source files hashed below; later edits are checkpoint documentation/evidence only. Builtin package and MCP runtime resource hashes are unchanged from168730a."
+  },
+  "sourceHashes": {
+    "drizzle/0016_application_data_operations.sql": "53f4acac1b3fd243baac7f78b10ca361dd9264fb6a242a8547f08fb5bcc01f47",
+    "drizzle/meta/_journal.json": "18b54ac870b9c9ce57848b91d6dcecaf77f036669221ed40f2f473b29c3f33e0",
+    "src/main/core/applications/__tests__/application-controller.test.ts": "1ac8cbc35387c98544aba8c0f8970221db9bd6712f27cb802d2e7c3d90f67b98",
+    "src/main/core/applications/__tests__/business-data.test.ts": "b6c8c731ba2715b02013df2116400001b702a39524cb38a7cb0951d135d88188",
+    "src/main/core/applications/__tests__/connection-service.test.ts": "00d5ab571ca81bc9c1499d0fc24cb1a82c1e65f2eddf5e57f577852f9c7665b5",
+    "src/main/core/applications/application-adapter-registry.ts": "8deb577a0c36bfafab5c1eb6a2dbcd87044f378386256c8978a8a109e5252f04",
+    "src/main/core/applications/application-service.ts": "0ed72cc278c623f04c0a408f7a2cb44e817d49dcf27e9168bc7f463daaf0f833",
+    "src/main/core/applications/connection-service.ts": "d160b3418276d2f8e9384bc8d48a25f629013ab9230f0e39285531b3e2f24d4c",
+    "src/main/core/applications/controller.ts": "fb7b3cd70fd0773ccf8bdb4a3c860d27721aa469c08b7de8eb13b7a7ef256668",
+    "src/main/core/applications/data-resources.ts": "35456a5746e11145f372ba1256455dc82bc76a3572b082b9d3139b4168b0394e",
+    "src/main/core/applications/draft-data-service.ts": "953d88d3376d52b1587a80123f81a34b4348bca39719a485b5dead3c660f9d8d",
+    "src/main/core/applications/execution-context.ts": "aac59912107cefccbacfd0b6380749faf1747e90b70dd3bb634b3ceddd416983",
+    "src/main/core/applications/selection-service.ts": "8f1d14771e0a441ca37bd2c5d7c590fcf37d4196a420c7d18bdb60aa1656ed65",
+    "src/main/core/applications/tool-service.ts": "d1e23ee9b040b7981017819bed46287c48634bdaa335060623092f2ed21b5232",
+    "src/main/core/tasks/task-capabilities.test.ts": "0a9bd75a0a06d39564b09cd518c57c452fc67239f302c4b34632c5456d357711",
+    "src/main/core/tasks/task-service.test.ts": "7d122710472a40821f4480717fc788ab782579a78565fb0a088857f5805ea794",
+    "src/main/core/tasks/task-service.ts": "ef6704a70c01771cd85946a00aecf6084e5b897bdd701b755e7eeeee4b813f5d",
+    "src/main/db/migrations.test.ts": "cc103a01c620cfa13d1605fafb60c07fe70373671ebb4be5146aa693fa3d3a87",
+    "src/main/db/schema.ts": "ec180be338ca3e85a9f20418f704d246149fa67b2b0a20196c661e5e7c222058",
+    "src/main/index.ts": "81e2e96c40ebcf778b740dd5337d17fe29b0088e28ee248ef82ba531847446e2",
+    "src/main/rpc.ts": "0009627f994109d739c085f45c621d0e7f94e6161785c4fc4785f4d3601d32a7",
+    "src/shared/application-data.ts": "bc0f1fb84903828237377eb4cfd06efda00f0bc1a1e842dd82af3b79af4be1eb",
+    "src/shared/events.ts": "d08fc9f1783678632b7a674f010b6761adfca2cc8925c2a5851ca0849da98e00"
+  },
+  "evidenceHashes": {
+    "before-queued-fix-496.txt": "6772d73006ad015754da08a700ce03c019fb22bea0ff0588300cfe6c1a9f5dd2",
+    "bundle-index.json": "8ad91628ff0d83d460544acfca5e01bc5a869183e90ec296731f4b0d2dfa6f9f",
+    "cancel-retest-47.txt": "7f5e16d66ad611aeca5c8488ba221362a8f720a1861de9bf227fc486a747ee78",
+    "final-build.txt": "f6721e14dfaf9cba68a222f44372c7663edc0408771e75a02370d1bb4ba07bdf",
+    "final-tests.txt": "15bc99d1294854e07a98ed6a937361896de4a4c0709069d4e9e9bffcb3510fe8",
+    "final-types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9",
+    "first-business-19.txt": "4dfdf5020d8a45093437d498ea25e2d759aa474feba84d76dc1c276ff40b562c",
+    "initial-107-regressions.txt": "ba57008b3b493047a0fb4f239d2524552f1ac5c0f8966142b1a31be6784303b5",
+    "integration-84.txt": "1781b4b08907c3157e24b2f9582e5b1d0fd886df58636bcd589eb5c022ed4349",
+    "mail-manifest.json": "cb430eeab849f70d0c9847e1d6a1e2802b14966e232d9139d3a81201319a9363",
+    "red-cancel-fixtures.json": "8891584173f4a722c21cbb4e8cce76de1f4ed2093283e2a1c3c1d41ff64f53c4",
+    "red-project-fixture.json": "196f684c904d5b15cfffcb5b0eaabad24933e9c34d69534dd058cff4c8dd1896",
+    "red-queued-provider-start.json": "66c11fe5a835f4678fc781889ce809dcb2080a33483e1f147298d7f6154df1d7",
+    "red-queued-shutdown-code.json": "ca893380adf54c5d71c1df16e1db9906df8fc728335c45834deced52d9133e83",
+    "release-rules.txt": "d1c849fd3e410f7e3149d77b967e972c653b00ce39d87fa70d6af854abf0d13e",
+    "resource-verification.json": "0928355ffcc586400b3896b5226f652adee43910aba9d27cb2984c3938bbca9c",
+    "zentao-manifest.json": "17a9738992905e70615658946b79c87c746b311ea26492623e83f0d58ed01a6b"
+  },
+  "technicalNote": "../../技研/业务作用域与草稿DataAPI接入检查点_20261020.md",
+  "documentationHashes": {
+    "docs/里程碑/M10_三方应用接入/README.md": "863cf8145b485213297f4f45517bdbaf59aae492d85af4b44f17b30edd048b10",
+    "docs/里程碑/M10_三方应用接入/实施计划与进度.md": "5d7d1ea5b1a9006a0efcf444cb09c88d0d14244265dce0946b8fa0bd02cca60a",
+    "docs/里程碑/M10_三方应用接入/技研/业务作用域与草稿DataAPI接入检查点_20261020.md": "5c4cd3acce9146d2abcd57ff835d1bb9f69907841f694b064fd58dcbb42f0531",
+    "docs/里程碑/M10_三方应用接入/验收/执行与缺陷记录.md": "ff9dc30557a5f855bd1ff860c8c5df1024477617fa3c9def5ec17e082ba633e6",
+    "docs/里程碑/README.md": "35836d3f4d457b05dd2064cc4739f17d95762480be43ed96baa93b597a503508",
+    "docs/需求池.md": "c872379f167418119a4fdb1ea5226e15c618ad4cc59153266c5eb68a61beefed"
+  }
+}

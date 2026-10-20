@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification } from 'electron';
 import {
   aiProfilesChangedEvent,
+  applicationsChangedEvent,
   menuOpenSettingsEvent,
   menuToggleLeftSidebarEvent,
   ptyDataEvent,
@@ -22,6 +23,7 @@ import { ProfileHealth } from './core/ai/profile-health';
 import { CapabilityService } from './core/capabilities/capability-service';
 import { ResourceStore } from './core/applications/resource-store';
 import { AgentSupportService } from './core/applications/agent-support-service';
+import { ApplicationService } from './core/applications/application-service';
 import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
 import { TaskService } from './core/tasks/task-service';
@@ -169,6 +171,14 @@ async function main(): Promise<void> {
   });
   registerPtyInput(ipcMain, ptyAccess);
 
+  let applications:ApplicationService|undefined;
+  try {
+    if(agentSupport){
+      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
+      await applications.recover();
+    }
+  } catch {console.warn('[applications] Local business recovery pending; check application diagnostics');}
+
   const voice = new VoiceService({
     adapter: new TypelessAdapter(app.isPackaged ? join(process.resourcesPath, 'native/smartdd-voice') : join(app.getAppPath(), 'out/native/smartdd-voice')),
     settings: { get: () => settings.get('voice'), save: (value) => settings.update('voice', value) },
@@ -212,6 +222,7 @@ async function main(): Promise<void> {
       tasks,
       capabilities,
       agentSupport,
+      applications,
       ptys,
       ptyAccess,
       baseEnv,
@@ -277,6 +288,9 @@ async function main(): Promise<void> {
         const commit = await files.closer.request(owner, 'commit', send);
         if (!commit.ready) { resume(); return; }
       }
+      tasks.dispose();
+      ptys.killAll();
+      await applications?.dispose();
       quitConfirmed = true; markAppQuitting(); app.quit();
     })().catch((error) => {
       const win = getMainWindow();

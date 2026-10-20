@@ -18,6 +18,8 @@ export interface HostToolOperation {
   /** Only a trusted read executor may request transport retries; annotations alone never authorize them. */
   retry: 'safe-read' | 'never';timeoutMs?: number;
   authorize(context: RunContext,connectionId: string | null): void;
+  /** Revalidate the original operation target before returning a cached receipt. */
+  authorizeReceipt?(context: RunContext,operationId: string,connectionId: string | null): void;
   execute(context: RunContext,args: Record<string,unknown>,operation: ApplicationOperationContext): Promise<unknown>;
 }
 export interface ApplicationToolHost {
@@ -80,9 +82,16 @@ export class ApplicationToolService {
       if (!z.uuid().safeParse(requestId).success || !boundedJson(input) || Buffer.byteLength(JSON.stringify(input)) > BRIDGE_LIMITS.requestBytes) throw new ApplicationError('INVALID_INPUT','调用编号或JSON范围无效');
       const parsed = bridgeCallSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','工具调用包含未允许字段或契约无效');
       const call = parsed.data, context = this.runs.assertActive(runId), selected = this.selected(context,call);
-      const handler = this.host.resolve(selected.application.packageHash,call.operation,call.contractMajor); handler.authorize(context,call.connectionId);
+      const handler = this.host.resolve(selected.application.packageHash,call.operation,call.contractMajor);
       const hash = digest(canonicalJson(call)), key = runId + ':' + requestId, previous = this.pending.get(key) ?? this.cache.get(key);
-      if (previous) { if (previous.hash !== hash) throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已经用于其他输入'); return 'work' in previous ? previous.work : Promise.resolve(previous.response); }
+      if (previous) {
+        if (previous.hash !== hash) throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已经用于其他输入');
+        return ('work' in previous ? previous.work : Promise.resolve(previous.response)).then(response => {
+          try { const fresh=this.runs.assertActive(runId);handler.authorize(fresh,call.connectionId);if(response.operationId)handler.authorizeReceipt?.(fresh,response.operationId,call.connectionId);return response; }
+          catch(error){const recorded=response.operationId?this.store.sqlite.prepare('SELECT attempt_count FROM application_invocations WHERE operation_id=? AND run_id=?').get(response.operationId,runId) as {attempt_count:number}|undefined:undefined;const effect=response.status==='error'?response.error.effectState:response.effectState??(handler.semantics==='read'?'read-only':'unknown');return{schema:1 as const,id:requestId,status:'error' as const,error:failure(error,response.status==='error'?response.error.attemptCount:recorded?.attempt_count??0,effect),...(response.operationId?{operationId:response.operationId}:{})};}
+        });
+      }
+      handler.authorize(context,call.connectionId);
       const budget = Math.min(120000,Math.max(1,handler.timeoutMs ?? (handler.semantics === 'read' ? 30000 : 60000))), timeout = AbortSignal.timeout(budget), operationSignal = AbortSignal.any([context.signal,timeout,...(signal ? [signal] : [])]), deadline = this.clock() + budget;
       let onAbort!: () => void;
       const interrupted = new Promise<BridgeResponse>(resolve => { onAbort = () => { const row = this.store.sqlite.prepare('SELECT operation_id,effect_state,attempt_count FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,requestId) as InvocationRow | undefined; resolve({ schema: 1,id: requestId,status: 'error',error: failure(new ApplicationError(timeout.aborted ? 'TIMEOUT' : 'CANCELED','本次等待已结束，执行者尚未返回时须核对已有业务记录'),row?.attempt_count ?? 0,row?.effect_state ?? 'not-started'),...(row ? { operationId: row.operation_id } : {}) }); }; operationSignal.addEventListener('abort',onAbort,{ once: true }); if (operationSignal.aborted) onAbort(); });

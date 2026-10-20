@@ -281,7 +281,7 @@ export const applicationCatalogState = sqliteTable('application_catalog_state', 
   appId: text('app_id').primaryKey(), added: integer('added', { mode: 'boolean' }).notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), revision: integer('revision').notNull(), updatedAt: text('updated_at').notNull(),
 });
 export const applicationProjectSettings = sqliteTable('application_project_settings', {
-  projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }), appId: text('app_id').notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), bindingRevision: integer('binding_revision').notNull(), pendingOperationId: text('pending_operation_id'), updatedAt: text('updated_at').notNull(),
+  projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }), appId: text('app_id').notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), bindingRevision: integer('binding_revision').notNull(), policyRevision: integer('policy_revision').notNull().default(0), pendingOperationId: text('pending_operation_id'), updatedAt: text('updated_at').notNull(),
 }, t => ({ pk: primaryKey({ columns: [t.projectId, t.appId] }) }));
 export const applicationProjectBindings = sqliteTable('application_project_bindings', {
   projectId: text('project_id').notNull(), appId: text('app_id').notNull(), slot: text('slot').notNull(), connectionId: text('connection_id').notNull(), identityRevision: integer('identity_revision').notNull(),
@@ -377,3 +377,13 @@ export const capabilityBuiltinPackageSources = sqliteTable('capability_builtin_p
   packageHash: text('package_hash').notNull().references(() => capabilityPackages.packageHash),
   sourceIndexHash: text('source_index_hash').notNull(),sourceIndexJson: text('source_index_json').notNull(),approvedAt: text('approved_at').notNull(),
 },t => ({ pk: primaryKey({ columns: [t.packageHash,t.sourceIndexHash] }) }));
+
+
+// Business provenance retains IDs after project/package cleanup without pinning obsolete code.
+export const applicationDataOperations = sqliteTable('application_data_operations', {
+  operationId:text('operation_id').primaryKey(),callerKind:text('caller_kind').notNull(),scopeKind:text('scope_kind').notNull(),projectId:text('project_id'),taskId:text('task_id'),runId:text('run_id'),jobId:text('job_id'),parentOperationId:text('parent_operation_id'),
+  appId:text('app_id').notNull(),packageHash:text('package_hash').notNull(),dataApi:integer('data_api').notNull(),action:text('action').notNull(),semantics:text('semantics').notNull(),scopeHash:text('scope_hash').notNull(),targetsJson:text('targets_json').notNull().default('[]'),attemptCount:integer('attempt_count').notNull().default(1),state:text('state').notNull(),errorCode:text('error_code'),startedAt:text('started_at').notNull(),endedAt:text('ended_at'),
+},t=>({project:index('application_data_operations_project').on(t.projectId,t.startedAt)}));
+export const applicationDataResources = sqliteTable('application_data_resources', {
+  resourceId:text('resource_id').primaryKey(),projectId:text('project_id').notNull(),appId:text('app_id').notNull(),backingKind:text('backing_kind').notNull(),objectId:text('object_id').notNull(),objectRevision:text('object_revision').notNull(),part:text('part').notNull(),dataContractMajor:integer('data_contract_major').notNull(),permission:text('permission').notNull(),contentHash:text('content_hash').notNull(),byteSize:integer('byte_size').notNull(),mediaType:text('media_type').notNull(),mintedPackageHash:text('minted_package_hash').notNull(),mintedOperationId:text('minted_operation_id').notNull(),createdAt:text('created_at').notNull(),
+},t=>({businessIdentity:uniqueIndex('application_data_resources_identity').on(t.projectId,t.appId,t.backingKind,t.objectId,t.objectRevision,t.part,t.dataContractMajor)}));

@@ -93,6 +93,7 @@ export class ApplicationConnectionService {
     return { ...plan, planHash: digest(canonicalJson(plan)) };
   }
   private async verify(config: ConnectionConfig, secret: string | null, controller: AbortController): Promise<VerifiedConnectionIdentity> {
+    if(controller.signal.aborted)throw safeVerificationError(controller.signal.reason instanceof ApplicationError?controller.signal.reason:new ApplicationError('CANCELED','连接测试已取消'));
     let timer: ReturnType<typeof setTimeout> | undefined, onAbort: (() => void) | undefined;
     try {
       const aborted = new Promise<never>((_, reject) => {
@@ -108,7 +109,8 @@ export class ApplicationConnectionService {
     } catch (error) { throw safeVerificationError(error); }
     finally { if (timer) clearTimeout(timer); if (onAbort) controller.signal.removeEventListener('abort', onAbort); }
   }
-  async testCandidate(input: SaveApplicationConnection): Promise<VerifiedConnectionCandidate> {
+  async testCandidate(input: SaveApplicationConnection, signal?: AbortSignal): Promise<VerifiedConnectionCandidate> {
+    if(signal?.aborted)throw new ApplicationError('CANCELED','连接测试已取消');
     const parsed = saveConnectionSchema.safeParse(input);
     if (!parsed.success) throw new ApplicationError('INVALID_INPUT', '连接字段无效，请核对表单');
     const request = parsed.data, old = this.checkRevision(request.id, request.expectedRevision);
@@ -120,11 +122,12 @@ export class ApplicationConnectionService {
     const candidate: CandidateConfig = { id, name: request.name, config: request.config, expectedRevision: request.expectedRevision };
     const candidateHash = digest(canonicalJson({ ...candidate, secretRef, operationId })), expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
     await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+      if(signal?.aborted)throw new ApplicationError('CANCELED','连接测试已取消');
       this.checkRevision(request.id, request.expectedRevision);
       if (request.secret) this.secrets.set(secretRef!, request.secret);
       this.store.sqlite.prepare(`INSERT INTO application_secret_changes(operation_id,connection_id,expected_revision,old_secret_ref,new_secret_ref,candidate_hash,candidate_json,expires_at,state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'preparing',?,?)`).run(operationId, id, request.expectedRevision, old?.secret_ref ?? null, secretRef, candidateHash, canonicalJson(candidate), expiresAt, new Date().toISOString(), new Date().toISOString());
     }).immediate());
-    const controller = new AbortController(); this.tests.set(operationId, controller);
+    const controller = new AbortController(),cancel=()=>controller.abort(new ApplicationError('CANCELED','连接测试已取消'));this.tests.set(operationId,controller);signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
     try {
       const secret = secretRef ? this.secrets.get(secretRef) : null;
       if (request.config.kind !== 'foxmail' && !secret) throw new ApplicationError('AUTH_REQUIRED', '请配置本连接的认证凭据');
@@ -132,6 +135,7 @@ export class ApplicationConnectionService {
       if (old && digest(canonicalJson(identity)) !== old.identity_hash) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '测试识别到其他服务或账号，请新建连接并显式选用');
       let compatibility!: ConnectionChangePlan;
       await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+        if(controller.signal.aborted)throw controller.signal.reason instanceof ApplicationError?controller.signal.reason:new ApplicationError('CANCELED','连接测试已取消');
         this.checkRevision(request.id, request.expectedRevision);
         if (this.candidate(operationId).state !== 'preparing') throw new ApplicationError('CANCELED', '该次连接测试已失效');
         compatibility = this.planConfigChange(request.id, request.expectedRevision, request.config);
@@ -139,7 +143,7 @@ export class ApplicationConnectionService {
       }).immediate());
       return { operationId, connectionId: id, candidateHash, expectedRevision: request.expectedRevision, identity, compatibility, expiresAt };
     } catch (error) { await this.discardCandidate(operationId, error instanceof ApplicationError ? error.code : 'CONNECTION_UNAVAILABLE'); throw safeVerificationError(error); }
-    finally { this.tests.delete(operationId); }
+    finally { signal?.removeEventListener('abort',cancel);this.tests.delete(operationId); }
   }
   async commitCandidate(operationId: string, candidateHash: string, acceptedImpactHash?: string): Promise<ApplicationConnection> {
     let committed!: CandidateRow;
