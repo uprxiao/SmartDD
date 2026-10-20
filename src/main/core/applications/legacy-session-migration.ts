@@ -6,6 +6,7 @@ import {withResourceLock} from './resource-lock';
 import type {ResourceStore} from './resource-store';
 import {CapabilitySessionRegistry,canonicalFuturePath,selectionHash,type StoredCapabilitySession} from './session-registry';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
+import {LegacyPluginSources,legacyPluginOrigin} from './legacy-plugin-source';
 import {LegacyTaskEvidenceReader,type LegacySkillVersion} from './legacy-task-evidence';
 import {legacyRetentionIdentitySchema,retainedLegacySource,legacyLogicalEvidence} from './legacy-session-source';
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
@@ -38,13 +39,15 @@ export class LegacySessionMigration {
   sameTask(original.row.source_record_json);
   const reader=new LegacyTaskEvidenceReader(this.store.root,identity.home,id=>this.store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(id) as LegacySkillVersion|undefined),inspection=reader.inspect(identity,original.snapshot);
   if(inspection.state!=='verified'||canonicalJson(legacyLogicalEvidence(inspection.evidence))!==canonicalJson(legacyLogicalEvidence(original.evidence)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4文件未按原依据完整核验，不能迁移');
-  const resources=[adapter.resource,...original.snapshot.skills.map(s=>this.store.get('standard-skill:'+s.skillId+':'+s.hash)),this.store.get('legacy-runtime:'+original.evidence.runtimeHash)];
+  if(original.evidence.pluginRoot&&!original.pluginSource)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Claude插件完整来源尚未保留');
+  if(original.pluginSource)new LegacyPluginSources(this.store).verify(original.pluginSource,legacyPluginOrigin(original.evidence));
+  const resources=[adapter.resource,...original.snapshot.skills.map(s=>this.store.get('standard-skill:'+s.skillId+':'+s.hash)),this.store.get('legacy-runtime:'+original.evidence.runtimeHash),...(original.pluginSource?[original.pluginSource]:[])];
   for(const resource of resources)if(resource.pathScope!=='C'||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4迁移来源尚未就绪');
-  const snapshot=capabilitySessionSnapshotSchema.parse({schema:2,taskId:identity.taskId,projectId:identity.projectId,createdAt:new Date().toISOString(),runner:identity.runner,adapterBinding:{id:identity.runner,version:adapter.metadata.version,hash:adapter.hash,projectionFormatVersion:2,nativeToolNames:{}},native:{sessionId:identity.sessionId,stateRoot:identity.stateRoot,cwd:identity.cwd},agentAtCreation:{version:input.cliVersion,adapterRevision:2},catalogGeneration:input.catalogGeneration,packages:[],standardSkills:original.standardSkills,mcp:original.mcp,legacyBinding:original.binding,provenance:'migrated-known-legacy'} satisfies CapabilitySessionSnapshotV2);
+  const snapshot=capabilitySessionSnapshotSchema.parse({schema:2,taskId:identity.taskId,projectId:identity.projectId,createdAt:new Date().toISOString(),runner:identity.runner,adapterBinding:{id:identity.runner,version:adapter.metadata.version,hash:adapter.hash,projectionFormatVersion:2,nativeToolNames:{}},native:{sessionId:identity.sessionId,stateRoot:identity.stateRoot,cwd:identity.cwd},agentAtCreation:{version:input.cliVersion,adapterRevision:2},catalogGeneration:input.catalogGeneration,packages:[],standardSkills:original.standardSkills,mcp:original.mcp,legacyBinding:{...original.binding,...(original.pluginSource?{pluginSourceHash:original.pluginSource.contentHash}:{})},provenance:'migrated-known-legacy'} satisfies CapabilitySessionSnapshotV2);
   const bytes=canonicalJson(snapshot),snapshotHash=digest(bytes),selectedHash=selectionHash(snapshot),pointer={schema:2 as const,taskId:identity.taskId,snapshotHash},nextTask=JSON.stringify({...JSON.parse(original.row.source_record_json),sessionCapabilities:pointer});
   await this.checkpoint?.('files-verified');canceled(signal);await this.checkpoint?.('before-commit');canceled(signal);
   const session=await withResourceLock(this.store.root,()=>{
-   canceled(signal);if(!reader.verify(inspection.evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4文件在迁移等待中变化');this.adapters.verify(input.adapterHash);
+   canceled(signal);if(!reader.verify(inspection.evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4文件在迁移等待中变化');this.adapters.verify(input.adapterHash);if(original.pluginSource)new LegacyPluginSources(this.store).verify(original.pluginSource,legacyPluginOrigin(original.evidence));
    return this.store.sqlite.transaction(()=>{
     canceled(signal);sameTask(original.row.source_record_json);const retained=retainedLegacySource(this.store,identity.taskId,'prepared');if(canonicalJson(retained.row)!==canonicalJson(original.row))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4保留依据在迁移中变化');
     const held=this.store.sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(identity.taskId) as {schema_version:number;retention_state:string;legacy_status:string;snapshot_json:string;snapshot_hash:string}|undefined;

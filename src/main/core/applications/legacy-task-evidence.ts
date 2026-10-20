@@ -9,7 +9,7 @@ import {canonicalJson,digest} from './manifest';
 // The M4 schema is deliberately unchanged. A valid shape alone is not migration proof.
 export const legacyRuntimeMetadata=z.object({runId:z.uuid(),projectId:z.string().min(1).max(128),configVersion:z.number().int().nonnegative(),configHash:z.string().regex(/^[a-f0-9]{64}$/),manifestPath:z.string().min(1).max(4096),auditPath:z.string().min(1).max(4096),skills:z.array(z.object({skillId:z.string(),name:z.string(),versionId:z.string(),version:z.string(),hash:z.string().regex(/^[a-f0-9]{64}$/),path:z.string(),enabled:z.boolean(),loaded:z.literal('unverified')}).strict()).max(64),mcp:z.array(z.object({name:z.string(),loaded:z.literal('unverified')}).strict()).max(16),selfCheck:z.object({status:z.enum(['pending','passed','failed']),issues:z.array(z.string().max(256)).max(256),at:z.number().nullable()}).strict()}).strict();
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
-const manifestSchema=z.object({schemaVersion:z.literal(1),projectId:z.string(),configVersion:z.number().int().nonnegative(),configHash:hash,runId:z.uuid(),files:z.record(z.string(),hash),requiredEnv:z.array(z.string()).max(512),pathEnv:z.record(z.string(),z.string()),pythonModules:z.array(z.string()).max(64),commands:z.array(z.string()).max(64),readablePaths:z.array(z.string()).max(256)}).strict();
+export const legacyManifestSchema=z.object({schemaVersion:z.literal(1),projectId:z.string(),configVersion:z.number().int().nonnegative(),configHash:hash,runId:z.uuid(),files:z.record(z.string(),hash),requiredEnv:z.array(z.string()).max(512),pathEnv:z.record(z.string(),z.string()),pythonModules:z.array(z.string()).max(64),commands:z.array(z.string()).max(64),readablePaths:z.array(z.string()).max(256)}).strict();
 export interface LegacySkillVersion {id:string;skillId:string;name:string;version:string;hash:string}
 export interface LegacyTaskIdentity {taskId:string;projectId:string;runner:'claude-code'|'codex'}
 export interface LegacyTaskEvidence extends Readonly<LegacyTaskIdentity> {
@@ -20,7 +20,7 @@ export interface LegacyTaskEvidence extends Readonly<LegacyTaskIdentity> {
 }
 export type LegacyTaskInspection={state:'unknown';code:'LEGACY_MANIFEST_MISSING'}|{state:'verified';evidence:LegacyTaskEvidence};
 interface Observation {path:string;sha256:string;device:number;inode:number;size:number;mode:number;mtimeMs:number;ctimeMs:number}
-interface Proof {identity:LegacyTaskIdentity;snapshot:string;observationsHash:string}
+interface Proof {identity:LegacyTaskIdentity;snapshot:string;observationsHash:string;pluginSource:{manifest:Buffer;rootMarker:Buffer;files:Record<string,Buffer>}|null}
 const fail=(message:string):never=>{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED',message);};
 /** Read-only migration preflight. It neither changes history nor authorizes an Agent run.
  * The original manifest is mandatory: configHash is not the original runtime code hash.
@@ -35,7 +35,7 @@ export class LegacyTaskEvidenceReader {
   if(!['claude-code','codex'].includes(identity.runner)||!parsed.success||!id.test(identity.taskId)||!id.test(identity.projectId)||parsed.data.projectId!==identity.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','原M4任务快照格式或归属不同');
   const snapshot=parsed.data,runRoot=join(this.root,'runs',identity.projectId,identity.taskId,snapshot.runId),manifestPath=join(runRoot,'manifest.json');
   if(snapshot.manifestPath!==manifestPath||snapshot.auditPath!==join(this.root,'resource-audit',identity.projectId,identity.taskId+'.jsonl'))fail('原M4快照的受管路径不同，不能沿任意路径寻找历史');
-  const observations:Observation[]=[];let bytes=0;
+  const observations:Observation[]=[];let bytes=0;let runMarker:Buffer|null=null;
   const read=(path:string,anchor=this.root):Buffer=>{
    this.within(anchor,path);const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);
    try{const before=fstatSync(fd);if(!before.isFile()||before.nlink!==1||(before.mode&0o111)!==0||before.size>4*1024*1024||bytes+before.size>32*1024*1024||observations.length>=4096)fail('原M4文件类型、完整性或读取预算不符');
@@ -47,12 +47,12 @@ export class LegacyTaskEvidenceReader {
    this.within(anchor,join(directory,'.smartdd-owned.json'));const files:Record<string,Buffer>=Object.create(null);let visited=0;
    const walk=(dir:string,depth:number)=>{if(depth>32||++visited>4096)fail('原M4目录层级或文件数超过预算');for(const name of readdirSync(dir)){const path=join(dir,name),stat=lstatSync(path);if(stat.isSymbolicLink()||(!stat.isDirectory()&&!stat.isFile()))fail('原M4目录包含链接或特殊文件');if(stat.isDirectory())walk(path,depth+1);else files[relative(directory,path)]=read(path,anchor);}};walk(directory,0);
    const marker=files['.smartdd-owned.json'];if(!marker)fail('原M4目录缺少归属标记');let owner;try{owner=JSON.parse(marker.toString('utf8'));}catch{fail('原M4归属标记损坏');}
-   if(owner.owner!=='SmartDD'||owner.schema!==1||Object.keys(owner).length!==2)fail('原M4目录不属于旧受管格式');delete files['.smartdd-owned.json'];return files;
+   if(owner.owner!=='SmartDD'||owner.schema!==1||Object.keys(owner).length!==2)fail('原M4目录不属于旧受管格式');if(directory===runRoot)runMarker=Buffer.from(marker);delete files['.smartdd-owned.json'];return files;
   };
   try{
    this.within(this.root,manifestPath);
    try{lstatSync(manifestPath);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return{state:'unknown',code:'LEGACY_MANIFEST_MISSING'};throw error;}
-   const runFiles=tree(runRoot),raw=runFiles['manifest.json'];if(!raw)fail('原M4启动清单缺失');const manifest=manifestSchema.parse(JSON.parse(raw.toString('utf8')));
+   const runFiles=tree(runRoot),raw=runFiles['manifest.json'];if(!raw)fail('原M4启动清单缺失');const manifest=legacyManifestSchema.parse(JSON.parse(raw.toString('utf8')));
    if(manifest.projectId!==snapshot.projectId||manifest.configVersion!==snapshot.configVersion||manifest.configHash!==snapshot.configHash||manifest.runId!==snapshot.runId)fail('原M4启动清单与任务快照不一致');
    const paths=Object.keys(manifest.files);if(!paths.length||paths.length>4096)fail('原M4清单文件集合无效');
    const runtimeRoots=new Set(paths.filter(p=>p.startsWith(this.root+'/runtime/')).map(p=>join(this.root,'runtime',relative(join(this.root,'runtime'),p).split('/')[0])));
@@ -91,8 +91,13 @@ export class LegacyTaskEvidenceReader {
     const rawMcp=runFiles['mcp.json'];if(!rawMcp)fail('原M4上下文桥注册缺失');const config=JSON.parse(rawMcp.toString('utf8')),expectedMcp={mcpServers:{[snapshot.mcp[0].name]:{command:'python3',args:[join(runtimePath,'context_mcp.py'),join(runRoot,'context.json')]}}};if(canonicalJson(config)!==canonicalJson(expectedMcp))fail('原M4上下文桥名称或执行代码不同');
    }
    const snapshotBytes=canonicalJson(snapshot),observationsHash=digest(canonicalJson(observations)),identityData={schema:'m4-task-evidence-v1' as const,taskId:identity.taskId,projectId:identity.projectId,runner:identity.runner,snapshotHash:digest(snapshotBytes),manifestHash:digest(raw),runRoot,runtimeHash,runtimePath,pluginRoot,pluginName:pluginRoot?'smartdd':null,skills:Object.freeze(skills),mcp:Object.freeze(snapshot.mcp.map(m=>Object.freeze({name:m.name,protocolMajor:1 as const,runtimeHash})))};
-   const evidence=Object.freeze({...identityData,evidenceHash:digest(canonicalJson({identity:identityData,observationsHash}))});this.proofs.set(evidence,{identity:{...identity},snapshot:snapshotBytes,observationsHash});return{state:'verified',evidence};
+   const evidence=Object.freeze({...identityData,evidenceHash:digest(canonicalJson({identity:identityData,observationsHash}))});this.proofs.set(evidence,{identity:{...identity},snapshot:snapshotBytes,observationsHash,pluginSource:pluginRoot?{manifest:Buffer.from(raw),rootMarker:Buffer.from(runMarker!),files:Object.fromEntries(Object.entries(runFiles).filter(([name])=>name.startsWith('plugin/')).map(([name,data])=>[name.slice(7),Buffer.from(data)]))}:null});return{state:'verified',evidence};
   }catch(error){if(error instanceof ApplicationError)throw error;throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4证据缺失、损坏或无法核验，保留原记录');}
+ }
+ /** Exact original bytes from this reader's live proof; JSON clones grant no capture authority. */
+ capturePlugin(evidence:LegacyTaskEvidence):{manifest:Buffer;rootMarker:Buffer;files:Record<string,Buffer>}|null{
+  const proof=this.proofs.get(evidence);if(!proof||!this.verify(evidence))fail('原M4插件来源证明已失效，不能留存');
+  const source=proof!.pluginSource;return source?{manifest:Buffer.from(source.manifest),rootMarker:Buffer.from(source.rootMarker),files:Object.fromEntries(Object.entries(source.files).map(([name,data])=>[name,Buffer.from(data)]))}:null;
  }
  verify(evidence:LegacyTaskEvidence):boolean{
   const proof=this.proofs.get(evidence);if(!proof)return false;

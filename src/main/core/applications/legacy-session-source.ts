@@ -4,7 +4,8 @@ import {ApplicationError} from '@shared/applications';
 import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
 import {canonicalJson,digest} from './manifest';
 import {legacyRuntimeMetadata,type LegacyTaskEvidence} from './legacy-task-evidence';
-import type {ResourceStore} from './resource-store';
+import type {ResourceStore,ResourceRecord} from './resource-store';
+import {legacyPluginResourceId} from './legacy-plugin-source';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),path=z.string().min(1).max(4096).refine(p=>p.startsWith('/')&&!/[\x00\r\n]/.test(p));
 export const legacyRetentionIdentitySchema=z.object({taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),stateRoot:path,cwd:path,sessionId:z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),home:path}).strict();
 const evidenceSchema=z.object({schema:z.literal('m4-task-evidence-v1'),taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),snapshotHash:hash,evidenceHash:hash,manifestHash:hash,runRoot:path,runtimeHash:hash,runtimePath:path,pluginRoot:path.nullable(),pluginName:z.literal('smartdd').nullable(),skills:z.array(z.object({skillId:z.string(),versionId:z.string(),hash,enabled:z.boolean(),projectionPath:z.string().max(4096),nativeName:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/).nullable(),sourceHash:hash}).strict()).max(64),mcp:z.array(z.object({name:z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/),protocolMajor:z.literal(1),runtimeHash:hash}).strict()).max(1)}).strict();
@@ -25,11 +26,14 @@ export function retainedLegacySource(store:ResourceStore,taskId:string,state:'pr
   const binding={sourceSnapshotHash:row.source_snapshot_hash,sourceRecordHash:digest(row.source_record_json),identityHash:digest(row.source_identity_json),manifestHash:evidence.manifestHash,logicalEvidenceHash:digest(canonicalJson(legacyLogicalEvidence(evidence)))};
   const standardSkills:CapabilitySessionSnapshotV2['standardSkills']=snapshot.skills.filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1',projectionPath:s.path}));
   const mcp:CapabilitySessionSnapshotV2['mcp']=evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,protocolMajor:m.protocolMajor,runtimeHash:m.runtimeHash}));
-  return{row,snapshot,identity,evidence,binding,standardSkills,mcp};
+  let pluginSource:ResourceRecord|undefined;
+  if(evidence.pluginRoot){const resourceId=legacyPluginResourceId(taskId,evidence.manifestHash),ref=store.sqlite.prepare("SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-plugin-source' AND ref_id=?").get(taskId,resourceId) as {ref_hash:string;relative_path:string}|undefined;if(ref){const resource=store.get(resourceId);if(resource.kind!=='legacy-plugin-source'||resource.pathScope!=='C'||resource.ownerStoreId!==store.storeId||resource.relativePath!=='legacy/plugins/'+resource.contentHash||ref.ref_hash!==resource.contentHash||ref.relative_path!==resource.relativePath)return fail();pluginSource=resource;}}
+  return{row,snapshot,identity,evidence,binding,standardSkills,mcp,pluginSource};
  }catch(error){if(error instanceof ApplicationError)throw error;return fail();}
 }
 export function assertLegacySessionSource(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2){
  const source=retainedLegacySource(store,snapshot.taskId,'migrated'),{identity,row}=source;
- if(snapshot.provenance!=='migrated-known-legacy'||snapshot.adapterBinding.projectionFormatVersion!==2||snapshot.projectId!==identity.projectId||snapshot.runner!==identity.runner||snapshot.native.stateRoot!==identity.stateRoot||snapshot.native.cwd!==identity.cwd||snapshot.native.sessionId!==row.bound_native_session_id||snapshot.packages.length||Object.keys(snapshot.adapterBinding.nativeToolNames).length||canonicalJson(snapshot.legacyBinding)!==canonicalJson(source.binding)||canonicalJson(snapshot.standardSkills)!==canonicalJson(source.standardSkills)||canonicalJson(snapshot.mcp)!==canonicalJson(source.mcp))return fail();
+ const{pluginSourceHash,...binding}=snapshot.legacyBinding??{};if(pluginSourceHash&&source.pluginSource?.contentHash!==pluginSourceHash)return fail();
+ if(snapshot.provenance!=='migrated-known-legacy'||snapshot.adapterBinding.projectionFormatVersion!==2||snapshot.projectId!==identity.projectId||snapshot.runner!==identity.runner||snapshot.native.stateRoot!==identity.stateRoot||snapshot.native.cwd!==identity.cwd||snapshot.native.sessionId!==row.bound_native_session_id||snapshot.packages.length||Object.keys(snapshot.adapterBinding.nativeToolNames).length||canonicalJson(binding)!==canonicalJson(source.binding)||canonicalJson(snapshot.standardSkills)!==canonicalJson(source.standardSkills)||canonicalJson(snapshot.mcp)!==canonicalJson(source.mcp))return fail();
  return source;
 }

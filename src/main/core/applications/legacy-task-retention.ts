@@ -5,6 +5,7 @@ import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import type {ResourceRecord,ResourceStore} from './resource-store';
 import {LegacyCapabilityResourceAdopter} from './legacy-resource-adopter';
+import {LegacyPluginSources} from './legacy-plugin-source';
 import {LegacyTaskEvidenceReader,legacyRuntimeMetadata,type LegacyTaskEvidence,type LegacyTaskIdentity,type LegacySkillVersion} from './legacy-task-evidence';
 export interface LegacyRetentionIdentity extends LegacyTaskIdentity {stateRoot:string;cwd:string;sessionId:string|null;home:string}
 export interface LegacyRetentionResult {state:'prepared'|'unknown';sourceSnapshotHash:string;code:string|null}
@@ -48,7 +49,7 @@ export class LegacyTaskRetention {
   try{
    await this.checkpoint?.('intent-recorded');canceled(signal);const resources:ResourceRecord[]=[];
    for(const skill of parsed.data.skills){canceled(signal);resources.push(await this.legacy.adoptStandard(skill.skillId,skill.hash));}
-   resources.push(await this.legacy.adoptRuntime(evidence.runtimeHash));await this.checkpoint?.('sources-adopted');canceled(signal);
+   resources.push(await this.legacy.adoptRuntime(evidence.runtimeHash));const plugin=await new LegacyPluginSources(this.store).retain(reader,evidence);if(plugin)resources.push(plugin);await this.checkpoint?.('sources-adopted');canceled(signal);
    if(!reader.verify(evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4证据在准备中变化');
    await this.checkpoint?.('before-commit');canceled(signal);
    // A checkpoint is outside C; repeat all file/metadata IO before the SQL-only commit.

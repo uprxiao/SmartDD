@@ -21,7 +21,7 @@ export const capabilitySessionSnapshotSchema = z.object({
   }).strict()).max(32),
   standardSkills: z.array(z.object({ skillId: name,versionId: z.string().min(1).max(512),hash,hashAlgorithm: z.literal('legacy-tree-v1'),projectionPath: absolute.refine(p => p.endsWith('/SKILL.md')) }).strict()).max(64),
   mcp: z.array(z.object({ kind: z.enum(['applications','legacy-project-context']),serverName: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/),protocolMajor: z.number().int().positive(),runtimeHash: hash }).strict()).max(2),
-  legacyBinding: z.object({ sourceSnapshotHash: hash,sourceRecordHash: hash,identityHash: hash,manifestHash: hash,logicalEvidenceHash: hash }).strict().optional(),
+  legacyBinding: z.object({ sourceSnapshotHash: hash,sourceRecordHash: hash,identityHash: hash,manifestHash: hash,logicalEvidenceHash: hash,pluginSourceHash: hash.optional() }).strict().optional(),
   provenance: z.enum(['created','migrated-known-legacy']),
 }).strict().superRefine((snapshot,ctx) => {
   const fail = (message: string) => ctx.addIssue({ code: 'custom',message });

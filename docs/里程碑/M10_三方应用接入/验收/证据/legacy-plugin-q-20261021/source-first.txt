@@ -1,0 +1,54 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-plugin-source.test.ts src/main/core/applications/__tests__/legacy-task-retention.test.ts src/main/core/applications/__tests__/legacy-session-migration.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (31 tests | 1 failed) 4158ms
+     × publishes exact original claude-code selection, refs, names and task pointer in one transaction 239ms
+ ❯ src/main/core/applications/__tests__/legacy-task-retention.test.ts (20 tests | 1 failed) 696ms
+     × persists original claude-code metadata, manifest and source refs without changing task/pointer/paths 100ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > atomic known-M4 schema conversion; no original owner claim or native activation > publishes exact original claude-code selection, refs, names and task pointer in one transaction
+AssertionError: expected [ 'agent-adapter', …(4) ] to deeply equal [ 'agent-adapter', …(3) ]
+
+- Expected
++ Received
+
+  [
+    "agent-adapter",
++   "legacy-plugin-source",
+    "legacy-runtime",
+    "standard-skill",
+    "standard-skill",
+  ]
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:42:409
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-task-retention.test.ts > durable M4 source retention before schema2 migration, not Agent execution > persists original claude-code metadata, manifest and source refs without changing task/pointer/paths
+AssertionError: expected [ { …(4) }, { …(4) }, { …(4) }, …(1) ] to have a length of 3 but got 4
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ ❯ src/main/core/applications/__tests__/legacy-task-retention.test.ts:38:220
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  2 failed | 67 passed (69)
+   Start at  03:24:26
+   Duration  7.17s (transform 239ms, setup 0ms, import 611ms, tests 6.35s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
