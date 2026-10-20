@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -33,7 +33,7 @@ let sender:IpcMainInvokeEvent,access:PtyAccess,runs:CapabilityRunRegistry,tools:
 let cc:OwnedCapabilityRun,codex:OwnedCapabilityRun;
 const owned:OwnedCapabilityRun[]=[];
 const content=(text='隔离草稿第一版'):MailDraftContent=>({mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['fixture@example.test'],cc:[],bcc:[],subject:'隔离草稿',text,html:null,inReplyTo:null,references:[],attachmentIds:[]});
-const setupService=()=>new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(f.root,'not-launched-worker.js'),foxmailNative:join(f.root,'not-launched-native')});
+const setupService=()=>new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(f.root,'not-launched-worker.js'),foxmailNative:join(f.root,'not-launched-native'),processes:reader});
 const ui=<T>(work:(scope:ApplicationExecutionContext)=>Promise<T>,operations=['mail.draft'],projectId='p1',signal?:AbortSignal)=>Promise.resolve().then(()=>app.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.test',operations,semantics:'read',signal},work));
 const call=(run:OwnedCapabilityRun,operation:string,args:Record<string,unknown>,id=randomUUID())=>tools.call(run.runId,id,{operation:'smartdd_mail_'+operation+'_v1',contractMajor:1,connectionId:null,arguments:args});
 async function draft(run=cc,text?:string){const response=await call(run,'draft_create',{content:content(text)});expect(response.status,JSON.stringify(response)).toBe('ok');if(response.status!=='ok')throw new Error('draft call failed');return(response.value as {draft:MailDraftDataView}).draft;}
@@ -65,7 +65,7 @@ beforeEach(async()=>{
  const wc=Object.assign(new EventEmitter(),{id:71,mainFrame:{},isDestroyed:()=>false});sender={sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;
  access=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:()=>null,alive:()=>false,write:()=>{},resize:()=>{},killTask:()=>{}});
  await new RuntimeRegistry(f.store).install(source.runtime());const trusted=new BuiltinPackageRegistry(f.store),mail=await trusted.install(source,source.index.apps.find(a=>a.appId==='mail')!);await trusted.packages.activate(mail.packageHash,0);
- app=setupService();await app.recover();await enable();reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});app.attachRuns(runs);
+ reader=new FixtureProcessReader();app=setupService();await app.recover();await enable();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});app.attachRuns(runs);
  tools=new ApplicationToolService(f.store,runs,new ApplicationAdapterRegistry(f.store,app.data),{retryDelays:[0,0]});cc=await start('claude-code',50101);codex=await start('codex',50102);
 });
 afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();f.cleanup();});
@@ -205,4 +205,23 @@ it('does not begin a queued configuration provider after host shutdown while C a
  // This lock is a private fault fixture owned solely by this test, not a recovered production owner.
  rmSync(lock,{recursive:true});
  const error=await pending.catch(error=>error);await closing;expect(started).toBe(0);expect(error).toMatchObject({code:'CANCELED'});
+});
+
+
+describe('actual host composition for U-local mail cache management',()=>{
+ it('leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests',async()=>{
+  await draft();expect(existsSync(join(f.root,'cache/mail'))).toBe(false);const [a,b]=await Promise.all([app.mailCacheStatus(sender),app.mailCacheStatus(sender)]);expect(a.limit).toBe(500000000);expect(b.actual.total).toBe(a.actual.total);expect(await app.mailCache()).toBe(await app.mailCache());
+ });
+ it('lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts',async()=>{
+  const created=await draft(),cache=await app.mailCache(),ref=await cache.put('a'.repeat(64),Buffer.from('rebuildable source'));await app.clearMailCache(sender);expect(await cache.find(ref.sourceKey,ref.contentHash)).toBeNull();expect(await app.readBusinessResource(sender,'p1',{resource:created.content.text,offset:0,length:100})).toMatchObject({data:'隔离草稿第一版'});
+  const state=app.selections.catalogState('mail');await app.setEnabled(sender,'mail',false,state.revision);expect((await app.mailCacheStatus(sender)).limit).toBe(500000000);expect((await app.clearMailCache(sender)).readyObjects).toBe(0);
+  const rows=f.sqlite.prepare("SELECT action,scope_kind,project_id FROM application_data_operations WHERE action LIKE 'application.cache.%'").all();expect(rows.length).toBeGreaterThanOrEqual(3);expect(rows.every(row=>(row as {scope_kind:string;project_id:null}).scope_kind==='connection-management'&&(row as {project_id:null}).project_id===null)).toBe(true);
+ });
+ it('does not create a cache for forged or destroyed UI senders',async()=>{
+  const foreign={...sender,senderFrame:{} as IpcMainInvokeEvent['senderFrame']};await expect(Promise.resolve().then(()=>app.mailCacheStatus(foreign))).rejects.toThrow();await expect(Promise.resolve().then(()=>app.clearMailCache(foreign))).rejects.toThrow();expect(existsSync(join(f.root,'cache/mail'))).toBe(false);
+ });
+ it('preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown',async()=>{
+  const cache=await app.mailCache(),ref=await cache.put('a'.repeat(64),Buffer.from('active'));let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(resolve=>entered=resolve),held=cache.withRead(ref,async()=>{entered();await new Promise<void>(resolve=>release=resolve);});await ready;expect((await app.clearMailCache(sender)).activeLeases).toBe(1);
+  let closed=false;const closing=app.dispose().then(()=>{closed=true;});await Promise.resolve();try{expect(closed).toBe(false);await expect(app.mailCache()).rejects.toMatchObject({code:'CANCELED'});}finally{release();}await expect(held).rejects.toMatchObject({code:'CANCELED'});await closing;expect(closed).toBe(true);
+ });
 });

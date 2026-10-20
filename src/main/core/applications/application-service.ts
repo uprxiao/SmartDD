@@ -12,6 +12,8 @@ import { ApplicationSelectionService } from './selection-service';
 import type { ResourceStore } from './resource-store';
 import { ApplicationExecutionContexts, type ApplicationUiSender } from './execution-context';
 import { ApplicationDataResources } from './data-resources';
+import { MailCache } from './mail-cache';
+import { MacProcessIdentityReader,type ProcessIdentityReader } from './process-identity';
 import { MailBlobStore } from './mail-blob-store';
 import { MailDraftService } from './mail-draft-service';
 import { MailDraftDataService } from './draft-data-service';
@@ -31,9 +33,11 @@ export class ApplicationService {
   readonly data:ApplicationBusinessDataService;
   readonly builtin:BuiltinPackageRegistry;
   private runs?:CapabilityRunRegistry;
+  private cachePromise?:Promise<MailCache>;
+  private closed=false;private closing?:Promise<void>;
   constructor(readonly store:ResourceStore,private readonly options:{
     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
-    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;changed?():void;
+    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;processes?:ProcessIdentityReader;changed?():void;
   }){
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
@@ -79,5 +83,19 @@ export class ApplicationService {
   zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read'},scope=>this.data.zentao.execute(scope,'zentao.work.list',input));}
   zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read'},scope=>this.data.zentao.execute(scope,'zentao.object.get',input));}
   zentaoResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.resource',operations:['zentao.read'],semantics:'read'},scope=>this.resources.read(scope,input));}
-  async dispose():Promise<void>{await this.contexts.dispose();}
+  /** Shared only inside this host; every business read must still check its own execution context. */
+  mailCache():Promise<MailCache>{
+    if(this.closed)return Promise.reject(new ApplicationError('CANCELED','邮件缓存服务已停止'));
+    if(!this.cachePromise){
+      const opening=MailCache.open(this.store,this.options.processes??new MacProcessIdentityReader(join(dirname(this.options.foxmailNative),'willyou-process-identity')));this.cachePromise=opening;
+      void opening.catch(()=>{if(this.cachePromise===opening)this.cachePromise=undefined;});
+    }
+    return this.cachePromise;
+  }
+  mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);return cache.usage();});}
+  clearMailCache(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.clear',semantics:'write'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);const result=await cache.clear(context.signal);this.options.changed?.();return result;});}
+  dispose():Promise<void>{
+    if(this.closing)return this.closing;this.closed=true;const contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
+    this.closing=(async()=>{const results=await Promise.allSettled([contexts,cache]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
+  }
 }

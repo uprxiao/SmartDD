@@ -33,6 +33,8 @@ export function createApplicationController(service:ApplicationService|undefined
     zentaoWork:(event,projectId:string,input:ZentaoWorkInput)=>run(event,current=>current.zentaoWork(event,projectId,input)),
     zentaoObject:(event,projectId:string,input:ZentaoDetailInput)=>run(event,current=>current.zentaoObject(event,projectId,input)),
     zentaoResource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.zentaoResource(event,projectId,input)),
+    mailCacheStatus:(event)=>run(event,current=>current.mailCacheStatus(event)),
+    clearMailCache:(event)=>run(event,current=>current.clearMailCache(event)),
     resource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.readBusinessResource(event,projectId,input)),
   });
 }
