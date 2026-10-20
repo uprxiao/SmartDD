@@ -50,6 +50,11 @@ describe('application manifest identity and complete-file contract', () => {
     const b = fixtureBundle(); b.manifest.migrations = [{ id: 'initial', from: 0, to: 1, file: b.manifest.adapter.entry, checksum: 'a'.repeat(64) }];
     expect(() => parseManifest(b.manifest)).toThrow(/checksum/);
   });
+  it('bounds native application and Skill names before creating any shared projections', () => {
+    const a = fixtureBundle(); a.manifest.appId = 'a'.repeat(21); expect(() => parseManifest(a.manifest)).toThrow(ApplicationError);
+    const b = fixtureBundle(); b.manifest.skills[0].id = 'a'.repeat(17); expect(() => parseManifest(b.manifest)).toThrow(ApplicationError);
+    const c = fixtureBundle(); c.manifest.skills[0].id = 'bad--name'; expect(() => parseManifest(c.manifest)).toThrow(ApplicationError);
+  });
   it('enforces application/tool identity, declared permissions, send annotations and host compatibility', () => {
     const a = fixtureBundle(); a.manifest.tools[0].name = 'smartdd_mail_query_v1'; expect(() => parseManifest(a.manifest)).toThrow(/名称/);
     const b = fixtureBundle(); b.manifest.tools[0].permission = 'zentao.send'; expect(() => parseManifest(b.manifest)).toThrow(/权限|发送/);

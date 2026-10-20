@@ -32,6 +32,19 @@ if (process.platform === 'darwin') {
   assert.equal(execFileSync('/usr/bin/lipo', ['-archs', fileBroker], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'File broker architecture');
   const fileInspection = JSON.parse(execFileSync(fileBroker, [], { input: JSON.stringify({ operation: 'inspect-root', path: resources }), encoding: 'utf8', timeout: 8000 }));
   assert(fileInspection.result?.identity?.inode, 'File broker read-only startup');
+  const mailReader = path.join(resources, 'native/willyou-foxmail');
+  assert(fs.existsSync(mailReader), 'Packaged Foxmail readonly reader');
+  assert.equal(execFileSync('/usr/bin/lipo', ['-archs', mailReader], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'Foxmail reader architecture');
+  const mailScratch = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'willyou-packaged-mail-'));
+  try {
+    const mailInspection = JSON.parse(execFileSync(mailReader, [path.join(mailScratch, 'messages.db')], { encoding: 'utf8', timeout: 8000 }));
+    assert.equal(mailInspection.error?.code, 'SOURCE_UNAVAILABLE', 'Mail reader startup on missing source');
+    assert.deepEqual(fs.readdirSync(mailScratch), [], 'Mail reader must not create source files');
+  } finally { fs.rmSync(mailScratch, { recursive: true, force: true }); }
+  assert(fs.existsSync(path.join(asar, 'out/main/m10-mail-reader.js')), 'Packaged mail Worker');
+  assert.equal(packagedRequire('nodemailer/package.json').version, '10.1.7', 'Fixed SMTP dependency');
+  assert.equal(packagedRequire('postal-mime/package.json').version, '4.0.11', 'Fixed MIME dependency');
+  for (const notice of ['nodemailer-10.1.7-MIT-0.txt', 'postal-mime-4.0.11-MIT-0.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10', notice)), 'Packaged mail library notice');
   const texRoot = path.join(resources, 'native/tex'), tex = path.join(texRoot, 'tectonic');
   const texManifest = JSON.parse(fs.readFileSync(path.join(texRoot, 'resources.json'), 'utf8'));
   assert.equal(texManifest.arch, expectedArch, 'TeX resource architecture');

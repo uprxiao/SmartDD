@@ -65,7 +65,8 @@ test('packaging refuses another OS before rebuilding or producing installers', (
 
 test('native probe finishes after PTY exit even if a worker handle remains open', (t) => {
   // Reproduce the Windows ConPTY lifecycle without requiring a Windows host.
-  // Real SQLite/PTY behavior is verified separately inside each platform package.
+  // Every native module below is an explicit lifecycle fixture; real SQLite/PTY/
+  // watcher behavior is verified separately inside each platform package.
   const dir = mkdtempSync(join(tmpdir(), 'smartdd-native-exit-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const put = (name, text = '') => {
@@ -83,9 +84,18 @@ test('native probe finishes after PTY exit even if a worker handle remains open'
     onData(fn) {setImmediate(() => fn('SMARTDD_NATIVE_PTY_OK'))},
     onExit(fn) {setInterval(() => {}, 10000); setImmediate(() => fn({exitCode:0}))}
   });`);
+  put('app.asar/node_modules/@parcel/watcher/package.json', JSON.stringify({ version: '2.5.6', main: 'index.js' }));
+  put('app.asar/node_modules/@parcel/watcher/index.js', `
+    // A mocked native-binding marker belongs only to this all-mocked probe fixture.
+    require.cache[__filename + '.fixture-watcher.node'] = { exports: {} };
+    exports.subscribe = async (directory, listener) => {
+      const watcher = require('node:fs').watch(directory, (_event, name) => listener(null, [{path:require('node:path').join(directory, String(name))}]));
+      return {unsubscribe: async () => watcher.close()};
+    };
+  `);
   put('preload.cjs', "Object.defineProperty(process.versions, 'electron', {value:'fixture'}); Object.defineProperty(process, 'platform', {value:'win32'});");
   const result = spawnSync(process.execPath, ['--require', join(dir, 'preload.cjs'),
-    join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], { encoding: 'utf8', timeout: 5000 });
+    join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], { encoding: 'utf8', timeout: 5000, env: { ...process.env, TEMP: dir, TMP: dir } });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(JSON.parse(result.stdout).pty, 'passed');

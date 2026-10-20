@@ -13,13 +13,14 @@ export function isPackagePath(value: string): boolean {
   return value.split('/').every((part) => part !== '' && part !== '.' && part !== '..'
     && !/[. ]$/.test(part) && !/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(part));
 }
+const nativePart = (max: number) => z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(max);
 const path = z.string().refine(isPackagePath, '应用包路径无效');
 const hash = z.string().regex(APP_HASH_PATTERN);
 const operation = z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
 const api = z.number().int().positive();
 export const applicationManifestSchema = z.object({
   schema: z.literal('smartdd-app-package-v1'),
-  appId: z.string().regex(APP_ID_PATTERN),
+  appId: nativePart(20),
   version: z.string().regex(version),
   displayName: z.string().trim().min(1).max(120),
   description: z.string().max(4000),
@@ -30,7 +31,7 @@ export const applicationManifestSchema = z.object({
     authModes: z.array(z.string().min(1).max(80)).min(1), identityContractMajor: api,
   }).strict()).min(1),
   runtime: z.object({ id: z.string().regex(APP_ID_PATTERN), hash, protocolMajor: api }).strict(),
-  skills: z.array(z.object({ id: z.string().regex(APP_ID_PATTERN), path, entry: path, description: z.string().max(2000) }).strict()).min(1),
+  skills: z.array(z.object({ id: nativePart(16), path, entry: path, description: z.string().max(2000) }).strict()).min(1),
   tools: z.array(z.object({
     name: z.string().regex(/^smartdd_[a-z0-9_]+_v[1-9]\d*$/).max(128), contractMajor: api,
     inputSchemaPath: path, outputSchemaPath: path, permission: operation,
@@ -70,7 +71,7 @@ export const applicationManifestSchema = z.object({
   }
 });
 export type ApplicationManifest = z.infer<typeof applicationManifestSchema>;
-export type ApplicationErrorCode = 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT';
+export type ApplicationErrorCode = 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT' | 'TRANSIENT_FAILURE' | 'INVALID_RESPONSE' | 'INCOMPLETE_RESULT' | 'SOURCE_UNAVAILABLE' | 'UNSUPPORTED_FORMAT';
 export class ApplicationError extends Error {
   constructor(public readonly code: ApplicationErrorCode, message: string) { super(message); this.name = 'ApplicationError'; }
 }

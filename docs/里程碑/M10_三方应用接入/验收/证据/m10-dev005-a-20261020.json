@@ -1,0 +1,151 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV005-A",
+  "recordedAt": "2026-10-20T02:38:00Z",
+  "requirementBaseline": "R1.6 incl 12.21",
+  "branch": "feature/0.0.2",
+  "baseCommit": "d8395178125685abe72e718221074a153bd675c8",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "environment": {
+    "os": "macOS",
+    "arch": "arm64",
+    "electron": "42.11.14",
+    "electronNode": "24.19.0",
+    "scriptHostNode": "22.23.1",
+    "nativeReaderArch": "arm64"
+  },
+  "changes": [
+    "ZenTao readonly account/scope/detail/pagination client",
+    "SMTP three explicit modes, normalized frozen bytes+envelope, single submit and unknown receipt",
+    "Foxmail fixed-query readonly native VFS including committed WAL without SHM writes, Worker and bounded MIME reads",
+    "config revision independent of pure secret rotation",
+    "native projection identifiers limited per R1.6",
+    "exact mail dependencies, licenses, build/package/native smoke inputs"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "layer": "U/I/local protocol fixtures",
+      "files": 15,
+      "tests": 137,
+      "passed": 137,
+      "failed": 0,
+      "m10AndMigrationUniqueTests": 107,
+      "m4RegressionUniqueTests": 30,
+      "log": "dev005-a-20261020/final-tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev005-a-20261020/final-types.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "layer": "release rules and explicit native lifecycle mocks",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev005-a-20261020/final-release-rules.txt"
+    },
+    {
+      "command": "node scripts/applications/build.mjs; /usr/bin/lipo -archs out/native/willyou-foxmail",
+      "status": "passed",
+      "arch": "arm64",
+      "binarySha256": "483678fb21961b724917f0bdbc754da026708af4ed16abc9836d5aa151d9bfde"
+    }
+  ],
+  "redRuns": [
+    {
+      "failure": "SMTP frozen bytes contained bare LF normalized by SMTP transport",
+      "fix": "Normalize CRLF in composer before computing frozen content hash; original byte equality expectation retained",
+      "log": "dev005-a-20261020/red-smtp-newlines.txt"
+    },
+    {
+      "failure": "immutable SQLite mode omitted committed WAL records; two tests failed",
+      "fix": "Readonly custom VFS with heap WAL index, stable before/after source stamps; tests assert latest committed rows plus all DB/WAL/SHM hashes unchanged",
+      "log": "dev005-a-20261020/red-immutable-wal.txt"
+    },
+    {
+      "failure": "macOS public SQLite header omits sqlite3_enable_load_extension; compile failed",
+      "fix": "Remove unavailable call; system build omits that extension API; only fixed queries accepted",
+      "retainedEvidence": "Original tool execution, no standalone compiler log saved"
+    },
+    {
+      "failure": "ZenTao fixture computed-key type and MIME module ESM types/Buffer narrowing/Worker reply narrowing",
+      "fix": "Explicit fixture/type imports and validated reply shapes, runtime checks unchanged",
+      "log": "dev005-a-20261020/red-provider-types.txt"
+    },
+    {
+      "failure": "Inherited release lifecycle fixture lacked watcher; then simulated win32 os.tmpdir selected undefined Windows temp",
+      "fix": "Add explicitly mocked native watcher lifecycle fixture and set child TEMP/TMP to its own scratch; production probe assertions retained",
+      "logs": [
+        "dev005-a-20261020/red-release-missing-watcher.txt",
+        "dev005-a-20261020/red-release-fixture-temp.txt"
+      ]
+    }
+  ],
+  "boundaries": [
+    "No production startup, RPC or renderer integration yet",
+    "No packaged M10 App product cases executed; no T01-T72 pass count changed",
+    "All HTTP/SMTP endpoints local fixtures; no real email/ZenTao service action",
+    "Foxmail sources synthetic, no daily mailbox accessed",
+    "TLS trust altered only in isolated test process and restored; no system trust changes",
+    "No persistent mail refresh/cache quota/eviction or draft/authorization/execution service yet",
+    "No CC/Codex M10 production session/broker acceptance",
+    "Native source busy snapshots fail, not arbitrary live transactional snapshot guarantee",
+    "No main merge, tag, push or release"
+  ],
+  "sourceHashes": {
+    "NOTICE": "04c3bf5f631c1a0fca5987453f3fc4f539563dcf4682119f751adfcdafafcdf0",
+    "electron-builder.config.cjs": "edbc2b79efe1ca1711fd5b370b7dd5cbe280c2342619c7ecb1cc03e6804595af",
+    "electron.vite.config.ts": "54df6dce7be00db12bb5f1277503bd86f475366ec69b934aedc837a16477118e",
+    "licenses/M10/manifest.json": "782b2d9c3cb585f9db90ceace28032257b11a2a2448af5ca0f6c55266a36d6e6",
+    "licenses/M10/nodemailer-10.1.7-MIT-0.txt": "4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78",
+    "licenses/M10/postal-mime-4.0.11-MIT-0.txt": "831ad54932cb62a1fe0827ae7218a213875f1ddbd629c6432860928ba1c5234d",
+    "native/applications/foxmail.mm": "a4f8d3d7d92f8168f61feadfa6df943429d39e98baaabd8e506fb6acc2c2d9a3",
+    "package.json": "c8dcdd9115881a46e5f8775f736deeaf6512b9e7b918f17e5bad06092e4b576a",
+    "pnpm-lock.yaml": "96802e0adce3e2e196bd3c41214aafe4b504aeb1088974e39ca85af376e6480e",
+    "scripts/applications/build.mjs": "61dacb40b655aeac6da0f0d784822c7e9a782eef1311a20f549ac7f20d0aea28",
+    "scripts/release/native-smoke.cjs": "2af991d4f500dc2f69916587178d2cb255f376e36c00e86c91eb99326d5e4648",
+    "scripts/release/release.test.mjs": "085fb4abf5a7dec02e5f8c2179782ebd89c046235a75c07c1fb5e80551d2cf67",
+    "src/main/core/applications/__tests__/connection-service.test.ts": "6a173f55ed412bb82955dcd0e4bbe01424f74e3604d8a5376cc602be086a6947",
+    "src/main/core/applications/__tests__/fixtures.ts": "d795d713c34183a19385912ef18c520ca715634795c901ebbfd3e7614f64e9ea",
+    "src/main/core/applications/__tests__/foxmail-native.test.ts": "1b1dde1e0f4109b3fd06bc76d31438ef7717a734c3c1d40a302dfeff0792067c",
+    "src/main/core/applications/__tests__/foxmail-worker.test.ts": "4658283fce483e4e45e6a2b69a0eb638ac645d9a78aa8a24cd04e8c00f90587c",
+    "src/main/core/applications/__tests__/manifest.test.ts": "357cc2f862408d14ad1f0aa38950ae07731df856069a3c241e253d3043a217de",
+    "src/main/core/applications/__tests__/package-files.test.ts": "a6423e53213965caed5228650b828a70ec63d01c22ff760bd3f6264f11e1cd72",
+    "src/main/core/applications/__tests__/package-registry.test.ts": "6e31f3869560c7b48a86f1b8f2981ab01993264fd2b6dcb7b3939f9fdfc7832b",
+    "src/main/core/applications/__tests__/resource-lock.test.ts": "7a68c876b544d5e553d20b3acc8ddf74a673ea71f0a445171de62e1133df6860",
+    "src/main/core/applications/__tests__/selection-service.test.ts": "0d1d634eddcee22850e93a7df5dae1a3979a3c1ef82c351718c6e12f2f390437",
+    "src/main/core/applications/__tests__/smtp-tls.test.ts": "982ad94fa57693ecd4e5e2e89ed3ed3481ceed9ff4ecc5f6152e708cf97048bf",
+    "src/main/core/applications/__tests__/smtp.test.ts": "78436ad922ed64f0792525590cb37cc7ab25062547af216c410423d3e23e1674",
+    "src/main/core/applications/__tests__/zentao.test.ts": "cc06846bfc74e2fb4e61f6c147caf84d85e2e704170c5bff155a0473f48879ca",
+    "src/main/core/applications/connection-service.ts": "c8c743664f769f331f6e91ea83b0028f368c22279a35403a92cbd72067ede534",
+    "src/main/core/applications/manifest.ts": "94b6c96662acdcb912b5b6d146ec28276bf8d19d43e97f6d087bd8257bc5ae25",
+    "src/main/core/applications/package-files.ts": "e7356964827a7051d4544fbe69548c791bcf394100d13f5d93eb7871cef6dc2c",
+    "src/main/core/applications/package-registry.ts": "4823d82a39b9449d71cd2b87ee5467df9aa44d2870717a48bce779fc72667606",
+    "src/main/core/applications/providers/connection-verifier.ts": "8cae52745a6030ebd7f626dae7fdf814f48a5c38053398bc2b3e4fde847880da",
+    "src/main/core/applications/providers/foxmail-source.ts": "ac5aefed23da64b8e26bf05a1545d784551c377ee8cafd3a3679406b0019bf54",
+    "src/main/core/applications/providers/json-http.ts": "6773f3a575709c8ecd05ed1558110f1e53fd8dbae3ad499b4180c64c4467a9d6",
+    "src/main/core/applications/providers/mail-worker-client.ts": "cdb9af802d9fb59b347ddf96576e3e15c1c68340cc385d835e8a74688a0c98d0",
+    "src/main/core/applications/providers/mail-worker.ts": "135b0245d5e26833d013d7e3c68cc73c161aa32c96b153663aa1a6cd825ae543",
+    "src/main/core/applications/providers/smtp.ts": "f75feaf1f48656f4b8066f935a76afc06180f8778140e4276a6e30f4d744b8d2",
+    "src/main/core/applications/providers/zentao.ts": "1b84c2dda400ded4518a837ba34347bb2f97d71cdeb80e62c928d5be86d29314",
+    "src/main/core/applications/resource-lock.ts": "64795022d5e8d3f6745b6daf61a0eed10b3fc289f734752c67e490d5b6f3f12d",
+    "src/main/core/applications/resource-store.ts": "35bfd3dc32987ff14f08846af741c7235d24b93b86959f3a06677f94e1b0601a",
+    "src/main/core/applications/runtime-registry.ts": "4327e8a3136070a9b4ed07a0906aaf3de817c45d05018352938c457f8296fe23",
+    "src/main/core/applications/selection-service.ts": "d0a1c6d1db4e60b3f96a5b2b5da66b441b7962fab1f2fcdf2cbbf0f6809cae66",
+    "src/shared/application-mail.ts": "69c6c6b7e0af34faf8333ef7a01b335fc6114f4a1f2528067d83189d5e50797a",
+    "src/shared/applications.ts": "c2f82879e45ee9dc957f67a429582aa5979cd02635accfdd171627422b1d294a"
+  },
+  "logHashes": {
+    "dev005-a-20261020/final-release-rules.txt": "01171f672dbe91e2c6fd47ce7ca8f3d78fe443990a99a7ef6052166c2ee00cde",
+    "dev005-a-20261020/final-tests.txt": "02b54df1c4a66ae5f505334999a7a3cdff9222bd2caa53681733aa7ad41c2523",
+    "dev005-a-20261020/final-types.txt": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+    "dev005-a-20261020/red-immutable-wal.txt": "407ac17193f2f13828dff8f7c2b39703b65cb569f11b1bd7449e50d8a40d3ecc",
+    "dev005-a-20261020/red-provider-types.txt": "a8966dbfd2b5bcd93e8e627534bed426bc27474e3c047067998f0fd17c36de9b",
+    "dev005-a-20261020/red-release-fixture-temp.txt": "2c0b8ce587e44bab0ee3960d7570bcca6f12c6d8302e826e4524af7b3d7bfc5a",
+    "dev005-a-20261020/red-release-missing-watcher.txt": "1e03d74e8b676e029fa4ecda40621cd225e419cf556c92c74cf4550a363fff3e",
+    "dev005-a-20261020/red-smtp-newlines.txt": "315d2419e8882c4956a9e9b78119dc74d522cbf58b8accaa8891e81b05a0184a"
+  }
+}

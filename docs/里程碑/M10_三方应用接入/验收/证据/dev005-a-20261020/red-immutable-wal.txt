@@ -1,0 +1,43 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/foxmail-native.test.ts
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/foxmail-native.test.ts (4 tests | 2 failed) 1232ms
+     × includes committed WAL rows and does not change the live source WAL or SHM 16ms
+     × reads an isolated committed WAL image without creating an SHM file 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/foxmail-native.test.ts > native Foxmail metadata reader source-write boundary > includes committed WAL rows and does not change the live source WAL or SHM
+AssertionError: expected [ '1' ] to deeply equal [ '1', '2' ]
+
+- Expected
++ Received
+
+  [
+    "1",
+-   "2",
+  ]
+
+ ❯ src/main/core/applications/__tests__/foxmail-native.test.ts:25:96
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/foxmail-native.test.ts > native Foxmail metadata reader source-write boundary > reads an isolated committed WAL image without creating an SHM file
+TypeError: Cannot read properties of undefined (reading 'id')
+ ❯ src/main/core/applications/__tests__/foxmail-native.test.ts:30:193
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  10:30:23
+   Duration  1.47s (transform 33ms, setup 0ms, import 51ms, tests 1.23s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

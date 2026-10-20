@@ -71,7 +71,7 @@ describe('current connection revisions, tested candidates and encrypted secret c
     expect(secretCount()).toBe(3);
     const next = await service.commitCandidate(a.operationId, a.candidateHash);
     await expect(service.commitCandidate(b.operationId, b.candidateHash)).rejects.toMatchObject({ code: 'REVISION_CONFLICT' });
-    expect(next.identityRevision).toBe(1); expect(next.secretRevision).toBe(2); expect(secretCount()).toBe(1);
+    expect(next.identityRevision).toBe(1); expect(next.configRevision).toBe(old.configRevision); expect(next.secretRevision).toBe(2); expect(secretCount()).toBe(1);
     expect(service.authentication(next.id, authVersion(next)).secret).toBe('rotation-a');
     expect(() => service.authentication(next.id, authVersion(old))).toThrow(/修订/);
   });

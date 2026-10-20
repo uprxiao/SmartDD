@@ -18,6 +18,7 @@ module.exports = {
     extraResources: [
       { from: 'out/native/smartdd-voice', to: 'native/smartdd-voice' },
       { from: 'out/native/willyou-files', to: 'native/willyou-files' },
+      { from: 'out/native/willyou-foxmail', to: 'native/willyou-foxmail' },
       { from: 'out/native/tex', to: 'native/tex' },
       { from: 'out/native/office', to: 'native/office' },
       { from: 'out/native/libreoffice', to: 'native/libreoffice' },

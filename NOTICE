@@ -116,3 +116,16 @@ M9 DEV048 language-service host:
   MIT licensed, https://github.com/microsoft/vscode-languageserver-node .
   Existing locked packages are used directly for JSON-RPC transport/protocol types.
   Language servers are user-configured local executables and are not bundled or downloaded.
+
+M10 applications (implementation in progress):
+- SMTP composition/transport uses the unmodified Nodemailer 10.1.7 library
+  (Andris Reinman and contributors, MIT-0).
+- Local RFC 822/MIME decoding uses unmodified postal-mime 4.0.11
+  (Andris Reinman and contributors, MIT-0).
+  Exact dependency versions/integrities are in pnpm-lock.yaml; original licenses,
+  source links and license hashes are retained in licenses/M10/.
+- The Foxmail native reader uses macOS system SQLite through public C APIs; it
+  does not distribute SQLite or Foxmail code. Its readonly VFS, bounded Worker,
+  source checks, and provider business logic are WillYou implementations.
+- ZenTao reading promotes this repository's reviewed M10 my_work_client.py
+  protocol contract; no ZenTao PHP source is copied into the application.
