@@ -193,10 +193,10 @@ export class MailCache {
       this.db.prepare('DELETE FROM cache_writes WHERE write_id=?').run(write.write_id);this.invalidate(current);this.db.prepare('DELETE FROM cache_objects WHERE object_key=?').run(current.object_key);
     });
   }
-  putRecord(sourceKey:string,key:string,value:unknown,refs:readonly MailCacheRef[]):Promise<void>{this.alive();return this.track(this.putRecordValue(sourceKey,key,value,refs));}
-  private async putRecordValue(sourceKey:string,key:string,value:unknown,refs:readonly MailCacheRef[]):Promise<void>{
+  putRecord(sourceKey:string,key:string,value:unknown,refs:readonly MailCacheRef[],options:{expectedHash?:string|null}={}):Promise<void>{this.alive();return this.track(this.putRecordValue(sourceKey,key,value,refs,options));}
+  private async putRecordValue(sourceKey:string,key:string,value:unknown,refs:readonly MailCacheRef[],options:{expectedHash?:string|null}):Promise<void>{
     this.alive();if(!HASH.test(sourceKey)||!key||key.length>1024||!boundedJson(value)||refs.length>512||refs.some(r=>r.sourceKey!==sourceKey))throw new ApplicationError('INVALID_INPUT','缓存记录或来源无效');const payload=canonicalJson(value);if(Buffer.byteLength(payload)>256*1024)throw new ApplicationError('TOO_LARGE','缓存索引记录过大，请分批保存');
-    await this.tx(()=>{this.growth(Buffer.byteLength(payload));const id=digest(canonicalJson({sourceKey,key}));for(const ref of refs){const row=this.row(ref.key);if(!row||row.state!=='ready'||canonicalJson(this.ref(row))!==canonicalJson(ref))throw new ApplicationError('SOURCE_UNAVAILABLE','记录所需缓存已回收');}
+    await this.tx(()=>{const id=digest(canonicalJson({sourceKey,key}));if(options.expectedHash!==undefined){if(options.expectedHash!==null&&!HASH.test(options.expectedHash))throw new ApplicationError('INVALID_INPUT','缓存比较修订无效');const old=this.db.prepare('SELECT payload_hash FROM cache_records WHERE record_id=?').get(id) as {payload_hash:string}|undefined;if((old?.payload_hash??null)!==options.expectedHash)throw new ApplicationError('REVISION_CONFLICT','缓存检查点已被另一执行者更新，未覆盖');}this.growth(Buffer.byteLength(payload));for(const ref of refs){const row=this.row(ref.key);if(!row||row.state!=='ready'||canonicalJson(this.ref(row))!==canonicalJson(ref))throw new ApplicationError('SOURCE_UNAVAILABLE','记录所需缓存已回收');}
       this.db.prepare('INSERT OR IGNORE INTO cache_sources VALUES(?)').run(sourceKey);this.deleteRecord(id);const now=this.clock();this.db.prepare('INSERT INTO cache_records VALUES(?,?,?,?,?,?,?)').run(id,sourceKey,key,payload,digest(payload),now,now);
       for(const ref of refs)this.db.prepare('INSERT OR IGNORE INTO cache_record_items VALUES(?,?,?)').run(id,ref.key,ref.generation);
     });

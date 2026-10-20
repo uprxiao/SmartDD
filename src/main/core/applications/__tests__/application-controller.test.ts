@@ -8,7 +8,7 @@ import { PtyAccess } from '../../../pty-access';
 import { createApplicationController } from '../controller';
 import type { ApplicationService } from '../application-service';
 let handlers:Map<string,(...args:any[])=>any>,sender:IpcMainInvokeEvent,access:PtyAccess,service:ReturnType<typeof fakeService>;
-function fakeService(){return{mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
+function fakeService(){return{mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
 const event=(id:number)=>{const wc=Object.assign(new EventEmitter(),{id,mainFrame:{},isDestroyed:()=>false});return{sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;};
 function register(current:ApplicationService|undefined){handlers=new Map();registerRPCRouter({applications:createApplicationController(current,e=>access.requireSender(e))},{handle:(name:string,handler:(...args:any[])=>any)=>handlers.set(name,handler)} as never);}
 const invoke=(name:string,e=sender,...args:unknown[])=>handlers.get('applications.'+name)!(e,...args);
@@ -27,13 +27,18 @@ describe('main-renderer application RPC authority and safe replies',()=>{
   service.setAdded.mockRejectedValueOnce(new ApplicationError('REVISION_CONFLICT','应用状态已变化，请重新载入'));expect(await invoke('setAdded',sender,'mail',true,0)).toEqual({ok:false,code:'REVISION_CONFLICT',message:'应用状态已变化，请重新载入'});
  });
  it('exposes explicit business endpoints without a generic SQL,secret,scope or send-approval method',()=>{
-  expect([...handlers.keys()].sort()).toEqual(['catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
+  expect([...handlers.keys()].sort()).toEqual(['catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','mailQuery','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
  });
  it('keeps cache inspection and reclamation as explicit main-frame-only management endpoints',async()=>{
   service.mailCacheStatus.mockResolvedValueOnce({limit:500000000});service.clearMailCache.mockResolvedValueOnce({activeLeases:1});
   expect(await invoke('mailCacheStatus')).toEqual({ok:true,value:{limit:500000000}});expect(service.mailCacheStatus).toHaveBeenCalledWith(sender);
   expect(await invoke('clearMailCache',event(82))).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service.clearMailCache).not.toHaveBeenCalled();
   expect(await invoke('clearMailCache')).toEqual({ok:true,value:{activeLeases:1}});expect(service.clearMailCache).toHaveBeenCalledWith(sender);
+ });
+ it('routes mail reads through the actual trusted sender and denies alternate windows before business execution',async()=>{
+  for(const [name,method,args] of [['mailQuery','mailQuery',['p1',{}]],['mailRead','mailMessage',['p1',{nativeId:'1'}]],['mailResource','mailResource',['p1',{resource:{}}]]] as const){
+   expect(await invoke(name,event(82),...args)).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({complete:true});expect(await invoke(name,sender,...args)).toEqual({ok:true,value:{complete:true}});expect(service[method]).toHaveBeenCalledWith(sender,...args);
+  }
  });
  it('checks sender authority even when the optional service is unavailable',async()=>{
   register(undefined);expect(await invoke('catalog',event(82))).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(await invoke('catalog')).toMatchObject({ok:false,code:'CAPABILITY_UNAVAILABLE'});

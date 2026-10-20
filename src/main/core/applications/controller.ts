@@ -4,6 +4,7 @@ import { createScopedRPCController } from '@shared/ipc/rpc';
 import { ApplicationError } from '@shared/applications';
 import type { ApplicationId, ProjectApplicationSelectionInput, SaveApplicationConnection } from '@shared/application-connections';
 import type { ApplicationDataReply, ApplicationResourceRead } from '@shared/application-data';
+import type { MailSourceRef } from '@shared/application-mail-data';
 import type { ZentaoWorkInput,ZentaoDetailInput } from '@shared/application-zentao';
 import type { ApplicationService } from './application-service';
 export function createApplicationController(service:ApplicationService|undefined,requireSender:(sender:IpcMainInvokeEvent)=>void){
@@ -33,6 +34,9 @@ export function createApplicationController(service:ApplicationService|undefined
     zentaoWork:(event,projectId:string,input:ZentaoWorkInput)=>run(event,current=>current.zentaoWork(event,projectId,input)),
     zentaoObject:(event,projectId:string,input:ZentaoDetailInput)=>run(event,current=>current.zentaoObject(event,projectId,input)),
     zentaoResource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.zentaoResource(event,projectId,input)),
+    mailQuery:(event,projectId:string,input?:unknown)=>run(event,current=>current.mailQuery(event,projectId,input)),
+    mailRead:(event,projectId:string,reference:MailSourceRef)=>run(event,current=>current.mailMessage(event,projectId,reference)),
+    mailResource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.mailResource(event,projectId,input)),
     mailCacheStatus:(event)=>run(event,current=>current.mailCacheStatus(event)),
     clearMailCache:(event)=>run(event,current=>current.clearMailCache(event)),
     resource:(event,projectId:string,input:ApplicationResourceRead)=>run(event,current=>current.readBusinessResource(event,projectId,input)),

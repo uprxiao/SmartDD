@@ -2,6 +2,7 @@ import { dirname, join } from 'node:path';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import { applicationIdSchema, projectApplicationSelectionSchema, providerApplication, saveConnectionSchema, type ApplicationId, type ProjectApplicationSelectionInput, type SaveApplicationConnection } from '@shared/application-connections';
+import type { MailSourceRef } from '@shared/application-mail-data';
 import type { ZentaoWorkInput,ZentaoDetailInput } from '@shared/application-zentao';
 import type { SecretsStore } from '../../secrets';
 import type { ProjectService } from '../projects/project-service';
@@ -16,6 +17,7 @@ import { MailCache } from './mail-cache';
 import { MacProcessIdentityReader,type ProcessIdentityReader } from './process-identity';
 import { MailBlobStore } from './mail-blob-store';
 import { MailDraftService } from './mail-draft-service';
+import { MailReadDataService } from './mail-read-data-service';
 import { MailDraftDataService } from './draft-data-service';
 import { ZentaoDataService } from './zentao-data-service';
 import { ApplicationBusinessDataService } from './business-data-service';
@@ -31,13 +33,14 @@ export class ApplicationService {
   readonly blobs:MailBlobStore;
   readonly drafts:MailDraftService;
   readonly data:ApplicationBusinessDataService;
+  readonly mailReads:MailReadDataService;
   readonly builtin:BuiltinPackageRegistry;
   private runs?:CapabilityRunRegistry;
   private cachePromise?:Promise<MailCache>;
   private closed=false;private closing?:Promise<void>;
   constructor(readonly store:ResourceStore,private readonly options:{
     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
-    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;processes?:ProcessIdentityReader;changed?():void;
+    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};changed?():void;
   }){
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
@@ -47,7 +50,7 @@ export class ApplicationService {
     }});
     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
-    this.resources=new ApplicationDataResources(store,this.contexts);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections),new ZentaoDataService(this.contexts,this.resources,this.selections));
+    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads);
   }
   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
   async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();}
@@ -66,7 +69,7 @@ export class ApplicationService {
   projectSettings(sender:ApplicationUiSender,projectId:string,appId:ApplicationId){return this.management(sender,appId,'application.project.read','read',async()=>this.selections.projectSettings(projectId,appId),projectId);}
   select(sender:ApplicationUiSender,input:ProjectApplicationSelectionInput){const value=projectApplicationSelectionSchema.parse(input);return this.management(sender,value.appId,'application.project.select','write',()=>this.selections.select(value),value.projectId);}
   listConnections(sender:ApplicationUiSender,appId:ApplicationId){return this.management(sender,appId,'connection.list','read',async()=>this.connections.list().filter(c=>c.appId===appId));}
-  testConnection(sender:ApplicationUiSender,input:SaveApplicationConnection){const value=saveConnectionSchema.parse(input),appId=providerApplication(value.config.kind);return this.contexts.withManagement(sender,{appId,action:'connection.test',semantics:'write'},context=>this.connections.testCandidate(value,context.signal));}
+  testConnection(sender:ApplicationUiSender,input:SaveApplicationConnection){const value=saveConnectionSchema.parse(input),appId=providerApplication(value.config.kind);return this.contexts.withManagement(sender,{appId,action:'connection.test',semantics:'write'},context=>this.connections.testCandidate(value,context.signal,work=>this.contexts.retainActivity(context,work)));}
   saveConnection(sender:ApplicationUiSender,appId:ApplicationId,operationId:string,candidateHash:string,acceptedImpactHash?:string){
     uuid.parse(operationId);z.string().regex(/^[a-f0-9]{64}$/).parse(candidateHash);
     return this.management(sender,appId,'connection.save','write',async()=>{
@@ -80,6 +83,9 @@ export class ApplicationService {
   viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.list',input));}
   viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},context=>this.data.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}));}
   readBusinessResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource.read',operations:['mail.draft'],semantics:'read'},context=>this.resources.read(context,input));}
+  mailQuery(sender:ApplicationUiSender,projectId:string,input:unknown={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.query',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.query(scope,input));}
+  mailMessage(sender:ApplicationUiSender,projectId:string,reference:MailSourceRef){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.read',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.read(scope,{reference}));}
+  mailResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.resource(scope,input));}
   zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read'},scope=>this.data.zentao.execute(scope,'zentao.work.list',input));}
   zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read'},scope=>this.data.zentao.execute(scope,'zentao.object.get',input));}
   zentaoResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.resource',operations:['zentao.read'],semantics:'read'},scope=>this.resources.read(scope,input));}
@@ -95,7 +101,7 @@ export class ApplicationService {
   mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);return cache.usage();});}
   clearMailCache(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.clear',semantics:'write'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);const result=await cache.clear(context.signal);this.options.changed?.();return result;});}
   dispose():Promise<void>{
-    if(this.closing)return this.closing;this.closed=true;const contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
-    this.closing=(async()=>{const results=await Promise.allSettled([contexts,cache]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
+    if(this.closing)return this.closing;this.closed=true;const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
+    this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
   }
 }

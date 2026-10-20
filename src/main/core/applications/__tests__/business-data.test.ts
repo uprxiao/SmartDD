@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { MailDraftContent, MailActor } from '@shared/mail-drafts';
 import type { ApplicationResourceRef, MailDraftDataView, ApplicationResourceChunk } from '@shared/application-data';
@@ -14,6 +14,7 @@ import * as schema from '../../../db/schema';
 import { SecretsStore } from '../../../secrets';
 import { PtyAccess } from '../../../pty-access';
 import { ProjectService } from '../../projects/project-service';
+import { ProviderConnectionVerifier } from '../providers/connection-verifier';
 import { ApplicationService } from '../application-service';
 import { ApplicationAdapterRegistry } from '../application-adapter-registry';
 import { ApplicationToolService } from '../tool-service';
@@ -68,7 +69,7 @@ beforeEach(async()=>{
  reader=new FixtureProcessReader();app=setupService();await app.recover();await enable();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});app.attachRuns(runs);
  tools=new ApplicationToolService(f.store,runs,new ApplicationAdapterRegistry(f.store,app.data),{retryDelays:[0,0]});cc=await start('claude-code',50101);codex=await start('codex',50102);
 });
-afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();f.cleanup();});
+afterEach(async()=>{await app.dispose();vi.restoreAllMocks();while(owned.length)await owned.pop()!.cli.exited();f.cleanup();});
 
 describe('host-scoped Data API with original mail package, SQLite, drafts and resources',()=>{
  it('creates without either external slot and lets the other supported Agent and UI read the same business object',async()=>{
@@ -164,6 +165,14 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
   const pending=ui(async scope=>{entered();await gate;app.contexts.require(scope,'mail.draft');},['mail.draft'],'p1',abort.signal);await ready;abort.abort();
   const count=()=>f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get();
   try{expect(count()).toEqual({n:1});}finally{release();}await expect(pending).rejects.toMatchObject({code:'CANCELED'});expect(count()).toEqual({n:0});
+ });
+ it('keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown',async()=>{
+  let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(r=>entered=r),gate=new Promise<void>(r=>release=r),abort=new AbortController();
+  vi.spyOn(ProviderConnectionVerifier.prototype,'verify').mockImplementationOnce(async config=>{entered();await gate;return{providerId:config.kind,serviceId:'private-held-verifier',accountId:'private-test',contractMajor:1};});
+  const pending=app.contexts.withManagement(sender,{appId:'mail',action:'connection.test',semantics:'write',signal:abort.signal},scope=>app.connections.testCandidate({name:'held verification fixture',expectedRevision:0,config:{kind:'foxmail',sourcePath:join(f.root,'synthetic-only'),account:'fixture',queryDays:30}},scope.signal,work=>app.contexts.retainActivity(scope,work)));void pending.catch(()=>{});
+  await ready;abort.abort();await expect(pending).rejects.toMatchObject({code:'CANCELED'});let closed=false;const closing=app.dispose().then(()=>{closed=true;});
+  try{await Promise.resolve();expect(closed).toBe(false);expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:1});expect(app.connections.list()).toEqual([]);}finally{release();}
+  await closing;expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:0});expect(app.connections.list()).toEqual([]);
  });
  it('waits for actual UI work on service shutdown and rejects its eventual result',async()=>{
   let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(r=>entered=r),gate=new Promise<void>(r=>release=r);

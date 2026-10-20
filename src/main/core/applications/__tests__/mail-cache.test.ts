@@ -9,6 +9,7 @@ import { ResourceStore } from '../resource-store';
 import { runBundledMigrations } from '../../../db/migrations';
 import { FixtureProcessReader } from './run-fixture';
 import { digest } from '../manifest';
+import { MailCacheValues } from '../mail-cache-values';
 let root:string,sqlite:Database.Database,store:ResourceStore,reader:FixtureProcessReader,now:number;
 const caches:MailCache[]=[];
 const sourceA=digest('source-a'),sourceB=digest('source-b');
@@ -106,6 +107,11 @@ describe('U-scoped durable mail cache and physical file budget',()=>{
  it('shares quota and read protection across two engines using the same U',async()=>{
   const one=await cache(),two=await cache(),a=await one.put(sourceA,Buffer.alloc(700000,1));let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(r=>entered=r),held=one.withRead(a,async()=>{entered();await new Promise<void>(r=>release=r);});await ready;
   try{expect((await two.clear()).readyObjects).toBe(1);await expect(two.put(sourceB,Buffer.alloc(700000,2))).rejects.toMatchObject({code:'RESOURCE_BUSY'});}finally{release();}await held;expect((await two.clear()).readyObjects).toBe(0);
+ });
+ it('uses a shared SQLite CAS to prevent a late checkpoint from overwriting a newer engine result',async()=>{
+  const one=new MailCacheValues(await cache()),two=new MailCacheValues(await cache());const original=await one.save(sourceA,'checkpoint',{offset:1},null);
+  expect(await two.load(sourceA,'checkpoint',value=>value)).toMatchObject({value:{offset:1},recordHash:original.recordHash});await two.save(sourceA,'checkpoint',{offset:3},original.recordHash);
+  await expect(one.save(sourceA,'checkpoint',{offset:2},original.recordHash)).rejects.toMatchObject({code:'REVISION_CONFLICT'});expect(await one.load(sourceA,'checkpoint',value=>value)).toMatchObject({value:{offset:3}});await expect(two.save(sourceA,'checkpoint',{offset:0},null)).rejects.toMatchObject({code:'REVISION_CONFLICT'});
  });
  it('registers the full stage reservation before any asynchronous write and keeps it until real settlement',async()=>{
   let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(r=>entered=r),c=await cache({checkpoint:async phase=>{if(phase==='reserved'){entered();await new Promise<void>(r=>release=r);}}}),writing=c.put(sourceA,Buffer.alloc(700000,1));await ready;

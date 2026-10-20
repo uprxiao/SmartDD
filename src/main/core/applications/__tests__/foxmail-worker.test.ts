@@ -5,11 +5,13 @@ import { mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import Database from 'better-sqlite3';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it,vi } from 'vitest';
 import type { ConnectionConfig, VerifiedConnectionIdentity } from '@shared/application-connections';
 import { MailWorkerClient } from '../providers/mail-worker-client';
+import type { Worker } from 'node:worker_threads';
+import { MacProcessIdentityReader } from '../process-identity';
 import { localMailRange } from '../providers/foxmail-source';
-let build: string, root: string, worker: string, native: string, client: MailWorkerClient, db: Database.Database;
+let build: string, root: string, worker: string, native: string, client: MailWorkerClient, identityReader:MacProcessIdentityReader, db: Database.Database;
 let config: Extract<ConnectionConfig,{ kind: 'foxmail' }>, identity: VerifiedConnectionIdentity;
 const now = new Date(2026,9,20,12), signal = () => new AbortController().signal;
 const schema = 'CREATE TABLE mailinfo(mailid INTEGER PRIMARY KEY,subject TEXT,from_ TEXT,to_ TEXT,messageid TEXT,date INTEGER,mail_receivedate INTEGER,fileexist INTEGER,attachment INTEGER)';
@@ -23,6 +25,7 @@ describe.skipIf(process.platform !== 'darwin')('actual mail Worker, native metad
   beforeAll(() => {
     build = mkdtempSync(join(tmpdir(),'willyou-m10-mail-build-')); native = join(build,'foxmail'); worker = join(build,'mail.cjs');
     execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O2','-mmacosx-version-min=12.0','-framework','Foundation','-lsqlite3',resolve('native/applications/foxmail.mm'),'-o',native]);
+    execFileSync('xcrun',['clang++','-std=c++17','-O2',resolve('native/applications/process-identity.cc'),'-o',join(build,'process-identity')]);identityReader=new MacProcessIdentityReader(join(build,'process-identity'));
     const require = createRequire(import.meta.url), esbuild = createRequire(require.resolve('electron-vite/package.json'))('esbuild');
     esbuild.buildSync({ entryPoints: [resolve('src/main/core/applications/providers/mail-worker.ts')],bundle: true,platform: 'node',format: 'cjs',outfile: worker,alias: { '@shared': resolve('src/shared') } });
   });
@@ -33,7 +36,7 @@ describe.skipIf(process.platform !== 'darwin')('actual mail Worker, native metad
     config = { kind: 'foxmail',sourcePath: root,account: 'selected-fixture-mailbox',queryDays: 30 }; client = new MailWorkerClient(worker,native);
     identity = await client.verify(config,signal());
   });
-  afterEach(() => { client.close(); db.close(); rmSync(root,{ recursive: true,force: true }); });
+  afterEach(async() => { await client.close(); db.close(); rmSync(root,{ recursive: true,force: true }); });
   it('uses local natural dates and rejects invalid windows without expanding scope', () => {
     expect(localMailRange(1,now)).toMatchObject({ days: 1,startDate: '2026-10-20',endDate: '2026-10-20' });
     expect(localMailRange(100,now).startDate).toBe('2026-07-13'); expect(() => localMailRange(101,now)).toThrow(); expect(() => localMailRange(1.5,now)).toThrow();
@@ -79,9 +82,29 @@ describe.skipIf(process.platform !== 'darwin')('actual mail Worker, native metad
     rmSync(join(root,'Mail','other','1.mail')); symlinkSync(join(root,'Mail','Inbox','1.mail'),join(root,'Mail','other','linked.mail'));
     await expect(client.query(config,{ text: '',limit: 50 },identity,signal(),now)).rejects.toMatchObject({ code: 'INCOMPLETE_RESULT' });
   });
+  it('binds scan batches to the original configuration and rejects mutations before declaring a snapshot complete',async()=>{
+    add(1,now,'body-only-needle');const scan=await client.beginScan(config,identity,signal(),now),entries=await client.scanEntries(config,scan.id,0,50,signal());expect(entries).toHaveLength(1);expect(entries[0]).toMatchObject({id:'1',fingerprint:expect.stringMatching(/^[a-f0-9]{64}$/)});
+    await expect(client.scanEntries({...config,queryDays:100},scan.id,0,50,signal())).rejects.toMatchObject({code:'SCOPE_DENIED'});
+    const batch=await client.scanBatch(config,scan.id,0,50,'body-only-needle',signal());expect(batch).toMatchObject({done:true,readHeaders:1,indexed:[{id:'1',searchText:expect.stringContaining('body-only-needle')}]});
+    writeFileSync(join(root,'Mail/Inbox/1.mail'),readFileSync(join(root,'Mail/Inbox/1.mail'),'utf8')+' changed');await expect(client.finishScan(config,scan.id,signal())).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
+  });
   it('terminates a hung Worker within its budget and rejects cancellation without late results', async () => {
     const hung = join(build,'hung.cjs'); writeFileSync(hung,'while(true) {}'); const other = new MailWorkerClient(hung,native,100);
-    try { await expect(other.verify(config,signal())).rejects.toMatchObject({ code: 'TIMEOUT' }); } finally { other.close(); }
+    try { await expect(other.verify(config,signal())).rejects.toMatchObject({ code: 'TIMEOUT' }); } finally { await other.close(); }
     const abort = new AbortController(), pending = client.verify(config,abort.signal); abort.abort(); await expect(pending).rejects.toMatchObject({ code: 'CANCELED' });
   });
+  it('waits for actual Worker and owned native child exit before rejecting cancellation or completing close',async()=>{
+    const holdSource=join(build,'hold-reader.cc'),holdNative=join(build,'hold-reader'),holdWorker=join(build,'hold-worker.cjs');
+    writeFileSync(holdSource,'#include <unistd.h>\n#include <signal.h>\n#include <fstream>\n#include <string>\nint main(int argc,char**argv){std::ofstream out(std::string(argv[1])+".fixture-pid");out<<getpid();out.close();signal(SIGTERM,SIG_IGN);for(;;)pause();}');
+    execFileSync('xcrun',['clang++','-std=c++17',holdSource,'-o',holdNative]);
+    writeFileSync(holdWorker,'const{parentPort}=require("node:worker_threads");parentPort.on("message",m=>parentPort.postMessage({type:"metadata",id:m.id,metadataId:1,path:require("node:path").join(m.config.sourcePath,"messages.db")}));');
+    const other=new MailWorkerClient(holdWorker,holdNative),abort=new AbortController(),reading=other.verify(config,abort.signal);void reading.catch(()=>{});
+    try{
+      let pid=0;await vi.waitFor(()=>{pid=Number(readFileSync(join(root,'messages.db.fixture-pid'),'utf8'));expect(pid).toBeGreaterThan(0);},{timeout:2000});
+      const nativeIdentity=identityReader.read(pid)!;expect(identityReader.state(nativeIdentity)).toBe('running');expect((other as unknown as {worker:Worker}).worker.threadId).toBeGreaterThan(0);
+      abort.abort();const closing=other.close();expect(other.close()).toBe(closing);await expect(reading).rejects.toMatchObject({code:'CANCELED'});await closing;
+      expect(identityReader.state(nativeIdentity)).toBe('stopped');expect((other as unknown as {worker:Worker}).worker.threadId).toBe(-1);
+    }finally{await other.close();}
+  });
+
 });

@@ -12,6 +12,7 @@ import type { ResourceStore } from './resource-store';
 export interface ConnectionVerifier {
   verify(config: ConnectionConfig, secret: string | null, signal: AbortSignal): Promise<VerifiedConnectionIdentity>;
 }
+type VerificationActivity = (work:()=>Promise<VerifiedConnectionIdentity>)=>Promise<VerifiedConnectionIdentity>;
 interface ConnectionRow {
   id: string; app_id: 'zentao' | 'mail'; provider_id: ConnectionConfig['kind']; name: string; config_json: string; config_schema_version: number;
   revision: number; config_revision: number; identity_revision: number; verified_identity_json: string; identity_hash: string;
@@ -92,7 +93,7 @@ export class ApplicationConnectionService {
     const plan = { connectionId: id ?? null, expectedRevision, configHash: digest(canonicalJson(config)), referenceHash: digest(canonicalJson(records.map(r => ({ taskId: r.taskId, hash: r.hash, snapshotHash: r.snapshotHash ?? null })))), impacts };
     return { ...plan, planHash: digest(canonicalJson(plan)) };
   }
-  private async verify(config: ConnectionConfig, secret: string | null, controller: AbortController): Promise<VerifiedConnectionIdentity> {
+  private async verify(config: ConnectionConfig, secret: string | null, controller: AbortController, activity?:VerificationActivity): Promise<VerifiedConnectionIdentity> {
     if(controller.signal.aborted)throw safeVerificationError(controller.signal.reason instanceof ApplicationError?controller.signal.reason:new ApplicationError('CANCELED','连接测试已取消'));
     let timer: ReturnType<typeof setTimeout> | undefined, onAbort: (() => void) | undefined;
     try {
@@ -102,14 +103,15 @@ export class ApplicationConnectionService {
         timer = setTimeout(() => controller.abort(new ApplicationError('TIMEOUT', '连接测试超时')), this.timeoutMs);
         if (controller.signal.aborted) onAbort();
       });
-      const result = await Promise.race([this.verifier.verify(config, secret, controller.signal), aborted]);
+      const producer=()=>{if(controller.signal.aborted)throw new ApplicationError('CANCELED','连接测试已取消');return this.verifier.verify(config,secret,controller.signal);};
+      const result = await Promise.race([activity?activity(producer):producer(), aborted]);
       const identity = verifiedConnectionIdentitySchema.safeParse(result);
       if (!identity.success || identity.data.providerId !== config.kind) throw new ApplicationError('AUTH_REQUIRED', '无法核实当前服务和账号身份');
       return identity.data;
     } catch (error) { throw safeVerificationError(error); }
     finally { if (timer) clearTimeout(timer); if (onAbort) controller.signal.removeEventListener('abort', onAbort); }
   }
-  async testCandidate(input: SaveApplicationConnection, signal?: AbortSignal): Promise<VerifiedConnectionCandidate> {
+  async testCandidate(input: SaveApplicationConnection, signal?: AbortSignal, activity?:VerificationActivity): Promise<VerifiedConnectionCandidate> {
     if(signal?.aborted)throw new ApplicationError('CANCELED','连接测试已取消');
     const parsed = saveConnectionSchema.safeParse(input);
     if (!parsed.success) throw new ApplicationError('INVALID_INPUT', '连接字段无效，请核对表单');
@@ -131,7 +133,7 @@ export class ApplicationConnectionService {
     try {
       const secret = secretRef ? this.secrets.get(secretRef) : null;
       if (request.config.kind !== 'foxmail' && !secret) throw new ApplicationError('AUTH_REQUIRED', '请配置本连接的认证凭据');
-      const identity = await this.verify(request.config, secret, controller);
+      const identity = await this.verify(request.config, secret, controller, activity);
       if (old && digest(canonicalJson(identity)) !== old.identity_hash) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '测试识别到其他服务或账号，请新建连接并显式选用');
       let compatibility!: ConnectionChangePlan;
       await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {

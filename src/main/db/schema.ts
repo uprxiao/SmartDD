@@ -408,3 +408,11 @@ export const applicationReadReceiptChecks=sqliteTable('application_read_receipt_
 export const applicationZentaoOperationResources=sqliteTable('application_zentao_operation_resources',{
   operationId:text('operation_id').primaryKey(),backingJson:text('backing_json').notNull(),
 });
+
+// Operational lineage only; mail index/body/resource bytes remain in the quota-controlled cache.
+export const applicationIndexWaiters=sqliteTable('application_index_waiters',{
+ indexOperationId:text('index_operation_id').notNull().references(()=>applicationDataOperations.operationId),parentOperationId:text('parent_operation_id').notNull().references(()=>applicationDataOperations.operationId),sourceKey:text('source_key').notNull(),joinedAt:text('joined_at').notNull(),endedAt:text('ended_at'),state:text('state').notNull(),
+},t=>({pk:primaryKey({columns:[t.indexOperationId,t.parentOperationId]})}));
+export const applicationMailOperationSources=sqliteTable('application_mail_operation_sources',{
+ operationId:text('operation_id').primaryKey().references(()=>applicationDataOperations.operationId),sourceKey:text('source_key').notNull(),sourceRevision:text('source_revision').notNull(),operationKind:text('operation_kind').notNull(),provenanceJson:text('provenance_json').notNull(),createdAt:text('created_at').notNull(),
+});

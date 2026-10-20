@@ -33,6 +33,7 @@ const managementActions=new Set(['application.configure','application.cache.stat
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
 export class ApplicationExecutionContexts {
   private readonly records=new WeakMap<object,ContextRecord>();
+  private readonly sharedIndexes=new WeakSet<object>();
   private readonly active=new Set<ContextRecord>();
   private readonly actors=new WeakMap<MailActor,ApplicationExecutionContext>();
   private readonly pending=new Set<Promise<unknown>>();
@@ -75,6 +76,7 @@ export class ApplicationExecutionContexts {
   }
   async connection(context:ApplicationExecutionContext,slot:ApplicationProvider,expectedId:string|null=null):Promise<{connection:ApplicationConnection;secret:string|null}>{
     this.require(context,slot==='smtp'?'mail.send':context.appId+'.read');
+    if(this.sharedIndexes.has(context))throw new ApplicationError('SCOPE_DENIED','共享索引仅使用由当前有效触发方固定的只读来源，不直接解析项目连接或秘密');
     if(!context.projectId||context.scopeKind==='connection-management')throw new ApplicationError('SCOPE_DENIED','连接管理不能用来读取项目数据');
     const selected=this.selections.connectionSlot(context.projectId,context.appId,slot);
     if(!selected.connectionId)throw new ApplicationError('AUTH_REQUIRED','请先明确选用此项目的来源或发件连接');
@@ -94,6 +96,12 @@ export class ApplicationExecutionContexts {
   }
   async connectionHealth(context:ApplicationExecutionContext,connection:ApplicationConnection,code:ApplicationError['code']|null):Promise<void>{
     this.assertActive(context);const target=this.record(context).targets.get(connection.providerId);if(!target||target.id!==connection.id)throw new ApplicationError('SCOPE_DENIED','健康结果不属于本次已固定来源');const changed=await this.connections.reportHealth(connection.id,connection,code);this.assertActive(context);if(changed)this.deps.changed?.();
+  }
+  /** A bounded caller may stop waiting before its native producer actually exits. */
+  retainActivity<T>(context:ApplicationExecutionContext,work:()=>Promise<T>):Promise<T>{
+    this.assertActive(context);const application=this.builtin.assertTrusted(context.packageHash),id=randomUUID();
+    const activity=this.store.use(application.resourceId,context.callerKind==='index-job'?'index-job':'ui',id,()=>{this.assertActive(context);return work();});
+    this.pending.add(activity);void activity.finally(()=>this.pending.delete(activity)).catch(()=>{});return activity;
   }
   private activePackage(appId:ApplicationId):InstalledApplicationPackage{
     const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前应用没有已准备的默认版本');return this.builtin.packages.get(active.packageHash);
@@ -117,6 +125,20 @@ export class ApplicationExecutionContexts {
   withIndex<T>(parent:ApplicationExecutionContext,permission:'mail.read'|'zentao.read',work:(context:ApplicationExecutionContext)=>Promise<T>):Promise<T>{
     this.require(parent,permission);if(parent.scopeKind!=='project'||!parent.projectId)throw new ApplicationError('SCOPE_DENIED','来源刷新需要有效项目触发');const application=this.builtin.assertTrusted(parent.packageHash),id=randomUUID();
     return this.begin(application,{operationId:id,callerKind:'index-job',scopeKind:'internal-index',projectId:parent.projectId,taskId:null,runId:null,jobId:id,parentOperationId:parent.operationId,appId:parent.appId,packageHash:parent.packageHash,dataApi:1,action:parent.appId+'.refresh',semantics:'read',allowedOperations:[permission],signal:parent.signal,startedAt:new Date(this.now()).toISOString()},()=>this.require(parent,permission),{parent:parent.operationId},work,true);
+  }
+  withSharedIndex<T>(parents:()=>readonly ApplicationExecutionContext[],permission:'mail.read',signal:AbortSignal,work:(context:ApplicationExecutionContext)=>Promise<T>):Promise<T>{
+    const first=parents()[0];if(!first||first.scopeKind!=='project'||!first.projectId)throw new ApplicationError('SCOPE_DENIED','共享邮件检查需要有效项目触发');this.require(first,permission);
+    const check=()=>{for(const parent of parents())try{if(parent.appId===first.appId){this.require(parent,permission);return;}}catch{}throw new ApplicationError('CANCELED','本次共享邮件检查已没有有效触发方');};
+    const application=this.builtin.assertTrusted(first.packageHash),id=randomUUID();
+    return this.begin(application,{operationId:id,callerKind:'index-job',scopeKind:'internal-index',projectId:first.projectId,taskId:null,runId:null,jobId:id,parentOperationId:first.operationId,appId:'mail',packageHash:first.packageHash,dataApi:1,action:'mail.refresh',semantics:'read',allowedOperations:[permission],signal,startedAt:new Date(this.now()).toISOString()},check,{sharedIndex:true},context=>{this.sharedIndexes.add(context);return work(context);},true);
+  }
+  linkIndexParent(index:ApplicationExecutionContext,parent:ApplicationExecutionContext,sourceKey:string):Promise<void>{
+    this.require(index,'mail.read');this.require(parent,'mail.read');if(!this.sharedIndexes.has(index)||parent.scopeKind!=='project'||parent.appId!=='mail'||!/^[a-f0-9]{64}$/.test(sourceKey))throw new ApplicationError('SCOPE_DENIED','无效共享检查关系');
+    return withResourceLock(this.store.root,()=>{this.require(index,'mail.read');this.require(parent,'mail.read');this.store.sqlite.prepare("INSERT OR IGNORE INTO application_index_waiters VALUES(?,?,?,?,NULL,'waiting')").run(index.operationId,parent.operationId,sourceKey,new Date(this.now()).toISOString());});
+  }
+  endIndexParent(index:ApplicationExecutionContext,parent:ApplicationExecutionContext,state:'completed'|'cancelled'|'failed'):Promise<void>{
+    if(!this.sharedIndexes.has(index)||!this.records.has(parent))throw new ApplicationError('SCOPE_DENIED','检查关系不是当前宿主签发');
+    return withResourceLock(this.store.root,()=>{this.store.sqlite.prepare('UPDATE application_index_waiters SET state=?,ended_at=? WHERE index_operation_id=? AND parent_operation_id=?').run(state,new Date(this.now()).toISOString(),index.operationId,parent.operationId);});
   }
   private begin<T>(application:InstalledApplicationPackage,input:ApplicationExecutionContext,check:()=>void,policy:unknown,work:(context:ApplicationExecutionContext)=>Promise<T>,lease:boolean):Promise<T>{
     if(this.closed)throw new ApplicationError('CANCELED','应用业务服务已停止');actionSchema.parse(input.action);if(!z.uuid().safeParse(input.operationId).success)throw new ApplicationError('INVALID_INPUT','业务操作编号无效');

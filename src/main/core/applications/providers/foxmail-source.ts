@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { constants } from 'node:fs';
 import { lstat, open, readdir, realpath } from 'node:fs/promises';
@@ -6,7 +7,7 @@ import PostalMime, { type PostalMimeOptions, type Address, type Email } from 'po
 import { z } from 'zod';
 import { foxmailConfigSchema, type ConnectionConfig, type VerifiedConnectionIdentity } from '@shared/application-connections';
 import { ApplicationError } from '@shared/applications';
-import { mailSearchSchema, type LocalMailContent, type LocalMailQuery, type LocalMailSummary, type MailDateRange, type MailSearch } from '@shared/application-mail';
+import { mailSearchSchema, type LocalMailContent, type LocalMailQuery, type LocalMailSummary, type MailDateRange, type MailSearch,type LocalMailScan,type LocalMailScanBatch,type LocalMailScanEntry,type LocalMailIndexEntry } from '@shared/application-mail';
 import { canonicalJson, digest } from '../manifest';
 type Config = Extract<ConnectionConfig, { kind: 'foxmail' }>;
 const field = z.string().max(65536).nullable();
@@ -74,6 +75,7 @@ function summary(id: string, email: Email, revision: string): LocalMailSummary {
 /** Runs only inside the supervised mail Worker; neither source SQL nor MIME blocks the main thread. */
 export class FoxmailSource {
   private readonly headers = new Map<string,{ stamp: string; value: LocalMailSummary }>();
+  private scan?:{descriptor:LocalMailScan;ctx:Awaited<ReturnType<FoxmailSource['context']>>;files:Map<string,string>;stamps:Record<string,string>};
   constructor(private readonly native: string | ((path: string) => Promise<string>)) {}
   private async context(input: Config, expected?: VerifiedConnectionIdentity) {
     const config = foxmailConfigSchema.parse(input), root = await sourceRoot(config.sourcePath), meta = await metadata(this.native,join(root,'messages.db'));
@@ -114,6 +116,64 @@ export class FoxmailSource {
     if (canonicalJson(after.meta) !== canonicalJson(ctx.meta) || canonicalJson(await this.fileStamps(await inventory(ctx.root))) !== canonicalJson(beforeFiles)) { result.complete = false; result.problems.push({ id: null, code: 'RESOURCE_STATE_CHANGED' }); }
     return result;
   }
+  /** Snapshot creation enumerates only the selected read-only source; batches never narrow its date window. */
+  async beginScan(config:Config,expected:VerifiedConnectionIdentity,now=new Date()):Promise<LocalMailScan>{
+    const ctx=await this.context(config,expected);if(new Set(ctx.meta.rows.map(row=>row.id)).size!==ctx.meta.rows.length)throw new ApplicationError('INCOMPLETE_RESULT','邮件元数据包含重复身份');const files=await inventory(ctx.root),stamps=await this.fileStamps(files),range=localMailRange(ctx.config.queryDays,now);
+    const after=await this.context(config,ctx.identity);if(canonicalJson(after.meta)!==canonicalJson(ctx.meta))throw new ApplicationError('RESOURCE_STATE_CHANGED','建立邮件检查时来源变化，请重试');
+    const descriptor:LocalMailScan={id:randomUUID(),sourceRevision:digest(canonicalJson({metadata:ctx.meta,stamps})),sourceIdentity:ctx.identity.serviceId,range,metadataCount:ctx.meta.rows.length,checkedAt:new Date().toISOString()};
+    this.scan={descriptor,ctx,files,stamps};return descriptor;
+  }
+  private selectedScan(id:string,config:Config){if(!this.scan||this.scan.descriptor.id!==id)throw new ApplicationError('RESOURCE_STATE_CHANGED','邮件检查已结束或不属于此读取器');if(canonicalJson(foxmailConfigSchema.parse(config))!==canonicalJson(this.scan.ctx.config))throw new ApplicationError('SCOPE_DENIED','邮件检查配置不属于原选定来源');return this.scan;}
+  private summaryFits(value:LocalMailSummary):void{
+    if(value.subject.length>8192||value.from.length>2000||value.to.length>8192||(value.messageId?.length??0)>2000)throw new ApplicationError('TOO_LARGE','邮件头超过原工具契约范围，未静默截断');
+  }
+  scanEntries(config:Config,id:string,offset:number,limit:number):LocalMailScanEntry[]{
+    const scan=this.selectedScan(id,config);if(!Number.isInteger(offset)||offset<0||offset>scan.ctx.meta.rows.length||!Number.isInteger(limit)||limit<1||limit>100)throw new ApplicationError('INVALID_INPUT','邮件检查批次参数无效');
+    return scan.ctx.meta.rows.slice(offset,offset+limit).map(row=>({id:row.id,fingerprint:digest(canonicalJson({row,file:scan.stamps[row.id]??null,parser:1}))}));
+  }
+  async scanBatch(config:Config,id:string,offset:number,limit:number,text:string,reuse:LocalMailIndexEntry[]=[]):Promise<LocalMailScanBatch>{
+    const scan=this.selectedScan(id,config),entries=this.scanEntries(config,id,offset,limit);if(typeof text!=='string'||text.length>1000||reuse.length>100)throw new ApplicationError('INVALID_INPUT','邮件检查批次参数无效');
+    const result:LocalMailScanBatch={offset,nextOffset:offset,done:false,records:[],problems:[],problemCount:0,readHeaders:0,reusedHeaders:0,indexed:[]};
+    const needle=text.toLocaleLowerCase(),prior=new Map(reuse.map(item=>[item.id,item]));let indexedBytes=0;
+    for(const [at,entry] of entries.entries()){
+      const row=scan.ctx.meta.rows[offset+at];
+      try{
+        const path=scan.files.get(row.id);if(!path)throw new ApplicationError('INCOMPLETE_RESULT','邮件尚未下载到本机');
+        const cached=prior.get(row.id),known=cached?.fingerprint===entry.fingerprint?cached:undefined;
+        let value:LocalMailSummary,searchText:string|null=known?.searchText??null,revision:string|undefined=known?.summary.sourceRevision;
+        if(known){value=known.summary;result.reusedHeaders++;}else{const header=await this.header(scan.ctx.root,path,row.id);value=header.value;if(header.reused)result.reusedHeaders++;else result.readHeaders++;}
+        if(value.id!==row.id)throw new ApplicationError('HASH_MISMATCH','邮件索引身份不一致');
+        if(value.date>=scan.descriptor.range.start&&value.date<scan.descriptor.range.endExclusive){
+          let matched=!needle||[value.subject,value.from,value.to].some(s=>s.toLocaleLowerCase().includes(needle));
+          if(!matched&&searchText===null){
+            const content=await this.content(scan.ctx.root,path,row.id);if(!content.complete)throw new ApplicationError('INCOMPLETE_RESULT','正文尚不完整，无法声明全文匹配完成');
+            revision=content.sourceRevision;searchText=content.text.toLocaleLowerCase()+'\n'+(content.html??'').toLocaleLowerCase();
+          }
+          if(!revision){const raw=await readRegular(path,8*1024*1024);if(raw.stamp!==value.sourceRevision)throw new ApplicationError('RESOURCE_STATE_CHANGED','邮件在检查中变化');revision=digest(raw.bytes);}
+          if(!matched)matched=searchText!.includes(needle);
+          const record={...value,sourceRevision:revision,hasAttachments:Number(row.attachmentCount)>0};this.summaryFits(record);if(matched)result.records.push(record);
+          if(!known||known.searchText!==searchText){const indexed={...entry,summary:record,searchText};indexedBytes+=Buffer.byteLength(canonicalJson(indexed));result.indexed.push(indexed);}
+        }
+      }catch(error){result.problemCount++;if(result.problems.length<200)result.problems.push({id:row.id,code:error instanceof ApplicationError?error.code:'SOURCE_UNAVAILABLE'});}
+      result.nextOffset=offset+at+1;
+      if(indexedBytes>=16*1024*1024)break;
+    }
+    result.done=result.nextOffset===scan.ctx.meta.rows.length;return result;
+  }
+  async scanSummaries(config:Config,id:string,items:{id:string;revision:string}[]):Promise<LocalMailSummary[]>{
+    const scan=this.selectedScan(id,config);if(items.length>200)throw new ApplicationError('TOO_LARGE','邮件列表页超过预算');const result:LocalMailSummary[]=[];
+    for(const item of items){
+      const row=scan.ctx.meta.rows.find(row=>row.id===item.id),path=scan.files.get(item.id);if(!row||!path||!/^[a-f0-9]{64}$/.test(item.revision))throw new ApplicationError('RESOURCE_STATE_CHANGED','原查询项不在本次来源中');
+      const {value}=await this.header(scan.ctx.root,path,item.id);if(value.date<scan.descriptor.range.start||value.date>=scan.descriptor.range.endExclusive)throw new ApplicationError('SCOPE_DENIED','原查询项已不在本次日期范围');
+      const record={...value,sourceRevision:item.revision,hasAttachments:Number(row.attachmentCount)>0};this.summaryFits(record);result.push(record);
+    }
+    return result;
+  }
+  async finishScan(config:Config,id:string):Promise<{sourceRevision:string;checkedAt:string}>{
+    const scan=this.selectedScan(id,config),after=await this.context(scan.ctx.config,scan.ctx.identity),files=await inventory(scan.ctx.root),stamps=await this.fileStamps(files);
+    if(canonicalJson(after.meta)!==canonicalJson(scan.ctx.meta)||canonicalJson(stamps)!==canonicalJson(scan.stamps))throw new ApplicationError('RESOURCE_STATE_CHANGED','检查期间邮件来源变化，旧检查结果未交付');
+    return{sourceRevision:scan.descriptor.sourceRevision,checkedAt:new Date().toISOString()};
+  }
   private async fileStamps(files: Map<string,string>): Promise<Record<string,string>> {
     const result: Record<string,string> = {}; for (const [id,path] of files) { const s = await lstat(path,{ bigint: true }); result[id] = path + ':' + statStamp(s); } return result;
   }
@@ -140,8 +200,9 @@ export class FoxmailSource {
     const after = await this.context(config,expected); if (canonicalJson(after.meta) !== canonicalJson(ctx.meta) || statStamp(await lstat(path,{ bigint: true })) !== value.observedStamp) throw new ApplicationError('RESOURCE_STATE_CHANGED','读取期间邮件来源变化，请重新查询');
     return { value, ctx };
   }
-  async attachment(config: Config,id: string,attachmentId: string,hash: string,expected: VerifiedConnectionIdentity,now = new Date()): Promise<Uint8Array> {
+  async attachment(config: Config,id: string,attachmentId: string,hash: string,expected: VerifiedConnectionIdentity,now = new Date(),expectedMailRevision?:string): Promise<Uint8Array> {
     const { value } = await this.readOwned(config,id,expected,now), at = Number(attachmentId);
+    if(expectedMailRevision!==undefined&&value.sourceRevision!==expectedMailRevision)throw new ApplicationError('RESOURCE_STATE_CHANGED','读取附件时原邮件修订已变化');
     if (!/^(0|[1-9]\d{0,2})$/.test(attachmentId) || !value.attachments[at] || value.attachments[at].contentHash !== hash) throw new ApplicationError('RESOURCE_STATE_CHANGED','附件不存在或已发生变化');
     return value.bytes[at];
   }
