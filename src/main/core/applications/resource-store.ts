@@ -108,9 +108,15 @@ export class ResourceStore {
       const old = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(spec.resourceId) as ResourceRecord | undefined;
       if (old) {
         this.assertIdentity(this.get(spec.resourceId), spec);
-        if (old.state !== 'ready' || old.integrity !== 'valid') throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源有未完成的发布或清理，先恢复原操作');
+        if (old.state !== 'removed' && (old.state !== 'ready' || old.integrity !== 'valid')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源有未完成的发布或清理，先恢复原操作');
         const actual = (this.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(spec.resourceId) as { dependency_id: string }[]).map(d => d.dependency_id);
         if (canonicalJson(actual) !== canonicalJson([...spec.dependencies].sort())) throw new ApplicationError('RESOURCE_STATE_CHANGED', '资源依赖与原发布不一致');
+        if (old.state === 'removed') {
+          const now = new Date().toISOString();
+          this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'restore-' + spec.kind, this.storeId, canonicalJson({ resourceId: spec.resourceId, hash: spec.contentHash, relativePath: spec.relativePath, dependencies: [...spec.dependencies].sort(), instanceId: this.instanceId, pid: process.pid }), now, now);
+          this.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',generation=generation+1,operation_id=? WHERE resource_id=? AND state='removed'").run(operationId,spec.resourceId);
+          leaseId = this.lease(spec.resourceId, operationId); return;
+        }
         reuse = true; leaseId = this.lease(spec.resourceId, operationId); return;
       }
       const now = new Date().toISOString();

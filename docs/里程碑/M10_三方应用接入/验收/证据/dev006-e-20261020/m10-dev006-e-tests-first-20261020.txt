@@ -1,0 +1,300 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/version-maintenance.test.ts src/main/core/applications/__tests__/application-controller.test.ts src/main/core/applications/__tests__/package-registry.test.ts src/main/core/applications/__tests__/session-registry.test.ts src/renderer/features/applications/workspace.test.tsx --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts (13 tests | 10 failed) 1083ms
+     × removes only the approved package, retaining runtime, permanent identity and application data 118ms
+     × permits exact-hash reinstall after cleanup but rejects same-version changed content 136ms
+     × rechecks a stale preview when a lease or active default changes and does not reap unknown leases 40ms
+     × keeps tombstone refs and corrupt or unknown history rather than reporting zero-reference cleanup eligibility 47ms
+     × holds unmapped native histories and retained derived resources even if no package ref row exists 85ms
+     × recovers a stopped-owner interruption at marked and rejects new consumption while deleting 55ms
+     × recovers a stopped-owner interruption at renamed and rejects new consumption while deleting 87ms
+     × recovers a stopped-owner interruption at deleting and rejects new consumption while deleting 86ms
+     × recovers a stopped-owner interruption at removed and rejects new consumption while deleting 83ms
+     × refuses replaced package parents, content corruption and unrelated trash payloads without deleting user files 50ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > removes only the approved package, retaining runtime, permanent identity and application data
+Error: 资源协调区禁止等待网络、文件复制或异步业务
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:29:41
+     27|     if (options.signal?.aborted) throw new ApplicationError('CANCELED'…
+     28|     const value = action();
+     29|     if (value instanceof Promise) throw new Error('资源协调区禁止等待网络、文件复制或异步…
+       |                                         ^
+     30|     return value;
+     31|   } finally {
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:22:319
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > permits exact-hash reinstall after cleanup but rejects same-version changed content
+Error: 资源协调区禁止等待网络、文件复制或异步业务
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:29:41
+     27|     if (options.signal?.aborted) throw new ApplicationError('CANCELED'…
+     28|     const value = action();
+     29|     if (value instanceof Promise) throw new Error('资源协调区禁止等待网络、文件复制或异步…
+       |                                         ^
+     30|     return value;
+     31|   } finally {
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:23:101
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > rechecks a stale preview when a lease or active default changes and does not reap unknown leases
+AssertionError: expected Error: 资源协调区禁止等待网络、文件复制或异步业务 to match object { code: 'RESOURCE_STATE_CHANGED' }
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_STATE_CHANGED",
++ Error {
++   "message": "资源协调区禁止等待网络、文件复制或异步业务",
+  }
+
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:24:432
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > keeps tombstone refs and corrupt or unknown history rather than reporting zero-reference cleanup eligibility
+AssertionError: expected Error: 资源协调区禁止等待网络、文件复制或异步业务 to match object { code: 'RESOURCE_BUSY' }
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ Error {
++   "message": "资源协调区禁止等待网络、文件复制或异步业务",
+  }
+
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:25:745
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > holds unmapped native histories and retained derived resources even if no package ref row exists
+AssertionError: expected Error: 资源协调区禁止等待网络、文件复制或异步业务 to match object { code: 'RESOURCE_BUSY' }
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ Error {
++   "message": "资源协调区禁止等待网络、文件复制或异步业务",
+  }
+
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:26:836
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > recovers a stopped-owner interruption at marked and rejects new consumption while deleting
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > recovers a stopped-owner interruption at renamed and rejects new consumption while deleting
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > recovers a stopped-owner interruption at deleting and rejects new consumption while deleting
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > recovers a stopped-owner interruption at removed and rejects new consumption while deleting
+AssertionError: expected [Function] to throw error including 'injected cleanup' but got '资源协调区禁止等待网络、文件复制或异步业务'
+
+Expected: "injected cleanup"
+Received: "资源协调区禁止等待网络、文件复制或异步业务"
+
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:27:191
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  src/main/core/applications/__tests__/version-maintenance.test.ts > authoritative version inventory and crash-safe owned package cleanup > refuses replaced package parents, content corruption and unrelated trash payloads without deleting user files
+AssertionError: expected Error: 资源协调区禁止等待网络、文件复制或异步业务 to match object { code: 'RESOURCE_BUSY' }
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ Error {
++   "message": "资源协调区禁止等待网络、文件复制或异步业务",
+  }
+
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:29:401
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 10 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+ApplicationError: 版本占用已变化，请重新检查清理计划
+ ❯ src/main/core/applications/version-maintenance.ts:93:45
+     91|    const usage=this.inventory(value.appId).items.find(i=>i.packageHash…
+     92|    if(!usage)throw new ApplicationError('NOT_FOUND','本机没有该应用版本');
+     93|    if(usage.planHash!==value.planHash)throw new ApplicationError('RESO…
+       |                                             ^
+     94|    if(!usage.canCleanup)throw new ApplicationError('RESOURCE_BUSY','版本…
+     95|    const owner=this.processes.read(process.pid);if(!owner||owner.pid!=…
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:24:361
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'RESOURCE_STATE_CHANGED' }
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+ApplicationError: 版本仍有保留依据或待核查项，不能常规清理
+ ❯ src/main/core/applications/version-maintenance.ts:94:31
+
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:25:725
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'RESOURCE_BUSY' }
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+ApplicationError: 版本仍有保留依据或待核查项，不能常规清理
+ ❯ src/main/core/applications/version-maintenance.ts:94:31
+
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:26:816
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'RESOURCE_BUSY' }
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: injected cleanup marked
+ ❯ ApplicationVersionMaintenance.checkpoint src/main/core/applications/__tests__/version-maintenance.test.ts:18:516
+
+ ❯ src/main/core/applications/version-maintenance.ts:105:9
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:27:171
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: injected cleanup renamed
+ ❯ ApplicationVersionMaintenance.checkpoint src/main/core/applications/__tests__/version-maintenance.test.ts:18:516
+
+ ❯ ApplicationVersionMaintenance.finish src/main/core/applications/version-maintenance.ts:120:195
+ ❯ src/main/core/applications/version-maintenance.ts:105:44
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:27:171
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: injected cleanup deleting
+ ❯ ApplicationVersionMaintenance.checkpoint src/main/core/applications/__tests__/version-maintenance.test.ts:18:516
+
+ ❯ ApplicationVersionMaintenance.finish src/main/core/applications/version-maintenance.ts:123:128
+ ❯ src/main/core/applications/version-maintenance.ts:105:44
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:27:171
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: injected cleanup removed
+ ❯ ApplicationVersionMaintenance.checkpoint src/main/core/applications/__tests__/version-maintenance.test.ts:18:516
+
+ ❯ ApplicationVersionMaintenance.finish src/main/core/applications/version-maintenance.ts:125:42
+ ❯ src/main/core/applications/version-maintenance.ts:105:44
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:27:171
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: injected cleanup deleting
+ ❯ ApplicationVersionMaintenance.checkpoint src/main/core/applications/__tests__/version-maintenance.test.ts:18:516
+
+ ❯ ApplicationVersionMaintenance.finish src/main/core/applications/version-maintenance.ts:123:128
+ ❯ src/main/core/applications/version-maintenance.ts:105:44
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:28:141
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+ApplicationError: 版本仍有保留依据或待核查项，不能常规清理
+ ❯ src/main/core/applications/version-maintenance.ts:94:31
+
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:29:381
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'RESOURCE_BUSY' }
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: injected cleanup deleting
+ ❯ ApplicationVersionMaintenance.checkpoint src/main/core/applications/__tests__/version-maintenance.test.ts:18:516
+
+ ❯ ApplicationVersionMaintenance.finish src/main/core/applications/version-maintenance.ts:123:128
+ ❯ src/main/core/applications/version-maintenance.ts:105:44
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ApplicationVersionMaintenance.cleanup src/main/core/applications/version-maintenance.ts:90:10
+ ❯ clean src/main/core/applications/__tests__/version-maintenance.test.ts:17:71
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+ ❯ src/main/core/applications/__tests__/version-maintenance.test.ts:30:109
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+This error originated in "src/main/core/applications/__tests__/version-maintenance.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  10 failed | 50 passed (60)
+     Errors  10 errors
+   Start at  21:01:01
+   Duration  2.60s (transform 284ms, setup 0ms, import 635ms, tests 2.91s, environment 412ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

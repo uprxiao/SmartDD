@@ -8,7 +8,7 @@ import {ConnectionForm} from './connection-form';
 import {ProjectApplications} from './project-applications';
 import {ApplicationsWorkspace} from './workspace';
 import type {CatalogItem} from './api';
-const m=vi.hoisted(()=>({catalog:vi.fn(),connections:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),setAdded:vi.fn(),setEnabled:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn(),projectList:vi.fn(),projectGet:vi.fn(),refreshTasks:vi.fn(),tasks:[] as {id:string;projectId:string;ptyId:string|null;title:string}[]}));
+const m=vi.hoisted(()=>({versions:vi.fn(async()=>({ok:true,value:{appId:'mail',items:[],checkedAt:'2026-10-20T00:00:00.000Z',recoveryPending:0}})),catalog:vi.fn(),connections:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),setAdded:vi.fn(),setEnabled:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn(),projectList:vi.fn(),projectGet:vi.fn(),refreshTasks:vi.fn(),tasks:[] as {id:string;projectId:string;ptyId:string|null;title:string}[]}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m,projects:{list:m.projectList,get:m.projectGet},dialog:{pickDirectory:vi.fn()}},events:{on:()=>()=>{}}}));
 vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{get tasks(){return m.tasks;},refresh:m.refreshTasks}}));
 const uid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;

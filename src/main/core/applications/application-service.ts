@@ -1,3 +1,5 @@
+import {ApplicationVersionMaintenance} from './version-maintenance';
+import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
 import type {ApplicationActivityQuery} from '@shared/application-activity';
 import {ApplicationActivityService} from './activity-service';
 import type {MailDraftDataView,MailDraftListData} from '@shared/application-data';
@@ -35,6 +37,7 @@ import type { CapabilityRunRegistry } from './run-registry';
 const uuid=z.uuid();
 /** Main-process composition for actual local business services. Agent runtime attachment is explicit. */
 export class ApplicationService {
+  readonly versions:ApplicationVersionMaintenance;
   readonly activity:ApplicationActivityService;
   readonly connections:ApplicationConnectionService;
   readonly selections:ApplicationSelectionService;
@@ -58,6 +61,7 @@ export class ApplicationService {
     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
     requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};changed?():void;
   }){
+    this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
     this.activity=new ApplicationActivityService(store);
     this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null});
     this.builtin=new BuiltinPackageRegistry(store);
@@ -72,10 +76,12 @@ export class ApplicationService {
   }
   observeInput(sender:ApplicationUiSender,target:NativeInputTarget,data:string):void{this.nativeInputs.observe(sender,target,data);}
   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
-  async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();
+  async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();await this.versions.recover();
     const unfinished=this.store.sqlite.prepare("SELECT 1 FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing') LIMIT 1").get();
     if(unfinished)try{await this.mailExecution();}catch(error){this.mailRecoveryIssue={code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:'原邮件执行的恢复核查尚未完成；保留原结果，不自动重发'};}
   }
+  listVersions(sender:ApplicationUiSender,appId:ApplicationId){this.options.requireSender(sender);return this.versions.list(appId);}
+  async cleanupVersion(sender:ApplicationUiSender,input:ApplicationVersionCleanup){this.options.requireSender(sender);const result=await this.versions.cleanup(input);this.options.changed?.();return result;}
   listActivity(sender:ApplicationUiSender,input:ApplicationActivityQuery={}){this.options.requireSender(sender);return{...this.activity.list(input),recoveryIssue:this.mailRecoveryIssue};}
   activityDetail(sender:ApplicationUiSender,kind:'operation'|'send',id:string){this.options.requireSender(sender);return{...this.activity.detail(kind,id),recoveryIssue:this.mailRecoveryIssue};}
   catalog(sender:ApplicationUiSender){
