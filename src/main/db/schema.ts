@@ -228,10 +228,10 @@ export const importedKeys = sqliteTable('imported_keys', {
 export const capabilityResources = sqliteTable('capability_resources', {
   resourceId: text('resource_id').primaryKey(), kind: text('kind').notNull(), contentHash: text('content_hash').notNull(),
   ownerStoreId: text('owner_store_id').notNull(), pathScope: text('path_scope', { enum: ['C', 'H'] }).notNull(),
-  relativePath: text('relative_path').notNull(),
+  relativePath: text('relative_path').notNull(),scopeIdentity: text('scope_identity').notNull().default(''),scopeRelativePath: text('scope_relative_path'),
   state: text('state', { enum: ['staged', 'verified', 'ready', 'deleting', 'removed', 'recovery-required'] }).notNull(),
   generation: integer('generation').notNull().default(1), integrity: text('integrity', { enum: ['unknown', 'valid', 'invalid'] }).notNull(), operationId: text('operation_id'),
-}, t => ({ ownedPath: uniqueIndex('capability_resources_owned_path').on(t.ownerStoreId, t.pathScope, t.relativePath) }));
+}, t => ({ ownedPath: uniqueIndex('capability_resources_owned_path').on(t.ownerStoreId, t.pathScope, t.relativePath),discoveryPath: uniqueIndex('capability_resources_discovery_path').on(t.scopeIdentity,t.scopeRelativePath).where(sql`${t.pathScope}='H' AND ${t.state}<>'removed'`) }));
 export const capabilityResourceDependencies = sqliteTable('capability_resource_dependencies', {
   resourceId: text('resource_id').notNull().references(() => capabilityResources.resourceId),
   dependencyId: text('dependency_id').notNull().references(() => capabilityResources.resourceId),
@@ -369,3 +369,5 @@ export const capabilityPackageContracts = sqliteTable('capability_package_contra
 export const capabilityAgentAdapters = sqliteTable('capability_agent_adapters', {
   agentId: text('agent_id').notNull(),version: text('version').notNull(),adapterHash: text('adapter_hash').notNull().unique(),resourceId: text('resource_id').notNull().references(() => capabilityResources.resourceId),manifestJson: text('manifest_json').notNull(),
 },t => ({ pk: primaryKey({ columns: [t.agentId,t.version] }) }));
+
+export const capabilityDiscoveryRoots = sqliteTable('capability_discovery_roots', { homeId: text('home_id').primaryKey(),canonicalHome: text('canonical_home').notNull().unique() });

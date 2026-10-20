@@ -1,0 +1,140 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-D",
+  "recordedAt": "2026-10-20T04:38:27.918684+00:00",
+  "requirementBaseline": "R1.6 incl 12.21; runtime design6.2/6.8/8.3; no product scope change",
+  "baseCommit": "4427533d8e09604f846cbe093168e23820dae008",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "previousGoalTurnClassification": "progress: versioned adapters, stable complete Claude projection and production resource initialization committed as 4427533",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Canonical explicit HOME identity and persistent catalog with full immutable Skill tree hashes and source/store ownership; same-version cross-store namesakes are never adopted or overwritten",
+    "H maintenance intent precedes C operation and full dependency leases; staged copies and full original-source validation occur outside SQLite write transactions; target renames/catalog publication hold H lock",
+    "Consumer reservation precedes same-ID C run/PTY registration; H freeze waits for actual C CLI/bridge/activity completion and revocation, including armed PID-null windows and lost registration return",
+    "H->C->DB order, token/inode/device ownership checks and bounded wait/cancel; unknown or malformed consumers and old locks retain protection rather than being stolen by age",
+    "Original operation/owner and exact source recovery for four interrupted publication phases; unpublished canceled resources retain removed tombstones without reserving an unused address",
+    "Additive0014 preserves legacy C IDs/paths and all original foreign keys, adds explicit H scope/root/relative locations and active address uniqueness; C-only APIs refuse H resource misuse",
+    "Initialized catalog loss, broken symlinks, original dependency metadata damage and user-owned target content remain explicit recovery/conflict errors"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "files": 27,
+      "tests": 303,
+      "passed": 303,
+      "failed": 0,
+      "log": "dev003-d-20261020/all-tests.txt"
+    },
+    {
+      "command": "pnpm test src/main/core/applications/__tests__/discovery-catalog.test.ts src/main/db/migrations.test.ts",
+      "files": 2,
+      "tests": 43,
+      "passed": 43,
+      "failed": 0,
+      "log": "dev003-d-20261020/catalog-final.txt",
+      "scope": "29 H/catalog plus14 migrations; subset of303, not added to unique count"
+    },
+    {
+      "command": "pnpm test src/main/core/projects",
+      "files": 6,
+      "tests": 79,
+      "passed": 79,
+      "failed": 0,
+      "log": "dev003-d-20261020/project-regression.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-d-20261020/types.txt"
+    }
+  ],
+  "newTests": {
+    "discoveryCatalog": 29,
+    "preservedCUpgradeAndForeignKeys": 1
+  },
+  "findingsAndCorrections": [
+    {
+      "finding": "First run had5 migration replay failures because leading comments hid the new first ADD COLUMN from the existing replay detector",
+      "correction": "Separate the comment-only statement from ADD COLUMN; retain all old upgrade/replay assertions and add original C ID/path/FK preservation case",
+      "redLog": "dev003-d-20261020/red-initial-tests.txt"
+    },
+    {
+      "finding": "First run also showed canceled unpublished wrong projection bytes permanently retained the H address",
+      "correction": "Keep removed resource/operation tombstones and full history while releasing only an unmaterialized target address; same original source can then publish its verified bytes; existing files are never overwritten",
+      "redLog": "dev003-d-20261020/red-initial-tests.txt"
+    },
+    {
+      "finding": "Native disable-list test asserted unquoted TOML text rather than the actual config semantics",
+      "correction": "Parse the generated TOML and assert enabled=false on the precise unselected original path",
+      "redLog": "dev003-d-20261020/red-initial-tests.txt"
+    },
+    {
+      "finding": "New recovery fixture expected unknown although the existing run registry calls a dead host plus uncertain child orphaned",
+      "correction": "Assert orphaned and the original H hold/release denial; no process-state or release logic relaxed",
+      "redLog": "dev003-d-20261020/red-recovery-state.txt"
+    },
+    {
+      "finding": "New dependency-closure test had an invalid SQL string quote",
+      "correction": "Correct test source quoting; this was a transform failure before its H tests ran, not a business red test",
+      "redLog": "dev003-d-20261020/red-sql-fixture-transform.json"
+    }
+  ],
+  "actualBoundary": [
+    "H trees, binary files, executable bits, atomic directory/file operations, SQLite references and native adapter parameter generation participate",
+    "Multiple stores/HOMEs/aliases are real separate temporary directories and databases within one test process; process identity/stop/reuse decisions for new H tests use explicit FixtureProcessReader inputs",
+    "Final aggregate also retains earlier actual private Unix/MCP subprocess and macOS native identity tests, without converting them into H cross-process or real Agent acceptance"
+  ],
+  "buildObservation": {
+    "sourceCheckpoint": "DEV003-C /4427533; current H changes have not been rebuilt",
+    "sessionId": 46034,
+    "stateAtObservation": "specific original build session confirmed live; fixed LibreOffice download curl retries after two300-second timeouts",
+    "log": "dev003-d-20261020/prior-build-progress.txt",
+    "fallbackAssetReadOnlyVerification": {
+      "path": "/Users/liubu/Documents/ChatGPT/SmartDD/release/engine-cache/libreoffice/LibreOffice_26.2.4.2_MacOS_aarch64.dmg",
+      "bytes": 295019039,
+      "sha256": "64e0ad05564554eeee639d49b08b20908a38d4722ec95f1620d05c99bcbe9fb1",
+      "matchesCommittedAssetLock": true,
+      "copiedOrChanged": false
+    },
+    "scope": "Only read-only verification of a pinned public build asset in the original worktree; no M9 source, user data, node_modules, out or process touched"
+  },
+  "boundaries": [
+    "TaskService/PTY and effective native profile/user configuration have not adopted the new H consumers or managed adapter plan; no production Agent run accepted",
+    "Actual multiple-App/process H concurrency and process crash while holding catalog.lock are not accepted; stale-lock safe recovery, H projection deletion/GC and pre-migration startup fence remain required",
+    "The conservative old-lock hold is a temporary safe behavior, not completion of the recovery requirement",
+    "No actual Claude Code/Codex model turn, M10 packaged App or formal product T-case passed in this batch; all72 cases retain their previous state",
+    "No daily HOME/native session, live account, business API action, email send, main merge, push, tag or release; M9 only had the public asset cache read described above"
+  ],
+  "sourceHashes": {
+    "drizzle/0014_discovery_catalog.sql": "7045ad7d93f78906170d249cce7e1a4f828af07dad9d66e31ae96cdfa21ebd4b",
+    "drizzle/meta/_journal.json": "a093abac60c769cd69ae2b08aade0ab21ac0966de011f3e3f38c750d405712a3",
+    "src/main/core/applications/__tests__/agent-fixture.ts": "051b3b0a2679d073aca2eafbcf8a5f82789954fc9981499ac5209c293392f298",
+    "src/main/core/applications/__tests__/discovery-catalog.test.ts": "1a59eb5d4adb207ef5c9ee88f3ef8fd400a15a69af11db2873f644719f930278",
+    "src/main/core/applications/discovery-catalog-lock.ts": "3e207127f86f3a5e98224b21418149cc84f491a9ff138c3b66ec4efd30c92cbb",
+    "src/main/core/applications/discovery-catalog.ts": "67490d526146547a2f2ad1c33f6e4a5f30d56855647e1233b9ef5eb45316482d",
+    "src/main/core/applications/resource-store.ts": "cc003e7008dbb6cd1fc9635c42c346e10e491034c92d9d701c8b71d695e66e0b",
+    "src/main/core/applications/run-registry.ts": "9a9526bacfd276ff354fb6b658d95a5b788280ec6a5494d477c5c97ed5d79120",
+    "src/main/db/migrations.test.ts": "3eb5bf4363f5de7e52099751fa89064b69f0411fb5dce7e429bf172cb7e4c445",
+    "src/main/db/schema.ts": "0d52cd145ce085f3f778b1ba0a8210dd1102b62c8c87691f3b1c0b375b1aaffa"
+  },
+  "logHashes": {
+    "dev003-d-20261020/all-tests.txt": "02d3c91dd64b560732137e3c12209b4cd3d5a903c67a7766a7279d8bf91975e3",
+    "dev003-d-20261020/catalog-final.txt": "af79d523b5d1d2e0cd8613efdc7714d7239711eb553b0e4387a73c31cdde7a68",
+    "dev003-d-20261020/intermediate-tests.txt": "fb152365e59bf2e6b9198e5b1a3bbdac55464985d03b912ff75081a9626b2363",
+    "dev003-d-20261020/prior-build-progress.txt": "1a02f474fe802c4d7c05daed5e95104eefeab2ff3c97ac0fca816d41a2d2fbcc",
+    "dev003-d-20261020/project-regression.txt": "dd186b3fda22e5b798a8003b8171dc11894bf485d43e9609c61fad1b18ffc00b",
+    "dev003-d-20261020/red-initial-tests.txt": "e75b554b1782e70f93cce72c014a0a507d296e2eb1499e1265a1a03581d501d5",
+    "dev003-d-20261020/red-recovery-state.txt": "39ce1761a706183b6c1096d48ee581f4d9bc533c075a38d5e8af29a77504f31c",
+    "dev003-d-20261020/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9",
+    "dev003-d-20261020/red-sql-fixture-transform.json": "c0dbc23c7b2294b4fa6b211d8607e47c08bebd4dea7707078b19ba87478ab822"
+  },
+  "logEncoding": "Text logs retain stdout/stderr with terminal trailing blank lines trimmed only; transform diagnostics are losslessly JSON-wrapped with original raw SHA256 so display padding is preserved. Repeated checks are not counted as new cases."
+}

@@ -3,12 +3,12 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSyn
 import { dirname, join } from 'node:path';
 import type Database from 'better-sqlite3';
 import { APP_HASH_PATTERN, ApplicationError, isPackagePath } from '@shared/applications';
-import { canonicalJson } from './manifest';
+import { canonicalJson, digest } from './manifest';
 import { ensureStoreDirectory } from './package-files';
 import { withResourceLock } from './resource-lock';
 
 export interface ResourceRecord {
-  resourceId: string; kind: string; contentHash: string; ownerStoreId: string; relativePath: string;
+  resourceId: string; kind: string; contentHash: string; ownerStoreId: string; relativePath: string;pathScope: 'C' | 'H';scopeIdentity: string;
   state: 'staged' | 'verified' | 'ready' | 'deleting' | 'removed' | 'recovery-required';
   generation: number; integrity: 'unknown' | 'valid' | 'invalid'; operationId: string | null;
 }
@@ -19,7 +19,7 @@ export interface PublishResource {
 }
 export type PublishCheckpoint = 'registered' | 'materialized' | 'renamed';
 const SELECT = `SELECT resource_id AS resourceId,kind,content_hash AS contentHash,owner_store_id AS ownerStoreId,
-  relative_path AS relativePath,state,generation,integrity,operation_id AS operationId FROM capability_resources`;
+  COALESCE(scope_relative_path,relative_path) AS relativePath,path_scope AS pathScope,CASE WHEN path_scope='C' THEN owner_store_id ELSE scope_identity END AS scopeIdentity,state,generation,integrity,operation_id AS operationId FROM capability_resources`;
 
 /** Durable C-store publication. File copies never run inside a SQLite write transaction. */
 export class ResourceStore {
@@ -48,7 +48,14 @@ export class ResourceStore {
     const row = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(id) as ResourceRecord | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND', '应用资源记录不存在');
     if (row.ownerStoreId !== this.storeId || !isPackagePath(row.relativePath)) throw new ApplicationError('OWNERSHIP_CONFLICT', '应用资源归属不一致');
+    if (!['C','H'].includes(row.pathScope) || (row.pathScope === 'H' && (!APP_HASH_PATTERN.test(row.scopeIdentity) || !row.relativePath.startsWith('.agents/skills/')))) throw new ApplicationError('OWNERSHIP_CONFLICT','资源位置范围无法核验');
     return row;
+  }
+  directory(resource: ResourceRecord): string {
+    if (resource.pathScope === 'C') return join(this.root,resource.relativePath);
+    const home = this.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(resource.scopeIdentity) as { home: string } | undefined;
+    if (!home || digest(home.home) !== resource.scopeIdentity || realpathSync(home.home) !== home.home || !resource.relativePath.startsWith('.agents/skills/')) throw new ApplicationError('OWNERSHIP_CONFLICT','共享投影的实际发现根无法核验');
+    return join(home.home,resource.relativePath);
   }
   private checkSpec(spec: PublishResource): void {
     if (!/^[a-z][a-z0-9:._-]{0,199}$/.test(spec.resourceId) || !isPackagePath(spec.relativePath) || !APP_HASH_PATTERN.test(spec.contentHash)
@@ -61,7 +68,7 @@ export class ResourceStore {
     }
   }
   private assertIdentity(row: ResourceRecord, spec: PublishResource): void {
-    if (row.kind !== spec.kind || row.contentHash !== spec.contentHash || row.relativePath !== spec.relativePath) throw new ApplicationError('OWNERSHIP_CONFLICT', '资源标识与发布身份不一致');
+    if (row.pathScope !== 'C' || row.kind !== spec.kind || row.contentHash !== spec.contentHash || row.relativePath !== spec.relativePath) throw new ApplicationError('OWNERSHIP_CONFLICT', '资源标识与发布身份不一致');
   }
   private lease(resourceId: string, operationId: string, kind = 'install'): string {
     const leaseId = randomUUID();
@@ -83,7 +90,9 @@ export class ResourceStore {
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
       const rows = this.sqlite.prepare(`WITH RECURSIVE needed(id) AS (VALUES(?) UNION SELECT d.dependency_id FROM capability_resource_dependencies d JOIN needed n ON d.resource_id=n.id) SELECT id FROM needed`).all(resourceId) as { id: string }[];
       this.assertDependencies(rows.map(r => r.id));
-      directory = join(this.root, this.get(resourceId).relativePath);
+      const resource = this.get(resourceId);
+      if (resource.pathScope !== 'C') throw new ApplicationError('OWNERSHIP_CONFLICT','共享发现资源须先取得对应H目录占用');
+      directory = this.directory(resource);
       leaseId = this.lease(resourceId, ownerId, ownerKind);
     }).immediate());
     try { return await action(directory); }

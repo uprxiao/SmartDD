@@ -1,0 +1,152 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/discovery-catalog.test.ts src/main/db/migrations.test.ts
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/db/migrations.test.ts (13 tests | 5 failed) 45ms
+     × upgrades existing draft attachments and seeds independent nullable connection-slot revisions without resetting data 6ms
+     × retains native run history after project deletion and skips its completed FK rebuild on replay 5ms
+     × re-runs 0001 safely when its tables exist but the record is missing 5ms
+     × re-runs 0002 without duplicating tasks copied from sessions 5ms
+     × re-runs 0003 when its columns already exist, keeping the stored results 4ms
+ ❯ src/main/core/applications/__tests__/discovery-catalog.test.ts (22 tests | 2 failed) 7462ms
+     × builds a real complete native disable list from the coordinated catalog without changing the fixed snapshot 394ms
+     × checks supplied projected bytes against the original source, then safely cancels an unpublished materialization 354ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > upgrades existing draft attachments and seeds independent nullable connection-slot revisions without resetting data
+SqliteError: duplicate column name: scope_identity
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:107:63
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > retains native run history after project deletion and skips its completed FK rebuild on replay
+SqliteError: duplicate column name: scope_identity
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:117:62
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > re-runs 0001 safely when its tables exist but the record is missing
+SqliteError: duplicate column name: scope_identity
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:133:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > re-runs 0002 without duplicating tasks copied from sessions
+SqliteError: duplicate column name: scope_identity
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:143:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > re-runs 0003 when its columns already exist, keeping the stored results
+SqliteError: duplicate column name: scope_identity
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:156:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/main/core/applications/__tests__/discovery-catalog.test.ts > actual H catalog publication, cross-store freezing and run reservations > builds a real complete native disable list from the coordinated catalog without changing the fixed snapshot
+AssertionError: expected '-c\nskills.config=[{"path"="/private/…' to contain 'enabled=false'
+
+- Expected
++ Received
+
+- enabled=false
++ -c
++ skills.config=[{"path"="/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-pbM3HX/home/.agents/skills/smartdd-a-zentao-query-f8c977de5ae6/SKILL.md","enabled"=true},{"path"="/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-pbM3HX/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md","enabled"=true},{"path"="/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-pbM3HX/home/.agents/skills/smartdd-s-project-db-diagnostics-fa158d3592b3/SKILL.md","enabled"=false}]
++ -c
++ mcp_servers.wy_47525412aeef069bf2bb194e.command="/Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
++ -c
++ mcp_servers.wy_47525412aeef069bf2bb194e.args=["/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-pbM3HX/capabilities/runtime/c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793/mcp-bridge.cjs","--bootstrap","/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-pbM3HX/private-ticket.json"]
++ -c
++ mcp_servers.wy_47525412aeef069bf2bb194e.env={"ELECTRON_RUN_AS_NODE"="1"}
++ -c
++ mcp_servers.smartdd_project_47525412aeef.command="python3"
++ -c
++ mcp_servers.smartdd_project_47525412aeef.args=["/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-pbM3HX/capabilities/runtime/70c32e91da49eb11fb26ac32d000a45bd1df1de05cbea8b899ec3fa216ced795/context_mcp.py","/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-pbM3HX/capabilities/runs/p1/eb64d754-b8ea-4beb-b034-199d8b2ff9d8/e87628fb-6a20-4f55-bf90-8f02fe176df1/context.json"]
+
+ ❯ src/main/core/applications/__tests__/discovery-catalog.test.ts:27:445
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  src/main/core/applications/__tests__/discovery-catalog.test.ts > actual H catalog publication, cross-store freezing and run reservations > checks supplied projected bytes against the original source, then safely cancels an unpublished materialization
+SqliteError: UNIQUE constraint failed: capability_resources.scope_identity, capability_resources.scope_relative_path
+ ❯ sqliteTransaction.<anonymous> src/main/core/applications/discovery-catalog.ts:88:286
+
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ src/main/core/applications/discovery-catalog.ts:92:6
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ DiscoveryCatalog.register src/main/core/applications/discovery-catalog.ts:83:79
+ ❯ src/main/core/applications/discovery-catalog.ts:102:18
+ ❯ withDiscoveryLock src/main/core/applications/discovery-catalog-lock.ts:15:201
+ ❯ DiscoveryCatalog.lock src/main/core/applications/discovery-catalog.ts:55:82
+ ❯ DiscoveryCatalog.publication src/main/core/applications/discovery-catalog.ts:100:20
+ ❯ DiscoveryCatalog.publish src/main/core/applications/discovery-catalog.ts:96:173
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 28 passed (35)
+   Start at  12:31:26
+   Duration  7.71s (transform 164ms, setup 0ms, import 240ms, tests 7.51s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

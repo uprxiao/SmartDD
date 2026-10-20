@@ -120,10 +120,11 @@ export class CapabilityRunRegistry {
   }
   private view(row: RunRow): CapabilityRunRecord { return { runId: row.run_id,taskId: row.task_id,projectId: row.project_id,runner: row.runner,state: row.state,snapshotHash: row.snapshot_hash,pid: row.pid,processStartedAt: row.process_started_at,startedAt: row.started_at,endedAt: row.ended_at }; }
   get(runId: string): CapabilityRunRecord { return this.view(this.row(runId)); }
-  async reserve(input: z.infer<typeof reserveSchema>): Promise<OwnedCapabilityRun> {
+  async reserve(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string}): Promise<OwnedCapabilityRun> {
     const parsed = reserveSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','运行准备参数无效或含未允许字段');
     if (this.closed) throw new ApplicationError('CANCELED','此宿主的应用运行服务已停止');
-    const value = parsed.data, runId = randomUUID(), ptyId = randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';
+    if (reservation && (!z.uuid().safeParse(reservation.runId).success || !z.uuid().safeParse(reservation.ptyId).success)) throw new ApplicationError('INVALID_INPUT','宿主预留运行身份无效');
+    const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       if (this.closed) throw new ApplicationError('CANCELED','运行准备已取消');
       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId); this.gate();
