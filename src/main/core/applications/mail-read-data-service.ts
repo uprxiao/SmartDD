@@ -1,7 +1,7 @@
 import { createHash,randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
-import { applicationResourceReadSchema,type ApplicationResourceRef,type ApplicationResourceChunk } from '@shared/application-data';
+import { applicationResourceReadSchema,applicationResourceRefSchema,type ApplicationResourceRef,type ApplicationResourceChunk } from '@shared/application-data';
 import { mailSourceRefSchema,type MailSourceRef,type MailQueryData,type MailReadData } from '@shared/application-mail-data';
 import type { LocalMailContent,LocalMailSummary } from '@shared/application-mail';
 import type { ApplicationDataHost,ApplicationDataBinding } from './application-adapter-registry';
@@ -52,6 +52,7 @@ export class MailReadDataService implements ApplicationDataHost {
   if(reference.connectionId!==target.connection.id||reference.identityRevision!==target.connection.identityRevision)throw new ApplicationError('SCOPE_DENIED','原邮件来源身份不是当前项目选用身份');
   const worker=this.worker();try{const value=await worker.read(target.config,reference.nativeId,target.connection.identity,target.context.signal,target.at);if(value.sourceRevision!==reference.contentRevision)throw new ApplicationError('RESOURCE_STATE_CHANGED','原邮件内容已变化，请从当前查询重新读取');this.contexts.require(target.context,'mail.read');return value;}finally{await this.closeWorker(worker);}
  }
+ async source(context:ApplicationExecutionContext,reference:MailSourceRef):Promise<LocalMailContent>{const parsed=mailSourceRefSchema.safeParse(reference);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','原邮件来源引用无效');return this.nativeRead(await this.target(context,reference.connectionId),parsed.data);}
  private summary(value:LocalMailSummary):void{if(value.subject.length>8192||value.from.length>2000||value.to.length>8192||(value.messageId?.length??0)>2000)throw new ApplicationError('TOO_LARGE','邮件头超过原工具契约，未静默截断');}
  private async register(target:MailQueryTarget,reference:MailSourceRef,part:string,mediaType:string,bytes:Uint8Array):Promise<ApplicationResourceRef>{
   this.contexts.require(target.context,'mail.read');const cache=await this.cache(),hash=digest(bytes),id=resourceId(canonicalJson({project:target.context.projectId,source:target.sourceKey,reference,part,hash,mediaType})),resource={id,revision:hash,mediaType,size:bytes.byteLength};
@@ -82,17 +83,22 @@ export class MailReadDataService implements ApplicationDataHost {
   await this.audit(context,target,'read',reference.contentRevision,{reference});this.contexts.require(context,'mail.read');
   return{reference,subject:value.subject,from:value.from,to:value.to,date:value.date,messageId:value.messageId,replyTo:value.replyTo,inReplyTo:value.inReplyTo,references:value.references,text,html,attachments:attachments.map(({filename,contentType,size,contentHash,contentId,resource})=>({filename,contentType,size,contentHash,contentId,resource})),complete:value.complete&&!missing.length,missing};
  }
- async resource(context:ApplicationExecutionContext,input:unknown):Promise<ApplicationResourceChunk>{
-  const parsed=applicationResourceReadSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件资源引用或范围无效');const args=parsed.data;
-  if(this.contexts.store.sqlite.prepare('SELECT 1 FROM application_data_resources WHERE resource_id=? AND project_id=? AND app_id=?').get(args.resource.id,context.projectId,'mail'))return this.resources.read(context,input);
-  const target=await this.target(context),cache=await this.cache(),locator=await cache.withRecord(target.sourceKey,'resource:'+context.projectId+':'+args.resource.id,async value=>locatorSchema.parse(value));
-  if(!locator)throw new ApplicationError('SOURCE_UNAVAILABLE','邮件缓存引用已回收，请重新读取原邮件以重建资源');if(canonicalJson(locator.resource)!==canonicalJson(args.resource))throw new ApplicationError('HASH_MISMATCH','资源引用不能替换原内容或类型');if(args.offset>locator.resource.size)throw new ApplicationError('INVALID_INPUT','邮件资源位置超过原长度');
+ async resourceBytes(context:ApplicationExecutionContext,input:ApplicationResourceRef,limit=25*1024*1024):Promise<Buffer>{
+  const parsed=applicationResourceRefSchema.safeParse(input);if(!parsed.success||parsed.data.size>limit||limit>40*1024*1024)throw new ApplicationError('TOO_LARGE','邮件资源无效或超过附件复制预算');const resource=parsed.data;
+  if(this.contexts.store.sqlite.prepare('SELECT 1 FROM application_data_resources WHERE resource_id=? AND project_id=? AND app_id=?').get(resource.id,context.projectId,'mail'))return this.resources.bytes(context,resource,limit);
+  const target=await this.target(context),cache=await this.cache(),locator=await cache.withRecord(target.sourceKey,'resource:'+context.projectId+':'+resource.id,async value=>locatorSchema.parse(value));
+  if(!locator)throw new ApplicationError('SOURCE_UNAVAILABLE','邮件缓存引用已回收，请重新读取原邮件以重建资源');if(canonicalJson(locator.resource)!==canonicalJson(resource))throw new ApplicationError('HASH_MISMATCH','资源引用不能替换原内容或类型');
   const value=await this.nativeRead(target,locator.reference);let bytes:Buffer;
   if(locator.part==='text')bytes=Buffer.from(value.text);else if(locator.part==='html'&&value.html!==null)bytes=Buffer.from(value.html);else if(locator.part.startsWith('attachment:')){
-   const id=locator.part.slice(11),attachment=value.attachments.find(item=>item.id===id);if(!attachment||attachment.contentHash!==args.resource.revision)throw new ApplicationError('RESOURCE_STATE_CHANGED','原附件已不在当前邮件中');
+   const id=locator.part.slice(11),attachment=value.attachments.find(item=>item.id===id);if(!attachment||attachment.contentHash!==resource.revision)throw new ApplicationError('RESOURCE_STATE_CHANGED','原附件已不在当前邮件中');
    const worker=this.worker();try{bytes=Buffer.from(await worker.attachment(target.config,locator.reference.nativeId,id,attachment.contentHash,target.connection.identity,context.signal,target.at,locator.reference.contentRevision));}finally{await this.closeWorker(worker);}
   }else throw new ApplicationError('SOURCE_UNAVAILABLE','原邮件资源部分已缺失');
   if(bytes.length!==locator.resource.size||digest(bytes)!==locator.resource.revision)throw new ApplicationError('HASH_MISMATCH','原邮件资源内容与引用不同');await cache.put(target.sourceKey,bytes,{signal:context.signal,used:true});await this.audit(context,target,'resource',locator.reference.contentRevision,{reference:locator.reference,part:locator.part});this.contexts.require(context,'mail.read');
+  return bytes;
+ }
+ async resource(context:ApplicationExecutionContext,input:unknown):Promise<ApplicationResourceChunk>{
+  const parsed=applicationResourceReadSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件资源引用或范围无效');const args=parsed.data;
+  if(args.offset>args.resource.size)throw new ApplicationError('INVALID_INPUT','邮件资源位置超过原长度');const bytes=await this.resourceBytes(context,args.resource,40*1024*1024);
   const chunk=bytes.subarray(args.offset,Math.min(bytes.length,args.offset+args.length));let encoding:'utf8'|'base64'='base64',data=chunk.toString('base64');if(args.resource.mediaType.startsWith('text/')||args.resource.mediaType==='application/json')try{data=new TextDecoder('utf-8',{fatal:true}).decode(chunk);encoding='utf8';}catch{}
   const next=args.offset+chunk.length,eof=next===bytes.length;return{resourceId:args.resource.id,revision:args.resource.revision,offset:args.offset,length:chunk.length,encoding,data,nextOffset:eof?null:next,eof};
  }

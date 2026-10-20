@@ -1,0 +1,231 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV005-H",
+  "recordedAt": "2026-10-20T08:28:02.813153+00:00",
+  "requirementBaseline": "R1.6 incl12.21; R06-02/03/08/10/13 and R08; no added external send authorization",
+  "baseCommit": "df9c30411d8cd62ce6a37dd1bf30578d4788c7c6",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "prototypeBaseline": "8466734",
+  "applicationVersion": "0.0.5",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Original mail.reply.create uses actual source SHA and parsed From/Reply-To/To/Cc;reply/reply-all distinction,strict thread headers,visible recipients and no inherited Bcc",
+    "Current selected SMTP public identity via fixed-package v1 compatible schema,no SMTP secret read or send permission;no-SMTP draft stays independent",
+    "Existing saved reply body edits keep original thread identity and do not require deleted/offline source;new or changed linkage validated,forged new-message thread refused",
+    "Original mail.attachment.import copies exact authorized resource or host-minted workspace reference into existing persistent business blob store",
+    "Trusted main-frame capture validates original FileService root owner/project/generation,UUID+SHA expires10min;no model paths,same-project native chunks and final hash proof",
+    "Shared FileService terminal source gains controlled1MiB native reads at selected revision;changed/replaced/symlink/closed/canceled sources cannot commit an attachment",
+    "Three explicit trusted RPC methods and production FileService composition,no product UI yet"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects --maxWorkers=2",
+      "status": "passed",
+      "files": 48,
+      "tests": 614,
+      "passed": 614,
+      "failed": 0,
+      "m10AndRelatedRuntime": 535,
+      "projectsAndM8": 79,
+      "log": "dev005-h-20261020/related-validated-20261020.json"
+    },
+    {
+      "command": "pnpm test src/main/core/files/native-broker.test.ts src/shared/file-terminal.test.ts --maxWorkers=1",
+      "status": "passed",
+      "files": 2,
+      "tests": 67,
+      "passed": 67,
+      "failed": 0,
+      "nativeFileBoundary": 59,
+      "terminalReferences": 8,
+      "log": "dev005-h-20261020/files-final-20261020.json"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev005-h-20261020/types-validated-20261020.json"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev005-h-20261020/build-20261020.json"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev005-h-20261020/release-20261020.json"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "log": "dev005-h-20261020/resource-verification.json"
+    }
+  ],
+  "testAccounting": {
+    "uniqueCodeAndRegressionTests": 681,
+    "m10RelatedWithProjects": 614,
+    "additionalExistingFileAndTerminalRegression": 67,
+    "newMailDataIntegration": 10,
+    "newReplyBoundaryUnit": 7,
+    "newTrustedRpc": 1,
+    "newTestsIncludedIn614": 18,
+    "previousM10RelatedBaseline": 596,
+    "note": "596 prior plus18 new equals614;additional67 existing file/terminal tests are regression coverage,not new M10 tests. Repeated61/614/681 runs are not added."
+  },
+  "engineeringLimits": {
+    "attachmentBytes": 26214400,
+    "nativeReadChunkBytes": 1048576,
+    "resourceResponseChunkBytes": 262144,
+    "workspaceReferenceMs": 600000,
+    "workspaceReferences": 256,
+    "replyTargets": 100,
+    "replyChainIds": 100,
+    "replySubjectCharacters": 2000,
+    "originalPackageReplyBodyCharacters": 131072,
+    "integrationFixtureMs": 15000,
+    "paginationFixtureMs": 30000
+  },
+  "initialFailure": {
+    "log": "dev005-h-20261020/aggregate-20261020.json",
+    "passed": 679,
+    "failed": 2,
+    "tests": 681,
+    "details": [
+      "Existing built-in old-snapshot/default-switch test hit default5s outer timeout at7.029s",
+      "Existing native directory case creates6000 fixture files before explicit<5s search assertion;outer default5s timed out at25.972s"
+    ],
+    "followup": "No expectation,test timeout,Vitest config or native production source changed. M10 related group ran with2workers;file/native group separately with1worker. Both green runs retained. This does not claim a fix for every shared-machine IO timing condition."
+  },
+  "sourceInspectionFinding": "Reply SMTP identity now validates the original fixed package v1 connection schema rather than consuming current public config without the compatibility view;final614 run and build include this guard. No prior business red is claimed.",
+  "immutableResourceVerification": {
+    "indexHash": "ed79ceef451f21d563235e3cca0bcba700307165b118141f54eb098bfe236319",
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "adapters": 2,
+    "runtimes": 1,
+    "apps": [
+      {
+        "appId": "zentao",
+        "version": "1.0.0",
+        "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+        "skills": 2,
+        "tools": 3,
+        "files": 13
+      },
+      {
+        "appId": "mail",
+        "version": "1.0.0",
+        "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+        "skills": 1,
+        "tools": 14,
+        "files": 34
+      }
+    ]
+  },
+  "evidenceBoundary": {
+    "actualComponents": [
+      "private synthetic Foxmail SQLite/.mail and production-source native reader",
+      "real mail Worker and original v1 CJS package",
+      "private compiled production-source native file broker and current FileService roots/chunks",
+      "host contexts,SQLite,persistent blobs,session/run/tool chain and RPC routing"
+    ],
+    "explicitFixtures": [
+      "SMTP identity verifier and test-only credentials",
+      "cipher and WebContents",
+      "CLI process identity instead of real CC/Codex",
+      "Owned source read gate and owned file mutation in cancellation/change tests"
+    ],
+    "existingNativeRegressionBoundary": "Existing native-broker suite uses its test-only failpoint build;new mail/file imports compile the unmodified production source without failpoint flags. Neither is packaged App UI acceptance.",
+    "dailyDataRead": false,
+    "actualAgentRun": false,
+    "externalMailSent": false,
+    "packagedAppExecuted": false,
+    "formalM10Cases": 72,
+    "newFormalProductPasses": 0,
+    "formalProductCasesPassed": 0
+  },
+  "remaining": [
+    "send Data APIs and concrete user authority provenance",
+    "production TaskCapabilityLauncher,effective native configurations,Agent-spawned bridge identity and actual CC/Codex business runs",
+    "mail complete/partial/last-success status and health,full startup maintenance/recovery/GC",
+    "P01-P09 UI including actual attachment capture/open/save and full72 packaged App/system/manual acceptance and delivery"
+  ],
+  "sourceManifest": "dev005-h-20261020/source-and-build-manifest.json",
+  "evidenceFiles": [
+    {
+      "path": "dev005-h-20261020/aggregate-20261020.json",
+      "bytes": 2908,
+      "sha256": "94fedea437a3ef7d725053602252f166e5fc0f5731facd722c80ff96febb6b12"
+    },
+    {
+      "path": "dev005-h-20261020/build-20261020.json",
+      "bytes": 18375,
+      "sha256": "864d54314d2c53ae0ac6d714634c12c3ab956cc78e63a9c09c22396ce6287df1"
+    },
+    {
+      "path": "dev005-h-20261020/data-first-20261020.json",
+      "bytes": 756,
+      "sha256": "4322d90549c05c3a833c6e3cad8fea30710ac53ccbdfff4c9e2d21727035103d"
+    },
+    {
+      "path": "dev005-h-20261020/files-final-20261020.json",
+      "bytes": 658,
+      "sha256": "6e810ea1353db4d44fea1a7fec6b9216dcfc7f43a439a03ec38d2fd270464e55"
+    },
+    {
+      "path": "dev005-h-20261020/related-final-20261020.json",
+      "bytes": 917,
+      "sha256": "e2e981c0d49f923a3dedc5efda514f2ef0eaa4296af83427e68e4711870494d6"
+    },
+    {
+      "path": "dev005-h-20261020/related-validated-20261020.json",
+      "bytes": 920,
+      "sha256": "45545b2bf67d3ed460f003cd0a8c4e24014ca9c29948dba7f334f0bb363b3d61"
+    },
+    {
+      "path": "dev005-h-20261020/release-20261020.json",
+      "bytes": 3550,
+      "sha256": "6daf18c14c058db26945877a0a5dc3c80ae891c9e95e7c42aba60a60ef5488a7"
+    },
+    {
+      "path": "dev005-h-20261020/resource-verification.json",
+      "bytes": 626,
+      "sha256": "e004fb5a2dbf0cb3782893cc9698f234b8db1b94653c1e19492121071901b0cc"
+    },
+    {
+      "path": "dev005-h-20261020/source-and-build-manifest.json",
+      "bytes": 4550,
+      "sha256": "bb815313410be2bf68e9230facdb244cdb4b13c5c9aa369bdbc37731b31ae1df"
+    },
+    {
+      "path": "dev005-h-20261020/types-final-20261020.json",
+      "bytes": 380,
+      "sha256": "2cbd9152bf228307a03d7525a79aafbe544156ab0951065c04028ded4ffb218b"
+    },
+    {
+      "path": "dev005-h-20261020/types-first-20261020.json",
+      "bytes": 380,
+      "sha256": "0dcf88c13b43edacf6e72dca3a8fa9cfd7de444ae4ff47cb95f87967fa6f5db2"
+    },
+    {
+      "path": "dev005-h-20261020/types-second-20261020.json",
+      "bytes": 381,
+      "sha256": "27c4ab917f36b2b9552114f07225263153844068f3c1c51f577c71b19e830bb9"
+    },
+    {
+      "path": "dev005-h-20261020/types-validated-20261020.json",
+      "bytes": 384,
+      "sha256": "58b0d3006d67ce43023904886433dc22ca63c64b9b09b58301954f9436ea96b5"
+    }
+  ]
+}

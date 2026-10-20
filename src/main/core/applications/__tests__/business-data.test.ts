@@ -95,7 +95,7 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
  it('cannot fake reply provenance or silently substitute a model-supplied project or approval',async()=>{
   for(const extra of [{projectId:'p2'},{approved:true},{operationId:randomUUID()}])expect(await call(cc,'draft_create',{content:content(),...extra})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});
   const reply={...content(),mode:'reply',sourceMessageRef:{connectionId:randomUUID(),identityRevision:1,nativeId:'forged',contentRevision:'a'.repeat(64)}};
-  expect(await call(cc,'draft_create',{content:reply})).toMatchObject({status:'error',error:{code:'CAPABILITY_UNAVAILABLE'}});expect(f.sqlite.prepare('SELECT count(*) n FROM mail_drafts').get()).toEqual({n:0});
+  expect(await call(cc,'draft_create',{content:reply})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});expect(f.sqlite.prepare('SELECT count(*) n FROM mail_drafts').get()).toEqual({n:0});
  });
  it('rejects cross-project drafts and references even when their valid IDs and hashes are known',async()=>{
   const original=await draft();f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','other isolated project',1,1)");await enable('p2');

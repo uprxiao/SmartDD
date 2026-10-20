@@ -180,7 +180,10 @@ export class FileService {
     if (initial && (initial.device !== result.revision.device || initial.inode !== result.revision.inode)) throw new FileError('CHANGED', '文件已被替换，请刷新后重新选择');
     if (expected && (expected.device !== result.revision.device || expected.inode !== result.revision.inode)) throw new FileError('CHANGED', '捕获的文件已被替换，请重新选择');
     const revision = { ...result.revision };
-    return { relativePath: result.relativePath, absolutePath: join(lease.canonicalPath, result.relativePath), revision, signal, assert, inspect: async () => {
+    return { relativePath: result.relativePath, absolutePath: join(lease.canonicalPath, result.relativePath), revision, signal, assert, read:async(offset,length,cancel)=>{
+      if(!Number.isSafeInteger(offset)||offset<0||!Number.isSafeInteger(length)||length<0||length>FILE_LIMITS.chunk||offset+length>revision.size)throw new FileError('INVALID_INPUT','引用文件分块范围无效');
+      assert();const chunk=await this.readRequest<NativeFileResult>('chunk',lease,result.relativePath,{offset,length,expectedHash:revision.hash,expectedRevision:revision,resourceLimit:25*1024*1024},AbortSignal.any([signal,cancel]));assert();return Buffer.from(chunk.base64!,'base64');
+    }, inspect: async () => {
       assert();
       const current = await this.readRequest<NativeFileResult>('stat', lease, result.relativePath, {}, signal); assert();
       if (current.revision.device !== revision.device || current.revision.inode !== revision.inode) throw new FileError('CHANGED', '引用文件已被替换，请重新选择');

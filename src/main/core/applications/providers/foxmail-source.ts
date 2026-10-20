@@ -183,7 +183,7 @@ export class FoxmailSource {
     if (bytes.reduce((n,b) => n + b.length,Buffer.byteLength(email.text ?? '') + Buffer.byteLength(email.html ?? '')) > 16 * 1024 * 1024) throw new ApplicationError('INCOMPLETE_RESULT','解码后邮件超过读取预算');
     const missing = email.attachments.some(a => a.rfc822DepthExceeded) ? ['nested-message-depth'] : [];
     if (!email.text && !email.html) missing.push('body');
-    return { ...summary(id,email,digest(read.bytes)), text: email.text ?? '', html: email.html ?? null, replyTo: addresses(email.replyTo), references: email.references?.match(/<[^<>]+>/g) ?? [], inReplyTo: email.inReplyTo ?? null,
+    return { ...summary(id,email,digest(read.bytes)), text: email.text ?? '', html: email.html ?? null, fromAddresses:addresses(email.from?[email.from]:[]),toAddresses:addresses(email.to),cc:addresses(email.cc),replyTo: addresses(email.replyTo), references: email.references?.match(/<[^<>]+>/g) ?? [], inReplyTo: email.inReplyTo ?? null,
       complete: !missing.length, missing, attachments: email.attachments.map((a,i) => ({ id: String(i), filename: a.filename ?? 'attachment-' + (i + 1), contentType: a.mimeType, size: bytes[i].length, contentHash: digest(bytes[i]), contentId: a.contentId ?? null })), bytes, observedStamp: read.stamp };
   }
   async read(config: Config, id: string, expected: VerifiedConnectionIdentity, now = new Date()): Promise<LocalMailContent> {

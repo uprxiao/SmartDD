@@ -23,11 +23,11 @@ export interface ApplicationExecutionContext {
   readonly action:string;readonly semantics:'read'|'write';readonly allowedOperations:readonly string[];
   readonly signal:AbortSignal;readonly startedAt:string;
 }
-interface Target {slot:ApplicationProvider;id:string;identityRevision:number;configRevision:number;policyRevision:number;bindingRevision:number}
+interface Target {slot:ApplicationProvider;id:string;identityRevision:number;configRevision:number;policyRevision:number;bindingRevision:number;identityOnly?:true}
 interface ContextRecord {context:ApplicationExecutionContext;active:boolean;abort:AbortController;check:()=>void;allowed:Set<string>;targets:Map<ApplicationProvider,Target>;scopeHash:string}
 interface OperationRow {scope_hash:string;targets_json:string;state:string;semantics:'read'|'write';attempt_count:number}
 const actionSchema=z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
-const targetSchema=z.object({slot:z.enum(['zentao','foxmail','smtp']),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative()}).strict();
+const targetSchema=z.object({slot:z.enum(['zentao','foxmail','smtp']),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional()}).strict();
 const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.save','connection.enable','connection.disconnect']);
 
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
@@ -72,18 +72,24 @@ export class ApplicationExecutionContexts {
   private checkTarget(context:ApplicationExecutionContext,target:Target):void{
     if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','来源使用需要真实项目');
     const selected=this.selections.connectionSlot(context.projectId,context.appId,target.slot),current=this.connections.get(target.id);
-    if(selected.connectionId!==target.id||selected.identityRevision!==target.identityRevision||selected.revision!==target.bindingRevision||current.identityRevision!==target.identityRevision||current.configRevision!==target.configRevision||current.policyRevision!==target.policyRevision||!current.enabled||current.authorization!=='connected')throw new ApplicationError('REVISION_CONFLICT','本次来源身份、配置或选用已变化，结果未交付');
+    if(selected.connectionId!==target.id||selected.identityRevision!==target.identityRevision||selected.revision!==target.bindingRevision||current.identityRevision!==target.identityRevision||current.configRevision!==target.configRevision||current.policyRevision!==target.policyRevision||!target.identityOnly&&(!current.enabled||current.authorization!=='connected'))throw new ApplicationError('REVISION_CONFLICT','本次来源身份、配置或选用已变化，结果未交付');
   }
   async connection(context:ApplicationExecutionContext,slot:ApplicationProvider,expectedId:string|null=null):Promise<{connection:ApplicationConnection;secret:string|null}>{
     this.require(context,slot==='smtp'?'mail.send':context.appId+'.read');
     if(this.sharedIndexes.has(context))throw new ApplicationError('SCOPE_DENIED','共享索引仅使用由当前有效触发方固定的只读来源，不直接解析项目连接或秘密');
     if(!context.projectId||context.scopeKind==='connection-management')throw new ApplicationError('SCOPE_DENIED','连接管理不能用来读取项目数据');
+    const connection=await this.pinConnection(context,slot,expectedId,false);
+    const authenticated=this.connections.authentication(connection.id,connection);
+    return {connection,secret:authenticated.secret};
+  }
+  private async pinConnection(context:ApplicationExecutionContext,slot:ApplicationProvider,expectedId:string|null,identityOnly:boolean):Promise<ApplicationConnection>{
+    if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','连接使用需要有效项目');
     const selected=this.selections.connectionSlot(context.projectId,context.appId,slot);
     if(!selected.connectionId)throw new ApplicationError('AUTH_REQUIRED','请先明确选用此项目的来源或发件连接');
     if(expectedId!==null&&expectedId!==selected.connectionId)throw new ApplicationError('SCOPE_DENIED','请求的连接不是当前项目明确选用的连接');
     const connection=this.connections.get(selected.connectionId);
-    if(!connection.enabled||connection.authorization!=='connected')throw new ApplicationError('AUTH_REQUIRED','当前连接已停用或断开');
-    const target:Target={slot,id:connection.id,identityRevision:connection.identityRevision,configRevision:connection.configRevision,policyRevision:connection.policyRevision,bindingRevision:selected.revision};
+    if(!identityOnly&&(!connection.enabled||connection.authorization!=='connected'))throw new ApplicationError('AUTH_REQUIRED','当前连接已停用或断开');
+    const target:Target={slot,id:connection.id,identityRevision:connection.identityRevision,configRevision:connection.configRevision,policyRevision:connection.policyRevision,bindingRevision:selected.revision,...(identityOnly?{identityOnly:true as const}:{})};
     await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
       const record=this.record(context),row=this.store.sqlite.prepare('SELECT targets_json FROM application_data_operations WHERE operation_id=?').get(context.operationId) as {targets_json:string};
       let targets:Target[];try{targets=z.array(targetSchema).parse(JSON.parse(row.targets_json));}catch{throw new ApplicationError('HASH_MISMATCH','原业务来源记录无法核验');}
@@ -91,8 +97,13 @@ export class ApplicationExecutionContexts {
       if(!prior){targets.push(target);this.store.sqlite.prepare('UPDATE application_data_operations SET targets_json=? WHERE operation_id=?').run(canonicalJson(targets),context.operationId);}
       record.targets.set(slot,target);this.checkTarget(context,target);
     }).immediate());
-    const authenticated=this.connections.authentication(connection.id,connection);
-    return {connection,secret:authenticated.secret};
+    return connection;
+  }
+  async draftSender(context:ApplicationExecutionContext,expectedId:string|null):Promise<ApplicationConnection|null>{
+    this.require(context,'mail.draft');if(context.appId!=='mail'||context.scopeKind!=='project'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','回复身份需要真实邮件项目');
+    const selected=this.selections.connectionSlot(context.projectId,'mail','smtp');
+    if(!selected.connectionId){if(expectedId)throw new ApplicationError('SCOPE_DENIED','回复发件连接不是当前项目明确选用的连接');return null;}
+    return this.pinConnection(context,'smtp',expectedId,true);
   }
   async connectionHealth(context:ApplicationExecutionContext,connection:ApplicationConnection,code:ApplicationError['code']|null):Promise<void>{
     this.assertActive(context);const target=this.record(context).targets.get(connection.providerId);if(!target||target.id!==connection.id)throw new ApplicationError('SCOPE_DENIED','健康结果不属于本次已固定来源');const changed=await this.connections.reportHealth(connection.id,connection,code);this.assertActive(context);if(changed)this.deps.changed?.();

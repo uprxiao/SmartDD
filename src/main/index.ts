@@ -174,7 +174,7 @@ async function main(): Promise<void> {
   let applications:ApplicationService|undefined;
   try {
     if(agentSupport){
-      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
+      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,workspaceFiles:files,requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
       await applications.recover();
     }
   } catch {console.warn('[applications] Local business recovery pending; check application diagnostics');}
