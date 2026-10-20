@@ -81,6 +81,11 @@ describe('main-process PTY ownership', () => {
   it('keeps an accepted keyboard write successful when evidence collection fails,so callers cannot duplicate it',()=>{
     const current=new PtyAccess({trusted:()=>true,activePty:()=>payload.ptyId,alive:()=>true,write,resize,killTask:kill,observedInput:()=>{throw new Error('observation unavailable');}});expect(current.input(event,payload)).toBe(true);expect(write).toHaveBeenCalledExactlyOnceWith(payload.ptyId,payload.data);
   });
+  it('passes only the real Electron sender to task launch origin,ignoring renderer-supplied sender arguments',()=>{
+    const create=vi.fn(),handlers=new Map<string,Function>();registerRPCRouter(createTaskController({create} as never,e=>access.requireSender(e)),{handle:(name:string,fn:Function)=>handlers.set(name,fn)} as never);
+    const forged={sender:sender(99),senderFrame:{}},req={projectId:'p1',firstMessage:'literal initial prompt',initialSender:forged};handlers.get('tasks.create')!(event,req,forged);expect(create).toHaveBeenCalledExactlyOnceWith(req,event);
+    expect(()=>handlers.get('tasks.create')!(forged,req,event)).toThrow('TERMINAL_SENDER_DENIED');expect(create).toHaveBeenCalledTimes(1);
+  });
   it('task endpoints cannot bypass sender checks for create/open/delete/kill/archive', () => {
     const names = ['list', 'get', 'create', 'open', 'rename', 'setArchived', 'stopAndArchive', 'delete', 'kill'];
     const svc = Object.fromEntries(names.map(n => [n, vi.fn()]));

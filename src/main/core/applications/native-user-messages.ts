@@ -24,7 +24,7 @@ export interface NativeUserMessageResult {
 }
 interface Registration { version: string; signal: AbortSignal; detach: () => void }
 interface Proof { file: string; root: string; offset: number; length: number; device: number; inode: number; headerHash: string | null; cwd: string; expiresAt: number }
-/** Main-process origin evidence only. Native roles AND bytes accepted by the owned PTY must
+/** Main-process origin evidence only. Native roles AND input accepted by the owned PTY or launch argument must
  * match. Neither a native file nor one of these receipts decides whether sending is intended.
  * No method is exposed by RPC, MCP, or the versioned package runtime.
  */
@@ -123,7 +123,7 @@ export class NativeUserMessages {
           const end = data.indexOf(10, begin); if (end < 0) break;
           const raw = data.subarray(begin, end), parsed = raw.length <= LIMIT.line ? this.message(raw, context, cwd) : null;
           if (parsed) {
-            const current = this.context(runId).context, receipt = this.inputs.match(current, parsed.text, parsed.timestamp);
+            const receipt = this.inputs.match(context, parsed.text, parsed.timestamp);
             if (receipt) {
               const message: NativeUserMessage = Object.freeze({ id: randomUUID(), runId, runner: context.snapshot.runner, cliVersion: registration.version, nativeSessionId: context.snapshot.native.sessionId!, timestamp: parsed.timestamp, text: parsed.text.replace(/\r\n?/g, '\n'), recordHash: digest(raw), receipt });
               messages.push(message); this.proofs.set(message, { ...located, offset: start + begin, length: raw.length, device: before.dev, inode: before.ino, headerHash, cwd, expiresAt: Math.min(this.now() + 600000, receipt.observedAt + 600000) });
@@ -133,11 +133,17 @@ export class NativeUserMessages {
           }
           begin = end + 1;
         }
-        const after = await file.stat(); this.context(runId);
-        if (after.size < before.size || before.dev !== after.dev || before.ino !== after.ino || await this.header(file, context) !== headerHash) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生消息文件在读取时被替换或截断');
-        // A complete record must still be present when exposed to the next host stage.
+        const after = await file.stat(), pathState = await lstat(located.file), again = Buffer.alloc(data.length), reread = await file.read(again, 0, again.length, start);
+        if (after.size < before.size || !pathState.isFile() || pathState.isSymbolicLink() || pathState.dev !== before.dev || pathState.ino !== before.ino || before.dev !== after.dev || before.ino !== after.ino || reread.bytesRead !== data.length || !again.equals(data) || await this.header(file, context) !== headerHash || await realpath(context.snapshot.native.stateRoot) !== located.root || await realpath(context.snapshot.native.cwd) !== cwd) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生消息文件在读取时被替换或截断');
+        // Revalidate the owned process once after asynchronous IO, then use that same
+        // snapshot for all results. The later claim still reopens/rechecks its exact row.
+        const fresh = this.context(runId).context;
+        if (fresh.snapshot.native.sessionId !== context.snapshot.native.sessionId) throw new ApplicationError('SCOPE_DENIED', '本次原生会话身份已改变');
         const verified: NativeUserMessage[] = [];
-        for (const message of messages.reverse()) if (await this.verify(message)) verified.push(message);
+        for (const message of messages.reverse()) {
+          if (this.proofs.has(message) && this.inputs.match(fresh, message.text, message.timestamp) === message.receipt) verified.push(message);
+          else this.proofs.delete(message);
+        }
         return { status: verified.length ? 'matched' : 'no-match', messages: Object.freeze(verified), issueCode: null };
       } finally { await file.close(); }
     } catch (error) {

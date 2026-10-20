@@ -25,7 +25,7 @@ import { redact } from '../connections/redact';
 import type { ProjectService } from '../projects/project-service';
 import { claudeSessionFile, claudeSessionFileExists, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
 import { SessionTail } from './session-health';
-import type { TaskCapabilityLaunch, TaskCapabilityLauncher } from './capability-lifecycle';
+import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
 
 type TaskRow = typeof tasks.$inferSelect;
 
@@ -148,7 +148,7 @@ export class TaskService {
   }
 
   /** New task from the home page (PRD F05 steps 1–3). Nothing is recorded if the CLI cannot start. */
-  async create(req: CreateTaskRequest): Promise<OpenResult> {
+  async create(req: CreateTaskRequest, sender?: TaskInputSender): Promise<OpenResult> {
     if (this.closed) throw new Error('应用正在退出，不能启动任务');
     const project = this.d.projects.getProject(req.projectId);
     if (project.archivedAt != null) throw new Error(`项目「${project.name}」已归档，不能新建任务`);
@@ -162,7 +162,7 @@ export class TaskService {
     const firstMessage = req.firstMessage.trim();
     // Claude takes our id, so the task id doubles as its session id.
     const sessionId = profile.runner === 'claude' ? id : null;
-    const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id,newTask:true });
+    const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id,newTask:true,initialSender:sender });
 
     try {
       this.d.db
@@ -396,7 +396,7 @@ export class TaskService {
     firstMessage: string,
     size: { cols?: number; rows?: number },
     keepRoot: { path: string; explicit: boolean } | null = null,
-    context?: { projectId: string; taskId: string; previous?: RuntimeSnapshot | null; newTask: boolean }
+    context?: { projectId: string; taskId: string; previous?: RuntimeSnapshot | null; newTask: boolean; initialSender?: TaskInputSender }
   ): Promise<{ ptyId: string; injectedNames: string[]; stateRoot: string; runtime?: PreparedRuntime; launchedAt: number }> {
     const base = { ...this.d.baseEnv() };
     for (const key of PARENT_AGENT_VARS) delete base[key];
@@ -475,6 +475,10 @@ export class TaskService {
         if (!this.managed.get(ptyId)?.exited) this.running.set(context!.taskId, ptyId);
         await launch.spawned(this.d.ptys.nativePid?.(ptyId) ?? null);
         if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
+        if (mode === 'new' && context?.initialSender && firstMessage.trim()) {
+          try { launch.initialInput?.(context.initialSender, firstMessage.trim()); }
+          catch { /* Origin evidence is optional; never replay a prompt already given to the native process. */ }
+        }
       }
       return { ptyId, injectedNames: plan.injectedNames, stateRoot: stateRootFor(profile.runner, env, base), runtime, launchedAt };
     } catch (error) {

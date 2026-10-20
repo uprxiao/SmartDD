@@ -1,7 +1,9 @@
+import type { IpcMainInvokeEvent } from 'electron';
 import type { LaunchMode } from '@shared/runner-args';
 import type { RuntimeSnapshot } from '@shared/capabilities';
 import type { PreparedRuntime } from '../capabilities/capability-service';
 import type { ResolvedProfile } from '../ai/ai-profile-service';
+export type TaskInputSender = Pick<IpcMainInvokeEvent, 'sender' | 'senderFrame'>;
 /** Host-owned callbacks. No runtime identity or process receipt is accepted from RPC. */
 export interface TaskCapabilityLaunch {
   ptyId: string;
@@ -11,6 +13,7 @@ export interface TaskCapabilityLaunch {
   command?: string;
   beforeSpawn(): Promise<void>;
   spawned(nativePid: number | null): Promise<void>;
+  initialInput?(sender: TaskInputSender, text: string): void;
   spawnFailed(): Promise<void>;
   exited(): Promise<void>;
   stop(reason: string): Promise<void>;

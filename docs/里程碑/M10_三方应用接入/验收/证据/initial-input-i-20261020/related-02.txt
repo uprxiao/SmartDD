@@ -1,0 +1,33 @@
+2026-10-20T15:50:28.298607+00:00
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/native-user-inputs.test.ts src/main/core/applications/__tests__/native-user-messages.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/pty-access.test.ts src/main/core/tasks --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (23 tests | 2 failed) 28313ms
+     × joins the trusted home prompt to native claude-code user records only after owned spawn and never replays it on resume 3322ms
+     × joins the trusted home prompt to native codex user records only after owned spawn and never replays it on resume 4999ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > joins the trusted home prompt to native claude-code user records only after owned spawn and never replays it on resume
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > joins the trusted home prompt to native codex user records only after owned spawn and never replays it on resume
+AssertionError: expected 'stopping' to be 'stopped' // Object.is equality
+
+Expected: "stopped"
+Received: "stopping"
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:65:88
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  2 failed | 133 passed (135)
+   Start at  23:50:28
+   Duration  36.51s (transform 533ms, setup 0ms, import 1.28s, tests 34.59s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -58,4 +58,15 @@ describe('bounded host-observed native user input origin; no send grant',()=>{
  it('handles a large complete paste with linear byte accounting and rejects transport overflow',()=>{
   const large='正文'.repeat(60000);input('\x1b[200~'+large+'\x1b[201~\r');expect(match(large)).not.toBeNull();input('x'.repeat(1024*1024+1)+'\r');expect(match('x')).toBeNull();
  });
+ it('records a successful launch argument without interpreting terminal controls or adding Enter',()=>{
+  input('pending prefix');const text='首条问题\n具体内容';ledger.observeLaunch(sender,target,text);const receipt=match(text)!;expect(receipt.transport).toBe('launch-argument');expect(receipt).toMatchObject({runId:current.run.runId,senderId:101});input(' suffix\r');expect(match('pending prefix suffix')?.transport).toBe('terminal');
+  ledger.observeLaunch(sender,target,'second argument');expect(match('second argument')).toBeNull();expect(match(text)).toBe(receipt);
+ });
+ it('binds a launch input once to the first native ID and removes it on the actual run abort',()=>{
+  current.snapshot.native.sessionId=null;ledger.observeLaunch(sender,target,'initial literal');expect(match('initial literal')).toBeNull();current.snapshot.native.sessionId='new-native';const receipt=match('initial literal')!;expect(receipt.transport).toBe('launch-argument');abort.abort();expect(match('initial literal')).toBeNull();
+ });
+ it('refuses launch origin from the wrong frame/target,oversized input or a disposed observer',()=>{
+  expect(()=>ledger.observeLaunch({...sender},target,'forged')).toThrow('untrusted sender');ledger.observeLaunch(sender,{...target,taskId:'foreign-task'},'foreign');ledger.observeLaunch(sender,target,'x'.repeat(1024*1024+1));expect(match('foreign')).toBeNull();ledger.dispose();ledger.observeLaunch(sender,target,'after close');expect(match('after close')).toBeNull();
+ });
+
 });

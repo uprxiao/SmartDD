@@ -23,5 +23,5 @@ try{
  await client.connect(transport);const list=await client.listTools(),tool=list.tools.find(t=>t.name.includes('draft')&&t.name.includes('list'));
  if(!tool)throw new Error('private draft list contract missing');
  const result=await client.callTool({name:tool.name,arguments:{}});
- writeFileSync(process.env.WY_M10_TEST_REPORT,JSON.stringify({cliPid:process.pid,bridgePid:transport.pid,tool:tool.name,result})+'\n',{flag:'wx',mode:0o600});
+ writeFileSync(process.env.WY_M10_TEST_REPORT,JSON.stringify({cliPid:process.pid,bridgePid:transport.pid,initialArgument:process.argv.at(-1),tool:tool.name,result})+'\n',{flag:'wx',mode:0o600});
 }catch(error){clearInterval(timer);await client.close().catch(()=>{});process.stderr.write('private managed CLI integration failed\n');process.exitCode=1;}

@@ -25,6 +25,7 @@ import {ManagedTaskCapabilities} from '../task-capability-launcher';
 import {FixtureProcessReader} from './run-fixture';
 import {PtyManager} from '../../../pty-manager';
 import {MacProcessIdentityReader} from '../process-identity';
+import {encodeClaudeDir} from '../../tasks/native-sessions';
 import {ApplicationToolService} from '../tool-service';
 import {ApplicationAdapterRegistry} from '../application-adapter-registry';
 let root:string,home:string,cwd:string,sqlite:Database.Database,capabilities:CapabilityService,support:AgentSupportService,applications:ApplicationService,managed:ManagedTaskCapabilities,tasks:TaskService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,ptys:TestPtys,projectId:string,codexId:string,claudeId:string;
@@ -53,6 +54,33 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const register=vi.spyOn(applications.nativeMessages,'register'),first=await create(runner==='codex'?codexId:claudeId),runId=first.task.runtimeSnapshot!.runId,context=managed.runs.assertActive(runId);
   expect(register).toHaveBeenCalledWith(runId,runner==='codex'?'0.162.1':'2.1.303',context.signal);expect((await applications.nativeMessages.read(runId)).messages).toEqual([]);
   tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));expect((await applications.nativeMessages.read(runId)).messages).toEqual([]);expect(sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+ });
+ it.each(['claude-code','codex'] as const)('joins the trusted home prompt to native %s user records only after owned spawn and invalidates it on stop',async runner=>{
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const sender={sender:{id:101},senderFrame:{processId:9,routingId:1}} as unknown as ApplicationUiSender,text='请查看当前邮件\n并准备具体回复',first=await tasks.create({projectId,dirId:null,aiProfileId:runner==='codex'?codexId:claudeId,firstMessage:'  '+text+'  '},sender),runId=first.task.runtimeSnapshot!.runId,initial=managed.runs.assertActive(runId),nativeId=runner==='codex'?randomUUID():first.task.id,at=new Date().toISOString();
+  expect(ptys.launches[0].args.at(-1)).toBe(text);const date=new Date(),dir=runner==='codex'?join(initial.snapshot.native.stateRoot,'sessions',String(date.getFullYear()),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')):join(initial.snapshot.native.stateRoot,'projects',encodeClaudeDir(cwd));mkdirSync(dir,{recursive:true});
+  const path=join(dir,runner==='codex'?'rollout-home-'+nativeId+'.jsonl':nativeId+'.jsonl'),record=runner==='codex'?{timestamp:at,type:'response_item',payload:{type:'message',role:'user',content:[{type:'input_text',text}]}}:{timestamp:at,type:'user',sessionId:nativeId,cwd,message:{role:'user',content:text}},header=runner==='codex'?JSON.stringify({type:'session_meta',payload:{id:nativeId,cwd,timestamp:at,originator:'codex_cli_rs'}})+'\n':'';writeFileSync(path,header+JSON.stringify(record)+'\n');
+  if(runner==='codex')await vi.waitFor(()=>expect(tasks.get(first.task.id).nativeSessionId).toBe(nativeId),{timeout:6000});
+  const context=managed.runs.assertActive(runId),matched=await applications.nativeMessages.read(runId);expect(matched).toMatchObject({status:'matched',messages:[{text,nativeSessionId:nativeId,receipt:{transport:'launch-argument',senderId:101,taskId:first.task.id}}]});expect(sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+  tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopping'));expect(applications.nativeInputs.match(context,text,Date.parse(at))).toBeNull();
+  // The synthetic PTY never forks its armed bridge. Real process exit/resume is checked below.
+ });
+ it('does not assign home-user origin to an internal task creation without a trusted sender',async()=>{
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const observe=vi.spyOn(applications.nativeInputs,'observeLaunch'),first=await tasks.create({projectId,dirId:null,aiProfileId:claudeId,firstMessage:'internal request'});expect(observe).not.toHaveBeenCalled();expect(ptys.launches[0].args.at(-1)).toBe('internal request');expect(applications.nativeInputs.match(managed.runs.assertActive(first.task.runtimeSnapshot!.runId),'internal request',Date.now())).toBeNull();
+ });
+ it('does not capture a launch argument when native spawning fails',async()=>{
+  const observe=vi.spyOn(applications.nativeInputs,'observeLaunch');vi.spyOn(ptys,'spawn').mockImplementationOnce(()=>{throw new Error('controlled spawn failure');});
+  await expect(tasks.create({projectId,dirId:null,aiProfileId:claudeId,firstMessage:'never delivered'},{sender:{id:101},senderFrame:{processId:9,routingId:1}} as unknown as ApplicationUiSender)).rejects.toThrow('controlled spawn failure');expect(observe).not.toHaveBeenCalled();
+ });
+ it('clears a captured launch origin if the new task cannot be committed to SQLite',async()=>{
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const sender={sender:{id:101},senderFrame:{processId:9,routingId:1}} as unknown as ApplicationUiSender,observe=applications.nativeInputs.observeLaunch.bind(applications.nativeInputs);let captured:ReturnType<typeof applications.nativeInputs.match>=null,context:ReturnType<typeof managed.runs.assertActive>|undefined;
+  vi.spyOn(applications.nativeInputs,'observeLaunch').mockImplementation((source,target,text)=>{observe(source,target,text);context=managed.runs.inputContext(target.taskId,target.ptyId)!;captured=applications.nativeInputs.match(context,text,Date.now());});
+  sqlite.exec("CREATE TRIGGER fixture_task_fail BEFORE INSERT ON tasks BEGIN SELECT RAISE(ABORT,'controlled task commit failure'); END");await expect(tasks.create({projectId,dirId:null,aiProfileId:claudeId,firstMessage:'already passed to process'},sender)).rejects.toThrow('controlled task commit failure');expect(captured).toMatchObject({transport:'launch-argument'});expect(context).toBeDefined();expect(applications.nativeInputs.match(context!,'already passed to process',Date.now())).toBeNull();
+ });
+ it('does not duplicate an accepted launch when optional origin observation fails',async()=>{
+  vi.spyOn(applications.nativeInputs,'observeLaunch').mockImplementation(()=>{throw new Error('controlled evidence failure');});const text='single initial request',first=await tasks.create({projectId,dirId:null,aiProfileId:claudeId,firstMessage:text},{sender:{id:101},senderFrame:{processId:9,routingId:1}} as unknown as ApplicationUiSender);expect(first.task.firstMessage).toBe(text);expect(ptys.launches).toHaveLength(1);expect(ptys.launches[0].args.at(-1)).toBe(text);
  });
  it('registers all no-application Codex runs, retains fixed sources, and releases only after the owned PTY exit',async()=>{
   const first=await create(),runtime=first.task.runtimeSnapshot!,session=await managed.sessions.get(first.task.id);expect(session.snapshot.packages).toEqual([]);expect(runtime.sessionCapabilities).toEqual(session.pointer);expect(managed.runs.get(runtime.runId).state).toBe('active');expect(consumers()).toHaveLength(1);expect(ptys.launches[0].args.join('\n')).toContain('skills.config=');expect(existsSync(runtime.manifestPath)).toBe(true);
@@ -97,15 +125,19 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const profile=profiles.create({name:'private actual process fixture',runner:'codex',executable:command,args:[],env:[{name:'WY_M10_TEST_INPUT_REPORT',value:inputReport,secret:false},{name:'ELECTRON_RUN_AS_NODE',value:'1',secret:false},{name:'WY_M10_TEST_REPORT',value:report,secret:false},{name:'WY_M10_TEST_STOP',value:stop,secret:false}],color:null,isDefault:false});
   for(const skill of capabilities.list(projectId))capabilities.setEnabled(projectId,skill.id,false);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);
   tasks=new TaskService({db,ptys:real,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',SHELL:'/bin/sh'}),onChanged:()=>{}});
-  const frame={},sender={sender:{mainFrame:frame,isDestroyed:()=>false},senderFrame:frame} as unknown as ApplicationUiSender;
+  const frame={processId:9,routingId:1},sender={sender:{id:101,mainFrame:frame,isDestroyed:()=>false},senderFrame:frame} as unknown as ApplicationUiSender;
   const access=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:id=>tasks.activePty(id),alive:id=>real.has(id),write:(id,data)=>real.writeControlled(id,data),resize:()=>{},killTask:()=>{}});
   applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),terminal:{access,bracketedPaste:id=>real.bracketedPaste(id),write:(id,data)=>real.writeControlled(id,data)},requireSender:e=>access.requireSender(e),mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
   managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:resolve('out/native/willyou-process-identity'),stopPty:id=>real.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const oldShell=process.env.SHELL;process.env.SHELL='/bin/sh';let transcript='';real.on('data',(_id,data)=>{transcript+=data;});
   try{
-   const first=await create(profile.id),runId=first.task.runtimeSnapshot!.runId;
-   await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const observed=JSON.parse(readFileSync(report,'utf8')) as {cliPid:number;bridgePid:number;result:{isError?:boolean}};
+   const homePrompt='真实启动首条问题\n仅准备草稿内容',first=await tasks.create({projectId,dirId:null,aiProfileId:profile.id,firstMessage:homePrompt},sender),runId=first.task.runtimeSnapshot!.runId;
+   await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const observed=JSON.parse(readFileSync(report,'utf8')) as {cliPid:number;bridgePid:number;initialArgument:string;result:{isError?:boolean}};
+   expect(observed.initialArgument).toBe(homePrompt);
+   const nativeId=randomUUID(),date=new Date(),nativeRoot=managed.runs.assertActive(runId).snapshot.native.stateRoot,folder=join(nativeRoot,'sessions',String(date.getFullYear()),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')),nativeAt=new Date().toISOString();mkdirSync(folder,{recursive:true});
+   writeFileSync(join(folder,'rollout-actual-argv-'+nativeId+'.jsonl'),JSON.stringify({type:'session_meta',payload:{id:nativeId,cwd,timestamp:nativeAt,originator:'codex_cli_rs'}})+'\n'+JSON.stringify({timestamp:nativeAt,type:'response_item',payload:{type:'message',role:'user',content:[{type:'input_text',text:observed.initialArgument}]}})+'\n');
+   await vi.waitFor(()=>expect(tasks.get(first.task.id).nativeSessionId).toBe(nativeId),{timeout:6000});const homeSource=(await applications.nativeMessages.read(runId)).messages[0];expect(homeSource).toMatchObject({text:homePrompt,receipt:{transport:'launch-argument',senderId:101}});expect(await applications.nativeMessages.verify(homeSource)).toBe(true);
    expect(observed.result.isError).not.toBe(true);expect(managed.runs.get(runId).pid).toBe(observed.cliPid);const child=sqlite.prepare("SELECT state,pid FROM capability_run_processes WHERE run_id=? AND kind='bridge'").get(runId);expect(child).toEqual({state:'active',pid:observed.bridgePid});expect(consumers()).toHaveLength(1);
    const diagnostic=await applications.sessionDiagnostics.inspect(first.task.id);expect(diagnostic.currentRun).toMatchObject({id:runId,current:true,preparation:{state:'prepared',cliVersion:'0.162.1'},bridge:{connected:true,observedAt:expect.any(String)}});expect(diagnostic.applications.find(a=>a.appId==='mail')).toMatchObject({fixedVersion:'1.0.0',resourceState:'verified',evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:1,successfulToolRequests:1}});
    const target={taskId:first.task.id,ptyId:first.ptyId},source={kind:'skill' as const,appId:'mail' as const,skillId:'work-assistant'};
@@ -127,8 +159,13 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
    const revoked=await applications.bindTerminal(sender,{projectId,target,source});await applications.selections.setGlobalEnabled('mail',false,1);
    await expect(async()=>applications.insertTerminal(sender,{bindingId:revoked.id,operationId:randomUUID()})).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(readFileSync(inputReport,'utf8')).toBe(expected);expect(real.has(first.ptyId)).toBe(true);
    writeFileSync(stop,'owned fixture exit');await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'),{timeout:10000});await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(existsSync(first.task.runtimeSnapshot!.manifestPath)).toBe(false);
+   expect(await applications.nativeMessages.verify(homeSource)).toBe(false);await applications.selections.setGlobalEnabled('mail',true,2);for(const path of [report,inputReport,stop])rmSync(path);
+   const resumed=await tasks.open({taskId:first.task.id}),nextRun=resumed.task.runtimeSnapshot!.runId;expect(nextRun).not.toBe(runId);await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const second=JSON.parse(readFileSync(report,'utf8')) as {initialArgument:string;result:{isError?:boolean}};expect(second.result.isError).not.toBe(true);expect(second.initialArgument).toBe(nativeId);expect(second.initialArgument).not.toBe(homePrompt);expect((await applications.nativeMessages.read(nextRun)).messages).toEqual([]);expect(sqlite.prepare('SELECT COUNT(*) AS n FROM mail_send_grants').get()).toEqual({n:0});
+   if(process.env.WY_M10_INPUT_EVIDENCE_ROOT){const dir=process.env.WY_M10_INPUT_EVIDENCE_ROOT;mkdirSync(dir,{recursive:true});writeFileSync(join(dir,'actual-argv-and-resume.json'),JSON.stringify({layer:'actual OS PTY/kernel/native MCP with synthetic CLI and native user JSON',initial:{taskId:first.task.id,runId,ptyId:first.ptyId,cliPid:observed.cliPid,bridgePid:observed.bridgePid,argument:observed.initialArgument,source:homeSource},resumed:{runId:nextRun,ptyId:resumed.ptyId,cliPid:managed.runs.get(nextRun).pid,argument:second.initialArgument,nativeUserMatches:0},sendGrants:0,actualAgents:false})+'\n',{flag:'wx',mode:0o600});}
+   writeFileSync(stop,'owned resumed fixture exit');await vi.waitFor(()=>expect(managed.runs.get(nextRun).state).toBe('stopped'),{timeout:10000});await vi.waitFor(()=>expect(consumers()).toEqual([]));
+
   }finally{tasks.dispose();real.killAll();if(oldShell===undefined)delete process.env.SHELL;else process.env.SHELL=oldShell;}
- },20000);
+ },30000);
  it('opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge',async()=>{
   const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
   const id=randomUUID(),stamp=Date.now();drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,aiProfileName:'historical fixture',runner:'codex',nativeSessionId:'old-owned-native',title:'old history',firstMessage:'',runtimeSnapshot:null,configVersion:0,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
