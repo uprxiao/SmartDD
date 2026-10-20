@@ -3,15 +3,29 @@ import { join } from 'node:path';
 import { ApplicationError, isPackagePath } from '@shared/applications';
 import { capabilityBundleIndexSchema, type CapabilityBundleIndex } from '@shared/capability-bundles';
 import { agentAdapterMetadataSchema } from '@shared/agent-adapters';
-import { canonicalJson, digest } from './manifest';
+import { canonicalJson, digest, validateBundle, type ValidatedBundle } from './manifest';
 import { fileNames } from './package-files';
 import { ownedBundle } from './owned-bundle';
 import { validateRuntime, type RuntimeBundle } from './runtime-registry';
+export function parseCapabilityBundleIndex(value: unknown): CapabilityBundleIndex {
+  try {
+    const index = capabilityBundleIndexSchema.parse(value), {indexHash,...content} = index;
+    if (digest(canonicalJson(content)) !== indexHash
+      || index.adapters.some(a => a.path !== `adapters/${a.agentId}/${a.version}/${a.hash}`)
+      || index.runtimes.some(r => r.path !== `runtimes/${r.hash}`)
+      || index.apps.some(a => a.path !== `apps/${a.appId}/${a.version}/${a.hash}`)
+      || new Set(index.adapters.map(a => a.agentId + ':' + a.version)).size !== index.adapters.length
+      || new Set(index.runtimes.map(r => r.hash)).size !== index.runtimes.length
+      || new Set(index.apps.map(a => a.appId + ':' + a.version)).size !== index.apps.length
+      || digest(canonicalJson({adapters:index.adapters,runtimes:index.runtimes,apps:index.apps})) !== index.build.resourceSetHash) throw new Error();
+    return index;
+  } catch { throw new ApplicationError('INVALID_PACKAGE','能力索引的内容、路径或摘要无效'); }
+}
 export class CapabilityBundleSource {
   readonly index: CapabilityBundleIndex;
   constructor(readonly root: string) {
-    try { this.root = realpathSync(root);const bytes = readFileSync(join(this.root,'index.json'));if(bytes.length>4*1024*1024)throw new Error();const index=capabilityBundleIndexSchema.parse(JSON.parse(bytes.toString('utf8'))),{indexHash,...content}=index;
-      if(digest(canonicalJson(content))!==indexHash || index.adapters.some(a=>a.path!==`adapters/${a.agentId}/${a.version}/${a.hash}`) || index.runtimes.some(r=>r.path!==`runtimes/${r.hash}`) || new Set(index.adapters.map(a=>a.agentId+':'+a.version)).size!==index.adapters.length || new Set(index.runtimes.map(r=>r.hash)).size!==index.runtimes.length || digest(canonicalJson({adapters:index.adapters,runtimes:index.runtimes,apps:index.apps}))!==index.build.resourceSetHash)throw new Error();this.index=index;
+    try { this.root = realpathSync(root);const bytes = readFileSync(join(this.root,'index.json'));if(bytes.length>4*1024*1024)throw new Error();const index=JSON.parse(bytes.toString('utf8'));
+      this.index=parseCapabilityBundleIndex(index);
     }catch{throw new ApplicationError('INVALID_PACKAGE','随程序分发的能力索引无效，应用能力暂不可用');}
   }
   private tree(path: string,manifestName: string): { manifest: Record<string,unknown>;files: Record<string,Buffer> } {
@@ -21,5 +35,12 @@ export class CapabilityBundleSource {
     }catch{throw new ApplicationError('HASH_MISMATCH','随程序分发的能力完整文件树无效');}
   }
   adapters() { return this.index.adapters.map(entry=>{const source=this.tree(entry.path,'bundle.json'),metadata=agentAdapterMetadataSchema.parse(source.manifest.metadata),bundle=ownedBundle(metadata,source.files);if(bundle.hash!==entry.hash||metadata.agentId!==entry.agentId||metadata.version!==entry.version||canonicalJson(bundle.manifest)!==canonicalJson(source.manifest))throw new ApplicationError('HASH_MISMATCH','适配器与构建索引不同');return{metadata,files:source.files,hash:entry.hash};}); }
+  application(entry: CapabilityBundleIndex['apps'][number]): ValidatedBundle {
+    if (!this.index.apps.some(a => canonicalJson(a) === canonicalJson(entry))) throw new ApplicationError('INVALID_PACKAGE','应用不属于当前可信分发索引');
+    const source = this.tree(entry.path,'manifest.json'), bundle = validateBundle(source);
+    if (bundle.packageHash !== entry.hash || bundle.manifest.appId !== entry.appId || bundle.manifest.version !== entry.version || !this.index.runtimes.some(r => r.id === bundle.manifest.runtime.id && r.hash === bundle.manifest.runtime.hash && r.protocolMajor === bundle.manifest.runtime.protocolMajor)) throw new ApplicationError('HASH_MISMATCH','应用包或完整运行依赖与构建索引不同');
+    return bundle;
+  }
+  applications(): ValidatedBundle[] { return this.index.apps.map(entry => this.application(entry)); }
   runtime(entry = this.index.runtimes.find(r=>r.id==='applications')): RuntimeBundle { if(!entry)throw new ApplicationError('NOT_FOUND','业务桥未随程序准备');const source=this.tree(entry.path,'runtime.json'),bundle={id:entry.id,protocolMajor:entry.protocolMajor,bridgeEntry:entry.bridgeEntry,files:source.files},validated=validateRuntime(bundle);if(validated.hash!==entry.hash||canonicalJson(validated.manifest)!==canonicalJson(source.manifest))throw new ApplicationError('HASH_MISMATCH','业务桥与构建索引不同');return bundle; }
 }

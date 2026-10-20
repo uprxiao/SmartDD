@@ -371,3 +371,9 @@ export const capabilityAgentAdapters = sqliteTable('capability_agent_adapters', 
 },t => ({ pk: primaryKey({ columns: [t.agentId,t.version] }) }));
 
 export const capabilityDiscoveryRoots = sqliteTable('capability_discovery_roots', { homeId: text('home_id').primaryKey(),canonicalHome: text('canonical_home').notNull().unique() });
+
+
+export const capabilityBuiltinPackageSources = sqliteTable('capability_builtin_package_sources', {
+  packageHash: text('package_hash').notNull().references(() => capabilityPackages.packageHash),
+  sourceIndexHash: text('source_index_hash').notNull(),sourceIndexJson: text('source_index_json').notNull(),approvedAt: text('approved_at').notNull(),
+},t => ({ pk: primaryKey({ columns: [t.packageHash,t.sourceIndexHash] }) }));

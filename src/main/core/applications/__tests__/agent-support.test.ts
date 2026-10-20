@@ -16,7 +16,7 @@ import { agentFixture } from './agent-fixture';
 let build: string, output: string, runtimeEntry: string, f: Awaited<ReturnType<typeof agentFixture>>, capabilities: CapabilityService;
 beforeAll(() => { build=mkdtempSync(join(tmpdir(),'willyou-m10-index-build-'));output=join(build,'bundles');const runtime=join(build,'runtime');runtimeEntry=join(runtime,'mcp-bridge.cjs');execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',runtime],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',output,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'}); });
 afterAll(()=>rmSync(build,{recursive:true,force:true}));
-beforeEach(async()=>{f=await agentFixture();const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});capabilities=new CapabilityService({db,projects:new ProjectService(db,secrets),secrets,userData:f.root});});
+beforeEach(async()=>{f=await agentFixture({applicationVersion:'2.0.0'});const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});capabilities=new CapabilityService({db,projects:new ProjectService(db,secrets),secrets,userData:f.root});});
 afterEach(()=>{capabilities.dispose();f.cleanup();});
 describe('indexed production resource bootstrap and nonfatal readiness',()=>{
   it('builds an index whose complete adapter/runtime hashes match the runtime registries',async()=>{

@@ -21,13 +21,13 @@ import { ownedBundle, writeOwnedBundle } from '../owned-bundle';
 import { canonicalJson, digest } from '../manifest';
 import { fileNames } from '../package-files';
 import { fixtureBundle } from './fixtures';
-export async function agentFixture() {
+export async function agentFixture(options: {applicationVersion?:string} = {}) {
   const root = realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-agent-'))), sqlite = new Database(join(root,'state.sqlite')); sqlite.pragma('foreign_keys=ON'); runBundledMigrations(sqlite); sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p1','agent fixture',1,1)");
   const home = join(root,'home'),cwd = join(root,'project'); mkdirSync(home);mkdirSync(cwd);
   const store = new ResourceStore(sqlite,root), packages = new PackageRegistry(store,'agent-fixture'), adapters = new AgentAdapterRegistry(store), legacy = new LegacyCapabilityResourceAdopter(store);
   const installedAdapters = await Promise.all(bundledAgentAdapters().map(a => adapters.install(a.metadata,a.files)));
   const runtime = await new RuntimeRegistry(store).install({ id: 'applications',protocolMajor: 1,bridgeEntry: 'mcp-bridge.cjs',files: { 'mcp-bridge.cjs': Buffer.from('module.exports = {};\n') } });
-  const source = fixtureBundle(); source.manifest.runtime.hash = runtime.contentHash;
+  const source = fixtureBundle(options.applicationVersion); source.manifest.runtime.hash = runtime.contentHash;
   source.files['skills/query/references/version.txt'] = Buffer.from('original-v1-reference'); source.files['skills/query/assets/data.bin'] = Buffer.from([0,255,192,128,10]); source.files['skills/query/scripts/run.sh'] = Buffer.from('#!/bin/sh\nprintf synthetic\n');
   source.manifest.files = Object.entries(source.files).map(([path,bytes]) => ({ path,sha256: digest(bytes),size: bytes.length,executable: path.endsWith('/run.sh') })); const application = await packages.install(source); await packages.activate(application.packageHash,0);
   const standard = BUNDLED_SKILLS[0], standardPath = join(store.root,'packages',standard.id,standard.hash); writeOwnedTree(standardPath,standard.files,join(store.root,'conflicts')); await legacy.adoptStandard(standard.id,standard.hash);

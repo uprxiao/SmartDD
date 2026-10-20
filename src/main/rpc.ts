@@ -68,7 +68,7 @@ export function createRpcRouter(d: RpcDeps) {
         await shell.openExternal(url);
       },
     }),
-    agentSupport: createScopedRPCController({ status: (event) => { d.ptyAccess.requireSender(event); return d.agentSupport?.status() ?? { state: 'unavailable',errorCode: 'CAPABILITY_UNAVAILABLE',legacyResourceCount: 0,runtimeHash: null,adapters: [] } as AgentSupportState; } }),
+    agentSupport: createScopedRPCController({ status: (event) => { d.ptyAccess.requireSender(event); return d.agentSupport?.status() ?? { state: 'unavailable',errorCode: 'CAPABILITY_UNAVAILABLE',legacyResourceCount: 0,runtimeHash: null,adapters: [],applications: [] } as AgentSupportState; } }),
     voice: createVoiceController(d.voice),
     projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),

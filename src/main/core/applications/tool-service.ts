@@ -53,7 +53,9 @@ export class ApplicationToolService {
     const resource = this.store.get(application.resourceId); if (verifyBytes && (resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定应用包尚不可用');
     if (verifyBytes) verifyPackageTree(join(this.store.root,application.relativePath),application,this.store.storeId);
     const schemas = this.packages.toolContractSources(application.packageHash,declaration.name);
-    return { application,declaration,tool: { name: declaration.name,description: application.manifest.description,inputSchema: this.schema(schemas.input),outputSchema: this.schema(schemas.output),annotations: declaration.annotations,contractMajor: declaration.contractMajor } };
+    const inputSchema = this.schema(schemas.input);
+    const description = typeof inputSchema.description === 'string' && inputSchema.description.length <= 2000 ? inputSchema.description : application.manifest.description;
+    return { application,declaration,tool: { name: declaration.name,description,inputSchema,outputSchema: this.schema(schemas.output),annotations: declaration.annotations,contractMajor: declaration.contractMajor } };
   }
   async list(runId: string): Promise<{ tools: BridgeTool[];unavailable: { appId: string;code: string }[] }> {
     return this.runs.withActivity(runId,async context => {
