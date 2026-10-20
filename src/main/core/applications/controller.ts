@@ -21,6 +21,7 @@ export function createApplicationController(service:ApplicationService|undefined
     }
   };
   return createScopedRPCController({
+    session:(event,taskId:string)=>run(event,current=>current.diagnoseSession(event,taskId)),
     versions:(event,appId:ApplicationId)=>run(event,current=>current.listVersions(event,appId)),
     cleanupVersion:(event,input:ApplicationVersionCleanup)=>run(event,current=>current.cleanupVersion(event,input)),
     activity:(event,input?:ApplicationActivityQuery)=>run(event,current=>current.listActivity(event,input)),

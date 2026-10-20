@@ -1,0 +1,53 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/db/migrations.test.ts src/main/core/applications src/main/core/capabilities src/main/core/tasks src/renderer/features/applications src/renderer/views/task-project-version.test.tsx src/renderer/views/task-terminal-focus.test.tsx --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (24 tests | 2 failed) 22737ms
+     × migrates only the provable original prepare identity and leaves frozen sends unchanged on replay 433ms
+     × upgrades v18 send records and retains metadata-only user-source provenance on migration replay 708ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > migrates only the provable original prepare identity and leaves frozen sends unchanged on replay
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    "0020_application_activity_subjects",
++   "0021_capability_run_evidence",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:100:146
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > upgrades v18 send records and retains metadata-only user-source provenance on migration replay
+AssertionError: expected [ …(3) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "0019_mail_user_action_sources",
+    "0020_application_activity_subjects",
++   "0021_capability_run_evidence",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:166:142
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 54 passed | 1 skipped (56)
+      Tests  2 failed | 693 passed | 2 skipped (697)
+   Start at  22:00:34
+   Duration  110.30s (transform 1.57s, setup 0ms, import 6.66s, tests 207.89s, environment 1.58s)
+
+ ELIFECYCLE  Test failed. See above for more details.

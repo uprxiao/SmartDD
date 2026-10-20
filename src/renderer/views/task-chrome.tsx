@@ -1,3 +1,4 @@
+import {SessionApplicationsPanel} from '@renderer/features/applications/session-applications';
 // Task details and runtime bar adapted from Yoda (Apache-2.0).
 // The single window title follows the approved Codex reference; the sidebar switches sessions.
 import { Ellipsis, Folder, FolderOpen, Moon, Play, SlidersHorizontal, Square, SquarePlus, Sun, TriangleAlert } from 'lucide-react';
@@ -35,6 +36,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
   const { t } = useTranslation();
   const { effectiveTheme, setTheme } = useTheme();
   const [busy, setBusy] = useState(false);
+  const [sessionApps,setSessionApps]=useState(false);
   const dark = effectiveTheme === 'ydark';
   const running = Boolean(task.ptyId);
   const restart = canRestartInPlace(task) && Boolean(task.aiProfileId);
@@ -46,11 +48,12 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
     } catch (e) { toast.error(rpcErrorMessage(e)); }
     finally { setBusy(false); }
   };
-  return <header className="task-window-header app-drag" data-testid="task-header">
+  return <><header className="task-window-header app-drag" data-testid="task-header">
     <div className="task-window-title" title={`${task.projectName ?? t('task.noProject')} / ${task.title}`}>
       <Folder size={17} aria-hidden="true" /><span>{task.title}</span>
     </div>
     <div className="task-window-actions app-no-drag">
+      <button type="button" className="m9-file-entry" data-testid="task-applications" onClick={()=>setSessionApps(true)}><SlidersHorizontal size={16}/>应用</button>
       <button type="button" className="m9-file-entry" data-testid="task-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button>
       <DropdownMenu>
         <DropdownMenuTrigger className="icon-button" data-testid="task-actions" aria-label={t('m6.more')} title={t('m6.more')}><Ellipsis size={18} /></DropdownMenuTrigger>
@@ -70,7 +73,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
       <span className="task-window-divider" />
       <button type="button" className="icon-button" title={t('nav.newTask')} aria-label={t('nav.newTask')} onClick={() => navigation.newTask(task.projectId ?? undefined)}><SquarePlus size={17} /></button>
     </div>
-  </header>;
+  </header>{sessionApps&&<SessionApplicationsPanel key={task.id} taskId={task.id} runIdentity={(task.ptyId??'stopped')+':'+(task.runtimeSnapshot?.runId??'unrecorded')} onClose={()=>setSessionApps(false)}/>}</>;
 });
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {

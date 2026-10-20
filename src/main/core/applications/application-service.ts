@@ -1,3 +1,4 @@
+import {ApplicationSessionDiagnostics} from './session-diagnostics';
 import {ApplicationVersionMaintenance} from './version-maintenance';
 import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
 import type {ApplicationActivityQuery} from '@shared/application-activity';
@@ -37,6 +38,7 @@ import type { CapabilityRunRegistry } from './run-registry';
 const uuid=z.uuid();
 /** Main-process composition for actual local business services. Agent runtime attachment is explicit. */
 export class ApplicationService {
+  readonly sessionDiagnostics:ApplicationSessionDiagnostics;
   readonly versions:ApplicationVersionMaintenance;
   readonly activity:ApplicationActivityService;
   readonly connections:ApplicationConnectionService;
@@ -59,7 +61,7 @@ export class ApplicationService {
   private closed=false;private closing?:Promise<void>;
   constructor(readonly store:ResourceStore,private readonly options:{
     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
-    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};changed?():void;
+    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;changed?():void;
   }){
     this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
     this.activity=new ApplicationActivityService(store);
@@ -67,6 +69,7 @@ export class ApplicationService {
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
     this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id),runningInProject:id=>options.tasks.runningInProject(id)});
+    this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty});
     this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,changed:options.changed,assertRun:id=>{
       if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前Agent运行通道尚未完成初始化');return this.runs.assertActive(id);
     }});
@@ -80,6 +83,7 @@ export class ApplicationService {
     const unfinished=this.store.sqlite.prepare("SELECT 1 FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing') LIMIT 1").get();
     if(unfinished)try{await this.mailExecution();}catch(error){this.mailRecoveryIssue={code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:'原邮件执行的恢复核查尚未完成；保留原结果，不自动重发'};}
   }
+  diagnoseSession(sender:ApplicationUiSender,taskId:string){this.options.requireSender(sender);return this.sessionDiagnostics.inspect(taskId);}
   listVersions(sender:ApplicationUiSender,appId:ApplicationId){this.options.requireSender(sender);return this.versions.list(appId);}
   async cleanupVersion(sender:ApplicationUiSender,input:ApplicationVersionCleanup){this.options.requireSender(sender);const result=await this.versions.cleanup(input);this.options.changed?.();return result;}
   listActivity(sender:ApplicationUiSender,input:ApplicationActivityQuery={}){this.options.requireSender(sender);return{...this.activity.list(input),recoveryIssue:this.mailRecoveryIssue};}

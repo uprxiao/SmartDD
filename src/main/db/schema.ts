@@ -425,3 +425,11 @@ export const mailUserActionSources=sqliteTable('mail_user_action_sources',{
 export const applicationActivitySubjects=sqliteTable('application_activity_subjects',{
  operationId:text('operation_id').notNull().references(()=>applicationDataOperations.operationId,{onDelete:'cascade'}),kind:text('kind').notNull(),subjectId:text('subject_id').notNull(),
 },t=>({pk:primaryKey({columns:[t.operationId,t.kind,t.subjectId]}),lookup:index('application_activity_subjects_lookup').on(t.kind,t.subjectId,t.operationId)}));
+
+// Fixed host preparation and kernel-verified bridge observations, scoped per run.
+export const capabilityRunPreparations = sqliteTable('capability_run_preparations', {
+ runId:text('run_id').primaryKey().references(()=>capabilityRuns.runId),evidenceJson:text('evidence_json').notNull(),evidenceHash:text('evidence_hash').notNull(),preparedAt:text('prepared_at').notNull(),
+},t=>({time:index('capability_run_evidence_time').on(t.preparedAt,t.runId)}));
+export const capabilityBridgeObservations = sqliteTable('capability_bridge_observations', {
+ runId:text('run_id').notNull().references(()=>capabilityRuns.runId),bridgeId:text('bridge_id').notNull().references(()=>capabilityRunProcesses.processId),evidenceJson:text('evidence_json').notNull(),evidenceHash:text('evidence_hash').notNull(),observedAt:text('observed_at').notNull(),
+},t=>({pk:primaryKey({columns:[t.runId,t.bridgeId]})}));

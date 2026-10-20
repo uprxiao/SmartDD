@@ -21,7 +21,7 @@ export class PrivateApplicationBroker {
   private readonly bindings = new Map<string,Binding>();
   private readonly peers = new Set<Peer>();
   private closed = false;
-  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
+  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;authenticated?:(runId:string,bridgeId:string)=>Promise<void>;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
   private clock(): number { return this.options.now?.() ?? Date.now(); }
   get endpoint(): string { if (!this.server || this.closed) throw new ApplicationError('CAPABILITY_UNAVAILABLE','本机应用通道尚未启动'); return join(this.directory,'broker.sock'); }
   async start(): Promise<void> {
@@ -103,8 +103,10 @@ export class PrivateApplicationBroker {
     try{await this.options.attachPeer?.(peer.socket,ticket.runId,ticket.bridge);if(this.closed||peer.socket.destroyed||this.tickets.get(hash)!==ticket||ticket.expiresAt<=this.clock())throw new ApplicationError('AUTH_REQUIRED','启动核验期间票据已撤销或失效');this.runs.assertBridge(ticket.runId,ticket.bridge.processId);this.tickets.delete(hash);this.cleanupTicket(ticket);}finally{ticket.claiming=false;}
     const token = randomBytes(32).toString('hex'), binding: Binding = { runId: ticket.runId,bridgeId: ticket.bridge.processId,digest: digest(token),expiresAt: this.clock() + Math.min(900000,Math.max(1,this.options.tokenTtlMs ?? 900000)),revoked: false };
     peer.binding = binding; this.bindings.set(binding.digest,binding); peer.socket.setTimeout(0);
+    if(this.options.attachPeer&&this.options.authenticated)try{await this.options.authenticated(ticket.runId,ticket.bridge.processId);}catch{/* Missing diagnostic evidence does not grant authority or block the Agent. */}
     return { schema: 1,id: request.id,status: 'ok',value: { token,expiresAt: binding.expiresAt,hostGeneration: this.hostGeneration } };
   }
+  hasAuthenticated(runId:string):boolean{for(const peer of this.peers)if(peer.binding?.runId===runId&&!peer.socket.destroyed)try{this.checkBinding(peer,peer.binding);return true;}catch{/* stale is not connected */}return false;}
   private revokePeer(peer: Peer): void { if (peer.binding) { peer.binding.revoked = true; this.bindings.delete(peer.binding.digest); } for (const controller of peer.controllers.values()) controller.abort(); }
   revokeRun(runId: string): void { for (const peer of this.peers) if (peer.binding?.runId === runId) { this.revokePeer(peer); peer.socket.destroy(); } for (const [hash,ticket] of this.tickets) if (ticket.runId === runId) { this.tickets.delete(hash); this.cleanupTicket(ticket); } this.tools.clearMemory(runId); }
   async close(): Promise<void> {
