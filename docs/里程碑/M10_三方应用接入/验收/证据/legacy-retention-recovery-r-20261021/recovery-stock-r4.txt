@@ -1,0 +1,22 @@
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (17 tests | 1 failed) 1751ms
+     × rejects corrupted durable partial-proof instead of inferring it from an orphan archive 123ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > rejects corrupted durable partial-proof instead of inferring it from an orphan archive
+SqliteError: CHECK constraint failed: (evidence_json IS NULL AND evidence_hash IS NULL AND manifest_json IS NULL AND manifest_hash IS NULL)
+    OR (evidence_json IS NOT NULL AND evidence_hash IS NOT NULL AND manifest_json IS NOT NULL AND manifest_hash IS NOT NULL)
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:74:134
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  05:53:32
+   Duration  2.12s (transform 147ms, setup 0ms, import 302ms, tests 1.75s, environment 0ms)
+
