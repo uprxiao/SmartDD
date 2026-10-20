@@ -1,0 +1,71 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV005-B",
+  "recordedAt": "2026-10-20T02:44:46.692130+00:00",
+  "requirementBaseline": "R1.6 incl 12.21",
+  "baseCommit": "d57967b470d7c9596bd763bbd2cf64e094178afb",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "changes": [
+    "0008 six mail business tables and lightweight draft index",
+    "incomplete drafts with null source and SMTP, project scope and immutable revisions",
+    "CAS and durable operation receipts; new ID for copies of sent/sending/unknown content",
+    "persistent blobs isolated from cache, hash verification, deduplication without cross-project authorization, two-phase publication/recovery and cleanup journal"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "layer": "U/I",
+      "files": 16,
+      "tests": 149,
+      "passed": 149,
+      "failed": 0,
+      "newDraftTests": 12,
+      "log": "dev005-b-20261020/final-tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev005-b-20261020/final-types.txt"
+    }
+  ],
+  "redRuns": [
+    {
+      "failure": "Restart fixture retained old ApplicationSelectionService attached to a closed database",
+      "fix": "Recreate selection/connection services against reopened SQLite; persisted content expectations unchanged",
+      "log": "dev005-b-20261020/red-restart-fixture.txt"
+    },
+    {
+      "failure": "randomUUID template-string inference rejected the database string type",
+      "fix": "Explicit string variable for persisted attachment ID",
+      "log": "dev005-b-20261020/red-uuid-type.txt"
+    }
+  ],
+  "boundaries": [
+    "No SMTP connection or source required or called by these draft tests",
+    "Actor labels are host-supplied fixture contexts; not actual CC/Codex discovery or model execution",
+    "Cache deletion test removes a separate synthetic cache directory; no quota manager acceptance claimed",
+    "State fixtures simulate sent/sending/unknown only to validate immutable editing; no real send record created",
+    "No production startup/RPC/UI hookup yet",
+    "Mail execution/approval intent service remains to implement; copying unknown content does not grant permission to resend",
+    "No packaged App product case pass count changed",
+    "No release/main/tag/push"
+  ],
+  "sourceHashes": {
+    "drizzle/0008_mail_drafts.sql": "9a5fdd76319ed7142bb28297ca1da2b7bbaad9f4c8254b5db4592f070e768afd",
+    "drizzle/meta/_journal.json": "ca60e4b9db13cf2681199d1610547dbaa6ee7be44b4ccfd3f2141a91f3bdfaa5",
+    "src/main/db/migrations.test.ts": "faa3f5f5f9acee233eaabdcc01196379301d22c687678a58a169eae38a87ef4c",
+    "src/main/db/schema.ts": "d2b78f17d9594c41bf929587b91cad525950991e8cba24d36e07e5c3530eb673",
+    "src/shared/applications.ts": "44d52bc77cf98229222c93a74252a816b47156d30d8fc2c9e2dc7baf417a571f",
+    "src/shared/mail-drafts.ts": "d0e60c11f02236a8aefacf32c3b806e7d6320f8c71b634782cb5d96999408682",
+    "src/main/core/applications/mail-blob-store.ts": "17cd2d6b234079ca226ef36c9455a4dc5f57a630bfae6d5b0927a1a31fd3793c",
+    "src/main/core/applications/mail-draft-service.ts": "0a2faea0676e2633866d96a345fe309e6ee2bafe22bb283ffdee8f1226b1c229",
+    "src/main/core/applications/__tests__/mail-drafts.test.ts": "a488b4854f89e3ffa9af9c9249a1e32242ceabdac6fba9f9869e2929c9c6d003"
+  },
+  "logHashes": {
+    "dev005-b-20261020/red-restart-fixture.txt": "b08e612b740d1b6672f2f1ad60292c87c7a0d7262d82110a77d804a0539fc6df",
+    "dev005-b-20261020/final-tests.txt": "23f9dac3dbb1509b27cda09773833a06b7ee2f76aaa56322c740aa822122896c",
+    "dev005-b-20261020/red-uuid-type.txt": "95d5e646bcbe7fc29944f381013cfef5646b743929504261f93dc79cc87b8e04",
+    "dev005-b-20261020/final-types.txt": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e"
+  }
+}

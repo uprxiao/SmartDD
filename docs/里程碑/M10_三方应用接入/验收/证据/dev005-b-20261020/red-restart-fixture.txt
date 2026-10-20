@@ -1,0 +1,37 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/mail-drafts.test.ts src/main/db/migrations.test.ts
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/mail-drafts.test.ts (12 tests | 1 failed) 205ms
+     × saves incomplete drafts without any SMTP or reading source and reopens the same ID after database restart 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-drafts.test.ts > persistent drafts with empty bindings, immutable revisions and stable business attachments > saves incomplete drafts without any SMTP or reading source and reopens the same ID after database restart
+TypeError: The database connection is not open
+ ❯ Database.prepare node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21
+ ❯ ApplicationSelectionService.catalogState src/main/core/applications/selection-service.ts:22:35
+     20|   catalogState(appId: ApplicationId): ApplicationCatalogState {
+     21|     applicationIdSchema.parse(appId);
+     22|     const row = this.store.sqlite.prepare('SELECT added,enabled,revisi…
+       |                                   ^
+     23|     return { appId, added: row?.added === 1, enabled: row?.enabled ===…
+     24|   }
+ ❯ ApplicationSelectionService.requireEnabled src/main/core/applications/selection-service.ts:115:26
+ ❯ Object.requireDrafts src/main/core/applications/__tests__/mail-drafts.test.ts:32:50
+ ❯ MailDraftService.row src/main/core/applications/mail-draft-service.ts:18:17
+ ❯ MailDraftService.get src/main/core/applications/mail-draft-service.ts:22:22
+ ❯ src/main/core/applications/__tests__/mail-drafts.test.ts:42:60
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 22 passed (23)
+   Start at  10:42:34
+   Duration  529ms (transform 139ms, setup 0ms, import 302ms, tests 226ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

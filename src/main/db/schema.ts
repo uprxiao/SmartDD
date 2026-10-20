@@ -289,3 +289,26 @@ export const applicationProjectBindings = sqliteTable('application_project_bindi
 export const applicationBindingChanges = sqliteTable('application_binding_changes', {
   operationId: text('operation_id').primaryKey(), projectId: text('project_id').notNull(), appId: text('app_id').notNull(), fromRevision: integer('from_revision').notNull(), toRevision: integer('to_revision'), previousJson: text('previous_json').notNull(), nextJson: text('next_json').notNull(), state: text('state').notNull(), errorCode: text('error_code'), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
 });
+
+// M10 persistent mail business objects have no cascading project/task deletion:
+// ordinary application removal and native-history cleanup must retain their data.
+export const mailBlobObjects = sqliteTable('mail_blob_objects', {
+  contentHash: text('content_hash').primaryKey(), byteSize: integer('byte_size').notNull(), createdAt: text('created_at').notNull(),
+});
+export const mailAttachmentObjects = sqliteTable('mail_attachment_objects', {
+  id: text('id').primaryKey(), projectId: text('project_id').notNull(), contentHash: text('content_hash').notNull().references(() => mailBlobObjects.contentHash),
+  filename: text('filename').notNull(), contentType: text('content_type').notNull(), byteSize: integer('byte_size').notNull(), createdAt: text('created_at').notNull(),
+});
+export const mailBlobWrites = sqliteTable('mail_blob_writes', {
+  operationId: text('operation_id').primaryKey(), attachmentId: text('attachment_id').notNull(), projectId: text('project_id').notNull(), requestHash: text('request_hash').notNull(), metadataJson: text('metadata_json').notNull(), state: text('state').notNull(), errorCode: text('error_code'), cleanupPending: integer('cleanup_pending', { mode: 'boolean' }).notNull().default(false), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
+});
+export const mailDrafts = sqliteTable('mail_drafts', {
+  id: text('id').primaryKey(), projectId: text('project_id').notNull(), sourceTaskId: text('source_task_id'), copiedFromDraftId: text('copied_from_draft_id'),
+  subject: text('subject').notNull(), attachmentCount: integer('attachment_count').notNull(), currentRevision: integer('current_revision').notNull(), state: text('state').notNull(), activeIntentId: text('active_intent_id'), lastExecutionId: text('last_execution_id'), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
+},t => ({ byProject: index('mail_drafts_project_updated').on(t.projectId,t.updatedAt,t.id), sourceDraft: foreignKey({ columns: [t.copiedFromDraftId], foreignColumns: [t.id] }) }));
+export const mailDraftRevisions = sqliteTable('mail_draft_revisions', {
+  draftId: text('draft_id').notNull().references(() => mailDrafts.id), revision: integer('revision').notNull(), contentJson: text('content_json').notNull(), contentHash: text('content_hash').notNull(), actorTaskId: text('actor_task_id'), createdAt: text('created_at').notNull(),
+},t => ({ pk: primaryKey({ columns: [t.draftId,t.revision] }) }));
+export const mailDraftMutations = sqliteTable('mail_draft_mutations', {
+  projectId: text('project_id').notNull(), operationId: text('operation_id').notNull(), requestHash: text('request_hash').notNull(), draftId: text('draft_id').notNull().references(() => mailDrafts.id), resultJson: text('result_json').notNull(), createdAt: text('created_at').notNull(),
+},t => ({ pk: primaryKey({ columns: [t.projectId,t.operationId] }) }));
