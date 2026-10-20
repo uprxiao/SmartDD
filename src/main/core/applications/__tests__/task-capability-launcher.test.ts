@@ -49,6 +49,11 @@ afterEach(async()=>{tasks?.dispose();for(const id of ptys?.live?.keys()??[])ptys
 const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
 const consumers=()=>readdirSync(join(home,'.agents/smartdd-runtime/catalog-consumers'));
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+ it.each(['claude-code','codex'] as const)('registers native input provenance using the current verified %s launch version and owned run signal',async runner=>{
+  const register=vi.spyOn(applications.nativeMessages,'register'),first=await create(runner==='codex'?codexId:claudeId),runId=first.task.runtimeSnapshot!.runId,context=managed.runs.assertActive(runId);
+  expect(register).toHaveBeenCalledWith(runId,runner==='codex'?'0.162.1':'2.1.303',context.signal);expect((await applications.nativeMessages.read(runId)).messages).toEqual([]);
+  tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));expect((await applications.nativeMessages.read(runId)).messages).toEqual([]);expect(sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+ });
  it('registers all no-application Codex runs, retains fixed sources, and releases only after the owned PTY exit',async()=>{
   const first=await create(),runtime=first.task.runtimeSnapshot!,session=await managed.sessions.get(first.task.id);expect(session.snapshot.packages).toEqual([]);expect(runtime.sessionCapabilities).toEqual(session.pointer);expect(managed.runs.get(runtime.runId).state).toBe('active');expect(consumers()).toHaveLength(1);expect(ptys.launches[0].args.join('\n')).toContain('skills.config=');expect(existsSync(runtime.manifestPath)).toBe(true);
   tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(managed.runs.get(runtime.runId).state).toBe('stopped');expect(existsSync(runtime.manifestPath)).toBe(false);expect((await managed.sessions.references(first.task.id)).some(r=>r.refKind==='legacy-runtime')).toBe(true);

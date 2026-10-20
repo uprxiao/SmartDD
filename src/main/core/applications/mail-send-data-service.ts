@@ -18,7 +18,7 @@ export type {MailSendData} from '@shared/mail-execution';
 import type {MailSendData} from '@shared/mail-execution';
 export class MailSendDataService implements ApplicationDataHost {
  private readonly views:PackageConfigViews;
- constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations){
+ constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations,private readonly observeNative?:(context:ApplicationExecutionContext)=>Promise<void>){
   this.views=new PackageConfigViews(contexts);resources.registerProvider({kind:'mail-send-review-v1',appId:'mail',contractMajor:1,permission:'mail.draft',read:async(context,backing)=>{
    const intent=(await this.engine()).get(this.contexts.sendActor(context,context.allowedOperations.includes('mail.send')?'mail.send':'mail.draft'),backing.objectId);if(backing.part!=='review'||!intent.review||intent.reviewHash!==backing.objectRevision)throw new ApplicationError('HASH_MISMATCH','原发送审阅修订不同');return Buffer.from(canonicalJson(intent.review));
   }});
@@ -35,7 +35,7 @@ export class MailSendDataService implements ApplicationDataHost {
  }
  async execute(context:ApplicationExecutionContext,method:string,input:unknown):Promise<{intent:MailSendData}>{
   if(!methods.has(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','发送方法不属于当前宿主契约');const permission=method==='mail.send.prepare'||method==='mail.send.execute'?'mail.send':'mail.draft',actor=this.contexts.sendActor(context,permission),engine=await this.engine();let intent:MailSendIntent;
-  if(method==='mail.send.prepare'){const parsed=prepareSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','发送准备字段无效');await this.preflight(context);intent=await engine.prepare(actor,{...parsed.data,operationId:context.operationId},context.signal);}
+  if(method==='mail.send.prepare'){const parsed=prepareSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','发送准备字段无效');await this.preflight(context);await this.observeNative?.(context);intent=await engine.prepare(actor,{...parsed.data,operationId:context.operationId},context.signal);}
   else if(method==='mail.send.execute'){
    const parsed=executeSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','发送执行字段无效');intent=engine.get(actor,parsed.data.intentId);if(intent.reviewHash!==parsed.data.expectedReviewHash)throw new ApplicationError('INTENT_STALE','发送审阅内容已变化');
    if(!intent.executionId){await this.preflight(context);if(!intent.authorized)throw new ApplicationError('AUTHORIZATION_REQUIRED','本次具体邮件尚无可核验的用户授权，请审阅原意图或核对明确用户指令来源');}

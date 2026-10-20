@@ -2,7 +2,7 @@ import type {ProcessIdentityReader} from '../process-identity';
 import {execFileSync} from 'node:child_process';
 import {EventEmitter} from 'node:events';
 import {randomUUID} from 'node:crypto';
-import {mkdtempSync,rmSync} from 'node:fs';
+import {mkdtempSync,rmSync,mkdirSync,writeFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createServer,type Socket} from 'node:net';
@@ -27,6 +27,7 @@ import {BuiltinPackageRegistry} from '../builtin-package-registry';
 import {CapabilityBundleSource} from '../bundle-source';
 import {applicationSkillContentHash} from '../session-registry';
 import {MacProcessIdentityReader} from '../process-identity';
+import {encodeClaudeDir} from '../../tasks/native-sessions';
 import {digest} from '../manifest';
 import {agentFixture} from './agent-fixture';
 import {FixtureProcessReader} from './run-fixture';
@@ -112,6 +113,17 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
  it('records only the trusted owned PTY input across first native binding and never turns origin evidence into a send grant',async()=>{
   const initial=runs.assertActive(cc.runId),target={taskId:initial.run.taskId,ptyId:cc.ptyId},write=vi.fn(),input=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:id=>id===target.taskId?target.ptyId:null,alive:id=>id===target.ptyId,write,resize:()=>{},killTask:()=>{},observedInput:(event,target,data)=>app.observeInput(event,target,data)}),at=Date.now();
   expect(input.input(sender,{...target,data:'发送当前明确草稿\r',runId:codex.runId})).toBe(true);expect(write).toHaveBeenCalledOnce();expect(app.nativeInputs.match(initial,'发送当前明确草稿',at)).toBeNull();const saved=await f.sessions.get(target.taskId);await f.sessions.bindNativeSession(target.taskId,saved.pointer.snapshotHash,{...saved.snapshot.native,runner:saved.snapshot.runner,sessionId:'private-native-input-1'});const current=runs.assertActive(cc.runId);expect(app.nativeInputs.match(current,'发送当前明确草稿',at)).toMatchObject({runId:cc.runId,taskId:target.taskId,projectId:'p1',ptyId:cc.ptyId});expect(app.nativeInputs.match(runs.assertActive(codex.runId),'发送当前明确草稿',at)).toBeNull();expect((await prepare()).authorized).toBe(false);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);expect(messages).toHaveLength(0);
+ });
+ it.each(['claude-code','codex'] as const)('matches actual native user-file records on %s send preparation without minting semantic permission',async runner=>{
+  const run=runner==='codex'?codex:cc,known=runs.assertActive(run.runId),at=Date.now(),id=randomUUID(),prompt='发送已经唯一明确的草稿内容';
+  const saved=await f.sessions.get(known.run.taskId);await f.sessions.bindNativeSession(known.run.taskId,saved.pointer.snapshotHash,{...saved.snapshot.native,runner,sessionId:id});
+  const context=runs.assertActive(run.runId);app.nativeMessages.register(run.runId,runner==='codex'?'0.162.1':'2.1.303',run.signal);
+  app.observeInput(sender,{taskId:context.run.taskId,ptyId:run.ptyId},prompt+'\r');
+  const dir=runner==='codex'?join(context.snapshot.native.stateRoot,'sessions/2026/10/01'):join(context.snapshot.native.stateRoot,'projects',encodeClaudeDir(context.snapshot.native.cwd));mkdirSync(dir,{recursive:true});
+  const file=join(dir,runner==='codex'?'rollout-fixture-'+id+'.jsonl':id+'.jsonl'),timestamp=new Date(at).toISOString(),record=runner==='codex'?{timestamp,type:'response_item',payload:{type:'message',role:'user',content:[{type:'input_text',text:prompt}]}}:{timestamp,type:'user',sessionId:id,cwd:context.snapshot.native.cwd,message:{role:'user',content:prompt}};
+  const head=runner==='codex'?JSON.stringify({type:'session_meta',payload:{id,cwd:context.snapshot.native.cwd}})+'\n':'';writeFileSync(file,head+JSON.stringify(record)+'\n');
+  const observe=vi.spyOn(app.nativeMessages,'read'),intent=await prepare({},run);expect(observe).toHaveBeenCalledWith(run.runId);const result=await observe.mock.results[0].value;expect(result).toMatchObject({status:'matched',messages:[{text:prompt,runId:run.runId,nativeSessionId:id}]});
+  expect(intent.authorized).toBe(false);expect(await execute(intent,run)).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);expect(f.sqlite.prepare('SELECT * FROM mail_send_grants').all()).toEqual([]);expect(messages).toHaveLength(0);expect(decrypts).toBe(0);
  });
  it('freezes without decrypting SMTP secrets and rejects fabricated model approval before network work',async()=>{
   const intent=await prepare();expect(intent).toMatchObject({state:'awaiting-authorization',authorized:false,executionId:null,result:null});expect(decrypts).toBe(0);expect(messages).toHaveLength(0);expect(authentications).toHaveLength(0);

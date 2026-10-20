@@ -32,6 +32,7 @@ import { MailDraftService } from './mail-draft-service';
 import { MailExecutionService,type MailExecutionOptions } from './mail-execution-service';
 import { MailSendDataService } from './mail-send-data-service';
 import { NativeUserInputs,type NativeInputTarget } from './native-user-inputs';
+import { NativeUserMessages } from './native-user-messages';
 import { MailUserAuthorizations } from './mail-user-authorizations';
 import { MailReadDataService } from './mail-read-data-service';
 import { MailDraftDataService } from './draft-data-service';
@@ -58,6 +59,7 @@ export class ApplicationService {
   readonly mailSends:MailSendDataService;
   readonly mailAuthorizations:MailUserAuthorizations;
   readonly nativeInputs:NativeUserInputs;
+  readonly nativeMessages:NativeUserMessages;
   private executionPromise?:Promise<MailExecutionService>;
   private mailRecoveryIssue:{code:string;message:string}|null=null;
   readonly builtin:BuiltinPackageRegistry;
@@ -72,6 +74,7 @@ export class ApplicationService {
     this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
     this.activity=new ApplicationActivityService(store);
     this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null});
+    this.nativeMessages=new NativeUserMessages(this.nativeInputs,id=>{if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原生消息来源尚未初始化');return this.runs.assertActive(id);});
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
     this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id),runningInProject:id=>options.tasks.runningInProject(id)});
@@ -81,7 +84,7 @@ export class ApplicationService {
     }});
     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
-    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
+    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations,async context=>{this.contexts.require(context,'mail.send');if(context.callerKind==='agent-run'&&context.runId)await this.nativeMessages.read(context.runId);this.contexts.require(context,'mail.send');});this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
     if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.nativeInputs.observe(sender,target,data),uncertain:(sender,target)=>this.nativeInputs.uncertain(sender,target)});}
   }
   private terminalService(){if(!this.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端投递服务不可用');return this.terminal;}
@@ -169,7 +172,7 @@ export class ApplicationService {
   mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);return cache.usage();});}
   clearMailCache(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.clear',semantics:'write'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);const result=await cache.clear(context.signal);this.options.changed?.();return result;});}
   dispose():Promise<void>{
-    if(this.closing)return this.closing;this.closed=true;this.terminal?.dispose();this.nativeInputs.dispose();this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
+    if(this.closing)return this.closing;this.closed=true;this.terminal?.dispose();this.nativeMessages.dispose();this.nativeInputs.dispose();this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
     this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
   }
 }
