@@ -25,7 +25,7 @@ const ownerSchema = z.object({ storeId: uuid, uFingerprint: hash, instanceId: uu
 const entrySchema = z.object({ resourceId: z.string().regex(/^h-projection:[a-f0-9]{64}$/), storeId: uuid, path: z.string().min(1).max(4096), nativeName: name, sourceHash: hash, projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict().refine(e=>e.format?e.projectionHash===e.sourceHash&&/^smartdd-[a-z][a-z0-9-]{0,63}-[a-f0-9]{16}$/.test(e.nativeName)&&e.nativeName.endsWith('-'+e.sourceHash.slice(0,16)):/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(e.nativeName)&&e.nativeName.length<=64,'共享目录格式、名称或摘要不同');
 const catalogSchema = z.object({ schema: z.literal(1), homeId: hash, generation: hash, entries: z.array(entrySchema).max(4096) }).strict();
 const consumerSchema = z.object({ schema: z.literal(1), consumerId: uuid, runId: uuid, ptyId: uuid, homeId: hash, generation: hash, runner: z.enum(['claude-code', 'codex']), phase: z.enum(['preparing', 'active', 'releasing']), owner: ownerSchema }).strict();
-const pendingSchema = z.object({ schema: z.literal(1), operationId: uuid, token: uuid, homeId: hash, owner: ownerSchema, baseGeneration: hash, baseEntries: z.array(entrySchema).max(4096), entries: z.array(entrySchema).min(1).max(4096), phase: z.enum(['waiting', 'materializing', 'publishing', 'catalog-published']) }).strict();
+const pendingSchema = z.object({ schema: z.literal(1), operationId: uuid, token: uuid, homeId: hash, owner: ownerSchema, baseGeneration: hash, baseEntries: z.array(entrySchema).max(4096), entries: z.array(entrySchema).min(1).max(4096), handoff: z.object({ fromOwner: ownerSchema, fromPlanHash: hash }).strict().optional(), phase: z.enum(['waiting', 'materializing', 'publishing', 'catalog-published']) }).strict();
 type Catalog = z.infer<typeof catalogSchema>;
 type Consumer = z.infer<typeof consumerSchema>;
 type Pending = z.infer<typeof pendingSchema>;
@@ -279,9 +279,9 @@ export class DiscoveryCatalog {
         if(plan.bundle)writeOwnedBundle(path,plan.bundle,this.store.storeId);
         else writeOwnedTree(path,Object.fromEntries(Object.entries(plan.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')])),join(this.root,'staging-conflicts'));
     }
-    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions,assertEarly?:()=>void): Promise<void> {
+    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions,assertBasis?:()=>void): Promise<void> {
         await withResourceLock(this.store.root, () => {options.assertPublish?.(pending.operationId);return this.store.sqlite.transaction(() => {
-            assertEarly?.();
+            assertBasis?.();
             const oldHome = this.store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(this.homeId) as {
                 home: string;
             } | undefined;
@@ -369,6 +369,7 @@ export class DiscoveryCatalog {
      * the exact unchanged base, no C/staging footprint and a separately stopped
      * original publisher. Never infer this case by deleting a committed ledger. */
     private assertEarlyIntent(prior:Pending,current:Catalog,plans:Planned[]):void{
+        if(prior.handoff)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原交接依据的C登记缺失，保留原操作');
         if(prior.phase!=='waiting'||current.generation!==prior.baseGeneration||canonicalJson(current.entries)!==canonicalJson(prior.baseEntries)||present(join(this.root,'staging',prior.operationId)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','早期H意图已物化或基线不同，保留原操作');
         if(this.store.sqlite.prepare('SELECT 1 FROM capability_resource_operations WHERE operation_id=?').get(prior.operationId)||this.store.sqlite.prepare('SELECT 1 FROM capability_resources WHERE operation_id=? LIMIT 1').get(prior.operationId)||this.store.sqlite.prepare('SELECT 1 FROM capability_resource_leases WHERE owner_id=? LIMIT 1').get(prior.operationId))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H操作已有登记或占用，不能按未登记意图恢复');
         this.assertNoOtherHolds(prior);
@@ -389,22 +390,38 @@ export class DiscoveryCatalog {
         try {
             await this.lock(async () => {
                 const current = this.catalog(), prior = this.pending();
-                let assertEarly:(()=>void)|undefined;
+                let assertBasis:(()=>void)|undefined;
                 if (recoverId) {
                     if (!prior || prior.operationId !== recoverId || prior.owner.storeId !== this.store.storeId || prior.owner.uFingerprint !== this.owner.uFingerprint || canonicalJson(prior.entries) !== canonicalJson(plans.map(p => p.entry)))
                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '缺少相同归属及内容的原维护记录');
-                    const ledger = this.store.sqlite.prepare("SELECT plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=? AND kind='publish-H'").get(recoverId, this.store.storeId) as {
-                        plan: string;
-                    } | undefined;
-                    const original = ledger ? pendingSchema.safeParse(JSON.parse(ledger.plan)) : null;
-                    if (ledger&&(!original?.success || canonicalJson(original.data.owner) !== canonicalJson(prior.owner) || canonicalJson(original.data.entries) !== canonicalJson(prior.entries) || original.data.baseGeneration !== prior.baseGeneration || canonicalJson(original.data.baseEntries) !== canonicalJson(prior.baseEntries)))
-                        throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原H意图与本数据根操作账不同，保留现场');
-                    if (canonicalJson(prior.owner)!==canonicalJson(this.owner) && this.processes.state({ pid: prior.owner.pid, startedAt: prior.owner.startedAt }) !== 'stopped')
-                        throw new ApplicationError('RESOURCE_BUSY', '原目录维护者仍存活或身份未知');
-                    if(ledger)this.assertPublisherLeases(prior,true);
-                    else{assertEarly=()=>this.assertEarlyIntent(prior,this.catalog(),plans);assertEarly();}
-                    this.assertNoOtherHolds(prior);
-                    pending = { ...prior, token: randomUUID(), owner: this.owner };
+                    const query = () => this.store.sqlite.prepare("SELECT plan_json AS plan,state FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=? AND kind='publish-H'").get(recoverId, this.store.storeId) as {plan:string;state:string}|undefined;
+                    const ledger = query();
+                    let original:Pending|undefined;
+                    if (ledger) {
+                        try { original = pendingSchema.parse(JSON.parse(ledger.plan)); }
+                        catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H操作账无法核验，保留原记录'); }
+                        if (original.operationId!==prior.operationId || original.homeId!==prior.homeId || canonicalJson(original.entries)!==canonicalJson(prior.entries) || original.baseGeneration!==prior.baseGeneration || canonicalJson(original.baseEntries)!==canonicalJson(prior.baseEntries) || !['preparing','committed'].includes(ledger.state))
+                            throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H意图与本数据根操作账不同，保留现场');
+                        const sameEpoch=canonicalJson(original.owner)===canonicalJson(prior.owner)&&original.token===prior.token&&canonicalJson(original.handoff??null)===canonicalJson(prior.handoff??null);
+                        if(!sameEpoch&&(!prior.handoff || canonicalJson(prior.handoff.fromOwner)!==canonicalJson(original.owner) || prior.handoff.fromPlanHash!==digest(canonicalJson(original))))
+                            throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H交接缺少匹配的完整C操作依据，保留现场');
+                    }
+                    const stopped=(owner:Pending['owner'])=>{
+                        if(canonicalJson(owner)!==canonicalJson(this.owner)&&this.processes.state({pid:owner.pid,startedAt:owner.startedAt})!=='stopped')
+                            throw new ApplicationError('RESOURCE_BUSY','原目录发布者或恢复者仍存活或身份未知');
+                    };
+                    stopped(prior.owner);
+                    if(ledger&&original){
+                        const committed=original;
+                        assertBasis=()=>{
+                            const currentLedger=query();
+                            if(!currentLedger||currentLedger.plan!==ledger.plan||currentLedger.state!==ledger.state)throw new ApplicationError('RESOURCE_STATE_CHANGED','原H交接的C操作账已变化，保留原记录');
+                            stopped(prior.owner);stopped(committed.owner);
+                            this.assertPublisherLeases(committed,true);this.assertNoOtherHolds(prior);
+                        };
+                    }else assertBasis=()=>this.assertEarlyIntent(prior,this.catalog(),plans);
+                    assertBasis();this.assertNoOtherHolds(prior);
+                    pending = { ...prior, token: randomUUID(), owner: this.owner, ...(original?{handoff:{fromOwner:original.owner,fromPlanHash:digest(canonicalJson(original))}}:{}) };
                     atomicJson(join(this.root, 'pending.json'), pending);
                 }
                 else {
@@ -423,7 +440,7 @@ export class DiscoveryCatalog {
                     atomicJson(join(this.root, 'pending.json'), pending);
                     this.intentCheckpoint?.();
                 }
-                await this.register(plans, pending!,options,assertEarly);
+                await this.register(plans, pending!,options,assertBasis);
             }, options.signal);
             if (reuse) {
                 const snapshot = await this.snapshot();

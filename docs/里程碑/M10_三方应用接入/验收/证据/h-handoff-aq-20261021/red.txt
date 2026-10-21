@@ -1,0 +1,60 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/discovery-handoff.test.ts --maxWorkers=1 --testTimeout=20000 -t 'continues the original operation' --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-h-handoff-aq-20261021/red-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ × src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > continues the original operation after two consecutive recovery SIGKILLs before C registration 3274ms
+   → recovery exited early ApplicationError: 原H意图与本数据根操作账不同，保留现场
+    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:15948:19
+    at withDiscoveryLock.signal.signal (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:15647:16)
+    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6869:14
+    at withCoordinatorLock (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6361:20)
+    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6867:12 {
+  code: 'RESOURCE_RECOVERY_REQUIRED'
+}
+
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved no-proof instead of adopting or releasing it
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved proof-hash instead of adopting or releasing it
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved proof-owner instead of adopting or releasing it
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved changed-ledger instead of adopting or releasing it
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved missing-ledger instead of adopting or releasing it
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved unknown-pending instead of adopting or releasing it
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved unknown-ledger instead of adopting or releasing it
+ ↓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved foreign-install instead of adopting or releasing it
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > continues the original operation after two consecutive recovery SIGKILLs before C registration
+Error: recovery exited early ApplicationError: 原H意图与本数据根操作账不同，保留现场
+    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:15948:19
+    at withDiscoveryLock.signal.signal (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:15647:16)
+    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6869:14
+    at withCoordinatorLock (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6361:20)
+    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6867:12 {
+  code: 'RESOURCE_RECOVERY_REQUIRED'
+}
+
+ ❯ ../../../var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:15948:19
+ ❯ withDiscoveryLock.signal.signal ../../../var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:15647:16
+ ❯ ../../../var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6869:14
+ ❯ withCoordinatorLock ../../../var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-h-handoff-build-1BU3uA/publisher.cjs:6361:20
+ ❯ vi.waitFor.timeout src/main/core/applications/__tests__/discovery-handoff.test.ts:46:81
+     44|  const before=ledger(id),child=launch('publisher.cjs',[f.root,f.home,h…
+     45|  try{
+     46|   await vi.waitFor(()=>{if(child.exitCode!==null||child.signalCode!==n…
+       |                                                                                 ^
+     47|   const intent=pending(),identity=processes.read(child.pid!)!;
+     48|   expect(ledger(id)).toEqual(before);expect(existsSync(join(catalog.ro…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  00:27:48
+   Duration  4.17s (transform 165ms, setup 0ms, import 262ms, tests 3.83s, environment 0ms)
+
+JSON report written to /private/tmp/m10-h-handoff-aq-20261021/red-report.json
+ ELIFECYCLE  Test failed. See above for more details.
