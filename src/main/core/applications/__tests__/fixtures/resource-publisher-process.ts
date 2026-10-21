@@ -1,0 +1,10 @@
+import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
+import {join} from 'node:path';
+import Database from 'better-sqlite3';
+import {ResourceStore,type PublishCheckpoint} from '../../resource-store';
+import {MacProcessIdentityReader} from '../../process-identity';
+import {digest} from '../../manifest';
+const [root,helper,phase]=process.argv.slice(2),sqlite=new Database(join(root,'state.sqlite'));
+const store=new ResourceStore(sqlite,root,at=>{if(at===phase){process.stdout.write(JSON.stringify({phase:at,pid:process.pid})+'\n');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);}},{processes:new MacProcessIdentityReader(helper)});
+const text='original immutable C resource';
+void store.publish({resourceId:'original-c-fixture',kind:'legacy-static-plugin',contentHash:digest(text),relativePath:'original-static',dependencies:[],materialize:dir=>{mkdirSync(dir);writeFileSync(join(dir,'entry'),text);},verify:dir=>{if(readFileSync(join(dir,'entry'),'utf8')!==text)throw Error('source differs');}}).catch(error=>{process.stderr.write(String(error));process.exitCode=1;}).finally(()=>sqlite.close());

@@ -1,0 +1,147 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/resource-publication-recovery.test.ts src/main/core/applications/__tests__/package-registry.test.ts src/main/core/applications/__tests__/legacy-session-migration.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-publication-owner-an-20261021/first-report.json
+
+[1021/171952.337541:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/171953.867822:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (9 tests | 1 failed) 1230ms
+     ✓ restores registered only after the original kernel identity has stopped, keeping the exact operation and bytes 217ms
+     ✓ restores materialized only after the original kernel identity has stopped, keeping the exact operation and bytes  311ms
+     ✓ restores renamed only after the original kernel identity has stopped, keeping the exact operation and bytes 156ms
+     ✓ retains running original owner and unchanged resources, plan and install leases 84ms
+     ✓ retains unknown original owner and unchanged resources, plan and install leases 59ms
+     × does not release an unknown later install resumer even when the original operation says failed 124ms
+     ✓ preserves unrelated unknown resource readers instead of completing a half-published resource 155ms
+     ✓ does not infer stopped from a missing PID or an approximate historical timestamp 83ms
+     ✓ retains an active second resumer after the original publisher is proven stopped 38ms
+[1021/171958.251964:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (95 tests) 85337ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  2095ms
+     ✓ publishes exact original codex selection, refs, names and task pointer in one transaction  486ms
+     ✓ pins the retained plugin source hash and detects losing its long-term reference  603ms
+     ✓ requires plugin source retention before first conversion and catches late archive changes before commit  793ms
+     ✓ keeps an intact fixed snapshot readable when only retained plugin resource readiness changes  1142ms
+     ✓ reads the earlier five-field persisted migration layout without requiring a plugin archive that was never recorded  1835ms
+     ✓ retains disabled original source refs while publishing only the originally enabled standard Skill  314ms
+     ✓ retains the original runtime when the original task did not select context MCP  309ms
+     ✓ binds a previously null native ID in the same source/snapshot transaction and retains the original identity  641ms
+     ✓ rolls back snapshot, refs, names, identity, source state and task pointer on final SQL failure  2124ms
+     ✓ is retryable after a committed return-path interruption without resetting the converted state  416ms
+     ✓ rejects cancel at the asynchronous precommit boundary without partial migration  446ms
+     ✓ rejects task at the asynchronous precommit boundary without partial migration  853ms
+     ✓ rejects file at the asynchronous precommit boundary without partial migration  659ms
+     ✓ rejects source-row at the asynchronous precommit boundary without partial migration  843ms
+     ✓ rejects resource-generation at the asynchronous precommit boundary without partial migration  704ms
+     ✓ rejects a changed reference basis without promoting any current application  564ms
+     ✓ rejects a changed manifest basis without promoting any current application  645ms
+     ✓ rejects a changed source-hash basis without promoting any current application  446ms
+     ✓ rejects a changed identity basis without promoting any current application  409ms
+     ✓ rejects a changed adapter basis without promoting any current application  439ms
+     ✓ rejects a changed cli basis without promoting any current application  862ms
+     ✓ rejects a changed approved basis without promoting any current application  713ms
+     ✓ rejects an oversized retained raw record even when its parsed metadata is identical  571ms
+     ✓ does not migrate while a recorded native guard is still occupied  780ms
+     ✓ does not steal another task native identity or a previously registered original MCP name  1966ms
+     ✓ retains the converted source/snapshot and disabled references after deleting the UI task/project  667ms
+     ✓ plans the original native load after conversion and rejects an adapter different from the fixed binding  1078ms
+     ✓ rolls back retained native binding if a later snapshot version write fails  939ms
+     ✓ does not demote or reconstruct a converted snapshot after losing the task pointer  659ms
+     ✓ preserves an occupied mirror directory and completes only the missing mirror on retry  575ms
+     ✓ rejects modified persistent original evidence even if the v2 pointer still matches  949ms
+     ✓ pins the original retained identity bytes independently of mutable registry rows  1478ms
+     ✓ pins the original retained record bytes independently of mutable registry rows  749ms
+     ✓ requires a legacy binding only for migrated format2 and preserves ordinary v2 validation  522ms
+   ✓ converts the retained claude-code source after normal transient cleanup and plans the same original paths  879ms
+   ✓ converts the retained codex source after normal transient cleanup and plans the same original paths  1682ms
+     ✓ keeps an all-disabled claude-code history empty after transient cleanup  575ms
+     ✓ keeps an all-disabled codex history empty after transient cleanup  405ms
+     ✓ rejects a corrupted original claude-code projection after cleanup without rewriting it  588ms
+     ✓ rejects a corrupted original codex projection after cleanup without rewriting it  1335ms
+     ✓ does not hide a partially present claude-code run by consuming the durable manifest  814ms
+     ✓ does not hide a partially present codex run by consuming the durable manifest  373ms
+     ✓ rejects a late same-byte original claude-code Skill inode replacement before publishing SQL  1720ms
+     ✓ rejects a late claude-code source generation change after cleaned-source verification  528ms
+     ✓ rejects a late codex source generation change after cleaned-source verification  1600ms
+     ✓ preserves unknown content which arrives in original claude-code T before commit  501ms
+     ✓ preserves unknown content which arrives in original codex T before commit  323ms
+     ✓ rejects an undeclared dependency on a retained original runtime  864ms
+     ✓ restores a missing original static Claude path from the exact retained source before conversion  1512ms
+     ✓ refuses a changed retained Claude archive even when its original static paths still match  801ms
+   ✓ invalidates the claude-code file receipt when a caller changes its returned logical evidence  695ms
+   ✓ invalidates the codex file receipt when a caller changes its returned logical evidence  582ms
+   ✓ retains an original static Claude projection through conversion, then repairs the same path on replay  1039ms
+   ✓ does not repair an original Claude projection while a recorded native run is active  610ms
+   ✓ does not repair an original Claude projection while a recorded native run is orphaned  547ms
+     ✓ preserves extra at the original path without registering it as a ready projection  594ms
+     ✓ preserves empty at the original path without registering it as a ready projection  975ms
+     ✓ preserves marker at the original path without registering it as a ready projection  707ms
+     ✓ preserves symlink at the original path without registering it as a ready projection  626ms
+     ✓ preserves hardlink at the original path without registering it as a ready projection  681ms
+     ✓ preserves full-T at the original path without registering it as a ready projection  856ms
+     ✓ keeps an unknown target resource lease intact and does not restore the missing path  969ms
+     ✓ rechecks a late unknown native run before publishing any original files  841ms
+     ✓ preserves a dangling user alias which appears after private materialization  1628ms
+     ✓ resumes a failed post-rename publication under the original operation and long-term reference  530ms
+     ✓ keeps a canceled publication recoverable without recreating old context  1015ms
+     ✓ rejects a late dangling target in the generic publisher even without a caller guard  627ms
+   ✓ does not publish through a substituted parent of the original store root  549ms
+   ✓ detects loss of the original static projection dependency after migration  840ms
+   ✓ detects loss of the original static projection reference after migration  1089ms
+   ✓ recognizes the owned original static Skill path in read-only session diagnostics  1226ms
+     ✓ restores the selected original H paths and keeps durable aliases through migration and replay  1112ms
+     ✓ registers long-term original H aliases before publication makes any missing directory visible  1199ms
+     ✓ anchors original H alias refs independently of the unchanged fixed snapshot  1250ms
+     ✓ replays original H aliases after a registered interruption with the stopped original publisher proof  1236ms
+     ✓ replays original H aliases after a materialized interruption with the stopped original publisher proof  1292ms
+     ✓ replays original H aliases after a renamed interruption with the stopped original publisher proof  900ms
+     ✓ replays original H aliases after a catalog-published interruption with the stopped original publisher proof  1404ms
+     ✓ does not adopt a living or unknown original H publisher, or discard its permanent refs  679ms
+     ✓ detects missing or changed original H receipt without replacing fixed S  839ms
+     ✓ detects missing or changed original H receipt-and-refs without replacing fixed S  1391ms
+     ✓ detects missing or changed original H anchor without replacing fixed S  1812ms
+     ✓ detects missing or changed original H receipt-hash without replacing fixed S  1235ms
+     ✓ keeps the same original H identity and long-term refs when repairing after migration  958ms
+     ✓ shares immutable original H bytes across two task bindings without moving either native identity  1702ms
+     ✓ does not create aliases while an unknown original task run still exists  565ms
+     ✓ checks the current original task again before publishing after a late unknown run  889ms
+     ✓ requires the original H dependency during resource verification  905ms
+     ✓ imports other existing known original H paths and explicitly disables unselected ones in the original planner  484ms
+     ✓ does not resurrect an unselected missing original H directory during inventory  609ms
+     ✓ keeps an unknown install resumer instead of replacing its lease after the original publisher stops  707ms
+     ✓ repairs original H missing after ready commits but before the original intent is removed  2129ms
+     ✓ persists an empty original H binding when the original task selected no standard Skills  760ms
+[1021/172126.263232:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts (20 tests) 2910ms
+     ✓ installs full runtime and package once, and activates only after explicit selection  1501ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > C publication recovery uses original kernel identity and every install owner > does not release an unknown later install resumer even when the original operation says failed
+AssertionError: expected ApplicationError: 原发布占用与持久身份不同 { …(1) } to match object { code: 'RESOURCE_BUSY' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ ApplicationError {
++   "code": "RESOURCE_RECOVERY_REQUIRED",
+  }
+
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts:38:104
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 123 passed (124)
+   Start at  17:19:53
+   Duration  96.10s (transform 3.14s, setup 0ms, import 5.41s, tests 89.48s, environment 0ms)
+
+JSON report written to /private/tmp/m10-publication-owner-an-20261021/first-report.json
+ ELIFECYCLE  Test failed. See above for more details.

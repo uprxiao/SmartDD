@@ -1,0 +1,107 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/resource-publication-recovery.test.ts src/main/core/applications/__tests__/legacy-session-migration.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-publication-owner-an-20261021/second-report.json
+
+[1021/172215.332680:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/172217.108427:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (11 tests) 8572ms
+     ✓ restores renamed only after the original kernel identity has stopped, keeping the exact operation and bytes  478ms
+     ✓ keeps a living registered publisher, then restores the same operation after actual SIGKILL  1089ms
+     ✓ keeps a living materialized publisher, then restores the same operation after actual SIGKILL  830ms
+[1021/172229.493775:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (98 tests) 75429ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  1610ms
+     ✓ publishes exact original codex selection, refs, names and task pointer in one transaction  1293ms
+     ✓ pins the retained plugin source hash and detects losing its long-term reference  582ms
+     ✓ requires plugin source retention before first conversion and catches late archive changes before commit  509ms
+     ✓ keeps an intact fixed snapshot readable when only retained plugin resource readiness changes  1848ms
+     ✓ reads the earlier five-field persisted migration layout without requiring a plugin archive that was never recorded  938ms
+     ✓ retains disabled original source refs while publishing only the originally enabled standard Skill  872ms
+     ✓ retains the original runtime when the original task did not select context MCP  450ms
+     ✓ binds a previously null native ID in the same source/snapshot transaction and retains the original identity  445ms
+     ✓ rolls back snapshot, refs, names, identity, source state and task pointer on final SQL failure  1475ms
+     ✓ is retryable after a committed return-path interruption without resetting the converted state  402ms
+     ✓ rejects cancel at the asynchronous precommit boundary without partial migration  413ms
+     ✓ rejects task at the asynchronous precommit boundary without partial migration  1028ms
+     ✓ rejects file at the asynchronous precommit boundary without partial migration  1146ms
+     ✓ rejects source-row at the asynchronous precommit boundary without partial migration  569ms
+     ✓ rejects a changed identity basis without promoting any current application  1461ms
+     ✓ rejects a changed adapter basis without promoting any current application  340ms
+     ✓ rejects an oversized retained raw record even when its parsed metadata is identical  394ms
+     ✓ does not migrate while a recorded native guard is still occupied  459ms
+     ✓ does not steal another task native identity or a previously registered original MCP name  1539ms
+     ✓ retains the converted source/snapshot and disabled references after deleting the UI task/project  1742ms
+     ✓ plans the original native load after conversion and rejects an adapter different from the fixed binding  611ms
+     ✓ rolls back retained native binding if a later snapshot version write fails  759ms
+     ✓ does not demote or reconstruct a converted snapshot after losing the task pointer  351ms
+     ✓ preserves an occupied mirror directory and completes only the missing mirror on retry  381ms
+     ✓ rejects modified persistent original evidence even if the v2 pointer still matches  330ms
+     ✓ pins the original retained identity bytes independently of mutable registry rows  1491ms
+     ✓ pins the original retained record bytes independently of mutable registry rows  362ms
+   ✓ converts the retained claude-code source after normal transient cleanup and plans the same original paths  579ms
+   ✓ converts the retained codex source after normal transient cleanup and plans the same original paths  437ms
+     ✓ keeps an all-disabled claude-code history empty after transient cleanup  1101ms
+     ✓ keeps an all-disabled codex history empty after transient cleanup  421ms
+     ✓ rejects a corrupted original claude-code projection after cleanup without rewriting it  343ms
+     ✓ does not hide a partially present claude-code run by consuming the durable manifest  318ms
+     ✓ rejects a late same-byte original claude-code Skill inode replacement before publishing SQL  502ms
+     ✓ rejects a late same-byte original codex Skill inode replacement before publishing SQL  461ms
+     ✓ rejects a late claude-code source generation change after cleaned-source verification  802ms
+     ✓ preserves unknown content which arrives in original claude-code T before commit  397ms
+     ✓ restores a missing original static Claude path from the exact retained source before conversion  462ms
+     ✓ refuses a changed retained Claude archive even when its original static paths still match  1456ms
+   ✓ invalidates the claude-code file receipt when a caller changes its returned logical evidence  664ms
+   ✓ invalidates the codex file receipt when a caller changes its returned logical evidence  400ms
+   ✓ retains an original static Claude projection through conversion, then repairs the same path on replay  670ms
+   ✓ does not repair an original Claude projection while a recorded native run is active  1318ms
+   ✓ does not repair an original Claude projection while a recorded native run is orphaned  923ms
+     ✓ preserves extra at the original path without registering it as a ready projection  608ms
+     ✓ preserves empty at the original path without registering it as a ready projection  593ms
+     ✓ preserves marker at the original path without registering it as a ready projection  962ms
+     ✓ preserves symlink at the original path without registering it as a ready projection  326ms
+     ✓ preserves hardlink at the original path without registering it as a ready projection  670ms
+     ✓ preserves full-T at the original path without registering it as a ready projection  754ms
+     ✓ keeps an unknown target resource lease intact and does not restore the missing path  1203ms
+     ✓ rechecks a late unknown native run before publishing any original files  1329ms
+     ✓ preserves a dangling user alias which appears after private materialization  719ms
+     ✓ resumes a failed post-rename publication under the original operation and long-term reference  434ms
+     ✓ keeps a canceled publication recoverable without recreating old context  431ms
+   ✓ does not publish through a substituted parent of the original store root  879ms
+   ✓ detects loss of the original static projection dependency after migration  1145ms
+   ✓ detects loss of the original static projection reference after migration  1288ms
+   ✓ recognizes the owned original static Skill path in read-only session diagnostics  975ms
+     ✓ restores the selected original H paths and keeps durable aliases through migration and replay  1648ms
+     ✓ registers long-term original H aliases before publication makes any missing directory visible  953ms
+     ✓ anchors original H alias refs independently of the unchanged fixed snapshot  1099ms
+     ✓ replays original H aliases after a registered interruption with the stopped original publisher proof  1058ms
+     ✓ replays original H aliases after a materialized interruption with the stopped original publisher proof  1608ms
+     ✓ replays original H aliases after a renamed interruption with the stopped original publisher proof  751ms
+     ✓ replays original H aliases after a catalog-published interruption with the stopped original publisher proof  2083ms
+     ✓ does not adopt a living or unknown original H publisher, or discard its permanent refs  528ms
+     ✓ detects missing or changed original H receipt without replacing fixed S  1389ms
+     ✓ detects missing or changed original H receipt-and-refs without replacing fixed S  1089ms
+     ✓ detects missing or changed original H anchor without replacing fixed S  619ms
+     ✓ detects missing or changed original H receipt-hash without replacing fixed S  771ms
+     ✓ keeps the same original H identity and long-term refs when repairing after migration  2228ms
+     ✓ shares immutable original H bytes across two task bindings without moving either native identity  1378ms
+     ✓ does not create aliases while an unknown original task run still exists  416ms
+     ✓ checks the current original task again before publishing after a late unknown run  497ms
+     ✓ requires the original H dependency during resource verification  1025ms
+     ✓ imports other existing known original H paths and explicitly disables unselected ones in the original planner  1203ms
+     ✓ does not resurrect an unselected missing original H directory during inventory  402ms
+     ✓ keeps an unknown install resumer instead of replacing its lease after the original publisher stops  640ms
+     ✓ repairs original H missing after ready commits but before the original intent is removed  1303ms
+     ✓ persists an empty original H binding when the original task selected no standard Skills  851ms
+     ✓ recovers original Claude registered after proven publisher exit without changing paths, refs or S  590ms
+     ✓ recovers original Claude materialized after proven publisher exit without changing paths, refs or S  510ms
+     ✓ recovers original Claude renamed after proven publisher exit without changing paths, refs or S  506ms
+
+ Test Files  2 passed (2)
+      Tests  109 passed (109)
+   Start at  17:22:16
+   Duration  92.22s (transform 2.88s, setup 0ms, import 6.82s, tests 84.00s, environment 0ms)
+
+JSON report written to /private/tmp/m10-publication-owner-an-20261021/second-report.json

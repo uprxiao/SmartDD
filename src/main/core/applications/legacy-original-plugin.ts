@@ -39,7 +39,14 @@ export class LegacyOriginalPlugin {
    const current=this.source(taskId);if(canonicalJson(current.row)!==sourceRow||canonicalJson(current.pluginSource)!==canonicalJson(archive)||refRows()!==originalRefs)throw new ApplicationError('RESOURCE_STATE_CHANGED','原插件来源或引用在恢复中变化');
    const state=this.store.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;if(state&&(state.store_id!==this.store.storeId||state.maintenance_state!=='ready'))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源库维护尚未结束');
    if(this.store.sqlite.prepare("SELECT 1 FROM capability_resources WHERE path_scope='C' AND relative_path=? AND resource_id<>? LIMIT 1").get(relativePath,resourceId))throw new ApplicationError('OWNERSHIP_CONFLICT','原路径已被另一资源登记，不能改签');
-   this.target(relativePath);if(legacyFilesReceipt([target])!==targetReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原插件目标在发布前变化，保留原内容');
+   this.target(relativePath);if(legacyFilesReceipt([target])!==targetReceipt){
+    // A known publisher may have just renamed its fully verified stage. Accept
+    // only that exact resource's published phase and recheck all source bytes;
+    // pre-publication, occupied, changed or unrelated targets remain blocked.
+    const projection=this.store.get(resourceId),operation=projection.operationId?this.store.sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(projection.operationId,this.store.storeId) as {state:string}|undefined:undefined;
+    if(projection.state!=='verified'||operation?.state!=='published')throw new ApplicationError('RESOURCE_STATE_CHANGED','原插件目标在发布前变化，保留原内容');
+    reader.verifyStaticProjection(archive,origin,target);
+   }
   };
   const guard=(operationId:string)=>{
    metadata();if(this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed') LIMIT 1").get(taskId))throw new ApplicationError('RESOURCE_BUSY','原会话仍有运行或待核查占用，暂不恢复路径');
@@ -52,7 +59,7 @@ export class LegacyOriginalPlugin {
   };
   const known=this.store.sqlite.prepare('SELECT resource_id FROM capability_resources WHERE resource_id=?').get(resourceId);
   if(known&&!source.originalProjection)throw new ApplicationError('SNAPSHOT_CORRUPT','原静态投影长期引用缺失，保留原登记');
-  if(known){const r=this.store.get(resourceId);if(r.state!=='ready'){if(!r.operationId||r.state!=='recovery-required')throw new ApplicationError('RESOURCE_BUSY','原静态投影发布仍未结束');return this.store.recover(spec,r.operationId,signal);}}
+  if(known){const r=this.store.get(resourceId);if(r.state!=='ready'){if(!r.operationId||!['staged','verified','recovery-required'].includes(r.state))throw new ApplicationError('RESOURCE_BUSY','原静态投影发布仍未结束');return this.store.recover(spec,r.operationId,signal);}}
   return this.store.publish(spec,signal);
  }
  verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):void{

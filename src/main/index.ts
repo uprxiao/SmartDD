@@ -22,6 +22,7 @@ import { AiProfileService } from './core/ai/ai-profile-service';
 import { ProfileHealth } from './core/ai/profile-health';
 import { CapabilityService } from './core/capabilities/capability-service';
 import { ResourceStore } from './core/applications/resource-store';
+import {MacProcessIdentityReader} from './core/applications/process-identity';
 import { AgentSupportService } from './core/applications/agent-support-service';
 import { ApplicationService } from './core/applications/application-service';
 import { ManagedTaskCapabilities } from './core/applications/task-capability-launcher';
@@ -128,7 +129,7 @@ async function main(): Promise<void> {
   const capabilities = new CapabilityService({ db: client.db, projects, secrets, userData: app.getPath('userData') });
   let agentSupport: AgentSupportService | undefined;
   try {
-    agentSupport = new AgentSupportService(new ResourceStore(client.sqlite,app.getPath('userData')),capabilities,app.isPackaged ? join(process.resourcesPath,'capability-bundles') : join(app.getAppPath(),'out/capability-bundles'));
+    agentSupport = new AgentSupportService(new ResourceStore(client.sqlite,app.getPath('userData'),undefined,{processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))}),capabilities,app.isPackaged ? join(process.resourcesPath,'capability-bundles') : join(app.getAppPath(),'out/capability-bundles'));
     await agentSupport.initialize();
   } catch { console.warn('[applications] Local capability resources unavailable; ordinary task launch remains available'); }
   const health = new ProfileHealth({

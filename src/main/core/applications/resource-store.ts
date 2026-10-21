@@ -6,6 +6,7 @@ import { APP_HASH_PATTERN, ApplicationError, isPackagePath } from '@shared/appli
 import { canonicalJson, digest } from './manifest';
 import { ensureStoreDirectory } from './package-files';
 import { withResourceLock } from './resource-lock';
+import type {ProcessIdentity,ProcessIdentityReader} from './process-identity';
 
 export interface ResourceRecord {
   resourceId: string; kind: string; contentHash: string; ownerStoreId: string; relativePath: string;pathScope: 'C' | 'H';scopeIdentity: string;
@@ -29,7 +30,9 @@ export class ResourceStore {
   readonly storeId: string;
   readonly instanceId = randomUUID();
   private readonly activeOperations = new Set<string>();
-  constructor(readonly sqlite: Database.Database, userData: string, private readonly checkpoint?: (at: PublishCheckpoint) => void) {
+  private readonly host:ProcessIdentity|null;
+  constructor(readonly sqlite: Database.Database, userData: string, private readonly checkpoint?: (at: PublishCheckpoint) => void,private readonly options:{processes?:ProcessIdentityReader}={}) {
+    const host=options.processes?.read(process.pid);this.host=host&&host.pid===process.pid&&/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(host.startedAt)?{...host}:null;
     mkdirSync(userData, { recursive: true, mode: 0o700 });
     const parent = realpathSync(userData);
     try { mkdirSync(join(parent, 'capabilities'), { mode: 0o700 }); }
@@ -69,15 +72,27 @@ export class ResourceStore {
       if (resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED', '应用依赖尚未就绪');
     }
   }
+  private assertRecordedDependencies(spec:PublishResource):void{
+    const actual=(this.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(spec.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
+    if(canonicalJson(actual)!==canonicalJson([...spec.dependencies].sort()))throw new ApplicationError('RESOURCE_STATE_CHANGED','原资源的依赖集合已经变化');
+    this.assertDependencies(spec.dependencies);
+  }
   private assertIdentity(row: ResourceRecord, spec: PublishResource): void {
     if (row.pathScope !== 'C' || row.kind !== spec.kind || row.contentHash !== spec.contentHash || row.relativePath !== spec.relativePath) throw new ApplicationError('OWNERSHIP_CONFLICT', '资源标识与发布身份不一致');
   }
-  private lease(resourceId: string, operationId: string, kind = 'install',identity?:{pid:number;startedAt:string}): string {
-    const leaseId = randomUUID();
+  private lease(resourceId: string, operationId: string, kind = 'install',identity?:{pid:number;startedAt:string},leaseId:string=randomUUID()): string {
     this.sqlite.prepare(`INSERT INTO capability_resource_leases
       (lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at)
-      VALUES(?,?,?,?,?,?,?, 'active',?)`).run(leaseId, resourceId, kind, operationId, this.instanceId, process.pid, identity?.startedAt??new Date(Date.now() - process.uptime() * 1000).toISOString(), new Date().toISOString());
+      VALUES(?,?,?,?,?,?,?, 'active',?)`).run(leaseId, resourceId, kind, operationId, this.instanceId, process.pid, identity?.startedAt??this.host?.startedAt??new Date(Date.now() - process.uptime() * 1000).toISOString(), new Date().toISOString());
     return leaseId;
+  }
+  private publicationPlan(spec:PublishResource,leaseId:string):string{
+    if(this.options.processes&&!this.host)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','无法核验发布宿主的内核身份，保留原资源');
+    return canonicalJson({resourceId:spec.resourceId,hash:spec.contentHash,relativePath:spec.relativePath,dependencies:[...spec.dependencies].sort(),instanceId:this.instanceId,pid:process.pid,host:this.host,leaseId});
+  }
+  private assertOwnPublisher(resourceId:string,operationId:string,leaseId:string):void{
+    const row=this.sqlite.prepare('SELECT resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE lease_id=?').get(leaseId) as {resource_id:string;owner_kind:string;owner_id:string;host_instance_id:string;pid:number|null;process_started_at:string|null;state:string}|undefined;
+    if(!row||row.resource_id!==resourceId||row.owner_kind!=='install'||row.owner_id!==operationId||row.host_instance_id!==this.instanceId||row.pid!==process.pid||this.host&&row.process_started_at!==this.host.startedAt||row.state!=='active')throw new ApplicationError('RESOURCE_BUSY','当前资源发布占用已经变化，保留原记录');
   }
   private endLease(leaseId: string): void {
     this.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=? AND host_instance_id=?").run(new Date().toISOString(), leaseId, this.instanceId);
@@ -137,9 +152,9 @@ export class ResourceStore {
       const busy = this.sqlite.prepare(`SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND (l.resource_id IN (${marks}) OR EXISTS(SELECT 1 FROM capability_lease_resources p WHERE p.lease_id=l.lease_id AND p.resource_id IN (${marks}))) LIMIT 1`).get(...ids, ...ids);
       if (busy) throw new ApplicationError('RESOURCE_BUSY', '原资源或依赖仍有占用，暂不修复缺失目录');
       const now = new Date().toISOString();
-      this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'restore-' + spec.kind, this.storeId, canonicalJson({resourceId:spec.resourceId,hash:spec.contentHash,relativePath:spec.relativePath,dependencies:[...spec.dependencies].sort(),instanceId:this.instanceId,pid:process.pid}), now, now);
+      this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'restore-' + spec.kind, this.storeId, this.publicationPlan(spec,leaseId=randomUUID()), now, now);
       this.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',generation=generation+1,operation_id=? WHERE resource_id=? AND state='ready'").run(operationId, spec.resourceId);
-      leaseId = this.lease(spec.resourceId, operationId);
+      leaseId = this.lease(spec.resourceId, operationId,'install',undefined,leaseId);
     }).immediate(), {signal});
     if (present) {
       try { spec.verify(join(this.root, spec.relativePath)); return this.get(spec.resourceId); }
@@ -164,20 +179,20 @@ export class ResourceStore {
         if (canonicalJson(actual) !== canonicalJson([...spec.dependencies].sort())) throw new ApplicationError('RESOURCE_STATE_CHANGED', '资源依赖与原发布不一致');
         if (old.state === 'removed') {
           const now = new Date().toISOString();
-          this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'restore-' + spec.kind, this.storeId, canonicalJson({ resourceId: spec.resourceId, hash: spec.contentHash, relativePath: spec.relativePath, dependencies: [...spec.dependencies].sort(), instanceId: this.instanceId, pid: process.pid }), now, now);
+          this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'restore-' + spec.kind, this.storeId, this.publicationPlan(spec,leaseId=randomUUID()), now, now);
           this.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',generation=generation+1,operation_id=? WHERE resource_id=? AND state='removed'").run(operationId,spec.resourceId);
-          leaseId = this.lease(spec.resourceId, operationId); return;
+          leaseId = this.lease(spec.resourceId, operationId,'install',undefined,leaseId); return;
         }
         reuse = true; leaseId = this.lease(spec.resourceId, operationId); return;
       }
       const now = new Date().toISOString();
       this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at)
-        VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'install-' + spec.kind, this.storeId, canonicalJson({ resourceId: spec.resourceId, hash: spec.contentHash, relativePath: spec.relativePath, dependencies: [...spec.dependencies].sort(), instanceId: this.instanceId, pid: process.pid }), now, now);
+        VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'install-' + spec.kind, this.storeId, this.publicationPlan(spec,leaseId=randomUUID()), now, now);
       this.sqlite.prepare(`INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity,operation_id)
         VALUES(?,?,?,?,'C',?,'staged',1,'unknown',?)`).run(spec.resourceId, spec.kind, spec.contentHash, this.storeId, spec.relativePath, operationId);
       for (const id of spec.dependencies) this.sqlite.prepare('INSERT INTO capability_resource_dependencies(resource_id,dependency_id) VALUES(?,?)').run(spec.resourceId, id);
       spec.register?.(operationId);
-      leaseId = this.lease(spec.resourceId, operationId);
+      leaseId = this.lease(spec.resourceId, operationId,'install',undefined,leaseId);
     }).immediate(), { signal });
     if (reuse) {
       let failure: unknown, missing = false;
@@ -198,7 +213,7 @@ export class ResourceStore {
     } finally { this.activeOperations.delete(operationId); }
   }
   private async finish(spec: PublishResource, operationId: string, leaseId: string, signal?: AbortSignal): Promise<void> {
-    spec.assertPublish?.(operationId);
+    this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
     ensureStoreDirectory(this.root, 'staging');
     const stage = join(this.root, 'staging', operationId), target = join(this.root, spec.relativePath);
     if (this.missingTarget(spec)) {
@@ -206,17 +221,17 @@ export class ResourceStore {
       spec.verify(stage);
     } else spec.verify(target);
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      spec.assertPublish?.(operationId);
+      this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || row.state === 'deleting' || row.state === 'removed') throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布资源状态已变化');
-      this.assertDependencies(spec.dependencies);
+      this.assertRecordedDependencies(spec);
       this.sqlite.prepare("UPDATE capability_resources SET state='verified',integrity='valid' WHERE resource_id=?").run(spec.resourceId);
       this.phase(operationId, 'verified');
     }).immediate(), { signal });
     this.checkpoint?.('materialized');
     await withResourceLock(this.root, () => {
-      spec.assertPublish?.(operationId);
-      this.assertDependencies(spec.dependencies);
+      this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
+      this.assertRecordedDependencies(spec);
       const row = this.get(spec.resourceId);
       if (row.operationId !== operationId || row.state !== 'verified') throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布资源状态已变化');
       if (dirname(spec.relativePath) !== '.') ensureStoreDirectory(this.root, dirname(spec.relativePath));
@@ -224,8 +239,9 @@ export class ResourceStore {
       else renameSync(stage, target);
       this.phase(operationId, 'published');
       this.checkpoint?.('renamed');
+      this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);spec.verify(target);
       this.sqlite.transaction(() => {
-        this.assertDependencies(spec.dependencies);
+        this.assertOwnPublisher(spec.resourceId,operationId,leaseId);this.assertRecordedDependencies(spec);
         this.sqlite.prepare("UPDATE capability_resources SET state='ready',integrity='valid' WHERE resource_id=? AND operation_id=?").run(spec.resourceId, operationId);
         this.phase(operationId, 'committed'); this.endLease(leaseId);
       }).immediate();
@@ -247,19 +263,37 @@ export class ResourceStore {
     if (!/^[a-f0-9-]{36}$/.test(operationId)) throw new ApplicationError('INVALID_PACKAGE', '恢复操作标识无效');
     let leaseId = '', alreadyReady = false;
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId);
+      const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || this.activeOperations.has(operationId)) throw new ApplicationError('RESOURCE_BUSY', '原发布操作仍在执行或归属不同');
-      const operation = this.sqlite.prepare('SELECT state,plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId, this.storeId) as { state: string; plan: string } | undefined;
+      const operation = this.sqlite.prepare('SELECT kind,state,plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId, this.storeId) as {kind:string;state:string;plan:string}|undefined;
+      if(operation&&!['install-'+spec.kind,'restore-'+spec.kind].includes(operation.kind))throw new ApplicationError('RESOURCE_STATE_CHANGED','原发布操作类型不同');
       if (!operation) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '缺少原发布日志');
-      const plan = JSON.parse(operation.plan) as { pid: number; resourceId: string; hash: string; relativePath: string; dependencies: string[] };
+      let plan:{pid:number;instanceId:string;resourceId:string;hash:string;relativePath:string;dependencies:string[];host?:ProcessIdentity|null;leaseId?:string};
+      try{plan=JSON.parse(operation.plan);if(!plan||!Number.isSafeInteger(plan.pid)||plan.pid<1||typeof plan.instanceId!=='string'||!Array.isArray(plan.dependencies))throw Error();}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布身份记录不完整');}
       if (plan.resourceId !== spec.resourceId || plan.hash !== spec.contentHash || plan.relativePath !== spec.relativePath || canonicalJson(plan.dependencies) !== canonicalJson([...spec.dependencies].sort())) throw new ApplicationError('RESOURCE_STATE_CHANGED', '恢复输入与原发布不一致');
-      if (operation.state !== 'failed' && operation.state !== 'committed') {
-        try { process.kill(plan.pid, 0); throw new ApplicationError('RESOURCE_BUSY', '原发布进程仍存在，保留占用'); }
-        catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ESRCH') throw e; }
+      const validIdentity=(v:ProcessIdentity|null|undefined):v is ProcessIdentity=>!!v&&Number.isSafeInteger(v.pid)&&v.pid>0&&typeof v.startedAt==='string'&&/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(v.startedAt);
+      if(operation.state!=='failed'&&operation.state!=='committed'){
+        if(!validIdentity(plan.host)||plan.host.pid!==plan.pid||!this.options.processes)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布者缺少可核验的内核启动身份');
+        if(this.options.processes.state(plan.host)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原发布者仍存活或身份未知，保留原占用');
       }
+      type Install={lease_id:string;resource_id:string;host_instance_id:string;pid:number|null;process_started_at:string|null;state:string};
+      const installs=this.sqlite.prepare("SELECT lease_id,resource_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE owner_id=? AND owner_kind='install' ORDER BY lease_id").all(operationId) as Install[];
+      if(!installs.length)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布占用凭据缺失');
+      if(plan.leaseId){const original=installs.find(l=>l.lease_id===plan.leaseId);if(!original)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布占用凭据缺失');if(original.resource_id!==spec.resourceId||original.host_instance_id!==plan.instanceId||original.pid!==plan.pid||plan.host&&original.process_started_at!==plan.host.startedAt)throw new ApplicationError('RESOURCE_BUSY','原发布占用已有不同恢复者，保留原记录');}
+      const ended:string[]=[];
+      for(const lease of installs){
+        if(lease.resource_id!==spec.resourceId||!['active','released','recovery-required'].includes(lease.state))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布占用的资源或状态不同');
+        if(lease.state==='released')continue;
+        const identity={pid:lease.pid!,startedAt:lease.process_started_at!};
+        if(!validIdentity(identity)||!this.options.processes||this.options.processes.state(identity)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原发布或恢复者仍存活或身份未知，保留占用');
+        ended.push(lease.lease_id);
+      }
+      const held=this.sqlite.prepare("SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND NOT(l.owner_kind='install' AND l.owner_id=?) AND (l.resource_id=? OR EXISTS(SELECT 1 FROM capability_lease_resources r WHERE r.lease_id=l.lease_id AND r.resource_id=?)) LIMIT 1").get(operationId,spec.resourceId,spec.resourceId);
+      if(held)throw new ApplicationError('RESOURCE_BUSY','原资源仍有其他运行或待核查占用');
       if (row.state === 'deleting' || row.state === 'removed') throw new ApplicationError('RESOURCE_STATE_CHANGED', '不能从清理状态恢复发布');
-      this.assertDependencies(spec.dependencies);
-      this.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_id=? AND owner_kind='install' AND state<>'released'").run(new Date().toISOString(), operationId);
+      this.assertRecordedDependencies(spec);
+      for(const id of ended)this.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=? AND owner_id=? AND owner_kind='install' AND state<>'released'").run(new Date().toISOString(),id,operationId);
+      spec.assertPublish?.(operationId);
       alreadyReady = row.state === 'ready' && operation.state === 'committed';
       leaseId = this.lease(spec.resourceId, operationId);
       if (!alreadyReady) this.phase(operationId, 'recovering');
