@@ -14,6 +14,7 @@ import {runBundledMigrations} from '../../../db/migrations';
 import * as schema from '../../../db/schema';
 import {SecretsStore} from '../../../secrets';
 import type {SpawnOptions} from '../../../pty-manager';
+import type {TaskCapabilityLaunch} from '../../tasks/capability-lifecycle';
 import {ProjectService} from '../../projects/project-service';
 import {AiProfileService} from '../../ai/ai-profile-service';
 import {CapabilityService,MCP_CAPABILITY} from '../../capabilities/capability-service';
@@ -30,6 +31,7 @@ import {ApplicationToolService} from '../tool-service';
 import {ApplicationAdapterRegistry} from '../application-adapter-registry';
 let root:string,home:string,cwd:string,sqlite:Database.Database,capabilities:CapabilityService,support:AgentSupportService,applications:ApplicationService,managed:ManagedTaskCapabilities,tasks:TaskService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,ptys:TestPtys,projectId:string,codexId:string,claudeId:string;
 let expectedDisposeError:unknown;
+let argMax:number|null;
 class TestPtys extends EventEmitter implements PtyHost{
  readonly live=new Map<string,number>();readonly launches:SpawnOptions[]=[];
  spawn(options:SpawnOptions){this.launches.push(options);const pid=31000+this.launches.length;this.live.set(options.id!,pid);reader.identities.set(pid,'darwin-proc-v1:300:'+pid);return options.id!;}
@@ -37,19 +39,41 @@ class TestPtys extends EventEmitter implements PtyHost{
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
 beforeEach(async()=>{
- expectedDisposeError=undefined;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));
+ expectedDisposeError=undefined;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
- capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{}});
+ capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{},launchArgMax:()=>argMax});
  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,peers:{read:async()=>null},stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
 });
 afterEach(async()=>{tasks?.dispose();for(const id of ptys?.live?.keys()??[])ptys.kill(id);await applications?.dispose();try{await managed?.dispose();}catch(error){if(error!==expectedDisposeError)throw error;}capabilities?.dispose();sqlite?.close();rmSync(root,{recursive:true,force:true});});
 const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
 const consumers=()=>readdirSync(join(home,'.agents/smartdd-runtime/catalog-consumers'));
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+ it.each(['claude-code','codex'] as const)('withdraws oversized %s injection before fork, preserves fixed selection and resumes capabilities after capacity recovers',async runner=>{
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const prepare=managed.prepare.bind(managed),plans:TaskCapabilityLaunch[]=[];
+  // Inflate the real adapter's injection only. This is a capacity fixture, not a native CLI claim.
+  vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await prepare(input);launch.args.push('-c','capacity_fixture='+JSON.stringify('x'.repeat(24000)));plans.push(launch);return launch;});
+  argMax=50000;const observe=vi.spyOn(applications.nativeInputs,'observeLaunch'),first=await tasks.create({projectId,dirId:null,aiProfileId:runner==='codex'?codexId:claudeId,firstMessage:'原始问题保持不变'},{sender:{id:101},senderFrame:{processId:9,routingId:1}} as unknown as ApplicationUiSender),runId=first.task.runtimeSnapshot!.runId,snapshot=await managed.sessions.get(first.task.id),raw=JSON.stringify(snapshot.snapshot),pointer=snapshot.pointer;
+  expect(first.task.runtimeSnapshot!.selfCheck).toMatchObject({status:'failed',issues:['AGENT_ADAPTER_UNSUPPORTED','managed_launch_payload_too_large']});expect(first.task.runtimeSnapshot!.sessionCapabilities).toEqual(pointer);
+  expect(ptys.launches).toHaveLength(1);expect(ptys.launches[0].args).not.toContain('-c');expect(ptys.launches[0].args.at(-1)).toBe('原始问题保持不变');expect(ptys.launches[0].env.__SMARTDD_V_HOME).toBe(home);expect(observe).not.toHaveBeenCalled();
+  expect(sqlite.prepare('SELECT kind,state FROM capability_run_processes WHERE run_id=? ORDER BY kind').all(runId)).toEqual([{kind:'bridge',state:'canceled'},{kind:'cli',state:'active'}]);expect(sqlite.prepare('SELECT bindings_json FROM capability_runs WHERE run_id=?').get(runId)).toEqual({bindings_json:'[]'});
+  expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(()=>managed.runs.bridgePreparation(runId)).toThrow('不签发');expect(managed.runs.inputContext(first.task.id,first.ptyId)).toBeNull();expect(managed.broker.hasAuthenticated(runId)).toBe(false);
+  await expect(plans[0].nativeOnly!('managed_launch_payload_too_large')).rejects.toMatchObject({code:'CANCELED'});
+  expect(sqlite.prepare("SELECT state FROM capability_resource_leases WHERE owner_id=? AND owner_kind='run'").get(runId)).toEqual({state:'active'});if(runner==='codex')expect(consumers()).toHaveLength(1);
+  tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));expect(JSON.stringify((await managed.sessions.get(first.task.id)).snapshot)).toBe(raw);
+  sqlite.prepare('UPDATE skill_versions SET active=0').run();argMax=1048576;const restored=await tasks.open({taskId:first.task.id});expect(restored.task.runtimeSnapshot!.runId).not.toBe(runId);expect(managed.runs.assertActive(restored.task.runtimeSnapshot!.runId).snapshot).toEqual(snapshot.snapshot);expect(restored.task.runtimeSnapshot!.sessionCapabilities).toEqual(pointer);expect(ptys.launches).toHaveLength(2);expect(observe).not.toHaveBeenCalled();
+ });
+ it('fails an oversized original native payload before arming and never retries a fork',async()=>{
+  argMax=100;await expect(create()).rejects.toThrow('本机容量');expect(ptys.launches).toHaveLength(0);expect(sqlite.prepare('SELECT state FROM capability_runs').all()).toEqual([{state:'stopped'}]);expect(sqlite.prepare('SELECT state FROM capability_run_processes').all()).toEqual([{state:'canceled'}]);expect(consumers()).toEqual([]);
+ });
+ it('never falls back or retries after an uncertain native fork failure',async()=>{
+  const original=managed.prepare.bind(managed);let fallback:NonNullable<TaskCapabilityLaunch['nativeOnly']>|undefined;vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await original(input);fallback=vi.fn(launch.nativeOnly!);launch.nativeOnly=fallback;return launch;});vi.spyOn(ptys,'spawn').mockImplementationOnce(()=>{throw new Error('uncertain fork fixture');});
+  await expect(create()).rejects.toThrow('uncertain fork fixture');expect(fallback).not.toHaveBeenCalled();expect(ptys.spawn).toHaveBeenCalledTimes(1);expect(sqlite.prepare('SELECT state FROM capability_runs').all()).toEqual([{state:'stopping'}]);expect(sqlite.prepare('SELECT state FROM capability_run_processes').all()).toEqual([{state:'armed'}]);expect(consumers()).toHaveLength(1);
+ });
  it.each(['claude-code','codex'] as const)('registers native input provenance using the current verified %s launch version and owned run signal',async runner=>{
   const register=vi.spyOn(applications.nativeMessages,'register'),first=await create(runner==='codex'?codexId:claudeId),runId=first.task.runtimeSnapshot!.runId,context=managed.runs.assertActive(runId);
   expect(register).toHaveBeenCalledWith(runId,runner==='codex'?'0.162.1':'2.1.303',context.signal);expect((await applications.nativeMessages.read(runId)).messages).toEqual([]);
@@ -192,6 +216,12 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const opened=await tasks.open({taskId:id}),runId=opened.task.runtimeSnapshot!.runId,argv=ptys.launches.at(-1)!.args,flags=argv.find(a=>a.startsWith('skills.config='))!;
   expect((parseToml(flags).skills as {config:{enabled:boolean}[]}).config.every(item=>item.enabled===false)).toBe(true);expect(argv.join('\n')).not.toContain('--bootstrap');expect(argv.join('\n')).not.toContain('mcp_servers.');expect(opened.task.runtimeSnapshot?.selfCheck.issues).toEqual(['HISTORY_CAPABILITIES_UNKNOWN']);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(managed.runs.inputContext(id,opened.ptyId)).toBeNull();expect(consumers()).toHaveLength(1);
   await new Promise<void>(done=>setTimeout(done,250));expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});tasks.kill(id);await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});expect(sqlite.prepare('SELECT schema_version,retention_state FROM capability_session_snapshots WHERE task_id=?').get(id)).toEqual({schema_version:0,retention_state:'hold'});
+ });
+ it('continues known native history when its disable-list injection exceeds capacity without rewriting the old record',async()=>{
+  const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+  const id=randomUUID(),nativeId=randomUUID(),stamp=Date.now();drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,runner:'codex',nativeSessionId:nativeId,title:'capacity history fixture',runtimeSnapshot:null,configVersion:0,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
+  const original=managed.prepare.bind(managed);vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await original(input);launch.args.push('-c','capacity_fixture='+JSON.stringify('x'.repeat(24000)));return launch;});argMax=50000;
+  const opened=await tasks.open({taskId:id}),runId=opened.task.runtimeSnapshot!.runId;expect(ptys.launches.at(-1)!.args).toEqual(['resume','--cd',cwd,nativeId]);expect(opened.task.runtimeSnapshot!.selfCheck.issues).toEqual(['HISTORY_CAPABILITIES_UNKNOWN','AGENT_ADAPTER_UNSUPPORTED','managed_launch_payload_too_large']);expect(consumers()).toHaveLength(1);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(managed.runs.inputContext(id,opened.ptyId)).toBeNull();expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});tasks.kill(id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
  });
  it.each(['unknown-cli','unverified-config'] as const)('continues ordinary native history with a populated shared catalog and %s, without granting application access',async(kind)=>{
   const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));

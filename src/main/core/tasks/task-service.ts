@@ -16,6 +16,7 @@ import {
 import type { AppDb } from '../../db/client';
 import { aiProfiles, projects, tasks } from '../../db/schema';
 import { PARENT_AGENT_VARS, planLaunchEnv } from '../../launch-env';
+import { launchArgMax, launchPayloadFits } from '../../launch-budget';
 import type { SpawnOptions } from '../../pty-manager';
 import type { RuntimeSnapshot } from '@shared/capabilities';
 import { RUNTIME_ISOLATION, type CapabilityService, type PreparedRuntime } from '../capabilities/capability-service';
@@ -53,6 +54,8 @@ export interface TaskServiceDeps {
   now?: () => number;
   codexPollMs?: number;
   healthPollMs?: number;
+  /** Local OS capacity; injectable for deterministic boundary tests. */
+  launchArgMax?: () => number | null;
 }
 
 /** A CLI that dies this soon after launch, unprompted and without any API answer, failed to start. */
@@ -444,15 +447,29 @@ export class TaskService {
       runtime = launch?.runtime ?? (!this.d.managedCapabilities && context ? this.d.capabilities?.prepare({
         ...context, runner: profile.runner, cwd, home: env.HOME ?? base.HOME ?? process.env.HOME ?? '', profileArgs: profile.args,
       }) : undefined);
-      const plan = planLaunchEnv(base, { ...env, ...runtime?.env, ...launch?.env }, [
-        ...profile.isolatePrefixes, ...RUNTIME_ISOLATION,
-        ...(context && hasCapabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME'] : []),
-      ]);
-      const args = buildRunnerArgs(profile.runner, {
-        mode, sessionId, cwd, profileArgs: profile.args, runtimeArgs: launch?.args ?? runtime?.args, firstMessage,
-      });
-      const executable = launch?.command ?? profile.command;
-      const command = runtime?.wrap(executable, args) ?? { command: executable, args };
+      const assemble = () => {
+        const plan = planLaunchEnv(base, { ...env, ...runtime?.env, ...launch?.env }, [
+          ...profile.isolatePrefixes, ...RUNTIME_ISOLATION,
+          ...(context && hasCapabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME'] : []),
+        ]);
+        const args = buildRunnerArgs(profile.runner, {
+          mode, sessionId, cwd, profileArgs: profile.args, runtimeArgs: launch?.args ?? runtime?.args, firstMessage,
+        });
+        const executable = launch?.command ?? profile.command;
+        const command = runtime?.wrap(executable, args) ?? { command: executable, args };
+        return { plan, command };
+      };
+      let { plan, command } = assemble();
+      if (launch) {
+        const limit = (this.d.launchArgMax ?? launchArgMax)();
+        const fits = () => launchPayloadFits({ ...command, env: plan.env, scriptArgs: plan.scriptArgs }, limit);
+        if (!fits() && launch.nativeOnly) {
+          launch = await launch.nativeOnly('managed_launch_payload_too_large');
+          runtime = launch.runtime;
+          ({ plan, command } = assemble());
+        }
+        if (!fits()) throw new Error('原生 Agent 的启动参数和环境已超过本机容量，请缩短初始输入或配置后重试');
+      }
       if (launch) {
         this.managed.set(launch.ptyId, { taskId: context!.taskId, launch, exited: false });
         await launch.beforeSpawn();

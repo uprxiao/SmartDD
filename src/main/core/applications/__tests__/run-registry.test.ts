@@ -11,6 +11,16 @@ async function active(): Promise<OwnedCapabilityRun> { const run = await f.creat
 beforeEach(async () => { reader = new FixtureProcessReader(); f = await runFixture(reader); });
 afterEach(() => f.cleanup());
 describe('capability run resource registration, revocation and conservative recovery', () => {
+  it('narrows only a prepared, fully canceled-bridge run and retains protection until the owned native exit',async()=>{
+    const run=await f.create();await run.prepare();const bridge=await run.reserveBridge();await expect(f.runs.restrictToNative(run.runId)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});await bridge.cancelBeforeLaunch();const refs=protection(run.runId);await f.runs.restrictToNative(run.runId);
+    expect(()=>f.runs.assertActive(run.runId)).toThrow('不签发');await expect(run.reserveBridge()).rejects.toMatchObject({code:'SCOPE_DENIED'});await run.cli.arm();reader.identities.set(200001,'darwin-proc-v1:200:1');await run.cli.attach(200001);expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();expect(protection(run.runId)).toEqual(refs);expect(leases(run.runId)).toEqual([{state:'active'}]);await run.cli.exited();expect(leases(run.runId)).toEqual([{state:'released'}]);
+  });
+  it('refuses narrowing an armed CLI without changing its authority or occupied resources',async()=>{
+    const run=await f.create();await run.prepare();await run.cli.arm();await expect(f.runs.restrictToNative(run.runId)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(leases(run.runId)).toEqual([{state:'active'}]);reader.identities.set(200001,'darwin-proc-v1:200:1');await run.cli.attach(200001);expect(f.runs.assertActive(run.runId).snapshot).toEqual(f.snapshot);await run.cli.exited();
+  });
+  it('accepts the first proved native ID on a narrowed run without restoring business authority',async()=>{
+    const run=await f.create();await run.prepare();await f.runs.restrictToNative(run.runId);await run.cli.arm();reader.identities.set(200001,'darwin-proc-v1:200:1');await run.cli.attach(200001);const bound=await f.sessions.bindNativeSession(f.snapshot.taskId,f.session.pointer.snapshotHash,{...f.snapshot.native,runner:'claude-code',sessionId:'native-narrowed-id'});expect(f.runs.get(run.runId).snapshotHash).toBe(bound.pointer.snapshotHash);expect(()=>f.runs.assertActive(run.runId)).toThrow('不签发');await run.cli.exited();expect(leases(run.runId)).toEqual([{state:'released'}]);
+  });
   it('joins input only to one actual active task/PTY owned by this registry',async()=>{
     const run=await f.create();expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();await run.prepare();await run.cli.arm();reader.identities.set(200001,'darwin-proc-v1:200:1');await run.cli.attach(200001);expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)?.run.runId).toBe(run.runId);expect(f.runs.inputContext('other-task',run.ptyId)).toBeNull();expect(f.runs.inputContext(f.snapshot.taskId,'other-pty')).toBeNull();expect(f.registry().inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();await run.cli.exited();expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();
   });

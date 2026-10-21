@@ -1,0 +1,165 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/run-registry.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'narrows only|refuses narrowing|first proved native ID on a narrowed|withdraws oversized|oversized original'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (42 tests | 3 failed | 39 skipped) 5290ms
+     × withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers 2326ms
+     × withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers 2459ms
+     × fails an oversized original native payload before arming and never retries a fork 505ms
+ ❯ src/main/core/applications/__tests__/run-registry.test.ts (29 tests | 3 failed | 26 skipped) 116ms
+     × narrows only a prepared, fully canceled-bridge run and retains protection until the owned native exit 45ms
+     × refuses narrowing an armed CLI without changing its authority or occupied resources 36ms
+     × accepts the first proved native ID on a narrowed run without restoring business authority 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > narrows only a prepared, fully canceled-bridge run and retains protection until the owned native exit
+TypeError: f.runs.restrictToNative is not a function
+ ❯ src/main/core/applications/__tests__/run-registry.test.ts:15:111
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > refuses narrowing an armed CLI without changing its authority or occupied resources
+TypeError: f.runs.restrictToNative is not a function
+ ❯ src/main/core/applications/__tests__/run-registry.test.ts:19:92
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > accepts the first proved native ID on a narrowed run without restoring business authority
+TypeError: f.runs.restrictToNative is not a function
+ ❯ src/main/core/applications/__tests__/run-registry.test.ts:22:65
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers
+AssertionError: expected { status: 'pending', issues: [], …(1) } to match object { status: 'failed', issues: [ …(2) ] }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "issues": [
+-     "AGENT_ADAPTER_UNSUPPORTED",
+-     "managed_launch_payload_too_large",
+-   ],
+-   "status": "failed",
++   "issues": [],
++   "status": "pending",
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:61:49
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > fails an oversized original native payload before arming and never retries a fork
+AssertionError: promise resolved "{ task: { …(23) }, …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "45d774dd-0a26-4111-a72e-4d1e296c1350",
++   "task": {
++     "aiProfileColor": null,
++     "aiProfileId": "17ce122c-0e5e-43e7-b30f-3ae057699810",
++     "aiProfileName": "Codex version fixture",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792544816477,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-ZerJZH/project",
++     "dirId": "39404400-13bc-4a1b-93ff-d2f0062723e4",
++     "firstMessage": "",
++     "id": "14802214-1a62-40f9-9c14-bcd9d8658976",
++     "injectedEnvNames": [
++       "CODEX_HOME",
++       "HOME",
++       "PROJECT_DB_CONFIG",
++       "REMOTE_SERVERS_CONFIG",
++       "SMARTDD_CONFIG_VERSION",
++       "SMARTDD_PROJECT_CONTEXT",
++       "SMARTDD_PROJECT_ID",
++       "SMARTDD_RESOURCE_AUDIT",
++     ],
++     "lastLaunchedAt": 1792544816752,
++     "nativeSessionId": null,
++     "projectConfigVersion": 1,
++     "projectId": "b56df77b-0003-45fe-9c39-b4a16375d587",
++     "projectName": "isolated production composition",
++     "ptyId": "45d774dd-0a26-4111-a72e-4d1e296c1350",
++     "recovery": "not-started",
++     "recoveryReason": "还没有发过消息，Codex 未生成会话；打开时会新开一个",
++     "runner": "codex",
++     "runtimeSnapshot": {
++       "auditPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-ZerJZH/capabilities/resource-audit/b56df77b-0003-45fe-9c39-b4a16375d587/14802214-1a62-40f9-9c14-bcd9d8658976.jsonl",
++       "configHash": "30b2682d3c0ed74c6bfe9c1649cf818374d322726b638be1052764dde050c06c",
++       "configVersion": 1,
++       "manifestPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-ZerJZH/capabilities/runs/b56df77b-0003-45fe-9c39-b4a16375d587/14802214-1a62-40f9-9c14-bcd9d8658976/e334efc8-00cc-43c9-b514-2804df89fefd/manifest.json",
++       "mcp": [
++         {
++           "loaded": "unverified",
++           "name": "smartdd_project_59dab6d7fb1d",
++         },
++       ],
++       "projectId": "b56df77b-0003-45fe-9c39-b4a16375d587",
++       "runId": "e334efc8-00cc-43c9-b514-2804df89fefd",
++       "selfCheck": {
++         "at": null,
++         "issues": [],
++         "status": "pending",
++       },
++       "sessionCapabilities": {
++         "schema": 2,
++         "snapshotHash": "e14b662d5b7e99f7bed47d0dbc9561771ef1c38170fdeaee7bde3d3ba5e3eb88",
++         "taskId": "14802214-1a62-40f9-9c14-bcd9d8658976",
++       },
++       "skills": [
++         {
++           "enabled": true,
++           "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++           "loaded": "unverified",
++           "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-ZerJZH/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
++           "skillId": "project-db-diagnostics",
++           "version": "1.0.0",
++           "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         },
++         {
++           "enabled": true,
++           "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++           "loaded": "unverified",
++           "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-ZerJZH/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
++           "skillId": "remote-password-ssh",
++           "version": "1.0.0",
++           "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         },
++       ],
++     },
++     "title": "Codex version fixture 10-21 09:06",
++     "updatedAt": 1792544816477,
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:71:35
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 65 skipped (71)
+   Start at  09:06:50
+   Duration  6.35s (transform 461ms, setup 0ms, import 795ms, tests 5.41s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
