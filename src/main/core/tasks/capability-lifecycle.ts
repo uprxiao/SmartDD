@@ -16,6 +16,8 @@ export interface TaskCapabilityLaunch {
   beforeSpawn(): Promise<void>;
   spawned(nativePid: number | null): Promise<void>;
   initialInput?(sender: TaskInputSender, text: string): void;
+  /** Host-only receipt: OS spawn has not been attempted; never use after a spawn error. */
+  cancelBeforeFork?(): Promise<void>;
   spawnFailed(): Promise<void>;
   exited(): Promise<void>;
   stop(reason: string): Promise<void>;

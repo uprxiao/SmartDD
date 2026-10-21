@@ -162,3 +162,22 @@ describe('native-only unknown-history lifecycle without business authority',()=>
  it('refuses cross-project, v2 or empty-source promotion and detects changed original metadata',async()=>{const g=await guard();await expect(f.runs.reserveNativeGuard({...g.input,projectId:'different-project'})).rejects.toMatchObject({code:'SCOPE_DENIED'});await expect(f.runs.reserveNativeGuard({...g.input,taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash})).rejects.toMatchObject({code:'SESSION_ON_HOLD'});await expect(f.runs.reserveNativeGuard({...g.input,resourceIds:[]})).rejects.toMatchObject({code:'INVALID_INPUT'});f.sqlite.prepare("UPDATE capability_session_snapshots SET snapshot_json='{}' WHERE task_id=?").run(g.taskId);await expect(g.run.prepare()).rejects.toMatchObject({code:'SNAPSHOT_CORRUPT'});expect(leases(g.run.runId)).toEqual([{state:'preparing'}]);await g.run.stop();expect(f.runs.get(g.run.runId).state).toBe('stopped');});
  it('recovers only when the previous guard owner and actual CLI identity are both stopped',async()=>{const g=await guard();await g.run.prepare();await g.run.cli.arm();reader.identities.set(200003,'darwin-proc-v1:400:3');await g.run.cli.attach(200003);hostStopped(g.run.runId);const other=f.registry();expect(await other.recover()).toContainEqual({runId:g.run.runId,state:'orphaned'});expect(leases(g.run.runId)).toEqual([{state:'recovery-required'}]);reader.identities.delete(200003);expect(await other.recover()).toContainEqual({runId:g.run.runId,state:'stopped'});expect(leases(g.run.runId)).toEqual([{state:'released'}]);expect(()=>other.assertActive(g.run.runId)).toThrow('不属于');});
 });
+
+
+describe('owned host receipt before an OS fork is attempted',()=>{
+ it('cancels both armed windows and releases after a verified no-fork receipt',async()=>{
+  const run=await f.create();await run.prepare();const bridge=await run.reserveBridge();await bridge.arm();await run.cli.arm();
+  await expect(run.cli.cancelBeforeLaunch()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
+  await run.cancelBeforeFork();expect(f.runs.get(run.runId).state).toBe('stopped');expect(leases(run.runId)).toEqual([{state:'released'}]);
+  expect(f.sqlite.prepare('SELECT kind,state,pid FROM capability_run_processes WHERE run_id=? ORDER BY kind').all(run.runId)).toEqual([{kind:'bridge',state:'canceled',pid:null},{kind:'cli',state:'canceled',pid:null}]);
+ });
+ it('refuses to cancel an actually attached process as never forked',async()=>{
+  const run=await active();await expect(run.cancelBeforeFork()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
+  expect(leases(run.runId)).toEqual([{state:'active'}]);expect(f.runs.get(run.runId).state).toBe('active');await run.cli.exited();
+ });
+ it('refuses an uncertain fork and leaves the existing hold intact',async()=>{
+  const run=await f.create();await run.prepare();await run.cli.arm();await expect(run.cli.attach(999999)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});
+  await expect(run.cancelBeforeFork()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
+  expect(f.sqlite.prepare('SELECT state FROM capability_run_processes WHERE run_id=?').get(run.runId)).toEqual({state:'unknown'});expect(leases(run.runId)).toEqual([{state:'active'}]);
+ });
+});

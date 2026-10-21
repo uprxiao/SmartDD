@@ -149,6 +149,8 @@ describe('Codex session ownership (review H1)', () => {
     ptys.emit('exit', 'pty-1', 0);
     expect((await svc.open({ taskId: first.id })).ptyId).toBe('pty-2');
     await vi.advanceTimersByTimeAsync(3100); // the old run's grace period has ended
+    const nativeDir=join(dir,'codex','sessions','2026','10','21');mkdirSync(nativeDir,{recursive:true});
+    writeFileSync(join(nativeDir,'rollout-private-after-reopen.jsonl'),JSON.stringify({type:'session_meta',payload:{id:'after-reopen',cwd,timestamp:new Date(clock).toISOString(),originator:'codex_cli_rs'}})+'\n');
     rollouts.mockResolvedValue([meta('after-reopen', 500)]);
     await vi.advanceTimersByTimeAsync(300);
 

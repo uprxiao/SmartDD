@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
@@ -97,8 +97,9 @@ const mk = (name: string) => {
 const claudeRoot = () => join(tmp, 'claude-home');
 const codexRoot = () => join(tmp, 'codex-home');
 
-const claudeProfile = (over: Partial<AiProfileInput> = {}) =>
-  profiles.create({
+const claudeProfile = (over: Partial<AiProfileInput> = {}) => {
+  mkdirSync(claudeRoot(), {recursive:true});
+  return profiles.create({
     name: 'CC-DS',
     runner: 'claude',
     executable: null,
@@ -112,6 +113,7 @@ const claudeProfile = (over: Partial<AiProfileInput> = {}) =>
     isDefault: false,
     ...over,
   });
+};
 const codexProfile = () =>
   profiles.create({
     name: 'Codex',
@@ -535,5 +537,115 @@ describe('project-scoped application connection stop',()=>{
   vi.spyOn(ptys,'kill').mockImplementation(id=>{ptys.killed.push(id);});
   expect(await svc.stopProject(p.id,25)).toBe(false);expect(svc.activePty(first.task.id)).toBeNull();expect(svc.runningInProject(p.id)).toBe(1);
   ptys.emit('exit',first.ptyId,0);expect(await svc.stopProject(p.id,25)).toBe(true);
+ });
+});
+
+
+describe('persisted native history cannot become a fresh empty-root session', () => {
+  it.each(['claude', 'codex'].flatMap(runner => ['missing-root', 'empty-root', 'missing-history'].map(fault => ({runner: runner as 'claude' | 'codex', fault}))))('rejects $runner $fault after observed history and host restart, then resumes the restored original', async ({runner, fault}) => {
+    const p = project();
+    const profile = runner === 'claude' ? claudeProfile() : codexProfile();
+    const created = await svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'history guard' });
+    if (runner === 'claude') {
+      writeClaudeSession(created.task.cwd, created.task.id);
+      appendFileSync(claudeSessionPath(created.task.cwd, created.task.id), JSON.stringify({ type: 'assistant', message: { model: 'synthetic', content: [{ type: 'text', text: 'native history written' }] } }) + '\n');
+    } else {
+      const file = writeCodexRollout(created.task.cwd, 'history-guard-native', clock);
+      appendFileSync(file, JSON.stringify({ type: 'response_item', payload: { type: 'message', role: 'assistant', content: [] } }) + '\n');
+      await vi.waitFor(() => expect(svc.get(created.task.id).nativeSessionId).toBe('history-guard-native'), { timeout: 2000 });
+    }
+    await vi.waitFor(() => expect(reports.some(r => r.ev.category === 'ok')).toBe(true), { timeout: 2000 });
+    ptys.emit('exit', created.ptyId, 0);
+    const before = sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(created.task.id);
+    svc.dispose();
+    const root = runner === 'claude' ? claudeRoot() : codexRoot();
+    const quarantine = root + '-preserved';
+    const source = fault === 'missing-history' ? join(root, runner === 'claude' ? 'projects' : 'sessions') : root;
+    renameSync(source, quarantine);
+    if (fault === 'empty-root') mkdirSync(root);
+    svc = new TaskService({ db: drizzle(sqlite, { schema }), ptys, profiles, projects, baseEnv: () => ({ PATH: '/usr/bin', HOME: '/home/x' }), onChanged: () => changed++, now: () => ++clock, codexPollMs: 20, healthPollMs: 20 });
+    const spawns = ptys.spawned.length;
+    await expect(svc.open({ taskId: created.task.id })).rejects.toThrow(/原生会话.*(缺失|不可用)/);
+    expect(ptys.spawned).toHaveLength(spawns);
+    expect(sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(created.task.id)).toEqual(before);
+    if (fault === 'empty-root') rmSync(root, { recursive: true });
+    renameSync(quarantine, source);
+    const restored = await svc.open({ taskId: created.task.id });
+    expect(restored.task.nativeSessionId).toBe(runner === 'claude' ? created.task.id : 'history-guard-native');
+    expect(ptys.last.args).toContain(runner === 'claude' ? '--resume' : 'resume');
+    expect(ptys.last.env[runner === 'claude' ? '__SMARTDD_V_CLAUDE_CONFIG_DIR' : '__SMARTDD_V_CODEX_HOME']).toBe(root);
+  });
+});
+
+
+describe('native history evidence boundaries', () => {
+  it('observes native history even when optional profile health reporting is disabled', async () => {
+    svc.dispose();
+    svc=new TaskService({db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:'/home/x'}),onChanged:()=>changed++,healthPollMs:20});
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    writeClaudeSession(created.task.cwd,created.task.id);
+    await vi.waitFor(()=>expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:1}));
+    ptys.emit('exit',created.ptyId,0);
+    rmSync(claudeRoot(),{recursive:true});mkdirSync(claudeRoot());
+    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+  });
+  it('does not infer a legacy Claude task was never used from a missing file', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    ptys.emit('exit',created.ptyId,0);
+    sqlite.prepare('UPDATE tasks SET native_history_observed=NULL WHERE id=?').run(created.task.id);
+    expect(svc.get(created.task.id)).toMatchObject({recovery:'unrecoverable',recoveryReason:expect.stringContaining('未知')});
+    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+    expect(ptys.spawned).toHaveLength(1);
+  });
+  it('keeps a legitimately never-written Claude UUID and original root when another profile is selected', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    ptys.emit('exit',created.ptyId,0);
+    const other=claudeProfile({name:'another root',env:[{name:'CLAUDE_CONFIG_DIR',secret:false,value:mk('other-root')}]});
+    const opened=await svc.open({taskId:created.task.id,aiProfileId:other.id});
+    expect(opened.task.nativeSessionId).toBe(created.task.id);
+    expect(ptys.last.args).toContain('--session-id');
+    expect(ptys.last.env.__SMARTDD_V_CLAUDE_CONFIG_DIR).toBe(claudeRoot());
+    expect(opened.task.recovery).toBe('fresh');
+    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
+    ptys.emit('exit',opened.ptyId,0);
+    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:0});
+  });
+});
+
+
+describe('interrupted native history observation', () => {
+  it('does not retain a never-written claim across a host restart before an owned exit', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
+    svc.dispose();ptys.emit('exit',created.ptyId,0);
+    svc=new TaskService({db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:'/home/x'}),onChanged:()=>changed++});
+    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+    expect(ptys.spawned).toHaveLength(1);
+  });
+});
+
+
+describe('unreadable original native root', () => {
+  it('keeps unknown rather than certifying an empty history after an owned exit', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    chmodSync(claudeRoot(),0);
+    try {
+      ptys.emit('exit',created.ptyId,0);
+      expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
+      await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+      expect(ptys.spawned).toHaveLength(1);
+    } finally { chmodSync(claudeRoot(),0o700); }
+  });
+});
+
+
+describe('unusable no-message native artifacts',()=>{
+ it.each(['empty-file','directory'] as const)('does not certify %s as an absent Claude history',async kind=>{
+  const p=project(),first=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''}),file=claudeSessionPath(first.task.cwd,first.task.id);
+  mkdirSync(join(claudeRoot(),'projects',first.task.cwd.replace(/[^a-zA-Z0-9]/g,'-')),{recursive:true});
+  if(kind==='empty-file')writeFileSync(file,'');else mkdirSync(file);
+  ptys.emit('exit',first.ptyId,0);
+  await expect(svc.open({taskId:first.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+  expect(ptys.spawned).toHaveLength(1);
  });
 });

@@ -50,6 +50,8 @@ it('persists the actual child report and cleans only the exited run, keeping the
   writeFileSync(join(dirname(original.manifestPath), 'self-check.json'), JSON.stringify({ status: 'passed', issues: [], at: Date.now() }));
   await new Promise((resolve) => setTimeout(resolve, 240));
   expect(svc.get(first.task.id).runtimeSnapshot?.selfCheck.status).toBe('passed');
+  const nativeDir=join(tmp,'claude','projects',encodeClaudeDir(first.task.cwd));mkdirSync(nativeDir,{recursive:true});
+  writeFileSync(join(nativeDir,first.task.nativeSessionId+'.jsonl'),JSON.stringify({type:'user',message:{content:'synthetic original native history'}})+'\n');
   ptys.emit('exit', first.ptyId, 0);
   expect(existsSync(original.manifestPath)).toBe(false);
   const reopened = (await svc.open({ taskId: first.task.id }));
@@ -99,7 +101,7 @@ it('resumes an implicit default Claude session under another profile without swi
   profiles.update(request.aiProfileId, { name: 'fixture', runner: 'claude', executable: null, env: [], args: [], color: null, isDefault: true });
   const first = (await svc.create(request));
   const dir = join(tmp, 'home', '.claude', 'projects', encodeClaudeDir(first.task.cwd));
-  mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, first.task.nativeSessionId + '.jsonl'), '');
+  mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, first.task.nativeSessionId + '.jsonl'), JSON.stringify({type:'user',message:{content:'synthetic original native history'}})+'\n');
   ptys.emit('exit', first.ptyId, 0);
   const other = profiles.create({ name: 'other', runner: 'claude', executable: null, env: [{ name: 'CLAUDE_CONFIG_DIR', value: join(tmp, 'other'), secret: false }], args: [], color: null, isDefault: false });
   const resumed = (await svc.open({ taskId: first.task.id, aiProfileId: other.id }));

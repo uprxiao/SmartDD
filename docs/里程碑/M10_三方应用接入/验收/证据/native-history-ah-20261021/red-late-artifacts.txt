@@ -1,0 +1,219 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/tasks/task-service.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'unusable no-message|late native history arrival'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (57 tests | 1 failed | 56 skipped) 461ms
+     × does not reopen a fresh Claude UUID after its original history appears during preparation 460ms
+ ❯ src/main/core/tasks/task-service.test.ts (40 tests | 2 failed | 38 skipped) 31ms
+     × does not certify empty-file as an absent Claude history 21ms
+     × does not certify directory as an absent Claude history 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/tasks/task-service.test.ts > unusable no-message native artifacts > does not certify empty-file as an absent Claude history
+AssertionError: promise resolved "{ task: { …(23) }, ptyId: 'pty-2' }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "pty-2",
++   "task": {
++     "aiProfileColor": "#3b82f6",
++     "aiProfileId": "d3921e5c-4bfa-4454-a30b-fe15777aa2ee",
++     "aiProfileName": "CC-DS",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792563504603,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-task-qJ5RMq/code",
++     "dirId": "6baa5dd9-ded1-47f5-bae3-71b58858a0e0",
++     "firstMessage": "",
++     "id": "58aff865-b6c0-4088-8245-43fbcb5e0eaa",
++     "injectedEnvNames": [
++       "ANTHROPIC_AUTH_TOKEN",
++       "ANTHROPIC_BASE_URL",
++       "CLAUDE_CONFIG_DIR",
++     ],
++     "lastLaunchedAt": 1792563504606,
++     "nativeSessionId": "58aff865-b6c0-4088-8245-43fbcb5e0eaa",
++     "projectConfigVersion": 1,
++     "projectId": "ced936c0-333d-42cd-9793-1985febe794e",
++     "projectName": "AIS",
++     "ptyId": "pty-2",
++     "recovery": "fresh",
++     "recoveryReason": "尚未观察到原生会话文件；打开时沿用原 ID 和原目录新开",
++     "runner": "claude",
++     "runtimeSnapshot": null,
++     "title": "CC-DS 10-21 14:18",
++     "updatedAt": 1792563504607,
++   },
+  }
+
+ ❯ src/main/core/tasks/task-service.test.ts:648:48
+    646|   if(kind==='empty-file')writeFileSync(file,'');else mkdirSync(file);
+    647|   ptys.emit('exit',first.ptyId,0);
+    648|   await expect(svc.open({taskId:first.task.id})).rejects.toMatchObject…
+       |                                                ^
+    649|   expect(ptys.spawned).toHaveLength(1);
+    650|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/tasks/task-service.test.ts > unusable no-message native artifacts > does not certify directory as an absent Claude history
+AssertionError: promise resolved "{ task: { …(23) }, ptyId: 'pty-2' }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "pty-2",
++   "task": {
++     "aiProfileColor": "#3b82f6",
++     "aiProfileId": "32545d55-6340-4f06-99a5-b8473668ef6b",
++     "aiProfileName": "CC-DS",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792563504621,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-task-Jqh6kh/code",
++     "dirId": "8f9571ac-8c58-464f-9124-95ed6e9c10c6",
++     "firstMessage": "",
++     "id": "519d8991-4934-4ff5-9127-376e796c77a4",
++     "injectedEnvNames": [
++       "ANTHROPIC_AUTH_TOKEN",
++       "ANTHROPIC_BASE_URL",
++       "CLAUDE_CONFIG_DIR",
++     ],
++     "lastLaunchedAt": 1792563504624,
++     "nativeSessionId": "519d8991-4934-4ff5-9127-376e796c77a4",
++     "projectConfigVersion": 1,
++     "projectId": "abdff418-3dc8-41c6-9fd1-7b923b1be06e",
++     "projectName": "AIS",
++     "ptyId": "pty-2",
++     "recovery": "fresh",
++     "recoveryReason": "尚未观察到原生会话文件；打开时沿用原 ID 和原目录新开",
++     "runner": "claude",
++     "runtimeSnapshot": null,
++     "title": "CC-DS 10-21 14:18",
++     "updatedAt": 1792563504625,
++   },
+  }
+
+ ❯ src/main/core/tasks/task-service.test.ts:648:48
+    646|   if(kind==='empty-file')writeFileSync(file,'');else mkdirSync(file);
+    647|   ptys.emit('exit',first.ptyId,0);
+    648|   await expect(svc.open({taskId:first.task.id})).rejects.toMatchObject…
+       |                                                ^
+    649|   expect(ptys.spawned).toHaveLength(1);
+    650|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > late native history arrival before fork > does not reopen a fresh Claude UUID after its original history appears during preparation
+AssertionError: promise resolved "{ task: { …(23) }, …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "e75dcdb2-06f3-479f-963d-fb36f64de7c6",
++   "task": {
++     "aiProfileColor": null,
++     "aiProfileId": "e8a939c0-b210-4e8b-9e83-38e22f8ebcdb",
++     "aiProfileName": "CC version fixture",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792563504209,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-eReIQ0/project",
++     "dirId": "0918de50-ce54-43cb-b6cc-c632578670e6",
++     "firstMessage": "",
++     "id": "ec07334a-06f1-43a4-9616-dbdf2335481f",
++     "injectedEnvNames": [
++       "HOME",
++       "PROJECT_DB_CONFIG",
++       "REMOTE_SERVERS_CONFIG",
++       "SMARTDD_CONFIG_VERSION",
++       "SMARTDD_PROJECT_CONTEXT",
++       "SMARTDD_PROJECT_ID",
++       "SMARTDD_RESOURCE_AUDIT",
++     ],
++     "lastLaunchedAt": 1792563504391,
++     "nativeSessionId": "ec07334a-06f1-43a4-9616-dbdf2335481f",
++     "projectConfigVersion": 1,
++     "projectId": "c1134f7e-be28-4acc-9323-c25dd085a331",
++     "projectName": "isolated production composition",
++     "ptyId": "e75dcdb2-06f3-479f-963d-fb36f64de7c6",
++     "recovery": "resumable",
++     "recoveryReason": "",
++     "runner": "claude",
++     "runtimeSnapshot": {
++       "auditPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-eReIQ0/capabilities/resource-audit/c1134f7e-be28-4acc-9323-c25dd085a331/ec07334a-06f1-43a4-9616-dbdf2335481f.jsonl",
++       "configHash": "ecc10579096a68df182d704b94c23b6ab6df424d12d5acabff6b5f64ffa55b66",
++       "configVersion": 1,
++       "manifestPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-eReIQ0/capabilities/runs/c1134f7e-be28-4acc-9323-c25dd085a331/ec07334a-06f1-43a4-9616-dbdf2335481f/1243e14e-50ed-4e29-9c8b-e049d24de4d5/manifest.json",
++       "mcp": [
++         {
++           "loaded": "unverified",
++           "name": "smartdd_project_3ff9254a2f38",
++         },
++       ],
++       "projectId": "c1134f7e-be28-4acc-9323-c25dd085a331",
++       "runId": "1243e14e-50ed-4e29-9c8b-e049d24de4d5",
++       "selfCheck": {
++         "at": null,
++         "issues": [],
++         "status": "pending",
++       },
++       "sessionCapabilities": {
++         "schema": 2,
++         "snapshotHash": "0939988f35db7acd25f2ab5f9d9f75c25ccaf3a4dd5b8a3a6c21e6bd8bbc543e",
++         "taskId": "ec07334a-06f1-43a4-9616-dbdf2335481f",
++       },
++       "skills": [
++         {
++           "enabled": true,
++           "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++           "loaded": "unverified",
++           "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-eReIQ0/capabilities/sessions/ec07334a-06f1-43a4-9616-dbdf2335481f/claude/plugin/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
++           "skillId": "project-db-diagnostics",
++           "version": "1.0.0",
++           "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         },
++         {
++           "enabled": true,
++           "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++           "loaded": "unverified",
++           "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-eReIQ0/capabilities/sessions/ec07334a-06f1-43a4-9616-dbdf2335481f/claude/plugin/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
++           "skillId": "remote-password-ssh",
++           "version": "1.0.0",
++           "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         },
++       ],
++     },
++     "title": "CC version fixture 10-21 14:18",
++     "updatedAt": 1792563504392,
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:425:50
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 94 skipped (97)
+   Start at  14:18:23
+   Duration  1.45s (transform 477ms, setup 0ms, import 812ms, tests 492ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

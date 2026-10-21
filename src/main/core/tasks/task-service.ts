@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, realpathSync, statSync } from 'node:fs';
+import { accessSync, constants, existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { desc, eq, isNotNull } from 'drizzle-orm';
@@ -24,7 +24,8 @@ import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service
 import type { ProfileHealth } from '../ai/profile-health';
 import { redact } from '../connections/redact';
 import type { ProjectService } from '../projects/project-service';
-import { claudeSessionFile, claudeSessionFileExists, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
+import { claudeSessionFile, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
+import { ApplicationError } from '@shared/applications';
 import { SessionTail } from './session-health';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
 
@@ -47,7 +48,7 @@ export interface TaskServiceDeps {
   baseEnv: () => Record<string, string>;
   /** Fired whenever the list or a running state changes; the renderer re-reads. */
   onChanged: () => void;
-  /** Where API answers seen in the session file go; without it nothing is followed. */
+  /** Optional API health reporting; native history is followed independently. */
   health?: Pick<ProfileHealth, 'report'>;
   capabilities?: CapabilityService;
   managedCapabilities?: TaskCapabilityLauncher;
@@ -113,6 +114,8 @@ export class TaskService {
   private closed = false;
   private readonly nativeClaims = new Map<string,string>();
   private readonly bindingNative = new Map<string,Promise<void>>();
+  /** Only this host can attest that a newly started Claude run ended without a history file. */
+  private readonly freshNativeTasks = new Set<string>();
 
   constructor(private readonly d: TaskServiceDeps) {
     this.now = d.now ?? Date.now;
@@ -179,6 +182,7 @@ export class TaskService {
           aiProfileName: profile.name,
           runner: profile.runner,
           nativeSessionId: sessionId,
+          nativeHistoryObserved: null,
           title: taskTitle(firstMessage, profile.name, ts),
           firstMessage,
           injectedEnvNames: JSON.stringify(injectedNames),
@@ -229,10 +233,10 @@ export class TaskService {
     if (!existsSync(row.cwd) || !statSync(row.cwd).isDirectory()) throw new Error(`工作目录不存在：${row.cwd}`);
 
     const { recovery, reason } = this.recoveryOf(row);
-    if (recovery === 'unrecoverable') throw new Error(`无法恢复：${reason}`);
+    if (recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${reason}`);
     const mode: LaunchMode = recovery === 'resumable' ? 'resume' : recovery === 'fresh' ? 'reopen' : 'new';
     // The session lives where it was written: resuming under another profile keeps that directory (M0 §5.4).
-    const keepRoot = mode === 'resume' && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes('CLAUDE_CONFIG_DIR') } : null;
+    const keepRoot = (mode === 'resume' || mode === 'reopen') && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes('CLAUDE_CONFIG_DIR') } : null;
     const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot,
       row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row),newTask:false } : undefined);
 
@@ -476,14 +480,33 @@ export class TaskService {
         if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
       }
       let ptyId: string;
+      let forkAttempted = false;
       try {
+        // Recheck after asynchronous preparation/arming and immediately before the
+        // native fork. A late loss must follow the known no-fork failure path.
+        if (context && !context.newTask) {
+          const current = this.require(context.taskId), recovery = this.recoveryOf(current);
+          if (recovery.recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${recovery.reason}`);
+          if (recovery.recovery === 'resumable' && mode !== 'resume') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话历史在准备时发生变化，请重试原会话恢复');
+          if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== stateRootFor(profile.runner, env, base))) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
+        }
+        if (context && !context.newTask && profile.runner === 'claude' && mode === 'reopen') {
+          // Persist uncertainty before fork: a host crash must not leave a reusable
+          // "never written" claim while the native process may have written history.
+          this.d.db.update(tasks).set({ nativeHistoryObserved: null }).where(eq(tasks.id, context.taskId)).run();
+        }
         launchedAt = this.now();
+        forkAttempted = true;
         ptyId = this.d.ptys.spawn({
           id: launch?.ptyId, ...command, cwd, env: plan.env, scriptArgs: plan.scriptArgs, cols: size.cols, rows: size.rows,
         });
         nativePtyId = ptyId;
+        if (context && profile.runner === 'claude' && (mode === 'new' || mode === 'reopen')) this.freshNativeTasks.add(context.taskId);
       } catch (error) {
-        if (launch) await launch.spawnFailed();
+        if (launch) {
+          if (!forkAttempted && launch.cancelBeforeFork) await launch.cancelBeforeFork();
+          else await launch.spawnFailed();
+        }
         else runtime?.release();
         throw error;
       }
@@ -550,15 +573,32 @@ export class TaskService {
     this.d.onChanged();
   }
 
-  private recoveryOf(row: TaskRow): { recovery: TaskRecovery; reason: string } {
-    if (row.runner === 'claude') {
-      if (!row.nativeSessionId) return { recovery: 'unrecoverable', reason: '没有记录 Claude 的 session ID（M3 之前的记录）' };
-      const root = row.stateRoot ?? stateRootFor('claude', {}, {});
-      if (claudeSessionFileExists(root, row.cwd, row.nativeSessionId)) return { recovery: 'resumable', reason: '' };
-      return { recovery: 'fresh', reason: '还没有发过消息，Claude 未写会话文件；打开时沿用原 ID 新开' };
+  /** A positive observation survives host restarts; absence is never evidence of no history. */
+  private observeNativeHistory(row: TaskRow, file: string | null): boolean {
+    let present = false;
+    try { const stat = file && statSync(file); present = !!stat && stat.isFile() && stat.size > 0; } catch { /* Missing or inaccessible original history. */ }
+    if (present && row.nativeHistoryObserved !== true) {
+      this.d.db.update(tasks).set({ nativeHistoryObserved: true }).where(eq(tasks.id, row.id)).run();
     }
-    if (!row.nativeSessionId) return { recovery: 'not-started', reason: '还没有发过消息，Codex 未生成会话；打开时会新开一个' };
-    return { recovery: 'resumable', reason: '' };
+    return present;
+  }
+
+  private recoveryOf(row: TaskRow): { recovery: TaskRecovery; reason: string } {
+    if (!row.nativeSessionId) return row.runner === 'claude'
+      ? { recovery: 'unrecoverable', reason: '没有记录 Claude 的 session ID（M3 之前的记录）' }
+      : { recovery: 'not-started', reason: '还没有发过消息，Codex 未生成会话；打开时会新开一个' };
+    const root = row.stateRoot ?? stateRootFor(row.runner, {}, {});
+    let file: string | null = null;
+    try { file = row.runner === 'claude' ? claudeSessionFile(root, row.cwd, row.nativeSessionId) : codexRolloutFile(root, row.nativeSessionId, 0, true); } catch { /* Preserve the original identity on inaccessible history. */ }
+    if (this.observeNativeHistory(row, file)) return { recovery: 'resumable', reason: '' };
+    // Claude reserves its UUID before writing a file. Only a newly created task
+    // whose owned run ended without a file can legitimately reopen that UUID.
+    // A run interrupted before host acknowledgement remains unknown after restart.
+    // NULL is unknown or still running; only this host may recognize its live new run.
+    if (row.runner === 'claude' && (row.nativeHistoryObserved === false || (row.nativeHistoryObserved === null && this.running.has(row.id) && this.freshNativeTasks.has(row.id)))) return { recovery: 'fresh', reason: '尚未观察到原生会话文件；打开时沿用原 ID 和原目录新开' };
+    return { recovery: 'unrecoverable', reason: row.nativeHistoryObserved === true
+      ? '原生会话状态目录或历史缺失或不可用，保留原记录与路径，不能用空目录恢复'
+      : '原生会话历史状态未知或缺失，请恢复原目录；不会按未发消息新开' };
   }
 
   // Codex creates its session only after the first user message, so poll until it appears.
@@ -603,7 +643,7 @@ export class TaskService {
           if(this.codexWatchers.get(taskId)!==w)return;
           this.stopWatch(taskId);
           const currentRuntime=this.runtimes.get(ptyId)?.runtime??managed?.launch.runtime;
-          this.d.db.update(tasks).set({ ...(currentRuntime&&currentRuntime.persistSnapshot!==false?{runtimeSnapshot:JSON.stringify(currentRuntime.snapshot)}:{}),nativeSessionId: found.id, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
+          this.d.db.update(tasks).set({ ...(currentRuntime&&currentRuntime.persistSnapshot!==false?{runtimeSnapshot:JSON.stringify(currentRuntime.snapshot)}:{}),nativeSessionId: found.id, nativeHistoryObserved: true, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
         }catch{this.stopWatch(taskId);this.d.onChanged();return;}
         finally{if(this.nativeClaims.get(found.id)===claim)this.nativeClaims.delete(found.id);}
         if (w.finalTail) this.pollFollow(w.finalTail);
@@ -634,17 +674,19 @@ export class TaskService {
   /** Report the API's answers in this run's session file to the profile's health (latest wins). */
   private follow(taskId: string, ptyId: string, profile: ResolvedProfile, cwd: string, root: string, launchedAt: number, resourceSecrets: string[] = []): void {
     const health = this.d.health;
-    if (!health) return;
     this.unfollow(taskId);
     let scanned = false;
     const locate = (): string | null => {
       const row = this.d.db.select({ sid: tasks.nativeSessionId }).from(tasks).where(eq(tasks.id, taskId)).get();
       if (!row?.sid) return null; // Codex: known once watchCodex has matched the rollout
-      if (profile.runner === 'claude') return claudeSessionFile(root, cwd, row.sid, false);
+      const file = profile.runner === 'claude'
+        ? claudeSessionFile(root, cwd, row.sid, false)
+        : codexRolloutFile(root, row.sid, launchedAt, !scanned);
       // A resumed Codex session lives in the day folder it was created in: look everywhere, once.
-      const f = codexRolloutFile(root, row.sid, launchedAt, !scanned);
       scanned = true;
-      return f;
+      const current = this.require(taskId);
+      if (current.stateRoot === root && current.cwd === cwd && current.nativeSessionId === row.sid) this.observeNativeHistory(current, file);
+      return file;
     };
     // Bound to the settings this run started with: its answers say nothing about an edited profile.
     const signature = this.d.profiles.launchSignature(profile.id);
@@ -653,7 +695,7 @@ export class TaskService {
       runner: profile.runner,
       locate,
       launchedAt,
-      onEvent: (ev) => health.report(profile.id, { ...ev, message: redact(ev.message, secrets) }, `task:${taskId}`, signature),
+      onEvent: (ev) => health?.report(profile.id, { ...ev, message: redact(ev.message, secrets) }, `task:${taskId}`, signature),
     });
     const timer = setInterval(() => this.pollFollow(tail), this.d.healthPollMs ?? 2000);
     this.follows.set(taskId, { tail, timer, ptyId, profileId: profile.id, launchedAt });
@@ -689,6 +731,29 @@ export class TaskService {
     }
     for (const [taskId, id] of this.running) {
       if (id !== ptyId) continue;
+      if (this.freshNativeTasks.delete(taskId)) {
+        const row = this.require(taskId);
+        let file: string | null = null;
+        try { if (row.stateRoot && row.nativeSessionId) file = claudeSessionFile(row.stateRoot, row.cwd, row.nativeSessionId); } catch { /* Unknown stays held if the native root cannot be inspected. */ }
+        if (!this.observeNativeHistory(row, file) && file === null && row.nativeHistoryObserved !== true) {
+          // An inaccessible root cannot establish that the owned run wrote nothing.
+          let readableRoot = false;
+          try {
+            if (row.stateRoot && statSync(row.stateRoot).isDirectory()) {
+              accessSync(row.stateRoot, constants.R_OK | constants.X_OK);
+              const directory = join(row.stateRoot, 'projects');
+              let names: string[] = [];
+              try { names = readdirSync(directory); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+              for (const name of names) {
+                const folder = join(directory, name);
+                if (statSync(folder).isDirectory()) accessSync(folder, constants.R_OK | constants.X_OK);
+              }
+              readableRoot = true;
+            }
+          } catch { /* Keep unknown when any possible original history cannot be inspected. */ }
+          if (readableRoot) this.d.db.update(tasks).set({ nativeHistoryObserved: false }).where(eq(tasks.id, taskId)).run();
+        }
+      }
       this.running.delete(taskId);
       this.d.onChanged();
     }

@@ -45,6 +45,8 @@ export interface OwnedCapabilityRun {
   runId: string;ptyId: string;signal: AbortSignal;cli: OwnedRunProcess;
   prepare(): Promise<CapabilityRunRecord>;
   reserveBridge(): Promise<OwnedRunProcess>;
+  /** Caller attests no OS spawn was attempted. Not a recovery/unknown-process API. */
+  cancelBeforeFork(): Promise<CapabilityRunRecord>;
   stop(reason?: string): Promise<CapabilityRunRecord>;
 }
 const TERMINAL = new Set(['stopped','failed']);
@@ -161,7 +163,7 @@ export class CapabilityRunRegistry {
     }).immediate());
     const owned: OwnedRun = { selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
     if (this.closed) { await this.stop(runId,'host-shutdown'); throw new ApplicationError('CANCELED','运行准备期间宿主服务已停止'); }
-    return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
+    return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
   }
   /** Trusted host-only guard for schema0 history. It cannot assertActive or reserve a bridge. */
   async reserveNativeGuard(input:NativeGuardRequest,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
@@ -205,7 +207,7 @@ export class CapabilityRunRegistry {
     }).immediate());
     this.owned.set(runId,{guard,selectionHash,leaseId,abort:new AbortController(),processes:new Set([processId])});
     if(this.closed){await this.stop(runId,'host-shutdown');throw new ApplicationError('CANCELED','守护准备期间服务已关闭');}
-    return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
+    return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),cancelBeforeFork:()=>this.cancelBeforeFork(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
   }
   /** Narrow an owned prepared run before any child can exist. Not an RPC surface. */
   async restrictToNative(runId:string):Promise<void>{
@@ -226,6 +228,19 @@ export class CapabilityRunRegistry {
       }).immediate();
       owned.guard=guard;
     });
+  }
+  /** Only the current host's still-unforked launch closure may provide this receipt.
+   * An armed window with no PID is not proof by itself, especially after a crash.
+   */
+  private async cancelBeforeFork(runId: string): Promise<CapabilityRunRecord> {
+    await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+      const { row, owned } = this.owner(runId);
+      if (row.state !== 'prepared' || owned.abort.signal.aborted || row.pid !== null) throw new ApplicationError('RESOURCE_STATE_CHANGED', '不能将已启动或状态不明的运行改为未启动');
+      const children = this.store.sqlite.prepare('SELECT * FROM capability_run_processes WHERE run_id=?').all(runId) as ProcessRow[];
+      if (!children.length || children.some(child => !owned.processes.has(child.process_id) || child.pid !== null || !['reserved','armed','canceled'].includes(child.state))) throw new ApplicationError('RESOURCE_STATE_CHANGED', '子进程已经启动或身份未知，保留占用');
+      this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE run_id=? AND state IN ('reserved','armed')").run(now(), runId);
+    }).immediate());
+    return this.stop(runId, 'native-fork-not-attempted');
   }
   private async prepare(runId: string): Promise<CapabilityRunRecord> {
     const taskId = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {

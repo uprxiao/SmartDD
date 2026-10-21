@@ -180,6 +180,8 @@ export const tasks = sqliteTable(
     configVersion: integer('config_version'),
     /** CLAUDE_CONFIG_DIR / CODEX_HOME in effect, so resume looks for the session file in the right place. */
     stateRoot: text('state_root'),
+    /** NULL: unknown or running without evidence; false: owned exit without history; true: history observed. */
+    nativeHistoryObserved: integer('native_history_observed', { mode: 'boolean' }),
     /** M4: version pins, hashes and injection self-check, never secret values. */
     runtimeSnapshot: text('runtime_snapshot'),
     archivedAt: integer('archived_at'),
