@@ -40,7 +40,7 @@ function inspectFiles(store:ResourceStore,source:Source,originalPaths=true){
  const {identity,snapshot,evidence}=source;
  if(!['prepared','migrated'].includes(source.row.state))fail('原M4来源尚未完成留存');
  const state=source.row.state as 'prepared'|'migrated',legacy=new LegacyPluginSources(store),resources:ResourceRecord[]=[],sources=new Map<string,Record<string,string>>();
- const logical=(value:Source)=>{const {originalProjection,...fixed}=value;return canonicalJson({...fixed,pluginSource:value.pluginSource??null,...(originalPaths&&originalProjection?{originalProjection}:{})});},sourceReceipt=logical(source);
+ const logical=(value:Source)=>{const {originalProjection,originalCodexProjections,...fixed}=value;const{h_binding_hash,...immutableRow}=value.row;return canonicalJson({...fixed,row:originalPaths?value.row:immutableRow,pluginSource:value.pluginSource??null,...(originalPaths&&originalProjection?{originalProjection}:{}),...(originalPaths&&originalCodexProjections?{originalCodexProjections}:{})});},sourceReceipt=logical(source);
  if(logical(retainedLegacySource(store,identity.taskId,state))!==sourceReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4来源对象与权威持久记录不同');
  const add=(id:string,kind:string,hash:string,path:string)=>{
   const resource=store.get(id);
@@ -53,12 +53,13 @@ function inspectFiles(store:ResourceStore,source:Source,originalPaths=true){
  add('legacy-runtime:'+evidence.runtimeHash,'legacy-runtime',evidence.runtimeHash,'runtime/'+evidence.runtimeHash);
  if(source.pluginSource)resources.push(source.pluginSource);
  if(originalPaths&&source.originalProjection)resources.push(source.originalProjection);
+ if(originalPaths&&source.originalCodexProjections)resources.push(...source.originalCodexProjections);
  const paths=[...resources.map(r=>store.directory(r)),...(originalPaths?[evidence.runRoot,...(identity.runner==='codex'?evidence.skills.filter(s=>s.enabled).map(s=>dirname(s.projectionPath)):[])]:[])];
  const dependencies=(id:string)=>store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(id);
  const metadata=()=>{
   const current=retainedLegacySource(store,identity.taskId,state);
   if(logical(current)!==sourceReceipt||logical(source)!==sourceReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4持久来源已不是开始核对时的修订');
-  return canonicalJson({row:current.row,resources:resources.map(r=>store.get(r.resourceId)),dependencies:resources.map(r=>[r.resourceId,dependencies(r.resourceId)]),refs:store.sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_kind,ref_id').all(identity.taskId).filter((r:any)=>originalPaths||r.ref_kind!=='legacy-static-plugin'),versions:snapshot.skills.map(s=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(s.versionId)??null)});
+  const{h_binding_hash,...immutableRow}=current.row;return canonicalJson({row:originalPaths?current.row:immutableRow,resources:resources.map(r=>store.get(r.resourceId)),dependencies:resources.map(r=>[r.resourceId,dependencies(r.resourceId)]),refs:store.sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_kind,ref_id').all(identity.taskId).filter((r:any)=>originalPaths||!['legacy-static-plugin','legacy-agent-projection'].includes(r.ref_kind)),versions:snapshot.skills.map(s=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(s.versionId)??null)});
  };
  const metadataReceipt=metadata(),reader=new LegacyTaskEvidenceReader(store.root,identity.home,id=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(id) as LegacySkillVersion|undefined),inspected=originalPaths?reader.inspect(identity,snapshot):null;
  if(inspected?.state==='verified'&&canonicalJson(legacyLogicalEvidence(inspected.evidence))!==canonicalJson(legacyLogicalEvidence(evidence)))fail('原M4逻辑来源、路径或名称与最初留存不同');
@@ -76,6 +77,10 @@ function inspectFiles(store:ResourceStore,source:Source,originalPaths=true){
   if(source.pluginSource)legacy.verify(source.pluginSource,legacyPluginOrigin(evidence));
   if(originalPaths&&source.originalProjection&&(source.originalProjection.state!=='ready'||source.originalProjection.integrity!=='valid'))fail('原静态投影尚未完成发布');
   if(originalPaths&&source.originalProjection&&canonicalJson(dependencies(source.originalProjection.resourceId))!==canonicalJson([{dependency_id:source.pluginSource!.resourceId}]))fail('原静态投影依赖缺失或不同');
+  if(originalPaths&&source.originalCodexProjections)for(const r of source.originalCodexProjections){
+   const skill=evidence.skills.find(s=>s.enabled&&dirname(s.projectionPath)===store.directory(r)),deps=dependencies(r.resourceId),original=skill?sources.get('standard-skill:'+skill.skillId+':'+skill.hash):null;
+   if(!skill||!original||r.state!=='ready'||r.integrity!=='valid'||canonicalJson(deps)!==canonicalJson([{dependency_id:'standard-skill:'+skill.skillId+':'+skill.hash}])||canonicalJson({...readLegacyOwnedTree(store.directory(r),r.contentHash)})!==canonicalJson({...original}))fail('原共享Skill的长期投影尚未就绪或来源不同');
+  }
   if(inspected?.state==='verified'){
    if(!reader.verify(inspected.evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4完整运行依据在核对中变化');
   }else if(inspected){

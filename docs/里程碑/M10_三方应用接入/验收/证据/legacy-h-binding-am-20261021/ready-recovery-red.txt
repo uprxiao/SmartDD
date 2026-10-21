@@ -1,0 +1,41 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts --maxWorkers=1 -t 'after ready commits'
+
+[1021/164334.527547:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/164335.466311:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (94 tests | 1 failed | 93 skipped) 997ms
+     × repairs original H missing after ready commits but before the original intent is removed 993ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > coordinated original Codex H migration bindings > repairs original H missing after ready commits but before the original intent is removed
+ApplicationError: 原目录发布依赖占用已改变
+ ❯ sqliteTransaction.<anonymous> src/main/core/applications/discovery-catalog.ts:462:31
+    460|                     const r = this.store.get(held.id);
+    461|                     if (r.contentHash !== held.hash || r.generation !=…
+    462|                         throw new ApplicationError('RESOURCE_STATE_CHA…
+       |                               ^
+    463|                 } for (const p of plans) {
+    464|                     const r = this.store.get(p.entry.resourceId), sour…
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ src/main/core/applications/discovery-catalog.ts:468:22
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ src/main/core/applications/discovery-catalog.ts:455:23
+ ❯ signal.signal src/main/core/applications/discovery-catalog.ts:154:119
+ ❯ withDiscoveryLock src/main/core/applications/discovery-catalog-lock.ts:45:22
+ ❯ src/main/core/applications/discovery-catalog.ts:154:60
+ ❯ DiscoveryCatalog.publication src/main/core/applications/discovery-catalog.ts:443:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 93 skipped (94)
+   Start at  16:43:35
+   Duration  4.29s (transform 1.89s, setup 0ms, import 2.74s, tests 997ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

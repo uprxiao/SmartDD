@@ -1,0 +1,54 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts --maxWorkers=1 -t 'coordinated original Codex H migration bindings'
+
+[1021/162443.591625:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/162444.029671:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (76 tests | 3 failed | 73 skipped) 409ms
+     × restores the selected original H paths and keeps durable aliases through migration and replay 153ms
+     × registers long-term original H aliases before publication makes any missing directory visible 119ms
+     × anchors original H alias refs independently of the unchanged fixed snapshot 136ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > coordinated original Codex H migration bindings > restores the selected original H paths and keeps durable aliases through migration and replay
+ApplicationError: 原M4完整资源或归属无法核验，不能从当前版本猜测补齐
+ ❯ readLegacyOwnedTree src/main/core/applications/legacy-resource-adopter.ts:21:15
+
+ ❯ validate src/main/core/applications/legacy-session-files.ts:86:91
+ ❯ inspectFiles src/main/core/applications/legacy-session-files.ts:92:47
+ ❯ inspectLegacySessionFiles src/main/core/applications/legacy-session-files.ts:99:13
+ ❯ LegacySessionMigration.migrate src/main/core/applications/legacy-session-migration.ts:44:15
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:243:110
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > coordinated original Codex H migration bindings > registers long-term original H aliases before publication makes any missing directory visible
+ApplicationError: 原M4完整资源或归属无法核验，不能从当前版本猜测补齐
+ ❯ readLegacyOwnedTree src/main/core/applications/legacy-resource-adopter.ts:21:15
+
+ ❯ validate src/main/core/applications/legacy-session-files.ts:86:91
+ ❯ inspectFiles src/main/core/applications/legacy-session-files.ts:92:47
+ ❯ inspectLegacySessionFiles src/main/core/applications/legacy-session-files.ts:99:13
+ ❯ LegacySessionMigration.migrate src/main/core/applications/legacy-session-migration.ts:44:15
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:250:72
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > coordinated original Codex H migration bindings > anchors original H alias refs independently of the unchanged fixed snapshot
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:254:61
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 73 skipped (76)
+   Start at  16:24:44
+   Duration  938ms (transform 244ms, setup 0ms, import 449ms, tests 409ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

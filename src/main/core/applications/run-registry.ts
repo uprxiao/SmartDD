@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import type { CapabilityRunRecord, CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
-import {launchRestrictionSchema,readLaunchRestriction} from './launch-restriction';
+import {launchRestrictionSchema,readLaunchRestriction,type ManagedCapabilityRestriction} from './launch-restriction';
 import type { ResourceRecord, ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import type { CapabilitySessionRegistry, StoredCapabilitySession } from './session-registry';
@@ -210,7 +210,7 @@ export class CapabilityRunRegistry {
     return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),cancelBeforeFork:()=>this.cancelBeforeFork(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
   }
   /** Narrow an owned prepared run before any child can exist. Not an RPC surface. */
-  async restrictToNative(runId:string):Promise<void>{
+  async restrictToNative(runId:string,cause?:ManagedCapabilityRestriction):Promise<void>{
     await withResourceLock(this.store.root,()=>{
       const {owned}=this.owner(runId);
       const guard=this.store.sqlite.transaction(()=>{
@@ -220,7 +220,7 @@ export class CapabilityRunRegistry {
         const children=this.store.sqlite.prepare('SELECT kind,state FROM capability_run_processes WHERE run_id=?').all(runId) as {kind:string;state:string}[];
         if(children.filter(p=>p.kind==='cli').length!==1||children.some(p=>p.kind==='cli'?p.state!=='reserved':!PROCESS_DONE.has(p.state)))throw new ApplicationError('RESOURCE_STATE_CHANGED','已有启动窗口，不能降级或重新启动');
         this.currentLifecycle(row,session);this.checkProtection(row,owned);
-        const evidence=launchRestrictionSchema.parse({schema:1,runId,taskId:row.task_id,snapshotHash:row.snapshot_hash,selectionHash:owned.selectionHash,reason:'managed_launch_payload_too_large',issueCode:'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:now()}),text=canonicalJson(evidence);
+        const evidence=launchRestrictionSchema.parse({schema:1,runId,taskId:row.task_id,snapshotHash:row.snapshot_hash,selectionHash:owned.selectionHash,reason:cause?.reason??'managed_launch_payload_too_large',issueCode:cause?.issueCode??'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:now()}),text=canonicalJson(evidence);
         this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),evidence.restrictedAt);
         const resources=this.closure(row.task_id,owned.guard).map(r=>r.resourceId);
         this.store.sqlite.prepare("UPDATE capability_runs SET bindings_json='[]' WHERE run_id=?").run(runId);

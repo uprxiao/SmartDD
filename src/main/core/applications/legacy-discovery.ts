@@ -3,6 +3,7 @@ import {dirname,join,relative} from 'node:path';
 import {ApplicationError} from '@shared/applications';
 import type {AgentLoadRequest} from '@shared/agent-adapters';
 import {readLegacyOwnedTree} from './legacy-resource-adopter';
+import {canonicalJson,digest} from './manifest';
 
 /** Read only: never creates parents or treats a matching prefix as ownership. */
 export function assertDiscoveryPath(home:string,path:string):void{
@@ -22,4 +23,10 @@ export function verifyLegacyDiscoveryEntry(entry:NonNullable<AgentLoadRequest['c
  assertDiscoveryPath(home,entry.path);
  const files=readLegacyOwnedTree(dirname(entry.path),entry.projectionHash);
  return{skillId:match[1],sourceResourceId:`standard-skill:${match[1]}:${entry.sourceHash}`,files};
+}
+
+export function legacyDiscoveryEntry(storeId:string,home:string,skillId:string,sourceHash:string):NonNullable<AgentLoadRequest['catalog']>['entries'][number]{
+ if(!/^[a-z][a-z0-9-]{0,63}$/.test(skillId)||!/^[a-f0-9]{64}$/.test(sourceHash))throw new ApplicationError('INVALID_INPUT','原Skill身份或完整摘要无效');
+ const nativeName=`smartdd-${skillId}-${sourceHash.slice(0,16)}`,homeId=digest(home);
+ return{resourceId:'h-projection:'+digest(canonicalJson({homeId,storeId,nativeName,hash:sourceHash})),storeId,path:join(home,'.agents/skills',nativeName,'SKILL.md'),nativeName,sourceHash,projectionHash:sourceHash,format:'legacy-tree-v1'};
 }

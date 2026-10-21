@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, rmSync, writeFileSync, lstatSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync, lstatSync,realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { ApplicationError } from '@shared/applications';
 import type { ProcessIdentity } from './process-identity';
@@ -8,8 +8,11 @@ export async function withDiscoveryLock<T>(root: string, host: ProcessIdentity, 
     timeoutMs?: number;
     signal?: AbortSignal;
 } = {}): Promise<T> {
+    const original=lstatSync(root);
+    const assertRoot=()=>{const stat=lstatSync(root);if(!stat.isDirectory()||stat.isSymbolicLink()||realpathSync(root)!==root||stat.dev!==original.dev||stat.ino!==original.ino)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','共享目录的规范位置或归属已变化，保留原锁');};assertRoot();
     const path = join(root, 'catalog.lock'), token = randomUUID(), deadline = performance.now() + (options.timeoutMs ?? 3000);
     for (;;) {
+        assertRoot();
         if (options.signal?.aborted)
             throw new ApplicationError('CANCELED', '已取消等待发现目录');
         try {
@@ -35,12 +38,14 @@ export async function withDiscoveryLock<T>(root: string, host: ProcessIdentity, 
     }
     const identity = lstatSync(path);
     try {
+        assertRoot();
         writeFileSync(join(path, 'owner.json'), JSON.stringify({ schema: 1, token, ...host }), { flag: 'wx', mode: 0o600 });
         if (options.signal?.aborted)
             throw new ApplicationError('CANCELED', '共享目录操作已取消');
         return await action();
     }
     finally {
+        assertRoot();
         let owner: {
             token?: string;
         };

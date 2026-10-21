@@ -85,4 +85,21 @@ describe('original schema1 Codex paths in the shared discovery catalog',()=>{
   const service=new DiscoveryCatalog(f.store,f.home,reader,{checkpoint:p=>{if(p===phase)writeFileSync(join(target(),'SKILL.md'),'late user bytes');}});
   await expect(service.publish([source()])).rejects.toThrow();expect(readFileSync(join(target(),'SKILL.md'),'utf8')).toBe('late user bytes');expect(existsSync(join(catalog.root,'pending.json'))).toBe(true);const r=f.sqlite.prepare("SELECT state FROM capability_resources WHERE kind='legacy-agent-projection'").get() as {state:string};expect(r.state).not.toBe('ready');
  });
+ it('refuses a substituted discovery root before acquiring or writing its lock',async()=>{
+  await catalog.snapshot();const agents=join(f.home,'.agents'),saved=join(f.home,'.agents-preserved'),{renameSync}=await import('node:fs');renameSync(agents,saved);symlinkSync(saved,agents);const before=f.snapshotTree(saved);await expect(catalog.snapshot()).rejects.toThrow();expect(f.snapshotTree(saved)).toEqual(before);expect(existsSync(join(saved,'smartdd-runtime/catalog.lock'))).toBe(false);
+ });
+ it('cancels waiting adoption without changing a preexisting original H tree or the other consumer',async()=>{
+  writeOwnedTree(target(),f.standard.files,join(f.root,'conflicts'));const before=f.snapshotTree(target()),c=await catalog.snapshot(),taskId='old-'+randomUUID(),runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});catalog=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId});
+  await f.sessions.holdUnknown({taskId,projectId:'p1',runner:'claude-code',stateRoot:f.home,cwd:f.cwd,sessionId:'original-history',reason:'history-unknown'});const row=f.sqlite.prepare('SELECT snapshot_hash AS hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {hash:string},hold=await catalog.reserveRun(c.generation,'claude-code',ids=>runs.reserveNativeGuard({taskId,projectId:'p1',runner:'claude-code',snapshotHash:row.hash,resourceIds:[f.installedAdapters[0].resource.resourceId],verify:async()=>{}},ids));
+  await expect(catalog.publish([source()],{waitMs:5})).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(f.snapshotTree(target())).toEqual(before);expect(existsSync(join(catalog.root,'pending.json'))).toBe(false);expect(readdirSync(join(catalog.root,'catalog-consumers'))).toHaveLength(1);await hold.run.stop('fixture never forked');await hold.release();expect((await catalog.publish([source()])).entries).toHaveLength(1);expect(f.snapshotTree(target())).toEqual(before);
+ });
+ it('rolls back only its unregistered waiting intent when the host guard fails before C commits',async()=>{
+  await expect(catalog.publish([source()],{assertPublish:()=>{throw Error('original host metadata changed');}})).rejects.toThrow('metadata changed');expect(existsSync(join(catalog.root,'pending.json'))).toBe(false);expect(existsSync(target())).toBe(false);expect(f.sqlite.prepare("SELECT * FROM capability_resource_operations WHERE kind='publish-H'").all()).toEqual([]);expect((await catalog.publish([source()])).entries).toHaveLength(1);
+ });
+ it.each(['catalog-consumers','staging'] as const)('rejects a substituted %s child without writing through its alias',async child=>{
+  await catalog.snapshot();const path=join(catalog.root,child),saved=join(f.root,'saved-'+child),{renameSync}=await import('node:fs');renameSync(path,saved);writeFileSync(join(saved,'user-data'),'unchanged');symlinkSync(saved,path);await expect(catalog.snapshot()).rejects.toThrow();expect(readFileSync(join(saved,'user-data'),'utf8')).toBe('unchanged');expect(lstatSync(path).isSymbolicLink()).toBe(true);
+ });
+ it('does not recreate a missing initialized consumer directory as an empty reader set',async()=>{
+  await catalog.snapshot();const path=join(catalog.root,'catalog-consumers');rmSync(path,{recursive:true});expect(()=>new DiscoveryCatalog(f.store,f.home,reader)).toThrow();expect(existsSync(path)).toBe(false);
+ });
 });

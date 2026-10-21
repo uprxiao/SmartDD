@@ -6,7 +6,7 @@ export interface SessionPreparationEvidence {
 export interface SessionBridgeEvidence {schema:1;runId:string;bridgeId:string;pid:number;startedAt:string;observedAt:string;source:'kernel-peer';}
 export interface SessionLaunchRestriction {
  schema:1;runId:string;taskId:string;snapshotHash:string;selectionHash:string;
- reason:'managed_launch_payload_too_large'|'fixed_application_resources_unavailable';issueCode:'AGENT_ADAPTER_UNSUPPORTED'|'CAPABILITY_UNAVAILABLE';restrictedAt:string;
+ reason:'managed_launch_payload_too_large'|'fixed_application_resources_unavailable'|'managed_capabilities_unavailable';issueCode:'AGENT_ADAPTER_UNSUPPORTED'|'CAPABILITY_UNAVAILABLE'|'AGENT_CAPABILITY_NAME_CONFLICT'|'RESOURCE_RECOVERY_REQUIRED';restrictedAt:string;
 }
 export interface SessionRunDiagnostic {
  id:string;state:string;startedAt:string;endedAt:string|null;current:boolean;

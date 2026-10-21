@@ -23,6 +23,8 @@ import { canonicalJson, digest } from './manifest';
 import {legacyRuntimeMetadata} from './legacy-task-evidence';
 import {LegacyTaskRetention} from './legacy-task-retention';
 import {LegacyOriginalPlugin} from './legacy-original-plugin';
+import {LegacyOriginalCodex} from './legacy-original-codex';
+import {LegacyDiscoveryInventory} from './legacy-discovery-inventory';
 import {LegacySessionMigration} from './legacy-session-migration';
 import {LegacyPluginSources,legacyPluginOrigin} from './legacy-plugin-source';
 import {assertLegacySessionSource} from './legacy-session-source';
@@ -60,11 +62,12 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
       else if(resource.kind==='agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原生发现根缺失');this.catalog(identity.home).verifyReference(resource,snapshot);}
+      else if(resource.kind==='legacy-agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现根缺失');new LegacyOriginalCodex(store,this.catalog(identity.home)).verify(resource,snapshot);}
       else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);
       else if(resource.kind==='legacy-plugin-source')new LegacyPluginSources(store).verify(resource,legacyPluginOrigin(assertLegacySessionSource(store,snapshot).evidence));
       else support.legacy.verify(resource);
     }});
-    this.legacyMigration=new LegacySessionMigration(store,this.sessions);
+    this.legacyMigration=new LegacySessionMigration(store,this.sessions,undefined,home=>this.catalog(home));
     this.projector=new SessionCapabilityProjector(store,this.sessions);
     this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,assertCurrent:snapshot=>{
       // Application enablement and current slots belong to each business call, not Agent liveness.
@@ -77,6 +80,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
       else if(resource.kind==='agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');catalog.verifyReference(resource,snapshot);}
+      else if(resource.kind==='legacy-agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');new LegacyOriginalCodex(store,catalog).verify(resource,snapshot);}
       else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);
       else if(resource.kind==='legacy-plugin-source')new LegacyPluginSources(store).verify(resource,legacyPluginOrigin(assertLegacySessionSource(store,snapshot).evidence));
       else support.legacy.verify(resource);
@@ -130,6 +134,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
     try{native=await(this.options.inspectNative??inspectNativeLaunch)(input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
     const catalog=this.catalog(input.home);let current:StoredCapabilitySession;
+    if(input.profile.runner==='codex')try{await new LegacyDiscoveryInventory(this.support.store,catalog).prepare(input.signal);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&['CANCELED','RESOURCE_BUSY'].includes(error.code))throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code==='OWNERSHIP_CONFLICT'?'AGENT_CAPABILITY_NAME_CONFLICT':error.code;}
     if(input.previous?.sessionCapabilities){
       const pointer=input.previous.sessionCapabilities;if(pointer.taskId!==input.taskId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针不属于当前会话');current=await this.sessions.get(input.taskId);
       if(current.snapshot.projectId!==input.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务项目与原固定快照身份不符，保留原记录且不恢复应用能力');
@@ -184,7 +189,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         try{this.support.adapters.plan(snapshot.adapterBinding.hash,request);}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT'].includes(error.code)){unavailable=error.code;request=undefined;}else throw error;}
       }
       let runtime=unavailable?this.unavailableRuntime(input,current,run.runId,unavailable):this.capabilities.prepare({projectId:input.projectId,taskId:input.taskId,runner:input.profile.runner,cwd:input.cwd,home:input.home,profileArgs:input.profile.args,previous:input.previous,managed:{runId:run.runId,runtimeHash:legacy[0].refHash,mcpName,skills,projections}});entry.runtime=runtime;runtime.snapshot.sessionCapabilities=current.pointer;
-      await run.prepare();const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
+      await run.prepare();if(unavailable)await this.runs.restrictToNative(run.runId,{reason:'managed_capabilities_unavailable',issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED'});const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
       if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}const plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);args=plan.args;const root=dirname(runtime.snapshot.manifestPath);for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});configPaths.push(join(root,name));}}
       try{await this.applications.sessionDiagnostics.prepared({schema:1,runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:unavailable?'unavailable':'prepared',issueCode:unavailable??null,manifestPath:runtime.snapshot.manifestPath,configPaths,preparedAt:new Date().toISOString()});}catch{/* Missing display evidence never grants capability or blocks ordinary Agent launch. */}
       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
@@ -193,6 +198,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:runtime.env,command:native?.command,
         nativeOnly:async reason=>{
           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
+          if(unavailable){runtime.snapshot.selfCheck?.issues.push(reason);launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;}
           phase='restricting';
           this.broker.revokeRun(run.runId);await bridge?.bridge.cancelBeforeLaunch();
           await this.runs.restrictToNative(run.runId);
@@ -202,7 +208,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
           // The registry recorded the narrowing atomically; initial preparation remains immutable.
           phase='native-only';return launch;
         },
-        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
+        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
       return launch;
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }

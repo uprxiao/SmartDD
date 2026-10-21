@@ -6,10 +6,11 @@ import {canonicalJson,digest} from './manifest';
 import {legacyRuntimeMetadata,legacyManifestSchema,type LegacyTaskEvidence} from './legacy-task-evidence';
 import type {ResourceStore,ResourceRecord} from './resource-store';
 import {legacyPluginResourceId,legacyStaticPluginResourceId} from './legacy-plugin-source';
+import {originalHBinding,readOriginalHBinding} from './legacy-h-binding';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),path=z.string().min(1).max(4096).refine(p=>p.startsWith('/')&&!/[\x00\r\n]/.test(p));
 export const legacyRetentionIdentitySchema=z.object({taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),stateRoot:path,cwd:path,sessionId:z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),home:path}).strict();
 const evidenceSchema=z.object({schema:z.literal('m4-task-evidence-v1'),taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),snapshotHash:hash,evidenceHash:hash,manifestHash:hash,runRoot:path,runtimeHash:hash,runtimePath:path,pluginRoot:path.nullable(),pluginName:z.literal('smartdd').nullable(),skills:z.array(z.object({skillId:z.string(),versionId:z.string(),hash,enabled:z.boolean(),projectionPath:z.string().max(4096),nativeName:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/).nullable(),sourceHash:hash}).strict()).max(64),mcp:z.array(z.object({name:z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/),protocolMajor:z.literal(1),runtimeHash:hash}).strict()).max(1)}).strict();
-export interface LegacySourceRow {task_id:string;source_snapshot_json:string;source_record_json:string;source_snapshot_hash:string;source_identity_json:string;bound_native_session_id:string|null;evidence_json:string|null;evidence_hash:string|null;manifest_json:string|null;manifest_hash:string|null;state:'held'|'prepared'|'migrated';created_at:string;updated_at:string;issue_code:string|null}
+export interface LegacySourceRow {task_id:string;source_snapshot_json:string;source_record_json:string;source_snapshot_hash:string;source_identity_json:string;bound_native_session_id:string|null;evidence_json:string|null;evidence_hash:string|null;manifest_json:string|null;manifest_hash:string|null;state:'held'|'prepared'|'migrated';h_binding_hash:string|null;created_at:string;updated_at:string;issue_code:string|null}
 export const legacyLogicalEvidence=(value:LegacyTaskEvidence)=>{const {evidenceHash,...logical}=value;return logical;};
 const fail=():never=>{throw new ApplicationError('SNAPSHOT_CORRUPT','原M4持久来源、原路径或固定迁移依据不一致');};
 /** SQL metadata only. Callers verify actual owned files before activation; this is not an owner/exit proof. */
@@ -35,7 +36,9 @@ export function retainedLegacySource(store:ResourceStore,taskId:string,state:'he
    if(!ref&&store.sqlite.prepare('SELECT 1 FROM capability_resources WHERE resource_id=?').get(resourceId))return fail();
    if(ref){const r=store.get(resourceId);if(!pluginSource||r.kind!=='legacy-static-plugin'||r.pathScope!=='C'||r.contentHash!==pluginSource.contentHash||r.relativePath!==relative(store.root,evidence.runRoot)||ref.ref_hash!==r.contentHash||ref.relative_path!==r.relativePath)return fail();originalProjection=r;}
   }
-  return{row,snapshot,identity,evidence,binding,standardSkills,mcp,pluginSource,...(originalProjection?{originalProjection}:{})};
+  const originalCodexProjections=identity.runner==='codex'?readOriginalHBinding(store,originalHBinding(store,taskId,identity.home,row.source_snapshot_hash,evidence),row.h_binding_hash):undefined;
+  if(identity.runner!=='codex'&&(row.h_binding_hash!==null||store.sqlite.prepare('SELECT 1 FROM capability_legacy_h_bindings WHERE task_id=?').get(taskId)))return fail();
+  return{row,snapshot,identity,evidence,binding,standardSkills,mcp,pluginSource,...(originalProjection?{originalProjection}:{}),...(originalCodexProjections?{originalCodexProjections}:{})};
  }catch(error){if(error instanceof ApplicationError)throw error;return fail();}
 }
 export function assertLegacySessionSource(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2){
