@@ -1,3 +1,4 @@
+import {inspectApplicationResources} from './application-resource-availability';
 import {assertNoPendingApplicationSwitch} from './application-run-policy';
 import { mkdirSync, writeFileSync,lstatSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -9,7 +10,7 @@ import { CapabilityService, MCP_CAPABILITY, type PreparedRuntime } from '../capa
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher } from '../tasks/capability-lifecycle';
 import type { AgentSupportService } from './agent-support-service';
 import type { ApplicationService } from './application-service';
-import { CapabilitySessionRegistry, applicationSkillContentHash, canonicalFuturePath, type StoredCapabilitySession } from './session-registry';
+import { CapabilitySessionRegistry, selectionHash, applicationSkillContentHash, canonicalFuturePath, type StoredCapabilitySession } from './session-registry';
 import { SessionCapabilityProjector, standardNativeSkillName } from './session-projector';
 import { CapabilityRunRegistry, type RunBindingRevision, type OwnedCapabilityRun } from './run-registry';
 import { DiscoveryCatalog, type DiscoveryReservation } from './discovery-catalog';
@@ -50,6 +51,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly broker:PrivateApplicationBroker;
   private readonly catalogs=new Map<string,DiscoveryCatalog>();
   private readonly active=new Map<string,ActiveLaunch>();
+  private readonly initialApplicationScopes=new Map<string,{selectionHash:string;appIds:readonly string[]}>();
   private readonly pending=new Set<Promise<TaskCapabilityLaunch>>();
   private readonly processes:ProcessIdentityReader;
   private readonly timer:ReturnType<typeof setInterval>;
@@ -104,7 +106,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   }
   /** SQL-only recheck under C. Selection is checked once; later calls use current business policy. */
   private assertInitialSelection(snapshot:CapabilitySessionSnapshotV2):void{
-    assertNoPendingApplicationSwitch(this.support.store,snapshot);
+    const planned=this.initialApplicationScopes.get(snapshot.taskId);if(planned&&planned.selectionHash!==selectionHash(snapshot))throw new ApplicationError('RESOURCE_STATE_CHANGED','本轮应用范围与原固定选择不同');
+    assertNoPendingApplicationSwitch(this.support.store,planned?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>planned.appIds.includes(p.appId))}:snapshot);
     const store=this.support.store,apps=this.selectedApps(snapshot.projectId);
     if(canonicalJson(apps)!==canonicalJson(snapshot.packages.map(p=>({appId:p.appId,packageHash:p.packageHash}))))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目应用或默认版本已变化');
     const actual=store.sqlite.prepare('SELECT v.skill_id AS skillId,v.id AS versionId,v.hash FROM skill_versions v LEFT JOIN project_capabilities p ON p.id=? || v.skill_id WHERE v.active=1 AND COALESCE(p.enabled,1)=1 ORDER BY v.skill_id').all(snapshot.projectId+':');
@@ -174,14 +177,16 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);
       }else{
       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
-      assertNoPendingApplicationSwitch(this.support.store,planned);
+      const plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready').map(p=>p.appId),plannedScope=planned.runner==='codex'&&plannedReady.length>0&&plannedReady.length<planned.packages.length?plannedReady:undefined;
+      assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);
       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
-      if(planned.runner==='codex'&&!unavailable&&this.applicationResourcesAvailable(planned)){
-        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned),{signal:input.signal})).generation;}
+      if(planned.runner==='codex'&&!unavailable&&(plannedReady.length>0||planned.packages.length===0)){
+        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope),{signal:input.signal})).generation;}
         catch(error){if(error instanceof ApplicationError&&error.code==='OWNERSHIP_CONFLICT')unavailable='AGENT_CAPABILITY_NAME_CONFLICT';else throw error;}
       }
-      current=await this.sessions.create(planned,input.home);
+      if(plannedScope)this.initialApplicationScopes.set(planned.taskId,{selectionHash:selectionHash(planned),appIds:Object.freeze([...plannedScope])});
+      try{current=await this.sessions.create(planned,input.home);}finally{this.initialApplicationScopes.delete(planned.taskId);}
       await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);
       }
     }
@@ -194,21 +199,24 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       }catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code;}
       if(unavailable||!native)return this.prepareUnavailableSession(input,current,native,unavailable??'AGENT_ADAPTER_UNSUPPORTED',catalog);
     }
-    const snapshot=current.snapshot;assertNoPendingApplicationSwitch(this.support.store,snapshot);const adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
+    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
-    if(!this.applicationResourcesAvailable(snapshot))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+    const ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready').map(p=>p.appId),applicationScope=snapshot.runner==='codex'&&!unavailable&&native&&ready.length>0&&ready.length<snapshot.packages.length?ready:undefined;
+    if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+    const gateSnapshot=applicationScope?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>applicationScope.includes(p.appId))}:snapshot;
+    assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);const projectionIds:string[]=[];
     let pluginRoot:string|null=null,pluginHash:string|null=null;
     if(!unavailable&&!snapshot.legacyBinding){
-      if(snapshot.runner==='codex'){const published=await catalog.publish(this.projector.sourceSkills(snapshot),{signal:input.signal});for(const source of this.projector.sourceSkills(snapshot)){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);}}
+      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope),published=await catalog.publish(sources,{signal:input.signal});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
       else{const plugin=await this.projector.claude(input.taskId);pluginRoot=plugin.root;pluginHash=plugin.resource.contentHash;}
     }
-    const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
+    const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
     const run=hold?.run??await this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]}),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
     try{
       const legacy=(await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime');if(legacy.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原启动资源身份缺失或重复');
       const mcpName=snapshot.mcp.find(m=>m.kind==='legacy-project-context')?.serverName??null;
       const original=snapshot.legacyBinding?assertLegacySessionSource(this.support.store,snapshot):null;
-      const sources=unavailable?[]:original?original.evidence.skills.filter(s=>s.enabled).map(s=>{if(!s.nativeName)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill原生名称缺失');return{path:s.projectionPath,nativeName:s.nativeName,sourceHash:s.hash,sourceResourceId:'standard-skill:'+s.skillId+':'+s.hash,files:Object.fromEntries(Object.entries(this.support.legacy.verify(this.support.store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set<string>()};}):this.projector.sourceSkills(snapshot),skills:RuntimeSkill[]=unavailable?[]:snapshot.standardSkills.map(s=>{const known=this.support.store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,name,version,hash FROM skill_versions WHERE id=? AND skill_id=? AND hash=?').get(s.versionId,s.skillId,s.hash) as Pick<RuntimeSkill,'skillId'|'versionId'|'name'|'version'|'hash'>|undefined;if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失或身份不同');return{...known,path:s.projectionPath,loaded:'unverified',enabled:true};});
+      const sources=unavailable?[]:original?original.evidence.skills.filter(s=>s.enabled).map(s=>{if(!s.nativeName)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill原生名称缺失');return{path:s.projectionPath,nativeName:s.nativeName,sourceHash:s.hash,sourceResourceId:'standard-skill:'+s.skillId+':'+s.hash,files:Object.fromEntries(Object.entries(this.support.legacy.verify(this.support.store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set<string>()};}):this.projector.sourceSkills(snapshot,applicationScope),skills:RuntimeSkill[]=unavailable?[]:snapshot.standardSkills.map(s=>{const known=this.support.store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,name,version,hash FROM skill_versions WHERE id=? AND skill_id=? AND hash=?').get(s.versionId,s.skillId,s.hash) as Pick<RuntimeSkill,'skillId'|'versionId'|'name'|'version'|'hash'>|undefined;if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失或身份不同');return{...known,path:s.projectionPath,loaded:'unverified',enabled:true};});
       const projections=unavailable?{}:Object.fromEntries(snapshot.standardSkills.map(s=>{const source=sources.find(v=>v.path===s.projectionPath)!;return[s.versionId,{path:s.projectionPath,nativeName:source.nativeName,...(original?{format:'legacy-tree-v1' as const}:{}),files:source.files}];}));
       let request:AgentLoadRequest|undefined,legacyRequest:LegacyAgentLoadRequest|undefined;
       const legacyPlan=()=>{if(!legacyRequest)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原格式加载依据缺失');return this.support.adapters.planLegacy(snapshot.adapterBinding.hash,legacyRequest);};
@@ -220,7 +228,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
           legacyRequest={schema:'m4-legacy-load-request-v1',taskId:input.taskId,projectId:input.projectId,sourceSnapshotHash:original.row.source_snapshot_hash,runId:run.runId,cliVersion:native.version,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},catalog:collection,userSkillConfig:flags,inventory};
           try{legacyPlan();}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT','RESOURCE_RECOVERY_REQUIRED'].includes(error.code)){unavailable=error.code;legacyRequest=undefined;}else throw error;}
         }else{
-        request={snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
+        request={snapshot,...(applicationScope?{applicationScope}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
         try{this.support.adapters.plan(snapshot.adapterBinding.hash,request);}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT'].includes(error.code)){unavailable=error.code;request=undefined;}else throw error;}
       }
       }
@@ -237,7 +245,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       let effectiveApplications=!unavailable;
       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared';
       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:runtime.env,command:native?.command,
-        assertBeforeFork:()=>{if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,snapshot);},
+        assertBeforeFork:()=>{if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);},
         nativeOnly:async reason=>{
           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
           if(unavailable){runtime.snapshot.selfCheck?.issues.push(reason);launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;}
@@ -250,17 +258,12 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
           // The registry recorded the narrowing atomically; initial preparation remains immutable.
           phase='native-only';return launch;
         },
-        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,snapshot);phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
+        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
       return launch;
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
   private originalTransientAbsent(path:string):boolean{
     try{lstatSync(path);return false;}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return true;throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原临时目录状态暂不能核验');}
-  }
-  private applicationResourcesAvailable(snapshot:CapabilitySessionSnapshotV2):boolean{
-    const builtin=new BuiltinPackageRegistry(this.support.store),runtimes=new RuntimeRegistry(this.support.store);
-    try{for(const pack of snapshot.packages){builtin.assertTrusted(pack.packageHash);runtimes.verify(pack.runtimeHash);}return true;}
-    catch(error){if(error instanceof ApplicationError&&error.code!=='CANCELED')return false;throw error;}
   }
   private async prepareUnavailableSession(input:TaskLaunchInput,current:StoredCapabilitySession,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=await catalog.snapshot(),isolationEntry=snapshot.legacyBinding?this.support.status().adapters.find(a=>a.agentId===snapshot.runner&&a.version==='1.0.0'):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;

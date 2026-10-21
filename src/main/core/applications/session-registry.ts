@@ -179,6 +179,9 @@ export class CapabilitySessionRegistry {
     this.validatePackages({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))});
     const expected=this.expectedSources({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))}),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
     for(const [id,source]of expected){const ref=all.find(r=>r.refId===id);if(!ref||ref.refKind!==source.kind||ref.refHash!==source.hash)throw new ApplicationError('SNAPSHOT_CORRUPT','本轮所需原资源引用缺失或身份不同');roots.push(ref);}
+    // The ordinary launcher always reads its original M4 runtime, including
+    // when its context MCP is disabled. Narrow only application-specific roots.
+    for(const ref of all.filter(r=>r.refKind==='legacy-runtime'))if(!roots.some(r=>r.refId===ref.refId))roots.push(ref);
     for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
     return roots.sort((a,b)=>compareCodePoints(a.refId,b.refId));
   }

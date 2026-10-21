@@ -553,6 +553,58 @@ describe('ZenTao switch retains already narrowed native-only running work',()=>{
 
 
 describe('per-application availability does not withdraw healthy fixed tools',()=>{
+ async function selectBoth(){
+  await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  return new BuiltinPackageRegistry(support.store);
+ }
+ const launchFlags=()=>((parseToml(ptys.launches.at(-1)!.args.find(a=>a.startsWith('skills.config='))!).skills as {config:{path:string;enabled:boolean}[]}).config);
+ const appTools=()=>new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data));
+ it('resumes Codex with original Mail and H paths after ZenTao loss,without widening the live run after same-hash repair',async()=>{
+  const builtin=await selectBoth(),first=await create();await stopForSwitchFixture(first,'codex');
+  const fixed=await managed.sessions.get(first.task.id),before=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(first.task.id),zen=builtin.assertTrusted(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});
+  const resumed=await tasks.open({taskId:first.task.id}),runId=resumed.task.runtimeSnapshot!.runId;
+  try{
+   expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);const flags=launchFlags();for(const p of fixed.snapshot.packages)for(const s of p.skills)expect(flags).toContainEqual({path:s.projectionPath,enabled:p.appId==='mail'});
+   const protectedIds=sqlite.prepare('SELECT r.resource_id FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_id=?').all(runId) as {resource_id:string}[];expect(protectedIds.map(r=>r.resource_id)).not.toContain(zen.resourceId);for(const ref of refs as {ref_id:string;ref_kind:string}[])if(ref.ref_kind==='legacy-runtime')expect(protectedIds.map(r=>r.resource_id)).toContain(ref.ref_id);expect(protectedIds.map(r=>r.resource_id)).toContain('app:'+fixed.snapshot.packages.find(p=>p.appId==='mail')!.packageHash);
+   expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});
+   const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);
+   expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);expect(await appTools().call(runId,randomUUID(),{operation:Object.keys(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.toolContractMajors)[0],contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'CAPABILITY_UNAVAILABLE'}});
+   expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id)).toEqual(before);expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(first.task.id)).toEqual(refs);
+  }finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+  const repaired=await tasks.open({taskId:first.task.id});try{expect(managed.runs.assertActive(repaired.task.runtimeSnapshot!.runId).applicationScope).toBeUndefined();for(const p of fixed.snapshot.packages)for(const s of p.skills)expect(launchFlags()).toContainEqual({path:s.projectionPath,enabled:true});expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);}finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
+ },30000);
+ it('loads only original ZenTao tools when Mail bytes are missing in a new Codex run',async()=>{
+  const builtin=await selectBoth(),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash);rmSync(join(support.store.root,mail.relativePath),{recursive:true});const created=await create(),runId=created.task.runtimeSnapshot!.runId,fixed=await managed.sessions.get(created.task.id);
+  try{expect(managed.runs.assertActive(runId).applicationScope).toEqual(['zentao']);expect((await appTools().list(runId)).tools.map(t=>t.name).sort()).toEqual(Object.keys(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.toolContractMajors).sort());expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'CAPABILITY_UNAVAILABLE'}});for(const s of fixed.snapshot.packages.find(p=>p.appId==='zentao')!.skills)expect(launchFlags()).toContainEqual({path:s.projectionPath,enabled:true});}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
+ });
+ it('permits scoped Mail new and resume while only excluded ZenTao has a pending switch',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});sqlite.prepare("UPDATE application_project_settings SET pending_operation_id='private-scope-pending' WHERE project_id=? AND app_id='zentao'").run(projectId);
+  try{const created=await create();expect(managed.runs.assertActive(created.task.runtimeSnapshot!.runId).applicationScope).toEqual(['mail']);await stopForSwitchFixture(created,'codex');const resumed=await tasks.open({taskId:created.task.id});expect(managed.runs.assertActive(resumed.task.runtimeSnapshot!.runId).applicationScope).toEqual(['mail']);tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}finally{sqlite.prepare("UPDATE application_project_settings SET pending_operation_id=NULL WHERE project_id=? AND app_id='zentao'").run(projectId);}
+ },20000);
+ it('still gates the last native fork for loaded scoped ZenTao when its switch begins after arming',async()=>{
+  const builtin=await selectBoth(),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash);rmSync(join(support.store.root,mail.relativePath),{recursive:true});
+  const prepare=managed.prepare.bind(managed),spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await prepare(input),before=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await before();sqlite.prepare("UPDATE application_project_settings SET pending_operation_id='private-scope-last-fork' WHERE project_id=? AND app_id='zentao'").run(projectId);};return launch;});
+  try{await expect(create()).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(ptys.launches).toHaveLength(0);expect(sqlite.prepare("SELECT count(*) n FROM capability_runs WHERE state NOT IN ('stopped','failed')").get()).toEqual({n:0});}finally{spy.mockRestore();sqlite.prepare("UPDATE application_project_settings SET pending_operation_id=NULL WHERE project_id=? AND app_id='zentao'").run(projectId);}
+ });
+ it('retains scoped Mail during a real ZenTao selection switch and rechecks current Mail policy on every call',async()=>{
+  const x=await zentaoSwitchFixture();await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});const created=await create(),runId=created.task.runtimeSnapshot!.runId,fixed=await managed.sessions.get(created.task.id),query=()=>appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}});
+  try{expect(await query()).toMatchObject({status:'ok'});
+   // Editing ZenTao configuration requires its own verified package. Restore
+   // those exact original bytes first; this must not widen the live Mail scope.
+   const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);
+   await x.next();expect(ptys.live.has(created.ptyId)).toBe(true);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);await applications.selections.setGlobalEnabled('mail',false,1);expect(await query()).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(ptys.live.has(created.ptyId)).toBe(true);await applications.selections.setGlobalEnabled('mail',true,2);expect(await query()).toMatchObject({status:'ok'});expect((await managed.sessions.get(created.task.id)).snapshot).toEqual(fixed.snapshot);}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
+ },20000);
+ it('keeps the native Agent without any application grant when the original shared application runtime is missing',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),runtime=support.store.get('runtime:'+zen.manifest.runtime.hash);rmSync(join(support.store.root,runtime.relativePath),{recursive:true});const created=await create(),runId=created.task.runtimeSnapshot!.runId;
+  try{expect(ptys.live.has(created.ptyId)).toBe(true);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect((await managed.sessions.get(created.task.id)).snapshot.packages.map(p=>p.appId).sort()).toEqual(['mail','zentao']);expect(managed.runs.inputContext(created.task.id,created.ptyId)).toBeNull();}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
+ });
+ it('reports healthy Mail resources independently of unavailable original ZenTao in a scoped Codex run',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});const created=await create();
+  try{const value=await applications.sessionDiagnostics.inspect(created.task.id);expect(value.applications.find(p=>p.appId==='mail')).toMatchObject({resourceState:'verified',issueCode:null,evidence:{skillDiscovery:'unverified',skillRead:'unverified'}});expect(value.applications.find(p=>p.appId==='zentao')).toMatchObject({resourceState:'unavailable'});expect(value.agentState).toBe('running');}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
+ });
+
  // Direct host/run/Data API coverage, deliberately separate from the still-red
  // native launch cases below. No native Skill discovery is claimed here.
  async function startCoreScope(runner:'claude-code'|'codex',unavailable:'zentao'|'mail'){

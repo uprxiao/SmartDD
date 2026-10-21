@@ -27,16 +27,18 @@ export class SessionCapabilityProjector {
   private readonly packages: PackageRegistry;
   private readonly legacy: LegacyCapabilityResourceAdopter;
   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
-  sourceSkills(snapshot: CapabilitySessionSnapshotV2): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+    if(applicationScope&&(!applicationScope.length||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
-    for (const application of snapshot.packages) {
+    for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
       const installed = this.packages.get(application.packageHash); verifyPackageTree(join(this.store.root,installed.relativePath),installed,this.store.storeId);
       for (const skill of application.skills) {
         const prefix = skill.sourceRelativePath + '/', files: Record<string,Buffer> = {},executables = new Set<string>();
-        for (const source of installed.manifest.files.filter(f => f.path.startsWith(prefix))) { const relative = source.path.slice(prefix.length), bytes = readFileSync(join(this.store.root,installed.relativePath,source.path)); files[relative] = relative === 'SKILL.md' ? projectSkillName(bytes,skill.nativeName) : bytes; if (source.executable) executables.add(relative); }
+        for (const source of installed.manifest.files.filter(f => f.path.startsWith(prefix))) { const relative = source.path.slice(prefix.length), bytes = readFileSync(join(this.store.root,installed.relativePath,source.path));if(bytes.length!==source.size||digest(bytes)!==source.sha256)throw new ApplicationError('HASH_MISMATCH','原Skill文件在读取时已改变'); files[relative] = relative === 'SKILL.md' ? projectSkillName(bytes,skill.nativeName) : bytes; if (source.executable) executables.add(relative); }
         if (!files['SKILL.md']) throw new ApplicationError('INVALID_PACKAGE','原Skill完整目录缺少入口');
         result.push({ nativeName: skill.nativeName,path: skill.projectionPath,sourceHash: skill.contentHash,sourceResourceId: installed.resourceId,files,executables });
       }
+      verifyPackageTree(join(this.store.root,installed.relativePath),installed,this.store.storeId);
     }
     for (const standard of snapshot.standardSkills) {
       const resource = this.store.get(`standard-skill:${standard.skillId}:${standard.hash}`);
