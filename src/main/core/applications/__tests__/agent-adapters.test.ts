@@ -1,3 +1,4 @@
+import {nativeApplicationConflicts} from '../native-application-conflicts';
 import { mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parse as parseToml } from 'smol-toml';
@@ -10,6 +11,11 @@ beforeEach(async () => { f = await agentFixture(); }); afterEach(() => f.cleanup
 describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixed adapter packages and actual complete Skill projection plans', () => {
  it('plans explicit independent Codex standards and context without allowing an app bridge or silently accepting an ordinary empty scope',async()=>{
   const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),legacy=input.mcp.filter(m=>m.kind==='legacy-project-context'),safe={...input,independentCapabilities:true as const,applicationScope:[],mcp:legacy};expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,applicationScope:[]})).toThrow();expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,applicationScope:[],independentCapabilities:true})).toThrow();const plan=f.adapters.plan(snapshot.adapterBinding.hash,safe),flags=(parseToml(plan.args.find(a=>a.startsWith('skills.config='))!).skills as {config:{path:string;enabled:boolean}[]}).config;for(const p of snapshot.packages)for(const s of p.skills)expect(flags).toContainEqual({path:s.projectionPath,enabled:false});for(const s of snapshot.standardSkills)expect(flags).toContainEqual({path:s.projectionPath,enabled:true});expect(plan.args.join('\n')).not.toContain('mcp_servers.'+snapshot.mcp.find(m=>m.kind==='applications')!.serverName);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(snapshot);
+ });
+
+
+ it.each(['skill','native-tool','mcp'] as const)('attributes only the exact native %s collision before publication',async kind=>{
+  const snapshot=f.plan('codex'),p=snapshot.packages[0],name=kind==='skill'?'smartdd-session:'+p.skills[0].nativeName:kind==='mcp'?snapshot.mcp.find(m=>m.kind==='applications')!.serverName:snapshot.adapterBinding.nativeToolNames[Object.keys(p.toolContractMajors)[0]],input={command:'/private/version-only',version:'0.162.1',userSkillConfig:[],inventory:[{kind,name,path:'/private/user-owned',ownerStoreId:null,contentHash:null}]};expect([...nativeApplicationConflicts(snapshot,input)].sort()).toEqual((kind==='mcp'?snapshot.packages.map(p=>p.appId):[p.appId]).sort());input.inventory[0].name=name+'-unrelated';expect([...nativeApplicationConflicts(snapshot,input)]).toEqual([]);
  });
 
   it('installs complete CJS adapters without replacing one version and retains the old adapter after a new install', async () => {

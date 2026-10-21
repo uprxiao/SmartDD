@@ -1,0 +1,141 @@
+diff --git a/prototypes/m6-codex/src/IntegrationPackageUI.jsx b/prototypes/m6-codex/src/IntegrationPackageUI.jsx
+index ad7a7bf7..90fbe66c 100644
+--- a/prototypes/m6-codex/src/IntegrationPackageUI.jsx
++++ b/prototypes/m6-codex/src/IntegrationPackageUI.jsx
+@@ -1,6 +1,6 @@
+ import { useEffect, useRef, useState } from 'react';
+ import { ArrowUpRight, Check, ChevronRight, Database, Mail, Package, SquareTerminal, Zap } from 'lucide-react';
+-import { demoZenTaoRuns, APP_DEFINITIONS, M10_STORAGE, initialIntegrationState, projectIntegrationState, packageVersion, connectionReady, projectPackages, snapshotCurrent, toggleProjectApplication, simulatePackageUpgrade, projectAppEnabled, selectedConnections, switchProjectZenTao, sessionApplicationState, packageRetention, upgradeBlockers, selectProjectMailConnection, sessionCapabilityDiagnostic, recoverSessionCapability } from './integration-model.mjs';
++import { APP_DEFINITIONS, M10_STORAGE, initialIntegrationState, projectIntegrationState, packageVersion, connectionReady, projectPackages, snapshotCurrent, toggleProjectApplication, simulatePackageUpgrade, projectAppEnabled, selectedConnections, switchProjectZenTao, sessionApplicationState, packageRetention, upgradeBlockers, selectProjectMailConnection, sessionCapabilityDiagnostic, recoverSessionCapability } from './integration-model.mjs';
+ import './integration.css';
+ 
+ export function useIntegrationPreview() {
+@@ -41,9 +41,8 @@ export function ProjectApplications({ project, integration, nav, onUse, onNewTas
+   const { data, setData, storageFailed } = integration;
+   const [switchTo, setSwitchTo] = useState(null), [switchResult, setSwitchResult] = useState(''), [failure, setFailure] = useState('none');
+   const bound = data.bindings[project.id] || [];
+-  let related=[],scopeError='';try{related=demoZenTaoRuns(tasks,project.id);}catch(error){scopeError=error.message;}
++  const related = tasks.filter(t => t.project === project.id && t.status === 'running' && (!t.integrationSnapshot || t.integrationSnapshot.packages.some(p => p.id === 'zentao')));
+   const switchConnection = () => {
+-    if(scopeError)return setSwitchResult(scopeError);
+     if (failure === 'stop') return setSwitchResult('模拟停止失败：保留原连接，未提交切换。');
+     onStopTasks?.(related.map(t => t.id));
+     if (failure === 'commit') return setSwitchResult('模拟切换失败：原连接保留，已停止的运行不会自动重启。');
+@@ -72,7 +71,7 @@ export function ProjectApplications({ project, integration, nav, onUse, onNewTas
+     })}
+     <div className="m10-project-session-note"><SquareTerminal size={17} /><div><strong>新会话采用当前版本，恢复会话保留原版本</strong><p>连接和权限按当前配置检查；暂时不可用不影响 Agent 启动。应用升级不会将新版替换进旧会话。</p><span>首版目标：macOS arm64 · Claude Code / Codex · 仅 WillYou 内启动／恢复。这里是合成演示，实际CLI版本适配待验证。</span></div><button className="m10-button secondary" disabled={project.archived} onClick={onNewTask}>新建任务<ArrowUpRight size={13} /></button></div>
+     <div className="m10-local-data"><Database size={15} /><span>连接、草稿和记录独立保存在本地；程序包升级继续读取原数据。</span></div>
+-    {switchTo && <ReviewDialog title="切换项目禅道连接" onClose={() => setSwitchTo(null)}><p className="m10-modal-copy">{chosenZenName(data, project.id)} → {switchTo.name}（{switchTo.account}）<br />仅影响 {project.name}。停止相关运行后提交切换，旧引用仍保留原来源。</p>{scopeError?<p role="alert">{scopeError}</p>:<DemoImpact data={{kind:'switch',connections:data.connections.filter(c=>c.app==='zentao'&&bound.includes(c.id)).map(c=>({id:c.id,name:c.name,providerId:'zentao',enabled:c.enabled,authorization:c.validation==='disconnected'?'disconnected':'connected'})),projects:[{id:project.id,name:project.name,enabled:projectAppEnabled(data,project.id,'zentao'),archived:!!project.archived}],runs:related}}/>}<label className="m10-field"><span>演示结果</span><select value={failure} onChange={e => setFailure(e.target.value)}><option value="none">切换成功</option><option value="stop">停止失败</option><option value="commit">停止后切换失败</option></select></label>{switchResult && <p role="status">{switchResult}</p>}<footer><button className="m10-button secondary" onClick={() => setSwitchTo(null)}>取消</button><button className="m10-button primary" disabled={!!scopeError} onClick={switchConnection}>{related.length ? '停止相关运行并切换 · 模拟' : '切换连接 · 模拟'}</button></footer></ReviewDialog>}
++    {switchTo && <ReviewDialog title="切换项目禅道连接" onClose={() => setSwitchTo(null)}><p className="m10-modal-copy">{chosenZenName(data, project.id)} → {switchTo.name}（{switchTo.account}）<br />仅影响 {project.name}。停止相关运行后提交切换，旧引用仍保留原来源。</p><div className="m10-switch-runs">{related.length ? related.map(t => <p key={t.id}>{t.title} · {t.status === 'running' ? '运行中，需停止' : '已停止'}</p>) : <p>没有需要停止的运行。</p>}</div><label className="m10-field"><span>演示结果</span><select value={failure} onChange={e => setFailure(e.target.value)}><option value="none">切换成功</option><option value="stop">停止失败</option><option value="commit">停止后切换失败</option></select></label>{switchResult && <p role="status">{switchResult}</p>}<footer><button className="m10-button secondary" onClick={() => setSwitchTo(null)}>取消</button><button className="m10-button primary" onClick={switchConnection}>{related.length ? '停止相关运行并切换 · 模拟' : '切换连接 · 模拟'}</button></footer></ReviewDialog>}
+   </div>;
+ }
+ function chosenZenName(data, projectId) { return selectedConnections(data, projectId, 'zentao')[0]?.name || '未选定唯一连接'; }
+@@ -132,8 +131,3 @@ export function PackageUpgradePreview({ data, setData, tasks = [] }) {
+   const run = fail => { if (blocked.length) { setResult(simulatePackageUpgrade(data, fail, activeRuns.current)); return; } setPhase('preparing'); setResult(null); timer.current = setTimeout(() => { setData(current => { const upgrade = simulatePackageUpgrade(current, fail, activeRuns.current); setResult(upgrade); return upgrade.state; }); setPhase('idle'); }, 450); };
+   return <div className="m10-upgrade-preview"><p className="m10-modal-copy">模拟新版包完整准备、校验后切换默认版本。旧会话引用原版本，未打开的历史会话也保留引用。仅合成状态，不更新程序或真实SQLite。</p><label className="m10-check"><input type="checkbox" checked={simulateOccupied} onChange={e => setSimulateOccupied(e.target.checked)} />模拟共享Skill目录仍有运行占用</label>{blocked.length > 0 && <p className="m10-note">等待以下运行释放共享目录：{blocked.map(t => t.title || t.id).join('、')}。可保留此状态；解除模拟占用后再执行升级。</p>}{phase === 'preparing' && <p className="m10-note" role="status">正在准备和校验…新会话暂沿用原默认版本。</p>}<div className="m10-upgrade-versions">{APP_DEFINITIONS.map(app => <div key={app.id}><ApplicationMark app={app.id} /><strong>{app.name}</strong><span>新会话默认 v{packageVersion(data, app.id)}</span></div>)}</div><div className="m10-version-list">{APP_DEFINITIONS.flatMap(app => (data.installedVersions?.[app.id] || ['1.0.0']).map(version => { const retained = packageRetention(data, tasks, app.id, version); return <div key={app.id + version}><strong>{app.name} v{version}</strong><span>{retained.references.length}个会话引用 · {retained.running}个运行中</span><small>{retained.reasons.join('；') || '无引用，可进入清理检查'} · 大小未测量</small><button className="m10-button secondary" disabled={!retained.cleanable || phase !== 'idle'} onClick={() => { setResult({ ok: true, message: '模拟清理二次核对：无引用时才删除。此预览保留文件；真实租约与崩溃恢复待工程验证。' }); }}>演示清理检查</button></div>; }))}</div><div className="m10-data-retention">{[['连接配置', data.connections.length], ['项目选用关系', Object.values(data.bindings).reduce((n, ids) => n + ids.length, 0)], ['草稿', data.drafts?.length || 0], ['调用记录', data.activity.length]].map(([label, count]) => <div key={label}><Check size={14} /><span>{label}</span><strong>{count} 项 · 保留</strong></div>)}</div><p className="m10-muted">共享Skill目录被运行占用时等待相关终端结束；不强制打断。中断后恢复检查未完成安装；不回退业务数据。</p>{result && <p className="m10-note" role="status">{result.message}</p>}<div className="m10-session-footer"><button className="button secondary" disabled={upgraded || phase !== 'idle'} onClick={() => run(true)}>模拟准备失败</button><button className="button primary" disabled={upgraded || phase !== 'idle'} onClick={() => run(false)}>{upgraded ? '已模拟升级' : '模拟升级并保留数据'}</button></div></div>;
+ }
+-
+-export function DemoImpact({data}){
+- const list=(label,items,content)=><><h3>{label}（{items.length}）</h3>{items.length?<ul className="m10-impact-list" aria-label={label}>{items.map(content)}</ul>:<p>{label==='需要停止的运行'?'没有需要停止的运行。':label==='关联项目'?'没有关联项目。':'没有受影响的连接。'}</p>}</>;
+- return <section className="m10-impact" aria-label="本次操作影响范围">{list('受影响连接',data.connections,c=><li key={c.id}><strong title={c.name}>{c.name}</strong><small>{c.providerId==='smtp'?'SMTP 发件账号':c.providerId==='foxmail'?'本地读取来源':'禅道连接'} · {c.authorization==='disconnected'?'已断开':c.enabled?'连接已启用':'连接已停用'}</small></li>)}{list('关联项目',data.projects,p=><li key={p.id}><strong title={p.name}>{p.name}</strong><small>{p.archived?'已归档 · ':''}{p.enabled?'项目已启用':'项目已停用'}</small></li>)}{data.kind==='switch'&&list('需要停止的运行',data.runs,r=><li key={r.id}><strong title={r.title}>{r.title}</strong><small>{r.status==='running'?'运行中，需停止':r.status==='preparing'?'正在准备，需停止':'正在停止，待确认'}</small></li>)}<p className="m10-muted">{data.kind==='switch'?'执行时再次核对当前相关运行；无关任务继续运行。':'已停用或归档项目仍保留连接选择；此操作不停止 Agent 的其他工作。'} · 合成原型</p></section>;
+-}
+diff --git a/prototypes/m6-codex/src/IntegrationWorkspace.jsx b/prototypes/m6-codex/src/IntegrationWorkspace.jsx
+index 479196ce..e2498632 100644
+--- a/prototypes/m6-codex/src/IntegrationWorkspace.jsx
++++ b/prototypes/m6-codex/src/IntegrationWorkspace.jsx
+@@ -1,7 +1,7 @@
+ import { useEffect, useRef, useState } from 'react';
+ import { ArrowLeft, ArrowUpRight, Check, ChevronDown, ChevronRight, CircleAlert, CircleCheck, Clock3, FileText, Folder, KeyRound, Link2, LoaderCircle, Mail, MoreHorizontal, Plus, Puzzle, RefreshCw, Search, Send, Settings2, ShieldCheck, Sun, Moon, Unplug, X, Zap } from 'lucide-react';
+-import { demoApplicationImpact, APP_DEFINITIONS, initialIntegrationState, validateConnection, connectionReady, availableConnections, saveConnection, referenceText, projectAppEnabled, validMailDays, DEMO_MAIL_DRAFT, saveDemoDraft, removeApplication, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted, selectedConnections, demoDraftSendEligibility, mailSourceDiagnostic } from './integration-model.mjs';
+-import { DemoImpact, ApplicationPackage, ProjectApplications, PackageUpgradePreview } from './IntegrationPackageUI';
++import { APP_DEFINITIONS, initialIntegrationState, validateConnection, connectionReady, availableConnections, saveConnection, referenceText, projectAppEnabled, validMailDays, DEMO_MAIL_DRAFT, saveDemoDraft, removeApplication, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted, selectedConnections, demoDraftSendEligibility, mailSourceDiagnostic } from './integration-model.mjs';
++import { ApplicationPackage, ProjectApplications, PackageUpgradePreview } from './IntegrationPackageUI';
+ import { packageVersion } from './integration-model.mjs';
+ import './integration.css';
+ 
+@@ -157,8 +157,8 @@ export function IntegrationWorkspace({ route, nav, projects, tasks, dark, onThem
+     {selected && <M10Dialog title={(zenTab === 'bug' ? 'Bug' : '研发需求') + ' #' + selected.id} wide onClose={() => setSelected(null)}><div className="m10-object-detail"><h2>{selected.title}</h2><div className="m10-detail-props"><span>状态<strong>{selected.state}</strong></span><span>指派给<strong>demo.user</strong></span><span>模块<strong>{selected.module}</strong></span><span>优先级<strong>{selected.priority}</strong></span></div><h3>{zenTab === 'bug' ? '重现步骤与说明' : '需求描述与验收标准'}</h3><pre>{selected.detail}</pre><h3>历史记录</h3><pre className="history">{selected.history}</pre><div className="m10-attachment"><FileText size={16} />示例说明.txt<span>附件摘要 · 合成数据</span></div><p className="m10-muted">企业版13.0 · 示例连接 zt-demo · 本轮未调用目标禅道接口</p></div><footer><button className="m10-button secondary" onClick={() => setModal({ type: 'transition', item: selected })}>流转操作（候选）</button><button className="m10-button primary" onClick={() => useReference(zenTab, selected.id)}>插入终端引用<ArrowUpRight size={14} /></button></footer></M10Dialog>}
+     {modal?.type === 'object-missing' && <M10Dialog title={'详情不可用 · #' + modal.item.id} onClose={() => setModal(null)}><Empty kind="error" title="无法获取该详情" text="对象可能已变更或当前账号不可见；未用列表摘要冒充完整详情。" action="返回列表" onAction={() => setModal(null)} /></M10Dialog>}
+     {modal?.type === 'form' && <ConnectionForm key={modal.connection?.id || modal.kind} kind={modal.kind} connection={modal.connection} scene={scene} onClose={() => setModal(null)} onSave={(draft, present) => { setData(d => saveConnection(d, draft, present)); setModal(null); notify('示例连接已保存，请在项目选用中选择。'); }} />}
+-    {modal?.type === 'disconnect' && <M10Dialog title="断开连接" onClose={() => setModal(null)}><p className="m10-modal-copy">断开“{modal.connection.name}”后，项目不能继续使用该连接。保留非秘密配置、历史记录、草稿及历史包，撤销本地访问和凭据引用。重连同一身份后仍启用的项目可恢复；不会声称远端令牌已撤销。</p><DemoImpact data={demoApplicationImpact(data,{kind:'disconnect',connectionId:modal.connection.id},projects)}/><footer><button className="m10-button secondary" onClick={() => setModal(null)}>取消</button><button className="m10-button primary" onClick={() => { updateConnection(modal.connection.id, { validation: 'disconnected', credentialPresent: false }); setModal(null); notify('示例连接已断开。'); }}>断开连接</button></footer></M10Dialog>}
+-    {modal?.type === 'remove' && <M10Dialog title="移除应用" onClose={() => setModal(null)}><p className="m10-modal-copy">移除“{modal.app.name}”并关闭各项目对此应用的使用。保留连接配置、凭据、草稿、发送记录及历史会话引用的版本。重新添加后需手动启用项目；永久删除数据另行评审。</p><DemoImpact data={demoApplicationImpact(data,{kind:'remove',appId:modal.app.id},projects)}/><footer><button className="m10-button secondary" onClick={() => setModal(null)}>取消</button><button className="m10-button primary" onClick={() => { const appId = modal.app.id; setData(d => removeApplication(d, appId)); setModal(null); nav('apps'); }}>移除应用</button></footer></M10Dialog>}
++    {modal?.type === 'disconnect' && <M10Dialog title="断开连接" onClose={() => setModal(null)}><p className="m10-modal-copy">断开“{modal.connection.name}”后，项目不能继续使用该连接。保留非秘密配置、历史记录、草稿及历史包，撤销本地访问和凭据引用。重连同一身份后仍启用的项目可恢复；不会声称远端令牌已撤销。</p><footer><button className="m10-button secondary" onClick={() => setModal(null)}>取消</button><button className="m10-button primary" onClick={() => { updateConnection(modal.connection.id, { validation: 'disconnected', credentialPresent: false }); setModal(null); notify('示例连接已断开。'); }}>断开连接</button></footer></M10Dialog>}
++    {modal?.type === 'remove' && <M10Dialog title="移除应用" onClose={() => setModal(null)}><p className="m10-modal-copy">移除“{modal.app.name}”并关闭各项目对此应用的使用。保留连接配置、凭据、草稿、发送记录及历史会话引用的版本。重新添加后需手动启用项目；永久删除数据另行评审。</p><footer><button className="m10-button secondary" onClick={() => setModal(null)}>取消</button><button className="m10-button primary" onClick={() => { const appId = modal.app.id; setData(d => removeApplication(d, appId)); setModal(null); nav('apps'); }}>移除应用</button></footer></M10Dialog>}
+     {modal?.type === 'transition' && <M10Dialog title="禅道流转 · 候选设计" onClose={() => setModal(null)}><p className="m10-modal-copy">具体动作、必填字段和权限需按企业版13.0逐项确定。当前只展示操作前查看对象与结果核实的设计；不会执行流转。</p><div className="m10-note"><FileText size={18} /><p>{zenTab === 'bug' ? 'Bug' : 'Story'} #{modal.item.id} · 当前{modal.item.state}<br />候选动作：{zenTab === 'bug' ? '解决、关闭、激活' : '变更、关闭、激活'}；不是最终交付清单。</p></div><footer><button className="m10-button primary" onClick={() => setModal(null)}>返回详情</button></footer></M10Dialog>}
+     {modal?.type === 'verify' && <M10Dialog title="核实未知结果" onClose={() => setModal(null)}><p className="m10-modal-copy">保留原操作标识，先核实外部结果。当前示例仅用于查看恢复状态，不会重新提交发送。</p><div className="m10-note"><CircleAlert size={18} /><p>{modal.record.operation}<br />当前结果未知；不能据此判断失败。</p></div><footer><button className="m10-button secondary" onClick={() => setModal(null)}>保留未知</button><button className="m10-button primary" onClick={() => { setData(d => verifyDemoSendAccepted(d, modal.record.id)); setModal(null); notify('已模拟查证结果，未重新发送。'); }}>模拟查证：已接受</button></footer></M10Dialog>}
+     {modal?.type === 'future' && <M10Dialog title="后续应用如何接入" onClose={() => setModal(null)}><div className="m10-modal-copy"><p>共用：应用目录、连接配置、凭据、项目选用、工具调用与记录、错误恢复。</p><p>单独适配：每个系统的认证步骤、对象、接口、参数、权限与业务进度。</p><p>例如 Jenkins 还需处理 Job、构建队列、构建日志和触发结果。它仅在本轮研究，不提供实际连接或构建按钮。</p></div><footer><button className="m10-button primary" onClick={() => setModal(null)}>知道了</button></footer></M10Dialog>}
+diff --git a/prototypes/m6-codex/src/integration-model.mjs b/prototypes/m6-codex/src/integration-model.mjs
+index aa1c130a..8859309e 100644
+--- a/prototypes/m6-codex/src/integration-model.mjs
++++ b/prototypes/m6-codex/src/integration-model.mjs
+@@ -134,7 +134,7 @@ export function toggleProjectApplication(state, projectId, appId, enabled) {
+ export function switchProjectZenTao(state, projectId, connectionId, tasks = []) {
+   const candidate = state.connections.find(c => c.id === connectionId && c.app === 'zentao');
+   if (connectionId && !candidate) return { ok: false, state, reason: '目标连接不存在。' };
+-  let blocked;try{blocked=demoZenTaoRuns(tasks,projectId);}catch(error){return{ok:false,state,reason:error.message};}
++  const blocked = tasks.filter(t => t.project === projectId && t.status === 'running' && (!t.integrationSnapshot || t.integrationSnapshot.packages.some(p => p.id === 'zentao')));
+   if (blocked.length) return { ok: false, state, reason: '先停止相关运行；不会自动重启。', tasks: blocked };
+   return { ok: true, state: { ...state, bindings: { ...state.bindings, [projectId]: [...(state.bindings[projectId] || []).filter(id => !state.connections.some(c => c.id === id && c.app === 'zentao')), ...(connectionId ? [connectionId] : [])] } } };
+ }
+@@ -219,22 +219,3 @@ export function referenceText(type, id, connectionId = type === 'mail' ? 'fox-de
+   const source = encodeURIComponent(connectionId);
+   return type === 'mail' ? `[邮件 mail://${source}/${id}] 请基于这封示例邮件继续分析。` : `[禅道 ${type === 'story' ? 'Story' : 'Bug'} #${id} zentao://${source}/${type}/${id}] 请读取详情并分析。`;
+ }
+-
+-// Synthetic-only scope. Missing snapshots in this prototype are known ordinary
+-// fixtures; an explicitly unknown/corrupt scope must never be treated as empty.
+-export function demoZenTaoRuns(tasks,projectId){
+- return tasks.filter(t=>{
+-  if(t.project!==projectId||!['running','preparing','stopping'].includes(t.status))return false;
+-  if(t.integrationScopeUnknown)throw new Error('无法核验受影响会话的应用范围，已保留原连接选择');
+-  if(!t.integrationSnapshot)return false;
+-  if(!Array.isArray(t.integrationSnapshot.packages))throw new Error('无法核验受影响会话的应用范围，已保留原连接选择');
+-  return t.applicationInjection!=='native-only'&&t.integrationSnapshot.packages.some(p=>p.id==='zentao');
+- });
+-}
+-export function demoApplicationImpact(state,query,projects=[]){
+- const target=query.kind==='disconnect'?state.connections.find(c=>c.id===query.connectionId):null;
+- if(query.kind==='disconnect'&&!target)throw new Error('该示例连接不存在');
+- const appId=target?.app||query.appId||'zentao',connections=state.connections.filter(c=>query.kind==='disconnect'?c.id===query.connectionId:c.app===appId);
+- const ids=[...new Set([...Object.keys(state.bindings),...Object.keys(state.projectApps||{})])].filter(id=>query.kind!=='disconnect'||state.bindings[id]?.includes(query.connectionId));
+- return{kind:query.kind,appId,connections:connections.map(c=>({id:c.id,name:c.name,providerId:c.kind==='local'?'foxmail':c.kind,enabled:c.enabled,authorization:c.validation==='disconnected'?'disconnected':'connected'})),projects:ids.map(id=>({id,name:projects.find(p=>p.id===id)?.name||id,archived:!!projects.find(p=>p.id===id)?.archived,enabled:projectAppEnabled(state,id,appId),connections:(state.bindings[id]||[]).filter(x=>connections.some(c=>c.id===x)).map(x=>({id:x,slot:connections.find(c=>c.id===x).kind}))})),runs:[]};
+-}
+diff --git a/prototypes/m6-codex/src/integration.css b/prototypes/m6-codex/src/integration.css
+index 88d5ced7..fbf8aede 100644
+--- a/prototypes/m6-codex/src/integration.css
++++ b/prototypes/m6-codex/src/integration.css
+@@ -104,5 +104,3 @@
+ .m10-capability-alert > p { line-height: 1.65; margin-block: 8px; }
+ .m10-capability-alert > small { color: var(--muted); overflow-wrap: anywhere; }
+ .m10-capability-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+-
+-.m10-impact h3{font-size:13px;font-weight:500;margin:16px 0 8px}.m10-impact>p{font-size:13px}.m10-impact-list{max-height:180px;overflow:auto;list-style:none;margin:0;padding:0;border:1px solid var(--border);border-radius:10px}.m10-impact-list li{display:flex;flex-direction:column;gap:4px;padding:10px 12px;min-width:0}.m10-impact-list li+li{border-top:1px solid var(--border)}.m10-impact-list strong{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.m10-impact-list small{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+diff --git a/prototypes/m6-codex/tests/integration-model.test.mjs b/prototypes/m6-codex/tests/integration-model.test.mjs
+index 2f704610..a64ece47 100644
+--- a/prototypes/m6-codex/tests/integration-model.test.mjs
++++ b/prototypes/m6-codex/tests/integration-model.test.mjs
+@@ -1,6 +1,6 @@
+ import test from 'node:test';
+ import assert from 'node:assert/strict';
+-import { demoApplicationImpact, demoZenTaoRuns, initialIntegrationState, projectIntegrationState, validateConnection, availableConnections, saveConnection, referenceText, packageVersion, projectPackages, toggleProjectApplication, integrationSnapshot, snapshotCurrent, simulatePackageUpgrade, selectedConnections, switchProjectZenTao, sessionApplicationState, projectAppEnabled, removeApplication, validMailDays, saveDemoDraft, packageRetention, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted } from '../src/integration-model.mjs';
++import { initialIntegrationState, projectIntegrationState, validateConnection, availableConnections, saveConnection, referenceText, packageVersion, projectPackages, toggleProjectApplication, integrationSnapshot, snapshotCurrent, simulatePackageUpgrade, selectedConnections, switchProjectZenTao, sessionApplicationState, projectAppEnabled, removeApplication, validMailDays, saveDemoDraft, packageRetention, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted } from '../src/integration-model.mjs';
+ import { selectProjectMailConnection, sessionCapabilityDiagnostic, recoverSessionCapability, demoDraftSendEligibility, mailSourceDiagnostic } from '../src/integration-model.mjs';
+ 
+ test('projection drops passwords, tokens, unknown apps and dangling project bindings', () => {
+@@ -344,16 +344,3 @@ test('mail reading and SMTP slot revisions change independently and retain a cle
+  assert.equal(demoDraftSendEligibility(reselected,'ais',created.draft).changed,true);
+  assert.ok(reselected.mailSlotRevisions.ais.smtp>created.draft.mailSendSlotRevision);
+ });
+-
+-
+-test('impact lists retain disabled and archived project references without copying connection configuration',()=>{
+- const state=projectIntegrationState(initialIntegrationState());state.projectApps.smartdd.zentao=false;const before=JSON.stringify(state);
+- const impact=demoApplicationImpact(state,{kind:'disconnect',connectionId:'zt-demo'},[{id:'ais',name:'业务项目'},{id:'smartdd',name:'旧项目',archived:true}]);
+- assert.deepEqual(impact.projects.map(p=>[p.id,p.name,p.enabled,p.archived]),[['ais','业务项目',true,false],['smartdd','旧项目',false,true]]);assert.deepEqual(impact.connections.map(c=>Object.keys(c).sort()),[['authorization','enabled','id','name','providerId']]);assert.equal(impact.connections[0].name,'公司禅道');assert.equal(JSON.stringify(impact).includes('demo.user'),false);
+- const removed=demoApplicationImpact(state,{kind:'remove',appId:'mail'},[]);assert.deepEqual(removed.projects.map(p=>p.id),['ais','smartdd']);assert.equal(JSON.stringify(state),before);
+-});
+-test('prototype switch scope excludes known ordinary/no-app/native-only work and refuses explicitly unknown scope',()=>{
+- const state=projectIntegrationState(initialIntegrationState()),snapshot=integrationSnapshot(state,'ais');
+- const tasks=[{id:'ordinary',project:'ais',status:'running'},{id:'empty',project:'ais',status:'running',integrationSnapshot:{packages:[]}},{id:'native',project:'ais',status:'running',applicationInjection:'native-only',integrationSnapshot:snapshot},{id:'loaded',project:'ais',status:'running',integrationSnapshot:snapshot},{id:'foreign',project:'smartdd',status:'running',integrationSnapshot:snapshot}];
+- assert.deepEqual(demoZenTaoRuns(tasks,'ais').map(t=>t.id),['loaded']);assert.equal(switchProjectZenTao(state,'ais',null,tasks.filter(t=>t.id!=='loaded')).ok,true);assert.throws(()=>demoZenTaoRuns([{id:'unknown',project:'ais',status:'running',integrationScopeUnknown:true}],'ais'),/无法核验/);
+-});

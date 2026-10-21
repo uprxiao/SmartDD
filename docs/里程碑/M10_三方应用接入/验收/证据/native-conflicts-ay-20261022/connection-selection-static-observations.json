@@ -1,0 +1,104 @@
+{
+  "at": "2026-10-21T20:48:24.172411+00:00",
+  "baseline": "M10 R1.6 including12.21",
+  "requirementsSha256": "65029b2a55b57597302247475cb03a1743cd8d352b2068d3ad8ccede126d979e",
+  "reviewedFiles": [
+    {
+      "path": "src/main/core/applications/connection-service.ts",
+      "sha256": "fcea5abd4dc33b4291b7aabb40ab66d91e2995dcd38ef73c5f27da7029fee353",
+      "allLinesRead": true
+    },
+    {
+      "path": "src/main/core/applications/selection-service.ts",
+      "sha256": "8f1d14771e0a441ca37bd2c5d7c590fcf37d4196a420c7d18bdb60aa1656ed65",
+      "allLinesRead": true
+    }
+  ],
+  "rows": [
+    {
+      "id": "M10-R01",
+      "requirementLine": 41,
+      "observation": "候选认证与提交CAS分开；秘密只保存引用/加密载体；错误文本受控；并非全部连接UI及实际provider复验",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R02-01",
+      "requirementLine": 199,
+      "observation": "projectSettings按明确slot回读；select schema逐槽单选，不按健康/顺序推断；实际项目权限与状态在调用时检查",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R02-05",
+      "requirementLine": 318,
+      "observation": "项目停用只写当前project/app；保留connection槽；requireApplicationEnabled及policyStamp逐次检查",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R01-01",
+      "requirementLine": 319,
+      "observation": "setEnabled仅更新本连接enabled/policy并保留secret/配置/项目槽；authentication逐次检查",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R01-02",
+      "requirementLine": 320,
+      "observation": "disconnect先事务撤销secret_ref/auth与修订，再依持久journal清理旧secret；共享ref检查/cleanupPending保留",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R01-03",
+      "requirementLine": 321,
+      "observation": "setAdded(false)关闭全部本应用项目授权但不删除连接/包/业务；重新添加不修改原项目enabled=0",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R01-04",
+      "requirementLine": 322,
+      "observation": "候选提交要求原已核验身份hash相同，保留显式连接停用；异身份要求新连接/显式选用；会话/执行层另核对",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R01-05",
+      "requirementLine": 389,
+      "observation": "secret/config/policy独立revision；同身份轮换提交当前secret；authentication不缓存旧secret；服务协议层另验",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    },
+    {
+      "id": "M10-R02-09",
+      "requirementLine": 449,
+      "observation": "邮件foxmail/smtp独立可空槽；异常槽/重复/身份修订拒绝；提交按schema精确遍历，不取第一项；本地draft不依赖外部槽",
+      "reviewState": "partial static implementation observation",
+      "implementationGateComplete": false,
+      "formalAcceptanceComplete": false,
+      "remaining": "provider/business/current scope,affected UI,full required cases checked separately;no final completeness claim from these two services"
+    }
+  ],
+  "softwareStatus": "existing connection/selection regression part of ongoing61-file batch;not prefilled passed",
+  "all87Reviewed": false,
+  "newCodeOrTests": false,
+  "actualAgentOrApp": false
+}

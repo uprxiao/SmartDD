@@ -1,0 +1,1 @@
+初次P09红测0过2失败，先复现缺少明确说明；其Zen副本误沿用了Mail的work-assistant，导致没有既定Zen示例模板。已改用真实zentao:bug-analysis并恢复严格无插入入口断言。保留初次日志；修正fixture后在原生产UI再次红测，然后接同一修复。没有改预期业务要求。
