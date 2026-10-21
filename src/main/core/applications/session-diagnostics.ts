@@ -67,8 +67,9 @@ export class ApplicationSessionDiagnostics {
  }
  inspect(taskId:string):Promise<ApplicationSessionDiagnostic>{id.parse(taskId);return withResourceLock(this.store.root,()=>{
   const db=this.store.sqlite,task=db.prepare('SELECT id,project_id,title,runner,CASE WHEN native_session_id IS NOT NULL OR runtime_snapshot IS NOT NULL THEN 1 ELSE 0 END AS has_history FROM tasks WHERE id=?').get(taskId) as {id:string;project_id:string|null;title:string;runner:string;has_history:number}|undefined;if(!task)throw new ApplicationError('NOT_FOUND','该任务已删除，不能把其他会话当作原任务');
-  const row=db.prepare('SELECT schema_version,snapshot_hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string}|undefined;
+  const row=db.prepare('SELECT schema_version,snapshot_hash,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;legacy_status:string}|undefined;
   let session:StoredCapabilitySession|null=null,selection:ApplicationSessionDiagnostic['selection']=row||task.has_history?'unknown-history':'not-recorded';const issues:string[]=[];
+  if(row&&row.schema_version!==2&&!(row.schema_version===0&&row.legacy_status==='history-unknown')){selection=row.schema_version===0?'corrupt':'unsupported-schema';issues.push(row.schema_version===0?'SNAPSHOT_CORRUPT':'HOST_INCOMPATIBLE');}
   if(row?.schema_version===2)try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(task.runner==='claude'?'claude-code':'codex'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}
   // Find the owned terminal independently of wall-clock order. A clock rollback
   // must not let future-dated history hide the live run or reuse its call counts.

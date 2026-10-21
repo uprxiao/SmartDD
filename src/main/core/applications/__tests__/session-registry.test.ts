@@ -58,6 +58,18 @@ beforeEach(async () => {
 afterEach(() => { sqlite.close(); rmSync(root,{ recursive: true,force: true }); });
 const refRows = (taskId: string) => sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId);
 describe('fixed capability selection, native identity and authoritative snapshot mirrors', () => {
+  it.each(['bad-json','unknown-schema','bad-hash','cross-project'] as const)('T63 parses and preserves %s without selecting current defaults or exposing stored content',async kind=>{
+    const original=await sessions.create(plan(),home),taskId=original.snapshot.taskId,canary='M10_T63_SYNTHETIC_PRIVATE_FIELD',refs=refRows(taskId),beforeMirror=readFileSync(join(store.root,'sessions',taskId,'snapshot.json'));
+    let bytes=canonicalJson(original.snapshot),hash=original.pointer.snapshotHash,schema=2;
+    if(kind==='bad-json')bytes='{ "private":"'+canary+'",';
+    if(kind==='unknown-schema'){schema=999;bytes=JSON.stringify({...original.snapshot,schema:999,private:canary});hash=digest(bytes);}
+    if(kind==='bad-hash')hash='f'.repeat(64);
+    if(kind==='cross-project'){bytes=canonicalJson({...original.snapshot,projectId:'another-project'});hash=digest(bytes);}
+    sqlite.prepare('UPDATE capability_session_snapshots SET schema_version=?,snapshot_json=?,snapshot_hash=? WHERE task_id=?').run(schema,bytes,hash,taskId);
+    let failure:unknown;try{await sessions.get(taskId);}catch(error){failure=error;}expect(failure).toMatchObject({code:kind==='unknown-schema'?'HOST_INCOMPATIBLE':'SNAPSHOT_CORRUPT'});expect(String(failure)).not.toContain(canary);expect(String(failure)).not.toContain(bytes);expect(String(failure)).toMatch(kind==='unknown-schema'?/格式暂不支持/:kind==='bad-json'?/无法解析/:kind==='bad-hash'?/摘要不符/:/身份不符/);expect(sessions.hasUnresolvedHistory()).toBe(true);
+    expect(sqlite.prepare('SELECT snapshot_json,snapshot_hash FROM capability_session_snapshots WHERE task_id=?').get(taskId)).toEqual({snapshot_json:bytes,snapshot_hash:hash});expect(refRows(taskId)).toEqual(refs);expect(readFileSync(join(store.root,'sessions',taskId,'snapshot.json'))).toEqual(beforeMirror);expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_snapshot_versions WHERE task_id=?').get(taskId)).toEqual({n:1});
+  });
+
   it('commits complete source references and MCP identities with one selection and verifies actual bytes', async () => {
     const input = plan(), saved = await sessions.create(input,home);
     expect(saved.snapshot).toEqual(input); expect(saved.pointer.snapshotHash).toBe(digest(canonicalJson(input))); expect(refRows(input.taskId)).toHaveLength(5); await sessions.verifyResources(input.taskId);

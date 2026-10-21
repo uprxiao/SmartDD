@@ -11,6 +11,8 @@ import { withResourceLock } from './resource-lock';
 import { PackageRegistry } from './package-registry';
 import { RuntimeRegistry } from './runtime-registry';
 import {assertLegacySessionSource} from './legacy-session-source';
+const snapshotFailureMessages={json:'固定能力快照无法解析，保留原记录，不重建选择',shape:'固定能力快照结构无效，保留原记录，不重建选择',hash:'固定能力快照摘要不符，保留原记录，不重建选择',identity:'固定能力快照身份不符，保留原记录，不重建选择'} as const;
+class SnapshotReadFailure extends Error {constructor(readonly kind:keyof typeof snapshotFailureMessages){super(kind);}}
 interface SnapshotRow { task_id: string;schema_version: number;snapshot_json: string;snapshot_hash: string;created_at: string;legacy_status: string;retention_state: 'active' | 'tombstone' | 'hold' }
 interface IdentityRow { task_id: string;runner: string;identity_root: string;session_id: string | null;cwd: string;discovery_home: string;selection_hash: string }
 export interface SessionRegistryDeps {
@@ -70,10 +72,14 @@ export class CapabilitySessionRegistry {
   private read(taskId: string): StoredCapabilitySession {
     const row = this.store.sqlite.prepare(SELECT).get(taskId) as SnapshotRow | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND','此任务尚无能力快照');
-    if (row.schema_version !== 2) throw new ApplicationError('SESSION_ON_HOLD','历史能力未知，不能自动补入当前应用');
+    if(row.schema_version===0){if(row.legacy_status==='history-unknown')throw new ApplicationError('SESSION_ON_HOLD','历史能力未知，不能自动补入当前应用');throw new ApplicationError('SNAPSHOT_CORRUPT','已记录的能力快照损坏，保留原记录，不重建选择');}
+    if(row.schema_version!==2)throw new ApplicationError('HOST_INCOMPATIBLE','原能力快照格式暂不支持，请使用兼容的 WillYou 版本；原记录已保留');
     try {
-      const snapshot = capabilitySessionSnapshotSchema.parse(JSON.parse(row.snapshot_json)), identity = this.store.sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId) as IdentityRow | undefined;
-      if (snapshot.taskId !== taskId || digest(canonicalJson(snapshot)) !== row.snapshot_hash || !identity || identity.runner !== snapshot.runner || identity.session_id !== snapshot.native.sessionId || identity.cwd !== snapshot.native.cwd || identity.selection_hash !== selectionHash(snapshot)) throw new Error('snapshot integrity');
+      let decoded:unknown;try{decoded=JSON.parse(row.snapshot_json);}catch{throw new SnapshotReadFailure('json');}
+      const parsed=capabilitySessionSnapshotSchema.safeParse(decoded);if(!parsed.success)throw new SnapshotReadFailure('shape');
+      const snapshot=parsed.data,identity=this.store.sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId) as IdentityRow|undefined;
+      if(digest(canonicalJson(snapshot))!==row.snapshot_hash)throw new SnapshotReadFailure('hash');
+      if(snapshot.taskId!==taskId||!identity||identity.runner!==snapshot.runner||identity.session_id!==snapshot.native.sessionId||identity.cwd!==snapshot.native.cwd||identity.selection_hash!==selectionHash(snapshot))throw new SnapshotReadFailure('identity');
       if(snapshot.legacyBinding&&identity.discovery_home!==assertLegacySessionSource(this.store,snapshot).identity.home)throw new Error('legacy discovery identity');
       const actual = this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId) as SessionResourceReference[];
       const expected = this.expectedSources(snapshot);
@@ -86,6 +92,7 @@ export class CapabilitySessionRegistry {
       if (canonicalJson(names) !== canonicalJson(snapshot.mcp.map(m => ({ serverName: m.serverName,kind: m.kind })).sort((a,b) => compareCodePoints(a.kind,b.kind)))) throw new Error('MCP identity integrity');
       return { snapshot,pointer: { schema: 2,taskId,snapshotHash: row.snapshot_hash },selectionHash: identity.selection_hash,discoveryHome: identity.discovery_home,retention: row.retention_state,legacyStatus: row.legacy_status };
     } catch (error) {
+      if(error instanceof SnapshotReadFailure)throw new ApplicationError('SNAPSHOT_CORRUPT',snapshotFailureMessages[error.kind]);
       if (error instanceof ApplicationError && ['RESOURCE_STATE_CHANGED','OWNERSHIP_CONFLICT'].includes(error.code)) throw error;
       throw new ApplicationError('SNAPSHOT_CORRUPT','固定能力快照、引用或原生身份损坏，保留现场不重建选择');
     }

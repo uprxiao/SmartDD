@@ -127,6 +127,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const catalog=this.catalog(input.home);let current:StoredCapabilitySession;
     if(input.previous?.sessionCapabilities){
       const pointer=input.previous.sessionCapabilities;if(pointer.taskId!==input.taskId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针不属于当前会话');current=await this.sessions.get(input.taskId);
+      if(current.snapshot.projectId!==input.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务项目与原固定快照身份不符，保留原记录且不恢复应用能力');
       if(current.pointer.snapshotHash!==pointer.snapshotHash)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针与原会话快照不同');
       await this.sessions.verifyNativeIdentity(input.taskId,{runner:input.profile.runner==='claude'?'claude-code':'codex',stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
     }else{

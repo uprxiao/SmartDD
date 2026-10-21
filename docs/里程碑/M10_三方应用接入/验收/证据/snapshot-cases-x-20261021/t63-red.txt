@@ -1,0 +1,77 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-registry.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'T63 '
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (48 tests | 2 failed | 43 skipped) 2362ms
+     × T63 refuses unknown-schema resume and keeps history,diagnostics and original source identities 402ms
+     × T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities 452ms
+ ❯ src/main/core/applications/__tests__/session-registry.test.ts (21 tests | 1 failed | 17 skipped) 274ms
+     × T63 parses and preserves unknown-schema without selecting current defaults or exposing stored content 55ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/session-registry.test.ts > fixed capability selection, native identity and authoritative snapshot mirrors > T63 parses and preserves unknown-schema without selecting current defaults or exposing stored content
+AssertionError: expected ApplicationError: 历史能力未知，不能自动补入当前应用 { code: '…' } to match object { code: 'HOST_INCOMPATIBLE' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "HOST_INCOMPATIBLE",
++ ApplicationError {
++   "code": "SESSION_ON_HOLD",
+  }
+
+ ❯ src/main/core/applications/__tests__/session-registry.test.ts:69:101
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T63 refuses unknown-schema resume and keeps history,diagnostics and original source identities
+AssertionError: expected ApplicationError: 历史能力未知，不能自动补入当前应用 { code: '…' } to match object { code: 'HOST_INCOMPATIBLE' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "HOST_INCOMPATIBLE",
++ ApplicationError {
++   "code": "SESSION_ON_HOLD",
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:66:207
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities
+Error: 目录已属于项目「isolated production composition」：/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-87I28J/project
+ ❯ ProjectService.assertPathFree src/main/core/projects/project-service.ts:443:13
+    441|       if (r.projectId !== projectId && r.archivedAt != null) continue;
+    442|       if (pathIdentity(r.path) !== identity) continue;
+    443|       throw new Error(
+       |             ^
+    444|         r.projectId === projectId ? `该项目已登记此目录：${r.path}` : `目录已属于项目「$…
+    445|       );
+ ❯ ProjectService.insertDir src/main/core/projects/project-service.ts:414:10
+ ❯ sqliteTransaction.<anonymous> src/main/core/projects/project-service.ts:121:40
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ BetterSQLiteSession.transaction node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/src/better-sqlite3/session.ts:68:49
+ ❯ BaseSQLiteDatabase.transaction node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/src/sqlite-core/db.ts:572:22
+ ❯ ProjectService.createProject src/main/core/projects/project-service.ts:115:13
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:64:56
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 6 passed | 60 skipped (69)
+   Start at  09:46:15
+   Duration  3.64s (transform 512ms, setup 0ms, import 855ms, tests 2.64s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

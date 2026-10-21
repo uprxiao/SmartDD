@@ -25,7 +25,7 @@ export interface SessionApplicationDiagnostic {
  evidence:{skillDiscovery:'unverified';skillRead:'unverified';toolRequests:number;successfulToolRequests:number;latestToolAt:string|null;latestErrorCode:string|null;latestEffectState:string|null};
 }
 export interface ApplicationSessionDiagnostic {
- taskId:string;projectId:string|null;title:string;runner:string;selection:'fixed'|'unknown-history'|'corrupt'|'not-recorded';
+ taskId:string;projectId:string|null;title:string;runner:string;selection:'fixed'|'unknown-history'|'unsupported-schema'|'corrupt'|'not-recorded';
  snapshotHash:string|null;agentState:'running'|'stopped'|'unverified';canNewSession:boolean;createdCliVersion:string|null;currentRun:SessionRunDiagnostic|null;recentRuns:SessionRunDiagnostic[];
  applications:SessionApplicationDiagnostic[];issues:string[];checkedAt:string;
 }

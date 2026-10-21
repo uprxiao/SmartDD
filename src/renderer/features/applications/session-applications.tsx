@@ -18,7 +18,7 @@ export function SessionApplicationsPanel({taskId,onClose,runIdentity=''}:{taskId
  return <AppDialog title="会话应用" wide onClose={onClose}><div className="m10-session-applications" data-testid="session-applications">
  {query.isPending?<AppEmpty loading title="正在核对原会话" text="读取固定版本、本次运行与独立证据。"/>:query.error?<AppEmpty error title="会话诊断未完成" text={query.error.message} action="重试读取" onAction={()=>void query.refetch()}/>:value&&<>
  <h3>{value.title}</h3><p>Agent 终端：{value.agentState==='running'?'运行中':value.agentState==='stopped'?'已停止':'状态未核实'}</p><p className="m10-muted">固定版本与当前使用条件分别展示。应用不可用时，Agent 可以继续工作。</p>
- {value.selection!=='fixed'&&<p className="m10-note" role="status">{value.selection==='corrupt'?'固定能力快照损坏，保留原记录等待核查。':value.selection==='unknown-history'?'历史能力未知，不自动补入当前应用。':'本任务尚无已记录的固定能力。'}查看当前项目可用版本不表示本会话已选用。</p>}
+ {value.selection!=='fixed'&&<p className="m10-note" role="status">{value.selection==='corrupt'?'固定能力快照损坏，保留原记录等待核查。':value.selection==='unsupported-schema'?'原能力快照格式暂不支持，请使用兼容版本。原记录已保留，不自动迁移或替换。':value.selection==='unknown-history'?'历史能力未知，不自动补入当前应用。':'本任务尚无已记录的固定能力。'}查看当前项目可用版本不表示本会话已选用。</p>}
  {!!value.issues.length&&<p className="m10-note" role="alert">{value.issues.join('、')} · 请核对原资源；本页不会换版、启动或重启 Agent。</p>}
  {value.currentRun?<section aria-label="当前运行证据"><h3>当前运行证据</h3><RunEvidence run={value.currentRun}/></section>:<p className="m10-note">当前没有可核实的应用运行证据。历史证据不作为当前加载或使用结果。</p>}
  {!value.applications.length&&<p>本会话未选用应用；项目当前也没有启用应用。</p>}
