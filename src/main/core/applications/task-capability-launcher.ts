@@ -63,7 +63,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const store=support.store;this.legacyRetention=new LegacyTaskRetention(store);this.processes=options.processes??new MacProcessIdentityReader(options.helper);
     this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:snapshot=>this.assertInitialSelection(snapshot),verifyExtraResource:(resource,snapshot)=>{
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
-      else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
+      else if(['session-projection','claude-projection-source','claude-projection-archive'].includes(resource.kind))this.projector.verify(resource,snapshot);
       else if(resource.kind==='agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原生发现根缺失');this.catalog(identity.home).verifyReference(resource,snapshot);}
       else if(resource.kind==='legacy-agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现根缺失');new LegacyOriginalCodex(store,this.catalog(identity.home)).verify(resource,snapshot);}
       else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);
@@ -81,7 +81,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId)});
     applications.sessionDiagnostics.attach({channelConnected:id=>this.broker.hasAuthenticated(id),verify:(resource,snapshot,home)=>{
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
-      else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
+      else if(['session-projection','claude-projection-source','claude-projection-archive'].includes(resource.kind))this.projector.verify(resource,snapshot);
       else if(resource.kind==='agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');catalog.verifyReference(resource,snapshot);}
       else if(resource.kind==='legacy-agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');new LegacyOriginalCodex(store,catalog).verify(resource,snapshot);}
       else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);

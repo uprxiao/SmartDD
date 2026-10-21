@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parseDocument } from 'yaml';
+import {z} from 'zod';
 import { ApplicationError } from '@shared/applications';
 import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import { verifyPackageTree } from './package-files';
 import { PackageRegistry } from './package-registry';
 import { LegacyCapabilityResourceAdopter } from './legacy-resource-adopter';
-import { ownedBundle, writeOwnedBundle, verifyOwnedBundle } from './owned-bundle';
+import { ownedBundle, writeOwnedBundle, verifyOwnedBundle,type OwnedBundle,type OwnedBundleManifest } from './owned-bundle';
 import type { ResourceRecord, ResourceStore } from './resource-store';
 import type { CapabilitySessionRegistry } from './session-registry';
 export const standardNativeSkillName = (skillId: string,hash: string): string => {
@@ -22,6 +23,8 @@ export function projectSkillName(input: Buffer,name: string): Buffer {
   if (doc.errors.length || typeof doc.get('name') !== 'string' || typeof doc.get('description') !== 'string') throw new ApplicationError('INVALID_PACKAGE','Skill元数据无效');
   doc.set('name',name); return Buffer.from('---\n' + doc.toString() + '---\n' + text.slice(front[0].length),'utf8');
 }
+const claudeMetadataSchema=z.object({kind:z.literal('claude-session-projection'),taskId:z.string().min(1).max(128),selectionHash:z.string().regex(/^[a-f0-9]{64}$/),formatVersion:z.literal(1),sources:z.array(z.object({resourceId:z.string().min(1).max(512),sourceHash:z.string().regex(/^[a-f0-9]{64}$/),nativeName:z.string().min(1).max(64)}).strict()).max(4096)}).strict();
+export type ClaudeProjectionSource={role:'view'|'archive';resource:ResourceRecord;bundle:OwnedBundle;applicationScope:readonly string[]};
 /** Full source trees are copied; relative scripts/references/assets remain alongside SKILL.md. */
 export class SessionCapabilityProjector {
   private readonly packages: PackageRegistry;
@@ -49,20 +52,73 @@ export class SessionCapabilityProjector {
     }
     if (new Set(result.map(s => s.nativeName)).size !== result.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','所选Skill原生名称冲突'); return result;
   }
-  async claude(taskId: string): Promise<{ resource: ResourceRecord;root: string }> {
-    const current = await this.sessions.get(taskId), snapshot = current.snapshot;
-    if (snapshot.runner !== 'claude-code' || snapshot.provenance !== 'created') throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此投影入口只处理有新会话依据的Claude能力；旧历史不猜测重建');
-    const relativePath = `sessions/${taskId}/claude/plugin`, root = join(this.store.root,relativePath), skills = this.sourceSkills(snapshot), files: Record<string,Buffer> = {},executables = new Set<string>();
-    files['.claude-plugin/plugin.json'] = Buffer.from(JSON.stringify({ name: 'smartdd-session',version: '1.0.0',description: 'WillYou session capabilities' },null,2) + '\n');
-    for (const skill of skills) {
-      if (skill.path !== join(root,'skills',skill.nativeName,'SKILL.md')) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Skill投影路径不等于原快照');
-      for (const [path,bytes] of Object.entries(skill.files)) { const target = `skills/${skill.nativeName}/${path}`; files[target] = bytes; if (skill.executables.has(path)) executables.add(target); }
+  private claudeBundle(snapshot:CapabilitySessionSnapshotV2,selectionHash:string,applicationScope?:readonly string[]):OwnedBundle{
+    if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此投影入口只处理有新会话依据的Claude能力；旧历史不猜测重建');
+    const root=join(this.store.root,'sessions',snapshot.taskId,'claude/plugin'),skills=this.sourceSkills(snapshot,applicationScope),files:Record<string,Buffer>={},executables=new Set<string>();
+    files['.claude-plugin/plugin.json']=Buffer.from(JSON.stringify({name:'smartdd-session',version:'1.0.0',description:'WillYou session capabilities'},null,2)+'\n');
+    for(const skill of skills){
+      if(skill.path!==join(root,'skills',skill.nativeName,'SKILL.md'))throw new ApplicationError('SNAPSHOT_IMMUTABLE','Skill投影路径不等于原快照');
+      for(const[path,bytes]of Object.entries(skill.files)){const target=`skills/${skill.nativeName}/${path}`;files[target]=bytes;if(skill.executables.has(path))executables.add(target);}
     }
-    const bundle = ownedBundle({ kind: 'claude-session-projection',taskId,selectionHash: current.selectionHash,formatVersion: 1,sources: skills.map(s => ({ resourceId: s.sourceResourceId,sourceHash: s.sourceHash,nativeName: s.nativeName })) },files,executables);
-    const resource = await this.store.publish({ resourceId: `session-projection:${taskId}:${bundle.hash}`,kind: 'session-projection',contentHash: bundle.hash,relativePath,dependencies: [...new Set(skills.map(s => s.sourceResourceId))],materialize: stage => writeOwnedBundle(stage,bundle,this.store.storeId),verify: directory => { verifyOwnedBundle(directory,bundle.hash,this.store.storeId); } });
-    await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId); return { resource,root };
+    return ownedBundle({kind:'claude-session-projection',taskId:snapshot.taskId,selectionHash,formatVersion:1,sources:skills.map(s=>({resourceId:s.sourceResourceId,sourceHash:s.sourceHash,nativeName:s.nativeName}))},files,executables);
+  }
+  /** Verify a complete view against the full original S;never infer a new selection. */
+  private claudeScope(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshotV2,requireFull=false):string[]{
+    if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原Claude来源类型不支持此投影');
+    const parsed=claudeMetadataSchema.safeParse(manifest.metadata),selected=digest(canonicalJson({...snapshot,native:{...snapshot.native,sessionId:null}}));
+    if(!parsed.success||parsed.data.taskId!==snapshot.taskId||parsed.data.selectionHash!==selected)throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影来源不属于完整原选择');
+    const metadata=parsed.data,appSources=(p:CapabilitySessionSnapshotV2['packages'][number])=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}));
+    const scope=snapshot.packages.filter(p=>appSources(p).some(source=>metadata.sources.some(s=>canonicalJson(s)===canonicalJson(source)))).map(p=>p.appId);
+    const expected=[...snapshot.packages.filter(p=>scope.includes(p.appId)).flatMap(appSources),...snapshot.standardSkills.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:standardNativeSkillName(s.skillId,s.hash)}))];
+    if(canonicalJson(metadata.sources)!==canonicalJson(expected)||(requireFull&&scope.length!==snapshot.packages.length))throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影必须包含本轮应用的完整原Skill及全部原标准Skill');
+    const names=expected.map(s=>s.nativeName);if(new Set(names).size!==names.length||manifest.files.some(f=>f.path!=='.claude-plugin/plugin.json'&&!names.some(name=>f.path.startsWith(`skills/${name}/`)))||names.some(name=>!manifest.files.some(f=>f.path===`skills/${name}/SKILL.md`)))throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影来源目录或原名称不完整');
+    return scope;
+  }
+  private sourceIdentity(taskId:string,hash:string,archive=false){const kind=archive?'claude-projection-archive':'claude-projection-source';return{kind,resourceId:`${kind}:${taskId}:${hash}`,relativePath:`projection-sources/claude/${taskId}/${archive?'archives':'views'}/${hash}`};}
+  /** Immutable depot only;this does not publish or activate the native plugin root. */
+  async claudeSource(taskId:string,applicationScope?:readonly string[]):Promise<ClaudeProjectionSource>{
+    const current=await this.sessions.get(taskId),bundle=this.claudeBundle(current.snapshot,current.selectionHash,applicationScope),scope=this.claudeScope(bundle.manifest,current.snapshot),identity=this.sourceIdentity(taskId,bundle.hash);
+    const dependencies=[...new Set((bundle.manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))];
+    const resource=await this.store.publish({...identity,contentHash:bundle.hash,dependencies,materialize:stage=>writeOwnedBundle(stage,bundle,this.store.storeId),verify:directory=>{this.claudeScope(verifyOwnedBundle(directory,bundle.hash,this.store.storeId),current.snapshot);}});
+    await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{role:'view',resource,bundle,applicationScope:Object.freeze(scope)};
+  }
+  /** Preserve verified original full bytes even if their source packages are now
+   * unavailable.Archives carry no execution dependency or native-loading grant. */
+  async archiveClaude(taskId:string,resourceId:string):Promise<ClaudeProjectionSource>{
+    const current=await this.sessions.get(taskId),original=this.store.get(resourceId),refs=await this.sessions.references(taskId);
+    if(!refs.some(r=>r.refId===resourceId)||original.kind!=='session-projection')throw new ApplicationError('SCOPE_DENIED','只归档原会话已登记的完整插件');
+    this.verify(original,current.snapshot);const root=this.store.directory(original),manifest=verifyOwnedBundle(root,original.contentHash,this.store.storeId),scope=this.claudeScope(manifest,current.snapshot,true),files:Record<string,Buffer>={},executables=new Set<string>();
+    for(const file of manifest.files){const bytes=readFileSync(join(root,file.path));if(bytes.length!==file.size||digest(bytes)!==file.sha256)throw new ApplicationError('HASH_MISMATCH','原插件在归档读取时已变化');files[file.path]=bytes;if(file.executable)executables.add(file.path);}
+    const bundle=ownedBundle(manifest.metadata,files,executables);if(bundle.hash!==original.contentHash)throw new ApplicationError('HASH_MISMATCH','原插件归档字节与原身份不同');verifyOwnedBundle(root,original.contentHash,this.store.storeId);
+    const identity=this.sourceIdentity(taskId,bundle.hash,true),resource=await this.store.publish({...identity,contentHash:bundle.hash,dependencies:[],materialize:stage=>writeOwnedBundle(stage,bundle,this.store.storeId),verify:directory=>{this.claudeScope(verifyOwnedBundle(directory,bundle.hash,this.store.storeId),current.snapshot,true);}});
+    await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{role:'archive',resource,bundle,applicationScope:Object.freeze(scope)};
+  }
+  /** Read verified static depot bytes.This is not a canonical-root lease or a
+   * native loading receipt;the delivery coordinator must obtain those separately. */
+  async readClaudeArtifact(taskId:string,resourceId:string):Promise<ClaudeProjectionSource>{
+    const current=await this.sessions.get(taskId),resource=this.store.get(resourceId),refs=await this.sessions.references(taskId);
+    if(!['claude-projection-source','claude-projection-archive'].includes(resource.kind)||!refs.some(r=>r.refId===resourceId))throw new ApplicationError('SCOPE_DENIED','来源必须是此原会话已登记的静态副本');
+    this.verify(resource,current.snapshot);const root=this.store.directory(resource),manifest=verifyOwnedBundle(root,resource.contentHash,this.store.storeId),files:Record<string,Buffer>={},executables=new Set<string>();
+    for(const file of manifest.files){const bytes=readFileSync(join(root,file.path));if(bytes.length!==file.size||digest(bytes)!==file.sha256)throw new ApplicationError('HASH_MISMATCH','投影来源在读取时已变化');files[file.path]=bytes;if(file.executable)executables.add(file.path);}
+    const bundle=ownedBundle(manifest.metadata,files,executables);if(bundle.hash!==resource.contentHash)throw new ApplicationError('HASH_MISMATCH','静态副本与原内容身份不同');this.verify(resource,current.snapshot);
+    if(canonicalJson(this.store.get(resourceId))!==canonicalJson(resource))throw new ApplicationError('RESOURCE_STATE_CHANGED','读取期间静态副本登记已变化');
+    const archive=resource.kind==='claude-projection-archive';return{role:archive?'archive':'view',resource,bundle,applicationScope:Object.freeze(this.claudeScope(manifest,current.snapshot,archive))};
+  }
+  async claude(taskId: string): Promise<{ resource: ResourceRecord;root: string }> {
+    const current=await this.sessions.get(taskId),bundle=this.claudeBundle(current.snapshot,current.selectionHash),relativePath=`sessions/${taskId}/claude/plugin`,root=join(this.store.root,relativePath);
+    const resource=await this.store.publish({resourceId:`session-projection:${taskId}:${bundle.hash}`,kind:'session-projection',contentHash:bundle.hash,relativePath,dependencies:[...new Set((bundle.manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))],materialize:stage=>writeOwnedBundle(stage,bundle,this.store.storeId),verify:directory=>{verifyOwnedBundle(directory,bundle.hash,this.store.storeId);}});
+    await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{resource,root};
   }
   verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void {
+    if(['claude-projection-source','claude-projection-archive'].includes(resource.kind)){
+      const archive=resource.kind==='claude-projection-archive',identity=this.sourceIdentity(snapshot.taskId,resource.contentHash,archive);
+      if(resource.pathScope!=='C'||resource.state!=='ready'||resource.integrity!=='valid'||resource.resourceId!==identity.resourceId||resource.relativePath!==identity.relativePath)throw new ApplicationError('OWNERSHIP_CONFLICT','Claude来源归属或就绪身份不同');
+      const manifest=verifyOwnedBundle(this.store.directory(resource),resource.contentHash,this.store.storeId);this.claudeScope(manifest,snapshot,archive);
+      const expected=archive?[]:[...new Set((manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))].sort(),actual=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
+      if(canonicalJson(actual)!==canonicalJson(expected))throw new ApplicationError('RESOURCE_STATE_CHANGED','Claude来源的完整依赖已改变');
+      if(archive){const original=this.store.get(`session-projection:${snapshot.taskId}:${resource.contentHash}`),ref=this.store.sqlite.prepare("SELECT 1 FROM capability_session_refs WHERE task_id=? AND ref_id=? AND ref_kind='session-projection' AND ref_hash=?").get(snapshot.taskId,original.resourceId,resource.contentHash);if(!ref||original.kind!=='session-projection'||original.pathScope!=='C'||original.relativePath!==`sessions/${snapshot.taskId}/claude/plugin`)throw new ApplicationError('SNAPSHOT_IMMUTABLE','归档缺少原完整插件引用');}
+      return;
+    }
     if (resource.kind !== 'session-projection' || resource.state !== 'ready' || resource.integrity !== 'valid' || resource.relativePath !== `sessions/${snapshot.taskId}/claude/plugin`) throw new ApplicationError('OWNERSHIP_CONFLICT','投影不属于此原会话');
     const manifest = verifyOwnedBundle(join(this.store.root,resource.relativePath),resource.contentHash,this.store.storeId), selectionHash = digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
     if (manifest.metadata.taskId !== snapshot.taskId || manifest.metadata.selectionHash !== selectionHash || manifest.metadata.kind !== 'claude-session-projection') throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影绑定的选择不同，不能覆盖原路径');
