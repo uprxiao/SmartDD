@@ -47,11 +47,11 @@ export class ClaudeDeliveryCoordinator{
   if(!this.sameOwner(p.activeOwner,this.owner)||!this.operations.has(p.id)){if(p.participants.length>=64)throw recovery();const leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-install',p.id,this.owner);p.participants.push({owner:this.owner,leaseId});p.activeOwner=this.owner;writeClaudeSlot(this.store,slot);this.operations.add(p.id);}
  }
  private preparation(slot:ClaudeSlot):ClaudeDeliveryToken{const v=slot.current!;if(!v||slot.pending||slot.preparation)throw recovery();const id=randomUUID(),leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-preparation',id,this.owner);slot.preparation={id,leaseId,owner:this.owner,revision:slot.revision};writeClaudeSlot(this.store,slot);this.preparations.add(id);return{schema:2,taskId:slot.taskId,preparationId:id,leaseId,revision:slot.revision,resourceId:v.resourceId,hash:v.hash,generation:v.generation,appIds:[...v.appIds]};}
- async prepare(taskId:string,appIds:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,appIds,false);}
- async prepareIndependent(taskId:string):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,[],true);}
- private async prepareSelection(taskId:string,appIds:readonly string[],independent:boolean):Promise<ClaudeDeliveryToken>{
+ async prepare(taskId:string,appIds:readonly string[],standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,appIds,false,standardSkillScope);}
+ async prepareIndependent(taskId:string,standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,[],true,standardSkillScope);}
+ private async prepareSelection(taskId:string,appIds:readonly string[],independent:boolean,standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{
   if(readClaudeSlot(this.store,taskId)?.pending){const recovered=await this.recover(taskId);if(recovered)await this.cancel(recovered);}
-  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds,independent);if(!source.applicationScope.length&&!independent)throw recovery();
+  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds,independent,standardSkillScope);if(!source.applicationScope.length&&!independent)throw recovery();
   const relative=claudeRoot(taskId),root=join(this.store.root,relative);let archiveId:string|null=null;
   // Before the first canonical change, preserve the actual registered complete
   // original tree.Archive creation never guesses a missing original body.

@@ -1,8 +1,9 @@
+import {claudeProjectionSelection} from './claude-projection-selection';
 import {randomUUID} from 'node:crypto';
 import {claudeRunDeliverySchema} from '@shared/claude-delivery';
 export type {ClaudeRunDelivery} from '@shared/claude-delivery';
 import type {ClaudeRunDelivery} from '@shared/claude-delivery';
-import {basename,dirname,join} from 'node:path';
+import {join} from 'node:path';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
@@ -65,9 +66,9 @@ export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord
  const source=store.get(v.sourceId),deps=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
  if(source.kind!=='claude-projection-source'||source.contentHash!==v.hash||source.state!=='ready'||source.integrity!=='valid'||canonicalJson(deps)!==canonicalJson([v.sourceId]))throw fail();
  verifyOwnedBundle(store.directory(source),v.hash,store.storeId);
- const manifest=verifyOwnedBundle(store.directory(resource),v.hash,store.storeId),metadata=manifest.metadata;
- const expected=[...snapshot.packages.filter(p=>v.appIds.includes(p.appId)).flatMap(p=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}))),...snapshot.standardSkills.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:basename(dirname(s.projectionPath))}))];
- if(metadata.kind!=='claude-session-projection'||metadata.taskId!==snapshot.taskId||metadata.selectionHash!==slot.selectionHash||canonicalJson(metadata.sources)!==canonicalJson(expected)||v.appIds.some(id=>!snapshot.packages.some(p=>p.appId===id)))throw fail();
+ const manifest=verifyOwnedBundle(store.directory(resource),v.hash,store.storeId);
+ const selected=claudeProjectionSelection(manifest,snapshot);
+ if(canonicalJson(selected.appIds)!==canonicalJson(v.appIds)||canonicalJson(verifyOwnedBundle(store.directory(source),v.hash,store.storeId))!==canonicalJson(manifest))throw fail();
  return slot;
 }
 export function assertClaudeReservation(store:ResourceStore,taskId:string,token?:ClaudeDeliveryToken):void{

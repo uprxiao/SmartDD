@@ -1,3 +1,4 @@
+import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
 import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-state';
 import { createRequire } from 'node:module';
 import { basename, dirname, join, relative } from 'node:path';
@@ -48,12 +49,15 @@ export class AgentAdapterRegistry {
     if(input.claudeDelivery&&snapshot.runner!=='claude-code')throw new ApplicationError('INVALID_INPUT','原目录交付依据只适用于Claude');
     if(input.claudeDelivery&&(!input.pluginRoot||!input.pluginHash||input.claudeDelivery.taskId!==snapshot.taskId))throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude原目录交付必须包含原任务的实际插件路径及hash');
     if(input.applicationScope&&((snapshot.runner!=='codex'&&!input.claudeDelivery)||snapshot.legacyBinding||new Set(input.applicationScope).size!==input.applicationScope.length||applications.length!==input.applicationScope.length))throw new ApplicationError('INVALID_INPUT','本轮应用加载范围须来自原固定选择且由受支持适配器处理');
-    const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...snapshot.standardSkills.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
+    const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
+    if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
+    const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...standards.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
       if (input.pluginRoot !== expected || !input.pluginHash || allSkills.some(s => !within(join(expected,'skills'),s.path))) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude必须沿用原会话稳定插件路径');
       if(input.claudeDelivery){if(!input.applicationScope||canonicalJson(input.applicationScope)!==canonicalJson(input.claudeDelivery.appIds)||input.pluginHash!==input.claudeDelivery.hash)throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude本轮加载范围与原目录交付不同');assertClaudeRunDelivery(this.store,input.runId,input.claudeDelivery);verifyClaudeDelivery(this.store,this.store.get(input.claudeDelivery.resourceId),snapshot);}
       const projection = verifyOwnedBundle(input.pluginRoot,input.pluginHash,this.store.storeId);
+      const selected=claudeProjectionSelection(projection,snapshot);if(canonicalJson(selected.appIds)!==canonicalJson(applications.map(p=>p.appId))||canonicalJson(selected.standardSkillScope)!==canonicalJson(standards.map(s=>s.projectionPath)))throw new ApplicationError('SNAPSHOT_IMMUTABLE','实际Claude目录与本轮加载范围不同');
       const selectionHash = digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
       if (projection.metadata.taskId !== snapshot.taskId || projection.metadata.selectionHash !== selectionHash) throw new ApplicationError('SNAPSHOT_IMMUTABLE','插件投影不属于原固定会话');
     }
@@ -84,7 +88,7 @@ export class AgentAdapterRegistry {
     for (const item of input.inventory) {
       const own = item.ownerStoreId === this.store.storeId && item.contentHash && ((item.kind === 'skill' && allSkills.some(s => s.path === item.path && s.hash === item.contentHash)) || (item.kind === 'plugin' && item.path === input.pluginRoot && item.contentHash === input.pluginHash));
       if (own) continue;
-      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
+      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && allSkills.length>0 && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
     }
   }
   plan(hash: string,value: AgentLoadRequest): AgentLoadPlan {
@@ -93,7 +97,7 @@ export class AgentAdapterRegistry {
     try {
       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,snapshot:input.applicationScope?{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope!.includes(p.appId))}:input.snapshot,mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
+      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
   }
   planLegacy(hash:string,value:unknown):AgentLoadPlan {

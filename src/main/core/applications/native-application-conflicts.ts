@@ -3,15 +3,18 @@ import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
 import type {NativeLaunchContext} from './native-launch-context';
 import {canonicalFuturePath} from './session-registry';
 
-/** Read-only attribution before publishing. This narrows App loading only; it
+/** Read-only attribution before publishing. This narrows per-run native loading only; it
  * does not prove filesystem ownership. Publication and adapter preflight must
  * still verify the actual managed trees and all shared capability conflicts. */
-export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):Set<string>{
- const conflicts=new Set<string>();
+export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):{applications:Set<string>;standardSkills:Set<string>;projectMcp:boolean}{
+ const conflicts=new Set<string>(),standards=new Set<string>();let projectMcp=false;
  const ownPaths=new Set([...snapshot.packages.flatMap(p=>p.skills.map(s=>s.projectionPath)),...snapshot.standardSkills.map(s=>s.projectionPath)]);
  const applicationMcp=snapshot.mcp.find(m=>m.kind==='applications')?.serverName;
  for(const item of native.inventory){
   if(item.kind==='skill'&&ownPaths.has(item.path))continue;
+  if(item.kind==='mcp'&&snapshot.mcp.some(m=>m.kind==='legacy-project-context'&&m.serverName===item.name))projectMcp=true;
+  if(item.kind==='plugin'&&snapshot.runner==='claude-code'&&item.name==='smartdd-session'){for(const p of snapshot.packages)conflicts.add(p.appId);for(const s of snapshot.standardSkills)standards.add(s.projectionPath);continue;}
+  if(item.kind==='skill')for(const s of snapshot.standardSkills){const name=dirname(s.projectionPath).split('/').at(-1);if(item.name===name||item.name==='smartdd-session:'+name)standards.add(s.projectionPath);}
   if(item.kind==='mcp'&&item.name===applicationMcp){for(const p of snapshot.packages)conflicts.add(p.appId);continue;}
   for(const p of snapshot.packages){
    if(item.kind==='skill'&&p.skills.some(s=>item.name===s.nativeName||item.name==='smartdd-session:'+s.nativeName)||item.kind==='native-tool'&&Object.keys(p.toolContractMajors).some(op=>snapshot.adapterBinding.nativeToolNames[op]===item.name))conflicts.add(p.appId);
@@ -21,6 +24,9 @@ export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,
   if(typeof item.path!=='string'||item.enabled!==false)continue;
   const path=canonicalFuturePath(resolve(snapshot.native.cwd,item.path));
   for(const p of snapshot.packages)if(p.skills.some(s=>path===canonicalFuturePath(s.projectionPath)||path===canonicalFuturePath(dirname(s.projectionPath))))conflicts.add(p.appId);
+  for(const s of snapshot.standardSkills)if(path===canonicalFuturePath(s.projectionPath)||path===canonicalFuturePath(dirname(s.projectionPath)))standards.add(s.projectionPath);
  }
- return conflicts;
+ return{applications:conflicts,standardSkills:standards,projectMcp};
 }
+/** Compatibility helper for callers that only need per-App attribution. */
+export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):Set<string>{return nativeCapabilityConflicts(snapshot,native).applications;}
