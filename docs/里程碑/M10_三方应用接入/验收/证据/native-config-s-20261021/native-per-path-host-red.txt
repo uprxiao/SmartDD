@@ -1,0 +1,46 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'preserves lower-layer native Skill flags'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (33 tests | 1 failed | 32 skipped) 435ms
+     × preserves lower-layer native Skill flags when a selected profile and CLI contain empty arrays 435ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > preserves lower-layer native Skill flags when a selected profile and CLI contain empty arrays
+AssertionError: expected [ { …(2) }, { …(2) } ] to deep equally contain { …(3) }
+
+- Expected:
+{
+  "custom": "lower-native-value",
+  "enabled": false,
+  "path": "/private/lower-native-skill",
+}
+
++ Received:
+[
+  {
+    "enabled": true,
+    "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-p4yCaT/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
+  },
+  {
+    "enabled": true,
+    "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-p4yCaT/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
+  },
+]
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:118:191
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 32 skipped (33)
+   Start at  07:39:45
+   Duration  1.24s (transform 443ms, setup 0ms, import 717ms, tests 435ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

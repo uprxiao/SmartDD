@@ -1,0 +1,40 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'preserves selected independent Codex profile'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (32 tests | 1 failed | 31 skipped) 363ms
+     × preserves selected independent Codex profile flags through the actual TaskService host composition 362ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > preserves selected independent Codex profile flags through the actual TaskService host composition
+AssertionError: expected { status: 'failed', …(2) } to match object { status: 'pending', issues: [] }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "issues": [],
+-   "status": "pending",
++   "issues": [
++     "AGENT_ADAPTER_UNSUPPORTED",
++   ],
++   "status": "failed",
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:111:29
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 skipped (32)
+   Start at  07:27:46
+   Duration  1.31s (transform 540ms, setup 0ms, import 847ms, tests 363ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

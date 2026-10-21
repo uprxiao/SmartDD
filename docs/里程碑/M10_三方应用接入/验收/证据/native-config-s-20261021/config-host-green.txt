@@ -1,0 +1,30 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/capabilities/discovery.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (32 tests | 1 failed) 36477ms
+     × preserves selected independent Codex profile flags through the actual TaskService host composition 509ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > preserves selected independent Codex profile flags through the actual TaskService host composition
+AssertionError: expected 'pending' to be 'passed' // Object.is equality
+
+Expected: "passed"
+Received: "pending"
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:111:36
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 59 passed (60)
+   Start at  07:25:25
+   Duration  37.32s (transform 399ms, setup 0ms, import 632ms, tests 36.51s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

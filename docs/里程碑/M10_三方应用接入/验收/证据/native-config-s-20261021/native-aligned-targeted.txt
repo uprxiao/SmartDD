@@ -1,0 +1,116 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/capabilities/discovery.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'Codex effective configuration precedence|preserves selected independent Codex profile|host-only native launch details'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/capabilities/discovery.test.ts (30 tests | 4 failed | 8 skipped) 31ms
+     × keeps native lower-layer path state when the final raw Skill array is empty 6ms
+     × retains native per-path defaults absent from the later raw configuration array 6ms
+     × resolves a user-file relative Skill path from that file rather than the launch cwd 1ms
+     × resolves CLI relative Skill paths from cwd while preserving a different lower-layer native path 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > keeps native lower-layer path state when the final raw Skill array is empty
+AssertionError: expected [ { …(2) } ] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "enabled": false,
+-     "path": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-rzBl3w/custom/skills/original/SKILL.md",
++     "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-rzBl3w/custom/skills/original/SKILL.md",
+    },
+  ]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:118:84
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > retains native per-path defaults absent from the later raw configuration array
+AssertionError: expected [ { …(2) }, { …(3) } ] to deep equally contain { …(2) }
+
+- Expected:
+{
+  "enabled": false,
+  "path": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-oM5jl0/custom/skills/original/SKILL.md",
+}
+
++ Received:
+[
+  {
+    "enabled": false,
+    "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-oM5jl0/custom/skills/original/SKILL.md",
+  },
+  {
+    "custom": "keep",
+    "enabled": true,
+    "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-oM5jl0/custom/skills/other/SKILL.md",
+  },
+]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:124:102
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > resolves a user-file relative Skill path from that file rather than the launch cwd
+AssertionError: expected [ { …(3) } ] to deeply equal [ { …(3) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "custom": "origin-preserved",
+      "enabled": false,
+-     "path": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-rs6rad/home/.agents/skills/relative/SKILL.md",
++     "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-rs6rad/home/.agents/skills/relative/SKILL.md",
+    },
+  ]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:135:184
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > resolves CLI relative Skill paths from cwd while preserving a different lower-layer native path
+AssertionError: expected [ { …(2) }, { …(2) } ] to deeply equal [ { …(2) }, { …(2) } ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    {
+      "enabled": false,
+-     "path": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-LEJfWV/home/.agents/skills/relative/SKILL.md",
++     "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-LEJfWV/home/.agents/skills/relative/SKILL.md",
+    },
+    {
+      "enabled": true,
+      "path": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-LEJfWV/not-the-home-skill/SKILL.md",
+    },
+
+ ❯ src/main/core/capabilities/discovery.test.ts:140:41
+    138|     const path=file('home/.agents/skills/relative/SKILL.md',skill),det…
+    139|     discoverCapabilities({...c,args:['-c','skills.config=[{path="../no…
+    140|     expect(detail.effectiveSkillConfig).toEqual([{path,enabled:false},…
+       |                                         ^
+    141|   });
+    142|   it('uses the native literal-string fallback for a CLI value that is …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 19 passed | 39 skipped (62)
+   Start at  07:36:56
+   Duration  1.44s (transform 446ms, setup 0ms, import 729ms, tests 569ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

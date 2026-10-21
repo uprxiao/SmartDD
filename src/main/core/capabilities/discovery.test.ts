@@ -107,3 +107,75 @@ describe('host-only native launch details',()=>{
     file('custom/config.toml','[skills]\nconfig=[{path="/user",enabled=false,private_field="host-only-marker"}]\n[mcp_servers.existing]\ncommand="/usr/bin/true"\n');const details={userSkillConfig:[],plugins:[],issues:[]},rows=discoverCapabilities({...c,details});expect(JSON.stringify(details)).toContain('host-only-marker');expect(JSON.stringify(rows)).not.toContain('host-only-marker');
   });
 });
+
+
+describe('Codex effective configuration precedence',()=>{
+  const details=()=>({userSkillConfig:[] as Record<string,unknown>[],effectiveSkillConfig:[] as Record<string,unknown>[],plugins:[] as {name:string;path:string}[],issues:[] as string[]});
+  it('keeps native lower-layer path state when the final raw Skill array is empty',()=>{
+    const path=file('custom/skills/original/SKILL.md',skill);
+    file('custom/config.toml',`skills.config=[{path=${JSON.stringify(path)},enabled=false}]\n`);
+    const detail=details(),rows=discoverCapabilities({...c,args:['-c','skills.config=[]'],details:detail});
+    expect(detail.userSkillConfig).toEqual([]);expect(detail.effectiveSkillConfig).toEqual([{path,enabled:false}]);expect(rows.find(r=>r.path===path)?.enabled).toBe(false);expect(detail.issues).toEqual([]);
+  });
+  it('retains native per-path defaults absent from the later raw configuration array',()=>{
+    const original=file('custom/skills/original/SKILL.md',skill),other=file('custom/skills/other/SKILL.md',skill);
+    file('custom/config.toml',`skills.config=[{path=${JSON.stringify(original)},enabled=false}]\n`);
+    const detail=details(),rows=discoverCapabilities({...c,args:['-c',`skills.config=[{path=${JSON.stringify(other)},enabled=true,custom="keep"}]`],details:detail});
+    expect(rows.find(r=>r.path===original)?.enabled).toBe(false);expect(detail.effectiveSkillConfig).toContainEqual({path:original,enabled:false});expect(rows.find(r=>r.path===other)?.enabled).toBe(true);
+    expect(detail.userSkillConfig).toEqual([{path:other,enabled:true,custom:'keep'}]);
+  });
+  it.each(['--config=','-c'])('accepts the valid inline CLI configuration form %s without changing source files',(prefix)=>{
+    const path=file('custom/skills/original/SKILL.md',skill),detail=details();
+    file('custom/config.toml',`skills.config=[{path=${JSON.stringify(path)},enabled=false}]\n`);
+    const rows=discoverCapabilities({...c,args:[prefix+`skills.config=[{path=${JSON.stringify(path)},enabled=true}]`],details:detail});
+    expect(detail.issues).toEqual([]);expect(detail.userSkillConfig).toEqual([{path,enabled:true}]);expect(rows.find(r=>r.path===path)?.enabled).toBe(true);
+  });
+  it('resolves a user-file relative Skill path from that file rather than the launch cwd',()=>{
+    const path=file('home/.agents/skills/relative/SKILL.md',skill),detail=details();file('custom/config.toml','skills.config=[{path="../home/.agents/skills/relative/SKILL.md",enabled=false,custom="origin-preserved"}]\n');
+    const rows=discoverCapabilities({...c,details:detail});expect(detail.userSkillConfig[0].path).toBe('../home/.agents/skills/relative/SKILL.md');expect(detail.effectiveSkillConfig).toEqual([{path,enabled:false,custom:'origin-preserved'}]);expect(rows.find(r=>r.path===path)?.enabled).toBe(false);
+  });
+  it('resolves CLI relative Skill paths from cwd while preserving a different lower-layer native path',()=>{
+    const path=file('home/.agents/skills/relative/SKILL.md',skill),detail=details();file('custom/config.toml',`skills.config=[{path=${JSON.stringify(path)},enabled=false}]\n`);
+    discoverCapabilities({...c,args:['-c','skills.config=[{path="../not-the-home-skill/SKILL.md",enabled=true}]'],details:detail});
+    expect(detail.effectiveSkillConfig).toEqual([{path,enabled:false},{path:join(tmp,'not-the-home-skill/SKILL.md'),enabled:true}]);
+  });
+  it('uses canonical identity to match a Skill but preserves a user symlink alias in forwarded argv',()=>{
+    const target=file('home/.agents/skills/alias-target/SKILL.md',skill),detail=details();file('custom/config.toml','skills.config=[{path="user-link/SKILL.md",enabled=false}]\n');
+    symlinkSync(dirname(target),join(tmp,'custom/user-link'));const rows=discoverCapabilities({...c,details:detail});
+    expect(detail.effectiveSkillConfig).toEqual([{path:join(tmp,'custom/user-link/SKILL.md'),enabled:false}]);expect(rows.find(r=>r.path===target)?.enabled).toBe(false);
+  });
+  it('uses the native literal-string fallback for a CLI value that is not TOML',()=>{
+    const detail=details(),rows=discoverCapabilities({...c,args:['-c','mcp_servers.native.command=/usr/bin/true'],details:detail});
+    expect(detail.issues).toEqual([]);expect(rows.find(r=>r.name==='native')).toMatchObject({kind:'mcp',validity:'partial'});
+  });
+  it.each(['-c','--config'])('marks a missing %s value as unverified instead of an empty override',(flag)=>{
+    const detail=details();discoverCapabilities({...c,args:[flag],details:detail});expect(detail.issues).toContain('profile_configuration_unverified');
+  });
+  it('never interprets prompt arguments after the native end-of-options marker as config',()=>{
+    const path=file('custom/skills/original/SKILL.md',skill),detail=details();file('custom/config.toml',`skills.config=[{path=${JSON.stringify(path)},enabled=false}]\n`);
+    const rows=discoverCapabilities({...c,args:['--','-c',`skills.config=[{path=${JSON.stringify(path)},enabled=true}]`],details:detail});
+    expect(detail.userSkillConfig).toEqual([{path,enabled:false}]);expect(rows.find(r=>r.path===path)?.enabled).toBe(false);expect(detail.issues).toContain('profile_configuration_unverified');
+  });
+  it.each([['--profile','read-only'],['--profile=read-only'],['-p','read-only']])('reads the selected independent profile file only for the verified CLI (%j)',(...args)=>{
+    const detail=details();file('custom/config.toml','skills.config=[{path="/base-user",enabled=false}]\n');
+    file('custom/read-only.config.toml','skills.config=[{path="/profile-user",enabled=true,custom="host-only-profile-marker"}]\n[mcp_servers.profile_server]\ncommand="/usr/bin/true"\nenv={TOKEN="never-render-profile-secret"}\n');
+    const rows=discoverCapabilities({...c,nativeVersion:'0.162.1',args:args as string[],details:detail});
+    expect(detail.issues).toEqual([]);expect(detail.userSkillConfig).toEqual([{path:'/profile-user',enabled:true,custom:'host-only-profile-marker'}]);
+    expect(rows.find(r=>r.name==='profile_server')).toMatchObject({source:'profile',envNames:['TOKEN']});expect(JSON.stringify(rows)).not.toContain('never-render-profile-secret');expect(JSON.stringify(rows)).not.toContain('host-only-profile-marker');
+  });
+  it('applies profile below the project layer and repeated CLI overrides above both',()=>{
+    file('custom/config.toml',`skills.config=[{path="/base-user",enabled=false}]\n[projects.${JSON.stringify(c.cwd)}]\ntrust_level="trusted"\n`);
+    file('custom/review.config.toml','skills.config=[{path="/profile-user",enabled=false}]\n');file('repo/.codex/config.toml','skills.config=[{path="/project-user",enabled=false}]\n');
+    const project=details();discoverCapabilities({...c,nativeVersion:'0.162.1',args:['--profile','review'],details:project});expect(project.issues).toEqual([]);expect(project.userSkillConfig).toEqual([{path:'/project-user',enabled:false}]);
+    const cli=details();discoverCapabilities({...c,nativeVersion:'0.162.1',args:['--profile','review','-c','skills.config=[{path="/cli-first",enabled=false}]','--config','skills.config=[{path="/cli-final",enabled=true,keep=7}]'],details:cli});
+    expect(cli.issues).toEqual([]);expect(cli.userSkillConfig).toEqual([{path:'/cli-final',enabled:true,keep:7}]);
+  });
+  it.each([undefined,'0.133.0','0.999.0'])('does not assume independent-profile semantics for an unverified CLI %s',(nativeVersion)=>{
+    file('custom/review.config.toml','skills.config=[{path="/must-not-adopt",enabled=true}]\n');const detail=details();discoverCapabilities({...c,nativeVersion,args:['--profile','review'],details:detail});
+    expect(detail.issues).toContain('profile_configuration_unverified');expect(detail.userSkillConfig).toEqual([]);
+  });
+  it.each(['../outside','missing'])('keeps invalid or missing named profiles unverified (%s)',(name)=>{
+    file('outside.config.toml','skills.config=[{path="/outside-marker",enabled=true}]\n');const detail=details();discoverCapabilities({...c,nativeVersion:'0.162.1',args:['--profile',name],details:detail});
+    expect(detail.issues).toContain('profile_configuration_unverified');expect(detail.userSkillConfig).toEqual([]);
+  });
+});

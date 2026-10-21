@@ -21,8 +21,9 @@ export async function inspectNativeLaunch(input: TaskLaunchInput): Promise<Nativ
     });
   });
   const details: NativeDiscoveryDetails = {userSkillConfig:[],plugins:[],issues:[]};
-  const context: DiscoveryContext = {runner:input.profile.runner,cwd:input.cwd,home:input.home,stateRoot:input.stateRoot,claudeConfigExplicit:input.claudeConfigExplicit,path:env.PATH ?? '',args:input.profile.args,details};
+  const context: DiscoveryContext = {runner:input.profile.runner,cwd:input.cwd,home:input.home,stateRoot:input.stateRoot,claudeConfigExplicit:input.claudeConfigExplicit,path:env.PATH ?? '',args:input.profile.args,details,nativeVersion:version};
   const found = discoverCapabilities(context);
-  if (details.issues.length || found.length >= 2000 || !agentLoadRequestSchema.shape.userSkillConfig.safeParse(details.userSkillConfig).success) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生能力配置尚未完整核验；本次不覆盖用户能力配置');
-  return {command,version,userSkillConfig:details.userSkillConfig,inventory:[...found.map(row=>({kind:row.kind,name:row.name,path:row.path,ownerStoreId:null,contentHash:null})),...details.plugins.map(p=>({kind:'plugin' as const,...p,ownerStoreId:null,contentHash:null}))]};
+  const userSkillConfig=details.effectiveSkillConfig??details.userSkillConfig;
+  if (details.issues.length || found.length >= 2000 || !agentLoadRequestSchema.shape.userSkillConfig.safeParse(userSkillConfig).success) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生能力配置尚未完整核验；本次不覆盖用户能力配置');
+  return {command,version,userSkillConfig,inventory:[...found.map(row=>({kind:row.kind,name:row.name,path:row.path,ownerStoreId:null,contentHash:null})),...details.plugins.map(p=>({kind:'plugin' as const,...p,ownerStoreId:null,contentHash:null}))]};
 }

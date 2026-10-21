@@ -1,0 +1,37 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/capabilities/discovery.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (32 tests | 1 failed) 37631ms
+     × preserves selected independent Codex profile flags through the actual TaskService host composition 485ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > preserves selected independent Codex profile flags through the actual TaskService host composition
+AssertionError: expected [ …(2) ] to deeply equal [ '--profile', 'm10-review' ]
+
+- Expected
++ Received
+
+  [
+-   "--profile",
+-   "m10-review",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-p2GyuQ/capabilities/runtime/70c32e91da49eb11fb26ac32d000a45bd1df1de05cbea8b899ec3fa216ced795/launch.py",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-p2GyuQ/capabilities/runs/253bd830-87f7-44c4-b4dd-e8efcf52fdf1/403bb4b8-7ddd-4fe3-ad71-b33672754aaa/8f214fd3-68de-4118-914a-83b0c53c7f00/manifest.json",
+  ]
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:112:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 59 passed (60)
+   Start at  07:27:48
+   Duration  38.53s (transform 415ms, setup 0ms, import 656ms, tests 37.67s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
