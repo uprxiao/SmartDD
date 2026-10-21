@@ -1,3 +1,4 @@
+import {validateNativeDiscoveryExclusions} from './native-discovery-exclusions';
 import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
 import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-state';
 import { createRequire } from 'node:module';
@@ -52,6 +53,7 @@ export class AgentAdapterRegistry {
     const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
     if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
     const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...standards.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
+    const excludedH=validateNativeDiscoveryExclusions(this.store,input,allSkills.map(s=>s.path));
     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
       if (input.pluginRoot !== expected || !input.pluginHash || allSkills.some(s => !within(join(expected,'skills'),s.path))) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude必须沿用原会话稳定插件路径');
@@ -65,6 +67,7 @@ export class AgentAdapterRegistry {
       const catalog = input.catalog; if (!catalog) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','Codex受管目录清单尚未核验');
       if (new Set(catalog.entries.map(e => e.path)).size !== catalog.entries.length || new Set(catalog.entries.map(e => e.nativeName)).size !== catalog.entries.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','Codex受管目录或名称冲突');
       for (const entry of catalog.entries) {
+        if(excludedH.has(entry.path))continue;
         if (entry.path !== join(input.native.home,'.agents','skills',entry.nativeName,'SKILL.md')) throw new ApplicationError('OWNERSHIP_CONFLICT','目录清单越过实际HOME的受管发现根');
         if(entry.format==='legacy-tree-v1'){verifyLegacyDiscoveryEntry(entry,input.native.home);continue;}
         const projection = verifyOwnedBundle(dirname(entry.path),entry.projectionHash,entry.storeId);
@@ -97,7 +100,7 @@ export class AgentAdapterRegistry {
     try {
       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
+      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&input.catalogExclusions?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!input.catalogExclusions!.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
   }
   planLegacy(hash:string,value:unknown):AgentLoadPlan {

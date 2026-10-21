@@ -1,0 +1,13 @@
+# 普通guard与坏现代H：下一项实现候选，尚未编码／验证
+
+当前BB只处理受支持Codex的实际加载；旧普通guard仍完整验证H。不得把这份方案写成已实现、不得直接改旧默认语义。先以实际TaskService构造隔离红测：两Agent未知CLI、原现代H被用户替换、原生恢复身份及原S/refs不变；记录C/H全占用、零业务/输入授权、用户字节和原参数。另补原marker仍在而字节损坏，以确认诊断分类，不把所有hash失败冒充用户同名冲突。
+
+候选复用点：native-discovery-exclusions的有界读取和物理归属；native-static-roots的原完整C来源/依赖闭包及代次占用；RunRegistry.reserveGuard的RAM-only无业务能力模式；DiscoveryCatalog完整原始catalog和真实consumer。前提是保留旧capture/verify默认、legacy树格式、全来源保留、实际adapter执行根严格核验和现有连续中断恢复。
+
+如需新模式，使用独立显式的宿主guard排除格式，而非悄悄过滤schema1清单或把失真H标ready。完整原catalog/代次、C run/owner/PTY、同owner真实H consumer、实际归属失败路径一并核对。仅允许当前modern、已物理核验失败的项；legacy、未知路径、仍有效原树均不由此豁免。加载adapter请求的已有catalogExclusions仍保持当前Codex边界，不能把新guard格式当应用权限。
+
+在真实C lease和H consumer建立后再做物理核验；原H资源记录及其完整C依赖仍进入保留图，不因不消费该H路径释放源资源，也不把实际adapter根降为非执行。RunRegistry可在新guard专用校验回执下只省略不可信modern项的物理树检查，但原资源身份/代次/依赖元数据仍必须匹配。不要把任意调用者传入的skip数组当依据。零业务guard不能获得工具bridge、App scope或terminal用户授权。未知CLI保持普通原命令/参数/原历史根；既有用户文件不加禁用flag、不改签、不删除。
+
+已验证CLI的纯false发现选择如需生成，仍使用实际宿主证明后的瞬时规划输入；完整持久清单不缩减。未知CLI不冒称已实现发现筛选，只如实保持原生运行无WillYou业务权限。在prepare/arm/最后fork及释放边界按既有规则复查；准备后原树变回完整或owner/consumer/代次变化时重新准备，不自动扩大已准备加载，已启动guard也不转为受管业务run。
+
+必要软件出口：实际新建/恢复、两Agent、同一原native ID/S/refs、健康其他运行不停止；故障C来源仍保留hash/代次图；合法/伪造/过期/重复/旧格式排除、晚恢复/晚H变更、无fork清理、停止后支持版本恢复、原默认H损坏仍拒绝。明确区分产品红测与夹具错误，先定向复验再完成受影响回归。维护pending准入属于后续独立细项，不顺手清除未知owner或放开发布冻结。

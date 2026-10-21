@@ -43,5 +43,5 @@ export class LegacyDiscoveryInventory{
   }
   return[...result.values()];
  }
- async prepare(signal?:AbortSignal){try{return await this.catalog.publishOrRecover(await this.sources(signal),{signal});}catch(error){if(!(error instanceof ApplicationError)&&['ENOENT','ENOTDIR','EACCES','EPERM','ELOOP'].includes((error as NodeJS.ErrnoException).code??''))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','历史Skill目录暂不可核验，保留原路径');throw error;}}
+ async prepare(signal?:AbortSignal){try{const sources=await this.sources(signal);return sources.length?await this.catalog.publishOrRecover(sources,{signal,requestedOnly:true}):await this.catalog.snapshot();}catch(error){if(!(error instanceof ApplicationError)&&['ENOENT','ENOTDIR','EACCES','EPERM','ELOOP'].includes((error as NodeJS.ErrnoException).code??''))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','历史Skill目录暂不可核验，保留原路径');throw error;}}
 }

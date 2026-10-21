@@ -1,3 +1,4 @@
+import {verifyModernDiscoveryProjection} from './native-discovery-exclusions';
 import { randomUUID } from 'node:crypto';
 import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -54,6 +55,8 @@ export interface DiscoveryReservation {
 }
 export interface DiscoveryPublicationOptions {
  signal?:AbortSignal;waitMs?:number;
+ /** Verify reuse of requested sources only;the returned raw catalog grants no loading. */
+ requestedOnly?:true;
  /** Host-only metadata guard. Called before registration and final publication under H/C. */
  assertPublish?:(operationId:string|null)=>void;
  /** Synchronous C SQLite writes only; part of the resource registration transaction. */
@@ -186,6 +189,14 @@ export class DiscoveryCatalog {
         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录消费者身份不同'); return value; }); }
     private consumerName(c: Consumer): string { return c.owner.storeId + '-' + c.runId + '.json'; }
     async snapshot(): Promise<NonNullable<AgentLoadRequest['catalog']>> { return this.lock(() => { const c = this.catalog(); return structuredClone({ generation: c.generation, entries: c.entries }); }); }
+    /** Read-only attribution,not a publication or file-readiness receipt. */
+    async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
+        const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>();
+        for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);valid.add(entry.path);}catch(error){if(error instanceof ApplicationError&&['OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))excludedPaths.push(entry.path);else throw error;}}
+        const selected=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash}))];
+        for(const skill of selected){const entry=raw.entries.find(e=>e.path===skill.path);if(entry&&entry.storeId===this.store.storeId&&entry.sourceHash===skill.hash&&valid.has(skill.path)){this.verifyReference(this.store.get(entry.resourceId),snapshot);owned.add(skill.path);}else if(entry&&(entry.storeId!==this.store.storeId||entry.sourceHash!==skill.hash)||present(dirname(skill.path)))occupied.add(skill.path);}
+        return{owned,occupied,generation:raw.generation,excludedPaths};
+    });}
     verify(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,true);}
     /** Only for a no-authority native guard: verify complete H bytes/metadata,
      * not C source bytes that the guarded native process will not consume. */
@@ -301,7 +312,8 @@ export class DiscoveryCatalog {
                         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影资源记录身份不同');
                     if(p.entry.format==='legacy-tree-v1'){const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);
                         if(r.kind!=='legacy-agent-projection'||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记或依赖缺失，不重新签认');}
-                    if(p.entry.format==='legacy-tree-v1'&&r.state==='ready'&&!present(dirname(p.entry.path))){
+                    if(r.state==='ready'&&!present(dirname(p.entry.path))){
+                        const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);if(r.kind!==(p.entry.format?'legacy-agent-projection':'agent-projection')||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记及完整来源不同，不能重建原路径');
                         if(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND (l.resource_id=? OR EXISTS(SELECT 1 FROM capability_lease_resources lr WHERE lr.lease_id=l.lease_id AND lr.resource_id=?)) LIMIT 1").get(r.resourceId,r.resourceId))throw new ApplicationError('RESOURCE_BUSY','原H路径仍有未知或活动占用');
                         this.store.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',operation_id=?,generation=generation+1 WHERE resource_id=?").run(pending.operationId,r.resourceId);
                         const key=digest(pending.operationId+':'+r.resourceId),held=this.store.sqlite.prepare('SELECT content_hash,generation FROM capability_lease_resources WHERE lease_id=? AND resource_id=?').get(key,r.resourceId) as {content_hash:string;generation:number}|undefined;
@@ -432,7 +444,7 @@ export class DiscoveryCatalog {
                         if (old && canonicalJson(old) !== canonicalJson(p.entry))
                             throw new ApplicationError('OWNERSHIP_CONFLICT', '同名共享投影属于其他数据根或版本，不能改签');
                     }
-                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry))&&!(p.entry.format==='legacy-tree-v1'&&!present(dirname(p.entry.path))))) {
+                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry))&&present(dirname(p.entry.path)))) {
                         reuse = true;
                         return;
                     }
@@ -444,7 +456,7 @@ export class DiscoveryCatalog {
             }, options.signal);
             if (reuse) {
                 const snapshot = await this.snapshot();
-                this.verify(snapshot);
+                if(options.requestedOnly){for(const p of plans)this.verifyProjection(p,dirname(p.entry.path));}else this.verify(snapshot);
                 for (const p of plans) {
                     this.verifySource(p);
                     const r = this.store.get(p.entry.resourceId);
