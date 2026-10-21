@@ -1,0 +1,781 @@
+--- a/src/shared/agent-adapters.ts
++++ b/src/shared/agent-adapters.ts
+@@ -1,3 +1,4 @@
++import {claudeRunDeliverySchema} from './claude-delivery';
+ import { z } from 'zod';
+ import { capabilitySessionSnapshotSchema } from './application-session';
+ import { boundedJson } from './application-bridge';
+@@ -6,7 +7,7 @@
+ export const agentAdapterMetadataSchema = z.object({ schema: z.literal('willyou-agent-adapter-v1'),agentId: z.enum(['claude-code','codex']),version: z.string().regex(/^\d+\.\d+\.\d+$/),entry: z.literal('index.cjs'),projectionFormatVersion: z.union([z.literal(1),z.literal(2)]),platforms: z.array(z.literal('darwin-arm64')).length(1),cliVersions: z.array(z.string().regex(/^\d+\.\d+\.\d+$/)).min(1).max(32),bridgeRecovery: z.literal('unverified'),evidenceBaseline: z.string().min(1).max(256) }).strict();
+ export type AgentAdapterMetadata = z.infer<typeof agentAdapterMetadataSchema>;
+ export const agentLoadRequestSchema = z.object({
+-  snapshot: capabilitySessionSnapshotSchema,applicationScope:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(20)).min(1).max(32).optional(),runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
++  snapshot: capabilitySessionSnapshotSchema,claudeDelivery:claudeRunDeliverySchema.optional(),applicationScope:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(20)).min(1).max(32).optional(),runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
+   native: z.object({ runner: z.enum(['claude-code','codex']),sessionId: z.string().nullable(),stateRoot: absolute,cwd: absolute,home: absolute }).strict(),
+   pluginRoot: absolute.nullable(),pluginHash: hash.nullable(),
+   catalog: z.object({ generation: z.string().min(1).max(256),entries: z.array(z.object({ resourceId: z.string().min(1).max(512),storeId: z.uuid(),path: absolute.refine(p => p.endsWith('/SKILL.md')),nativeName: name,sourceHash: hash,projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict()).max(4096) }).strict().nullable(),
+--- /dev/null
++++ b/src/shared/claude-delivery.ts
+@@ -0,0 +1,4 @@
++import {z} from 'zod';
++/** Host preparation/load-plan data only.Never accepted by renderer/tool RPC. */
++export const claudeRunDeliverySchema=z.object({taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),leaseId:z.uuid(),revision:z.number().int().positive(),resourceId:z.string().min(1).max(512),hash:z.string().regex(/^[a-f0-9]{64}$/),generation:z.number().int().positive(),appIds:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(1).max(32).refine(a=>new Set(a).size===a.length)}).strict();
++export type ClaudeRunDelivery=z.infer<typeof claudeRunDeliverySchema>;
+--- /dev/null
++++ b/src/main/core/applications/claude-delivery.ts
+@@ -0,0 +1,109 @@
++import {randomUUID} from 'node:crypto';
++import {closeSync,constants,fsyncSync,lstatSync,openSync,renameSync} from 'node:fs';
++import {dirname,join} from 'node:path';
++import {ApplicationError} from '@shared/applications';
++import type {ResourceStore,ResourceRecord} from './resource-store';
++import type {CapabilitySessionRegistry} from './session-registry';
++import type {SessionCapabilityProjector,ClaudeProjectionSource} from './session-projector';
++import type {ProcessIdentityReader} from './process-identity';
++import {canonicalJson,digest} from './manifest';
++import {ensureStoreDirectory} from './package-files';
++import {verifyOwnedBundle,writeOwnedBundle} from './owned-bundle';
++import {withResourceLock} from './resource-lock';
++import {assertClaudeInstallLease,assertClaudePreparation,assertClaudeRunDelivery,claudeAnchor,claudeRoot,claudeSlotId,deliveryOwner,normalizedSelection,readClaudeSlot,verifyClaudeDelivery,writeClaudeSlot,type ClaudeSlot,type ClaudeDeliveryToken,type ClaudeRunDelivery,type DeliveryOwner} from './claude-delivery-state';
++export type ClaudeDeliveryCheckpoint='registered'|'claimed'|'copied'|'backed-up'|'delivered'|'committed';
++const recovery=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','Claude原目录交付或占用未能核验，保留原路径和现场');
++const present=(p:string)=>{try{return lstatSync(p);}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;}};
++const sync=(p:string)=>{const fd=openSync(p,constants.O_RDONLY|constants.O_NOFOLLOW);try{fsyncSync(fd);}finally{closeSync(fd);}};
++/** Per-task canonical delivery.All filesystem replacement is covered by a durable
++ * pending intent and an independent root occupancy;immutable depot is never an alias. */
++export class ClaudeDeliveryCoordinator{
++ private readonly owner:DeliveryOwner;private readonly operations=new Set<string>();private readonly preparations=new Set<string>();
++ constructor(private readonly store:ResourceStore,private readonly sessions:CapabilitySessionRegistry,private readonly projector:SessionCapabilityProjector,private readonly processes:ProcessIdentityReader,instanceId:string,private readonly checkpoint?:(phase:ClaudeDeliveryCheckpoint)=>void){const host=processes.read(process.pid);if(!host)throw recovery();this.owner=deliveryOwner.parse({instanceId,pid:host.pid,startedAt:host.startedAt});}
++ has(taskId:string):boolean{return readClaudeSlot(this.store,taskId)!==null;}
++ private putLease(id:string,anchor:string,kind:string,ownerId:string,owner:DeliveryOwner):void{this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,?,?,?,?,?,'active',?)").run(id,anchor,kind,ownerId,owner.instanceId,owner.pid,owner.startedAt,new Date().toISOString());}
++ private release(id:string):void{this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=?").run(new Date().toISOString(),id);}
++ private sameOwner(a:DeliveryOwner,b:DeliveryOwner):boolean{return canonicalJson(a)===canonicalJson(b);}
++ private assertNoRuns(taskId:string):void{if(this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(taskId))throw new ApplicationError('RESOURCE_BUSY','原会话仍有运行或待核验启动窗口，暂不替换Claude目录');}
++ private idle(slot:ClaudeSlot):void{
++  // Durable consumer records survive missing run/lease rows.Neither absence nor
++  // an expired PID can prove a reader ended;RunRegistry must finish the lifecycle.
++  for(const c of slot.consumers){const r=this.store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state,revocation_state,ended_at FROM capability_runs WHERE run_id=?').get(c.runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string;revocation_state:string;ended_at:string|null}|undefined;
++   const l=this.store.sqlite.prepare('SELECT resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE lease_id=?').get(c.leaseId) as {resource_id:string;owner_kind:string;owner_id:string;host_instance_id:string;pid:number;process_started_at:string;state:string}|undefined;
++   if(!r||!l||r.task_id!==slot.taskId||r.owner_instance_id!==c.owner.instanceId||r.owner_pid!==c.owner.pid||r.owner_started_at!==c.owner.startedAt||l.resource_id!==slot.anchorId||l.owner_kind!=='run'||l.owner_id!==c.runId||l.host_instance_id!==c.owner.instanceId||l.pid!==c.owner.pid||l.process_started_at!==c.owner.startedAt)throw recovery();
++   const children=this.store.sqlite.prepare('SELECT state FROM capability_run_processes WHERE run_id=?').all(c.runId) as {state:string}[];
++   if(!['stopped','failed'].includes(r.state)||r.revocation_state!=='revoked'||!r.ended_at||l.state!=='released'||!children.length||children.some(p=>!['exited','canceled'].includes(p.state))||this.store.sqlite.prepare("SELECT 1 FROM capability_run_activities WHERE run_id=? AND state='active'").get(c.runId))throw new ApplicationError('RESOURCE_BUSY','原Claude目录仍被原生进程或业务读取，等待其正常结束');
++  }
++  this.assertNoRuns(slot.taskId);slot.consumers=[];
++  const ownLeases=new Set(slot.pending?.participants.map(p=>p.leaseId)??[]);if(slot.preparation)ownLeases.add(slot.preparation.leaseId);
++  const roots=(this.store.sqlite.prepare("SELECT resource_id,COALESCE(scope_relative_path,relative_path) AS path FROM capability_resources WHERE path_scope='C' AND owner_store_id=?").all(this.store.storeId) as {resource_id:string;path:string}[]).filter(r=>r.path===slot.root||r.path.startsWith(slot.root+'/')||slot.root.startsWith(r.path+'/')).map(r=>r.resource_id);
++  for(const l of this.store.sqlite.prepare("SELECT lease_id,resource_id FROM capability_resource_leases WHERE state<>'released'").all() as {lease_id:string;resource_id:string}[]){if(ownLeases.has(l.lease_id))continue;const extra=this.store.sqlite.prepare('SELECT resource_id FROM capability_lease_resources WHERE lease_id=?').all(l.lease_id) as {resource_id:string}[];if(roots.includes(l.resource_id)||extra.some(e=>roots.includes(e.resource_id)))throw new ApplicationError('RESOURCE_BUSY','原Claude目录或其别名仍有占用，保留交付现场');}
++ }
++ private recoverPreparation(slot:ClaudeSlot):void{if(!slot.preparation)return;assertClaudePreparation(this.store,slot);if(this.processes.state(slot.preparation.owner)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原Claude交付准备仍由其他启动持有');this.release(slot.preparation.leaseId);slot.preparation=null;writeClaudeSlot(this.store,slot);}
++ private assertPending(slot:ClaudeSlot):void{assertClaudeInstallLease(this.store,slot);const p=slot.pending!,row=this.store.sqlite.prepare('SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(p.id) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;
++  const expected=canonicalJson({slotId:claudeSlotId(slot.taskId),resourceId:p.resourceId,sourceId:p.sourceId,hash:p.hash,generation:p.generation,root:slot.root});if(!row||row.kind!=='claude-delivery-install'||row.owner_store_id!==this.store.storeId||row.state!=='preparing'||row.plan_json!==expected)throw recovery();
++ }
++ private claim(slot:ClaudeSlot):void{this.assertPending(slot);const p=slot.pending!;for(const participant of p.participants){const mine=this.sameOwner(participant.owner,this.owner)&&this.operations.has(p.id);if(!mine&&this.processes.state(participant.owner)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原Claude发布者或恢复者仍存活或无法核实');}
++  if(!this.sameOwner(p.activeOwner,this.owner)||!this.operations.has(p.id)){if(p.participants.length>=64)throw recovery();const leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-install',p.id,this.owner);p.participants.push({owner:this.owner,leaseId});p.activeOwner=this.owner;writeClaudeSlot(this.store,slot);this.operations.add(p.id);}
++ }
++ private preparation(slot:ClaudeSlot):ClaudeDeliveryToken{const v=slot.current!;if(!v||slot.pending||slot.preparation)throw recovery();const id=randomUUID(),leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-preparation',id,this.owner);slot.preparation={id,leaseId,owner:this.owner,revision:slot.revision};writeClaudeSlot(this.store,slot);this.preparations.add(id);return{taskId:slot.taskId,preparationId:id,leaseId,revision:slot.revision,resourceId:v.resourceId,hash:v.hash,generation:v.generation,appIds:[...v.appIds]};}
++ async prepare(taskId:string,appIds:readonly string[]):Promise<ClaudeDeliveryToken>{
++  if(readClaudeSlot(this.store,taskId)?.pending){const recovered=await this.recover(taskId);if(recovered)await this.cancel(recovered);}
++  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds);if(!source.applicationScope.length)throw recovery();
++  const relative=claudeRoot(taskId),root=join(this.store.root,relative);let archiveId:string|null=null;
++  // Before the first canonical change, preserve the actual registered complete
++  // original tree.Archive creation never guesses a missing original body.
++  if(!readClaudeSlot(this.store,taskId)&&present(root)){const refs=await this.sessions.references(taskId),original=refs.filter(r=>r.refKind==='session-projection'&&r.relativePath===relative);if(original.length!==1)throw new ApplicationError('OWNERSHIP_CONFLICT','原Claude路径不是唯一已登记的完整插件');archiveId=(await this.projector.archiveClaude(taskId,original[0].refId)).resource.resourceId;}
++  let token:ClaudeDeliveryToken|undefined;
++  await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
++   let slot=readClaudeSlot(this.store,taskId);if(!slot){const anchorId=claudeAnchor(taskId),selectionHash=normalizedSelection(current.snapshot);slot={schema:1,storeId:this.store.storeId,taskId,selectionHash,root:relative,anchorId,revision:1,current:null,pending:null,preparation:null,consumers:[]};this.assertNoRuns(taskId);
++    if(present(root)&&!archiveId)throw new ApplicationError('OWNERSHIP_CONFLICT','原目录在准备期间被其他内容占用');
++    this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,'claude-delivery-root',?,?,'C',?,?,'recovery-required',1,'unknown',?)").run(anchorId,digest(canonicalJson({taskId,selectionHash,root:relative})),this.store.storeId,`claude-deliveries/${taskId}/anchor`,relative,claudeSlotId(taskId));writeClaudeSlot(this.store,slot);
++   }
++   if(slot.selectionHash!==current.selectionHash||slot.pending)throw recovery();this.recoverPreparation(slot);this.idle(slot);
++   if(slot.current?.hash===source.bundle.hash){verifyClaudeDelivery(this.store,this.store.get(slot.current.resourceId),current.snapshot);token=this.preparation(slot);return;}
++   const priorIds=(this.store.sqlite.prepare("SELECT resource_id FROM capability_resources WHERE path_scope='C' AND COALESCE(scope_relative_path,relative_path)=? AND resource_id<>?").all(relative,slot.anchorId) as {resource_id:string}[]).map(r=>r.resource_id);
++   const refs=this.store.sqlite.prepare('SELECT ref_id FROM capability_session_refs WHERE task_id=?').all(taskId) as {ref_id:string}[];
++   for(const id of priorIds){const resource=this.store.get(id);if(!['session-projection','claude-delivery'].includes(resource.kind)||!refs.some(r=>r.ref_id===id)&&id!==slot.current?.resourceId||['staged','verified','deleting'].includes(resource.state))throw recovery();}
++   let priorHash:string|null=null;if(present(root)){priorHash=slot.current?.hash??(archiveId?this.store.get(archiveId).contentHash:null);if(!priorHash)throw recovery();verifyOwnedBundle(root,priorHash,this.store.storeId);}
++   const id=randomUUID(),resourceId=`claude-delivery:${taskId}:${source.bundle.hash}`,known=this.store.sqlite.prepare('SELECT generation FROM capability_resources WHERE resource_id=?').get(resourceId) as {generation:number}|undefined,generation=(known?.generation??0)+1,leaseId=randomUUID(),stage=`claude-deliveries/${taskId}/${id}/stages/${randomUUID()}`;
++   slot.pending={id,sourceId:source.resource.resourceId,hash:source.bundle.hash,appIds:[...source.applicationScope],resourceId,generation,priorHash,priorResourceIds:priorIds,stage,backup:`claude-deliveries/${taskId}/${id}/previous`,abandonedStages:[],participants:[{owner:this.owner,leaseId}],activeOwner:this.owner};
++   for(const priorId of priorIds)this.store.sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='unknown' WHERE resource_id=?").run(priorId);
++   this.store.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'claude-delivery-install',?,'preparing',?,?,?)").run(id,this.store.storeId,canonicalJson({slotId:claudeSlotId(taskId),resourceId,sourceId:source.resource.resourceId,hash:source.bundle.hash,generation,root:relative}),new Date().toISOString(),new Date().toISOString());
++   this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,'claude-delivery',?,?,'C',?,?,'staged',?,'unknown',?) ON CONFLICT(resource_id) DO UPDATE SET state='staged',integrity='unknown',generation=excluded.generation,operation_id=excluded.operation_id").run(resourceId,source.bundle.hash,this.store.storeId,`claude-deliveries/${taskId}/records/${source.bundle.hash}`,relative,generation,id);
++   const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=?').all(resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);if(deps.length&&canonicalJson(deps)!==canonicalJson([source.resource.resourceId]))throw recovery();this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_resource_dependencies(resource_id,dependency_id) VALUES(?,?)').run(resourceId,source.resource.resourceId);
++   this.putLease(leaseId,slot.anchorId,'claude-delivery-install',id,this.owner);writeClaudeSlot(this.store,slot);this.operations.add(id);
++  }).immediate());
++  if(token){try{await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,token.resourceId);return token;}catch(error){await this.cancel(token).catch(()=>{});throw error;}}
++  this.checkpoint?.('registered');return this.finish(taskId,source);
++ }
++ private async finish(taskId:string,source?:ClaudeProjectionSource):Promise<ClaudeDeliveryToken>{
++  let slot=readClaudeSlot(this.store,taskId);if(!slot?.pending)throw recovery();const id=slot.pending.id;
++  await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{slot=readClaudeSlot(this.store,taskId);if(!slot?.pending||slot.pending.id!==id)throw recovery();this.claim(slot);this.idle(slot);}).immediate());
++  this.checkpoint?.('claimed');
++  slot=readClaudeSlot(this.store,taskId)!;const artifact=source??await this.projector.readClaudeArtifact(taskId,slot.pending!.sourceId);if(artifact.role!=='view'||artifact.bundle.hash!==slot.pending!.hash||canonicalJson(artifact.applicationScope)!==canonicalJson(slot.pending!.appIds))throw recovery();
++  let stage=join(this.store.root,slot.pending!.stage);
++  if(present(stage)){try{verifyOwnedBundle(stage,artifact.bundle.hash,this.store.storeId);}catch{
++   await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{const fresh=readClaudeSlot(this.store,taskId)!;this.assertPending(fresh);if(!this.sameOwner(fresh.pending!.activeOwner,this.owner)||!this.operations.has(id))throw recovery();if(fresh.pending!.abandonedStages.length>=64)throw recovery();fresh.pending!.abandonedStages.push(fresh.pending!.stage);fresh.pending!.stage=`claude-deliveries/${taskId}/${id}/stages/${randomUUID()}`;writeClaudeSlot(this.store,fresh);slot=fresh;}).immediate());stage=join(this.store.root,slot.pending!.stage);
++  }}
++  ensureStoreDirectory(this.store.root,dirname(slot.pending!.stage));if(!present(stage))writeOwnedBundle(stage,artifact.bundle,this.store.storeId);verifyOwnedBundle(stage,artifact.bundle.hash,this.store.storeId);this.checkpoint?.('copied');
++  let token!:ClaudeDeliveryToken;
++  await withResourceLock(this.store.root,()=>{
++   const fresh=readClaudeSlot(this.store,taskId);if(!fresh?.pending||fresh.pending.id!==id||!this.sameOwner(fresh.pending.activeOwner,this.owner)||!this.operations.has(id))throw recovery();this.claim(fresh);this.idle(fresh);const p=fresh.pending,root=join(this.store.root,fresh.root),backup=join(this.store.root,p.backup);ensureStoreDirectory(this.store.root,dirname(fresh.root));ensureStoreDirectory(this.store.root,dirname(p.backup));
++   if(present(backup)){if(!p.priorHash)throw recovery();verifyOwnedBundle(backup,p.priorHash,this.store.storeId);}
++   if(present(root)){let next=false;try{verifyOwnedBundle(root,p.hash,this.store.storeId);next=true;}catch{if(!p.priorHash||present(backup))throw recovery();verifyOwnedBundle(root,p.priorHash,this.store.storeId);renameSync(root,backup);sync(dirname(root));sync(dirname(backup));this.checkpoint?.('backed-up');}
++    if(next&&p.priorHash&&!present(backup))throw recovery();
++   }else if(p.priorHash&&!present(backup))throw recovery();
++   if(!present(root)){verifyOwnedBundle(stage,p.hash,this.store.storeId);renameSync(stage,root);sync(dirname(stage));sync(dirname(root));}this.checkpoint?.('delivered');verifyOwnedBundle(root,p.hash,this.store.storeId);
++   this.store.sqlite.transaction(()=>{this.assertPending(fresh);const resource=this.store.get(p.resourceId);if(resource.operationId!==p.id||resource.contentHash!==p.hash||resource.relativePath!==fresh.root||resource.generation!==p.generation||resource.state!=='staged')throw recovery();
++    this.store.sqlite.prepare("UPDATE capability_resources SET state='ready',integrity='valid' WHERE resource_id=?").run(p.resourceId);
++    for(const priorId of p.priorResourceIds){const prior=this.store.get(priorId);const expected=[...new Set((artifact.bundle.manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))].sort(),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(priorId) as {dependency_id:string}[]).map(d=>d.dependency_id);if(prior.kind==='session-projection'&&prior.contentHash===p.hash&&canonicalJson(deps)===canonicalJson(expected))this.store.sqlite.prepare("UPDATE capability_resources SET state='ready',integrity='valid',generation=generation+1 WHERE resource_id=?").run(priorId);}
++    fresh.revision++;fresh.current={resourceId:p.resourceId,sourceId:p.sourceId,hash:p.hash,generation:p.generation,appIds:[...p.appIds]};fresh.pending=null;writeClaudeSlot(this.store,fresh);const snapshot=this.sessions.inspectCoordinated(taskId).snapshot;this.projector.verify(this.store.get(p.sourceId),snapshot);verifyClaudeDelivery(this.store,this.store.get(p.resourceId),snapshot);for(const participant of p.participants)this.release(participant.leaseId);this.store.sqlite.prepare("UPDATE capability_resource_operations SET state='committed',plan_json=?,updated_at=? WHERE operation_id=?").run(canonicalJson({slotId:claudeSlotId(taskId),completedPending:p}),new Date().toISOString(),p.id);token=this.preparation(fresh);
++   }).immediate();
++  });this.operations.delete(id);try{this.checkpoint?.('committed');const current=await this.sessions.get(taskId);await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,token.resourceId);return token;}catch(error){await this.cancel(token).catch(()=>{});throw error;}
++ }
++ async recover(taskId:string):Promise<ClaudeDeliveryToken|null>{const slot=readClaudeSlot(this.store,taskId);if(!slot)return null;if(slot.pending)return this.finish(taskId);await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{const fresh=readClaudeSlot(this.store,taskId)!;this.recoverPreparation(fresh);this.idle(fresh);writeClaudeSlot(this.store,fresh);}).immediate());return null;}
++ async cancel(token:ClaudeDeliveryToken):Promise<void>{if(!this.preparations.has(token.preparationId))throw recovery();await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{const slot=readClaudeSlot(this.store,token.taskId);if(!slot)throw recovery();if(!slot.preparation){const lease=this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE lease_id=? AND owner_id=? AND state='released'").get(token.leaseId,token.preparationId);if(!lease)throw recovery();return;}assertClaudePreparation(this.store,slot);if(slot.preparation.id!==token.preparationId||slot.preparation.leaseId!==token.leaseId||!this.sameOwner(slot.preparation.owner,this.owner))throw recovery();this.release(token.leaseId);slot.preparation=null;writeClaudeSlot(this.store,slot);}).immediate());this.preparations.delete(token.preparationId);}
++ proof(runId:string,token:ClaudeDeliveryToken):ClaudeRunDelivery{const slot=readClaudeSlot(this.store,token.taskId),consumer=slot?.consumers.find(c=>c.runId===runId);if(!consumer)throw recovery();const {preparationId:_unused,...rest}=token;const proof={...rest,leaseId:consumer.leaseId};this.assertRun(runId,proof);this.preparations.delete(token.preparationId);return proof;}
++ assertRun(runId:string,proof:ClaudeRunDelivery):void{assertClaudeRunDelivery(this.store,runId,proof);const slot=readClaudeSlot(this.store,proof.taskId)!;const snapshot=this.sessions.inspectCoordinated(proof.taskId).snapshot;verifyClaudeDelivery(this.store,this.store.get(slot.current!.resourceId),snapshot);}
++}
+--- /dev/null
++++ b/src/main/core/applications/claude-delivery-state.ts
+@@ -0,0 +1,102 @@
++import {randomUUID} from 'node:crypto';
++import {claudeRunDeliverySchema} from '@shared/claude-delivery';
++export type {ClaudeRunDelivery} from '@shared/claude-delivery';
++import type {ClaudeRunDelivery} from '@shared/claude-delivery';
++import {basename,dirname,join} from 'node:path';
++import {z} from 'zod';
++import {ApplicationError} from '@shared/applications';
++import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {ResourceStore,ResourceRecord} from './resource-store';
++import {canonicalJson,digest} from './manifest';
++import {verifyOwnedBundle} from './owned-bundle';
++const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/);
++export const deliveryOwner=z.object({instanceId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/)}).strict();
++const appIds=z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(1).max(32).refine(a=>new Set(a).size===a.length);
++const view=z.object({resourceId:z.string(),sourceId:z.string(),hash,generation:z.number().int().positive(),appIds}).strict();
++const participant=z.object({owner:deliveryOwner,leaseId:z.uuid()}).strict();
++const pending=z.object({id:z.uuid(),sourceId:z.string(),hash,appIds,priorHash:hash.nullable(),priorResourceIds:z.array(z.string()).max(1024),resourceId:z.string(),generation:z.number().int().positive(),abandonedStages:z.array(z.string()).max(64),participants:z.array(participant).min(1).max(64),activeOwner:deliveryOwner,stage:z.string(),backup:z.string()}).strict();
++const preparation=z.object({id:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive()}).strict();
++const consumer=z.object({runId:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive(),resourceId:z.string(),hash,generation:z.number().int().positive()}).strict();
++export const claudeSlotSchema=z.object({schema:z.literal(1),storeId:z.uuid(),taskId:id,selectionHash:hash,root:z.string(),anchorId:z.string(),revision:z.number().int().positive(),current:view.nullable(),pending:pending.nullable(),preparation:preparation.nullable(),consumers:z.array(consumer).max(128)}).strict();
++export type ClaudeSlot=z.infer<typeof claudeSlotSchema>;
++export type DeliveryOwner=z.infer<typeof deliveryOwner>;
++export const claudeDeliveryTokenSchema=claudeRunDeliverySchema.extend({preparationId:z.uuid()});
++export type ClaudeDeliveryToken=z.infer<typeof claudeDeliveryTokenSchema>;
++export const claudeSlotId=(taskId:string)=>'claude-delivery-slot:'+taskId;
++export const claudeRoot=(taskId:string)=>`sessions/${taskId}/claude/plugin`;
++export const claudeAnchor=(taskId:string)=>'claude-delivery-root:'+taskId;
++export const normalizedSelection=(s:CapabilitySessionSnapshotV2)=>digest(canonicalJson({...s,native:{...s.native,sessionId:null}}));
++const fail=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Claude目录交付或占用依据待核验，保留现场');
++export function readClaudeSlot(store:ResourceStore,taskId:string):ClaudeSlot|null{
++ const row=store.sqlite.prepare('SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(claudeSlotId(taskId)) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;if(!row){const footprint=store.sqlite.prepare("SELECT 1 FROM capability_resources WHERE owner_store_id=? AND path_scope='C' AND (resource_id=? OR kind='claude-delivery' AND scope_relative_path=?) LIMIT 1").get(store.storeId,claudeAnchor(taskId),claudeRoot(taskId));const intent=store.sqlite.prepare("SELECT 1 FROM capability_resource_operations WHERE owner_store_id=? AND kind='claude-delivery-install' AND CASE WHEN json_valid(plan_json) THEN json_extract(plan_json,'$.slotId') ELSE NULL END=? LIMIT 1").get(store.storeId,claudeSlotId(taskId));if(footprint||intent)throw fail();return null;}
++ try{const raw=JSON.parse(row.plan_json),value=claudeSlotSchema.parse(raw.payload);if(row.kind!=='claude-delivery-slot'||row.owner_store_id!==store.storeId||row.state!=='committed'||digest(canonicalJson(value))!==raw.evidenceHash||value.storeId!==store.storeId||value.taskId!==taskId||value.root!==claudeRoot(taskId)||value.anchorId!==claudeAnchor(taskId))throw fail();
++  const anchor=store.get(value.anchorId);if(anchor.kind!=='claude-delivery-root'||anchor.pathScope!=='C'||anchor.relativePath!==value.root||anchor.state!=='recovery-required'||anchor.integrity!=='unknown'||anchor.operationId!==claudeSlotId(taskId)||anchor.contentHash!==digest(canonicalJson({taskId,selectionHash:value.selectionHash,root:value.root})))throw fail();
++  if(value.pending){const p=value.pending;if(!p.stage.startsWith(`claude-deliveries/${taskId}/${p.id}/stages/`)||!z.uuid().safeParse(p.stage.split('/').at(-1)).success||p.abandonedStages.some(v=>!v.startsWith(`claude-deliveries/${taskId}/${p.id}/stages/`)||!z.uuid().safeParse(v.split('/').at(-1)).success)||p.backup!==`claude-deliveries/${taskId}/${p.id}/previous`||!p.participants.some(v=>canonicalJson(v.owner)===canonicalJson(p.activeOwner))||new Set(p.participants.map(v=>v.leaseId)).size!==p.participants.length)throw fail();}
++  return value;
++ }catch{throw fail();}
++}
++/** Only inside the same short C transaction as the corresponding lease/run change. */
++export function writeClaudeSlot(store:ResourceStore,value:ClaudeSlot):void{
++ const payload=claudeSlotSchema.parse(value),text=canonicalJson({payload,evidenceHash:digest(canonicalJson(payload))}),stamp=new Date().toISOString();
++ store.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'claude-delivery-slot',?,'committed',?,?,?) ON CONFLICT(operation_id) DO UPDATE SET plan_json=excluded.plan_json,updated_at=excluded.updated_at").run(claudeSlotId(value.taskId),store.storeId,text,stamp,stamp);
++}
++export function assertClaudePublication(store:ResourceStore,path:string,contentHash:string,reuse=false):void{
++ if(path!=='sessions'&&!path.startsWith('sessions/'))return;
++ const tasks=new Set<string>();
++ for(const row of store.sqlite.prepare("SELECT operation_id FROM capability_resource_operations WHERE kind='claude-delivery-slot'").all() as {operation_id:string}[]){if(!row.operation_id.startsWith('claude-delivery-slot:'))throw fail();tasks.add(row.operation_id.slice(21));}
++ // An erased slot journal is not proof of no owner.Keep the independent anchor
++ // and physical view footprints in the publication fence even in that condition.
++ for(const row of store.sqlite.prepare("SELECT resource_id,scope_relative_path FROM capability_resources WHERE owner_store_id=? AND path_scope='C' AND kind IN ('claude-delivery-root','claude-delivery')").all(store.storeId) as {resource_id:string;scope_relative_path:string|null}[]){const root=/^sessions\/([A-Za-z0-9][A-Za-z0-9_-]{0,127})\/claude\/plugin$/.exec(row.scope_relative_path??'');if(root)tasks.add(root[1]);else if(row.resource_id.startsWith('claude-delivery-root:'))tasks.add(row.resource_id.slice(21));else throw fail();}
++ for(const taskId of tasks){const root=claudeRoot(taskId);if(path!==root&&!path.startsWith(root+'/')&&!root.startsWith(path+'/'))continue;const slot=readClaudeSlot(store,taskId);if(!slot)throw fail();
++  if(reuse&&path===slot.root&&!slot.pending&&slot.current?.hash===contentHash)return;
++  throw new ApplicationError('RESOURCE_BUSY','此原Claude目录由交付协调器维护，当前占用及修复不能被独立发布覆盖');
++ }
++}
++
++function lease(store:ResourceStore,leaseId:string,owner:DeliveryOwner,ownerId:string,kind:string,anchorId:string,states:string[]):void{
++ const row=store.sqlite.prepare('SELECT resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE lease_id=?').get(leaseId) as {resource_id:string;owner_kind:string;owner_id:string;host_instance_id:string;pid:number;process_started_at:string;state:string}|undefined;
++ if(!row||row.resource_id!==anchorId||row.owner_kind!==kind||row.owner_id!==ownerId||row.host_instance_id!==owner.instanceId||row.pid!==owner.pid||row.process_started_at!==owner.startedAt||!states.includes(row.state))throw fail();
++}
++export function assertClaudeInstallLease(store:ResourceStore,slot:ClaudeSlot):void{if(!slot.pending)throw fail();for(const p of slot.pending.participants)lease(store,p.leaseId,p.owner,slot.pending.id,'claude-delivery-install',slot.anchorId,['active','recovery-required']);}
++export function assertClaudePreparation(store:ResourceStore,slot:ClaudeSlot):void{const p=slot.preparation;if(!p||slot.pending||p.revision!==slot.revision||!slot.current)throw fail();lease(store,p.leaseId,p.owner,p.id,'claude-delivery-preparation',slot.anchorId,['active']);}
++export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):ClaudeSlot{
++ const slot=readClaudeSlot(store,snapshot.taskId),v=slot?.current;
++ if(!slot||!v||slot.pending||slot.selectionHash!==normalizedSelection(snapshot)||snapshot.runner!=='claude-code'||snapshot.legacyBinding||resource.kind!=='claude-delivery'||resource.pathScope!=='C'||resource.resourceId!==v.resourceId||resource.contentHash!==v.hash||resource.generation!==v.generation||resource.relativePath!==slot.root||resource.state!=='ready'||resource.integrity!=='valid')throw fail();
++ const source=store.get(v.sourceId),deps=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
++ if(source.kind!=='claude-projection-source'||source.contentHash!==v.hash||source.state!=='ready'||source.integrity!=='valid'||canonicalJson(deps)!==canonicalJson([v.sourceId]))throw fail();
++ verifyOwnedBundle(store.directory(source),v.hash,store.storeId);
++ const manifest=verifyOwnedBundle(store.directory(resource),v.hash,store.storeId),metadata=manifest.metadata;
++ const expected=[...snapshot.packages.filter(p=>v.appIds.includes(p.appId)).flatMap(p=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}))),...snapshot.standardSkills.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:basename(dirname(s.projectionPath))}))];
++ if(metadata.kind!=='claude-session-projection'||metadata.taskId!==snapshot.taskId||metadata.selectionHash!==slot.selectionHash||canonicalJson(metadata.sources)!==canonicalJson(expected)||v.appIds.some(id=>!snapshot.packages.some(p=>p.appId===id)))throw fail();
++ return slot;
++}
++export function assertClaudeReservation(store:ResourceStore,taskId:string,token?:ClaudeDeliveryToken):void{
++ const slot=readClaudeSlot(store,taskId);if(!slot){if(token)throw fail();return;}
++ if(!token||slot.pending)throw new ApplicationError('RESOURCE_BUSY','原Claude目录需通过本轮交付占用准备运行');assertClaudePreparation(store,slot);const p=slot.preparation!,v=slot.current!;
++ if(token.taskId!==taskId||token.preparationId!==p.id||token.leaseId!==p.leaseId||token.revision!==slot.revision||token.resourceId!==v.resourceId||token.hash!==v.hash||token.generation!==v.generation||canonicalJson(token.appIds)!==canonicalJson(v.appIds))throw fail();
++}
++/** Called by RunRegistry inside its run/primary-lease transaction.No async handoff gap. */
++export function bindClaudeDelivery(store:ResourceStore,token:ClaudeDeliveryToken,runId:string,aliasLeaseId:string,appIds:readonly string[]):ClaudeRunDelivery{
++ assertClaudeReservation(store,token.taskId,token);const slot=readClaudeSlot(store,token.taskId)!,p=slot.preparation!;
++ const row=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
++ if(!row||row.task_id!==slot.taskId||row.state!=='preparing'||row.owner_instance_id!==p.owner.instanceId||row.owner_pid!==p.owner.pid||row.owner_started_at!==p.owner.startedAt||canonicalJson([...appIds].sort())!==canonicalJson([...token.appIds].sort()))throw fail();
++ const stamp=new Date().toISOString();store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(aliasLeaseId,slot.anchorId,runId,p.owner.instanceId,p.owner.pid,p.owner.startedAt,stamp);
++ slot.consumers.push({runId,leaseId:aliasLeaseId,owner:p.owner,revision:slot.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation});slot.preparation=null;writeClaudeSlot(store,slot);store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=?").run(stamp,p.leaseId);
++ return{taskId:token.taskId,leaseId:aliasLeaseId,revision:token.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation,appIds:[...token.appIds]};
++}
++export function assertClaudeRunDelivery(store:ResourceStore,runId:string,proof:ClaudeRunDelivery):void{
++ const slot=readClaudeSlot(store,proof.taskId),v=slot?.current,c=slot?.consumers.find(c=>c.runId===runId);
++ if(!slot||!v||!c||slot.pending||slot.revision!==proof.revision||c.revision!==proof.revision||c.leaseId!==proof.leaseId||c.resourceId!==proof.resourceId||c.hash!==proof.hash||c.generation!==proof.generation||v.resourceId!==proof.resourceId||v.hash!==proof.hash||v.generation!==proof.generation||canonicalJson(v.appIds)!==canonicalJson(proof.appIds))throw fail();
++ const run=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
++ if(!run||run.task_id!==slot.taskId||run.owner_instance_id!==c.owner.instanceId||run.owner_pid!==c.owner.pid||run.owner_started_at!==c.owner.startedAt||['stopped','failed'].includes(run.state))throw fail();lease(store,c.leaseId,c.owner,runId,'run',slot.anchorId,['preparing','active']);
++}
++
++/** A native-only fixed-history reader also freezes its actual canonical path.
++ * This alias is occupancy on an explicitly unready anchor,not application authority. */
++export function protectClaudeNativeGuard(store:ResourceStore,taskId:string,runId:string):void{
++ const slot=readClaudeSlot(store,taskId);if(!slot)return;
++ const row=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
++ if(!row||row.task_id!==taskId||row.state!=='preparing')throw fail();const owner=deliveryOwner.parse({instanceId:row.owner_instance_id,pid:row.owner_pid,startedAt:row.owner_started_at}),leaseId=randomUUID(),anchor=store.get(slot.anchorId);
++ store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,slot.anchorId,runId,owner.instanceId,owner.pid,owner.startedAt,new Date().toISOString());
++ slot.consumers.push({runId,leaseId,owner,revision:slot.revision,resourceId:slot.anchorId,hash:anchor.contentHash,generation:anchor.generation});writeClaudeSlot(store,slot);
++}
+--- a/src/main/core/applications/resource-store.ts
++++ b/src/main/core/applications/resource-store.ts
+@@ -1,3 +1,4 @@
++import {assertClaudePublication} from './claude-delivery-state';
+ import { randomUUID } from 'node:crypto';
+ import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+ import { dirname, join } from 'node:path';
+@@ -21,7 +22,7 @@
+   assertPublish?: (operationId: string) => void;
+ }
+ export type PublishCheckpoint = 'registered' | 'materialized' | 'renamed';
+-const SELECT = `SELECT resource_id AS resourceId,kind,content_hash AS contentHash,owner_store_id AS ownerStoreId,
++const SELECT = `SELECT resource_id AS resourceId,kind,content_hash AS contentHash,owner_store_id AS ownerStoreId,relative_path AS rawRelativePath,scope_relative_path AS physicalAliasPath,
+   COALESCE(scope_relative_path,relative_path) AS relativePath,path_scope AS pathScope,CASE WHEN path_scope='C' THEN owner_store_id ELSE scope_identity END AS scopeIdentity,state,generation,integrity,operation_id AS operationId FROM capability_resources`;
+ 
+ /** Durable C-store publication. File copies never run inside a SQLite write transaction. */
+@@ -50,7 +51,10 @@
+     } catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '应用资源库身份无法核验'); }
+   }
+   get(id: string): ResourceRecord {
+-    const row = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(id) as ResourceRecord | undefined;
++    const found = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(id) as (ResourceRecord & {rawRelativePath:string;physicalAliasPath:string|null}) | undefined;
++    if(!found)throw new ApplicationError('NOT_FOUND','应用资源记录不存在');const {rawRelativePath,physicalAliasPath,...row}=found;
++    if(['claude-delivery-root','claude-delivery'].includes(row.kind)&&(!physicalAliasPath||row.pathScope!=='C'))throw new ApplicationError('OWNERSHIP_CONFLICT','Claude交付缺少显式物理位置');
++    if(row.pathScope==='C'&&physicalAliasPath){const match=/^sessions\/([A-Za-z0-9][A-Za-z0-9_-]{0,127})\/claude\/plugin$/.exec(physicalAliasPath),taskId=match?.[1];if(!taskId||!(row.kind==='claude-delivery-root'&&row.resourceId==='claude-delivery-root:'+taskId&&rawRelativePath===`claude-deliveries/${taskId}/anchor`||row.kind==='claude-delivery'&&row.resourceId===`claude-delivery:${taskId}:${row.contentHash}`&&rawRelativePath===`claude-deliveries/${taskId}/records/${row.contentHash}`))throw new ApplicationError('OWNERSHIP_CONFLICT','C目录物理别名不属于已登记的Claude交付种类');}
+     if (!row) throw new ApplicationError('NOT_FOUND', '应用资源记录不存在');
+     if (row.ownerStoreId !== this.storeId || !isPackagePath(row.relativePath)) throw new ApplicationError('OWNERSHIP_CONFLICT', '应用资源归属不一致');
+     if (!['C','H'].includes(row.pathScope) || (row.pathScope === 'H' && (!APP_HASH_PATTERN.test(row.scopeIdentity) || !row.relativePath.startsWith('.agents/skills/')))) throw new ApplicationError('OWNERSHIP_CONFLICT','资源位置范围无法核验');
+@@ -138,7 +142,7 @@
+   private async restoreMissing(spec: PublishResource, signal?: AbortSignal): Promise<ResourceRecord> {
+     const operationId = randomUUID(); let leaseId = '', present = false;
+     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
+-      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId); this.assertDependencies(spec.dependencies);
++      assertClaudePublication(this,spec.relativePath,spec.contentHash);const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId); this.assertDependencies(spec.dependencies);
+       if (row.state !== 'ready' || row.integrity !== 'valid') throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源已有发布或清理操作，先恢复原操作');
+       const state = this.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
+       if (state && (state.store_id !== this.storeId || state.maintenance_state !== 'ready')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源库正在维护或待恢复');
+@@ -172,6 +176,7 @@
+     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
+       this.assertDependencies(spec.dependencies); spec.assertPublish?.(operationId);
+       const old = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(spec.resourceId) as ResourceRecord | undefined;
++      assertClaudePublication(this,spec.relativePath,spec.contentHash,old?.state==='ready'&&old.integrity==='valid');
+       if (old) {
+         this.assertIdentity(this.get(spec.resourceId), spec);
+         if (old.state !== 'removed' && (old.state !== 'ready' || old.integrity !== 'valid')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源有未完成的发布或清理，先恢复原操作');
+@@ -221,6 +226,7 @@
+       spec.verify(stage);
+     } else spec.verify(target);
+     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
++      assertClaudePublication(this,spec.relativePath,spec.contentHash);
+       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
+       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
+       if (row.operationId !== operationId || row.state === 'deleting' || row.state === 'removed') throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布资源状态已变化');
+@@ -230,6 +236,7 @@
+     }).immediate(), { signal });
+     this.checkpoint?.('materialized');
+     await withResourceLock(this.root, () => {
++      assertClaudePublication(this,spec.relativePath,spec.contentHash);
+       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
+       this.assertRecordedDependencies(spec);
+       const row = this.get(spec.resourceId);
+@@ -239,6 +246,7 @@
+       else renameSync(stage, target);
+       this.phase(operationId, 'published');
+       this.checkpoint?.('renamed');
++      assertClaudePublication(this,spec.relativePath,spec.contentHash);
+       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);spec.verify(target);
+       this.sqlite.transaction(() => {
+         this.assertOwnPublisher(spec.resourceId,operationId,leaseId);this.assertRecordedDependencies(spec);
+@@ -263,6 +271,7 @@
+     if (!/^[a-f0-9-]{36}$/.test(operationId)) throw new ApplicationError('INVALID_PACKAGE', '恢复操作标识无效');
+     let leaseId = '', alreadyReady = false;
+     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
++      const slotOld=this.get(spec.resourceId);assertClaudePublication(this,spec.relativePath,spec.contentHash,slotOld.state==='ready'&&slotOld.integrity==='valid');
+       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
+       if (row.operationId !== operationId || this.activeOperations.has(operationId)) throw new ApplicationError('RESOURCE_BUSY', '原发布操作仍在执行或归属不同');
+       const operation = this.sqlite.prepare('SELECT kind,state,plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId, this.storeId) as {kind:string;state:string;plan:string}|undefined;
+--- a/src/main/core/applications/run-registry.ts
++++ b/src/main/core/applications/run-registry.ts
+@@ -1,3 +1,4 @@
++import {assertClaudeReservation,bindClaudeDelivery,assertClaudeRunDelivery,protectClaudeNativeGuard,type ClaudeDeliveryToken,type ClaudeRunDelivery} from './claude-delivery-state';
+ import {applicationRunScopeSchema,applicationScopeOperationId,readApplicationRunScope,type ApplicationRunScope} from './application-run-scope';
+ import { randomUUID } from 'node:crypto';
+ import { z } from 'zod';
+@@ -22,7 +23,7 @@
+ interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
+ interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
+ interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;verify:()=>Promise<void>}
+-interface OwnedRun { scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
++interface OwnedRun { delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+ export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[] }
+ export interface RunRegistryDeps {
+   /** Read current local policy/revisions; no network, filesystem or asynchronous work in C. */
+@@ -137,6 +138,7 @@
+     this.checkProtection(row,owned);
+   }
+   private checkProtection(row: RunRow,owned: OwnedRun): void {
++    if(owned.delivery)assertClaudeRunDelivery(this.store,row.run_id,owned.delivery);
+     const lease = this.store.sqlite.prepare('SELECT state,owner_id,host_instance_id FROM capability_resource_leases WHERE lease_id=?').get(owned.leaseId) as { state: string;owner_id: string;host_instance_id: string } | undefined;
+     if (!lease || lease.owner_id !== row.run_id || lease.host_instance_id !== this.instanceId || !['preparing','active'].includes(lease.state)) throw new ApplicationError('RESOURCE_STATE_CHANGED','运行资源占用已改变');
+     const protectedRows = this.store.sqlite.prepare('SELECT resource_id,content_hash,generation FROM capability_lease_resources WHERE lease_id=?').all(owned.leaseId) as { resource_id: string;content_hash: string;generation: number }[];
+@@ -147,16 +149,17 @@
+   get(runId: string): CapabilityRunRecord { return this.view(this.row(runId)); }
+   async reserve(input: z.infer<typeof reserveSchema>,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation);}
+   /** Host-only narrowing; never exposed as an RPC or model parameter. */
+-  async reserveScoped(input:z.infer<typeof reserveSchema>,appIds:readonly string[],projectionIds:readonly string[]=[],reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation,{appIds:[...appIds],projectionIds:[...projectionIds]});}
+-  private async reserveManaged(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string},narrowing?:{appIds:readonly string[];projectionIds:readonly string[]}): Promise<OwnedCapabilityRun> {
++  async reserveScoped(input:z.infer<typeof reserveSchema>,appIds:readonly string[],projectionIds:readonly string[]=[],reservation?:{runId:string;ptyId:string},delivery?:ClaudeDeliveryToken):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation,{appIds:[...appIds],projectionIds:[...projectionIds]},delivery);}
++  private async reserveManaged(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string},narrowing?:{appIds:readonly string[];projectionIds:readonly string[]},deliveryToken?:ClaudeDeliveryToken): Promise<OwnedCapabilityRun> {
+     const parsed = reserveSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','运行准备参数无效或含未允许字段');
+     if (this.closed) throw new ApplicationError('CANCELED','此宿主的应用运行服务已停止');
+     if (reservation && (!z.uuid().safeParse(reservation.runId).success || !z.uuid().safeParse(reservation.ptyId).success)) throw new ApplicationError('INVALID_INPUT','宿主预留运行身份无效');
+-    const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';let scope:ApplicationRunScope|undefined;
++    const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';let scope:ApplicationRunScope|undefined;let delivery:ClaudeRunDelivery|undefined;
+     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+       if (this.closed) throw new ApplicationError('CANCELED','运行准备已取消');
+       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId); this.gate();
+       const session = this.sessions.inspectCoordinated(value.taskId); selectionHash = session.selectionHash;
++      assertClaudeReservation(this.store,value.taskId,deliveryToken);
+       if (session.retention !== 'active' || session.pointer.snapshotHash !== value.snapshotHash) throw new ApplicationError('RESOURCE_STATE_CHANGED','原会话版本或保留状态已改变');
+       if (!this.store.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(session.snapshot.projectId)) throw new ApplicationError('NOT_FOUND','项目已删除，保留历史但不能启动');
+       if (this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(value.taskId)) throw new ApplicationError('RESOURCE_BUSY','原任务仍有运行或待核查占用');
+@@ -168,8 +171,9 @@
+       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
+       for (const r of resources) this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
+       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
+-    }).immediate());
+-    const owned: OwnedRun = { ...(scope?{scope,scopeProjectionIds:Object.freeze([...narrowing!.projectionIds])}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
++      if(deliveryToken){if(!scope)throw new ApplicationError('SCOPE_DENIED','Claude交付必须使用真实本轮应用范围');delivery=bindClaudeDelivery(this.store,deliveryToken,runId,randomUUID(),scope.applications.map(p=>p.appId));}
++    }).immediate());
++    const owned: OwnedRun = { ...(delivery?{delivery}:{}),...(scope?{scope,scopeProjectionIds:Object.freeze([...narrowing!.projectionIds])}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
+     if (this.closed) { await this.stop(runId,'host-shutdown'); throw new ApplicationError('CANCELED','运行准备期间宿主服务已停止'); }
+     return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
+   }
+@@ -208,6 +212,7 @@
+       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
+       for(const r of resources)this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
+       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
++      protectClaudeNativeGuard(this.store,value.taskId,runId);
+       if(kind==='fixed'){
+         const receipt=launchRestrictionSchema.parse({schema:1,runId,taskId:value.taskId,snapshotHash:value.snapshotHash,selectionHash,reason:input.restriction?.reason??'fixed_application_resources_unavailable',issueCode:input.restriction?.issueCode??'CAPABILITY_UNAVAILABLE',restrictedAt:timestamp}),text=canonicalJson(receipt);
+         this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),timestamp);
+@@ -261,7 +266,7 @@
+       const { row,owned,session } = this.lifecycle(runId); if (owned.abort.signal.aborted || !['preparing','prepared'].includes(row.state)) throw new ApplicationError('CANCELED','准备期间运行已被撤销');
+       this.currentLifecycle(row,session); this.checkProtection(row,owned);
+       this.store.sqlite.prepare("UPDATE capability_runs SET state='prepared' WHERE run_id=?").run(runId);
+-      this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='active' WHERE lease_id=? AND state='preparing'").run(owned.leaseId); return this.get(runId);
++      this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='active' WHERE owner_kind='run' AND owner_id=? AND state='preparing'").run(runId); return this.get(runId);
+     }).immediate());
+   }
+   private async reserveBridge(runId: string): Promise<OwnedRunProcess> {
+--- a/src/main/core/applications/session-projector.ts
++++ b/src/main/core/applications/session-projector.ts
+@@ -1,3 +1,4 @@
++import {verifyClaudeDelivery} from './claude-delivery-state';
+ import { readFileSync } from 'node:fs';
+ import { dirname, join } from 'node:path';
+ import { parseDocument } from 'yaml';
+@@ -110,6 +111,7 @@
+     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{resource,root};
+   }
+   verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void {
++    if(resource.kind==='claude-delivery'){verifyClaudeDelivery(this.store,resource,snapshot);return;}
+     if(['claude-projection-source','claude-projection-archive'].includes(resource.kind)){
+       const archive=resource.kind==='claude-projection-archive',identity=this.sourceIdentity(snapshot.taskId,resource.contentHash,archive);
+       if(resource.pathScope!=='C'||resource.state!=='ready'||resource.integrity!=='valid'||resource.resourceId!==identity.resourceId||resource.relativePath!==identity.relativePath)throw new ApplicationError('OWNERSHIP_CONFLICT','Claude来源归属或就绪身份不同');
+--- a/src/main/core/applications/session-registry.ts
++++ b/src/main/core/applications/session-registry.ts
+@@ -83,7 +83,7 @@
+       if(snapshot.legacyBinding&&identity.discovery_home!==assertLegacySessionSource(this.store,snapshot).identity.home)throw new Error('legacy discovery identity');
+       const actual = this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId) as SessionResourceReference[];
+       const expected = this.expectedSources(snapshot);
+-      if ([...expected].some(([id,s]) => !actual.some(r => r.refId === id && r.refKind === s.kind && r.refHash === s.hash)) || actual.some(r => !isPackagePath(r.relativePath) || (!expected.has(r.refId) && !['session-projection','agent-projection','legacy-runtime','claude-projection-source','claude-projection-archive'].includes(r.refKind)))) throw new Error('reference integrity');
++      if ([...expected].some(([id,s]) => !actual.some(r => r.refId === id && r.refKind === s.kind && r.refHash === s.hash)) || actual.some(r => !isPackagePath(r.relativePath) || (!expected.has(r.refId) && !['session-projection','agent-projection','legacy-runtime','claude-projection-source','claude-projection-archive','claude-delivery'].includes(r.refKind)))) throw new Error('reference integrity');
+       for (const ref of actual) {
+         const resource = this.store.get(ref.refId);
+         if (resource.contentHash !== ref.refHash || resource.relativePath !== ref.relativePath || resource.kind !== ref.refKind) throw new Error('resource reference identity');
+@@ -182,7 +182,7 @@
+     // The ordinary launcher always reads its original M4 runtime, including
+     // when its context MCP is disabled. Narrow only application-specific roots.
+     for(const ref of all.filter(r=>r.refKind==='legacy-runtime'))if(!roots.some(r=>r.refId===ref.refId))roots.push(ref);
+-    for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
++    for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection','claude-delivery'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
+     return roots.sort((a,b)=>compareCodePoints(a.refId,b.refId));
+   }
+   async verifyScopedResources(taskId:string,appIds:readonly string[],projectionIds:readonly string[]):Promise<void>{
+@@ -192,7 +192,7 @@
+   }
+   async addProjectionReference(taskId: string,expectedHash: string,resourceId: string): Promise<void> {
+     const current = await this.get(taskId), resource = this.store.get(resourceId);
+-    if (!['session-projection','agent-projection','claude-projection-source','claude-projection-archive'].includes(resource.kind) || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','投影未完成发布');
++    if (!['session-projection','agent-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind) || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','投影未完成发布');
+     this.deps.verifyExtraResource(resource,current.snapshot);
+     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+       const known = this.read(taskId), fresh = this.store.get(resourceId);
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -1,3 +1,5 @@
++import {ClaudeDeliveryCoordinator} from './claude-delivery';
++import type {ClaudeDeliveryToken,ClaudeRunDelivery} from './claude-delivery-state';
+ import {inspectApplicationResources} from './application-resource-availability';
+ import {assertNoPendingApplicationSwitch} from './application-run-policy';
+ import { mkdirSync, writeFileSync,lstatSync } from 'node:fs';
+@@ -49,6 +51,7 @@
+   readonly runs:CapabilityRunRegistry;
+   readonly bridges:AgentBridgeProcesses;
+   readonly broker:PrivateApplicationBroker;
++  readonly claudeDelivery:ClaudeDeliveryCoordinator;
+   private readonly catalogs=new Map<string,DiscoveryCatalog>();
+   private readonly active=new Map<string,ActiveLaunch>();
+   private readonly initialApplicationScopes=new Map<string,{selectionHash:string;appIds:readonly string[]}>();
+@@ -63,7 +66,7 @@
+     const store=support.store;this.legacyRetention=new LegacyTaskRetention(store);this.processes=options.processes??new MacProcessIdentityReader(options.helper);
+     this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:snapshot=>this.assertInitialSelection(snapshot),verifyExtraResource:(resource,snapshot)=>{
+       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
+-      else if(['session-projection','claude-projection-source','claude-projection-archive'].includes(resource.kind))this.projector.verify(resource,snapshot);
++      else if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind))this.projector.verify(resource,snapshot);
+       else if(resource.kind==='agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原生发现根缺失');this.catalog(identity.home).verifyReference(resource,snapshot);}
+       else if(resource.kind==='legacy-agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现根缺失');new LegacyOriginalCodex(store,this.catalog(identity.home)).verify(resource,snapshot);}
+       else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);
+@@ -77,11 +80,12 @@
+       const project=store.sqlite.prepare('SELECT archived_at FROM projects WHERE id=?').get(snapshot.projectId) as {archived_at:number|null}|undefined;
+       if(!project||project.archived_at!==null)throw new ApplicationError('SCOPE_DENIED','项目已删除或归档，不能继续使用此运行');
+     },revoke:runId=>{this.broker?.revokeRun(runId);this.bridges?.revokeRun(runId);const entry=this.active.get(runId);if(entry)this.options.stopPty(entry.run.ptyId);}});
++    this.claudeDelivery=new ClaudeDeliveryCoordinator(store,this.sessions,this.projector,this.processes,this.runs.instanceId);
+     this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
+     this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId)});
+     applications.sessionDiagnostics.attach({channelConnected:id=>this.broker.hasAuthenticated(id),verify:(resource,snapshot,home)=>{
+       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
+-      else if(['session-projection','claude-projection-source','claude-projection-archive'].includes(resource.kind))this.projector.verify(resource,snapshot);
++      else if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind))this.projector.verify(resource,snapshot);
+       else if(resource.kind==='agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');catalog.verifyReference(resource,snapshot);}
+       else if(resource.kind==='legacy-agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');new LegacyOriginalCodex(store,catalog).verify(resource,snapshot);}
+       else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);
+@@ -177,7 +181,7 @@
+         if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);
+       }else{
+       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
+-      const plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready').map(p=>p.appId),plannedScope=planned.runner==='codex'&&plannedReady.length>0&&plannedReady.length<planned.packages.length?plannedReady:undefined;
++      const plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready').map(p=>p.appId),plannedScope=plannedReady.length>0&&plannedReady.length<planned.packages.length?plannedReady:undefined;
+       assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);
+       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
+       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+@@ -201,18 +205,24 @@
+     }
+     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
+     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+-    const ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready').map(p=>p.appId),applicationScope=snapshot.runner==='codex'&&!unavailable&&native&&ready.length>0&&ready.length<snapshot.packages.length?ready:undefined;
++    const ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready').map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&ready.length>0&&(ready.length<snapshot.packages.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
+     if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
++    if(snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId)&&(unavailable||!native))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+     const gateSnapshot=applicationScope?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>applicationScope.includes(p.appId))}:snapshot;
+     assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);const projectionIds:string[]=[];
+-    let pluginRoot:string|null=null,pluginHash:string|null=null;
++    let pluginRoot:string|null=null,pluginHash:string|null=null,deliveryToken:ClaudeDeliveryToken|undefined,deliveryProof:ClaudeRunDelivery|undefined;
+     if(!unavailable&&!snapshot.legacyBinding){
+       if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope),published=await catalog.publish(sources,{signal:input.signal});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
++      else if(applicationScope){try{deliveryToken=await this.claudeDelivery.prepare(input.taskId,applicationScope);}catch(error){if(!(error instanceof ApplicationError)||!['RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))throw error;return this.prepareUnavailableSession(input,current,native,error.code,catalog);}pluginRoot=join(this.support.store.root,'sessions',input.taskId,'claude/plugin');pluginHash=deliveryToken.hash;projectionIds.push(deliveryToken.resourceId);}
+       else{const plugin=await this.projector.claude(input.taskId);pluginRoot=plugin.root;pluginHash=plugin.resource.contentHash;}
+     }
+     const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
+-    const run=hold?.run??await this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]}),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
++    let run:OwnedCapabilityRun;
++    try{run=hold?.run??(deliveryToken?await this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope!,projectionIds,undefined,deliveryToken):await this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]}));}
++    catch(error){if(deliveryToken)await this.claudeDelivery.cancel(deliveryToken).catch(()=>{});throw error;}
++    const entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
+     try{
++      if(deliveryToken)deliveryProof=this.claudeDelivery.proof(run.runId,deliveryToken);
+       const legacy=(await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime');if(legacy.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原启动资源身份缺失或重复');
+       const mcpName=snapshot.mcp.find(m=>m.kind==='legacy-project-context')?.serverName??null;
+       const original=snapshot.legacyBinding?assertLegacySessionSource(this.support.store,snapshot):null;
+@@ -228,7 +238,7 @@
+           legacyRequest={schema:'m4-legacy-load-request-v1',taskId:input.taskId,projectId:input.projectId,sourceSnapshotHash:original.row.source_snapshot_hash,runId:run.runId,cliVersion:native.version,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},catalog:collection,userSkillConfig:flags,inventory};
+           try{legacyPlan();}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT','RESOURCE_RECOVERY_REQUIRED'].includes(error.code)){unavailable=error.code;legacyRequest=undefined;}else throw error;}
+         }else{
+-        request={snapshot,...(applicationScope?{applicationScope}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
++        request={snapshot,...(applicationScope?{applicationScope}:{}),...(deliveryProof?{claudeDelivery:deliveryProof}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
+         try{this.support.adapters.plan(snapshot.adapterBinding.hash,request);}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT'].includes(error.code)){unavailable=error.code;request=undefined;}else throw error;}
+       }
+       }
+@@ -245,7 +255,7 @@
+       let effectiveApplications=!unavailable;
+       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared';
+       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:runtime.env,command:native?.command,
+-        assertBeforeFork:()=>{if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);},
++        assertBeforeFork:()=>{if(effectiveApplications){assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);if(deliveryProof)this.claudeDelivery.assertRun(run.runId,deliveryProof);}},
+         nativeOnly:async reason=>{
+           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
+           if(unavailable){runtime.snapshot.selfCheck?.issues.push(reason);launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;}
+@@ -283,7 +293,7 @@
+         const flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path);return known?{...item,path:known.path}:item;});
+         args=this.support.adapters.plan(isolation.hash,{snapshot:hidden,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]}).args;
+       }
+-      const issue=snapshot.legacyBinding?unavailable??'RESOURCE_RECOVERY_REQUIRED':'CAPABILITY_UNAVAILABLE',runtime=this.unavailableRuntime(input,current,run.runId,issue);if(!native||!adapter.metadata.cliVersions.includes(native.version))runtime.snapshot.selfCheck?.issues.push('AGENT_ADAPTER_UNSUPPORTED');entry.runtime=runtime;
++      const issue=snapshot.legacyBinding?unavailable??'RESOURCE_RECOVERY_REQUIRED':unavailable??'CAPABILITY_UNAVAILABLE',runtime=this.unavailableRuntime(input,current,run.runId,issue);if(!native||!adapter.metadata.cliVersions.includes(native.version))runtime.snapshot.selfCheck?.issues.push('AGENT_ADAPTER_UNSUPPORTED');entry.runtime=runtime;
+       await run.prepare();if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原会话原生启动已取消');
+       try{await this.applications.sessionDiagnostics.prepared({schema:1,runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:'unavailable',issueCode:issue,manifestPath:runtime.snapshot.manifestPath,configPaths:[],preparedAt:new Date().toISOString()});}catch{/* Display evidence grants nothing. */}
+       let phase:'prepared'|'native-only'|'arming'='prepared';
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -1,3 +1,4 @@
++import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-state';
+ import { createRequire } from 'node:module';
+ import { basename, dirname, join, relative } from 'node:path';
+ import { ApplicationError } from '@shared/applications';
+@@ -44,11 +45,13 @@
+     if (!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64') || !meta.cliVersions.includes(input.cliVersion)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此Agent／平台版本尚未验证所需加载机制，保留Agent原功能');
+     if (input.native.runner !== snapshot.runner || input.native.stateRoot !== snapshot.native.stateRoot || input.native.cwd !== snapshot.native.cwd || input.native.sessionId !== snapshot.native.sessionId) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','加载时的原生身份或目录已改变');
+     const applications=input.applicationScope===undefined?snapshot.packages:snapshot.packages.filter(p=>input.applicationScope!.includes(p.appId));
+-    if(input.applicationScope&&(snapshot.runner!=='codex'||snapshot.legacyBinding||new Set(input.applicationScope).size!==input.applicationScope.length||applications.length!==input.applicationScope.length))throw new ApplicationError('INVALID_INPUT','本轮应用加载范围须来自原固定选择且由受支持适配器处理');
++    if(input.claudeDelivery&&snapshot.runner!=='claude-code')throw new ApplicationError('INVALID_INPUT','原目录交付依据只适用于Claude');
++    if(input.applicationScope&&((snapshot.runner!=='codex'&&!input.claudeDelivery)||snapshot.legacyBinding||new Set(input.applicationScope).size!==input.applicationScope.length||applications.length!==input.applicationScope.length))throw new ApplicationError('INVALID_INPUT','本轮应用加载范围须来自原固定选择且由受支持适配器处理');
+     const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...snapshot.standardSkills.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
+     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
+       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
+       if (input.pluginRoot !== expected || !input.pluginHash || allSkills.some(s => !within(join(expected,'skills'),s.path))) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude必须沿用原会话稳定插件路径');
++      if(input.claudeDelivery){if(!input.applicationScope||canonicalJson(input.applicationScope)!==canonicalJson(input.claudeDelivery.appIds)||input.pluginHash!==input.claudeDelivery.hash)throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude本轮加载范围与原目录交付不同');assertClaudeRunDelivery(this.store,input.runId,input.claudeDelivery);verifyClaudeDelivery(this.store,this.store.get(input.claudeDelivery.resourceId),snapshot);}
+       const projection = verifyOwnedBundle(input.pluginRoot,input.pluginHash,this.store.storeId);
+       const selectionHash = digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
+       if (projection.metadata.taskId !== snapshot.taskId || projection.metadata.selectionHash !== selectionHash) throw new ApplicationError('SNAPSHOT_IMMUTABLE','插件投影不属于原固定会话');
+--- a/src/main/core/applications/session-diagnostics.ts
++++ b/src/main/core/applications/session-diagnostics.ts
+@@ -1,3 +1,4 @@
++import {readClaudeSlot} from './claude-delivery-state';
+ import {lstatSync} from 'node:fs';
+ import {join,relative,isAbsolute} from 'node:path';
+ import {z} from 'zod';
+@@ -62,14 +63,15 @@
+  }
+  private resourceIssue(session:StoredCapabilitySession,appId?:string):string|null{
+   let refs=this.store.sqlite.prepare('SELECT ref_id FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(session.snapshot.taskId) as {ref_id:string}[];
+-  const scoped=appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding;
+-  const skills=[...session.snapshot.packages.filter(p=>!scoped||p.appId===appId).flatMap(p=>p.skills),...session.snapshot.standardSkills];
+   try{
++  const delivery=session.snapshot.runner==='claude-code'&&!session.snapshot.legacyBinding?readClaudeSlot(this.store,session.snapshot.taskId):null;
++  const scoped=!!delivery?.current||appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding;
++  const skills=[...session.snapshot.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...session.snapshot.standardSkills];
+    if(scoped){
+-    const projectionIds=refs.filter(ref=>{const resource=this.store.get(ref.ref_id);if(!['session-projection','agent-projection'].includes(resource.kind))return false;const root=this.store.directory(resource);return skills.some(skill=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});}).map(r=>r.ref_id);
+-    refs=this.sessions.scopedReferencesCoordinated(session.snapshot.taskId,[appId!],projectionIds).map(r=>({ref_id:r.refId}));
++    const projectionIds=delivery?.current?[delivery.current.resourceId]:refs.filter(ref=>{const resource=this.store.get(ref.ref_id);if(!['session-projection','agent-projection'].includes(resource.kind))return false;const root=this.store.directory(resource);return skills.some(skill=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});}).map(r=>r.ref_id);
++    refs=this.sessions.scopedReferencesCoordinated(session.snapshot.taskId,appId?[appId]:session.snapshot.packages.map(p=>p.appId),projectionIds).map(r=>({ref_id:r.refId}));
+    }
+-   const projectionRoots:string[]=[];for(const ref of refs){const resource=this.store.get(ref.ref_id);const directory=this.directory(resource);if(['session-projection','agent-projection','standard-skill','legacy-static-plugin','legacy-agent-projection'].includes(resource.kind))projectionRoots.push(directory);if(resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源未就绪');if(resource.kind==='application-package'){const pack=this.packages.get(resource.contentHash);verifyPackageTree(directory,pack,this.store.storeId);}else if(resource.kind==='runtime')new RuntimeRegistry(this.store).verify(resource.contentHash);else if(this.inspector)this.inspector.verify(resource,session.snapshot,session.discoveryHome);else throw new ApplicationError('CAPABILITY_UNAVAILABLE','完整投影核验尚无所属宿主');}
++   const projectionRoots:string[]=[];for(const ref of refs){const resource=this.store.get(ref.ref_id);const directory=this.directory(resource);if(['session-projection','agent-projection','standard-skill','legacy-static-plugin','legacy-agent-projection','claude-delivery'].includes(resource.kind))projectionRoots.push(directory);if(resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源未就绪');if(resource.kind==='application-package'){const pack=this.packages.get(resource.contentHash);verifyPackageTree(directory,pack,this.store.storeId);}else if(resource.kind==='runtime')new RuntimeRegistry(this.store).verify(resource.contentHash);else if(this.inspector)this.inspector.verify(resource,session.snapshot,session.discoveryHome);else throw new ApplicationError('CAPABILITY_UNAVAILABLE','完整投影核验尚无所属宿主');}
+    for(const skill of skills){const owned=projectionRoots.some(root=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});if(!owned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill缺少所属投影引用');const st=lstatSync(skill.projectionPath);if(st.isSymbolicLink()||!st.isFile())throw new ApplicationError('OWNERSHIP_CONFLICT','原Skill投影不是受管文件');}return null;}catch(e){return code(e);}
+  }
+  inspect(taskId:string):Promise<ApplicationSessionDiagnostic>{id.parse(taskId);return withResourceLock(this.store.root,()=>{
+--- a/src/main/core/applications/__tests__/agent-fixture.ts
++++ b/src/main/core/applications/__tests__/agent-fixture.ts
+@@ -34,7 +34,7 @@
+   const legacyFiles = runtimeFiles(),legacyHash = treeHash(legacyFiles),legacyPath = join(store.root,'runtime',legacyHash); writeOwnedTree(legacyPath,legacyFiles,join(store.root,'conflicts')); await legacy.adoptRuntime(legacyHash);
+   let projector!: SessionCapabilityProjector;
+   let extra: ((resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2)=>void)|undefined;
+-  const sessions = new CapabilitySessionRegistry(store,{ assertInitialSelection: snapshot => { const a = adapters.get(snapshot.adapterBinding.hash); if (a.metadata.agentId !== snapshot.runner || snapshot.packages.some(p => packages.active(p.appId)?.packageHash !== p.packageHash)) throw new ApplicationError('RESOURCE_STATE_CHANGED','fixture selection changed'); },verifyExtraResource: (resource,snapshot) => { if (resource.kind === 'agent-adapter') adapters.verifyReference(resource,snapshot); else if (['session-projection','claude-projection-source','claude-projection-archive'].includes(resource.kind)) projector.verify(resource,snapshot); else if(resource.kind==='agent-projection'&&extra)extra(resource,snapshot);else legacy.verify(resource); } }); projector = new SessionCapabilityProjector(store,sessions);
++  const sessions = new CapabilitySessionRegistry(store,{ assertInitialSelection: snapshot => { const a = adapters.get(snapshot.adapterBinding.hash); if (a.metadata.agentId !== snapshot.runner || snapshot.packages.some(p => packages.active(p.appId)?.packageHash !== p.packageHash)) throw new ApplicationError('RESOURCE_STATE_CHANGED','fixture selection changed'); },verifyExtraResource: (resource,snapshot) => { if (resource.kind === 'agent-adapter') adapters.verifyReference(resource,snapshot); else if (['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind)) projector.verify(resource,snapshot); else if(resource.kind==='agent-projection'&&extra)extra(resource,snapshot);else legacy.verify(resource); } }); projector = new SessionCapabilityProjector(store,sessions);
+   const plan = (runner: 'claude-code' | 'codex' = 'claude-code'): CapabilitySessionSnapshotV2 => {
+     const taskId = randomUUID(), adapter = installedAdapters.find(a => a.metadata.agentId === runner)!, name = applicationNativeSkillName(application.appId,source.manifest.skills[0].id,application.packageHash), standardName = standardNativeSkillName(standard.id,standard.hash), plugin = join(store.root,'sessions',taskId,'claude/plugin/skills'), skillPath = (n: string) => join(runner === 'codex' ? join(home,'.agents/skills') : plugin,n,'SKILL.md'),mcpName = applicationMcpServerName(digest(taskId));
+     return { schema: 2,taskId,projectId: 'p1',createdAt: new Date().toISOString(),runner,adapterBinding: { id: runner,version: adapter.metadata.version,hash: adapter.hash,projectionFormatVersion: 1,nativeToolNames: Object.fromEntries(source.manifest.tools.map(t => [t.name,'mcp__' + mcpName + '__' + t.name])) },native: { sessionId: null,stateRoot: join(home,runner === 'codex' ? '.codex' : '.claude'),cwd },agentAtCreation: { version: adapter.metadata.cliVersions[0],adapterRevision: 1 },catalogGeneration: 'fixture-catalog-1',packages: [{ appId: application.appId,version: application.version,packageHash: application.packageHash,hashAlgorithm: 'app-manifest-v1',hostApi: source.manifest.hostApi,dataApi: 1,runtimeHash: runtime.contentHash,toolContractMajors: Object.fromEntries(source.manifest.tools.map(t => [t.name,t.contractMajor])),skills: [{ skillId: source.manifest.skills[0].id,nativeName: name,contentHash: applicationSkillContentHash(source.manifest,source.manifest.skills[0].path),sourceRelativePath: source.manifest.skills[0].path,projectionPath: skillPath(name) }],bindings: [],allowedOperations: source.manifest.permissions }],standardSkills: [{ skillId: standard.id,versionId: standard.id + ':' + standard.hash,hash: standard.hash,hashAlgorithm: 'legacy-tree-v1',projectionPath: skillPath(standardName) }],mcp: [{ kind: 'applications',serverName: mcpName,protocolMajor: 1,runtimeHash: runtime.contentHash },{ kind: 'legacy-project-context',serverName: 'smartdd_project_' + digest(taskId).slice(0,12),protocolMajor: 1,runtimeHash: legacyHash }],provenance: 'created' };
+--- a/src/main/core/applications/__tests__/run-fixture.ts
++++ b/src/main/core/applications/__tests__/run-fixture.ts
+@@ -35,7 +35,7 @@
+   };
+   const child = await resource('fixture-dependency','1'), parent = await resource('fixture-dependency','2',[child.resourceId]), adapter = await resource('agent-adapter','1',[parent.resourceId]);
+   let projector:SessionCapabilityProjector|undefined;
+-  const sessions = new CapabilitySessionRegistry(store,{ assertInitialSelection: snapshot => { if ((!options.application && snapshot.packages.length) || snapshot.adapterBinding.hash !== adapter.contentHash) throw new Error('fixture host selection'); },verifyExtraResource: (r,snapshot) => { if(options.fullProjection&&r.kind==='session-projection'){projector!.verify(r,snapshot);return;}const dir = join(store.root,r.relativePath), bytes = readFileSync(join(dir,'entry.cjs')); if (!bytes.equals(entries.get(r.resourceId)!) || digest(bytes) !== r.contentHash || fileNames(dir).length !== 2 || JSON.parse(readFileSync(join(dir,'.smartdd-owned.json'),'utf8')).storeId !== store.storeId) throw new ApplicationError('HASH_MISMATCH','fixture whole tree changed'); onVerify?.(r); } });
++  const sessions = new CapabilitySessionRegistry(store,{ assertInitialSelection: snapshot => { if ((!options.application && snapshot.packages.length) || snapshot.adapterBinding.hash !== adapter.contentHash) throw new Error('fixture host selection'); },verifyExtraResource: (r,snapshot) => { if(options.fullProjection&&['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(r.kind)){projector!.verify(r,snapshot);return;}const dir = join(store.root,r.relativePath), bytes = readFileSync(join(dir,'entry.cjs')); if (!bytes.equals(entries.get(r.resourceId)!) || digest(bytes) !== r.contentHash || fileNames(dir).length !== 2 || JSON.parse(readFileSync(join(dir,'.smartdd-owned.json'),'utf8')).storeId !== store.storeId) throw new ApplicationError('HASH_MISMATCH','fixture whole tree changed'); onVerify?.(r); } });
+   const home = join(root,'home'), cwd = join(root,'project'); mkdirSync(home); mkdirSync(cwd);
+   const snapshot: CapabilitySessionSnapshotV2 = { schema: 2,taskId: randomUUID(),projectId: 'p1',runner: 'claude-code',createdAt: new Date().toISOString(),native: { sessionId: null,stateRoot: join(home,'.claude'),cwd },adapterBinding: { id: 'claude-code',version: '1.0.0',hash: adapter.contentHash,projectionFormatVersion: 1,nativeToolNames: {} },agentAtCreation: { version: 'controlled-fixture',adapterRevision: 1 },catalogGeneration: 'isolated-fixture',packages: [],standardSkills: [],mcp: [],provenance: 'created' };
+   let application: ReturnType<PackageRegistry['get']> | undefined, applicationSource: ReturnType<typeof fixtureBundle> | undefined;
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -1,3 +1,4 @@
++import {readClaudeSlot,writeClaudeSlot} from '../claude-delivery-state';
+ import {ApplicationConnectionService} from '../connection-service';
+ import {PtyAccess} from '../../../pty-access';
+ import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
+@@ -553,6 +554,22 @@
+ 
+ 
+ describe('per-application availability does not withdraw healthy fixed tools',()=>{
++ it('resumes original Claude with Mail at the actual old Skill paths,then restores the original full plugin only on a later stopped-run resume',async()=>{
++  const builtin=await selectBoth(),first=await create(claudeId);await stopForSwitchFixture(first,'claude-code');const fixed=await managed.sessions.get(first.task.id),raw=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id),beforeRefs=await managed.sessions.references(first.task.id),zen=builtin.assertTrusted(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash),original=beforeRefs.find(r=>r.refKind==='session-projection')!;rmSync(join(support.store.root,zen.relativePath),{recursive:true});
++  const resumed=await tasks.open({taskId:first.task.id}),runId=resumed.task.runtimeSnapshot!.runId;
++  try{expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);const args=ptys.launches.at(-1)!.args;expect(args[args.indexOf('--plugin-dir')+1]).toBe(join(support.store.root,original.relativePath));for(const p of fixed.snapshot.packages)for(const s of p.skills)expect(existsSync(s.projectionPath)).toBe(p.appId==='mail');for(const ref of beforeRefs)expect(await managed.sessions.references(first.task.id)).toContainEqual(ref);
++   expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);for(const s of fixed.snapshot.packages.find(p=>p.appId==='zentao')!.skills)expect(existsSync(s.projectionPath)).toBe(false);expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id)).toEqual(raw);
++  }finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
++  const full=await tasks.open({taskId:first.task.id});try{expect(managed.runs.assertActive(full.task.runtimeSnapshot!.runId).applicationScope).toEqual(fixed.snapshot.packages.map(p=>p.appId));expect(support.store.get(original.refId)).toMatchObject({state:'ready',contentHash:original.refHash});const diagnostics=await applications.sessionDiagnostics.inspect(first.task.id);for(const app of diagnostics.applications)expect(app.resourceState).toBe('verified');expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);}finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(full.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
++ },30000);
++ it('reports original healthy Mail independently from missing ZenTao after actual Claude partial delivery',async()=>{
++  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});const created=await create(claudeId);try{const value=await applications.sessionDiagnostics.inspect(created.task.id);expect(value.applications.find(p=>p.appId==='mail')).toMatchObject({resourceState:'verified',issueCode:null,evidence:{skillDiscovery:'unverified',skillRead:'unverified'}});expect(value.applications.find(p=>p.appId==='zentao')).toMatchObject({resourceState:'unavailable'});}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(created.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
++ });
++ it('refuses a last-fork Claude delivery proof change without forking or changing the original S',async()=>{
++  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});const originalPrepare=managed.prepare.bind(managed),spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await originalPrepare(input),assert=launch.assertBeforeFork!.bind(launch);launch.assertBeforeFork=()=>{const slot=readClaudeSlot(support.store,input.taskId)!;writeClaudeSlot(support.store,{...slot,revision:slot.revision+1});try{assert();}finally{writeClaudeSlot(support.store,slot);}};return launch;});
++  try{await expect(create(claudeId)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(ptys.launches).toHaveLength(0);}finally{spy.mockRestore();}
++ });
++
+  async function selectBoth(){
+   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
+   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+@@ -611,7 +628,8 @@
+   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+   const builtin=new BuiltinPackageRegistry(support.store),bad=builtin.assertTrusted(builtin.packages.active(unavailable)!.packageHash);rmSync(join(support.store.root,bad.relativePath),{recursive:true});
+   const task=await create(runner==='codex'?codexId:claudeId),fixed=await managed.sessions.get(task.task.id);tasks.kill(task.task.id);await vi.waitFor(()=>expect(managed.runs.get(task.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+-  const scope=await managed.runs.reserveScoped({taskId:task.task.id,snapshotHash:fixed.pointer.snapshotHash,bindings:[]},[unavailable==='zentao'?'mail':'zentao']);await scope.prepare();await scope.cli.arm();reader.identities.set(41000,'darwin-proc-v1:410:0');await scope.cli.attach(41000);
++  const appIds=[unavailable==='zentao'?'mail':'zentao'],delivery=runner==='claude-code'&&managed.claudeDelivery.has(task.task.id)?await managed.claudeDelivery.prepare(task.task.id,appIds):undefined;
++  const scope=await managed.runs.reserveScoped({taskId:task.task.id,snapshotHash:fixed.pointer.snapshotHash,bindings:[]},appIds,delivery?[delivery.resourceId]:[],undefined,delivery);await scope.prepare();await scope.cli.arm();reader.identities.set(41000,'darwin-proc-v1:410:0');await scope.cli.attach(41000);
+   return{task,fixed,scope,bad,builtin,close:async()=>{reader.identities.delete(41000);await scope.cli.exited();}};
+  }
+  it.each(['claude-code','codex'] as const)('host API foundation keeps real original Mail draft data callable in a scoped %s run while ZenTao is unavailable',async runner=>{
+--- /dev/null
++++ b/src/main/core/applications/__tests__/claude-delivery.test.ts
+@@ -0,0 +1,74 @@
++import {randomUUID} from 'node:crypto';
++import {existsSync,mkdirSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
++import {join} from 'node:path';
++import {afterEach,beforeEach,describe,expect,it} from 'vitest';
++import {ClaudeDeliveryCoordinator,type ClaudeDeliveryCheckpoint} from '../claude-delivery';
++import {readClaudeSlot,writeClaudeSlot,claudeRoot} from '../claude-delivery-state';
++import {digest} from '../manifest';
++import {SessionCapabilityProjector} from '../session-projector';
++import {verifyOwnedBundle} from '../owned-bundle';
++import {runFixture,FixtureProcessReader} from './run-fixture';
++import type {OwnedCapabilityRun} from '../run-registry';
++let f:Awaited<ReturnType<typeof runFixture>>,reader:FixtureProcessReader,projector:SessionCapabilityProjector,c:ClaudeDeliveryCoordinator,runs:OwnedCapabilityRun[],checkpoint:((p:ClaudeDeliveryCheckpoint)=>void)|undefined;
++beforeEach(async()=>{reader=new FixtureProcessReader();f=await runFixture(reader,{application:true,secondApplication:true,fullProjection:true});projector=new SessionCapabilityProjector(f.store,f.sessions);checkpoint=undefined;c=new ClaudeDeliveryCoordinator(f.store,f.sessions,projector,reader,f.runs.instanceId,p=>checkpoint?.(p));runs=[];});
++afterEach(async()=>{for(const r of runs)await r.stop().catch(()=>{});await f.runs.dispose();f.cleanup();});
++const root=()=>join(f.store.root,claudeRoot(f.snapshot.taskId));
++const missing=()=>rmSync(join(f.store.root,f.application!.relativePath),{recursive:true});
++async function scoped(ids=['mail']){const token=await c.prepare(f.snapshot.taskId,ids),run=await f.runs.reserveScoped({taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash,bindings:[]},ids,[token.resourceId],undefined,token);runs.push(run);await run.prepare();return{token,run,proof:c.proof(run.runId,token)};}
++describe('real canonical Claude delivery and independent physical root occupancy',()=>{
++ it('preserves original S/refs/full archive while delivering only healthy original Skills at their actual original paths',async()=>{
++  const fixed=(f.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId) as {snapshot_json:string}).snapshot_json,before=await f.sessions.references(f.snapshot.taskId),old=before.find(r=>r.refKind==='session-projection')!;missing();const token=await c.prepare(f.snapshot.taskId,['mail']),slot=readClaudeSlot(f.store,f.snapshot.taskId)!;
++  expect(slot.current?.appIds).toEqual(['mail']);expect(slot.pending).toBeNull();expect(slot.preparation?.leaseId).toBe(token.leaseId);expect(f.store.get(slot.anchorId)).toMatchObject({state:'recovery-required',integrity:'unknown',relativePath:claudeRoot(f.snapshot.taskId)});expect(f.store.get(old.refId)).toMatchObject({contentHash:old.refHash,relativePath:old.relativePath,state:'recovery-required'});
++  expect(existsSync(f.snapshot.packages[1].skills[0].projectionPath)).toBe(true);expect(existsSync(f.snapshot.packages[0].skills[0].projectionPath)).toBe(false);verifyOwnedBundle(root(),token.hash,f.store.storeId);expect((f.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId) as {snapshot_json:string}).snapshot_json).toBe(fixed);for(const ref of before)expect(await f.sessions.references(f.snapshot.taskId)).toContainEqual(ref);
++  const archive=(await f.sessions.references(f.snapshot.taskId)).find(r=>r.refKind==='claude-projection-archive')!,bytes=await projector.readClaudeArtifact(f.snapshot.taskId,archive.refId);expect(bytes.bundle.hash).toBe(old.refHash);expect(bytes.role).toBe('archive');await c.cancel(token);
++ });
++ it('atomically transfers preparation occupancy into an independent run alias and refuses canonical changes until proven stop',async()=>{
++  missing();const x=await scoped(),slot=readClaudeSlot(f.store,f.snapshot.taskId)!;expect(slot.preparation).toBeNull();expect(slot.consumers).toHaveLength(1);expect(f.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE lease_id=?').get(x.token.leaseId)).toEqual({state:'released'});expect(f.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE lease_id=?').get(x.proof.leaseId)).toEqual({state:'active'});expect(x.proof.leaseId).not.toBe(x.token.leaseId);c.assertRun(x.run.runId,x.proof);
++  await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toMatchObject({code:'RESOURCE_BUSY'});await x.run.stop();const next=await c.prepare(f.snapshot.taskId,['mail']);expect(readClaudeSlot(f.store,f.snapshot.taskId)!.consumers).toEqual([]);expect(next.hash).toBe(x.token.hash);await c.cancel(next);
++ });
++ it('repairs an excluded package without widening a live delivery and restores the original full body on the next stopped-run preparation',async()=>{
++  const original=(await f.sessions.references(f.snapshot.taskId)).find(r=>r.refKind==='session-projection')!;missing();const x=await scoped();await f.packageRegistry.install(f.applicationSource!);expect(c.proof(x.run.runId,x.token).appIds).toEqual(['mail']);expect(existsSync(f.snapshot.packages[0].skills[0].projectionPath)).toBe(false);await expect(c.prepare(f.snapshot.taskId,['zentao','mail'])).rejects.toMatchObject({code:'RESOURCE_BUSY'});await x.run.stop();const full=await c.prepare(f.snapshot.taskId,['zentao','mail']);expect(full.hash).toBe(original.refHash);expect(f.store.get(original.refId)).toMatchObject({state:'ready',integrity:'valid'});for(const p of f.snapshot.packages)for(const s of p.skills)expect(existsSync(s.projectionPath)).toBe(true);await c.cancel(full);
++ });
++ it('fences independent legacy publishers and canonical ancestors/descendants without dropping the original dependencies',async()=>{
++  missing();const x=await scoped(),slot=readClaudeSlot(f.store,f.snapshot.taskId)!,before=readFileSync(join(root(),'bundle.json'));
++  for(const path of [slot.root,slot.root+'/skills/rogue','sessions/'+slot.taskId+'/claude'])await expect(f.store.publish({resourceId:'rogue:'+randomUUID(),kind:'fixture',contentHash:'a'.repeat(64),relativePath:path,dependencies:[],materialize:()=>{throw Error('must never materialize');},verify:()=>{}})).rejects.toMatchObject({code:'RESOURCE_BUSY'});
++  expect(readFileSync(join(root(),'bundle.json'))).toEqual(before);c.assertRun(x.run.runId,x.proof);
++ });
++ it('retains an unknown CLI fork window and a missing alias lease footprint rather than reaping directory occupancy',async()=>{
++  missing();const x=await scoped();await x.run.cli.arm();await x.run.stop();expect(f.runs.get(x.run.runId).state).toBe('stopping');await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toMatchObject({code:'RESOURCE_BUSY'});
++  // This test itself armed a synthetic CLI and never forked.Test-owned explicit
++  // exit is delivered only for this synthetic handle;not AF or real unknown PID.
++  await x.run.cli.exited();const row=f.sqlite.prepare('SELECT * FROM capability_resource_leases WHERE lease_id=?').get(x.proof.leaseId) as Record<string,unknown>;f.sqlite.prepare('DELETE FROM capability_resource_leases WHERE lease_id=?').run(x.proof.leaseId);await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});
++  const names=Object.keys(row);f.sqlite.prepare(`INSERT INTO capability_resource_leases(${names.join(',')}) VALUES(${names.map(()=>'?').join(',')})`).run(...names.map(n=>row[n]));
++ });
++ it('freezes the same physical root for ordinary native-only fixed-history readers without granting an application',async()=>{
++  missing();const token=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(token);const guard=await f.runs.reserveFixedNativeGuard({taskId:f.snapshot.taskId,projectId:f.snapshot.projectId,runner:'claude-code',snapshotHash:f.session.pointer.snapshotHash,resourceIds:[f.adapter.resourceId],verify:async()=>{}});runs.push(guard);await guard.prepare();await guard.cli.arm();reader.identities.set(42001,'darwin-proc-v1:420:1');await guard.cli.attach(42001);expect(readClaudeSlot(f.store,f.snapshot.taskId)!.consumers.map(v=>v.runId)).toContain(guard.runId);expect(()=>f.runs.assertActive(guard.runId)).toThrow();await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toMatchObject({code:'RESOURCE_BUSY'});reader.identities.delete(42001);await guard.cli.exited();await guard.stop();const next=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(next);
++ });
++ it('can cancel a known unbound preparation while retaining an independently running native-only guard alias',async()=>{
++  missing();const token=await c.prepare(f.snapshot.taskId,['mail']),guard=await f.runs.reserveFixedNativeGuard({taskId:f.snapshot.taskId,projectId:f.snapshot.projectId,runner:'claude-code',snapshotHash:f.session.pointer.snapshotHash,resourceIds:[f.adapter.resourceId],verify:async()=>{}});runs.push(guard);await c.cancel(token);const slot=readClaudeSlot(f.store,f.snapshot.taskId)!;expect(slot.preparation).toBeNull();expect(slot.consumers.map(v=>v.runId)).toContain(guard.runId);expect(f.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE lease_id=?').get(slot.consumers[0].leaseId)).toEqual({state:'preparing'});await guard.stop();const next=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(next);
++ });
++ it('preserves an unknown staged tree and advances through a fresh registered sibling rather than overwriting it',async()=>{
++  missing();checkpoint=p=>{if(p==='registered')throw Error('controlled interruption');};await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toThrow('controlled interruption');const pending=readClaudeSlot(f.store,f.snapshot.taskId)!.pending!,old=join(f.store.root,pending.stage);mkdirSync(old,{recursive:true});writeFileSync(join(old,'user-canary'),'preserve');checkpoint=undefined;const token=await c.recover(f.snapshot.taskId);expect(token).toBeTruthy();expect(readFileSync(join(old,'user-canary'),'utf8')).toBe('preserve');const op=f.sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(pending.id) as {plan_json:string};expect(JSON.parse(op.plan_json).completedPending.abandonedStages).toContain(pending.stage);await c.cancel(token!);
++ });
++ it('does not turn a late changed dependency graph into a ready canonical resource',async()=>{
++  missing();checkpoint=phase=>{if(phase==='delivered'){const p=readClaudeSlot(f.store,f.snapshot.taskId)!.pending!;f.sqlite.prepare('DELETE FROM capability_resource_dependencies WHERE resource_id=?').run(p.resourceId);}};
++  await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});const pending=readClaudeSlot(f.store,f.snapshot.taskId)!.pending!;expect(f.store.get(pending.resourceId).state).toBe('staged');checkpoint=undefined;f.sqlite.prepare('INSERT INTO capability_resource_dependencies VALUES(?,?)').run(pending.resourceId,pending.sourceId);const token=await c.recover(f.snapshot.taskId);await c.cancel(token!);
++ });
++ it('pins delivery revision and alias identity across native ID binding without changing the actual Skill paths',async()=>{
++  missing();const x=await scoped(),fixed=await f.sessions.get(f.snapshot.taskId),bound=await f.sessions.bindNativeSession(f.snapshot.taskId,fixed.pointer.snapshotHash,{...f.snapshot.native,runner:'claude-code',sessionId:'first-native-id'});expect(bound.selectionHash).toBe(fixed.selectionHash);c.assertRun(x.run.runId,x.proof);const slot=readClaudeSlot(f.store,f.snapshot.taskId)!,changed={...slot,revision:slot.revision+1};writeClaudeSlot(f.store,changed);expect(()=>c.assertRun(x.run.runId,x.proof)).toThrow('待核验');writeClaudeSlot(f.store,slot);
++ });
++ it('does not reconstruct an erased slot journal while independent physical occupancy footprints still exist',async()=>{
++  missing();const x=await scoped(),slot=readClaudeSlot(f.store,f.snapshot.taskId)!,id='claude-delivery-slot:'+slot.taskId,row=f.sqlite.prepare('SELECT * FROM capability_resource_operations WHERE operation_id=?').get(id) as Record<string,unknown>;f.sqlite.prepare('DELETE FROM capability_resource_operations WHERE operation_id=?').run(id);
++  try{expect(()=>readClaudeSlot(f.store,f.snapshot.taskId)).toThrow('待核验');await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});await expect(f.store.publish({resourceId:'missing-slot-rogue',kind:'fixture',contentHash:'a'.repeat(64),relativePath:slot.root,dependencies:[],materialize:()=>{throw Error('no write');},verify:()=>{}})).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(()=>c.assertRun(x.run.runId,x.proof)).toThrow('待核验');}
++  finally{const keys=Object.keys(row);f.sqlite.prepare(`INSERT INTO capability_resource_operations(${keys.join(',')}) VALUES(${keys.map(()=>'?').join(',')})`).run(...keys.map(k=>row[k]));}
++ });
++ it('keeps a corrupt other-root slot from blocking an unrelated immutable resource publication',async()=>{
++  missing();const token=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(token);const id='claude-delivery-slot:'+f.snapshot.taskId,row=f.sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(id) as {plan_json:string};f.sqlite.prepare("UPDATE capability_resource_operations SET plan_json='{}' WHERE operation_id=?").run(id);
++  const bytes='independent immutable bytes';expect(await f.store.publish({resourceId:'independent-fixture',kind:'fixture',contentHash:digest(bytes),relativePath:'independent-fixture',dependencies:[],materialize:directory=>{mkdirSync(directory);writeFileSync(join(directory,'entry'),bytes);},verify:directory=>{if(readFileSync(join(directory,'entry'),'utf8')!==bytes)throw Error('changed');}})).toMatchObject({state:'ready'});f.sqlite.prepare('UPDATE capability_resource_operations SET plan_json=? WHERE operation_id=?').run(row.plan_json,id);
++ });
++ it.each(['running','unknown','missing-lease','missing-journal'] as const)('keeps %s publication proof instead of inventing recovery authority',async kind=>{
++  missing();checkpoint=p=>{if(p==='registered')throw Error('controlled interruption');};await expect(c.prepare(f.snapshot.taskId,['mail'])).rejects.toThrow();const original=readClaudeSlot(f.store,f.snapshot.taskId)!,p=original.pending!;
++  if(kind==='missing-lease')f.sqlite.prepare('DELETE FROM capability_resource_leases WHERE lease_id=?').run(p.participants[0].leaseId);if(kind==='missing-journal')f.sqlite.prepare('DELETE FROM capability_resource_operations WHERE operation_id=?').run(p.id);
++  const otherReader=new FixtureProcessReader(),other=new ClaudeDeliveryCoordinator(f.store,f.sessions,projector,otherReader,randomUUID());if(kind==='unknown')otherReader.unknown.add(process.pid);await expect(other.recover(f.snapshot.taskId)).rejects.toMatchObject({code:kind==='missing-lease'||kind==='missing-journal'?'RESOURCE_RECOVERY_REQUIRED':'RESOURCE_BUSY'});expect(readClaudeSlot(f.store,f.snapshot.taskId)!.pending?.id).toBe(p.id);reader.unknown.delete(process.pid);
++ });
++});
+--- /dev/null
++++ b/src/main/core/applications/__tests__/claude-delivery-process.test.ts
+@@ -0,0 +1,35 @@
++import {spawn,type ChildProcess} from 'node:child_process';
++import {once} from 'node:events';
++import {builtinModules} from 'node:module';
++import {mkdtempSync,rmSync,existsSync} from 'node:fs';
++import {join,resolve} from 'node:path';
++import {tmpdir} from 'node:os';
++import {randomUUID} from 'node:crypto';
++import {build as viteBuild} from 'vite';
++import {afterAll,afterEach,beforeAll,beforeEach,describe,expect,it} from 'vitest';
++import {ClaudeDeliveryCoordinator} from '../claude-delivery';
++import {readClaudeSlot} from '../claude-delivery-state';
++import {SessionCapabilityProjector} from '../session-projector';
++import {MacProcessIdentityReader} from '../process-identity';
++import {runFixture,FixtureProcessReader} from './run-fixture';
++let build:string,helper:string,f:Awaited<ReturnType<typeof runFixture>>,processes:MacProcessIdentityReader,c:ClaudeDeliveryCoordinator;const children=new Set<ChildProcess>();
++async function kill(child:ChildProcess){if(child.exitCode!==null||child.signalCode!==null){children.delete(child);return;}const exited=once(child,'exit');child.kill('SIGKILL');await exited;children.delete(child);}
++async function publisher(phase:string,mode='prepare'){
++ const child=spawn(process.execPath,[join(build,'child.cjs'),f.root,helper,f.snapshot.taskId,phase,mode],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',NODE_PATH:resolve('node_modules')},stdio:['ignore','pipe','pipe']});children.add(child);let stderr='';child.stderr!.on('data',b=>stderr+=b.toString());
++ const message=await new Promise<{phase:string;pid:number}>((done,reject)=>{let text='';const timer=setTimeout(()=>reject(Error('private Claude checkpoint timeout '+stderr)),12000);child.stdout!.on('data',data=>{text+=data.toString();if(text.includes('\n')){clearTimeout(timer);try{done(JSON.parse(text.split('\n')[0]));}catch(e){reject(e);}}});child.once('error',e=>{clearTimeout(timer);reject(e);});child.once('exit',()=>{clearTimeout(timer);reject(Error('private Claude publisher exited '+stderr));});});expect(message).toEqual({phase,pid:child.pid!});return child;
++}
++describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('actual isolated Claude directory publisher and repeated recovery termination',()=>{
++ beforeAll(async()=>{helper=resolve('out/native/willyou-process-identity');build=mkdtempSync(join(tmpdir(),'willyou-claude-delivery-build-'));await viteBuild({configFile:false,publicDir:false,logLevel:'error',resolve:{alias:{'@shared':resolve('src/shared'),'@root':resolve('.')}},ssr:{noExternal:true},build:{ssr:resolve('src/main/core/applications/__tests__/fixtures/claude-delivery-publisher-process.ts'),target:'node22',outDir:build,emptyOutDir:false,minify:false,rollupOptions:{external:id=>id==='better-sqlite3'||id.startsWith('node:')||builtinModules.includes(id),output:{format:'cjs',entryFileNames:'child.cjs',inlineDynamicImports:true}}}});});
++ afterAll(()=>rmSync(build,{recursive:true,force:true}));
++ beforeEach(async()=>{f=await runFixture(new FixtureProcessReader(),{application:true,secondApplication:true,fullProjection:true});processes=new MacProcessIdentityReader(helper);c=new ClaudeDeliveryCoordinator(f.store,f.sessions,new SessionCapabilityProjector(f.store,f.sessions),processes,randomUUID());rmSync(join(f.store.root,f.application!.relativePath),{recursive:true});});
++ afterEach(async()=>{for(const child of [...children])await kill(child);await f.runs.dispose();f.cleanup();});
++ it.each(['registered','backed-up','delivered'] as const)('keeps a live %s publisher,then completes the same journal/generation after actual SIGKILL',async phase=>{
++  const child=await publisher(phase),owner=processes.read(child.pid!)!,before=readClaudeSlot(f.store,f.snapshot.taskId)!,id=before.pending!.id,generation=before.pending!.generation;
++  await expect(c.recover(f.snapshot.taskId)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(readClaudeSlot(f.store,f.snapshot.taskId)!.pending!.id).toBe(id);await kill(child);expect(processes.state(owner)).toBe('stopped');
++  const token=await c.recover(f.snapshot.taskId);console.log('CLAUDE_DELIVERY_PROCESS_EVIDENCE '+JSON.stringify({phase,operationId:id,generation,publisher:owner,publisherStateAfterSIGKILL:processes.state(owner),recovered:readClaudeSlot(f.store,f.snapshot.taskId)?.current,parent:processes.read(process.pid),actualAgent:false}));expect(token).toMatchObject({generation,appIds:['mail']});expect(readClaudeSlot(f.store,f.snapshot.taskId)!.pending).toBeNull();expect(existsSync(f.snapshot.packages[1].skills[0].projectionPath)).toBe(true);expect(existsSync(f.snapshot.packages[0].skills[0].projectionPath)).toBe(false);const row=f.sqlite.prepare('SELECT state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(id) as {state:string;plan_json:string};expect(row.state).toBe('committed');expect(JSON.parse(row.plan_json).completedPending.participants).toHaveLength(2);await c.cancel(token!);
++ },25000);
++ it('retains every lease handoff when a second actual recovery owner is killed immediately after its C registration',async()=>{
++  const original=await publisher('backed-up');await kill(original);const second=await publisher('claimed','recover'),before=readClaudeSlot(f.store,f.snapshot.taskId)!;expect(before.pending!.participants).toHaveLength(2);const ids=before.pending!.participants.map(p=>p.leaseId);await kill(second);
++  const token=await c.recover(f.snapshot.taskId),op=f.sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(before.pending!.id) as {plan_json:string},participants=JSON.parse(op.plan_json).completedPending.participants as {leaseId:string}[];console.log('CLAUDE_DELIVERY_PROCESS_EVIDENCE '+JSON.stringify({phase:'recovery-owner-killed-after-C-registration',operationId:before.pending!.id,participants,parent:processes.read(process.pid),actualAgent:false}));expect(participants).toHaveLength(3);for(const id of ids)expect(participants.map(p=>p.leaseId)).toContain(id);for(const p of participants)expect(f.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE lease_id=?').get(p.leaseId)).toEqual({state:'released'});await c.cancel(token!);
++ },25000);
++});
+--- /dev/null
++++ b/src/main/core/applications/__tests__/fixtures/claude-delivery-publisher-process.ts
+@@ -0,0 +1,13 @@
++import {randomUUID} from 'node:crypto';
++import {join} from 'node:path';
++import Database from 'better-sqlite3';
++import {ResourceStore} from '../../resource-store';
++import {CapabilitySessionRegistry} from '../../session-registry';
++import {SessionCapabilityProjector} from '../../session-projector';
++import {MacProcessIdentityReader} from '../../process-identity';
++import {ClaudeDeliveryCoordinator,type ClaudeDeliveryCheckpoint} from '../../claude-delivery';
++const [root,helper,taskId,phase,mode]=process.argv.slice(2),sqlite=new Database(join(root,'state.sqlite')),processes=new MacProcessIdentityReader(helper),store=new ResourceStore(sqlite,root,undefined,{processes});
++let projector:SessionCapabilityProjector;
++const sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw Error('existing snapshot only');},verifyExtraResource:(resource,snapshot)=>projector.verify(resource,snapshot)});projector=new SessionCapabilityProjector(store,sessions);
++const coordinator=new ClaudeDeliveryCoordinator(store,sessions,projector,processes,randomUUID(),at=>{if(at===phase as ClaudeDeliveryCheckpoint){process.stdout.write(JSON.stringify({phase:at,pid:process.pid})+'\n');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);}});
++void(mode==='recover'?coordinator.recover(taskId):coordinator.prepare(taskId,['mail'])).then(()=>{throw Error('checkpoint not reached');}).catch(e=>{process.stderr.write(String(e));process.exitCode=1;}).finally(()=>sqlite.close());

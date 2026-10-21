@@ -1,3 +1,4 @@
+import {readClaudeSlot,writeClaudeSlot} from '../claude-delivery-state';
 import {ApplicationConnectionService} from '../connection-service';
 import {PtyAccess} from '../../../pty-access';
 import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
@@ -553,6 +554,32 @@ describe('ZenTao switch retains already narrowed native-only running work',()=>{
 
 
 describe('per-application availability does not withdraw healthy fixed tools',()=>{
+ it('resumes original Claude with Mail at the actual old Skill paths,then restores the original full plugin only on a later stopped-run resume',async()=>{
+  const builtin=await selectBoth(),first=await create(claudeId);await stopForSwitchFixture(first,'claude-code');const fixed=await managed.sessions.get(first.task.id),raw=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id),beforeRefs=await managed.sessions.references(first.task.id),zen=builtin.assertTrusted(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash),original=beforeRefs.find(r=>r.refKind==='session-projection')!;rmSync(join(support.store.root,zen.relativePath),{recursive:true});
+  const resumed=await tasks.open({taskId:first.task.id}),runId=resumed.task.runtimeSnapshot!.runId;
+  try{expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);const args=ptys.launches.at(-1)!.args;expect(args[args.indexOf('--plugin-dir')+1]).toBe(join(support.store.root,original.relativePath));for(const p of fixed.snapshot.packages)for(const s of p.skills)expect(existsSync(s.projectionPath)).toBe(p.appId==='mail');for(const ref of beforeRefs)expect(await managed.sessions.references(first.task.id)).toContainEqual(ref);
+   expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);for(const s of fixed.snapshot.packages.find(p=>p.appId==='zentao')!.skills)expect(existsSync(s.projectionPath)).toBe(false);expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id)).toEqual(raw);
+  }finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+  const full=await tasks.open({taskId:first.task.id});try{expect(managed.runs.assertActive(full.task.runtimeSnapshot!.runId).applicationScope).toEqual(fixed.snapshot.packages.map(p=>p.appId));expect(support.store.get(original.refId)).toMatchObject({state:'ready',contentHash:original.refHash});const diagnostics=await applications.sessionDiagnostics.inspect(first.task.id);for(const app of diagnostics.applications)expect(app.resourceState).toBe('verified');expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);}finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(full.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
+ },30000);
+ it('reports original healthy Mail independently from missing ZenTao after actual Claude partial delivery',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});const created=await create(claudeId);try{const value=await applications.sessionDiagnostics.inspect(created.task.id);expect(value.applications.find(p=>p.appId==='mail')).toMatchObject({resourceState:'verified',issueCode:null,evidence:{skillDiscovery:'unverified',skillRead:'unverified'}});expect(value.applications.find(p=>p.appId==='zentao')).toMatchObject({resourceState:'unavailable'});}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(created.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
+ });
+ it('requires the actual canonical plugin root and hash for a valid host Claude delivery plan',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});
+  const plan=support.adapters.plan.bind(support.adapters);let request:Parameters<typeof plan>[1]|undefined;
+  const spy=vi.spyOn(support.adapters,'plan').mockImplementation((hash,input)=>{if(input.claudeDelivery)request=structuredClone(input);return plan(hash,input);});
+  const created=await create(claudeId),runId=created.task.runtimeSnapshot!.runId;
+  try{expect(request?.claudeDelivery).toBeDefined();const input=request!,hash=input.snapshot.adapterBinding.hash;expect(plan(hash,input).args).toContain(input.pluginRoot);
+   for(const patch of [{pluginRoot:null,pluginHash:null},{pluginRoot:null},{pluginHash:null}])expect(()=>plan(hash,{...input,...patch})).toThrow(expect.objectContaining({code:'SNAPSHOT_IMMUTABLE'}));
+   expect(()=>plan(hash,{...input,runId:randomUUID()})).toThrow(expect.objectContaining({code:'RESOURCE_RECOVERY_REQUIRED'}));expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);
+  }finally{spy.mockRestore();tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+ });
+ it('refuses a last-fork Claude delivery proof change without forking or changing the original S',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});const originalPrepare=managed.prepare.bind(managed),spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await originalPrepare(input),assert=launch.assertBeforeFork!.bind(launch);launch.assertBeforeFork=()=>{const slot=readClaudeSlot(support.store,input.taskId)!;writeClaudeSlot(support.store,{...slot,revision:slot.revision+1});try{assert();}finally{writeClaudeSlot(support.store,slot);}};return launch;});
+  try{await expect(create(claudeId)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(ptys.launches).toHaveLength(0);}finally{spy.mockRestore();}
+ });
+
  async function selectBoth(){
   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
@@ -611,7 +638,8 @@ describe('per-application availability does not withdraw healthy fixed tools',()
   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const builtin=new BuiltinPackageRegistry(support.store),bad=builtin.assertTrusted(builtin.packages.active(unavailable)!.packageHash);rmSync(join(support.store.root,bad.relativePath),{recursive:true});
   const task=await create(runner==='codex'?codexId:claudeId),fixed=await managed.sessions.get(task.task.id);tasks.kill(task.task.id);await vi.waitFor(()=>expect(managed.runs.get(task.task.runtimeSnapshot!.runId).state).toBe('stopped'));
-  const scope=await managed.runs.reserveScoped({taskId:task.task.id,snapshotHash:fixed.pointer.snapshotHash,bindings:[]},[unavailable==='zentao'?'mail':'zentao']);await scope.prepare();await scope.cli.arm();reader.identities.set(41000,'darwin-proc-v1:410:0');await scope.cli.attach(41000);
+  const appIds=[unavailable==='zentao'?'mail':'zentao'],delivery=runner==='claude-code'&&managed.claudeDelivery.has(task.task.id)?await managed.claudeDelivery.prepare(task.task.id,appIds):undefined;
+  const scope=await managed.runs.reserveScoped({taskId:task.task.id,snapshotHash:fixed.pointer.snapshotHash,bindings:[]},appIds,delivery?[delivery.resourceId]:[],undefined,delivery);await scope.prepare();await scope.cli.arm();reader.identities.set(41000,'darwin-proc-v1:410:0');await scope.cli.attach(41000);
   return{task,fixed,scope,bad,builtin,close:async()=>{reader.identities.delete(41000);await scope.cli.exited();}};
  }
  it.each(['claude-code','codex'] as const)('host API foundation keeps real original Mail draft data callable in a scoped %s run while ZenTao is unavailable',async runner=>{

@@ -1,3 +1,4 @@
+import {assertClaudePublication} from './claude-delivery-state';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -21,7 +22,7 @@ export interface PublishResource {
   assertPublish?: (operationId: string) => void;
 }
 export type PublishCheckpoint = 'registered' | 'materialized' | 'renamed';
-const SELECT = `SELECT resource_id AS resourceId,kind,content_hash AS contentHash,owner_store_id AS ownerStoreId,
+const SELECT = `SELECT resource_id AS resourceId,kind,content_hash AS contentHash,owner_store_id AS ownerStoreId,relative_path AS rawRelativePath,scope_relative_path AS physicalAliasPath,
   COALESCE(scope_relative_path,relative_path) AS relativePath,path_scope AS pathScope,CASE WHEN path_scope='C' THEN owner_store_id ELSE scope_identity END AS scopeIdentity,state,generation,integrity,operation_id AS operationId FROM capability_resources`;
 
 /** Durable C-store publication. File copies never run inside a SQLite write transaction. */
@@ -50,7 +51,10 @@ export class ResourceStore {
     } catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '应用资源库身份无法核验'); }
   }
   get(id: string): ResourceRecord {
-    const row = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(id) as ResourceRecord | undefined;
+    const found = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(id) as (ResourceRecord & {rawRelativePath:string;physicalAliasPath:string|null}) | undefined;
+    if(!found)throw new ApplicationError('NOT_FOUND','应用资源记录不存在');const {rawRelativePath,physicalAliasPath,...row}=found;
+    if(['claude-delivery-root','claude-delivery'].includes(row.kind)&&(!physicalAliasPath||row.pathScope!=='C'))throw new ApplicationError('OWNERSHIP_CONFLICT','Claude交付缺少显式物理位置');
+    if(row.pathScope==='C'&&physicalAliasPath){const match=/^sessions\/([A-Za-z0-9][A-Za-z0-9_-]{0,127})\/claude\/plugin$/.exec(physicalAliasPath),taskId=match?.[1];if(!taskId||!(row.kind==='claude-delivery-root'&&row.resourceId==='claude-delivery-root:'+taskId&&rawRelativePath===`claude-deliveries/${taskId}/anchor`||row.kind==='claude-delivery'&&row.resourceId===`claude-delivery:${taskId}:${row.contentHash}`&&rawRelativePath===`claude-deliveries/${taskId}/records/${row.contentHash}`))throw new ApplicationError('OWNERSHIP_CONFLICT','C目录物理别名不属于已登记的Claude交付种类');}
     if (!row) throw new ApplicationError('NOT_FOUND', '应用资源记录不存在');
     if (row.ownerStoreId !== this.storeId || !isPackagePath(row.relativePath)) throw new ApplicationError('OWNERSHIP_CONFLICT', '应用资源归属不一致');
     if (!['C','H'].includes(row.pathScope) || (row.pathScope === 'H' && (!APP_HASH_PATTERN.test(row.scopeIdentity) || !row.relativePath.startsWith('.agents/skills/')))) throw new ApplicationError('OWNERSHIP_CONFLICT','资源位置范围无法核验');
@@ -138,7 +142,7 @@ export class ResourceStore {
   private async restoreMissing(spec: PublishResource, signal?: AbortSignal): Promise<ResourceRecord> {
     const operationId = randomUUID(); let leaseId = '', present = false;
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId); this.assertDependencies(spec.dependencies);
+      assertClaudePublication(this,spec.relativePath,spec.contentHash);const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId); this.assertDependencies(spec.dependencies);
       if (row.state !== 'ready' || row.integrity !== 'valid') throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源已有发布或清理操作，先恢复原操作');
       const state = this.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
       if (state && (state.store_id !== this.storeId || state.maintenance_state !== 'ready')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源库正在维护或待恢复');
@@ -172,6 +176,7 @@ export class ResourceStore {
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
       this.assertDependencies(spec.dependencies); spec.assertPublish?.(operationId);
       const old = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(spec.resourceId) as ResourceRecord | undefined;
+      assertClaudePublication(this,spec.relativePath,spec.contentHash,old?.state==='ready'&&old.integrity==='valid');
       if (old) {
         this.assertIdentity(this.get(spec.resourceId), spec);
         if (old.state !== 'removed' && (old.state !== 'ready' || old.integrity !== 'valid')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源有未完成的发布或清理，先恢复原操作');
@@ -221,6 +226,7 @@ export class ResourceStore {
       spec.verify(stage);
     } else spec.verify(target);
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
+      assertClaudePublication(this,spec.relativePath,spec.contentHash);
       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || row.state === 'deleting' || row.state === 'removed') throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布资源状态已变化');
@@ -230,6 +236,7 @@ export class ResourceStore {
     }).immediate(), { signal });
     this.checkpoint?.('materialized');
     await withResourceLock(this.root, () => {
+      assertClaudePublication(this,spec.relativePath,spec.contentHash);
       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
       this.assertRecordedDependencies(spec);
       const row = this.get(spec.resourceId);
@@ -239,6 +246,7 @@ export class ResourceStore {
       else renameSync(stage, target);
       this.phase(operationId, 'published');
       this.checkpoint?.('renamed');
+      assertClaudePublication(this,spec.relativePath,spec.contentHash);
       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);spec.verify(target);
       this.sqlite.transaction(() => {
         this.assertOwnPublisher(spec.resourceId,operationId,leaseId);this.assertRecordedDependencies(spec);
@@ -263,6 +271,7 @@ export class ResourceStore {
     if (!/^[a-f0-9-]{36}$/.test(operationId)) throw new ApplicationError('INVALID_PACKAGE', '恢复操作标识无效');
     let leaseId = '', alreadyReady = false;
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
+      const slotOld=this.get(spec.resourceId);assertClaudePublication(this,spec.relativePath,spec.contentHash,slotOld.state==='ready'&&slotOld.integrity==='valid');
       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || this.activeOperations.has(operationId)) throw new ApplicationError('RESOURCE_BUSY', '原发布操作仍在执行或归属不同');
       const operation = this.sqlite.prepare('SELECT kind,state,plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId, this.storeId) as {kind:string;state:string;plan:string}|undefined;

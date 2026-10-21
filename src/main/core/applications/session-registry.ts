@@ -83,7 +83,7 @@ export class CapabilitySessionRegistry {
       if(snapshot.legacyBinding&&identity.discovery_home!==assertLegacySessionSource(this.store,snapshot).identity.home)throw new Error('legacy discovery identity');
       const actual = this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId) as SessionResourceReference[];
       const expected = this.expectedSources(snapshot);
-      if ([...expected].some(([id,s]) => !actual.some(r => r.refId === id && r.refKind === s.kind && r.refHash === s.hash)) || actual.some(r => !isPackagePath(r.relativePath) || (!expected.has(r.refId) && !['session-projection','agent-projection','legacy-runtime','claude-projection-source','claude-projection-archive'].includes(r.refKind)))) throw new Error('reference integrity');
+      if ([...expected].some(([id,s]) => !actual.some(r => r.refId === id && r.refKind === s.kind && r.refHash === s.hash)) || actual.some(r => !isPackagePath(r.relativePath) || (!expected.has(r.refId) && !['session-projection','agent-projection','legacy-runtime','claude-projection-source','claude-projection-archive','claude-delivery'].includes(r.refKind)))) throw new Error('reference integrity');
       for (const ref of actual) {
         const resource = this.store.get(ref.refId);
         if (resource.contentHash !== ref.refHash || resource.relativePath !== ref.relativePath || resource.kind !== ref.refKind) throw new Error('resource reference identity');
@@ -182,7 +182,7 @@ export class CapabilitySessionRegistry {
     // The ordinary launcher always reads its original M4 runtime, including
     // when its context MCP is disabled. Narrow only application-specific roots.
     for(const ref of all.filter(r=>r.refKind==='legacy-runtime'))if(!roots.some(r=>r.refId===ref.refId))roots.push(ref);
-    for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
+    for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection','claude-delivery'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
     return roots.sort((a,b)=>compareCodePoints(a.refId,b.refId));
   }
   async verifyScopedResources(taskId:string,appIds:readonly string[],projectionIds:readonly string[]):Promise<void>{
@@ -192,7 +192,7 @@ export class CapabilitySessionRegistry {
   }
   async addProjectionReference(taskId: string,expectedHash: string,resourceId: string): Promise<void> {
     const current = await this.get(taskId), resource = this.store.get(resourceId);
-    if (!['session-projection','agent-projection','claude-projection-source','claude-projection-archive'].includes(resource.kind) || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','投影未完成发布');
+    if (!['session-projection','agent-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind) || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','投影未完成发布');
     this.deps.verifyExtraResource(resource,current.snapshot);
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       const known = this.read(taskId), fresh = this.store.get(resourceId);

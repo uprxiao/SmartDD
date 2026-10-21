@@ -1,0 +1,10 @@
+ it('requires the actual canonical plugin root and hash for a valid host Claude delivery plan',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});
+  const plan=support.adapters.plan.bind(support.adapters);let request:Parameters<typeof plan>[1]|undefined;
+  const spy=vi.spyOn(support.adapters,'plan').mockImplementation((hash,input)=>{if(input.claudeDelivery)request=structuredClone(input);return plan(hash,input);});
+  const created=await create(claudeId),runId=created.task.runtimeSnapshot!.runId;
+  try{expect(request?.claudeDelivery).toBeDefined();const input=request!,hash=input.snapshot.adapterBinding.hash;expect(plan(hash,input).args).toContain(input.pluginRoot);
+   for(const patch of [{pluginRoot:null,pluginHash:null},{pluginRoot:null},{pluginHash:null}])expect(()=>plan(hash,{...input,...patch})).toThrow(expect.objectContaining({code:'SNAPSHOT_IMMUTABLE'}));
+   expect(()=>plan(hash,{...input,runId:randomUUID()})).toThrow(expect.objectContaining({code:'RESOURCE_RECOVERY_REQUIRED'}));expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);
+  }finally{spy.mockRestore();tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+ });

@@ -1,0 +1,102 @@
+import {randomUUID} from 'node:crypto';
+import {claudeRunDeliverySchema} from '@shared/claude-delivery';
+export type {ClaudeRunDelivery} from '@shared/claude-delivery';
+import type {ClaudeRunDelivery} from '@shared/claude-delivery';
+import {basename,dirname,join} from 'node:path';
+import {z} from 'zod';
+import {ApplicationError} from '@shared/applications';
+import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {ResourceStore,ResourceRecord} from './resource-store';
+import {canonicalJson,digest} from './manifest';
+import {verifyOwnedBundle} from './owned-bundle';
+const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/);
+export const deliveryOwner=z.object({instanceId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/)}).strict();
+const appIds=z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(1).max(32).refine(a=>new Set(a).size===a.length);
+const view=z.object({resourceId:z.string(),sourceId:z.string(),hash,generation:z.number().int().positive(),appIds}).strict();
+const participant=z.object({owner:deliveryOwner,leaseId:z.uuid()}).strict();
+const pending=z.object({id:z.uuid(),sourceId:z.string(),hash,appIds,priorHash:hash.nullable(),priorResourceIds:z.array(z.string()).max(1024),resourceId:z.string(),generation:z.number().int().positive(),abandonedStages:z.array(z.string()).max(64),participants:z.array(participant).min(1).max(64),activeOwner:deliveryOwner,stage:z.string(),backup:z.string()}).strict();
+const preparation=z.object({id:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive()}).strict();
+const consumer=z.object({runId:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive(),resourceId:z.string(),hash,generation:z.number().int().positive()}).strict();
+export const claudeSlotSchema=z.object({schema:z.literal(1),storeId:z.uuid(),taskId:id,selectionHash:hash,root:z.string(),anchorId:z.string(),revision:z.number().int().positive(),current:view.nullable(),pending:pending.nullable(),preparation:preparation.nullable(),consumers:z.array(consumer).max(128)}).strict();
+export type ClaudeSlot=z.infer<typeof claudeSlotSchema>;
+export type DeliveryOwner=z.infer<typeof deliveryOwner>;
+export const claudeDeliveryTokenSchema=claudeRunDeliverySchema.extend({preparationId:z.uuid()});
+export type ClaudeDeliveryToken=z.infer<typeof claudeDeliveryTokenSchema>;
+export const claudeSlotId=(taskId:string)=>'claude-delivery-slot:'+taskId;
+export const claudeRoot=(taskId:string)=>`sessions/${taskId}/claude/plugin`;
+export const claudeAnchor=(taskId:string)=>'claude-delivery-root:'+taskId;
+export const normalizedSelection=(s:CapabilitySessionSnapshotV2)=>digest(canonicalJson({...s,native:{...s.native,sessionId:null}}));
+const fail=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Claude目录交付或占用依据待核验，保留现场');
+export function readClaudeSlot(store:ResourceStore,taskId:string):ClaudeSlot|null{
+ const row=store.sqlite.prepare('SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(claudeSlotId(taskId)) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;if(!row){const footprint=store.sqlite.prepare("SELECT 1 FROM capability_resources WHERE owner_store_id=? AND path_scope='C' AND (resource_id=? OR kind='claude-delivery' AND scope_relative_path=?) LIMIT 1").get(store.storeId,claudeAnchor(taskId),claudeRoot(taskId));const intent=store.sqlite.prepare("SELECT 1 FROM capability_resource_operations WHERE owner_store_id=? AND kind='claude-delivery-install' AND CASE WHEN json_valid(plan_json) THEN json_extract(plan_json,'$.slotId') ELSE NULL END=? LIMIT 1").get(store.storeId,claudeSlotId(taskId));if(footprint||intent)throw fail();return null;}
+ try{const raw=JSON.parse(row.plan_json),value=claudeSlotSchema.parse(raw.payload);if(row.kind!=='claude-delivery-slot'||row.owner_store_id!==store.storeId||row.state!=='committed'||digest(canonicalJson(value))!==raw.evidenceHash||value.storeId!==store.storeId||value.taskId!==taskId||value.root!==claudeRoot(taskId)||value.anchorId!==claudeAnchor(taskId))throw fail();
+  const anchor=store.get(value.anchorId);if(anchor.kind!=='claude-delivery-root'||anchor.pathScope!=='C'||anchor.relativePath!==value.root||anchor.state!=='recovery-required'||anchor.integrity!=='unknown'||anchor.operationId!==claudeSlotId(taskId)||anchor.contentHash!==digest(canonicalJson({taskId,selectionHash:value.selectionHash,root:value.root})))throw fail();
+  if(value.pending){const p=value.pending;if(!p.stage.startsWith(`claude-deliveries/${taskId}/${p.id}/stages/`)||!z.uuid().safeParse(p.stage.split('/').at(-1)).success||p.abandonedStages.some(v=>!v.startsWith(`claude-deliveries/${taskId}/${p.id}/stages/`)||!z.uuid().safeParse(v.split('/').at(-1)).success)||p.backup!==`claude-deliveries/${taskId}/${p.id}/previous`||!p.participants.some(v=>canonicalJson(v.owner)===canonicalJson(p.activeOwner))||new Set(p.participants.map(v=>v.leaseId)).size!==p.participants.length)throw fail();}
+  return value;
+ }catch{throw fail();}
+}
+/** Only inside the same short C transaction as the corresponding lease/run change. */
+export function writeClaudeSlot(store:ResourceStore,value:ClaudeSlot):void{
+ const payload=claudeSlotSchema.parse(value),text=canonicalJson({payload,evidenceHash:digest(canonicalJson(payload))}),stamp=new Date().toISOString();
+ store.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'claude-delivery-slot',?,'committed',?,?,?) ON CONFLICT(operation_id) DO UPDATE SET plan_json=excluded.plan_json,updated_at=excluded.updated_at").run(claudeSlotId(value.taskId),store.storeId,text,stamp,stamp);
+}
+export function assertClaudePublication(store:ResourceStore,path:string,contentHash:string,reuse=false):void{
+ if(path!=='sessions'&&!path.startsWith('sessions/'))return;
+ const tasks=new Set<string>();
+ for(const row of store.sqlite.prepare("SELECT operation_id FROM capability_resource_operations WHERE kind='claude-delivery-slot'").all() as {operation_id:string}[]){if(!row.operation_id.startsWith('claude-delivery-slot:'))throw fail();tasks.add(row.operation_id.slice(21));}
+ // An erased slot journal is not proof of no owner.Keep the independent anchor
+ // and physical view footprints in the publication fence even in that condition.
+ for(const row of store.sqlite.prepare("SELECT resource_id,scope_relative_path FROM capability_resources WHERE owner_store_id=? AND path_scope='C' AND kind IN ('claude-delivery-root','claude-delivery')").all(store.storeId) as {resource_id:string;scope_relative_path:string|null}[]){const root=/^sessions\/([A-Za-z0-9][A-Za-z0-9_-]{0,127})\/claude\/plugin$/.exec(row.scope_relative_path??'');if(root)tasks.add(root[1]);else if(row.resource_id.startsWith('claude-delivery-root:'))tasks.add(row.resource_id.slice(21));else throw fail();}
+ for(const taskId of tasks){const root=claudeRoot(taskId);if(path!==root&&!path.startsWith(root+'/')&&!root.startsWith(path+'/'))continue;const slot=readClaudeSlot(store,taskId);if(!slot)throw fail();
+  if(reuse&&path===slot.root&&!slot.pending&&slot.current?.hash===contentHash)return;
+  throw new ApplicationError('RESOURCE_BUSY','此原Claude目录由交付协调器维护，当前占用及修复不能被独立发布覆盖');
+ }
+}
+
+function lease(store:ResourceStore,leaseId:string,owner:DeliveryOwner,ownerId:string,kind:string,anchorId:string,states:string[]):void{
+ const row=store.sqlite.prepare('SELECT resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE lease_id=?').get(leaseId) as {resource_id:string;owner_kind:string;owner_id:string;host_instance_id:string;pid:number;process_started_at:string;state:string}|undefined;
+ if(!row||row.resource_id!==anchorId||row.owner_kind!==kind||row.owner_id!==ownerId||row.host_instance_id!==owner.instanceId||row.pid!==owner.pid||row.process_started_at!==owner.startedAt||!states.includes(row.state))throw fail();
+}
+export function assertClaudeInstallLease(store:ResourceStore,slot:ClaudeSlot):void{if(!slot.pending)throw fail();for(const p of slot.pending.participants)lease(store,p.leaseId,p.owner,slot.pending.id,'claude-delivery-install',slot.anchorId,['active','recovery-required']);}
+export function assertClaudePreparation(store:ResourceStore,slot:ClaudeSlot):void{const p=slot.preparation;if(!p||slot.pending||p.revision!==slot.revision||!slot.current)throw fail();lease(store,p.leaseId,p.owner,p.id,'claude-delivery-preparation',slot.anchorId,['active']);}
+export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):ClaudeSlot{
+ const slot=readClaudeSlot(store,snapshot.taskId),v=slot?.current;
+ if(!slot||!v||slot.pending||slot.selectionHash!==normalizedSelection(snapshot)||snapshot.runner!=='claude-code'||snapshot.legacyBinding||resource.kind!=='claude-delivery'||resource.pathScope!=='C'||resource.resourceId!==v.resourceId||resource.contentHash!==v.hash||resource.generation!==v.generation||resource.relativePath!==slot.root||resource.state!=='ready'||resource.integrity!=='valid')throw fail();
+ const source=store.get(v.sourceId),deps=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
+ if(source.kind!=='claude-projection-source'||source.contentHash!==v.hash||source.state!=='ready'||source.integrity!=='valid'||canonicalJson(deps)!==canonicalJson([v.sourceId]))throw fail();
+ verifyOwnedBundle(store.directory(source),v.hash,store.storeId);
+ const manifest=verifyOwnedBundle(store.directory(resource),v.hash,store.storeId),metadata=manifest.metadata;
+ const expected=[...snapshot.packages.filter(p=>v.appIds.includes(p.appId)).flatMap(p=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}))),...snapshot.standardSkills.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:basename(dirname(s.projectionPath))}))];
+ if(metadata.kind!=='claude-session-projection'||metadata.taskId!==snapshot.taskId||metadata.selectionHash!==slot.selectionHash||canonicalJson(metadata.sources)!==canonicalJson(expected)||v.appIds.some(id=>!snapshot.packages.some(p=>p.appId===id)))throw fail();
+ return slot;
+}
+export function assertClaudeReservation(store:ResourceStore,taskId:string,token?:ClaudeDeliveryToken):void{
+ const slot=readClaudeSlot(store,taskId);if(!slot){if(token)throw fail();return;}
+ if(!token||slot.pending)throw new ApplicationError('RESOURCE_BUSY','原Claude目录需通过本轮交付占用准备运行');assertClaudePreparation(store,slot);const p=slot.preparation!,v=slot.current!;
+ if(token.taskId!==taskId||token.preparationId!==p.id||token.leaseId!==p.leaseId||token.revision!==slot.revision||token.resourceId!==v.resourceId||token.hash!==v.hash||token.generation!==v.generation||canonicalJson(token.appIds)!==canonicalJson(v.appIds))throw fail();
+}
+/** Called by RunRegistry inside its run/primary-lease transaction.No async handoff gap. */
+export function bindClaudeDelivery(store:ResourceStore,token:ClaudeDeliveryToken,runId:string,aliasLeaseId:string,appIds:readonly string[]):ClaudeRunDelivery{
+ assertClaudeReservation(store,token.taskId,token);const slot=readClaudeSlot(store,token.taskId)!,p=slot.preparation!;
+ const row=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
+ if(!row||row.task_id!==slot.taskId||row.state!=='preparing'||row.owner_instance_id!==p.owner.instanceId||row.owner_pid!==p.owner.pid||row.owner_started_at!==p.owner.startedAt||canonicalJson([...appIds].sort())!==canonicalJson([...token.appIds].sort()))throw fail();
+ const stamp=new Date().toISOString();store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(aliasLeaseId,slot.anchorId,runId,p.owner.instanceId,p.owner.pid,p.owner.startedAt,stamp);
+ slot.consumers.push({runId,leaseId:aliasLeaseId,owner:p.owner,revision:slot.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation});slot.preparation=null;writeClaudeSlot(store,slot);store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=?").run(stamp,p.leaseId);
+ return{taskId:token.taskId,leaseId:aliasLeaseId,revision:token.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation,appIds:[...token.appIds]};
+}
+export function assertClaudeRunDelivery(store:ResourceStore,runId:string,proof:ClaudeRunDelivery):void{
+ const slot=readClaudeSlot(store,proof.taskId),v=slot?.current,c=slot?.consumers.find(c=>c.runId===runId);
+ if(!slot||!v||!c||slot.pending||slot.revision!==proof.revision||c.revision!==proof.revision||c.leaseId!==proof.leaseId||c.resourceId!==proof.resourceId||c.hash!==proof.hash||c.generation!==proof.generation||v.resourceId!==proof.resourceId||v.hash!==proof.hash||v.generation!==proof.generation||canonicalJson(v.appIds)!==canonicalJson(proof.appIds))throw fail();
+ const run=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
+ if(!run||run.task_id!==slot.taskId||run.owner_instance_id!==c.owner.instanceId||run.owner_pid!==c.owner.pid||run.owner_started_at!==c.owner.startedAt||['stopped','failed'].includes(run.state))throw fail();lease(store,c.leaseId,c.owner,runId,'run',slot.anchorId,['preparing','active']);
+}
+
+/** A native-only fixed-history reader also freezes its actual canonical path.
+ * This alias is occupancy on an explicitly unready anchor,not application authority. */
+export function protectClaudeNativeGuard(store:ResourceStore,taskId:string,runId:string):void{
+ const slot=readClaudeSlot(store,taskId);if(!slot)return;
+ const row=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
+ if(!row||row.task_id!==taskId||row.state!=='preparing')throw fail();const owner=deliveryOwner.parse({instanceId:row.owner_instance_id,pid:row.owner_pid,startedAt:row.owner_started_at}),leaseId=randomUUID(),anchor=store.get(slot.anchorId);
+ store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,slot.anchorId,runId,owner.instanceId,owner.pid,owner.startedAt,new Date().toISOString());
+ slot.consumers.push({runId,leaseId,owner,revision:slot.revision,resourceId:slot.anchorId,hash:anchor.contentHash,generation:anchor.generation});writeClaudeSlot(store,slot);
+}

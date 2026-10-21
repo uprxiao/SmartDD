@@ -1,3 +1,4 @@
+import {verifyClaudeDelivery} from './claude-delivery-state';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parseDocument } from 'yaml';
@@ -110,6 +111,7 @@ export class SessionCapabilityProjector {
     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{resource,root};
   }
   verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void {
+    if(resource.kind==='claude-delivery'){verifyClaudeDelivery(this.store,resource,snapshot);return;}
     if(['claude-projection-source','claude-projection-archive'].includes(resource.kind)){
       const archive=resource.kind==='claude-projection-archive',identity=this.sourceIdentity(snapshot.taskId,resource.contentHash,archive);
       if(resource.pathScope!=='C'||resource.state!=='ready'||resource.integrity!=='valid'||resource.resourceId!==identity.resourceId||resource.relativePath!==identity.relativePath)throw new ApplicationError('OWNERSHIP_CONFLICT','Claude来源归属或就绪身份不同');

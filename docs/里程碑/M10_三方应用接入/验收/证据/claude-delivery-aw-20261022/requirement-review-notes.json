@@ -1,0 +1,40 @@
+{
+  "recordedAt": "2026-10-21T19:36:05.551687+00:00",
+  "requirement": "M10-R09",
+  "status": "partial static read during frozen regression;not closed",
+  "sourceBaseline": "AV plus AW frozen17 overlay",
+  "sources": [
+    {
+      "path": "src/main/core/applications/manifest.ts",
+      "sha256": "a8a53528cbb33db110177e1a09178c70f3d602669e7969c67f926b944ec94765"
+    },
+    {
+      "path": "src/main/core/applications/package-registry.ts",
+      "sha256": "e7c9a66506bb40febcd29df10515dcb9cba4f275caee4c85d58241795c9e1796"
+    },
+    {
+      "path": "src/main/core/applications/application-adapter-registry.ts",
+      "sha256": "d21b1e39331eea51a25b47ab3e43f41b7b1755e891caeb7bf99ecba3036c1fd6"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/extension-contract.test.ts",
+      "sha256": "19bbd61e6dc9f49d2c22c8c757506def9a8c901a12be72c0be079918be0333f3"
+    },
+    {
+      "path": "src/shared/application-connections.ts",
+      "sha256": "f308d583343f3a319292d1ee7b759fc394f25292b280f280a4d120c569af8d4d"
+    }
+  ],
+  "guide": "docs/里程碑/M10_三方应用接入/技研/新增应用实施与验收指南_R1.6.md",
+  "guideSha256": "7926de9ec8057f3a49d557193261b4f047a1ac8ac21123222a1eafbb54d89873",
+  "findings": [
+    "Generic full-package schema and immutable registry are separate from trusted execution provenance;unknown provider/auth rejected by product schema",
+    "Current E-EXT suite has7 cases:two fake IDs,immutable conflict,complete files/unique tools,host/data incompatibility,auth metadata boundary,old effect rejection and untrusted dispatcher never executed",
+    "Guide explicitly retains missing T39 full discovery/connection permission/log mapping and T40 two-project/two-connection full experiment;do not infer complete extension delivery from registry7 pass",
+    "T42 historical document result preserved;T39/T40/T41 formal states unchanged",
+    "No production extension-contract.ts file;development plan shorthand must point to actual manifest/package registry and extension-contract.test.ts"
+  ],
+  "actualAgent": false,
+  "actualApp": false,
+  "JenkinsConnected": false
+}
