@@ -22,6 +22,7 @@ import { inspectNativeLaunch, type NativeLaunchContext, type TaskLaunchInput } f
 import { canonicalJson, digest } from './manifest';
 import {legacyRuntimeMetadata} from './legacy-task-evidence';
 import {LegacyTaskRetention} from './legacy-task-retention';
+import {LegacyOriginalPlugin} from './legacy-original-plugin';
 import {LegacySessionMigration} from './legacy-session-migration';
 import {LegacyPluginSources,legacyPluginOrigin} from './legacy-plugin-source';
 import {assertLegacySessionSource} from './legacy-session-source';
@@ -59,6 +60,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
       else if(resource.kind==='agent-projection'){const identity=store.sqlite.prepare('SELECT discovery_home AS home FROM capability_session_identities WHERE task_id=?').get(snapshot.taskId) as {home:string}|undefined;if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原生发现根缺失');this.catalog(identity.home).verifyReference(resource,snapshot);}
+      else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);
       else if(resource.kind==='legacy-plugin-source')new LegacyPluginSources(store).verify(resource,legacyPluginOrigin(assertLegacySessionSource(store,snapshot).evidence));
       else support.legacy.verify(resource);
     }});
@@ -75,6 +77,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
       else if(resource.kind==='agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');catalog.verifyReference(resource,snapshot);}
+      else if(resource.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(resource,snapshot);
       else if(resource.kind==='legacy-plugin-source')new LegacyPluginSources(store).verify(resource,legacyPluginOrigin(assertLegacySessionSource(store,snapshot).evidence));
       else support.legacy.verify(resource);
     }});

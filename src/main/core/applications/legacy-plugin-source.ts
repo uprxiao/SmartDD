@@ -10,6 +10,7 @@ const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][
 const metadataSchema=z.object({kind:z.literal('m4-legacy-plugin-source-v1'),taskId:id,projectId:id,sourceSnapshotHash:hash,manifestHash:hash,runRoot:path,pluginRoot:path,pluginName:z.literal('smartdd'),skills:z.array(z.object({skillId:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),hash}).strict()).min(1).max(64)}).strict();
 export type LegacyPluginOrigin=z.infer<typeof metadataSchema>;
 export const legacyPluginResourceId=(taskId:string,manifestHash:string)=>`legacy-plugin-source:${id.parse(taskId)}:${hash.parse(manifestHash)}`;
+export const legacyStaticPluginResourceId=(taskId:string,manifestHash:string)=>`legacy-static-plugin:${id.parse(taskId)}:${hash.parse(manifestHash)}`;
 export function legacyPluginOrigin(evidence:LegacyTaskEvidence):LegacyPluginOrigin{
  if(evidence.runner!=='claude-code'||!evidence.pluginRoot||evidence.pluginName!=='smartdd')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原任务没有已证明的Claude插件来源');
  return metadataSchema.parse({kind:'m4-legacy-plugin-source-v1',taskId:evidence.taskId,projectId:evidence.projectId,sourceSnapshotHash:evidence.snapshotHash,manifestHash:evidence.manifestHash,runRoot:evidence.runRoot,pluginRoot:evidence.pluginRoot,pluginName:evidence.pluginName,skills:evidence.skills.filter(s=>s.enabled).map(s=>({skillId:s.skillId,hash:s.hash}))});
@@ -43,8 +44,15 @@ export class LegacyPluginSources {
   * native process exited, grant ownership, repair paths or permit activation.
   */
  verifyOriginalPlugin(resource:ResourceRecord,origin:LegacyPluginOrigin):void{
-  const source=this.verify(resource,origin),actual=readArchive(origin.runRoot),expected={'.smartdd-owned.json':source.rootMarker,...Object.fromEntries(Object.entries(source.pluginFiles).map(([p,b])=>['plugin/'+p,b]))};
-  if(canonicalJson(Object.keys(actual).sort())!==canonicalJson(Object.keys(expected).sort())||Object.entries(expected).some(([p,b])=>!actual[p]?.equals(b)))fail('原静态插件路径含不同字节、临时配置或未知内容，保留原路径');
+  this.verifyStaticProjection(resource,origin,origin.runRoot);
+ }
+ /** Exact source bytes for private staging; this does not authorize a target path. */
+ staticProjectionFiles(resource:ResourceRecord,origin:LegacyPluginOrigin):Record<string,Buffer>{
+  const source=this.verify(resource,origin);return{'.smartdd-owned.json':source.rootMarker,...Object.fromEntries(Object.entries(source.pluginFiles).map(([p,b])=>['plugin/'+p,b]))};
+ }
+ verifyStaticProjection(resource:ResourceRecord,origin:LegacyPluginOrigin,directory:string):void{
+  try{const expected=this.staticProjectionFiles(resource,origin),actual=readArchive(directory);if(canonicalJson(Object.keys(actual).sort())!==canonicalJson(Object.keys(expected).sort())||Object.entries(expected).some(([p,b])=>!actual[p]?.equals(b)))fail('原静态插件路径含不同字节、临时配置或未知内容，保留原路径');}
+  catch(error){if(error instanceof ApplicationError)throw error;return fail('原静态插件目录缺失、损坏或无法核验');}
  }
  verify(resource:ResourceRecord,origin:LegacyPluginOrigin){
   if(resource.resourceId!==legacyPluginResourceId(origin.taskId,origin.manifestHash)||resource.kind!=='legacy-plugin-source'||resource.ownerStoreId!==this.store.storeId||resource.pathScope!=='C'||resource.relativePath!=='legacy/plugins/'+resource.contentHash||resource.state!=='ready'||resource.integrity!=='valid')return fail('原插件来源登记不属于此历史');

@@ -1,11 +1,11 @@
-import {join} from 'node:path';
+import {join,relative} from 'node:path';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
 import {canonicalJson,digest} from './manifest';
 import {legacyRuntimeMetadata,legacyManifestSchema,type LegacyTaskEvidence} from './legacy-task-evidence';
 import type {ResourceStore,ResourceRecord} from './resource-store';
-import {legacyPluginResourceId} from './legacy-plugin-source';
+import {legacyPluginResourceId,legacyStaticPluginResourceId} from './legacy-plugin-source';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),path=z.string().min(1).max(4096).refine(p=>p.startsWith('/')&&!/[\x00\r\n]/.test(p));
 export const legacyRetentionIdentitySchema=z.object({taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),stateRoot:path,cwd:path,sessionId:z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),home:path}).strict();
 const evidenceSchema=z.object({schema:z.literal('m4-task-evidence-v1'),taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),snapshotHash:hash,evidenceHash:hash,manifestHash:hash,runRoot:path,runtimeHash:hash,runtimePath:path,pluginRoot:path.nullable(),pluginName:z.literal('smartdd').nullable(),skills:z.array(z.object({skillId:z.string(),versionId:z.string(),hash,enabled:z.boolean(),projectionPath:z.string().max(4096),nativeName:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/).nullable(),sourceHash:hash}).strict()).max(64),mcp:z.array(z.object({name:z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/),protocolMajor:z.literal(1),runtimeHash:hash}).strict()).max(1)}).strict();
@@ -30,7 +30,12 @@ export function retainedLegacySource(store:ResourceStore,taskId:string,state:'he
   const mcp:CapabilitySessionSnapshotV2['mcp']=evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,protocolMajor:m.protocolMajor,runtimeHash:m.runtimeHash}));
   let pluginSource:ResourceRecord|undefined;
   if(evidence.pluginRoot){const resourceId=legacyPluginResourceId(taskId,evidence.manifestHash),ref=store.sqlite.prepare("SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-plugin-source' AND ref_id=?").get(taskId,resourceId) as {ref_hash:string;relative_path:string}|undefined;if(ref){const resource=store.get(resourceId);if(resource.kind!=='legacy-plugin-source'||resource.pathScope!=='C'||resource.ownerStoreId!==store.storeId||resource.relativePath!=='legacy/plugins/'+resource.contentHash||ref.ref_hash!==resource.contentHash||ref.relative_path!==resource.relativePath)return fail();pluginSource=resource;}}
-  return{row,snapshot,identity,evidence,binding,standardSkills,mcp,pluginSource};
+  let originalProjection:ResourceRecord|undefined;
+  if(evidence.pluginRoot){const resourceId=legacyStaticPluginResourceId(taskId,evidence.manifestHash),ref=store.sqlite.prepare("SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-static-plugin' AND ref_id=?").get(taskId,resourceId) as {ref_hash:string;relative_path:string}|undefined;
+   if(!ref&&store.sqlite.prepare('SELECT 1 FROM capability_resources WHERE resource_id=?').get(resourceId))return fail();
+   if(ref){const r=store.get(resourceId);if(!pluginSource||r.kind!=='legacy-static-plugin'||r.pathScope!=='C'||r.contentHash!==pluginSource.contentHash||r.relativePath!==relative(store.root,evidence.runRoot)||ref.ref_hash!==r.contentHash||ref.relative_path!==r.relativePath)return fail();originalProjection=r;}
+  }
+  return{row,snapshot,identity,evidence,binding,standardSkills,mcp,pluginSource,...(originalProjection?{originalProjection}:{})};
  }catch(error){if(error instanceof ApplicationError)throw error;return fail();}
 }
 export function assertLegacySessionSource(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2){

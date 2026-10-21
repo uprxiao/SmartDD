@@ -1,0 +1,100 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/core/applications/__tests__/legacy-agent-load.test.ts src/main/core/applications/__tests__/legacy-retention-recovery.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-original-plugin-ak-20261021/second-report.json
+
+[1021/153042.683467:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/153043.556977:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (70 tests) 29967ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  809ms
+     ✓ publishes exact original codex selection, refs, names and task pointer in one transaction  1039ms
+     ✓ pins the retained plugin source hash and detects losing its long-term reference  531ms
+     ✓ requires plugin source retention before first conversion and catches late archive changes before commit  328ms
+     ✓ keeps an intact fixed snapshot readable when only retained plugin resource readiness changes  524ms
+     ✓ reads the earlier five-field persisted migration layout without requiring a plugin archive that was never recorded  783ms
+     ✓ retains disabled original source refs while publishing only the originally enabled standard Skill  799ms
+     ✓ retains the original runtime when the original task did not select context MCP  491ms
+     ✓ binds a previously null native ID in the same source/snapshot transaction and retains the original identity  1203ms
+     ✓ rolls back snapshot, refs, names, identity, source state and task pointer on final SQL failure  453ms
+     ✓ is retryable after a committed return-path interruption without resetting the converted state  560ms
+     ✓ rejects task at the asynchronous precommit boundary without partial migration  335ms
+     ✓ rejects file at the asynchronous precommit boundary without partial migration  339ms
+     ✓ rejects source-row at the asynchronous precommit boundary without partial migration  305ms
+     ✓ rejects resource-generation at the asynchronous precommit boundary without partial migration  515ms
+     ✓ rejects a changed reference basis without promoting any current application  616ms
+     ✓ rejects a changed identity basis without promoting any current application  314ms
+     ✓ does not steal another task native identity or a previously registered original MCP name  360ms
+     ✓ pins the original retained identity bytes independently of mutable registry rows  305ms
+     ✓ pins the original retained record bytes independently of mutable registry rows  425ms
+     ✓ requires a legacy binding only for migrated format2 and preserves ordinary v2 validation  316ms
+   ✓ converts the retained claude-code source after normal transient cleanup and plans the same original paths  530ms
+     ✓ rejects a late same-byte original claude-code Skill inode replacement before publishing SQL  427ms
+     ✓ rejects a late claude-code source generation change after cleaned-source verification  348ms
+     ✓ preserves unknown content which arrives in original claude-code T before commit  1365ms
+     ✓ preserves unknown content which arrives in original codex T before commit  527ms
+     ✓ rejects an undeclared dependency on a retained original runtime  426ms
+     ✓ restores a missing original static Claude path from the exact retained source before conversion  623ms
+     ✓ refuses a changed retained Claude archive even when its original static paths still match  472ms
+   ✓ invalidates the claude-code file receipt when a caller changes its returned logical evidence  706ms
+   ✓ retains an original static Claude projection through conversion, then repairs the same path on replay  463ms
+     ✓ preserves empty at the original path without registering it as a ready projection  303ms
+     ✓ preserves marker at the original path without registering it as a ready projection  308ms
+     ✓ preserves symlink at the original path without registering it as a ready projection  328ms
+     ✓ preserves hardlink at the original path without registering it as a ready projection  452ms
+     ✓ preserves full-T at the original path without registering it as a ready projection  324ms
+     ✓ keeps an unknown target resource lease intact and does not restore the missing path  1554ms
+     ✓ rechecks a late unknown native run before publishing any original files  375ms
+     ✓ preserves a dangling user alias which appears after private materialization  492ms
+     ✓ resumes a failed post-rename publication under the original operation and long-term reference  782ms
+     ✓ keeps a canceled publication recoverable without recreating old context  1015ms
+     ✓ rejects a late dangling target in the generic publisher even without a caller guard  333ms
+[1021/153116.587706:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-agent-load.test.ts (29 tests) 26195ms
+     ✓ retains original claude-code names, paths and MCP keys without rewriting any data  1378ms
+     ✓ retains original codex names, paths and MCP keys without rewriting any data  786ms
+     ✓ keeps old selected Codex paths enabled while disabling other original versions and current-format projections  1162ms
+     ✓ rejects a current-format own projection whose reference is no longer authoritative  1039ms
+     ✓ rejects a current-format own projection whose projection-state is no longer authoritative  422ms
+     ✓ rejects a current-format own projection whose source-state is no longer authoritative  941ms
+     ✓ does not replace or rename a colliding user plugin  799ms
+     ✓ does not replace or rename a colliding user skill  1513ms
+     ✓ does not replace or rename a colliding user mcp  836ms
+     ✓ recognizes the exact existing original plugin and Skill paths while retaining the old namespace  2087ms
+     ✓ rejects conflicting or duplicate managed flags without rewriting user settings  2534ms
+     ✓ does not add a context MCP when the current project explicitly disables it  1512ms
+     ✓ rejects a different or damaged task loading basis  1844ms
+     ✓ rejects a different or damaged native-id loading basis  2341ms
+     ✓ rejects a different or damaged source-hash loading basis  375ms
+     ✓ rejects a different or damaged record loading basis  993ms
+     ✓ rejects a different or damaged manifest loading basis  723ms
+     ✓ rejects a different or damaged reference loading basis  407ms
+     ✓ rejects a different or damaged cli loading basis  726ms
+     ✓ rejects a different or damaged adapter loading basis  763ms
+     ✓ rejects a different or damaged approved loading basis  436ms
+     ✓ does not guess past a missing or changed generation  306ms
+     ✓ does not guess past a missing or changed catalog-file  311ms
+   ✓ plans the original claude-code paths from the durable source after ended-run cleanup  426ms
+   ✓ plans the original codex paths from the durable source after ended-run cleanup  458ms
+[1021/153145.713717:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (40 tests) 11654ms
+     ✓ recovers a durable captured source receipt after final SQL failure and original T removal  525ms
+     ✓ rejects an original T which reappears during cold recovery without changing its contents  353ms
+     ✓ rolls back a second final SQL failure during cold recovery and retries the same source exactly  352ms
+     ✓ keeps cancellation during cold source preparation retryable without publishing refs  350ms
+     ✓ holds the full original tree after a failed reference commit, then finishes cleanup on retry  644ms
+     ✓ preserves the original tree when plugin changes before owned cleanup  318ms
+     ✓ preserves the original tree when extra changes before owned cleanup  372ms
+     ✓ preserves the original tree when symlink changes before owned cleanup  805ms
+     ✓ preserves the original tree when root-replaced changes before owned cleanup  328ms
+     ✓ does not recapture a changed retained original plugin tree  385ms
+     ✓ does not recapture a changed retained original extra tree  339ms
+     ✓ does not recapture a changed retained original empty-dir tree  603ms
+
+ Test Files  3 passed (3)
+      Tests  139 passed (139)
+   Start at  15:30:43
+   Duration  75.90s (transform 1.78s, setup 0ms, import 6.67s, tests 67.82s, environment 0ms)
+
+JSON report written to /private/tmp/m10-original-plugin-ak-20261021/second-report.json

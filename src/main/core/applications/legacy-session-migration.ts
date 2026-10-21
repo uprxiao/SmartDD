@@ -1,3 +1,4 @@
+import {lstatSync} from 'node:fs';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
@@ -7,6 +8,7 @@ import type {ResourceStore} from './resource-store';
 import {CapabilitySessionRegistry,canonicalFuturePath,selectionHash,type StoredCapabilitySession} from './session-registry';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
 import {LegacyPluginSources,legacyPluginOrigin} from './legacy-plugin-source';
+import {LegacyOriginalPlugin} from './legacy-original-plugin';
 import {inspectLegacySessionFiles} from './legacy-session-files';
 import {legacyRetentionIdentitySchema,retainedLegacySource} from './legacy-session-source';
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
@@ -27,20 +29,22 @@ export class LegacySessionMigration {
   if(adapter.metadata.agentId!==identity.runner||adapter.metadata.projectionFormatVersion!==2||!adapter.metadata.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64')||!adapter.metadata.cliVersions.includes(input.cliVersion))throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此适配器或CLI版本未支持原M4迁移加载');
   const state=(this.store.sqlite.prepare('SELECT state FROM capability_legacy_migration_preparations WHERE task_id=?').get(identity.taskId) as {state:string}|undefined)?.state;
   if(state!=='prepared'&&state!=='migrated')throw new ApplicationError('SESSION_ON_HOLD','原M4来源尚未完成保留');
-  const original=retainedLegacySource(this.store,identity.taskId,state);
+  let original=retainedLegacySource(this.store,identity.taskId,state);
   if(original.row.source_snapshot_hash!==input.sourceSnapshotHash||original.row.bound_native_session_id!==identity.sessionId||canonicalJson({...original.identity,sessionId:identity.sessionId})!==canonicalJson(identity))throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','迁移对象与原M4来源或原生身份不同');
+  const needsOriginal=()=>{if(!original.pluginSource)return false;try{lstatSync(original.snapshot.manifestPath);return false;}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return true;throw error;}};
   const task=()=>this.store.sqlite.prepare('SELECT project_id,runner,state_root,cwd,native_session_id,runtime_snapshot FROM tasks WHERE id=?').get(identity.taskId) as {project_id:string;runner:string;state_root:string;cwd:string;native_session_id:string|null;runtime_snapshot:string}|undefined;
   const sameTask=(raw:string)=>{const current=task();if(!current||current.project_id!==identity.projectId||current.runner!==(identity.runner==='codex'?'codex':'claude')||current.state_root!==identity.stateRoot||current.cwd!==identity.cwd||current.native_session_id!==identity.sessionId||current.runtime_snapshot!==raw)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4任务在迁移前已变化');};
   if(state==='migrated'){
    const current=await this.sessions.get(identity.taskId);if(current.snapshot.adapterBinding.hash!==input.adapterHash||current.discoveryHome!==identity.home||current.snapshot.native.sessionId!==identity.sessionId)throw new ApplicationError('SNAPSHOT_IMMUTABLE','原M4迁移已经固定，不能换适配器或身份');
    const row=task();let pointer;try{pointer=JSON.parse(row?.runtime_snapshot??'null')?.sessionCapabilities;}catch{}
-   if(!pointer||canonicalJson(pointer)!==canonicalJson(current.pointer))throw new ApplicationError('SNAPSHOT_CORRUPT','已迁移原任务指针缺失或不同');sameTask(row!.runtime_snapshot);await this.sessions.ensureMirror(identity.taskId);return{session:current,reused:true};
+   if(!pointer||canonicalJson(pointer)!==canonicalJson(current.pointer))throw new ApplicationError('SNAPSHOT_CORRUPT','已迁移原任务指针缺失或不同');sameTask(row!.runtime_snapshot);if(needsOriginal())await new LegacyOriginalPlugin(this.store).prepare(identity.taskId,signal);await this.sessions.ensureMirror(identity.taskId);return{session:current,reused:true};
   }
   sameTask(original.row.source_record_json);
+  if(needsOriginal()){await new LegacyOriginalPlugin(this.store).prepare(identity.taskId,signal);original=retainedLegacySource(this.store,identity.taskId,'prepared');sameTask(original.row.source_record_json);}
   const files=inspectLegacySessionFiles(this.store,original);
   if(original.evidence.pluginRoot&&!original.pluginSource)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Claude插件完整来源尚未保留');
   if(original.pluginSource)new LegacyPluginSources(this.store).verify(original.pluginSource,legacyPluginOrigin(original.evidence));
-  const resources=[adapter.resource,...original.snapshot.skills.map(s=>this.store.get('standard-skill:'+s.skillId+':'+s.hash)),this.store.get('legacy-runtime:'+original.evidence.runtimeHash),...(original.pluginSource?[original.pluginSource]:[])];
+  const resources=[adapter.resource,...original.snapshot.skills.map(s=>this.store.get('standard-skill:'+s.skillId+':'+s.hash)),this.store.get('legacy-runtime:'+original.evidence.runtimeHash),...(original.pluginSource?[original.pluginSource]:[]),...(original.originalProjection?[original.originalProjection]:[])];
   for(const resource of resources)if(resource.pathScope!=='C'||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4迁移来源尚未就绪');
   const snapshot=capabilitySessionSnapshotSchema.parse({schema:2,taskId:identity.taskId,projectId:identity.projectId,createdAt:new Date().toISOString(),runner:identity.runner,adapterBinding:{id:identity.runner,version:adapter.metadata.version,hash:adapter.hash,projectionFormatVersion:2,nativeToolNames:{}},native:{sessionId:identity.sessionId,stateRoot:identity.stateRoot,cwd:identity.cwd},agentAtCreation:{version:input.cliVersion,adapterRevision:2},catalogGeneration:input.catalogGeneration,packages:[],standardSkills:original.standardSkills,mcp:original.mcp,legacyBinding:{...original.binding,...(original.pluginSource?{pluginSourceHash:original.pluginSource.contentHash}:{})},provenance:'migrated-known-legacy'} satisfies CapabilitySessionSnapshotV2);
   const bytes=canonicalJson(snapshot),snapshotHash=digest(bytes),selectedHash=selectionHash(snapshot),pointer={schema:2 as const,taskId:identity.taskId,snapshotHash},nextTask=JSON.stringify({...JSON.parse(original.row.source_record_json),sessionCapabilities:pointer});

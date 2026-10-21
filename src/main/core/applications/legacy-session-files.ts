@@ -16,7 +16,7 @@ function present(path:string):boolean{
 /** Record directory identities as well as file identities. This never reads outside
  * the exact source / original projection roots, follows links or creates a path.
  */
-function receipt(paths:readonly string[]):string{
+export function legacyFilesReceipt(paths:readonly string[]):string{
  const result:unknown[]=[];let entries=0,bytes=0;
  const walk=(path:string,depth:number)=>{
   const st=lstatSync(path);if(st.isSymbolicLink()||!st.isDirectory()&&!st.isFile()||depth>32||++entries>16384)fail('原M4来源含链接、特殊文件或超过核对预算');
@@ -36,11 +36,11 @@ function receipt(paths:readonly string[]):string{
  * normal cleanup removed old context/manifest. This grants no owner/exit proof,
  * does not repair a path, migrate SQL, reserve a run or activate capabilities.
  */
-function inspectFiles(store:ResourceStore,source:Source){
+function inspectFiles(store:ResourceStore,source:Source,originalPaths=true){
  const {identity,snapshot,evidence}=source;
  if(!['prepared','migrated'].includes(source.row.state))fail('原M4来源尚未完成留存');
  const state=source.row.state as 'prepared'|'migrated',legacy=new LegacyPluginSources(store),resources:ResourceRecord[]=[],sources=new Map<string,Record<string,string>>();
- const logical=(value:Source)=>canonicalJson({...value,pluginSource:value.pluginSource??null}),sourceReceipt=logical(source);
+ const logical=(value:Source)=>{const {originalProjection,...fixed}=value;return canonicalJson({...fixed,pluginSource:value.pluginSource??null,...(originalPaths&&originalProjection?{originalProjection}:{})});},sourceReceipt=logical(source);
  if(logical(retainedLegacySource(store,identity.taskId,state))!==sourceReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4来源对象与权威持久记录不同');
  const add=(id:string,kind:string,hash:string,path:string)=>{
   const resource=store.get(id);
@@ -52,16 +52,17 @@ function inspectFiles(store:ResourceStore,source:Source){
  for(const skill of snapshot.skills)add('standard-skill:'+skill.skillId+':'+skill.hash,'standard-skill',skill.hash,'packages/'+skill.skillId+'/'+skill.hash);
  add('legacy-runtime:'+evidence.runtimeHash,'legacy-runtime',evidence.runtimeHash,'runtime/'+evidence.runtimeHash);
  if(source.pluginSource)resources.push(source.pluginSource);
- const paths=[...resources.map(r=>store.directory(r)),evidence.runRoot,...(identity.runner==='codex'?evidence.skills.filter(s=>s.enabled).map(s=>dirname(s.projectionPath)):[])];
+ if(originalPaths&&source.originalProjection)resources.push(source.originalProjection);
+ const paths=[...resources.map(r=>store.directory(r)),...(originalPaths?[evidence.runRoot,...(identity.runner==='codex'?evidence.skills.filter(s=>s.enabled).map(s=>dirname(s.projectionPath)):[])]:[])];
  const dependencies=(id:string)=>store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(id);
  const metadata=()=>{
   const current=retainedLegacySource(store,identity.taskId,state);
   if(logical(current)!==sourceReceipt||logical(source)!==sourceReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4持久来源已不是开始核对时的修订');
-  return canonicalJson({row:current.row,resources:resources.map(r=>store.get(r.resourceId)),dependencies:resources.map(r=>[r.resourceId,dependencies(r.resourceId)]),refs:store.sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_kind,ref_id').all(identity.taskId),versions:snapshot.skills.map(s=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(s.versionId)??null)});
+  return canonicalJson({row:current.row,resources:resources.map(r=>store.get(r.resourceId)),dependencies:resources.map(r=>[r.resourceId,dependencies(r.resourceId)]),refs:store.sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_kind,ref_id').all(identity.taskId).filter((r:any)=>originalPaths||r.ref_kind!=='legacy-static-plugin'),versions:snapshot.skills.map(s=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(s.versionId)??null)});
  };
- const metadataReceipt=metadata(),reader=new LegacyTaskEvidenceReader(store.root,identity.home,id=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(id) as LegacySkillVersion|undefined),inspected=reader.inspect(identity,snapshot);
- if(inspected.state==='verified'&&canonicalJson(legacyLogicalEvidence(inspected.evidence))!==canonicalJson(legacyLogicalEvidence(evidence)))fail('原M4逻辑来源、路径或名称与最初留存不同');
- if(inspected.state!=='verified'&&inspected.code!=='LEGACY_MANIFEST_MISSING')fail('原M4运行文件仍需核查');
+ const metadataReceipt=metadata(),reader=new LegacyTaskEvidenceReader(store.root,identity.home,id=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(id) as LegacySkillVersion|undefined),inspected=originalPaths?reader.inspect(identity,snapshot):null;
+ if(inspected?.state==='verified'&&canonicalJson(legacyLogicalEvidence(inspected.evidence))!==canonicalJson(legacyLogicalEvidence(evidence)))fail('原M4逻辑来源、路径或名称与最初留存不同');
+ if(inspected&&inspected.state!=='verified'&&inspected.code!=='LEGACY_MANIFEST_MISSING')fail('原M4运行文件仍需核查');
  const validate=()=>{
   if(metadata()!==metadataReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4持久来源、引用或版本记录在核对中变化');
   for(const resource of resources)if(resource.kind==='standard-skill'||resource.kind==='legacy-runtime'){
@@ -73,9 +74,11 @@ function inspectFiles(store:ResourceStore,source:Source){
    if(!version||version.id!==skill.versionId||version.skillId!==skill.skillId||version.hash!==skill.hash||version.name!==skill.name||version.version!==skill.version)fail('原M4标准Skill版本元数据不同');
   }
   if(source.pluginSource)legacy.verify(source.pluginSource,legacyPluginOrigin(evidence));
-  if(inspected.state==='verified'){
+  if(originalPaths&&source.originalProjection&&(source.originalProjection.state!=='ready'||source.originalProjection.integrity!=='valid'))fail('原静态投影尚未完成发布');
+  if(originalPaths&&source.originalProjection&&canonicalJson(dependencies(source.originalProjection.resourceId))!==canonicalJson([{dependency_id:source.pluginSource!.resourceId}]))fail('原静态投影依赖缺失或不同');
+  if(inspected?.state==='verified'){
    if(!reader.verify(inspected.evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4完整运行依据在核对中变化');
-  }else{
+  }else if(inspected){
    if(identity.runner==='claude-code'&&evidence.pluginRoot){
     if(!source.pluginSource)fail('原静态插件完整来源尚未保留');legacy.verifyOriginalPlugin(source.pluginSource!,legacyPluginOrigin(evidence));
    }else if(present(evidence.runRoot))fail('原运行目录仍有未知或不完整内容，保留原路径');
@@ -86,12 +89,18 @@ function inspectFiles(store:ResourceStore,source:Source){
   }
   if(realpathSync(identity.home)!==identity.home||realpathSync(store.root)!==store.root||metadata()!==metadataReceipt)fail('原M4规范根或持久来源在读取中变化');
  };
- const filesReceipt=receipt(paths);validate();if(receipt(paths)!==filesReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4来源文件在核对中变化');
- return{evidence:inspected.state==='verified'?inspected.evidence:evidence,mode:inspected.state==='verified'?'original-run' as const:'retained-static' as const,
-  verify:():boolean=>{try{if(receipt(paths)!==filesReceipt)return false;validate();return receipt(paths)===filesReceipt;}catch{return false;}},
+ const filesReceipt=legacyFilesReceipt(paths);validate();if(legacyFilesReceipt(paths)!==filesReceipt)throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4来源文件在核对中变化');
+ return{evidence:inspected?.state==='verified'?inspected.evidence:evidence,mode:!originalPaths?'retained-sources' as const:inspected?.state==='verified'?'original-run' as const:'retained-static' as const,
+  verify:():boolean=>{try{if(legacyFilesReceipt(paths)!==filesReceipt)return false;validate();return legacyFilesReceipt(paths)===filesReceipt;}catch{return false;}},
  };
 }
 
 export function inspectLegacySessionFiles(store:ResourceStore,source:Source){
  try{return inspectFiles(store,source);}catch(error){if(error instanceof ApplicationError)throw error;return fail('原M4持久来源或原静态文件缺失、损坏或无法核验');}
+}
+
+/** Immutable C sources only, for staging a repair. Original paths, derived aliases
+ * and their occupancy remain the publisher's separate responsibility. */
+export function inspectLegacyRetainedSources(store:ResourceStore,source:Source){
+ try{return inspectFiles(store,source,false);}catch(error){if(error instanceof ApplicationError)throw error;return fail('最初留存的M4完整来源无法核验');}
 }

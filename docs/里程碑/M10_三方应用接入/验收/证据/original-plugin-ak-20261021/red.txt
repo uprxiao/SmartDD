@@ -1,0 +1,74 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts -t 'restores a missing original static|retains an original static Claude projection|recorded native run is' --maxWorkers=1
+
+[1021/152257.939435:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/152258.786012:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (57 tests | 4 failed | 53 skipped) 1653ms
+     × restores a missing original static Claude path from the exact retained source before conversion 432ms
+   × retains an original static Claude projection through conversion, then repairs the same path on replay 409ms
+   × does not repair an original Claude projection while a recorded native run is active 398ms
+   × does not repair an original Claude projection while a recorded native run is orphaned 412ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > retained source conversion keeps file, SQL and unknown-owner boundaries > restores a missing original static Claude path from the exact retained source before conversion
+ApplicationError: 原M4持久来源或原静态文件缺失、损坏或无法核验
+ ❯ fail src/main/core/applications/legacy-session-files.ts:12:43
+     10|
+     11| type Source=ReturnType<typeof retainedLegacySource>;
+     12| const fail=(message:string):never=>{throw new ApplicationError('RESOUR…
+       |                                           ^
+     13| function present(path:string):boolean{
+     14|  try{lstatSync(path);return true;}catch(error){if((error as NodeJS.Err…
+ ❯ inspectLegacySessionFiles src/main/core/applications/legacy-session-files.ts:96:110
+ ❯ LegacySessionMigration.migrate src/main/core/applications/legacy-session-migration.ts:40:15
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:159:280
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > retains an original static Claude projection through conversion, then repairs the same path on replay
+AssertionError: expected { n: +0 } to deeply equal { n: 1 }
+
+- Expected
++ Received
+
+  {
+-   "n": 1,
++   "n": 0,
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:175:162
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > does not repair an original Claude projection while a recorded native run is active
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > does not repair an original Claude projection while a recorded native run is orphaned
+AssertionError: expected ApplicationError: 原M4持久来源或原静态文件缺失、损坏或无法核验 { code: '…' } to match object { code: 'RESOURCE_BUSY' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ ApplicationError {
++   "code": "RESOURCE_RECOVERY_REQUIRED",
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:178:453
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 53 skipped (57)
+   Start at  15:22:58
+   Duration  3.53s (transform 959ms, setup 0ms, import 1.60s, tests 1.65s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,4 +1,4 @@
-import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync,realpathSync,readdirSync,lstatSync,renameSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync,realpathSync,readdirSync,lstatSync,renameSync,symlinkSync,linkSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
@@ -17,6 +17,10 @@ import {LegacyTaskRetention,type LegacyRetentionIdentity} from '../legacy-task-r
 import {LegacySessionMigration,type LegacyMigrationRequest} from '../legacy-session-migration';
 import {AgentAdapterRegistry} from '../agent-adapter-registry';
 import {LegacyCapabilityResourceAdopter} from '../legacy-resource-adopter';
+import {ApplicationSessionDiagnostics} from '../session-diagnostics';
+import type {ApplicationConnectionService} from '../connection-service';
+import type {ApplicationSelectionService} from '../selection-service';
+import {LegacyOriginalPlugin} from '../legacy-original-plugin';
 import {LegacyPluginSources,legacyPluginOrigin} from '../legacy-plugin-source';
 import {inspectLegacySessionFiles} from '../legacy-session-files';
 import {retainedLegacySource} from '../legacy-session-source';
@@ -28,7 +32,7 @@ let root:string,home:string,cwd:string,projectId:string,sqlite:Database.Database
 const runtimes:PreparedRuntime[]=[];let installed:Awaited<ReturnType<AgentAdapterRegistry['install']>>[];
 beforeEach(async()=>{
  root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m4-migration-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);sqlite=new Database(join(root,'private.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);
- const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),projects=new ProjectService(db,secrets);projectId=projects.createProject({name:'private legacy migration',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;capabilities=new CapabilityService({db,projects,secrets,userData:root});store=new ResourceStore(sqlite,root);adapters=new AgentAdapterRegistry(store);const legacy=new LegacyCapabilityResourceAdopter(store);sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw Error('must not select current applications');},verifyExtraResource:(r,s)=>r.kind==='agent-adapter'?adapters.verifyReference(r,s):r.kind==='legacy-plugin-source'?new LegacyPluginSources(store).verify(r,legacyPluginOrigin(retainedLegacySource(store,s.taskId,'migrated').evidence)):legacy.verify(r)});installed=[];for(const source of bundledLegacyAgentAdapters())installed.push(await adapters.install(source.metadata,source.files));catalog=new DiscoveryCatalog(store,home,new FixtureProcessReader());await catalog.snapshot();migration=new LegacySessionMigration(store,sessions);
+ const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),projects=new ProjectService(db,secrets);projectId=projects.createProject({name:'private legacy migration',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;capabilities=new CapabilityService({db,projects,secrets,userData:root});store=new ResourceStore(sqlite,root);adapters=new AgentAdapterRegistry(store);const legacy=new LegacyCapabilityResourceAdopter(store);sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw Error('must not select current applications');},verifyExtraResource:(r,s)=>r.kind==='agent-adapter'?adapters.verifyReference(r,s):r.kind==='legacy-static-plugin'?new LegacyOriginalPlugin(store).verify(r,s):r.kind==='legacy-plugin-source'?new LegacyPluginSources(store).verify(r,legacyPluginOrigin(retainedLegacySource(store,s.taskId,'migrated').evidence)):legacy.verify(r)});installed=[];for(const source of bundledLegacyAgentAdapters())installed.push(await adapters.install(source.metadata,source.files));catalog=new DiscoveryCatalog(store,home,new FixtureProcessReader());await catalog.snapshot();migration=new LegacySessionMigration(store,sessions);
 });
 afterEach(()=>{for(const r of runtimes.splice(0))r.release();capabilities.dispose();sqlite.close();rmSync(root,{recursive:true,force:true});});
 async function previous(runner:LegacyRetentionIdentity['runner']='codex',sessionId:string|null=randomUUID()){
@@ -155,8 +159,9 @@ describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('retained s
  it('rejects an undeclared dependency on a retained original runtime',async()=>{
   const value=await previous();value.runtime.release();const skill=value.runtime.snapshot.skills[0];sqlite.prepare('INSERT INTO capability_resource_dependencies VALUES(?,?)').run('legacy-runtime:'+capabilities.runtimeIdentity().hash,'standard-skill:'+skill.skillId+':'+skill.hash);const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);
  });
- it('keeps a missing original static Claude path unavailable without materializing a replacement',async()=>{
-  const value=await previous('claude-code'),runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();rmSync(runRoot,{recursive:true,force:true});const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);expect(()=>lstatSync(runRoot)).toThrow();
+ it('restores a missing original static Claude path from the exact retained source before conversion',async()=>{
+  const value=await previous('claude-code'),runRoot=dirname(value.runtime.snapshot.manifestPath),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path,bytes=readFileSync(file);value.runtime.release();rmSync(runRoot,{recursive:true,force:true});const result=await migration.migrate(value.request);
+  expect(readFileSync(file)).toEqual(bytes);expect(result.session.snapshot.standardSkills.map(s=>s.projectionPath)).toContain(file);expect(()=>lstatSync(join(runRoot,'context.json'))).toThrow();expect(sqlite.prepare("SELECT count(*) n FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-static-plugin'").get(value.request.identity.taskId)).toEqual({n:1});
  });
  it('refuses a changed retained Claude archive even when its original static paths still match',async()=>{
   const value=await previous('claude-code');value.runtime.release();const source=retainedLegacySource(store,value.request.identity.taskId,'prepared'),file=join(store.directory(source.pluginSource!),'plugin/.claude-plugin/plugin.json');writeFileSync(file,'corrupted archive');const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);expect(readFileSync(file,'utf8')).toBe('corrupted archive');
@@ -167,4 +172,67 @@ it.skipIf(process.platform!=='darwin'||process.arch!=='arm64').each(['claude-cod
  const value=await previous(runner);value.runtime.release();const source=retainedLegacySource(store,value.request.identity.taskId,'prepared'),files=inspectLegacySessionFiles(store,source),before=records();
  // Explicit private caller-corruption fault; this must not grant a different native name.
  (files.evidence.skills[0] as {nativeName:string}).nativeName='not-the-original-native-name';expect(files.verify()).toBe(false);expect(records()).toEqual(before);
+});
+
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('retains an original static Claude projection through conversion, then repairs the same path on replay',async()=>{
+ const value=await previous('claude-code'),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path,bytes=readFileSync(file),runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();const first=await migration.migrate(value.request);
+ expect(sqlite.prepare("SELECT count(*) n FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-static-plugin'").get(value.request.identity.taskId)).toEqual({n:1});rmSync(runRoot,{recursive:true,force:true});const again=await new LegacySessionMigration(store,sessions).migrate(value.request);expect(again.session.snapshot).toEqual(first.session.snapshot);expect(readFileSync(file)).toEqual(bytes);expect(sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);
+});
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64').each(['active','orphaned'] as const)('does not repair an original Claude projection while a recorded native run is %s',async state=>{
+ const value=await previous('claude-code'),runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();rmSync(runRoot,{recursive:true,force:true});sqlite.prepare('INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at) VALUES(?,?,?,?,?,?)').run(randomUUID(),value.request.identity.taskId,projectId,'claude-code',state,new Date().toISOString());const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(records()).toEqual(before);expect(()=>lstatSync(runRoot)).toThrow();
+});
+
+describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('owned original C plugin publication and repair',()=>{
+ it.each(['extra','empty','marker','symlink','hardlink','full-T'] as const)('preserves %s at the original path without registering it as a ready projection',async kind=>{
+  const value=await previous('claude-code'),runRoot=dirname(value.runtime.snapshot.manifestPath),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path;if(kind!=='full-T')value.runtime.release();
+  if(kind==='extra')writeFileSync(join(runRoot,'user-note'),'preserve original user note');if(kind==='empty'){rmSync(runRoot,{recursive:true,force:true});mkdirSync(runRoot);}if(kind==='marker')writeFileSync(join(runRoot,'.smartdd-owned.json'),'{}');
+  if(kind==='symlink'){rmSync(runRoot,{recursive:true,force:true});const outside=join(root,'outside');mkdirSync(outside);writeFileSync(join(outside,'user-note'),'outside unchanged');symlinkSync(outside,runRoot);}
+  if(kind==='hardlink'){const outside=join(root,'outside-file');writeFileSync(outside,readFileSync(file));rmSync(file);linkSync(outside,file);}
+  const before=records(),inode=lstatSync(runRoot).ino;await expect(new LegacyOriginalPlugin(store).prepare(value.request.identity.taskId)).rejects.toThrow();expect(records()).toEqual(before);expect(lstatSync(runRoot).ino).toBe(inode);expect(sqlite.prepare("SELECT * FROM capability_resources WHERE kind='legacy-static-plugin'").all()).toEqual([]);
+  if(kind==='extra'||kind==='symlink')expect(readFileSync(join(runRoot,'user-note'),'utf8')).toContain(kind==='extra'?'preserve':'outside');
+ });
+ it('keeps an unknown target resource lease intact and does not restore the missing path',async()=>{
+  const value=await previous('claude-code'),taskId=value.request.identity.taskId,runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();const projection=await new LegacyOriginalPlugin(store).prepare(taskId);rmSync(runRoot,{recursive:true,force:true});const leaseId=randomUUID();sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,'unreachable-original-owner',NULL,NULL,'recovery-required',?)").run(leaseId,projection.resourceId,randomUUID(),new Date().toISOString());const before=sqlite.prepare('SELECT * FROM capability_resource_leases WHERE lease_id=?').get(leaseId);
+  await expect(new LegacyOriginalPlugin(store).prepare(taskId)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(sqlite.prepare('SELECT * FROM capability_resource_leases WHERE lease_id=?').get(leaseId)).toEqual(before);expect(()=>lstatSync(runRoot)).toThrow();
+ });
+ it('rechecks a late unknown native run before publishing any original files',async()=>{
+  const value=await previous('claude-code'),taskId=value.request.identity.taskId,runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();rmSync(runRoot,{recursive:true,force:true});const runId=randomUUID(),fault=new ResourceStore(sqlite,root,phase=>{if(phase==='materialized')sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at) VALUES(?,?,?,'claude-code','orphaned',?)").run(runId,taskId,projectId,new Date().toISOString());});
+  await expect(new LegacyOriginalPlugin(fault).prepare(taskId)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(()=>lstatSync(runRoot)).toThrow();expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'orphaned'});expect(sqlite.prepare("SELECT state FROM capability_resources WHERE kind='legacy-static-plugin'").get()).toEqual({state:'recovery-required'});
+ });
+ it('preserves a dangling user alias which appears after private materialization',async()=>{
+  const value=await previous('claude-code'),taskId=value.request.identity.taskId,runRoot=dirname(value.runtime.snapshot.manifestPath),outside=join(root,'uncreated-user-target');value.runtime.release();rmSync(runRoot,{recursive:true,force:true});const fault=new ResourceStore(sqlite,root,phase=>{if(phase==='materialized')symlinkSync(outside,runRoot);});
+  await expect(new LegacyOriginalPlugin(fault).prepare(taskId)).rejects.toMatchObject({code:'OWNERSHIP_CONFLICT'});expect(lstatSync(runRoot).isSymbolicLink()).toBe(true);expect(()=>lstatSync(outside)).toThrow();
+ });
+ it('resumes a failed post-rename publication under the original operation and long-term reference',async()=>{
+  const value=await previous('claude-code'),taskId=value.request.identity.taskId,runRoot=dirname(value.runtime.snapshot.manifestPath),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path,original=readFileSync(file);value.runtime.release();rmSync(runRoot,{recursive:true,force:true});const fault=new ResourceStore(sqlite,root,phase=>{if(phase==='renamed')throw Error('private original path post-rename interruption');});
+  await expect(new LegacyOriginalPlugin(fault).prepare(taskId)).rejects.toThrow('post-rename interruption');const before=store.sqlite.prepare("SELECT resource_id,operation_id FROM capability_resources WHERE kind='legacy-static-plugin'").get() as {resource_id:string;operation_id:string},inode=lstatSync(file).ino;expect(readFileSync(file)).toEqual(original);
+  const ready=await new LegacyOriginalPlugin(store).prepare(taskId);expect(ready).toMatchObject({resourceId:before.resource_id,operationId:before.operation_id,state:'ready'});expect(lstatSync(file).ino).toBe(inode);expect(sqlite.prepare("SELECT count(*) n FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-static-plugin'").get(taskId)).toEqual({n:1});expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_operations WHERE kind='install-legacy-static-plugin'").get()).toEqual({n:1});
+ });
+ it('keeps a canceled publication recoverable without recreating old context',async()=>{
+  const value=await previous('claude-code'),taskId=value.request.identity.taskId,runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();rmSync(runRoot,{recursive:true,force:true});const abort=new AbortController(),fault=new ResourceStore(sqlite,root,phase=>{if(phase==='materialized')abort.abort();});
+  await expect(new LegacyOriginalPlugin(fault).prepare(taskId,abort.signal)).rejects.toMatchObject({code:'CANCELED'});expect(()=>lstatSync(runRoot)).toThrow();await new LegacyOriginalPlugin(store).prepare(taskId);expect(()=>lstatSync(join(runRoot,'context.json'))).toThrow();expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(taskId)).toEqual({runtime_snapshot:value.raw});
+ });
+ it('rejects a late dangling target in the generic publisher even without a caller guard',async()=>{
+  const target=join(store.root,'private-dangling-target'),outside=join(root,'uncreated-target'),fault=new ResourceStore(sqlite,root,phase=>{if(phase==='materialized')symlinkSync(outside,target);}),bytes='private generic immutable artifact';
+  await expect(fault.publish({resourceId:'private-generic-dangling',kind:'private-test',contentHash:digest(bytes),relativePath:'private-dangling-target',dependencies:[],materialize:dir=>{mkdirSync(dir);writeFileSync(join(dir,'artifact'),bytes);},verify:dir=>{expect(readFileSync(join(dir,'artifact'),'utf8')).toBe(bytes);}})).rejects.toMatchObject({code:'OWNERSHIP_CONFLICT'});
+  expect(lstatSync(target).isSymbolicLink()).toBe(true);expect(()=>lstatSync(outside)).toThrow();
+ });
+});
+
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('does not publish through a substituted parent of the original store root',async()=>{
+ const container=join(root,'container'),saved=join(root,'container-preserved');mkdirSync(container);const bytes='private immutable parent-alias test',fault=new ResourceStore(sqlite,container,phase=>{if(phase==='materialized'){renameSync(container,saved);symlinkSync(saved,container);}});
+ try{await expect(fault.publish({resourceId:'private-parent-alias',kind:'private-test',contentHash:digest(bytes),relativePath:'original-target',dependencies:[],materialize:dir=>{mkdirSync(dir);writeFileSync(join(dir,'artifact'),bytes);},verify:dir=>{expect(readFileSync(join(dir,'artifact'),'utf8')).toBe(bytes);}})).rejects.toMatchObject({code:'OWNERSHIP_CONFLICT'});expect(()=>lstatSync(join(saved,'capabilities/original-target'))).toThrow();}
+ finally{if(lstatSync(container).isSymbolicLink()){rmSync(container);renameSync(saved,container);}}
+});
+
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64').each(['dependency','reference'] as const)('detects loss of the original static projection %s after migration',async kind=>{
+ const value=await previous('claude-code'),taskId=value.request.identity.taskId;value.runtime.release();await migration.migrate(value.request);const projection=retainedLegacySource(store,taskId,'migrated').originalProjection!;
+ if(kind==='dependency')sqlite.prepare('DELETE FROM capability_resource_dependencies WHERE resource_id=?').run(projection.resourceId);else sqlite.prepare("DELETE FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-static-plugin'").run(taskId);
+ if(kind==='dependency')await expect(sessions.verifyResources(taskId)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});else await expect(sessions.get(taskId)).rejects.toMatchObject({code:'SNAPSHOT_CORRUPT'});
+});
+
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('recognizes the owned original static Skill path in read-only session diagnostics',async()=>{
+ const value=await previous('claude-code');value.runtime.release();const {session}=await migration.migrate(value.request),unused=new Proxy({},{get(){throw Error('a legacy snapshot must not select new application connections');}}),diagnostic=new ApplicationSessionDiagnostics(store,unused as ApplicationConnectionService,unused as ApplicationSelectionService,{runs:()=>undefined});
+ const legacy=new LegacyCapabilityResourceAdopter(store);diagnostic.attach({channelConnected:()=>false,verify:(r,s)=>{if(r.kind==='agent-adapter')adapters.verifyReference(r,s);else if(r.kind==='legacy-static-plugin')new LegacyOriginalPlugin(store).verify(r,s);else if(r.kind==='legacy-plugin-source')new LegacyPluginSources(store).verify(r,legacyPluginOrigin(retainedLegacySource(store,s.taskId,'migrated').evidence));else legacy.verify(r);}});
+ const result=await diagnostic.inspect(value.request.identity.taskId);expect(result).toMatchObject({selection:'fixed',snapshotHash:session.pointer.snapshotHash,applications:[],currentRun:null});expect(result.issues).not.toContain('RESOURCE_RECOVERY_REQUIRED');expect(sqlite.prepare('SELECT * FROM mail_send_grants').all()).toEqual([]);
 });

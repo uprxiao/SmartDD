@@ -16,6 +16,8 @@ export interface PublishResource {
   resourceId: string; kind: string; contentHash: string; relativePath: string; dependencies: string[];
   materialize: (stage: string) => void; verify: (directory: string) => void;
   register?: (operationId: string) => void;
+  /** Host-only short precondition, rechecked in each publication/repair transaction. */
+  assertPublish?: (operationId: string) => void;
 }
 export type PublishCheckpoint = 'registered' | 'materialized' | 'renamed';
 const SELECT = `SELECT resource_id AS resourceId,kind,content_hash AS contentHash,owner_store_id AS ownerStoreId,
@@ -103,7 +105,7 @@ export class ResourceStore {
   private missingTarget(spec: PublishResource): boolean {
     try {
       const root = lstatSync(this.root), owner = join(this.root, '.store-id.json'), marker = lstatSync(owner);
-      if (!root.isDirectory() || root.isSymbolicLink() || !marker.isFile() || marker.nlink !== 1) throw new Error();
+      if (!root.isDirectory() || root.isSymbolicLink() || realpathSync(this.root)!==this.root || !marker.isFile() || marker.nlink !== 1 || marker.size>4096) throw new Error();
       const identity = JSON.parse(readFileSync(owner, 'utf8'));
       if (identity.schema !== 1 || identity.storeId !== this.storeId) throw new Error();
     } catch { throw new ApplicationError('OWNERSHIP_CONFLICT', '原资源库身份已变化，保留原目录'); }
@@ -121,7 +123,7 @@ export class ResourceStore {
   private async restoreMissing(spec: PublishResource, signal?: AbortSignal): Promise<ResourceRecord> {
     const operationId = randomUUID(); let leaseId = '', present = false;
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); this.assertDependencies(spec.dependencies);
+      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId); this.assertDependencies(spec.dependencies);
       if (row.state !== 'ready' || row.integrity !== 'valid') throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源已有发布或清理操作，先恢复原操作');
       const state = this.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
       if (state && (state.store_id !== this.storeId || state.maintenance_state !== 'ready')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源库正在维护或待恢复');
@@ -153,7 +155,7 @@ export class ResourceStore {
     const operationId = randomUUID();
     let reuse = false, leaseId = '';
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      this.assertDependencies(spec.dependencies);
+      this.assertDependencies(spec.dependencies); spec.assertPublish?.(operationId);
       const old = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(spec.resourceId) as ResourceRecord | undefined;
       if (old) {
         this.assertIdentity(this.get(spec.resourceId), spec);
@@ -196,13 +198,15 @@ export class ResourceStore {
     } finally { this.activeOperations.delete(operationId); }
   }
   private async finish(spec: PublishResource, operationId: string, leaseId: string, signal?: AbortSignal): Promise<void> {
+    spec.assertPublish?.(operationId);
     ensureStoreDirectory(this.root, 'staging');
     const stage = join(this.root, 'staging', operationId), target = join(this.root, spec.relativePath);
-    if (!existsSync(target)) {
+    if (this.missingTarget(spec)) {
       if (!existsSync(stage)) spec.materialize(stage);
       spec.verify(stage);
     } else spec.verify(target);
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
+      spec.assertPublish?.(operationId);
       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || row.state === 'deleting' || row.state === 'removed') throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布资源状态已变化');
       this.assertDependencies(spec.dependencies);
@@ -211,11 +215,12 @@ export class ResourceStore {
     }).immediate(), { signal });
     this.checkpoint?.('materialized');
     await withResourceLock(this.root, () => {
+      spec.assertPublish?.(operationId);
       this.assertDependencies(spec.dependencies);
       const row = this.get(spec.resourceId);
       if (row.operationId !== operationId || row.state !== 'verified') throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布资源状态已变化');
       if (dirname(spec.relativePath) !== '.') ensureStoreDirectory(this.root, dirname(spec.relativePath));
-      if (existsSync(target)) spec.verify(target);
+      if (!this.missingTarget(spec)) spec.verify(target);
       else renameSync(stage, target);
       this.phase(operationId, 'published');
       this.checkpoint?.('renamed');
@@ -242,7 +247,7 @@ export class ResourceStore {
     if (!/^[a-f0-9-]{36}$/.test(operationId)) throw new ApplicationError('INVALID_PACKAGE', '恢复操作标识无效');
     let leaseId = '', alreadyReady = false;
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
+      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId);
       if (row.operationId !== operationId || this.activeOperations.has(operationId)) throw new ApplicationError('RESOURCE_BUSY', '原发布操作仍在执行或归属不同');
       const operation = this.sqlite.prepare('SELECT state,plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId, this.storeId) as { state: string; plan: string } | undefined;
       if (!operation) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '缺少原发布日志');

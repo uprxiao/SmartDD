@@ -1,0 +1,137 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-original-plugin-ak-20261021/targeted-report.json
+
+[1021/152841.272973:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/152842.244402:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (69 tests | 11 failed) 42000ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  921ms
+     ✓ publishes exact original codex selection, refs, names and task pointer in one transaction  419ms
+     ✓ pins the retained plugin source hash and detects losing its long-term reference  610ms
+     ✓ requires plugin source retention before first conversion and catches late archive changes before commit  742ms
+     ✓ keeps an intact fixed snapshot readable when only retained plugin resource readiness changes  839ms
+     ✓ reads the earlier five-field persisted migration layout without requiring a plugin archive that was never recorded  790ms
+     ✓ retains disabled original source refs while publishing only the originally enabled standard Skill  717ms
+     ✓ retains the original runtime when the original task did not select context MCP  816ms
+     ✓ binds a previously null native ID in the same source/snapshot transaction and retains the original identity  857ms
+     ✓ rolls back snapshot, refs, names, identity, source state and task pointer on final SQL failure  1211ms
+     ✓ is retryable after a committed return-path interruption without resetting the converted state  846ms
+     ✓ rejects cancel at the asynchronous precommit boundary without partial migration  867ms
+     ✓ rejects task at the asynchronous precommit boundary without partial migration  669ms
+     ✓ rejects file at the asynchronous precommit boundary without partial migration  1107ms
+     ✓ rejects source-row at the asynchronous precommit boundary without partial migration  500ms
+     ✓ rejects resource-generation at the asynchronous precommit boundary without partial migration  637ms
+     ✓ rejects a changed reference basis without promoting any current application  831ms
+     ✓ rejects a changed manifest basis without promoting any current application  932ms
+     ✓ rejects a changed source-hash basis without promoting any current application  745ms
+     ✓ rejects a changed identity basis without promoting any current application  725ms
+     ✓ rejects a changed adapter basis without promoting any current application  689ms
+     ✓ rejects a changed cli basis without promoting any current application  612ms
+     ✓ rejects a changed approved basis without promoting any current application  2174ms
+     ✓ rejects an oversized retained raw record even when its parsed metadata is identical  557ms
+     ✓ does not migrate while a recorded native guard is still occupied  630ms
+     ✓ does not steal another task native identity or a previously registered original MCP name  2348ms
+     ✓ retains the converted source/snapshot and disabled references after deleting the UI task/project  1272ms
+     ✓ plans the original native load after conversion and rejects an adapter different from the fixed binding  1950ms
+     ✓ rolls back retained native binding if a later snapshot version write fails  627ms
+     ✓ does not demote or reconstruct a converted snapshot after losing the task pointer  531ms
+     ✓ preserves an occupied mirror directory and completes only the missing mirror on retry 220ms
+     ✓ rejects modified persistent original evidence even if the v2 pointer still matches  495ms
+     ✓ pins the original retained identity bytes independently of mutable registry rows  594ms
+     ✓ pins the original retained record bytes independently of mutable registry rows  532ms
+     ✓ requires a legacy binding only for migrated format2 and preserves ordinary v2 validation 220ms
+   ✓ converts the retained claude-code source after normal transient cleanup and plans the same original paths  336ms
+   ✓ converts the retained codex source after normal transient cleanup and plans the same original paths 180ms
+     ✓ keeps an all-disabled claude-code history empty after transient cleanup 169ms
+     ✓ keeps an all-disabled codex history empty after transient cleanup 176ms
+     ✓ rejects a corrupted original claude-code projection after cleanup without rewriting it 244ms
+     ✓ rejects a corrupted original codex projection after cleanup without rewriting it 169ms
+     ✓ does not hide a partially present claude-code run by consuming the durable manifest 238ms
+     ✓ does not hide a partially present codex run by consuming the durable manifest 171ms
+     ✓ rejects a late same-byte original claude-code Skill inode replacement before publishing SQL 298ms
+     ✓ rejects a late same-byte original codex Skill inode replacement before publishing SQL 189ms
+     ✓ rejects a late claude-code source generation change after cleaned-source verification  310ms
+     ✓ rejects a late codex source generation change after cleaned-source verification 192ms
+     ✓ preserves unknown content which arrives in original claude-code T before commit  484ms
+     ✓ preserves unknown content which arrives in original codex T before commit  544ms
+     ✓ rejects an undeclared dependency on a retained original runtime  334ms
+     ✓ restores a missing original static Claude path from the exact retained source before conversion  642ms
+     ✓ refuses a changed retained Claude archive even when its original static paths still match  588ms
+   ✓ invalidates the claude-code file receipt when a caller changes its returned logical evidence  470ms
+   ✓ invalidates the codex file receipt when a caller changes its returned logical evidence  314ms
+   ✓ retains an original static Claude projection through conversion, then repairs the same path on replay  627ms
+   ✓ does not repair an original Claude projection while a recorded native run is active  438ms
+   ✓ does not repair an original Claude projection while a recorded native run is orphaned  317ms
+     × preserves extra at the original path without registering it as a ready projection 531ms
+     × preserves empty at the original path without registering it as a ready projection 430ms
+     × preserves marker at the original path without registering it as a ready projection 511ms
+     × preserves symlink at the original path without registering it as a ready projection 487ms
+     × preserves hardlink at the original path without registering it as a ready projection 379ms
+     × preserves full-T at the original path without registering it as a ready projection 360ms
+     × keeps an unknown target resource lease intact and does not restore the missing path 557ms
+     × rechecks a late unknown native run before publishing any original files 440ms
+     × preserves a dangling user alias which appears after private materialization 534ms
+     × resumes a failed post-rename publication under the original operation and long-term reference 426ms
+     × keeps a canceled publication recoverable without recreating old context 356ms
+     ✓ rejects a late dangling target in the generic publisher even without a caller guard  314ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > preserves extra at the original path without registering it as a ready projection
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > preserves empty at the original path without registering it as a ready projection
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > preserves marker at the original path without registering it as a ready projection
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > preserves symlink at the original path without registering it as a ready projection
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > preserves hardlink at the original path without registering it as a ready projection
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > preserves full-T at the original path without registering it as a ready projection
+ReferenceError: LegacyOriginalPlugin is not defined
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:187:72
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > keeps an unknown target resource lease intact and does not restore the missing path
+ReferenceError: LegacyOriginalPlugin is not defined
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:191:176
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > rechecks a late unknown native run before publishing any original files
+ReferenceError: LegacyOriginalPlugin is not defined
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:196:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > preserves a dangling user alias which appears after private materialization
+ReferenceError: LegacyOriginalPlugin is not defined
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:200:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > resumes a failed post-rename publication under the original operation and long-term reference
+ReferenceError: LegacyOriginalPlugin is not defined
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:204:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > owned original C plugin publication and repair > keeps a canceled publication recoverable without recreating old context
+ReferenceError: LegacyOriginalPlugin is not defined
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:209:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 58 passed (69)
+   Start at  15:28:42
+   Duration  47.08s (transform 3.08s, setup 0ms, import 4.63s, tests 42.00s, environment 0ms)
+
+JSON report written to /private/tmp/m10-original-plugin-ak-20261021/targeted-report.json
+ ELIFECYCLE  Test failed. See above for more details.
