@@ -48,6 +48,15 @@ describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('API2 legac
   const standard=BUNDLED_SKILLS[0],nativeName=standardNativeSkillName(standard.id,standard.hash),files=Object.fromEntries(Object.entries(standard.files).map(([p,s])=>[p,p==='SKILL.md'?projectSkillName(Buffer.from(s),nativeName):Buffer.from(s)]));await catalog.publish([{nativeName,sourceHash:standard.hash,sourceResourceId:'standard-skill:'+standard.id+':'+standard.hash,files,executables:new Set()}]);value.input.catalog=await catalog.snapshot();const user={path:join(home,'user "quote" ; $(literal)/SKILL.md'),enabled:true,note:'unchanged user value'};value.input.userSkillConfig=[user,{path:dirname(old.path),enabled:true,note:'retained own metadata'}];const before=hashes(),plan=adapters.planLegacy(value.adapter.hash,value.input),config=flags(plan.args);
   expect(config).toContainEqual(user);expect(config).toContainEqual({path:old.path,enabled:true,note:'retained own metadata'});expect(config).toContainEqual({path:other.snapshot.skills.find(s=>s.skillId===old.skillId)!.path,enabled:false});expect(config).toContainEqual({path:value.input.catalog.entries[0].path,enabled:false});expect(config.filter(v=>v.enabled===true&&v.path!==user.path).map(v=>v.path).sort()).toEqual(value.runtime.snapshot.skills.map(s=>s.path).sort());expect(hashes()).toEqual(before);
  });
+ it('keeps original selected Codex paths enabled after their schema1 trees enter the coordinated catalog',async()=>{
+  const value=await previous();
+  for(const selected of value.runtime.snapshot.skills.filter(s=>s.enabled)){
+   const skill=BUNDLED_SKILLS.find(s=>s.id===selected.skillId&&s.hash===selected.hash)!;
+   await catalog.publish([{format:'legacy-tree-v1',nativeName:`smartdd-${skill.id}-${skill.hash.slice(0,16)}`,sourceHash:skill.hash,sourceResourceId:`standard-skill:${skill.id}:${skill.hash}`,files:Object.fromEntries(Object.entries(skill.files).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set()}]);
+  }
+  value.input.catalog=await catalog.snapshot();const before=hashes(),plan=adapters.planLegacy(value.adapter.hash,value.input),config=flags(plan.args);
+  expect(config.filter(s=>s.enabled===true).map(s=>s.path).sort()).toEqual(value.runtime.snapshot.skills.filter(s=>s.enabled).map(s=>s.path).sort());expect(new Set(config.map(s=>s.path)).size).toBe(config.length);expect(hashes()).toEqual(before);
+ });
  it.each(['reference','projection-state','source-state'] as const)('rejects a current-format own projection whose %s is no longer authoritative',async kind=>{
   const value=await previous(),standard=BUNDLED_SKILLS[0],nativeName=standardNativeSkillName(standard.id,standard.hash),sourceId='standard-skill:'+standard.id+':'+standard.hash,files=Object.fromEntries(Object.entries(standard.files).map(([p,s])=>[p,p==='SKILL.md'?projectSkillName(Buffer.from(s),nativeName):Buffer.from(s)]));
   await catalog.publish([{nativeName,sourceHash:standard.hash,sourceResourceId:sourceId,files,executables:new Set()}]);value.input.catalog=await catalog.snapshot();const entry=value.input.catalog.entries[0];

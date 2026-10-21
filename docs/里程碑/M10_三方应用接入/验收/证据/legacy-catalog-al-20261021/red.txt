@@ -1,0 +1,97 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts --maxWorkers=1
+
+[1021/155906.966439:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/155908.878225:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts (4 tests | 4 failed) 2152ms
+     × restores the exact original path, full source and legacy marker without renaming the Skill 500ms
+     × adopts an unchanged original tree without writing any of its files or marker 357ms
+     × keeps the original projection disabled in a new session and preserves user Skill configuration 518ms
+     × waits for Claude consumers too and cancels before changing the original discovery set 775ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > restores the exact original path, full source and legacy marker without renaming the Skill
+ZodError: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/",
+    "path": [],
+    "message": "Invalid string: must match pattern /^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/"
+  }
+]
+ ❯ src/main/core/applications/discovery-catalog.ts:188:18
+
+ ❯ DiscoveryCatalog.plans src/main/core/applications/discovery-catalog.ts:187:24
+ ❯ DiscoveryCatalog.publish src/main/core/applications/discovery-catalog.ts:283:95
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:21:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > adopts an unchanged original tree without writing any of its files or marker
+ZodError: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/",
+    "path": [],
+    "message": "Invalid string: must match pattern /^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/"
+  }
+]
+ ❯ src/main/core/applications/discovery-catalog.ts:188:18
+
+ ❯ DiscoveryCatalog.plans src/main/core/applications/discovery-catalog.ts:187:24
+ ❯ DiscoveryCatalog.publish src/main/core/applications/discovery-catalog.ts:283:95
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:29:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > keeps the original projection disabled in a new session and preserves user Skill configuration
+ZodError: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/",
+    "path": [],
+    "message": "Invalid string: must match pattern /^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/"
+  }
+]
+ ❯ src/main/core/applications/discovery-catalog.ts:188:18
+
+ ❯ DiscoveryCatalog.plans src/main/core/applications/discovery-catalog.ts:187:24
+ ❯ DiscoveryCatalog.publish src/main/core/applications/discovery-catalog.ts:283:95
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:32:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > waits for Claude consumers too and cancels before changing the original discovery set
+ApplicationError: 消费者与本数据根运行身份不一致
+ ❯ DiscoveryCatalog.assertRun src/main/core/applications/discovery-catalog.ts:478:15
+    476|         revocation: string;
+    477|     } | undefined; if (!row || row.pid !== c.owner.pid || row.startedA…
+    478|         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '消费者与…
+       |               ^
+    479|         const children = this.store.sqlite.prepare('SELECT state FROM …
+    480|             state: string;
+ ❯ src/main/core/applications/discovery-catalog.ts:456:18
+ ❯ withDiscoveryLock src/main/core/applications/discovery-catalog-lock.ts:41:16
+ ❯ DiscoveryCatalog.reserveRun src/main/core/applications/discovery-catalog.ts:442:9
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:40:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  15:59:08
+   Duration  5.35s (transform 1.70s, setup 0ms, import 2.73s, tests 2.15s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

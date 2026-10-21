@@ -1,0 +1,69 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-legacy-catalog-al-20261021/retest-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/task-capability-launcher.test.ts (57 tests) 74496ms
+     ✓ T63 refuses bad-json resume and keeps history,diagnostics and original source identities  3276ms
+     ✓ T63 refuses unknown-schema resume and keeps history,diagnostics and original source identities  2849ms
+     ✓ T63 refuses bad-hash resume and keeps history,diagnostics and original source identities  2932ms
+     ✓ T63 refuses cross-project-snapshot resume and keeps history,diagnostics and original source identities  2656ms
+     ✓ T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities  2584ms
+     ✓ T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available  1264ms
+     ✓ T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available  2416ms
+     ✓ T64 continues the original claude-code session without application authority while its fixed package is unavailable  742ms
+     ✓ T64 continues the original codex session without application authority while its fixed package is unavailable  2524ms
+     ✓ keeps selected applications in a new claude-code snapshot when original package bytes are unavailable  471ms
+     ✓ keeps selected applications in a new codex snapshot when original package bytes are unavailable  376ms
+     ✓ withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  2538ms
+     ✓ withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  2672ms
+     ✓ fails an oversized original native payload before arming and never retries a fork  499ms
+     ✓ never falls back or retries after an uncertain native fork failure  2693ms
+     ✓ registers native input provenance using the current verified claude-code launch version and owned run signal  506ms
+     ✓ registers native input provenance using the current verified codex launch version and owned run signal  573ms
+     ✓ joins the trusted home prompt to native claude-code user records only after owned spawn and invalidates it on stop  2494ms
+     ✓ joins the trusted home prompt to native codex user records only after owned spawn and invalidates it on stop  4404ms
+     ✓ does not assign home-user origin to an internal task creation without a trusted sender  3017ms
+     ✓ does not capture a launch argument when native spawning fails  2664ms
+     ✓ clears a captured launch origin if the new task cannot be committed to SQLite  3403ms
+     ✓ does not duplicate an accepted launch when optional origin observation fails  503ms
+     ✓ registers all no-application Codex runs, retains fixed sources, and releases only after the owned PTY exit  541ms
+     ✓ uses the same session selection and paths when project defaults change between runs  630ms
+     ✓ retains user Skill flags and MCP names while adding a full managed selection  411ms
+     ✓ gives Claude one stable complete plugin without registering a Codex consumer  558ms
+     ✓ keeps the old launcher runtime occupied even with the project-context MCP disabled  483ms
+     ✓ preserves selected independent Codex profile flags through the actual TaskService host composition  395ms
+     ✓ preserves lower-layer native Skill flags when a selected profile and CLI contain empty arrays  453ms
+     ✓ keeps the native Agent available when effective Skill flags are over-count  399ms
+     ✓ diagnoses an actual Claude plugin namespace conflict without removing the user plugin or stopping the Agent  550ms
+     ✓ keeps original Mail tool contracts callable without SMTP and rejects later policy revocation without stopping the CLI  2544ms
+     ✓ connects the complete production launcher through a real OS PTY, kernel-owned CLI and original CJS MCP child  2950ms
+     ✓ opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge  758ms
+     ✓ continues known native history when its disable-list injection exceeds capacity without rewriting the old record  515ms
+     ✓ continues ordinary native history with a populated shared catalog and unknown-cli, without granting application access  516ms
+     ✓ continues ordinary native history with a populated shared catalog and unverified-config, without granting application access  496ms
+     ✓ runs an unverified history CLI through a real OS PTY while keeping its catalog consumer and refusing every application grant  682ms
+     ✓ preserves old M4 metadata byte-for-byte during a guarded open, self-check, native ID discovery and exit  1799ms
+     ✓ retains verified original claude-code M4 sources during guarded resume without claiming migration complete  445ms
+     ✓ retains verified original codex M4 sources during guarded resume without claiming migration complete  393ms
+     ✓ recovers captured claude-code sources through the actual TaskService resume hook after an interrupted receipt and original T removal  411ms
+     ✓ recovers captured codex sources through the actual TaskService resume hook after an interrupted receipt and original T removal  462ms
+     ✓ reports a damaged original M4 source while preserving metadata and ordinary native Agent availability  321ms
+     ✓ keeps the first retained M4 identity while native discovery binds a missing ID before the next resume  2035ms
+     ✓ keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending  469ms
+     ✓ keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending  429ms
+     ✓ does not demote a recorded v2 session when the task loses its capability pointer  487ms
+     ✓ revokes the private broker even if an owned PTY stop fails and retains the actual child lease  2451ms
+     ✓ rejects replacing the registry after a task has begun and does not fork after an invalid pointer  431ms
+     ✓ refuses a late claude-code history loss before fork and cancels the known unspawned run  348ms
+     ✓ refuses a late codex history loss before fork and cancels the known unspawned run  2087ms
+     ✓ does not reopen a fresh Claude UUID after its original history appears during preparation  337ms
+
+ Test Files  1 passed (1)
+      Tests  57 passed (57)
+   Start at  16:17:09
+   Duration  76.29s (transform 1.04s, setup 0ms, import 1.67s, tests 74.50s, environment 0ms)
+
+JSON report written to /private/tmp/m10-legacy-catalog-al-20261021/retest-report.json

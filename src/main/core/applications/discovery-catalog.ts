@@ -13,13 +13,16 @@ import type { ResourceRecord, ResourceStore } from './resource-store';
 import type { OwnedCapabilityRun } from './run-registry';
 import { withResourceLock } from './resource-lock';
 import { withDiscoveryLock } from './discovery-catalog-lock';
-import { LegacyCapabilityResourceAdopter } from './legacy-resource-adopter';
+import { LegacyCapabilityResourceAdopter,readLegacyOwnedTree } from './legacy-resource-adopter';
+import {writeOwnedTree} from '../capabilities/files';
+import {treeHash} from '../capabilities/assets';
+import {verifyLegacyDiscoveryEntry,assertDiscoveryPath} from './legacy-discovery';
 import { PackageRegistry } from './package-registry';
 import { applicationSkillContentHash } from './session-registry';
 import { projectSkillName, standardNativeSkillName } from './session-projector';
-const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.string().max(64).regex(/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/);
+const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.string().max(128).regex(/^smartdd-[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const ownerSchema = z.object({ storeId: uuid, uFingerprint: hash, instanceId: uuid, pid: z.number().int().positive(), startedAt: z.string().min(1).max(128) }).strict();
-const entrySchema = z.object({ resourceId: z.string().regex(/^h-projection:[a-f0-9]{64}$/), storeId: uuid, path: z.string().min(1).max(4096), nativeName: name, sourceHash: hash, projectionHash: hash }).strict();
+const entrySchema = z.object({ resourceId: z.string().regex(/^h-projection:[a-f0-9]{64}$/), storeId: uuid, path: z.string().min(1).max(4096), nativeName: name, sourceHash: hash, projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict().refine(e=>e.format?e.projectionHash===e.sourceHash&&/^smartdd-[a-z][a-z0-9-]{0,63}-[a-f0-9]{16}$/.test(e.nativeName)&&e.nativeName.endsWith('-'+e.sourceHash.slice(0,16)):/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(e.nativeName)&&e.nativeName.length<=64,'共享目录格式、名称或摘要不同');
 const catalogSchema = z.object({ schema: z.literal(1), homeId: hash, generation: hash, entries: z.array(entrySchema).max(4096) }).strict();
 const consumerSchema = z.object({ schema: z.literal(1), consumerId: uuid, runId: uuid, ptyId: uuid, homeId: hash, generation: hash, runner: z.enum(['claude-code', 'codex']), phase: z.enum(['preparing', 'active', 'releasing']), owner: ownerSchema }).strict();
 const pendingSchema = z.object({ schema: z.literal(1), operationId: uuid, token: uuid, homeId: hash, owner: ownerSchema, baseGeneration: hash, baseEntries: z.array(entrySchema).max(4096), entries: z.array(entrySchema).min(1).max(4096), phase: z.enum(['waiting', 'materializing', 'publishing', 'catalog-published']) }).strict();
@@ -28,6 +31,7 @@ type Consumer = z.infer<typeof consumerSchema>;
 type Pending = z.infer<typeof pendingSchema>;
 type Entry = z.infer<typeof entrySchema>;
 export interface DiscoveryProjectionSource {
+    format?: 'legacy-tree-v1';
     nativeName: string;
     sourceHash: string;
     sourceResourceId: string;
@@ -38,7 +42,9 @@ interface Planned {
     entry: Entry;
     relativePath: string;
     source: DiscoveryProjectionSource;
-    bundle: OwnedBundle;
+    hash: string;
+    files: Readonly<Record<string,Uint8Array>>;
+    bundle: OwnedBundle | null;
 }
 export interface DiscoveryReservation {
     run: OwnedCapabilityRun;
@@ -169,6 +175,13 @@ export class DiscoveryCatalog {
         for (const entry of parsed.entries) {
             if (entry.path !== join(this.home, '.agents/skills', entry.nativeName, 'SKILL.md'))
                 throw new ApplicationError('OWNERSHIP_CONFLICT', '投影越过实际发现根');
+            if(entry.format==='legacy-tree-v1'){
+                const identity=verifyLegacyDiscoveryEntry(entry,this.home);
+                if(entry.storeId===this.store.storeId){const r=this.store.get(entry.resourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),source=this.store.get(identity.sourceResourceId);
+                    if(r.kind!=='legacy-agent-projection'||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.contentHash!==entry.projectionHash||r.state!=='ready'||r.integrity!=='valid'||this.store.directory(r)!==dirname(entry.path)||canonicalJson(deps)!==canonicalJson([identity.sourceResourceId])||source.state!=='ready'||source.integrity!=='valid'||source.pathScope!=='C'||canonicalJson({...readLegacyOwnedTree(this.store.directory(source),source.contentHash)})!==canonicalJson({...identity.files}))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H投影本机记录或原来源不完整');}
+                continue;
+            }
+            assertDiscoveryPath(this.home,entry.path);
             const manifest = verifyOwnedBundle(dirname(entry.path), entry.projectionHash, entry.storeId);
             if (manifest.metadata.kind !== 'codex-agent-projection-v1' || manifest.metadata.homeId !== this.homeId || manifest.metadata.nativeName !== entry.nativeName || manifest.metadata.sourceHash !== entry.sourceHash)
                 throw new ApplicationError('HASH_MISMATCH', '共享投影的原始身份不同');
@@ -187,15 +200,25 @@ export class DiscoveryCatalog {
         return sources.map(source => {
             name.parse(source.nativeName);
             hash.parse(source.sourceHash);
+            if(source.format==='legacy-tree-v1'){
+                const skillId=source.sourceResourceId.slice('standard-skill:'.length).split(':')[0],expected=`smartdd-${skillId}-${source.sourceHash.slice(0,16)}`,files=Object.fromEntries(Object.entries(source.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')]));
+                if(!/^[a-z][a-z0-9-]{0,63}$/.test(skillId)||source.sourceResourceId!==`standard-skill:${skillId}:${source.sourceHash}`||source.nativeName!==expected||source.executables.size||treeHash(files)!==source.sourceHash||Object.entries(files).some(([p,t])=>!Buffer.from(t).equals(Buffer.from(source.files[p]))))throw new ApplicationError('HASH_MISMATCH','原H投影必须沿用完整原标准Skill和名称');
+                const relativePath='.agents/skills/'+expected,entry:Entry={resourceId:'h-projection:'+digest(canonicalJson({homeId:this.homeId,storeId:this.store.storeId,nativeName:expected,hash:source.sourceHash})),storeId:this.store.storeId,path:join(this.home,relativePath,'SKILL.md'),nativeName:expected,sourceHash:source.sourceHash,projectionHash:source.sourceHash,format:'legacy-tree-v1'};return{entry,relativePath,source,hash:source.sourceHash,files:source.files,bundle:null};
+            }
+            if(!/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(source.nativeName)||source.nativeName.length>64)throw new ApplicationError('INVALID_INPUT','新格式投影名称无效');
             const bundle = ownedBundle({ kind: 'codex-agent-projection-v1', homeId: this.homeId, nativeName: source.nativeName, sourceHash: source.sourceHash, sourceResourceId: source.sourceResourceId }, source.files, source.executables), relativePath = '.agents/skills/' + source.nativeName;
             const entry: Entry = { resourceId: 'h-projection:' + digest(canonicalJson({ homeId: this.homeId, storeId: this.store.storeId, nativeName: source.nativeName, hash: bundle.hash })), storeId: this.store.storeId, path: join(this.home, relativePath, 'SKILL.md'), nativeName: source.nativeName, sourceHash: source.sourceHash, projectionHash: bundle.hash };
-            return { entry, relativePath, source, bundle };
+            return { entry, relativePath, source, hash:bundle.hash,files:bundle.files,bundle };
         }).sort((a, b) => compareCodePoints(a.entry.nativeName, b.entry.nativeName));
     }
     private verifySource(plan: Planned): void {
         const resource = this.store.get(plan.source.sourceResourceId);
         if (resource.pathScope !== 'C' || resource.state !== 'ready' || resource.integrity !== 'valid')
             throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享投影原资源尚未就绪');
+        if(plan.entry.format==='legacy-tree-v1'){
+            const original=new LegacyCapabilityResourceAdopter(this.store).verify(resource);
+            if(resource.kind!=='standard-skill'||resource.contentHash!==plan.hash||canonicalJson(Object.keys(original).sort())!==canonicalJson(Object.keys(plan.files).sort())||Object.entries(original).some(([p,t])=>!Buffer.from(t).equals(Buffer.from(plan.files[p]))))throw new ApplicationError('HASH_MISMATCH','原H内容与本机完整来源不同');return;
+        }
         let files: Record<string, Buffer> = {}, executables = new Set<string>();
         if (resource.kind === 'standard-skill') {
             const skillId = resource.resourceId.slice('standard-skill:'.length).split(':')[0];
@@ -222,8 +245,17 @@ export class DiscoveryCatalog {
         if (!files['SKILL.md'])
             throw new ApplicationError('INVALID_PACKAGE', '原Skill入口缺失');
         files['SKILL.md'] = projectSkillName(files['SKILL.md'], plan.entry.nativeName);
-        if (canonicalJson(Object.keys(files).sort()) !== canonicalJson(Object.keys(plan.bundle.files).sort()) || Object.keys(files).some(n => !files[n].equals(plan.bundle.files[n])) || canonicalJson([...executables].sort()) !== canonicalJson([...plan.source.executables].sort()))
+        if (canonicalJson(Object.keys(files).sort()) !== canonicalJson(Object.keys(plan.files).sort()) || Object.keys(files).some(n => !files[n].equals(plan.files[n])) || canonicalJson([...executables].sort()) !== canonicalJson([...plan.source.executables].sort()))
             throw new ApplicationError('HASH_MISMATCH', '共享投影不是原Skill完整内容');
+    }
+    private verifyProjection(plan:Planned,path:string):void{
+        assertDiscoveryPath(this.home,path);
+        if(plan.entry.format==='legacy-tree-v1'){const files=readLegacyOwnedTree(path,plan.hash);if(canonicalJson(Object.keys(files).sort())!==canonicalJson(Object.keys(plan.files).sort())||Object.entries(files).some(([p,t])=>!Buffer.from(t).equals(Buffer.from(plan.files[p]))))throw new ApplicationError('HASH_MISMATCH','原H静态内容不同');}
+        else verifyOwnedBundle(path,plan.hash,this.store.storeId);
+    }
+    private writeProjection(plan:Planned,path:string):void{
+        if(plan.bundle)writeOwnedBundle(path,plan.bundle,this.store.storeId);
+        else writeOwnedTree(path,Object.fromEntries(Object.entries(plan.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')])),join(this.root,'staging-conflicts'));
     }
     private async register(plans: Planned[], pending: Pending): Promise<void> {
         await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
@@ -242,8 +274,14 @@ export class DiscoveryCatalog {
                 const old = this.store.sqlite.prepare('SELECT resource_id FROM capability_resources WHERE resource_id=?').get(p.entry.resourceId);
                 if (old) {
                     const r = this.store.get(p.entry.resourceId);
-                    if (r.pathScope !== 'H' || r.scopeIdentity !== this.homeId || r.relativePath !== p.relativePath || r.contentHash !== p.bundle.hash)
+                    if (r.pathScope !== 'H' || r.scopeIdentity !== this.homeId || r.relativePath !== p.relativePath || r.contentHash !== p.hash)
                         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影资源记录身份不同');
+                    if(p.entry.format==='legacy-tree-v1'){const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);
+                        if(r.kind!=='legacy-agent-projection'||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记或依赖缺失，不重新签认');}
+                    if(p.entry.format==='legacy-tree-v1'&&r.state==='ready'&&!present(dirname(p.entry.path))){
+                        if(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND (l.resource_id=? OR EXISTS(SELECT 1 FROM capability_lease_resources lr WHERE lr.lease_id=l.lease_id AND lr.resource_id=?)) LIMIT 1").get(r.resourceId,r.resourceId))throw new ApplicationError('RESOURCE_BUSY','原H路径仍有未知或活动占用');
+                        this.store.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',operation_id=?,generation=generation+1 WHERE resource_id=?").run(pending.operationId,r.resourceId);
+                    }
                     if (r.state !== 'ready' && r.operationId !== pending.operationId) {
                         const prior = this.store.sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(r.operationId) as {
                             state: string;
@@ -254,7 +292,7 @@ export class DiscoveryCatalog {
                     }
                 }
                 else
-                    this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_identity,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,'agent-projection',?,?,'H',?,?,?,'staged',1,'unknown',?)").run(p.entry.resourceId, p.bundle.hash, this.store.storeId, 'H/' + this.homeId + '/' + p.relativePath + '/' + p.bundle.hash, this.homeId, p.relativePath, pending.operationId);
+                    this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_identity,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,?,?,?,'H',?,?,?,'staged',1,'unknown',?)").run(p.entry.resourceId,p.entry.format?'legacy-agent-projection':'agent-projection', p.hash, this.store.storeId, 'H/' + this.homeId + '/' + p.relativePath + '/' + p.hash, this.homeId, p.relativePath, pending.operationId);
                 this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_resource_dependencies VALUES(?,?)').run(p.entry.resourceId, source.resourceId);
                 const leaseId = digest(pending.operationId + ':' + p.entry.resourceId);
                 this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'install',?,?,?,?,'active',?) ON CONFLICT(lease_id) DO UPDATE SET state='active',host_instance_id=excluded.host_instance_id,pid=excluded.pid,process_started_at=excluded.process_started_at,ended_at=NULL").run(leaseId, p.entry.resourceId, pending.operationId, this.instanceId, this.host.pid, this.host.startedAt, now);
@@ -275,8 +313,8 @@ export class DiscoveryCatalog {
     private mine(pending: Pending): void { const current = this.pending(); if (!current || current.operationId !== pending.operationId || current.token !== pending.token || canonicalJson(current.owner) !== canonicalJson(this.owner) || canonicalJson(current) !== canonicalJson(pending))
         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录维护所有权已改变'); }
     private async phase(pending: Pending, phase: Pending['phase']): Promise<void> { await this.lock(() => { this.mine(pending); pending.phase = phase; atomicJson(join(this.root, 'pending.json'), pending); }); }
-    private async finishRecords(pending: Pending, state: 'ready' | 'recovery-required' | 'removed', operationState: string): Promise<void> { await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => { for (const entry of pending.entries)
-        this.store.sqlite.prepare('UPDATE capability_resources SET state=?,integrity=? WHERE resource_id=? AND operation_id=?').run(state, state === 'ready' ? 'valid' : state === 'removed' ? 'invalid' : 'unknown', entry.resourceId, pending.operationId); this.store.sqlite.prepare('UPDATE capability_resource_operations SET state=?,updated_at=? WHERE operation_id=? AND owner_store_id=?').run(operationState, timestamp(), pending.operationId, this.store.storeId); this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_id=? AND owner_kind='install'").run(timestamp(), pending.operationId); }).immediate()); }
+    private async finishRecords(pending: Pending, state: 'ready' | 'recovery-required' | 'removed', operationState: string,verify?:()=>void): Promise<void> { await withResourceLock(this.store.root, () => {verify?.();return this.store.sqlite.transaction(() => { for (const entry of pending.entries)
+        this.store.sqlite.prepare('UPDATE capability_resources SET state=?,integrity=? WHERE resource_id=? AND operation_id=?').run(state, state === 'ready' ? 'valid' : state === 'removed' ? 'invalid' : 'unknown', entry.resourceId, pending.operationId); this.store.sqlite.prepare('UPDATE capability_resource_operations SET state=?,updated_at=? WHERE operation_id=? AND owner_store_id=?').run(operationState, timestamp(), pending.operationId, this.store.storeId); this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_id=? AND owner_kind='install'").run(timestamp(), pending.operationId); }).immediate();}); }
     async publish(sources: readonly DiscoveryProjectionSource[], options: {
         signal?: AbortSignal;
         waitMs?: number;
@@ -319,7 +357,7 @@ export class DiscoveryCatalog {
                         if (old && canonicalJson(old) !== canonicalJson(p.entry))
                             throw new ApplicationError('OWNERSHIP_CONFLICT', '同名共享投影属于其他数据根或版本，不能改签');
                     }
-                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry)))) {
+                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry))&&!(p.entry.format==='legacy-tree-v1'&&!present(dirname(p.entry.path))))) {
                         reuse = true;
                         return;
                     }
@@ -332,6 +370,7 @@ export class DiscoveryCatalog {
                 const snapshot = await this.snapshot();
                 this.verify(snapshot);
                 for (const p of plans) {
+                    this.verifySource(p);
                     const r = this.store.get(p.entry.resourceId);
                     if (r.state !== 'ready' || r.integrity !== 'valid')
                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原共享资源账尚未完成');
@@ -361,11 +400,11 @@ export class DiscoveryCatalog {
                 this.verifySource(p);
                 const target = dirname(p.entry.path), stage = join(staging, p.entry.nativeName);
                 if (present(target))
-                    verifyOwnedBundle(target, p.bundle.hash, this.store.storeId);
+                    this.verifyProjection(p,target);
                 else {
                     if (!present(stage))
-                        writeOwnedBundle(stage, p.bundle, this.store.storeId);
-                    verifyOwnedBundle(stage, p.bundle.hash, this.store.storeId);
+                        this.writeProjection(p,stage);
+                    this.verifyProjection(p,stage);
                 }
             }
             this.checkpoint?.('materialized');
@@ -395,29 +434,34 @@ export class DiscoveryCatalog {
                         throw new ApplicationError('RESOURCE_STATE_CHANGED', '原目录发布依赖占用已改变');
                 } for (const p of plans) {
                     const r = this.store.get(p.entry.resourceId), source = this.store.get(p.source.sourceResourceId);
-                    if (r.contentHash !== p.bundle.hash || ['deleting', 'removed'].includes(r.state) || source.state !== 'ready' || source.integrity !== 'valid')
+                    if (r.contentHash !== p.hash || ['deleting', 'removed'].includes(r.state) || source.state !== 'ready' || source.integrity !== 'valid')
                         throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布前原资源状态已改变');
                     this.store.sqlite.prepare("UPDATE capability_resources SET state='verified',integrity='valid' WHERE resource_id=? AND state<>'ready'").run(r.resourceId);
                 } }).immediate());
                 if (options.signal?.aborted)
                     throw new ApplicationError('CANCELED', '共享目录发布前已取消');
                 ensureStoreDirectory(this.home, '.agents/skills');
+                for(const p of plans){this.verifySource(p);const stage=join(staging,p.entry.nativeName);if(!present(dirname(p.entry.path)))this.verifyProjection(p,stage);}
                 for (const p of plans) {
                     const target = dirname(p.entry.path);
                     if (present(target))
-                        verifyOwnedBundle(target, p.bundle.hash, this.store.storeId);
+                        this.verifyProjection(p,target);
                     else {
                         renameSync(join(staging, p.entry.nativeName), target);
                         durableDirectory(dirname(target));
                     }
                     this.checkpoint?.('renamed');
                 }
+                for(const p of plans){this.verifySource(p);this.verifyProjection(p,dirname(p.entry.path));}
                 current = { schema: 1, homeId: this.homeId, entries: expectedEntries, generation: this.generation(expectedEntries) };
                 atomicJson(join(this.root, 'catalog.json'), current);
                 work.phase = 'catalog-published';
                 atomicJson(join(this.root, 'pending.json'), work);
                 this.checkpoint?.('catalog-published');
-                await this.finishRecords(work, 'ready', 'committed');
+                await this.finishRecords(work, 'ready', 'committed',()=>{
+                    this.mine(work);if(canonicalJson(this.catalog())!==canonicalJson(current))throw new ApplicationError('RESOURCE_STATE_CHANGED','最终共享目录在就绪提交前变化');
+                    for(const p of plans){this.verifySource(p);this.verifyProjection(p,dirname(p.entry.path));}
+                });
                 unlinkSync(join(this.root, 'pending.json'));
                 durableDirectory(this.root);
             });

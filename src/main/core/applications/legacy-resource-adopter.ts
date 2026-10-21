@@ -11,7 +11,8 @@ export function readLegacyOwnedTree(root:string,expectedHash:string):Record<stri
   const files:Record<string,string>=Object.create(null);let count=0,total=0,visited=0;
   const walk=(directory:string,depth:number)=>{
    const dir=lstatSync(directory);if(!dir.isDirectory()||dir.isSymbolicLink()||depth>32||++visited>4096)throw Error('legacy directory');
-   for(const name of readdirSync(directory)){
+   const names=readdirSync(directory);if(!names.length)throw Error('undeclared empty directory');
+   for(const name of names){
     const path=join(directory,name),stat=lstatSync(path);if(stat.isSymbolicLink()||(!stat.isDirectory()&&!stat.isFile()))throw Error('legacy file');if(stat.isDirectory()){walk(path,depth+1);continue;}
     if(++count>4096||stat.nlink!==1||(stat.mode&0o111)!==0||stat.size>4*1024*1024||(total+=stat.size)>32*1024*1024)throw Error('legacy budget/ownership');
     const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);try{const before=fstatSync(fd);if(before.dev!==stat.dev||before.ino!==stat.ino||before.size!==stat.size||before.ctimeMs!==stat.ctimeMs)throw Error('legacy changed');const buffer=Buffer.alloc(stat.size+1);let length=0;while(length<buffer.length){const n=readSync(fd,buffer,length,buffer.length-length,null);if(!n)break;length+=n;}const bytes=buffer.subarray(0,length),after=fstatSync(fd),text=bytes.toString('utf8');if(length!==stat.size||after.size!==stat.size||after.ino!==stat.ino||after.mtimeMs!==stat.mtimeMs||after.ctimeMs!==stat.ctimeMs||!Buffer.from(text).equals(bytes))throw Error('legacy changed bytes');files[relative(root,path)]=text;}finally{closeSync(fd);}

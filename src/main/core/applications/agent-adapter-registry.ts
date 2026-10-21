@@ -5,6 +5,7 @@ import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema
 import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import {legacyPlannerInput} from './legacy-agent-load';
+import {verifyLegacyDiscoveryEntry} from './legacy-discovery';
 import { ownedBundle, writeOwnedBundle, verifyOwnedBundle, type OwnedBundleManifest } from './owned-bundle';
 import type { PublishResource, ResourceRecord, ResourceStore } from './resource-store';
 interface AdapterRow { agent_id: string;version: string;adapter_hash: string;resource_id: string;manifest_json: string }
@@ -55,6 +56,7 @@ export class AgentAdapterRegistry {
       if (new Set(catalog.entries.map(e => e.path)).size !== catalog.entries.length || new Set(catalog.entries.map(e => e.nativeName)).size !== catalog.entries.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','Codex受管目录或名称冲突');
       for (const entry of catalog.entries) {
         if (entry.path !== join(input.native.home,'.agents','skills',entry.nativeName,'SKILL.md')) throw new ApplicationError('OWNERSHIP_CONFLICT','目录清单越过实际HOME的受管发现根');
+        if(entry.format==='legacy-tree-v1'){verifyLegacyDiscoveryEntry(entry,input.native.home);continue;}
         const projection = verifyOwnedBundle(dirname(entry.path),entry.projectionHash,entry.storeId);
         if (projection.metadata.kind !== 'codex-agent-projection-v1' || projection.metadata.sourceHash !== entry.sourceHash || projection.metadata.nativeName !== entry.nativeName) throw new ApplicationError('HASH_MISMATCH','共享投影来源摘要或原生名称不同');
       }
