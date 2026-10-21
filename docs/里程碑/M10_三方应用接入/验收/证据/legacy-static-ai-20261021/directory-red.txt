@@ -1,0 +1,46 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-retention-recovery.test.ts --maxWorkers=1
+
+[1021/144350.552766:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/144350.685108:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (38 tests | 2 failed) 3179ms
+     × preserves the original tree when empty-dir changes before owned cleanup 86ms
+     × does not recapture a changed retained original empty-dir tree 109ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > original static cleanup authority and retry boundaries > preserves the original tree when empty-dir changes before owned cleanup
+Error: ENOENT: no such file or directory, open '/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-plugin-source-FcLdSO/capabilities/runs/423c04a7-287a-4d3d-9037-fd49f7e76346/d177948f-af82-436e-a718-14c5041af2f4/a1252492-50ec-469f-8f48-17a5653fd08c/context.json'
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:171:10
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > original static cleanup authority and retry boundaries > does not recapture a changed retained original empty-dir tree
+AssertionError: expected { state: 'prepared', …(2) } to match object { state: 'unknown' }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "state": "unknown",
++   "state": "prepared",
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:176:95
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 36 passed (38)
+   Start at  14:43:50
+   Duration  3.50s (transform 147ms, setup 0ms, import 256ms, tests 3.18s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

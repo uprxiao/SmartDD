@@ -6,7 +6,7 @@ import {randomUUID} from 'node:crypto';
 import {parse as parseToml} from 'smol-toml';
 import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
-import {join,resolve} from 'node:path';
+import {dirname,join,resolve} from 'node:path';
 import Database from 'better-sqlite3';
 import {drizzle} from 'drizzle-orm/better-sqlite3';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
@@ -347,6 +347,9 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   expect(record).toMatchObject({source_record_json:raw,state:'prepared'});expect(JSON.parse(record.evidence_json)).toMatchObject({taskId:id,runner,runtimeHash:capabilities.runtimeIdentity().hash});expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:runner==='claude-code'?4:3});
   expect(managed.legacyPreparationWarnings.has(id)).toBe(false);expect(ptys.launches.at(-1)!.args.join('\n')).not.toContain('--bootstrap');expect(()=>managed.runs.assertActive(opened.task.runtimeSnapshot!.runId)).toThrow('不签发');expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});
   tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(opened.task.runtimeSnapshot!.runId).state).toBe('stopped'));expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});expect(sqlite.prepare('SELECT state FROM capability_legacy_migration_preparations WHERE task_id=?').get(id)).toEqual({state:'prepared'});original.release();
+  expect(existsSync(original.snapshot.skills.find(s=>s.enabled)!.path)).toBe(true);expect(existsSync(original.snapshot.manifestPath)).toBe(false);
+  const again=await tasks.open({taskId:id});expect(managed.legacyPreparationWarnings.has(id)).toBe(false);expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:runner==='claude-code'?4:3});
+  tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(again.task.runtimeSnapshot!.runId).state).toBe('stopped'));
  });
  it.each(['claude-code','codex'] as const)('recovers captured %s sources through the actual TaskService resume hook after an interrupted receipt and original T removal',async runner=>{
   const id=randomUUID(),nativeSessionId=randomUUID(),stamp=Date.now(),original=capabilities.prepare({projectId,taskId:id,runner:runner==='codex'?'codex':'claude',cwd,home,profileArgs:[]}),raw=JSON.stringify(original.snapshot,null,2),stateRoot=join(home,runner==='codex'?'.codex':'.claude');
@@ -356,7 +359,10 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   sqlite.exec("CREATE TRIGGER interrupted_hook_receipt BEFORE UPDATE ON capability_legacy_migration_preparations WHEN NEW.state='prepared' BEGIN SELECT RAISE(ABORT,'private hook receipt interruption'); END");
   const first=await tasks.open({taskId:id}),held=sqlite.prepare('SELECT state,evidence_json,manifest_json FROM capability_legacy_migration_preparations WHERE task_id=?').get(id) as {state:string;evidence_json:string;manifest_json:string};
   expect(held).toMatchObject({state:'held',evidence_json:expect.any(String),manifest_json:expect.any(String)});expect(managed.legacyPreparationWarnings.has(id)).toBe(true);expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:0});
-  tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));original.release();sqlite.exec('DROP TRIGGER interrupted_hook_receipt');expect(existsSync(original.snapshot.manifestPath)).toBe(false);
+  tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));original.release();sqlite.exec('DROP TRIGGER interrupted_hook_receipt');
+  // Explicit private T-loss fault. An interrupted source capture now correctly
+  // keeps its current host's original tree on ordinary release.
+  rmSync(dirname(original.snapshot.manifestPath),{recursive:true,force:true});expect(existsSync(original.snapshot.manifestPath)).toBe(false);
   const reopened=await tasks.open({taskId:id});expect(managed.legacyPreparationWarnings.has(id)).toBe(false);expect(sqlite.prepare('SELECT state,evidence_json,manifest_json FROM capability_legacy_migration_preparations WHERE task_id=?').get(id)).toEqual({...held,state:'prepared'});expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:runner==='claude-code'?4:3});
   expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});expect(sqlite.prepare('SELECT schema_version FROM capability_session_snapshots WHERE task_id=?').get(id)).toEqual({schema_version:0});expect(()=>managed.runs.assertActive(reopened.task.runtimeSnapshot!.runId)).toThrow('不签发');expect(ptys.launches.at(-1)!.args.join('\n')).not.toContain('--bootstrap');expect(sqlite.prepare('SELECT COUNT(*) n FROM mail_send_grants').get()).toEqual({n:0});
   tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(reopened.task.runtimeSnapshot!.runId).state).toBe('stopped'));

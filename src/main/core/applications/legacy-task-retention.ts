@@ -1,6 +1,7 @@
 import {constants,closeSync,fstatSync,lstatSync,openSync,readSync,realpathSync} from 'node:fs';
 import {join} from 'node:path';
 import {ApplicationError} from '@shared/applications';
+import {retainOriginalRun} from '../capabilities/original-run-lifetime';
 import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import type {ResourceRecord,ResourceStore} from './resource-store';
@@ -46,7 +47,11 @@ export class LegacyTaskRetention {
   try{const resource=this.store.get(legacyPluginResourceId(evidence.taskId,evidence.manifestHash)),content=new LegacyPluginSources(this.store).verify(resource,legacyPluginOrigin(evidence));if(content.manifest.toString('utf8')!==manifest)throw Error('different original manifest');return resource;}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原插件留存尚未完整发布或不能按原依据核验');}
  }
  private verifyRetainedFiles(evidence:LegacyTaskEvidence,manifest:string):void{
-  if(!this.absent(evidence.runRoot))throw new ApplicationError('RESOURCE_STATE_CHANGED','原临时目录在留存恢复期间重新出现，保留原路径并重新核查');
+  if(!this.absent(evidence.runRoot)){
+   const plugin=this.archivedPlugin(evidence,manifest);
+   if(!plugin)throw new ApplicationError('RESOURCE_STATE_CHANGED','原临时目录在留存恢复期间重新出现，保留原路径并重新核查');
+   try{new LegacyPluginSources(this.store).verifyOriginalPlugin(plugin,legacyPluginOrigin(evidence));}catch{throw new ApplicationError('RESOURCE_STATE_CHANGED','原路径不是已留存的完整静态插件，保留原路径并重新核查');}
+  }
   try{for(const skill of evidence.skills)this.legacy.verify(this.store.get('standard-skill:'+skill.skillId+':'+skill.hash));this.legacy.verify(this.store.get('legacy-runtime:'+evidence.runtimeHash));this.archivedPlugin(evidence,manifest);}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','最初留存的完整来源尚未就绪，保留准备回执等待修复');}
  }
  async prepare(input:LegacyRetentionIdentity,value:unknown,signal?:AbortSignal):Promise<LegacyRetentionResult>{
@@ -57,11 +62,18 @@ export class LegacyTaskRetention {
    const inspection=reader.inspect(identity,parsed.data);let evidence:LegacyTaskEvidence,manifest:string,fromRetained=false;
    if(inspection.state==='verified'){evidence=inspection.evidence;manifest=this.manifest(evidence);}else{
     const previous=this.read(identity.taskId),runRoot=join(this.store.root,'runs',identity.projectId,identity.taskId,parsed.data.runId);
-    if(inspection.code!=='LEGACY_MANIFEST_MISSING'||!this.absent(runRoot)||!previous||[previous.evidence_json,previous.evidence_hash,previous.manifest_json,previous.manifest_hash].every(v=>v===null))return{state:'unknown',sourceSnapshotHash,code:inspection.code};
+    if(inspection.code!=='LEGACY_MANIFEST_MISSING'||!previous||[previous.evidence_json,previous.evidence_hash,previous.manifest_json,previous.manifest_hash].every(v=>v===null))return{state:'unknown',sourceSnapshotHash,code:inspection.code};
     if(previous.state==='migrated')throw new ApplicationError('SNAPSHOT_IMMUTABLE','原M4迁移依据已被后续阶段使用');
     const retained=retainedLegacySource(this.store,identity.taskId,previous.state);
     if(retained.row.source_snapshot_json!==snapshot||retained.row.source_record_json!==originalRecord||!this.sameIdentity(retained.row.source_identity_json,identity)||retained.row.bound_native_session_id!==null&&retained.row.bound_native_session_id!==identity.sessionId)throw new ApplicationError('SNAPSHOT_IMMUTABLE','留存恢复对象与最初任务依据或原生身份不同');
-    evidence=retained.evidence;manifest=retained.row.manifest_json!;fromRetained=true;
+    evidence=retained.evidence;manifest=retained.row.manifest_json!;
+    if(!this.absent(runRoot)){
+     // A completed source capture may leave only the original immutable plugin.
+     // This is a read-only source check, never an unknown-owner adoption.
+     try{const plugin=this.archivedPlugin(evidence,manifest);if(!plugin)throw Error('no original plugin');new LegacyPluginSources(this.store).verifyOriginalPlugin(plugin,legacyPluginOrigin(evidence));}
+     catch{return{state:'unknown',sourceSnapshotHash,code:inspection.code};}
+    }
+    fromRetained=true;
    }
    const evidenceJson=canonicalJson(evidence),now=new Date().toISOString(),verifyFiles=()=>{if(fromRetained)this.verifyRetainedFiles(evidence,manifest);else if(!reader.verify(evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4证据在准备中变化');};
    const resources:ResourceRecord[]=[],retainSources=async()=>{
@@ -81,6 +93,7 @@ export class LegacyTaskRetention {
      else if(previous.evidence_json===null)this.store.sqlite.prepare('UPDATE capability_legacy_migration_preparations SET evidence_json=?,evidence_hash=?,manifest_json=?,manifest_hash=? WHERE task_id=?').run(evidenceJson,evidence.evidenceHash,manifest,evidence.manifestHash,identity.taskId);
     }).immediate();
    },{signal});
+   if(evidence.pluginRoot)retainOriginalRun(evidence.runRoot,parsed.data,'intent');
    await this.checkpoint?.('intent-recorded');canceled(signal);if(!fromRetained)await retainSources();await this.checkpoint?.('sources-adopted');canceled(signal);
    verifyFiles();await this.checkpoint?.('before-commit');canceled(signal);verifyFiles();
    await withResourceLock(this.store.root,()=>{
@@ -98,6 +111,7 @@ export class LegacyTaskRetention {
     }).immediate();
    },{signal});
   }catch(error){await withResourceLock(this.store.root,()=>{this.store.sqlite.prepare("UPDATE capability_legacy_migration_preparations SET state='held',issue_code=?,updated_at=? WHERE task_id=? AND source_snapshot_hash=? AND state<>'migrated'").run(error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED',new Date().toISOString(),identity.taskId,sourceSnapshotHash);});throw error;}
+  const retained=retainedLegacySource(this.store,identity.taskId,'prepared');if(retained.evidence.pluginRoot)retainOriginalRun(retained.evidence.runRoot,parsed.data,'committed');
   await this.checkpoint?.('committed');return{state:'prepared',sourceSnapshotHash,code:null};
  }
 }

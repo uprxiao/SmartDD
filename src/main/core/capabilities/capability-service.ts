@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
 import { and, eq, sql } from 'drizzle-orm';
@@ -17,6 +17,7 @@ import { BUNDLED_SKILLS, runtimeFiles, sha256, treeHash, type BundledSkill } fro
 import { discoverCapabilities } from './discovery';
 import { readOwnedTree, writeOwnedTree } from './files';
 import { projectSkillName } from '../applications/session-projector';
+import { registerOriginalRun,type OriginalRunCleanup } from './original-run-lifetime';
 
 export const MCP_CAPABILITY = 'smartdd-project-context';
 export const RUNTIME_ISOLATION = ['SMARTDD_', 'PROJECT_DB_CONFIG', 'REMOTE_SERVERS_CONFIG'];
@@ -60,6 +61,7 @@ export class CapabilityService {
   private readonly runtimeRoot: string;
   private readonly activeRuns = new Set<string>();
   private readonly managedRuns = new Set<string>();
+  private readonly runCleanups = new Map<string,() => void>();
 
   constructor(private readonly d: CapabilityDeps) {
     this.bundles = d.bundles ?? BUNDLED_SKILLS;
@@ -297,6 +299,41 @@ export class CapabilityService {
     this.activeRuns.add(runRoot); if (input.managed) this.managedRuns.add(runRoot);
     const snapshot: RuntimeSnapshot = { runId, projectId: project.id, configVersion: project.configVersion, configHash, manifestPath, auditPath, skills: selected,
       mcp: mcpEnabled ? [{ name: mcpName, loaded: 'unverified' }] : [], selfCheck: { status: 'pending', issues: [], at: null } };
+    const ownedRoot = lstatSync(runRoot);
+    const cleanup = (mode: OriginalRunCleanup): void => {
+      try {
+        if (!existsSync(runRoot)) return;
+        const current = lstatSync(runRoot);
+        if (!current.isDirectory() || current.isSymbolicLink() || current.dev !== ownedRoot.dev || current.ino !== ownedRoot.ino) return;
+        if (mode === 'hold') return;
+        if (mode === 'retain-plugin') {
+          const actual = readOwnedTree(runRoot),known = new Set([...Object.keys(files),'self-check.json']);
+          if (Object.keys(actual).some(name => !known.has(name)) || Object.entries(files).some(([name,bytes]) => actual[name] !== bytes)) return;
+          const directories = new Set<string>();
+          for (const name of Object.keys(files)) for (let parent = dirname(name); parent !== '.'; parent = dirname(parent)) directories.add(parent);
+          for (const dir of ['',...directories]) for (const name of readdirSync(join(runRoot,dir))) {
+            const path = join(dir,name);
+            if (lstatSync(join(runRoot,path)).isDirectory() && !directories.has(path)) return;
+          }
+          const marker = '.smartdd-owned.json';
+          if (readFileSync(join(runRoot,marker),'utf8') !== JSON.stringify({ owner: 'SmartDD',schema: 1 })) return;
+          for (const name of [...Object.keys(actual),marker]) {
+            const leaf = lstatSync(join(runRoot,name));
+            if (!leaf.isFile() || leaf.isSymbolicLink() || leaf.nlink !== 1) return;
+          }
+          // Only known ephemeral leaves are removed. The original plugin tree and
+          // original root marker keep their paths, bytes, modes and inodes.
+          for (const name of [...Object.keys(files),'self-check.json']) {
+            if (name.startsWith('plugin/')) continue;
+            if (name.includes('/')) return;
+            rmSync(join(runRoot,name),{ force: true });
+          }
+        } else rmSync(runRoot,{ recursive: true,force: true });
+      } catch { /* Unknown/replaced paths are retained; never turn cleanup into an overwrite. */ }
+    };
+    const releaseOwned = input.managed ? () => cleanup('remove') : registerOriginalRun(runRoot,snapshot,cleanup);
+    const release = () => { releaseOwned();this.activeRuns.delete(runRoot);this.managedRuns.delete(runRoot);this.runCleanups.delete(runRoot); };
+    this.runCleanups.set(runRoot,release);
     const allowedIssues = new Set(['file_hash_mismatch', 'file_unreadable', 'resource_path_unreadable', 'manifest_hash_mismatch', 'manifest_invalid', 'runner_not_found', 'self_check_report_failed',
       ...Object.keys(env).map((n) => `missing_env:${n}`), ...Object.keys(pathEnv).concat(['SMARTDD_PROJECT_ID', 'SMARTDD_CONFIG_VERSION']).map((n) => `wrong_path_env:${n}`),
       'missing_dependency:pymysql', 'missing_dependency:psycopg2', 'missing_command:ssh']);
@@ -311,12 +348,12 @@ export class CapabilityService {
           return { status: report.status, issues: report.issues, at: typeof report.at === 'number' ? report.at : Date.now() };
         } catch { return { status: 'failed', issues: ['self_check_report_invalid'], at: Date.now() }; }
       },
-      release: () => { rmSync(runRoot, { recursive: true, force: true }); this.activeRuns.delete(runRoot); this.managedRuns.delete(runRoot); },
+      release,
     };
   }
 
   dispose(): void {
-    for (const root of this.activeRuns) if (!this.managedRuns.has(root)) { rmSync(root,{ recursive: true,force: true }); this.activeRuns.delete(root); }
+    for (const root of [...this.activeRuns]) if (!this.managedRuns.has(root)) this.runCleanups.get(root)?.();
     // Managed T is released only by the run owner after actual CLI/bridge/executor exit.
   }
 }

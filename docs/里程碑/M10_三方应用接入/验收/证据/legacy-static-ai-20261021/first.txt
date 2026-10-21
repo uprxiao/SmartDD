@@ -1,0 +1,262 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-retention-recovery.test.ts --maxWorkers=1
+
+[1021/143859.003809:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/143859.140713:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (18 tests | 18 failed) 310ms
+     × recovers a durable captured source receipt after final SQL failure and original T removal 26ms
+     × durably pins the original evidence before any source publication and source refs 16ms
+     × recovers Codex sources from exact old C bytes after interruption before source registration 17ms
+     × refuses to synthesize a Claude archive if interruption occurred before original capture 16ms
+     × refuses a retained source with changed plugin-bytes and preserves the journal 17ms
+     × refuses a retained source with changed dependency and preserves the journal 29ms
+     × refuses a retained source with changed integrity and preserves the journal 15ms
+     × rejects corrupted durable manifest instead of inferring it from an orphan archive 16ms
+     × rejects corrupted durable evidence instead of inferring it from an orphan archive 15ms
+     × rejects corrupted durable partial-proof instead of inferring it from an orphan archive 16ms
+     × keeps a partially present original T unchanged and reports it unknown 17ms
+     × rejects an original T which reappears during cold recovery without changing its contents 15ms
+     × rolls back a second final SQL failure during cold recovery and retries the same source exactly 16ms
+     × keeps cancellation during cold source preparation retryable without publishing refs 15ms
+     × keeps a late task change instead of overwriting it with the older retained record 16ms
+     × does not invent proof for an old null-proof held row even when an orphan source exists 15ms
+     × rejects a self-consistent replacement runtime in durable evidence when the original manifest pins another root 16ms
+     × keeps the referenced original Skill path while removing ended-run connection files 16ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > recovers a durable captured source receipt after final SQL failure and original T removal
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:47:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > durably pins the original evidence before any source publication and source refs
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:52:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > recovers Codex sources from exact old C bytes after interruption before source registration
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:57:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > refuses to synthesize a Claude archive if interruption occurred before original capture
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:61:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > refuses a retained source with changed plugin-bytes and preserves the journal
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > refuses a retained source with changed dependency and preserves the journal
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > refuses a retained source with changed integrity and preserves the journal
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:65:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > rejects corrupted durable manifest instead of inferring it from an orphan archive
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > rejects corrupted durable evidence instead of inferring it from an orphan archive
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > rejects corrupted durable partial-proof instead of inferring it from an orphan archive
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:72:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > keeps a partially present original T unchanged and reports it unknown
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:84:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > rejects an original T which reappears during cold recovery without changing its contents
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:88:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > rolls back a second final SQL failure during cold recovery and retries the same source exactly
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:93:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > keeps cancellation during cold source preparation retryable without publishing refs
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:97:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > keeps a late task change instead of overwriting it with the older retained record
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:101:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > does not invent proof for an old null-proof held row even when an orphan source exists
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:106:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > durable original-source receipt recovery, without T/H repair or native activation > rejects a self-consistent replacement runtime in durable evidence when the original manifest pins another root
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ interrupted src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:38:20
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:110:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > original M4 static plugin lifetime after source retention > keeps the referenced original Skill path while removing ended-run connection files
+TypeError: Invalid value used as weak map key
+ ❯ registerOriginalRun src/main/core/capabilities/original-run-lifetime.ts:24:39
+     22|   if (entries.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
+     23|   const owner: Owner = { pins: pins(snapshot),phase: 'remove',released…
+     24|   entries.set(canonical,owner);owners.set(connection,entries);
+       |                                       ^
+     25|   return () => {
+     26|     owner.released = true;
+ ❯ CapabilityService.prepare src/main/core/capabilities/capability-service.ts:322:68
+ ❯ previous src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:30:129
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:120:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed (18)
+   Start at  14:38:59
+   Duration  660ms (transform 159ms, setup 0ms, import 276ms, tests 310ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

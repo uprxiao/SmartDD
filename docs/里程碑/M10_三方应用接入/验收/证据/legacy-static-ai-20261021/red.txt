@@ -1,0 +1,35 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-retention-recovery.test.ts --maxWorkers=1 -t 'original M4 static plugin lifetime'
+
+[1021/143622.048469:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/143622.434837:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (18 tests | 1 failed | 17 skipped) 131ms
+     × keeps the referenced original Skill path while removing ended-run connection files 131ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-retention-recovery.test.ts > original M4 static plugin lifetime after source retention > keeps the referenced original Skill path while removing ended-run connection files
+AssertionError: historical fixed Skill path must survive ordinary run cleanup: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts:123:92
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  14:36:22
+   Duration  576ms (transform 196ms, setup 0ms, import 360ms, tests 131ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
