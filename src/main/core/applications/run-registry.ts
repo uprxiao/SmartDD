@@ -1,3 +1,4 @@
+import {applicationRunScopeSchema,applicationScopeOperationId,readApplicationRunScope,type ApplicationRunScope} from './application-run-scope';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
@@ -21,8 +22,8 @@ interface RunRow {
 interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
 interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;verify:()=>Promise<void>}
-interface OwnedRun { guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
-export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal }
+interface OwnedRun { scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[] }
 export interface RunRegistryDeps {
   /** Read current local policy/revisions; no network, filesystem or asynchronous work in C. */
   assertCurrent(snapshot: CapabilitySessionSnapshotV2,bindings: readonly RunBindingRevision[]): void;
@@ -82,6 +83,7 @@ export class CapabilityRunRegistry {
     if(owned.guard)throw new ApplicationError('SCOPE_DENIED','原生守护不签发应用工具、业务来源或凭据');
     const session = this.sessions.inspectCoordinated(row.task_id);
     if (session.selectionHash !== owned.selectionHash || session.snapshot.projectId !== row.project_id || session.snapshot.runner !== row.runner || session.pointer.snapshotHash !== row.snapshot_hash) throw new ApplicationError('SNAPSHOT_CORRUPT','运行与固定会话身份不同');
+    const scope=readApplicationRunScope(this.store,runId,session.snapshot,owned.scope?.evidenceHash);if(Boolean(scope)!==Boolean(owned.scope))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本轮应用范围与宿主登记不同');
     return { row,owned,session };
   }
   /** Lifecycle authority for native-only history is distinct from business authority. */
@@ -110,8 +112,8 @@ export class CapabilityRunRegistry {
     if (session.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话能力已保留或待核查');
     const bindings = bindingsSchema.parse(JSON.parse(row.bindings_json)); this.deps.assertCurrent(session.snapshot,bindings); return bindings;
   }
-  private closure(taskId: string,guard?:NativeGuard): ResourceRecord[] {
-    const roots = guard?guard.resources.map(id=>{const r=this.store.get(id);return{ref_id:id,ref_hash:r.contentHash,ref_kind:r.kind,relative_path:r.relativePath};}):this.store.sqlite.prepare('SELECT ref_id,ref_hash,ref_kind,relative_path FROM capability_session_refs WHERE task_id=?').all(taskId) as { ref_id: string;ref_hash: string;ref_kind: string;relative_path: string }[];
+  private closure(taskId: string,guard?:NativeGuard,scope?:ApplicationRunScope): ResourceRecord[] {
+    const roots = guard?guard.resources.map(id=>{const r=this.store.get(id);return{ref_id:id,ref_hash:r.contentHash,ref_kind:r.kind,relative_path:r.relativePath};}):scope?scope.roots.map(r=>({ref_id:r.refId,ref_hash:r.refHash,ref_kind:r.refKind,relative_path:r.relativePath})):this.store.sqlite.prepare('SELECT ref_id,ref_hash,ref_kind,relative_path FROM capability_session_refs WHERE task_id=?').all(taskId) as { ref_id: string;ref_hash: string;ref_kind: string;relative_path: string }[];
     if (!roots.length) throw new ApplicationError('SNAPSHOT_CORRUPT','原会话资源引用缺失');
     const visited = new Map<string,ResourceRecord>(), visiting = new Set<string>();
     const visit = (id: string,depth = 0): void => {
@@ -129,7 +131,7 @@ export class CapabilityRunRegistry {
     return [...visited.values()];
   }
   private protect(runId: string,owned: OwnedRun): void {
-    const row = this.row(runId), resources = this.closure(row.task_id,owned.guard);
+    const row = this.row(runId), resources = this.closure(row.task_id,owned.guard,owned.scope);
     const put = this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)');
     for (const resource of resources) put.run(owned.leaseId,resource.resourceId,resource.contentHash,resource.generation);
     this.checkProtection(row,owned);
@@ -138,16 +140,19 @@ export class CapabilityRunRegistry {
     const lease = this.store.sqlite.prepare('SELECT state,owner_id,host_instance_id FROM capability_resource_leases WHERE lease_id=?').get(owned.leaseId) as { state: string;owner_id: string;host_instance_id: string } | undefined;
     if (!lease || lease.owner_id !== row.run_id || lease.host_instance_id !== this.instanceId || !['preparing','active'].includes(lease.state)) throw new ApplicationError('RESOURCE_STATE_CHANGED','运行资源占用已改变');
     const protectedRows = this.store.sqlite.prepare('SELECT resource_id,content_hash,generation FROM capability_lease_resources WHERE lease_id=?').all(owned.leaseId) as { resource_id: string;content_hash: string;generation: number }[];
-    for (const resource of this.closure(row.task_id,owned.guard)) if (!protectedRows.some(r => r.resource_id === resource.resourceId && r.content_hash === resource.contentHash && r.generation === resource.generation)) throw new ApplicationError('RESOURCE_STATE_CHANGED','原资源依赖或代次已改变，保留占用但拒绝启动');
+    for (const resource of this.closure(row.task_id,owned.guard,owned.scope)) if (!protectedRows.some(r => r.resource_id === resource.resourceId && r.content_hash === resource.contentHash && r.generation === resource.generation)) throw new ApplicationError('RESOURCE_STATE_CHANGED','原资源依赖或代次已改变，保留占用但拒绝启动');
     for (const protectedRow of protectedRows) { const r = this.store.get(protectedRow.resource_id); if (r.state !== 'ready' || r.integrity !== 'valid' || r.contentHash !== protectedRow.content_hash || r.generation !== protectedRow.generation) throw new ApplicationError('RESOURCE_STATE_CHANGED','被占用资源状态发生改变'); }
   }
   private view(row: RunRow): CapabilityRunRecord { return { runId: row.run_id,taskId: row.task_id,projectId: row.project_id,runner: row.runner,state: row.state,snapshotHash: row.snapshot_hash,pid: row.pid,processStartedAt: row.process_started_at,startedAt: row.started_at,endedAt: row.ended_at }; }
   get(runId: string): CapabilityRunRecord { return this.view(this.row(runId)); }
-  async reserve(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string}): Promise<OwnedCapabilityRun> {
+  async reserve(input: z.infer<typeof reserveSchema>,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation);}
+  /** Host-only narrowing; never exposed as an RPC or model parameter. */
+  async reserveScoped(input:z.infer<typeof reserveSchema>,appIds:readonly string[],projectionIds:readonly string[]=[],reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation,{appIds:[...appIds],projectionIds:[...projectionIds]});}
+  private async reserveManaged(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string},narrowing?:{appIds:readonly string[];projectionIds:readonly string[]}): Promise<OwnedCapabilityRun> {
     const parsed = reserveSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','运行准备参数无效或含未允许字段');
     if (this.closed) throw new ApplicationError('CANCELED','此宿主的应用运行服务已停止');
     if (reservation && (!z.uuid().safeParse(reservation.runId).success || !z.uuid().safeParse(reservation.ptyId).success)) throw new ApplicationError('INVALID_INPUT','宿主预留运行身份无效');
-    const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';
+    const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';let scope:ApplicationRunScope|undefined;
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       if (this.closed) throw new ApplicationError('CANCELED','运行准备已取消');
       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId); this.gate();
@@ -155,13 +160,16 @@ export class CapabilityRunRegistry {
       if (session.retention !== 'active' || session.pointer.snapshotHash !== value.snapshotHash) throw new ApplicationError('RESOURCE_STATE_CHANGED','原会话版本或保留状态已改变');
       if (!this.store.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(session.snapshot.projectId)) throw new ApplicationError('NOT_FOUND','项目已删除，保留历史但不能启动');
       if (this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(value.taskId)) throw new ApplicationError('RESOURCE_BUSY','原任务仍有运行或待核查占用');
-      this.deps.assertCurrent(session.snapshot,value.bindings); const resources = this.closure(value.taskId), timestamp = now();
+      this.deps.assertCurrent(session.snapshot,value.bindings);const timestamp=now();
+      if(narrowing){const roots=this.sessions.scopedReferencesCoordinated(value.taskId,narrowing.appIds,narrowing.projectionIds),payload={schema:1 as const,runId,taskId:value.taskId,projectId:session.snapshot.projectId,runner:session.snapshot.runner,snapshotHash:value.snapshotHash,selectionHash,ownerInstanceId:this.instanceId,ownerPid:this.host.pid,ownerStartedAt:this.host.startedAt,applications:session.snapshot.packages.filter(p=>narrowing.appIds.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash})),roots,createdAt:timestamp};scope=applicationRunScopeSchema.parse({...payload,evidenceHash:digest(canonicalJson(payload))});}
+      const resources=this.closure(value.taskId,undefined,scope);
       this.store.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,revocation_state) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,'open')").run(runId,value.taskId,session.snapshot.projectId,session.snapshot.runner,timestamp,value.snapshotHash,this.instanceId,this.host.pid,this.host.startedAt,canonicalJson(value.bindings),ptyId);
+      if(scope)this.store.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'application-run-scope',?,'committed',?,?,?)").run(applicationScopeOperationId(runId),this.store.storeId,canonicalJson(scope),timestamp,timestamp);
       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
       for (const r of resources) this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
     }).immediate());
-    const owned: OwnedRun = { selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
+    const owned: OwnedRun = { ...(scope?{scope,scopeProjectionIds:Object.freeze([...narrowing!.projectionIds])}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
     if (this.closed) { await this.stop(runId,'host-shutdown'); throw new ApplicationError('CANCELED','运行准备期间宿主服务已停止'); }
     return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
   }
@@ -222,9 +230,9 @@ export class CapabilityRunRegistry {
         this.currentLifecycle(row,session);this.checkProtection(row,owned);
         const evidence=launchRestrictionSchema.parse({schema:1,runId,taskId:row.task_id,snapshotHash:row.snapshot_hash,selectionHash:owned.selectionHash,reason:cause?.reason??'managed_launch_payload_too_large',issueCode:cause?.issueCode??'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:now()}),text=canonicalJson(evidence);
         this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),evidence.restrictedAt);
-        const resources=this.closure(row.task_id,owned.guard).map(r=>r.resourceId);
+        const resources=this.closure(row.task_id,owned.guard,owned.scope).map(r=>r.resourceId);
         this.store.sqlite.prepare("UPDATE capability_runs SET bindings_json='[]' WHERE run_id=?").run(runId);
-        return owned.guard??{kind:'fixed' as const,snapshotHash:row.snapshot_hash,resources:Object.freeze(resources),verify:()=>this.sessions.verifyResources(row.task_id)};
+        return owned.guard??{kind:'fixed' as const,snapshotHash:row.snapshot_hash,resources:Object.freeze(resources),verify:()=>owned.scope?this.sessions.verifyScopedResources(row.task_id,owned.scope.applications.map(p=>p.appId),owned.scopeProjectionIds??[]):this.sessions.verifyResources(row.task_id)};
       }).immediate();
       owned.guard=guard;
     });
@@ -248,7 +256,7 @@ export class CapabilityRunRegistry {
       if (owned.abort.signal.aborted || !['preparing','prepared'].includes(row.state)) throw new ApplicationError('CANCELED','运行已被撤销，不能继续准备');
       this.currentLifecycle(row,session); this.protect(runId,owned); return row.task_id;
     }).immediate());
-    const guard=this.owned.get(runId)?.guard;if(guard)await guard.verify();else await this.sessions.verifyResources(taskId);
+    const owned=this.owned.get(runId)!,guard=owned.guard;if(guard)await guard.verify();else if(owned.scope)await this.sessions.verifyScopedResources(taskId,owned.scope.applications.map(p=>p.appId),owned.scopeProjectionIds??[]);else await this.sessions.verifyResources(taskId);
     return withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       const { row,owned,session } = this.lifecycle(runId); if (owned.abort.signal.aborted || !['preparing','prepared'].includes(row.state)) throw new ApplicationError('CANCELED','准备期间运行已被撤销');
       this.currentLifecycle(row,session); this.checkProtection(row,owned);
@@ -336,12 +344,12 @@ export class CapabilityRunRegistry {
     const { row,owned,session } = this.mine(runId);
     if (owned.abort.signal.aborted || row.state !== 'active' || row.revocation_state !== 'open') throw new ApplicationError('SCOPE_DENIED','当前运行已停止或尚未激活');
     const bindings = this.current(row,session); this.checkProtection(row,owned);
-    return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal };
+    return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId)}:{}) };
   }
   bridgePreparation(runId: string): RunContext {
     const { row,owned,session } = this.mine(runId);
     if (owned.abort.signal.aborted || !['prepared','active'].includes(row.state)) throw new ApplicationError('SCOPE_DENIED','当前运行不能准备工具桥');
-    const bindings = this.current(row,session); this.checkProtection(row,owned); return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal };
+    const bindings = this.current(row,session); this.checkProtection(row,owned); return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId)}:{}) };
   }
   assertBridge(runId: string,processId: string): RunContext {
     const context = this.assertActive(runId), child = this.processRow(runId,processId);

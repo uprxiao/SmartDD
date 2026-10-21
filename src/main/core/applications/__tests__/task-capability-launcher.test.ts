@@ -550,3 +550,59 @@ describe('ZenTao switch retains already narrowed native-only running work',()=>{
   await x.next();expect(tasks.activePty(loaded.task.id)).toBeNull();expect(ptys.live.has(pty)).toBe(true);expect(tasks.activePty(native.task.id)).toBe(pty);
  },20000);
 });
+
+
+describe('per-application availability does not withdraw healthy fixed tools',()=>{
+ // Direct host/run/Data API coverage, deliberately separate from the still-red
+ // native launch cases below. No native Skill discovery is claimed here.
+ async function startCoreScope(runner:'claude-code'|'codex',unavailable:'zentao'|'mail'){
+  await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const builtin=new BuiltinPackageRegistry(support.store),bad=builtin.assertTrusted(builtin.packages.active(unavailable)!.packageHash);rmSync(join(support.store.root,bad.relativePath),{recursive:true});
+  const task=await create(runner==='codex'?codexId:claudeId),fixed=await managed.sessions.get(task.task.id);tasks.kill(task.task.id);await vi.waitFor(()=>expect(managed.runs.get(task.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+  const scope=await managed.runs.reserveScoped({taskId:task.task.id,snapshotHash:fixed.pointer.snapshotHash,bindings:[]},[unavailable==='zentao'?'mail':'zentao']);await scope.prepare();await scope.cli.arm();reader.identities.set(41000,'darwin-proc-v1:410:0');await scope.cli.attach(41000);
+  return{task,fixed,scope,bad,builtin,close:async()=>{reader.identities.delete(41000);await scope.cli.exited();}};
+ }
+ it.each(['claude-code','codex'] as const)('host API foundation keeps real original Mail draft data callable in a scoped %s run while ZenTao is unavailable',async runner=>{
+  const x=await startCoreScope(runner,'zentao'),before=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(x.task.task.id),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(x.task.task.id);
+  try{const tools=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),result=await tools.call(x.scope.runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}});expect(result.status,JSON.stringify(result)).toBe('ok');expect((await tools.list(x.scope.runId)).tools.map(t=>t.name).sort()).toEqual(Object.keys(x.fixed.snapshot.packages.find(p=>p.appId==='mail')!.toolContractMajors).sort());expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(x.task.task.id)).toEqual(before);expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(x.task.task.id)).toEqual(refs);}finally{await x.close();}
+ });
+ it.each(['claude-code','codex'] as const)('host API foundation refuses forged direct Mail scopes after a same-hash repair in a scoped %s run',async runner=>{
+  const x=await startCoreScope(runner,'mail');
+  try{const source=new CapabilityBundleSource(resolve('out/capability-bundles')),entry=source.index.apps.find(a=>a.hash===x.bad.packageHash)!;expect(entry).toBeTruthy();await x.builtin.install(source,entry);expect(x.builtin.assertTrusted(x.bad.packageHash).packageHash).toBe(x.bad.packageHash);
+   const known=managed.runs.assertActive(x.scope.runId),claim={...known,applicationScope:['mail']},binding={packageHash:x.bad.packageHash,appId:'mail',toolName:'smartdd_mail_draft_list_v1',permission:'mail.draft'},operation={operationId:randomUUID(),requestId:randomUUID(),attempt:1,deadline:Date.now()+1000,signal:new AbortController().signal,packageHash:binding.packageHash,appId:'mail',toolName:binding.toolName,contractMajor:1,connectionId:null},before=sqlite.prepare('SELECT count(*) AS n FROM application_data_operations').get();let executed=0;
+   expect(()=>applications.contexts.withAgent(claim,binding,operation,'read',async()=>{executed++;})).toThrow('本轮此应用能力');expect(()=>applications.contexts.assertAgentReceipt(claim,binding,randomUUID())).toThrow('本轮此应用能力');expect(()=>applications.contexts.withReadReceipt(claim,binding,randomUUID(),async()=>{executed++;})).toThrow('本轮此应用能力');expect(()=>applications.contexts.assertSendOrigin(projectId,x.task.task.id,x.scope.runId)).toThrow('本轮此应用能力');expect(executed).toBe(0);expect(sqlite.prepare('SELECT count(*) AS n FROM application_data_operations').get()).toEqual(before);expect(managed.runs.assertActive(x.scope.runId).applicationScope).toEqual(['zentao']);
+  }finally{await x.close();}
+ });
+
+ beforeEach(()=>{
+  // This composition uses TestPtys: no CLI/MCP child is ever forked. The two
+  // healthy controls deliver only their own synthetic child exits, as in T64.
+  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
+ });
+ it.each(['claude-code','codex'] as const)('allows original Mail draft contracts in a healthy two-app %s run',async runner=>{
+  await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash),operation=mail.manifest.tools.find(t=>t.name.includes('draft')&&t.name.includes('list'))!;
+  expect(operation).toBeTruthy();expect(existsSync(join(support.store.root,zen.relativePath))).toBe(true);
+  const created=await create(runner==='codex'?codexId:claudeId),runId=created.task.runtimeSnapshot!.runId,saved=await managed.sessions.get(created.task.id),before=JSON.stringify(saved.snapshot),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(created.task.id);
+  try{
+   expect(saved.snapshot.packages.map(p=>p.appId).sort()).toEqual(['mail','zentao']);expect(saved.snapshot.packages.find(p=>p.appId==='mail')!.packageHash).toBe(mail.packageHash);
+   const tools=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),result=await tools.call(runId,randomUUID(),{operation:operation.name,contractMajor:operation.contractMajor,connectionId:null,arguments:{}});
+   expect(result).toMatchObject({status:'ok'});expect(ptys.live.size).toBe(1);expect(JSON.stringify((await managed.sessions.get(created.task.id)).snapshot)).toBe(before);expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(created.task.id)).toEqual(refs);
+  }finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+ });
+ it.each(['claude-code','codex'] as const)('keeps healthy Mail draft calls available in a new %s run when only selected ZenTao bytes are missing',async runner=>{
+  await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash),operation=mail.manifest.tools.find(t=>t.name.includes('draft')&&t.name.includes('list'))!;
+  expect(operation).toBeTruthy();rmSync(join(support.store.root,zen.relativePath),{recursive:true});
+  const created=await create(runner==='codex'?codexId:claudeId),runId=created.task.runtimeSnapshot!.runId,saved=await managed.sessions.get(created.task.id),before=JSON.stringify(saved.snapshot),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(created.task.id);
+  try{
+   expect(saved.snapshot.packages.map(p=>p.appId).sort()).toEqual(['mail','zentao']);expect(saved.snapshot.packages.find(p=>p.appId==='mail')!.packageHash).toBe(mail.packageHash);
+   const tools=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),result=await tools.call(runId,randomUUID(),{operation:operation.name,contractMajor:operation.contractMajor,connectionId:null,arguments:{}});
+   expect(result.status,result.status==='error'?result.error.code+': '+result.error.message:'healthy original result').toBe('ok');expect(ptys.live.size).toBe(1);expect(JSON.stringify((await managed.sessions.get(created.task.id)).snapshot)).toBe(before);expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(created.task.id)).toEqual(refs);
+  }finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+ });
+});

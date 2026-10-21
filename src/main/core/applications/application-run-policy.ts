@@ -1,3 +1,4 @@
+import {readApplicationRunScope} from './application-run-scope';
 import { ApplicationError } from '@shared/applications';
 import { capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { canonicalJson,digest } from './manifest';
@@ -28,7 +29,7 @@ export function taskUsesApplication(store:ResourceStore,projectId:string,taskId:
   if(!runs.length)return true;
   for(const run of runs){
    if(run.project_id!==projectId||run.runner!==snapshot.runner||run.snapshot_hash!==row.snapshot_hash)throw unresolved();
-   const restriction=readLaunchRestriction(store,run.run_id,taskId,selected);if(!restriction)return true;
+   const restriction=readLaunchRestriction(store,run.run_id,taskId,selected);if(!restriction){const scope=readApplicationRunScope(store,run.run_id,snapshot);if(!scope||scope.applications.some(p=>p.appId===appId))return true;continue;}
    // Native ID binding preserves the immutable initial narrowing receipt. Its
    // older hash must still name a recorded version of this exact selection.
    if(restriction.snapshotHash!==row.snapshot_hash){

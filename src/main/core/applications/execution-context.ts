@@ -1,3 +1,4 @@
+import {assertRunApplication} from './application-run-scope';
 import { randomUUID } from 'node:crypto';
 import type { IpcMainInvokeEvent } from 'electron';
 import { z } from 'zod';
@@ -85,7 +86,7 @@ export class ApplicationExecutionContexts {
   }
   assertSendOrigin(projectId:string,taskId:string|null,runId:string|null):AbortSignal|null{
     if(runId===null){if(taskId!==null)throw new ApplicationError('SCOPE_DENIED','发送来源运行缺失');return null;}
-    const current=this.deps.assertRun(runId);if(current.run.projectId!==projectId||current.run.taskId!==taskId||!current.snapshot.packages.some(pack=>pack.appId==='mail'&&pack.allowedOperations.includes('mail.send')))throw new ApplicationError('SCOPE_DENIED','原发送运行或邮件权限已失效');return current.signal;
+    const current=this.deps.assertRun(runId);assertRunApplication(current,'mail');if(current.run.projectId!==projectId||current.run.taskId!==taskId||!current.snapshot.packages.some(pack=>pack.appId==='mail'&&pack.allowedOperations.includes('mail.send')))throw new ApplicationError('SCOPE_DENIED','原发送运行或邮件权限已失效');return current.signal;
   }
   retainSendActivity(actor:MailSendActor,intentId:string,identity:ProcessIdentity,work:()=>Promise<unknown>):Promise<unknown>{
     const context=this.sendScope(actor),application=this.builtin.assertTrusted(context.packageHash);
@@ -150,10 +151,10 @@ export class ApplicationExecutionContexts {
     return this.begin(application,{operationId:randomUUID(),callerKind:'ui',scopeKind:'connection-management',projectId:input.projectId??null,taskId:null,runId:null,jobId:null,parentOperationId:null,appId:input.appId,packageHash:application.packageHash,dataApi:1,action:input.action,semantics:input.semantics,allowedOperations:[input.action],signal:input.signal??new AbortController().signal,startedAt:new Date(this.now()).toISOString()},()=>this.deps.requireSender(sender),null,work,true);
   }
   withAgent<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operation:ApplicationOperationContext,semantics:'read'|'write',work:(context:ApplicationExecutionContext)=>Promise<T>):Promise<T>{
-    const known=this.deps.assertRun(claim.run.runId),selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
+    const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
     if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selected.toolContractMajors[binding.toolName]!==operation.contractMajor||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');
     const application=this.builtin.assertTrusted(binding.packageHash),appId=application.appId as ApplicationId,stamp=this.selections.policyStamp(known.run.projectId,appId);
-    const check=()=>{const current=this.deps.assertRun(known.run.runId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};
+    const check=()=>{const current=this.deps.assertRun(known.run.runId);assertRunApplication(current,binding.appId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};
     return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,work,false);
   }
   withIndex<T>(parent:ApplicationExecutionContext,permission:'mail.read'|'zentao.read',work:(context:ApplicationExecutionContext)=>Promise<T>):Promise<T>{
@@ -199,7 +200,7 @@ export class ApplicationExecutionContexts {
   }
   private end(context:ApplicationExecutionContext,state:string,code:string|null):Promise<void>{return withResourceLock(this.store.root,()=>{this.store.sqlite.prepare('UPDATE application_data_operations SET state=?,error_code=?,ended_at=? WHERE operation_id=?').run(state,code,new Date(this.now()).toISOString(),context.operationId);});}
   assertAgentReceipt(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operationId:string):void{
-    const known=this.deps.assertRun(claim.run.runId),selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
+    const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
     if(!selected||!selected.allowedOperations.includes(binding.permission))throw new ApplicationError('SCOPE_DENIED','当前运行不能读取该原业务回执');
     const row=this.store.sqlite.prepare('SELECT * FROM application_data_operations WHERE operation_id=?').get(operationId) as {caller_kind:string;scope_kind:string;project_id:string;task_id:string;run_id:string;job_id:null;parent_operation_id:null;app_id:ApplicationId;package_hash:string;action:string;semantics:'read'|'write';scope_hash:string;targets_json:string}|undefined;
     if(!row||row.caller_kind!=='agent-run'||row.project_id!==known.run.projectId||row.task_id!==known.run.taskId||row.run_id!==known.run.runId||row.app_id!==binding.appId||row.package_hash!==binding.packageHash||row.action!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','回执不属于当前真实运行及固定工具');
@@ -210,7 +211,7 @@ export class ApplicationExecutionContexts {
   }
   withReadReceipt<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,originalOperationId:string,work:(context:ApplicationExecutionContext)=>Promise<T>,signal?:AbortSignal):Promise<T>{
     this.assertAgentReceipt(claim,binding,originalOperationId);
-    const known=this.deps.assertRun(claim.run.runId),application=this.builtin.assertTrusted(binding.packageHash),id=randomUUID();
+    const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const application=this.builtin.assertTrusted(binding.packageHash),id=randomUUID();
     const check=()=>this.assertAgentReceipt(known,binding,originalOperationId);
     return this.begin(application,{operationId:id,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId:application.appId as ApplicationId,packageHash:application.packageHash,dataApi:1,action:binding.toolName+'.receipt',semantics:'read',allowedOperations:[binding.permission],signal:AbortSignal.any([known.signal,...(signal?[signal]:[])]),startedAt:new Date(this.now()).toISOString()},check,{receiptOf:originalOperationId},async context=>{
       await withResourceLock(this.store.root,()=>{this.assertActive(context);this.store.sqlite.prepare('INSERT INTO application_read_receipt_checks VALUES(?,?,?)').run(id,originalOperationId,new Date(this.now()).toISOString());});return work(context);

@@ -172,6 +172,21 @@ export class CapabilitySessionRegistry {
       else this.deps.verifyExtraResource(resource,current.snapshot);
     }
   }
+  /** Host-only active roots. Full S and its long-term refs remain untouched. */
+  scopedReferencesCoordinated(taskId:string,appIds:readonly string[],projectionIds:readonly string[]=[]):SessionResourceReference[]{
+    const current=this.inspectCoordinated(taskId),snapshot=current.snapshot;
+    if(snapshot.legacyBinding||snapshot.provenance!=='created'||!appIds.length||appIds.length>32||new Set(appIds).size!==appIds.length||appIds.some(id=>!snapshot.packages.some(p=>p.appId===id))||new Set(projectionIds).size!==projectionIds.length||projectionIds.length>4096)throw new ApplicationError('INVALID_INPUT','本轮应用范围必须来自原固定选择');
+    this.validatePackages({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))});
+    const expected=this.expectedSources({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))}),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
+    for(const [id,source]of expected){const ref=all.find(r=>r.refId===id);if(!ref||ref.refKind!==source.kind||ref.refHash!==source.hash)throw new ApplicationError('SNAPSHOT_CORRUPT','本轮所需原资源引用缺失或身份不同');roots.push(ref);}
+    for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
+    return roots.sort((a,b)=>compareCodePoints(a.refId,b.refId));
+  }
+  async verifyScopedResources(taskId:string,appIds:readonly string[],projectionIds:readonly string[]):Promise<void>{
+    const current=await this.get(taskId);if(current.retention!=='active')throw new ApplicationError('SESSION_ON_HOLD','原会话能力处于保留状态');
+    const roots=this.scopedReferencesCoordinated(taskId,appIds,projectionIds);
+    for(const ref of roots){const resource=this.store.get(ref.refId);if(resource.kind!==ref.refKind||resource.contentHash!==ref.refHash||resource.relativePath!==ref.relativePath||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_STATE_CHANGED','本轮固定资源身份或状态已改变');if(ref.refKind==='application-package'){const pack=this.packages.get(ref.refHash);verifyPackageTree(join(this.store.root,ref.relativePath),pack,this.store.storeId);}else if(ref.refKind==='runtime')this.runtimes.verify(ref.refHash);else this.deps.verifyExtraResource(resource,current.snapshot);}
+  }
   async addProjectionReference(taskId: string,expectedHash: string,resourceId: string): Promise<void> {
     const current = await this.get(taskId), resource = this.store.get(resourceId);
     if (!['session-projection','agent-projection'].includes(resource.kind) || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','投影未完成发布');

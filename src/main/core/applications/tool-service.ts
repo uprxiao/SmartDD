@@ -1,3 +1,4 @@
+import {assertRunApplication} from './application-run-scope';
 import {applicationConnectionNotice} from './application-run-policy';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
@@ -51,6 +52,7 @@ export class ApplicationToolService {
   private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true): SelectedTool {
     const selected = context.snapshot.packages.find(p => Object.hasOwn(p.toolContractMajors,call.operation));
     if (!selected || selected.toolContractMajors[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该工具契约');
+    assertRunApplication(context,selected.appId);
     const application = this.packages.get(selected.packageHash), declaration = application.manifest.tools.find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
     if (application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
     const resource = this.store.get(application.resourceId); if (verifyBytes && (resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定应用包尚不可用');
@@ -67,6 +69,7 @@ export class ApplicationToolService {
       for (const application of context.snapshot.packages) {
         const group: BridgeTool[] = [];
         try {
+          assertRunApplication(context,application.appId);
           const manifest = this.packages.get(application.packageHash).manifest;
           const permitted = Object.entries(application.toolContractMajors).filter(([name]) => application.allowedOperations.includes(manifest.tools.find(t => t.name === name)!.permission));
           for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false).tool);

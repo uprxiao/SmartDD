@@ -1,0 +1,22 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/application-resource-availability.test.ts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-app-isolation-at-20261022/inspection-final-report.json
+
+[1022/012556.661561:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1022/012557.300124:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > checks exactly selected identities without changing SQL or the selection 592ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps Mail ready when only the fixed ZenTao package directory is absent 717ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps ZenTao ready when only the fixed Mail package contents are corrupted 381ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > reports shared runtime absence for every dependent app without dropping the fixed packages 418ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > does not substitute another app or version for a mismatched original identity 335ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > does not swallow cancellation or unexpected inspector errors as an ordinary unavailable app 406ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  01:25:57
+   Duration  3.98s (transform 577ms, setup 0ms, import 804ms, tests 2.85s, environment 0ms)
+
+JSON report written to /private/tmp/m10-app-isolation-at-20261022/inspection-final-report.json

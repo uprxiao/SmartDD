@@ -1,0 +1,24 @@
+import {mkdtempSync,rmSync,writeFileSync,readFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import Database from 'better-sqlite3';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+import {ApplicationError} from '@shared/applications';
+import {runBundledMigrations} from '../../../db/migrations';
+import {ResourceStore} from '../resource-store';
+import {CapabilityBundleSource} from '../bundle-source';
+import {BuiltinPackageRegistry} from '../builtin-package-registry';
+import {RuntimeRegistry} from '../runtime-registry';
+import {inspectApplicationResources} from '../application-resource-availability';
+let root:string,sqlite:Database.Database,store:ResourceStore,builtin:BuiltinPackageRegistry,source:CapabilityBundleSource,selected:Parameters<typeof inspectApplicationResources>[1];
+beforeEach(async()=>{root=mkdtempSync(join(tmpdir(),'willyou-m10-app-availability-'));sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);store=new ResourceStore(sqlite,root);builtin=new BuiltinPackageRegistry(store);source=new CapabilityBundleSource(resolve('out/capability-bundles'));await new RuntimeRegistry(store).install(source.runtime());const values=[];for(const appId of ['zentao','mail']){const entry=source.index.apps.find(p=>p.appId===appId&&p.version==='1.0.0')!;expect(entry).toBeTruthy();const installed=await builtin.install(source,entry);values.push({appId:installed.appId,version:installed.version,packageHash:installed.packageHash,runtimeHash:installed.manifest.runtime.hash});}selected=values;});
+afterEach(()=>{vi.restoreAllMocks();sqlite.close();rmSync(root,{recursive:true,force:true});});
+const inspect=()=>inspectApplicationResources(store,selected);
+describe('fixed application resource availability is independent and read-only',()=>{
+ it('checks exactly selected identities without changing SQL or the selection',()=>{const before=sqlite.serialize(),raw=JSON.stringify(selected);expect(inspect()).toEqual(selected.map(p=>({appId:p.appId,packageHash:p.packageHash,runtimeHash:p.runtimeHash,state:'ready',code:null})));expect(inspectApplicationResources(store,[])).toEqual([]);expect(sqlite.serialize().equals(before)).toBe(true);expect(JSON.stringify(selected)).toBe(raw);});
+ it('keeps Mail ready when only the fixed ZenTao package directory is absent',()=>{const pack=builtin.assertTrusted(selected[0].packageHash);rmSync(join(store.root,pack.relativePath),{recursive:true});const before=sqlite.serialize(),result=inspect();expect(result[0]).toMatchObject({appId:'zentao',state:'unavailable'});expect(result[1]).toMatchObject({appId:'mail',state:'ready',code:null});expect(sqlite.serialize().equals(before)).toBe(true);});
+ it('keeps ZenTao ready when only the fixed Mail package contents are corrupted',()=>{const pack=builtin.assertTrusted(selected[1].packageHash),path=join(store.root,pack.relativePath,pack.manifest.files[0].path);writeFileSync(path,Buffer.concat([readFileSync(path),Buffer.from('changed-private-fixture')]));const result=inspect();expect(result[0]).toMatchObject({appId:'zentao',state:'ready',code:null});expect(result[1]).toMatchObject({appId:'mail',state:'unavailable'});});
+ it('reports shared runtime absence for every dependent app without dropping the fixed packages',()=>{const runtime=sqlite.prepare('SELECT relative_path FROM capability_resources WHERE resource_id=?').get('runtime:'+selected[0].runtimeHash) as {relative_path:string};rmSync(join(store.root,runtime.relative_path),{recursive:true});const result=inspect();expect(result.map(p=>p.state)).toEqual(['unavailable','unavailable']);expect(result.map(p=>p.packageHash)).toEqual(selected.map(p=>p.packageHash));});
+ it('does not substitute another app or version for a mismatched original identity',()=>{const changed=selected.map(p=>({...p}));changed[0].version='9.9.9';expect(inspectApplicationResources(store,changed)[0]).toMatchObject({appId:'zentao',state:'unavailable',code:'SNAPSHOT_CORRUPT'});changed[0]={...selected[0],packageHash:selected[1].packageHash};const result=inspectApplicationResources(store,changed);expect(result[0].code).toBe('SNAPSHOT_CORRUPT');expect(result[1].state).toBe('ready');expect(()=>inspectApplicationResources(store,[selected[0],selected[0]])).toThrow('重复身份');});
+ it('does not swallow cancellation or unexpected inspector errors as an ordinary unavailable app',()=>{const spy=vi.spyOn(BuiltinPackageRegistry.prototype,'assertTrusted');spy.mockImplementationOnce(()=>{throw new ApplicationError('CANCELED','only fixture cancellation');});expect(inspect).toThrow('only fixture cancellation');spy.mockImplementationOnce(()=>{throw new Error('unexpected fixture inspector failure');});expect(inspect).toThrow('unexpected fixture inspector failure');});
+});
