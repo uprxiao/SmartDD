@@ -106,6 +106,25 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    for(const table of ['application_catalog_state','application_connections','application_project_settings'])expect(sqlite.prepare(`SELECT count(*) AS n FROM ${table}`).get()).toEqual({n:0});
    const approvalsBefore=approvals();await new AgentSupportService(store,capabilities,output).initialize();expect(approvals()).toEqual(approvalsBefore);expect(builtin.packages.list()).toHaveLength(2);
  });
+ it('T64 repairs an absent original package through trusted startup without replacing an explicitly newer default',async()=>{
+   const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),capabilities=new CapabilityService({db,projects:new ProjectService(db,secrets),secrets,userData:root});cleanups.push(()=>capabilities.dispose());
+   await new AgentSupportService(store,capabilities,output).initialize();const old=builtin.assertTrusted(entry('zentao').hash),nextDistribution=changedDistribution('zentao','2.0.0'),next=await builtin.install(nextDistribution,nextDistribution.index.apps.find(a=>a.appId==='zentao')!);
+   await builtin.packages.activate(next.packageHash,builtin.packages.active('zentao')!.generation);const selected=builtin.packages.active('zentao'),proof=approvals();
+   rmSync(join(store.root,old.relativePath),{recursive:true});const restarted=new AgentSupportService(store,capabilities,output);await restarted.initialize();
+   expect(restarted.status().state).toBe('ready');expect(restarted.status().applications.find(a=>a.appId==='zentao')).toMatchObject({hash:old.packageHash,filesReady:true,defaultForNewSessions:false,errorCode:null});
+   expect(builtin.assertTrusted(old.packageHash)).toEqual(old);expect(builtin.packages.active('zentao')).toEqual(selected);expect(approvals()).toEqual(proof);
+   expect(readFileSync(join(store.root,old.relativePath,'adapter/operations.json'))).toEqual(bundle('zentao').files['adapter/operations.json']);
+   expect(sqlite.prepare("SELECT state FROM capability_resource_operations WHERE kind='restore-application-package'").all()).toEqual([{state:'committed'}]);
+   for(const table of ['application_catalog_state','application_connections','application_project_settings'])expect(sqlite.prepare(`SELECT count(*) AS n FROM ${table}`).get()).toEqual({n:0});
+ });
+ it('T64 rejects an altered trusted-distribution copy before repairing a missing original package',async()=>{
+   const old=await install('zentao'),proof=approvals(),target=join(store.root,old.relativePath),copy=join(root,'unusable-repair-source');cpSync(output,copy,{recursive:true});
+   writeFileSync(join(copy,entry('zentao').path,'skills/'+bundle('zentao').manifest.skills[0].id+'/SKILL.md'),'altered repair content');rmSync(target,{recursive:true});
+   await expect(builtin.install(new CapabilityBundleSource(copy),entry('zentao'))).rejects.toMatchObject({code:'HASH_MISMATCH'});
+   expect(existsSync(target)).toBe(false);expect(approvals()).toEqual(proof);expect(store.get(old.resourceId).state).toBe('ready');
+   expect(sqlite.prepare("SELECT count(*) AS n FROM capability_resource_operations WHERE kind='restore-application-package'").get()).toEqual({n:0});
+   expect((await install('zentao')).packageHash).toBe(old.packageHash);expect(builtin.assertTrusted(old.packageHash)).toEqual(old);
+ });
  it('isolates a damaged package and keeps the other package available with a precise partial state',async()=>{
    const copy=join(root,'damaged-distribution');cpSync(output,copy,{recursive:true});writeFileSync(join(copy,entry('mail').path,'skills/work-assistant/SKILL.md'),'changed');
    const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),capabilities=new CapabilityService({db,projects:new ProjectService(db,secrets),secrets,userData:root});cleanups.push(()=>capabilities.dispose());

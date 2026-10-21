@@ -1,0 +1,33 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/package-restoration-runs.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/package-restoration-runs.test.ts (2 tests | 2 failed) 180ms
+     × T64 waits for the complete preparing consumer lifetime and preserves the fixed session 112ms
+     × T64 waits for the complete bridge-survives-cli consumer lifetime and preserves the fixed session 67ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/package-restoration-runs.test.ts > missing-package restoration and actual run resource protection > T64 waits for the complete preparing consumer lifetime and preserves the fixed session
+ FAIL  src/main/core/applications/__tests__/package-restoration-runs.test.ts > missing-package restoration and actual run resource protection > T64 waits for the complete bridge-survives-cli consumer lifetime and preserves the fixed session
+TypeError: Cannot read properties of undefined (reading 'snapshotHash')
+ ❯ src/main/core/applications/__tests__/package-restoration-runs.test.ts:48:107
+     46|       expect(f.sqlite.prepare('SELECT * FROM capability_session_refs W…
+     47|       const resumed = await f.create();
+     48|       try { await resumed.prepare(); expect(f.runs.get(resumed.runId).…
+       |                                                                                                           ^
+     49|       finally { await resumed.stop(); }
+     50|       expect(f.sqlite.prepare("SELECT count(*) AS n FROM capability_re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  12:52:23
+   Duration  485ms (transform 141ms, setup 0ms, import 226ms, tests 180ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

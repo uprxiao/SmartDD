@@ -99,6 +99,55 @@ export class ResourceStore {
     try { return await action(directory); }
     finally { await withResourceLock(this.root, () => this.endLease(leaseId)); }
   }
+  /** Absence is repairable; an occupied or linked path is never an empty target. */
+  private missingTarget(spec: PublishResource): boolean {
+    try {
+      const root = lstatSync(this.root), owner = join(this.root, '.store-id.json'), marker = lstatSync(owner);
+      if (!root.isDirectory() || root.isSymbolicLink() || !marker.isFile() || marker.nlink !== 1) throw new Error();
+      const identity = JSON.parse(readFileSync(owner, 'utf8'));
+      if (identity.schema !== 1 || identity.storeId !== this.storeId) throw new Error();
+    } catch { throw new ApplicationError('OWNERSHIP_CONFLICT', '原资源库身份已变化，保留原目录'); }
+    let directory = this.root;
+    for (const part of spec.relativePath.split('/')) {
+      directory = join(directory, part);
+      let stat;
+      try { stat = lstatSync(directory); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return true; throw error; }
+      if (!stat.isDirectory() || stat.isSymbolicLink()) throw new ApplicationError('OWNERSHIP_CONFLICT', '原资源路径被文件或链接占用，不能修复覆盖');
+    }
+    return false;
+  }
+  /** Republish missing immutable bytes under the same identity. Historical refs stay intact. */
+  private async restoreMissing(spec: PublishResource, signal?: AbortSignal): Promise<ResourceRecord> {
+    const operationId = randomUUID(); let leaseId = '', present = false;
+    await withResourceLock(this.root, () => this.sqlite.transaction(() => {
+      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); this.assertDependencies(spec.dependencies);
+      if (row.state !== 'ready' || row.integrity !== 'valid') throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源已有发布或清理操作，先恢复原操作');
+      const state = this.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
+      if (state && (state.store_id !== this.storeId || state.maintenance_state !== 'ready')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源库正在维护或待恢复');
+      const dependencies = (this.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(spec.resourceId) as {dependency_id:string}[]).map(r => r.dependency_id);
+      if (canonicalJson(dependencies) !== canonicalJson([...spec.dependencies].sort())) throw new ApplicationError('RESOURCE_STATE_CHANGED', '原资源依赖已变化，不能修复');
+      // A concurrent successful repair may have restored the path. Verify it outside the transaction.
+      if (!this.missingTarget(spec)) { present = true; leaseId = this.lease(spec.resourceId, operationId); return; }
+      const consumers = this.sqlite.prepare(`WITH RECURSIVE consumers(id) AS (VALUES(?) UNION SELECT d.resource_id FROM capability_resource_dependencies d JOIN consumers c ON d.dependency_id=c.id JOIN capability_resources r ON r.resource_id=d.resource_id WHERE r.state<>'removed') SELECT id FROM consumers`).all(spec.resourceId) as {id:string}[];
+      if (consumers.length > 10000) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源依赖占用超过核查预算');
+      const ids = consumers.map(r => r.id), marks = ids.map(() => '?').join(',');
+      const busy = this.sqlite.prepare(`SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND (l.resource_id IN (${marks}) OR EXISTS(SELECT 1 FROM capability_lease_resources p WHERE p.lease_id=l.lease_id AND p.resource_id IN (${marks}))) LIMIT 1`).get(...ids, ...ids);
+      if (busy) throw new ApplicationError('RESOURCE_BUSY', '原资源或依赖仍有占用，暂不修复缺失目录');
+      const now = new Date().toISOString();
+      this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'restore-' + spec.kind, this.storeId, canonicalJson({resourceId:spec.resourceId,hash:spec.contentHash,relativePath:spec.relativePath,dependencies:[...spec.dependencies].sort(),instanceId:this.instanceId,pid:process.pid}), now, now);
+      this.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',generation=generation+1,operation_id=? WHERE resource_id=? AND state='ready'").run(operationId, spec.resourceId);
+      leaseId = this.lease(spec.resourceId, operationId);
+    }).immediate(), {signal});
+    if (present) {
+      try { spec.verify(join(this.root, spec.relativePath)); return this.get(spec.resourceId); }
+      finally { await withResourceLock(this.root, () => this.endLease(leaseId)); }
+    }
+    this.activeOperations.add(operationId);
+    try { this.checkpoint?.('registered'); await this.finish(spec, operationId, leaseId, signal); return this.get(spec.resourceId); }
+    catch (error) { await this.recordFailure(spec.resourceId, operationId, leaseId, error); throw error; }
+    finally { this.activeOperations.delete(operationId); }
+  }
   async publish(spec: PublishResource, signal?: AbortSignal): Promise<ResourceRecord> {
     this.checkSpec(spec);
     const operationId = randomUUID();
@@ -129,8 +178,12 @@ export class ResourceStore {
       leaseId = this.lease(spec.resourceId, operationId);
     }).immediate(), { signal });
     if (reuse) {
+      let failure: unknown, missing = false;
       try { spec.verify(join(this.root, spec.relativePath)); return this.get(spec.resourceId); }
+      catch (error) { failure = error; missing = this.missingTarget(spec); }
       finally { await withResourceLock(this.root, () => this.endLease(leaseId)); }
+      if (!missing) throw failure;
+      return this.restoreMissing(spec, signal);
     }
     this.activeOperations.add(operationId);
     try {
