@@ -1,0 +1,539 @@
+{
+  "schema": "m10-packaged-native-task-checkpoint-v1",
+  "recordedAt": "2026-10-21T08:38:45.189505+08:00",
+  "requirement": "M10 R1.6 incl12.21; full goal remains active",
+  "sourceCommit": "3a23d7524758e1beaf9309335aa8f78ed4e1055c",
+  "sourceBranch": "feature/0.0.2",
+  "app": "/private/tmp/m10-native-config-s2-package-20261021/mac-arm64/WillYou.app",
+  "asarSha256": "1a578d44103a65f0dd19e2beb0726cbc32bc2cfa954b5bdef95d6f8e705ca900",
+  "embeddedBuild": {
+    "commit": null,
+    "dirty": true
+  },
+  "nativeCLI": {
+    "version": "codex-cli 0.162.1",
+    "path": "/Users/liubu/.local/bin/codex"
+  },
+  "coverage": {
+    "fullCasesPassed": 1,
+    "fullCasesTotal": 72,
+    "onlyFullPassed": "T42",
+    "greenAppCheckpoints": 6,
+    "additionalIdentityCheckpointInPartialResumeRun": 1,
+    "uniquePartialCheckpoints": 7,
+    "countsMustNotBeAddedAcrossRuns": true,
+    "mappings": [
+      "T18 local draft only",
+      "T55 profile business fields only; raw native profile hash changes",
+      "T56 real native packaged MCP only; no full matrix",
+      "T58 same-ID/fixed-snapshot stop-resume only; resumed call pending",
+      "T69 actual tool evidence stays separate from unverified Skill discovery/read"
+    ]
+  },
+  "runs": [
+    {
+      "label": "observer-v1",
+      "root": "/private/tmp/willyou-m10-native-t-UgXD11",
+      "status": "failed",
+      "failedStage": "native-task-response",
+      "passedCheckpoints": 2,
+      "requests": 1,
+      "error": "Error: TypeError: Cannot read properties of undefined (reading 'output')\n    at <anonymous>:1:13",
+      "result": "observer-v1/result.json"
+    },
+    {
+      "label": "profile-hash-v2",
+      "root": "/private/tmp/willyou-m10-native-t-qIQbtq",
+      "status": "failed",
+      "failedStage": "session-diagnostics",
+      "passedCheckpoints": 3,
+      "requests": 2,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n  'model=\"m10-ui-profile-model\"\\n' +\n+   'skills.config=[{path=\"/private/tmp/willyou-m10-native-t-qIQbtq/home/.agents/skills/m10-owned-config/SKILL.md\",enabled=false}]\\n' +\n+   '\\n' +\n+   '[tui]\\n' +\n+   'screen_reader_detection_done = true\\n' +\n+   '\\n' +\n+   '[tui.model_availability_nux]\\n' +\n+   '\"gpt-6.1-sol\" = 1\\n'\n-   'skills.config=[{path=\"/private/tmp/willyou-m10-native-t-qIQbtq/home/.agents/skills/m10-owned-config/SKILL.md\",enabled=false}]\\n'\n",
+      "result": "profile-hash-v2/result.json"
+    },
+    {
+      "label": "native-counter-v3",
+      "root": "/private/tmp/willyou-m10-native-t-NwoVlh",
+      "status": "failed",
+      "failedStage": "session-diagnostics",
+      "passedCheckpoints": 3,
+      "requests": 2,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n  'model=\"m10-ui-profile-model\"\\n' +\n    'skills.config=[{path=\"/private/tmp/willyou-m10-native-t-NwoVlh/home/.agents/skills/m10-owned-config/SKILL.md\",enabled=false}]\\n' +\n    '\\n' +\n    '[tui]\\n' +\n    'screen_reader_detection_done = true\\n' +\n    '\\n' +\n    '[tui.model_availability_nux]\\n' +\n+   '\"gpt-6.1-sol\" = 2\\n'\n-   '\"gpt-6.1-sol\" = 1\\n'\n",
+      "result": "native-counter-v3/result.json"
+    },
+    {
+      "label": "mcp-fields-v1",
+      "root": "/private/tmp/willyou-m10-native-t-NEzKBX",
+      "status": "failed",
+      "failedStage": "session-diagnostics",
+      "passedCheckpoints": 3,
+      "requests": 3,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- null\n",
+      "result": "mcp-fields-v1/result.json"
+    },
+    {
+      "label": "mcp-ui-green",
+      "root": "/private/tmp/willyou-m10-native-t-KmVA2j",
+      "status": "passed-partial",
+      "failedStage": null,
+      "passedCheckpoints": 6,
+      "requests": 3,
+      "error": null,
+      "result": "mcp-ui-green/result.json"
+    },
+    {
+      "label": "resume-dom-v1",
+      "root": "/private/tmp/willyou-m10-native-t-9g46pD",
+      "status": "failed",
+      "failedStage": "native-session-binding",
+      "passedCheckpoints": 6,
+      "requests": 3,
+      "error": "Error: Object reference chain is too long",
+      "result": "resume-dom-v1/result.json"
+    },
+    {
+      "label": "resume-view-v2",
+      "root": "/private/tmp/willyou-m10-native-t-ivOc5n",
+      "status": "failed",
+      "failedStage": "ui-stop",
+      "passedCheckpoints": 6,
+      "requests": 3,
+      "error": "Error: Electron test condition timed out",
+      "result": "resume-view-v2/result.json"
+    },
+    {
+      "label": "resume-submit-v3",
+      "root": "/private/tmp/willyou-m10-native-t-MlGycr",
+      "status": "failed",
+      "failedStage": "resumed-native-tool",
+      "passedCheckpoints": 7,
+      "requests": 3,
+      "error": "Error: Bounded state wait timed out: resumed-native-tool",
+      "result": "resume-submit-v3/result.json"
+    },
+    {
+      "label": "resume-focus-v4",
+      "root": "/private/tmp/willyou-m10-native-t-qRHsPb",
+      "status": "deferred-focus-loss",
+      "failedStage": "actual-draft-ui",
+      "passedCheckpoints": 4,
+      "requests": 3,
+      "error": "Error: This isolated App lost focus; yield the M10 UI batch for the other test.",
+      "result": "resume-focus-v4/result.json"
+    },
+    {
+      "label": "standalone-native-control",
+      "root": "/private/tmp/willyou-m10-native-t-avxX82",
+      "status": "passed-with-boundaries",
+      "failedStage": null,
+      "passedCheckpoints": 1,
+      "requests": 1,
+      "error": null,
+      "result": "standalone-native-control/result.json"
+    }
+  ],
+  "facts": [
+    "Actual App composer created Task; installed Codex called actual packaged M10 MCP to persist one draft with no recipients, no SMTP, then actual App opened the same draft body.",
+    "Actual UI stop and header resume retain Task/native session ID/fixed capability snapshot and create a new run. Subsequent native tool read remains unpassed.",
+    "Standalone actual Codex TUI without WillYou reproduced profile notice-only writes. Raw profile hash preservation is not passed; native business configuration and base bytes are separately checked.",
+    "Last attempt yielded on focus loss at draft UI, owned App closed, no immediate UI reacquisition. Enter text fix remains unverified.",
+    "All1962 frozen build inputs and source4 hashes unchanged; S2 reused; no production code changes this round."
+  ],
+  "boundaries": [
+    "Synthetic local Responses provider chooses exact function; not evidence of real-model autonomous Skill discovery/read or planning.",
+    "No real mail/source credentials, Foxmail/native format, external models or SMTP submission; fixtures are prerequisites, not UI setup acceptance.",
+    "No automatic M4/schema0 migration, original owner/T-H restore, full system/managed config/trust/argv-env budget validation or72-case completion claim.",
+    "Independent native root and userData are fixture scope; does not claim absence or compatibility of system/managed config layers.",
+    "No install, release, merge, push or tag; M9 original worktree/process not mutated."
+  ],
+  "officialProtocolReferences": [
+    "https://developers.openai.com/api/docs/guides/tools-tool-search",
+    "https://developers.openai.com/api/reference/resources/responses/methods/create"
+  ],
+  "artifacts": [
+    {
+      "path": "observer-v1/result.json",
+      "bytes": 3825,
+      "sha256": "8e459bfb5f1701f8c1d443d1e4546dbf87282ffa02a9e0660c22fec2cf309bb6",
+      "origin": "/private/tmp/willyou-m10-native-t-UgXD11/result.json"
+    },
+    {
+      "path": "observer-v1/electron.txt",
+      "bytes": 719,
+      "sha256": "4d30a666567e03d4b55c6b6c24bc17cf32a851a3a80d799a0e1fa2fa69c67268",
+      "origin": "/private/tmp/willyou-m10-native-t-UgXD11/electron.txt"
+    },
+    {
+      "path": "profile-hash-v2/result.json",
+      "bytes": 13844,
+      "sha256": "3febc803af5043e8a2cec20795205b77443ea37f09fbde19f5aa3853f896e077",
+      "origin": "/private/tmp/willyou-m10-native-t-qIQbtq/result.json"
+    },
+    {
+      "path": "profile-hash-v2/electron.txt",
+      "bytes": 719,
+      "sha256": "1befa331681bd848d4dadf691ff2059d64357af12e46956bdf7dd3c470bf2240",
+      "origin": "/private/tmp/willyou-m10-native-t-qIQbtq/electron.txt"
+    },
+    {
+      "path": "profile-hash-v2/terminal-failure.txt",
+      "bytes": 13675,
+      "sha256": "5781db0f25cf3ce26e9b47837850c28e9e383336f86df5a703b206b6bd69ab43",
+      "origin": "/private/tmp/willyou-m10-native-t-qIQbtq/terminal-failure.txt"
+    },
+    {
+      "path": "profile-hash-v2/failure.png",
+      "bytes": 185732,
+      "sha256": "c4da0545aae22367382cc6b4974726d187ec98574ef65c73220832c1fe4b4f49",
+      "origin": "/private/tmp/willyou-m10-native-t-qIQbtq/failure.png"
+    },
+    {
+      "path": "native-counter-v3/result.json",
+      "bytes": 13787,
+      "sha256": "7dabf8682a62d3cb1c4413876b2b69f07a006a474abfe50488280a9a3ab7c140",
+      "origin": "/private/tmp/willyou-m10-native-t-NwoVlh/result.json"
+    },
+    {
+      "path": "native-counter-v3/electron.txt",
+      "bytes": 719,
+      "sha256": "4c9a47c860b0050de1befb60d4da691c31b5d30a07f7bfee8194bbd42d3efdb8",
+      "origin": "/private/tmp/willyou-m10-native-t-NwoVlh/electron.txt"
+    },
+    {
+      "path": "native-counter-v3/terminal-failure.txt",
+      "bytes": 13436,
+      "sha256": "5bf67259c9ad1e65519ef5f50b1c151598c4f841747ebbab0100496617b889c0",
+      "origin": "/private/tmp/willyou-m10-native-t-NwoVlh/terminal-failure.txt"
+    },
+    {
+      "path": "native-counter-v3/failure.png",
+      "bytes": 186279,
+      "sha256": "2a20014d5134e25a9d8cf2d53644d507990d3b8012bff1e553392f5ef306a739",
+      "origin": "/private/tmp/willyou-m10-native-t-NwoVlh/failure.png"
+    },
+    {
+      "path": "mcp-fields-v1/result.json",
+      "bytes": 17745,
+      "sha256": "f59cfcd1509319227381d50236c272e96771ea726f11b42e7a06129c35b12b1c",
+      "origin": "/private/tmp/willyou-m10-native-t-NEzKBX/result.json"
+    },
+    {
+      "path": "mcp-fields-v1/electron.txt",
+      "bytes": 719,
+      "sha256": "bbc9316303a85015509d3284b23bd7eab24469824a5a35ced0f3ea1fd9761b5f",
+      "origin": "/private/tmp/willyou-m10-native-t-NEzKBX/electron.txt"
+    },
+    {
+      "path": "mcp-fields-v1/terminal-failure.txt",
+      "bytes": 14616,
+      "sha256": "125703016ddb474d016ad100d6c4da50644461ee1fbf3522906ef63c10ed560d",
+      "origin": "/private/tmp/willyou-m10-native-t-NEzKBX/terminal-failure.txt"
+    },
+    {
+      "path": "mcp-fields-v1/failure.png",
+      "bytes": 258013,
+      "sha256": "878ee7ce652a127453f7dec735a43e504551e4bc38112e220c02eb133cdfd375",
+      "origin": "/private/tmp/willyou-m10-native-t-NEzKBX/failure.png"
+    },
+    {
+      "path": "mcp-ui-green/result.json",
+      "bytes": 19746,
+      "sha256": "48abeb82fa4f391a1bfa07f92005c594d31af83348a2dc827c4907638aeb7bb7",
+      "origin": "/private/tmp/willyou-m10-native-t-KmVA2j/result.json"
+    },
+    {
+      "path": "mcp-ui-green/electron.txt",
+      "bytes": 719,
+      "sha256": "14385b4fe46ce021534d5b5f5c185fc273a88d16a1953f5b5e7ee7c5cd93f13c",
+      "origin": "/private/tmp/willyou-m10-native-t-KmVA2j/electron.txt"
+    },
+    {
+      "path": "mcp-ui-green/composer.png",
+      "bytes": 150927,
+      "sha256": "1b7aa4b0a42f2160eeced6f4004b4d50bd5baaf2874eaa9fcc914e4904caa574",
+      "origin": "/private/tmp/willyou-m10-native-t-KmVA2j/composer.png"
+    },
+    {
+      "path": "mcp-ui-green/task-native-response.png",
+      "bytes": 257370,
+      "sha256": "95457a75cbaf8e70db5c258ff4074a46c305fb655b2f661c844b9adf8e1dde1d",
+      "origin": "/private/tmp/willyou-m10-native-t-KmVA2j/task-native-response.png"
+    },
+    {
+      "path": "mcp-ui-green/native-created-draft-ui.png",
+      "bytes": 247025,
+      "sha256": "3741d87c99e70d1388264e8b0116538fb9cb49c920669efbf9498cc6a9bb3411",
+      "origin": "/private/tmp/willyou-m10-native-t-KmVA2j/native-created-draft-ui.png"
+    },
+    {
+      "path": "mcp-ui-green/native-tool-definitions.json",
+      "bytes": 23029,
+      "sha256": "5f7e3070b777a5244e15d4d5f01cb1153e7ebb6d2fc40f84518eb5302e915694",
+      "origin": "/private/tmp/willyou-m10-native-t-KmVA2j/native-tool-definitions.json"
+    },
+    {
+      "path": "resume-dom-v1/result.json",
+      "bytes": 28216,
+      "sha256": "c509133e03467435ff5ec2879f22eef5b81b558637c7ccca36f82447122a0941",
+      "origin": "/private/tmp/willyou-m10-native-t-9g46pD/result.json"
+    },
+    {
+      "path": "resume-dom-v1/electron.txt",
+      "bytes": 719,
+      "sha256": "24b2b64eb30a3c5bcf41b1e70e606b48eb533c3f22e1308cd2df430868373220",
+      "origin": "/private/tmp/willyou-m10-native-t-9g46pD/electron.txt"
+    },
+    {
+      "path": "resume-dom-v1/terminal-failure.txt",
+      "bytes": 14668,
+      "sha256": "f3e0c56f744af1f20455e35cbbaa0c4721dcdee675e8eac92f1f0a91145da997",
+      "origin": "/private/tmp/willyou-m10-native-t-9g46pD/terminal-failure.txt"
+    },
+    {
+      "path": "resume-dom-v1/failure.png",
+      "bytes": 136042,
+      "sha256": "49c3f40ce3ff6de2fa6aa89ef86d488741c6085c79678aa70e1e3afe7a82089b",
+      "origin": "/private/tmp/willyou-m10-native-t-9g46pD/failure.png"
+    },
+    {
+      "path": "resume-view-v2/result.json",
+      "bytes": 29701,
+      "sha256": "b8d47e69988b15825f902c8b84a4b053357fc3a72fa2483bcfbbdcca9f84f2c7",
+      "origin": "/private/tmp/willyou-m10-native-t-ivOc5n/result.json"
+    },
+    {
+      "path": "resume-view-v2/electron.txt",
+      "bytes": 719,
+      "sha256": "299c358fa8079289e86826f31bab8d4f42ebd5b988d4113ca015ad3de16ede1c",
+      "origin": "/private/tmp/willyou-m10-native-t-ivOc5n/electron.txt"
+    },
+    {
+      "path": "resume-view-v2/terminal-failure.txt",
+      "bytes": 14917,
+      "sha256": "be9d96d99471b030bc8bea4a9f24775ec47b18750fbbaf385d7c5e2beeafa46f",
+      "origin": "/private/tmp/willyou-m10-native-t-ivOc5n/terminal-failure.txt"
+    },
+    {
+      "path": "resume-view-v2/failure.png",
+      "bytes": 259169,
+      "sha256": "0ecafb7e111f1988667efbc69f3cbd33cc8182400a7a5824d7349d78690fa764",
+      "origin": "/private/tmp/willyou-m10-native-t-ivOc5n/failure.png"
+    },
+    {
+      "path": "resume-submit-v3/result.json",
+      "bytes": 42318,
+      "sha256": "3c4b86bc09f35c7c0f62b5e70ed2788ab71d7a76d3cd3d84dd8a7337a8b2ee27",
+      "origin": "/private/tmp/willyou-m10-native-t-MlGycr/result.json"
+    },
+    {
+      "path": "resume-submit-v3/electron.txt",
+      "bytes": 719,
+      "sha256": "3a0e212739110f7efe8351c0fd1da18e7c32b90dbf664a9041a3eb2592df87eb",
+      "origin": "/private/tmp/willyou-m10-native-t-MlGycr/electron.txt"
+    },
+    {
+      "path": "resume-submit-v3/terminal-failure.txt",
+      "bytes": 10350,
+      "sha256": "07241e1a063b397375a147fe78a14417c3b88759746451cab0a78aa06f76c10c",
+      "origin": "/private/tmp/willyou-m10-native-t-MlGycr/terminal-failure.txt"
+    },
+    {
+      "path": "resume-submit-v3/resumed-terminal-current.txt",
+      "bytes": 10350,
+      "sha256": "07241e1a063b397375a147fe78a14417c3b88759746451cab0a78aa06f76c10c",
+      "origin": "/private/tmp/willyou-m10-native-t-MlGycr/resumed-terminal-current.txt"
+    },
+    {
+      "path": "resume-submit-v3/failure.png",
+      "bytes": 266986,
+      "sha256": "3888b769df5abbac2de38d09430d15832f510a409314548fcf216ea0837615e4",
+      "origin": "/private/tmp/willyou-m10-native-t-MlGycr/failure.png"
+    },
+    {
+      "path": "resume-focus-v4/result.json",
+      "bytes": 22507,
+      "sha256": "74eeccda05c3284fc16d9dbcd349a005b9525eb61e6ad89d52e2d5064133f51f",
+      "origin": "/private/tmp/willyou-m10-native-t-qRHsPb/result.json"
+    },
+    {
+      "path": "resume-focus-v4/electron.txt",
+      "bytes": 719,
+      "sha256": "e63d69dab067883ae96685a471d4ec45fe36945a2267d158c084e1b890e8b61d",
+      "origin": "/private/tmp/willyou-m10-native-t-qRHsPb/electron.txt"
+    },
+    {
+      "path": "resume-focus-v4/terminal-failure.txt",
+      "bytes": 14523,
+      "sha256": "621caa26459fa72d0993c62e17faaaf4508b963a110545d847efd2ba3b6fa9ad",
+      "origin": "/private/tmp/willyou-m10-native-t-qRHsPb/terminal-failure.txt"
+    },
+    {
+      "path": "resume-focus-v4/failure.png",
+      "bytes": 225204,
+      "sha256": "dc3dc3e8e03c46c4b564cb59a1de00c58c0bb6467f0d9d2ce7a9bf06068e88d3",
+      "origin": "/private/tmp/willyou-m10-native-t-qRHsPb/failure.png"
+    },
+    {
+      "path": "standalone-native-control/result.json",
+      "bytes": 2687,
+      "sha256": "3387cc7da2bbc46937a08b012269751092e11c3a72c9c8afad5e3f484eb6a029",
+      "origin": "/private/tmp/willyou-m10-native-t-avxX82/result.json"
+    },
+    {
+      "path": "standalone-native-control/terminal-control.txt",
+      "bytes": 4449,
+      "sha256": "691284d41448da2c656c62683c301b320497431cca5563f45f73a5b4c3149b0e",
+      "origin": "/private/tmp/willyou-m10-native-t-avxX82/terminal-control.txt"
+    },
+    {
+      "path": "drivers/driver-v1-failure.json",
+      "bytes": 336,
+      "sha256": "b98cb8ce380c4384b352a931bcbd74fe3e1b83a7129f3f0da57a4d2dc3f94738",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/driver-v1-failure.json"
+    },
+    {
+      "path": "drivers/driver-v2-failure.json",
+      "bytes": 361,
+      "sha256": "2c700bc0879c2f94e3d2e8ba18f29ac2b4fac5b9478179b9954c1f8658c77ee8",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/driver-v2-failure.json"
+    },
+    {
+      "path": "drivers/driver-v3-native-state-increment.json",
+      "bytes": 336,
+      "sha256": "2fd3f87d8c87f59aa9bfef5e6f8bb840ea133dcbbec8de611abb393a57360478",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/driver-v3-native-state-increment.json"
+    },
+    {
+      "path": "drivers/mcp-driver-v1-failure.json",
+      "bytes": 401,
+      "sha256": "40295cae326824b56c3614d24e73d152b769e86155fec230139f2979c0fef804",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/mcp-driver-v1-failure.json"
+    },
+    {
+      "path": "drivers/native-control-output.txt",
+      "bytes": 728,
+      "sha256": "08996cf0574d7caee560f84acaa5c52053d16864f0de368c001fcdcd80a03eca",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/native-control-output.txt"
+    },
+    {
+      "path": "drivers/native-control-v1-startup-failure.json",
+      "bytes": 237,
+      "sha256": "d3c14cc393bee061c6cb96b4074bef3e03a3cf2acd28714938c71f4866fe43b7",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/native-control-v1-startup-failure.json"
+    },
+    {
+      "path": "drivers/native-notice-control.json",
+      "bytes": 434,
+      "sha256": "cbd8991f1dfb6b18dab9541949210d3e78b8a0bb6f38232dda7b95ec5050bb55",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/native-notice-control.json"
+    },
+    {
+      "path": "drivers/packaged-native-mcp-ui-v1.mjs",
+      "bytes": 17979,
+      "sha256": "6021cc0e5fa451fd43e450928c79eb91005ed4037b953c8ac86d86763d454117",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-mcp-ui-v1.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-mcp-ui.mjs",
+      "bytes": 18111,
+      "sha256": "af541844bf67142b4394cdaf5dbfddf79e2921a8cbebbc4f6cca9a301b444bef",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-mcp-ui.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-resume-ui-v1.mjs",
+      "bytes": 24054,
+      "sha256": "fb0bbeddbdf0fb129b6a49fbca5ee8abeb421d99ca120bdf96e046608f05bdc1",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-resume-ui-v1.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-resume-ui-v2.mjs",
+      "bytes": 24058,
+      "sha256": "bdc40d94f1e9631f4660ed07dd543005469a613b3510ee5a1911fbfd50bf0056",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-resume-ui-v2.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-resume-ui-v3.mjs",
+      "bytes": 24109,
+      "sha256": "c9437ebef09b2337cd85c120c7f0bf45230c4e64acff87170abdcbceb677ce7c",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-resume-ui-v3.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-resume-ui.mjs",
+      "bytes": 24269,
+      "sha256": "7e7a22553c4b12d645d6e86f15edde6afc35ccef29fb5b30e398952b30ecf982",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-resume-ui.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-ui-v1.mjs",
+      "bytes": 13164,
+      "sha256": "577208da6858e9a431df71c789bc7eaecd8a4753b9bcd8e7c8998dbf3f896b81",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-ui-v1.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-ui-v2.mjs",
+      "bytes": 13417,
+      "sha256": "c1e7cd41a1dec93080d082bd75069a2232980db8f34b12ff703926259d485e5b",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-ui-v2.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-ui-v3.mjs",
+      "bytes": 13812,
+      "sha256": "06effabecae0ebddd660e7f16c3862a595aa8a793107f48c3bc121835b199238",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-ui-v3.mjs"
+    },
+    {
+      "path": "drivers/packaged-native-ui.mjs",
+      "bytes": 14136,
+      "sha256": "a923132d27dc01edc93517d2165b6149dc6c191aa3c707d16bc529e82cd727ca",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/packaged-native-ui.mjs"
+    },
+    {
+      "path": "drivers/production-input-reuse-proof.json",
+      "bytes": 1110,
+      "sha256": "94f5f8787a3fd2003f69ca13d70891754e40fe07853efa5c91e8b0c0f40624b2",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/production-input-reuse-proof.json"
+    },
+    {
+      "path": "drivers/resume-driver-v1-failure.json",
+      "bytes": 499,
+      "sha256": "fddbbd524e7511e3b00031dddcc0530e3a5f13d77a8d0c74bcc1804163adffd4",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/resume-driver-v1-failure.json"
+    },
+    {
+      "path": "drivers/resume-driver-v2-failure.json",
+      "bytes": 552,
+      "sha256": "d8a3b487a7d12f6581d8b815bbcdd465e2e7929171e5e2dcfec675f76a32e705",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/resume-driver-v2-failure.json"
+    },
+    {
+      "path": "drivers/resume-driver-v3-failure.json",
+      "bytes": 522,
+      "sha256": "9bea16b64a268ca688dee7354b7b2816f02a72f53dc493aacc48d671da6eb8b3",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/resume-driver-v3-failure.json"
+    },
+    {
+      "path": "drivers/standalone-native-control-v1.mjs",
+      "bytes": 8641,
+      "sha256": "6225bae67ae0dc11d4c6bf015cbbf4f1a3682e456ec9d25ddafb285a8246fbc9",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/standalone-native-control-v1.mjs"
+    },
+    {
+      "path": "drivers/standalone-native-control.mjs",
+      "bytes": 8662,
+      "sha256": "1898134d0c9db4f3561508932c87dd852771826e26a27388192866bddeba4463",
+      "origin": "/private/tmp/m10-packaged-native-t-20261021/standalone-native-control.mjs"
+    },
+    {
+      "path": "framework/electron-harness.mjs",
+      "bytes": 8242,
+      "sha256": "0e872afd54f74b3ef3009e231f23c0cd9e810ef77ef59a31bdce46395b005659",
+      "origin": "/private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/lib/electron-harness.mjs"
+    },
+    {
+      "path": "framework/app-focus-guard.mjs",
+      "bytes": 1181,
+      "sha256": "cd20c35166d3fd9ea6b6966cfc12864091d32a5dc5aa36983dc3bedcd23a85ff",
+      "origin": "/private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/lib/app-focus-guard.mjs"
+    }
+  ]
+}
