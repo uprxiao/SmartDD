@@ -1,0 +1,32 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'T64 continues the original'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (52 tests | 2 failed | 50 skipped) 8408ms
+     × T64 continues the original claude-code session without application authority while its fixed package is unavailable 3384ms
+     × T64 continues the original codex session without application authority while its fixed package is unavailable 5023ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 continues the original claude-code session without application authority while its fixed package is unavailable
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 continues the original codex session without application authority while its fixed package is unavailable
+AssertionError: expected 'stopping' to be 'stopped' // Object.is equality
+
+Expected: "stopped"
+Received: "stopping"
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:93:109
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 50 skipped (52)
+   Start at  13:00:08
+   Duration  9.19s (transform 450ms, setup 0ms, import 707ms, tests 8.41s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -32,8 +32,8 @@ export class BuiltinPackageRegistry {
     return installed;
   }
 
-  /** Historical approval survives replacing the application bundle; no latest-version inference. */
-  assertTrusted(hash: string): InstalledApplicationPackage {
+  /** Retained distribution identity only. Never proof that executable bytes exist. */
+  trustedMetadata(hash: string): InstalledApplicationPackage {
     const installed = this.packages.get(hash);
     const rows = this.store.sqlite.prepare('SELECT source_index_hash,source_index_json FROM capability_builtin_package_sources WHERE package_hash=?').all(hash) as {source_index_hash:string;source_index_json:string}[];
     if (!rows.length || !['zentao','mail'].includes(installed.appId)) throw new ApplicationError('SCOPE_DENIED','应用适配器没有可信内置分发依据');
@@ -45,6 +45,11 @@ export class BuiltinPackageRegistry {
     }
     const resource = this.store.get(installed.resourceId);
     if (resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定内置应用资源未就绪');
+    return installed;
+  }
+  /** Historical approval survives replacing the application bundle; no latest-version inference. */
+  assertTrusted(hash: string): InstalledApplicationPackage {
+    const installed=this.trustedMetadata(hash);
     verifyPackageTree(join(this.store.root,installed.relativePath),installed,this.store.storeId);
     return installed;
   }

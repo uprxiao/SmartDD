@@ -15,6 +15,10 @@ function mount(){client=new QueryClient({defaultOptions:{queries:{retry:false},m
 beforeEach(()=>{vi.clearAllMocks();m.session.mockResolvedValue({ok:true,value:fixture()});Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.setAttribute('open','');}});Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:()=>{}});});
 afterEach(()=>{cleanup();client?.clear();Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');Reflect.deleteProperty(HTMLDialogElement.prototype,'close');});
 describe('P09 real session diagnostic presentation',()=>{
+ it('shows unavailable original resources as a native continuation without reporting capacity overflow or replacing the session',async()=>{
+  const value=fixture(),current=value.currentRun!;current.preparation!.state='unavailable';current.preparation!.issueCode='CAPABILITY_UNAVAILABLE';current.bridge.connected=false;current.restriction={schema:1,runId:current.id,taskId:value.taskId,snapshotHash:value.snapshotHash!,selectionHash:current.preparation!.selectionHash,reason:'fixed_application_resources_unavailable',issueCode:'CAPABILITY_UNAVAILABLE',restrictedAt:current.startedAt};m.session.mockResolvedValue({ok:true,value});mount();
+  await screen.findByText(/原固定应用资源不可用，本次保留原会话继续工作/);expect(screen.queryByText(/本次应用能力内容超过启动容量/)).toBeNull();expect(screen.getByText(/未改用其他版本/)).toBeTruthy();expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
+ });
  it('distinguishes a recorded unsupported snapshot from genuinely unrecorded history and never starts or replaces its task',async()=>{
   m.session.mockResolvedValue({ok:true,value:fixture({selection:'unsupported-schema',currentRun:null,applications:[],issues:['HOST_INCOMPATIBLE']})});mount();await screen.findByText(/原能力快照格式暂不支持/);expect(screen.queryByText(/历史能力未知，不自动补入当前应用/)).toBeNull();expect(screen.getByText(/原记录已保留，不自动迁移或替换/)).toBeTruthy();expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
  });

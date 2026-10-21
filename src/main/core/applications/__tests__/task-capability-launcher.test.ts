@@ -30,6 +30,8 @@ import {encodeClaudeDir} from '../../tasks/native-sessions';
 import {ApplicationToolService} from '../tool-service';
 import {canonicalJson,digest} from '../manifest';
 import {ApplicationAdapterRegistry} from '../application-adapter-registry';
+import {BuiltinPackageRegistry} from '../builtin-package-registry';
+import {CapabilityBundleSource} from '../bundle-source';
 let root:string,home:string,cwd:string,sqlite:Database.Database,capabilities:CapabilityService,support:AgentSupportService,applications:ApplicationService,managed:ManagedTaskCapabilities,tasks:TaskService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,ptys:TestPtys,projectId:string,codexId:string,claudeId:string;
 let expectedDisposeError:unknown;
 let argMax:number|null;
@@ -82,6 +84,36 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const independent=await create(profileId);expect(independent.task.id).not.toBe(taskId);expect(ptys.launches).toHaveLength(2);expect((await managed.sessions.get(taskId)).snapshot.native).toEqual(snapshot.snapshot.native);
  });
 
+ it.each(['claude-code','codex'] as const)('T64 continues the original %s session without application authority while its fixed package is unavailable',async runner=>{
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const bridgeHandles:Array<Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>=[],prepareBridge=managed.broker.prepare.bind(managed.broker);vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepareBridge(...args);bridgeHandles.push(value.bridge);return value;});
+  const first=await create(runner==='codex'?codexId:claudeId),taskId=first.task.id;let nativeId=first.task.nativeSessionId;const stateRoot=(await managed.sessions.get(taskId)).snapshot.native.stateRoot;
+  if(runner==='codex'){
+   nativeId=randomUUID();const date=new Date(),dir=join(stateRoot,'sessions',String(date.getFullYear()),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0'));mkdirSync(dir,{recursive:true});writeFileSync(join(dir,'rollout-t64-package-'+nativeId+'.jsonl'),JSON.stringify({type:'session_meta',payload:{id:nativeId,cwd,timestamp:new Date().toISOString(),originator:'codex_cli_rs'}})+'\n');await vi.waitFor(()=>expect(tasks.get(taskId).nativeSessionId).toBe(nativeId),{timeout:6000});
+  }else{const dir=join(stateRoot,'projects',encodeClaudeDir(cwd));mkdirSync(dir,{recursive:true});writeFileSync(join(dir,nativeId+'.jsonl'),JSON.stringify({type:'user',message:{role:'user',content:'T64 private fixed-package history'}})+'\n');}
+  // This TestPtys fixture never forks a native CLI or its MCP bridge. Deliver
+  // the recorded owned bridge exit as well as the fixture CLI exit before repair.
+  tasks.kill(taskId);for(const bridge of bridgeHandles)await bridge.exited();await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+  const original=await managed.sessions.get(taskId),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId),identity=sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId),hash=original.snapshot.packages[0].packageHash,builtin=new BuiltinPackageRegistry(support.store),pack=builtin.assertTrusted(hash);
+  rmSync(join(support.store.root,pack.relativePath),{recursive:true});const register=vi.spyOn(applications.nativeMessages,'register'),project=vi.spyOn(managed.projector,'sourceSkills');
+  const resumed=await tasks.open({taskId}),runId=resumed.task.runtimeSnapshot!.runId;
+  expect(resumed.task.nativeSessionId).toBe(nativeId);expect(resumed.task.runtimeSnapshot!.sessionCapabilities).toEqual(original.pointer);expect(resumed.task.runtimeSnapshot!.selfCheck?.issues).toContain('CAPABILITY_UNAVAILABLE');
+  expect(ptys.launches).toHaveLength(2);expect(ptys.launches[1].args).not.toContain('--plugin-dir');expect(ptys.launches[1].args.join(' ')).not.toContain('pending-bootstrap');expect(project).not.toHaveBeenCalled();expect(register).not.toHaveBeenCalled();
+  expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(()=>managed.runs.bridgePreparation(runId)).toThrow('不签发');expect(managed.runs.inputContext(taskId,resumed.ptyId)).toBeNull();expect(managed.broker.hasAuthenticated(runId)).toBe(false);
+  expect(sqlite.prepare('SELECT kind,state FROM capability_run_processes WHERE run_id=?').all(runId)).toEqual([{kind:'cli',state:'active'}]);expect(await managed.sessions.get(taskId)).toEqual(original);expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId)).toEqual(refs);expect(sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId)).toEqual(identity);
+  const diagnostic=await applications.sessionDiagnostics.inspect(taskId);expect(diagnostic).toMatchObject({selection:'fixed',agentState:'running',currentRun:{restriction:{reason:'fixed_application_resources_unavailable',issueCode:'CAPABILITY_UNAVAILABLE'},bridge:{connected:false}}});expect(diagnostic.applications.find(a=>a.packageHash===hash)?.resourceState).toBe('unavailable');
+  tasks.kill(taskId);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));
+  const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===hash)!);const repaired=await tasks.open({taskId});expect(managed.runs.assertActive(repaired.task.runtimeSnapshot!.runId).snapshot).toEqual(original.snapshot);expect(repaired.task.runtimeSnapshot!.sessionCapabilities).toEqual(original.pointer);expect(repaired.task.nativeSessionId).toBe(nativeId);expect(ptys.launches).toHaveLength(3);
+  expect(sqlite.prepare('SELECT count(*) AS n FROM application_invocations').get()).toEqual({n:0});expect(sqlite.prepare('SELECT count(*) AS n FROM mail_send_grants').get()).toEqual({n:0});
+  tasks.kill(taskId);for(const bridge of bridgeHandles)await bridge.exited();await vi.waitFor(()=>expect(managed.runs.get(repaired.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+ });
+ it.each(['claude-code','codex'] as const)('keeps selected applications in a new %s snapshot when original package bytes are unavailable',async runner=>{
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const builtin=new BuiltinPackageRegistry(support.store),hash=builtin.packages.active('mail')!.packageHash,pack=builtin.assertTrusted(hash);rmSync(join(support.store.root,pack.relativePath),{recursive:true});
+  const task=await create(runner==='codex'?codexId:claudeId),runId=task.task.runtimeSnapshot!.runId,saved=await managed.sessions.get(task.task.id);
+  expect(saved.snapshot.packages.map(p=>p.packageHash)).toEqual([hash]);expect(task.task.runtimeSnapshot!.selfCheck?.issues).toContain('CAPABILITY_UNAVAILABLE');expect(task.task.runtimeSnapshot!.sessionCapabilities).toEqual(saved.pointer);expect(ptys.launches).toHaveLength(1);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(managed.runs.inputContext(task.task.id,task.ptyId)).toBeNull();expect(managed.broker.hasAuthenticated(runId)).toBe(false);
+  tasks.kill(task.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));expect((await managed.sessions.get(task.task.id)).snapshot.packages.map(p=>p.packageHash)).toEqual([hash]);
+ });
  it.each(['claude-code','codex'] as const)('withdraws oversized %s injection before fork, preserves fixed selection and resumes capabilities after capacity recovers',async runner=>{
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const prepare=managed.prepare.bind(managed),plans:TaskCapabilityLaunch[]=[];

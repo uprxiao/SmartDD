@@ -139,6 +139,23 @@ describe('capability run resource registration, revocation and conservative reco
 });
 
 
+describe('fixed-session native guards when application resources are unavailable',()=>{
+ const input=()=>({taskId:f.snapshot.taskId,projectId:f.snapshot.projectId,runner:f.snapshot.runner,snapshotHash:f.session.pointer.snapshotHash,resourceIds:[f.adapter.resourceId],verify:async()=>{}});
+ it('protects native dependencies until actual exit and never grants a bridge or business provenance',async()=>{
+  const original=await f.sessions.get(f.snapshot.taskId),verify=vi.fn(async()=>{}),run=await f.runs.reserveFixedNativeGuard({...input(),verify});
+  expect(protection(run.runId)).toHaveLength(3);await run.prepare();expect(verify).toHaveBeenCalledTimes(1);await run.cli.arm();reader.identities.set(200004,'darwin-proc-v1:400:4');await run.cli.attach(200004);
+  expect(()=>f.runs.assertActive(run.runId)).toThrow('不签发');expect(()=>f.runs.bridgePreparation(run.runId)).toThrow('不签发');await expect(run.reserveBridge()).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();
+  await run.stop();expect(leases(run.runId)).toEqual([{state:'active'}]);reader.identities.delete(200004);await run.cli.exited();expect(leases(run.runId)).toEqual([{state:'released'}]);expect(await f.sessions.get(f.snapshot.taskId)).toEqual(original);
+ });
+ it('rejects altered snapshot/project/runner/adapter requests and retains protection when its restriction receipt is corrupt',async()=>{
+  await expect(f.runs.reserveFixedNativeGuard({...input(),projectId:'other'})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(f.runs.reserveFixedNativeGuard({...input(),runner:'codex'})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(f.runs.reserveFixedNativeGuard({...input(),snapshotHash:'f'.repeat(64)})).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
+  await expect(f.runs.reserveFixedNativeGuard({...input(),resourceIds:[f.child.resourceId]})).rejects.toMatchObject({code:'INVALID_INPUT'});
+  expect(f.sqlite.prepare('SELECT count(*) AS n FROM capability_runs').get()).toEqual({n:0});
+  const run=await f.runs.reserveFixedNativeGuard(input());f.sqlite.prepare("UPDATE capability_run_restrictions SET evidence_json='{}' WHERE run_id=?").run(run.runId);await expect(run.prepare()).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(leases(run.runId)).toEqual([{state:'preparing'}]);expect(()=>f.runs.assertActive(run.runId)).toThrow('不签发');await run.stop();expect(leases(run.runId)).toEqual([{state:'released'}]);
+ });
+});
 describe('native-only unknown-history lifecycle without business authority',()=>{
  async function guard(){const taskId='history-'+randomUUID();await f.sessions.holdUnknown({taskId,projectId:'p1',runner:'codex',stateRoot:f.home,cwd:f.snapshot.native.cwd,sessionId:'historical-native',reason:'history-unknown'});const row=f.sqlite.prepare('SELECT snapshot_hash AS hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {hash:string};let checks=0;const input={taskId,projectId:'p1',runner:'codex' as const,snapshotHash:row.hash,resourceIds:[f.adapter.resourceId],verify:async()=>{await withResourceLock(f.store.root,()=>{checks++;});}};const run=await f.runs.reserveNativeGuard(input);return{taskId,input,run,checks:()=>checks};}
  it('registers source closure before launch, cannot mint a bridge or input provenance, and waits for owned exit',async()=>{const g=await guard();expect(protection(g.run.runId)).toHaveLength(3);await g.run.prepare();expect(g.checks()).toBe(1);await g.run.cli.arm();reader.identities.set(200003,'darwin-proc-v1:400:3');await g.run.cli.attach(200003);expect(f.runs.get(g.run.runId).state).toBe('active');expect(()=>f.runs.assertActive(g.run.runId)).toThrow('不签发');expect(()=>f.runs.bridgePreparation(g.run.runId)).toThrow('不签发');expect(f.runs.inputContext(g.taskId,g.run.ptyId)).toBeNull();await expect(g.run.reserveBridge()).rejects.toMatchObject({code:'SCOPE_DENIED'});await g.run.stop();expect(leases(g.run.runId)).toEqual([{state:'active'}]);await g.run.cli.exited();expect(leases(g.run.runId)).toEqual([{state:'released'}]);expect(f.sqlite.prepare('SELECT schema_version,retention_state FROM capability_session_snapshots WHERE task_id=?').get(g.taskId)).toEqual({schema_version:0,retention_state:'hold'});});

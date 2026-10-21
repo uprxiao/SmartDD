@@ -4,7 +4,7 @@ import type { SessionLaunchRestriction } from '@shared/application-session-diagn
 import type { ResourceStore } from './resource-store';
 import { canonicalJson, digest } from './manifest';
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
-export const launchRestrictionSchema=z.object({schema:z.literal(1),runId:z.uuid(),taskId:z.string().min(1).max(128),snapshotHash:hash,selectionHash:hash,reason:z.literal('managed_launch_payload_too_large'),issueCode:z.literal('AGENT_ADAPTER_UNSUPPORTED'),restrictedAt:z.iso.datetime()}).strict();
+export const launchRestrictionSchema=z.object({schema:z.literal(1),runId:z.uuid(),taskId:z.string().min(1).max(128),snapshotHash:hash,selectionHash:hash,reason:z.enum(['managed_launch_payload_too_large','fixed_application_resources_unavailable']),issueCode:z.enum(['AGENT_ADAPTER_UNSUPPORTED','CAPABILITY_UNAVAILABLE']),restrictedAt:z.iso.datetime()}).strict().refine(v=>v.reason==='managed_launch_payload_too_large'?v.issueCode==='AGENT_ADAPTER_UNSUPPORTED':v.issueCode==='CAPABILITY_UNAVAILABLE');
 /** Read-only evidence. This receipt never grants native or application authority. */
 export function readLaunchRestriction(store:ResourceStore,runId:string,taskId:string,selectionHash:string):SessionLaunchRestriction|null{
  const row=store.sqlite.prepare('SELECT evidence_json,evidence_hash,restricted_at FROM capability_run_restrictions WHERE run_id=?').get(runId) as {evidence_json:string;evidence_hash:string;restricted_at:string}|undefined;

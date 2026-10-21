@@ -20,6 +20,7 @@ interface RunRow {
 }
 interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
+interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];verify:()=>Promise<void>}
 interface OwnedRun { guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
 export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal }
 export interface RunRegistryDeps {
@@ -163,18 +164,33 @@ export class CapabilityRunRegistry {
     return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
   }
   /** Trusted host-only guard for schema0 history. It cannot assertActive or reserve a bridge. */
-  async reserveNativeGuard(input:{taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];verify:()=>Promise<void>},reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
+  async reserveNativeGuard(input:NativeGuardRequest,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
+    return this.reserveGuard(input,'history',reservation);
+  }
+  /** Keep a validated fixed S while launching only its ordinary native Agent. */
+  async reserveFixedNativeGuard(input:NativeGuardRequest,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
+    return this.reserveGuard(input,'fixed',reservation);
+  }
+  private async reserveGuard(input:NativeGuardRequest,kind:NativeGuard['kind'],reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
     const parsed=z.object({taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:z.enum(['claude-code','codex']),snapshotHash:z.string().regex(/^[a-f0-9]{64}$/),resourceIds:z.array(z.string().min(1).max(512)).min(1).max(4096)}).strict().safeParse({taskId:input.taskId,projectId:input.projectId,runner:input.runner,snapshotHash:input.snapshotHash,resourceIds:input.resourceIds});
     if(!parsed.success||typeof input.verify!=='function'||reservation&&(!z.uuid().safeParse(reservation.runId).success||!z.uuid().safeParse(reservation.ptyId).success))throw new ApplicationError('INVALID_INPUT','原生历史守护身份无效');
     if(this.closed)throw new ApplicationError('CANCELED','运行服务已关闭');const value=parsed.data,runId=reservation?.runId??randomUUID(),ptyId=reservation?.ptyId??randomUUID(),processId=randomUUID(),leaseId=randomUUID();
-    const guard:NativeGuard={kind:'history',snapshotHash:value.snapshotHash,resources:Object.freeze([...new Set(value.resourceIds)]),verify:input.verify};
+    const guard:NativeGuard={kind,snapshotHash:value.snapshotHash,resources:Object.freeze([...new Set(value.resourceIds)]),verify:input.verify};let selectionHash=value.snapshotHash;
     await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
       if(this.closed)throw new ApplicationError('CANCELED','守护准备已取消');
       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId);this.gate();
-      const snapshot=this.store.sqlite.prepare('SELECT schema_version,snapshot_json,snapshot_hash,retention_state,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(value.taskId) as {schema_version:number;snapshot_json:string;snapshot_hash:string;retention_state:string;legacy_status:string}|undefined;
-      if(!snapshot||snapshot.schema_version!==0||snapshot.retention_state!=='hold'||snapshot.legacy_status!=='history-unknown'||snapshot.snapshot_hash!==value.snapshotHash||digest(snapshot.snapshot_json)!==value.snapshotHash)throw new ApplicationError('SESSION_ON_HOLD','此历史不能作为未知能力的原生守护依据');
-      let history:{taskId?:unknown;projectId?:unknown;runner?:unknown;reason?:unknown};try{history=JSON.parse(snapshot.snapshot_json);}catch{throw new ApplicationError('SNAPSHOT_CORRUPT','历史守护依据损坏');}
-      if(history.taskId!==value.taskId||history.projectId!==value.projectId||history.runner!==value.runner||history.reason!=='history-unknown')throw new ApplicationError('SCOPE_DENIED','原生守护不能更换原历史归属');
+      if(kind==='fixed'){
+        const session=this.sessions.inspectCoordinated(value.taskId);
+        if(session.retention!=='active'||session.pointer.snapshotHash!==value.snapshotHash)throw new ApplicationError('RESOURCE_STATE_CHANGED','原固定快照或保留状态已改变');
+        if(session.snapshot.projectId!==value.projectId||session.snapshot.runner!==value.runner)throw new ApplicationError('SCOPE_DENIED','原生守护不能更换原会话归属');
+        if(!value.resourceIds.includes(`agent-adapter:${session.snapshot.runner}:${session.snapshot.adapterBinding.hash}`))throw new ApplicationError('INVALID_INPUT','原生守护必须保留原固定适配资源');
+        selectionHash=session.selectionHash;
+      }else{
+        const snapshot=this.store.sqlite.prepare('SELECT schema_version,snapshot_json,snapshot_hash,retention_state,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(value.taskId) as {schema_version:number;snapshot_json:string;snapshot_hash:string;retention_state:string;legacy_status:string}|undefined;
+        if(!snapshot||snapshot.schema_version!==0||snapshot.retention_state!=='hold'||snapshot.legacy_status!=='history-unknown'||snapshot.snapshot_hash!==value.snapshotHash||digest(snapshot.snapshot_json)!==value.snapshotHash)throw new ApplicationError('SESSION_ON_HOLD','此历史不能作为未知能力的原生守护依据');
+        let history:{taskId?:unknown;projectId?:unknown;runner?:unknown;reason?:unknown};try{history=JSON.parse(snapshot.snapshot_json);}catch{throw new ApplicationError('SNAPSHOT_CORRUPT','历史守护依据损坏');}
+        if(history.taskId!==value.taskId||history.projectId!==value.projectId||history.runner!==value.runner||history.reason!=='history-unknown')throw new ApplicationError('SCOPE_DENIED','原生守护不能更换原历史归属');
+      }
       if(!this.store.sqlite.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(value.projectId))throw new ApplicationError('NOT_FOUND','历史项目已删除或归档');
       if(this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(value.taskId))throw new ApplicationError('RESOURCE_BUSY','原任务仍有运行或待核查占用');
       const resources=this.closure(value.taskId,guard),timestamp=now();
@@ -182,8 +198,12 @@ export class CapabilityRunRegistry {
       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
       for(const r of resources)this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
+      if(kind==='fixed'){
+        const receipt=launchRestrictionSchema.parse({schema:1,runId,taskId:value.taskId,snapshotHash:value.snapshotHash,selectionHash,reason:'fixed_application_resources_unavailable',issueCode:'CAPABILITY_UNAVAILABLE',restrictedAt:timestamp}),text=canonicalJson(receipt);
+        this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),timestamp);
+      }
     }).immediate());
-    this.owned.set(runId,{guard,selectionHash:value.snapshotHash,leaseId,abort:new AbortController(),processes:new Set([processId])});
+    this.owned.set(runId,{guard,selectionHash,leaseId,abort:new AbortController(),processes:new Set([processId])});
     if(this.closed){await this.stop(runId,'host-shutdown');throw new ApplicationError('CANCELED','守护准备期间服务已关闭');}
     return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
   }
