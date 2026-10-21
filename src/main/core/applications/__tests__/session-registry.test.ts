@@ -100,6 +100,13 @@ describe('fixed capability selection, native identity and authoritative snapshot
     await expect(sessions.bindNativeSession(input.taskId,bound.pointer.snapshotHash,{ ...native,sessionId: 'different-native' })).rejects.toMatchObject({ code: 'NATIVE_IDENTITY_CONFLICT' });
     await sessions.verifyNativeIdentity(input.taskId,{ ...native,home }); await expect(sessions.verifyNativeIdentity(input.taskId,{ ...native,stateRoot: join(home,'.another'),home })).rejects.toMatchObject({ code: 'NATIVE_IDENTITY_CONFLICT' });
   });
+  it.each(['missing','file'] as const)('T64 refuses a bound native identity when its original state root is %s without recreating it',async kind=>{
+    const input=plan(),saved=await sessions.create(input,home),native={runner:input.runner,stateRoot,cwd,sessionId:'native-t64-root'},bound=await sessions.bindNativeSession(input.taskId,saved.pointer.snapshotHash,native),refs=refRows(input.taskId),raw=sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(input.taskId),identity=sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(input.taskId);
+    rmSync(stateRoot,{recursive:true});if(kind==='file')writeFileSync(stateRoot,'private occupied native root');
+    await expect(sessions.verifyNativeIdentity(input.taskId,{...native,home})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT',message:expect.stringContaining('原生会话状态目录')});
+    expect((await sessions.get(input.taskId)).pointer).toEqual(bound.pointer);expect(sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(input.taskId)).toEqual(raw);expect(sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(input.taskId)).toEqual(identity);expect(refRows(input.taskId)).toEqual(refs);
+    if(kind==='file')expect(readFileSync(stateRoot,'utf8')).toBe('private occupied native root');else expect(existsSync(stateRoot)).toBe(false);
+  });
   it('prevents two tasks from claiming the same native history including a symlink alias', async () => {
     const first = plan(); first.native.sessionId = 'native-shared'; await sessions.create(first,home);
     const alias = join(home,'alias'); symlinkSync(stateRoot,alias); const other = plan(); other.native = { ...other.native,stateRoot: alias,sessionId: 'native-shared' };

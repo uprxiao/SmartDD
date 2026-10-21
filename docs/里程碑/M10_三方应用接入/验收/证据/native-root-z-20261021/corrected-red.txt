@@ -1,0 +1,231 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-registry.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t T64
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (50 tests | 2 failed | 48 skipped) 4862ms
+     × T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available 973ms
+     × T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available 3886ms
+ ❯ src/main/core/applications/__tests__/session-registry.test.ts (23 tests | 2 failed | 21 skipped) 364ms
+     × T64 refuses a bound native identity when its original state root is missing without recreating it 192ms
+     × T64 refuses a bound native identity when its original state root is file without recreating it 171ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/session-registry.test.ts > fixed capability selection, native identity and authoritative snapshot mirrors > T64 refuses a bound native identity when its original state root is missing without recreating it
+ FAIL  src/main/core/applications/__tests__/session-registry.test.ts > fixed capability selection, native identity and authoritative snapshot mirrors > T64 refuses a bound native identity when its original state root is file without recreating it
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+undefined
+
+ ❯ src/main/core/applications/__tests__/session-registry.test.ts:106:78
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available
+AssertionError: promise resolved "{ task: { …(23) }, …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "58db16de-5387-43b9-8ab7-ea990be9b66e",
++   "task": {
++     "aiProfileColor": null,
++     "aiProfileId": "9710eb8f-48ca-4f28-ba1b-c7012b26bf3e",
++     "aiProfileName": "CC version fixture",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792549460419,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-xvlqba/project",
++     "dirId": "a11b09f3-8ef3-468b-8c73-e1fdcdd28b6c",
++     "firstMessage": "",
++     "id": "00e48822-eeda-4cf5-8a84-69189daa8b87",
++     "injectedEnvNames": [
++       "HOME",
++       "PROJECT_DB_CONFIG",
++       "REMOTE_SERVERS_CONFIG",
++       "SMARTDD_CONFIG_VERSION",
++       "SMARTDD_PROJECT_CONTEXT",
++       "SMARTDD_PROJECT_ID",
++       "SMARTDD_RESOURCE_AUDIT",
++     ],
++     "lastLaunchedAt": 1792549460851,
++     "nativeSessionId": "00e48822-eeda-4cf5-8a84-69189daa8b87",
++     "projectConfigVersion": 1,
++     "projectId": "c8844371-fdfc-45d5-b277-889219b4ad55",
++     "projectName": "isolated production composition",
++     "ptyId": "58db16de-5387-43b9-8ab7-ea990be9b66e",
++     "recovery": "fresh",
++     "recoveryReason": "还没有发过消息，Claude 未写会话文件；打开时沿用原 ID 新开",
++     "runner": "claude",
++     "runtimeSnapshot": {
++       "auditPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-xvlqba/capabilities/resource-audit/c8844371-fdfc-45d5-b277-889219b4ad55/00e48822-eeda-4cf5-8a84-69189daa8b87.jsonl",
++       "configHash": "b68fe026bffb4ee6e45d60304ba696e3c23571dc88c85207a63d340a8988970a",
++       "configVersion": 1,
++       "manifestPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-xvlqba/capabilities/runs/c8844371-fdfc-45d5-b277-889219b4ad55/00e48822-eeda-4cf5-8a84-69189daa8b87/94e30d39-00ee-4464-8f36-13221e12a4ef/manifest.json",
++       "mcp": [
++         {
++           "loaded": "unverified",
++           "name": "smartdd_project_f2a8eb3a07e4",
++         },
++       ],
++       "projectId": "c8844371-fdfc-45d5-b277-889219b4ad55",
++       "runId": "94e30d39-00ee-4464-8f36-13221e12a4ef",
++       "selfCheck": {
++         "at": null,
++         "issues": [],
++         "status": "pending",
++       },
++       "sessionCapabilities": {
++         "schema": 2,
++         "snapshotHash": "537a1ce60712844d3bd553f1d0d169ce0c132fbba648e314090f09b6be715444",
++         "taskId": "00e48822-eeda-4cf5-8a84-69189daa8b87",
++       },
++       "skills": [
++         {
++           "enabled": true,
++           "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++           "loaded": "unverified",
++           "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-xvlqba/capabilities/sessions/00e48822-eeda-4cf5-8a84-69189daa8b87/claude/plugin/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
++           "skillId": "project-db-diagnostics",
++           "version": "1.0.0",
++           "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         },
++         {
++           "enabled": true,
++           "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++           "loaded": "unverified",
++           "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-xvlqba/capabilities/sessions/00e48822-eeda-4cf5-8a84-69189daa8b87/claude/plugin/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
++           "skillId": "remote-password-ssh",
++           "version": "1.0.0",
++           "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         },
++       ],
++     },
++     "title": "CC version fixture 10-21 10:24",
++     "updatedAt": 1792549460860,
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:80:72
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available
+AssertionError: promise resolved "{ task: { …(23) }, …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "e64e0bc7-c50a-46ab-9438-7c0f6cf05429",
++   "task": {
++     "aiProfileColor": null,
++     "aiProfileId": "2f145a62-c5c7-4c10-931a-2eb4581430e8",
++     "aiProfileName": "Codex version fixture",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792549461846,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-H2RIv8/project",
++     "dirId": "d95a1614-e28b-4260-ba02-70fdf37ffb15",
++     "firstMessage": "",
++     "id": "ea46b2b1-e935-4eb3-8012-cb51a796ef61",
++     "injectedEnvNames": [
++       "CODEX_HOME",
++       "HOME",
++       "PROJECT_DB_CONFIG",
++       "REMOTE_SERVERS_CONFIG",
++       "SMARTDD_CONFIG_VERSION",
++       "SMARTDD_PROJECT_CONTEXT",
++       "SMARTDD_PROJECT_ID",
++       "SMARTDD_RESOURCE_AUDIT",
++     ],
++     "lastLaunchedAt": 1792549464728,
++     "nativeSessionId": "258a432d-c2c9-4b71-aa34-c9ef2f37fe1a",
++     "projectConfigVersion": 1,
++     "projectId": "bdcd98f9-e70d-43a5-b441-4a01fd03c691",
++     "projectName": "isolated production composition",
++     "ptyId": "e64e0bc7-c50a-46ab-9438-7c0f6cf05429",
++     "recovery": "resumable",
++     "recoveryReason": "",
++     "runner": "codex",
++     "runtimeSnapshot": {
++       "auditPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-H2RIv8/capabilities/resource-audit/bdcd98f9-e70d-43a5-b441-4a01fd03c691/ea46b2b1-e935-4eb3-8012-cb51a796ef61.jsonl",
++       "configHash": "72ace413d4250b8d7851fd877333d864facc50bcf935a09a3e9d60480f36fbe7",
++       "configVersion": 1,
++       "manifestPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-H2RIv8/capabilities/runs/bdcd98f9-e70d-43a5-b441-4a01fd03c691/ea46b2b1-e935-4eb3-8012-cb51a796ef61/6be3005b-9d1a-47e3-b9bf-bb16446d6158/manifest.json",
++       "mcp": [
++         {
++           "loaded": "unverified",
++           "name": "smartdd_project_8b3ac7cedd98",
++         },
++       ],
++       "projectId": "bdcd98f9-e70d-43a5-b441-4a01fd03c691",
++       "runId": "6be3005b-9d1a-47e3-b9bf-bb16446d6158",
++       "selfCheck": {
++         "at": null,
++         "issues": [],
++         "status": "pending",
++       },
++       "sessionCapabilities": {
++         "schema": 2,
++         "snapshotHash": "9d72fa459e03dc32f151fb1fc6de6dcc6419b61d30e81a6b7a9166f5cb23e05e",
++         "taskId": "ea46b2b1-e935-4eb3-8012-cb51a796ef61",
++       },
++       "skills": [
++         {
++           "enabled": true,
++           "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++           "loaded": "unverified",
++           "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-H2RIv8/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
++           "skillId": "project-db-diagnostics",
++           "version": "1.0.0",
++           "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         },
++         {
++           "enabled": true,
++           "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++           "loaded": "unverified",
++           "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
++           "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-H2RIv8/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
++           "skillId": "remote-password-ssh",
++           "version": "1.0.0",
++           "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         },
++       ],
++     },
++     "title": "Codex version fixture 10-21 10:24",
++     "updatedAt": 1792549464733,
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:80:72
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 69 skipped (73)
+   Start at  10:24:15
+   Duration  10.32s (transform 2.77s, setup 0ms, import 4.62s, tests 5.23s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

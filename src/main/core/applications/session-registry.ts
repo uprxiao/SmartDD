@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { closeSync, constants, existsSync, fsyncSync, linkSync, lstatSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
+import { closeSync, constants, existsSync, fsyncSync, linkSync, lstatSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { z } from 'zod';
 import { ApplicationError, isPackagePath } from '@shared/applications';
@@ -149,6 +149,12 @@ export class CapabilitySessionRegistry {
     if (current.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话处于保留状态，不能授予运行能力');
     const identity = this.store.sqlite.prepare('SELECT identity_root FROM capability_session_identities WHERE task_id=?').get(taskId) as { identity_root: string };
     if (actual.runner !== current.snapshot.runner || actual.stateRoot !== native.stateRoot || actual.cwd !== native.cwd || actual.sessionId !== native.sessionId || canonicalFuturePath(actual.stateRoot) !== identity.identity_root || canonicalFuturePath(actual.home) !== current.discoveryHome) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生身份或发现目录与固定会话不同，不自动迁移或注入');
+    // A bound history must keep its original directory; canonicalFuturePath alone
+    // also accepts an absent path, which is valid for new sessions but not resume.
+    if (native.sessionId !== null) {
+      let available = false; try { available = statSync(actual.stateRoot).isDirectory(); } catch { /* Keep the original identity; never recreate or choose another root. */ }
+      if (!available) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话状态目录缺失或不可用，保留原路径，不新建空根恢复');
+    }
   }
   async references(taskId: string): Promise<SessionResourceReference[]> {
     await this.get(taskId);
