@@ -534,6 +534,29 @@
       "bytes": 1181,
       "sha256": "cd20c35166d3fd9ea6b6966cfc12864091d32a5dc5aa36983dc3bedcd23a85ff",
       "origin": "/private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/lib/app-focus-guard.mjs"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 92,
+      "sha256": "5c9d0a4c405e04ede880f631f1ee49656bfadc6dc882d6da92612f65b8a169c0",
+      "origin": "archive byte-preservation rule"
     }
-  ]
+  ],
+  "archiveByteCorrection": {
+    "initialArchiveCommit": "48ed9dc9f592de1589395409c77facbce1bfb35b",
+    "cause": "repository text normalization changed CR/CRLF bytes in captured .txt logs in initial commit",
+    "rawWorkingTreeAndOriginBytesUnchanged": true,
+    "correction": "directory attributes *.txt -text, exact-path renormalization, verify every committed blob against raw file and recorded sha256",
+    "affectedLogs": [
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/mcp-fields-v1/terminal-failure.txt",
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/native-counter-v3/terminal-failure.txt",
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/profile-hash-v2/terminal-failure.txt",
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/resume-dom-v1/terminal-failure.txt",
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/resume-focus-v4/terminal-failure.txt",
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/resume-submit-v3/resumed-terminal-current.txt",
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/resume-submit-v3/terminal-failure.txt",
+      "docs/里程碑/M10_三方应用接入/验收/证据/native-task-t-20261021/resume-view-v2/terminal-failure.txt"
+    ],
+    "actualTestVerdictsUnchanged": true
+  }
 }
