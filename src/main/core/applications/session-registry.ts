@@ -50,10 +50,13 @@ export class CapabilitySessionRegistry {
     for (const m of snapshot.mcp) add((m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash,m.kind === 'applications' ? 'runtime' : 'legacy-runtime',m.runtimeHash);
     return requested;
   }
-  private sourceReferences(snapshot: CapabilitySessionSnapshotV2): SessionResourceReference[] {
+  private executionSelection(snapshot:CapabilitySessionSnapshotV2,appIds:readonly string[]):CapabilitySessionSnapshotV2 {return{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId)),mcp:snapshot.mcp.filter(m=>m.kind!=='applications'||appIds.length>0)};}
+  private sourceReferences(snapshot: CapabilitySessionSnapshotV2,initialScope?:readonly string[]): SessionResourceReference[] {
+    if(initialScope&&(snapshot.legacyBinding||new Set(initialScope).size!==initialScope.length||initialScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','初始资源范围不属于原选择');
+    const required=this.expectedSources(initialScope?this.executionSelection(snapshot,initialScope):snapshot);
     return [...this.expectedSources(snapshot)].map(([id,expected]) => {
       const resource = this.store.get(id);
-      if (resource.kind !== expected.kind || resource.contentHash !== expected.hash || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','固定会话资源身份不一致或尚未就绪');
+      if (resource.kind !== expected.kind || resource.contentHash !== expected.hash || required.has(id)&&(resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('RESOURCE_STATE_CHANGED','固定会话资源身份不一致或尚未就绪');
       return { refKind: expected.kind,refId: id,refHash: expected.hash,relativePath: resource.relativePath };
     }).sort((a,b) => compareCodePoints(a.refId,b.refId));
   }
@@ -105,7 +108,7 @@ export class CapabilitySessionRegistry {
       catch (error) { if (error instanceof ApplicationError && error.code === 'SNAPSHOT_CORRUPT') this.quarantine(taskId,'corrupt'); throw error; }
     });
   }
-  async create(input: CapabilitySessionSnapshotV2,discoveryHome: string): Promise<StoredCapabilitySession> {
+  async create(input: CapabilitySessionSnapshotV2,discoveryHome: string,initialApplicationScope?:readonly string[]): Promise<StoredCapabilitySession> {
     const parsed = capabilitySessionSnapshotSchema.safeParse(input);
     if (!parsed.success || !isAbsolute(discoveryHome)) throw new ApplicationError('INVALID_INPUT','会话能力或原生发现目录无效');
     const snapshot = parsed.data, bytes = canonicalJson(snapshot), hash = digest(bytes); if (Buffer.byteLength(bytes) > 4 * 1024 * 1024) throw new ApplicationError('INVALID_INPUT','会话快照超过元数据预算');
@@ -113,7 +116,7 @@ export class CapabilitySessionRegistry {
     const saved = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       const previous = this.store.sqlite.prepare(SELECT).get(snapshot.taskId) as SnapshotRow | undefined;
       if (previous) { if (previous.snapshot_hash !== hash) throw new ApplicationError('SNAPSHOT_IMMUTABLE','原任务能力已经固定，不能改成新版本或新路径'); const known = this.read(snapshot.taskId); if (known.discoveryHome !== home) throw new ApplicationError('SNAPSHOT_IMMUTABLE','原生发现目录已经固定'); return known; }
-      this.deps.assertInitialSelection(snapshot); this.validatePackages(snapshot); const refs = this.sourceReferences(snapshot);
+      this.deps.assertInitialSelection(snapshot); this.validatePackages(snapshot); const refs = this.sourceReferences(snapshot,initialApplicationScope);
       if (snapshot.native.sessionId && this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=?').get(snapshot.runner,nativeRoot,snapshot.native.sessionId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已关联另一任务，不能新增另一套能力');
       for (const mcp of snapshot.mcp) if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_mcp_names WHERE server_name=?').get(mcp.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','已有会话使用此MCP名称，不能改名覆盖');
       this.store.sqlite.prepare("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES(?,2,?,?,?,?,'active')").run(snapshot.taskId,bytes,hash,snapshot.createdAt,snapshot.provenance);
@@ -173,11 +176,11 @@ export class CapabilitySessionRegistry {
     }
   }
   /** Host-only active roots. Full S and its long-term refs remain untouched. */
-  scopedReferencesCoordinated(taskId:string,appIds:readonly string[],projectionIds:readonly string[]=[]):SessionResourceReference[]{
+  scopedReferencesCoordinated(taskId:string,appIds:readonly string[],projectionIds:readonly string[]=[],independent=false):SessionResourceReference[]{
     const current=this.inspectCoordinated(taskId),snapshot=current.snapshot;
-    if(snapshot.legacyBinding||snapshot.provenance!=='created'||!appIds.length||appIds.length>32||new Set(appIds).size!==appIds.length||appIds.some(id=>!snapshot.packages.some(p=>p.appId===id))||new Set(projectionIds).size!==projectionIds.length||projectionIds.length>4096)throw new ApplicationError('INVALID_INPUT','本轮应用范围必须来自原固定选择');
+    if(snapshot.legacyBinding||snapshot.provenance!=='created'||(!appIds.length&&!independent)||(independent&&appIds.length!==0)||appIds.length>32||new Set(appIds).size!==appIds.length||appIds.some(id=>!snapshot.packages.some(p=>p.appId===id))||new Set(projectionIds).size!==projectionIds.length||projectionIds.length>4096)throw new ApplicationError('INVALID_INPUT','本轮应用范围必须来自原固定选择');
     this.validatePackages({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))});
-    const expected=this.expectedSources({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))}),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
+    const expected=this.expectedSources(this.executionSelection(snapshot,appIds)),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
     for(const [id,source]of expected){const ref=all.find(r=>r.refId===id);if(!ref||ref.refKind!==source.kind||ref.refHash!==source.hash)throw new ApplicationError('SNAPSHOT_CORRUPT','本轮所需原资源引用缺失或身份不同');roots.push(ref);}
     // The ordinary launcher always reads its original M4 runtime, including
     // when its context MCP is disabled. Narrow only application-specific roots.
@@ -185,9 +188,9 @@ export class CapabilitySessionRegistry {
     for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection','claude-delivery'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
     return roots.sort((a,b)=>compareCodePoints(a.refId,b.refId));
   }
-  async verifyScopedResources(taskId:string,appIds:readonly string[],projectionIds:readonly string[]):Promise<void>{
+  async verifyScopedResources(taskId:string,appIds:readonly string[],projectionIds:readonly string[],independent=false):Promise<void>{
     const current=await this.get(taskId);if(current.retention!=='active')throw new ApplicationError('SESSION_ON_HOLD','原会话能力处于保留状态');
-    const roots=this.scopedReferencesCoordinated(taskId,appIds,projectionIds);
+    const roots=this.scopedReferencesCoordinated(taskId,appIds,projectionIds,independent);
     for(const ref of roots){const resource=this.store.get(ref.refId);if(resource.kind!==ref.refKind||resource.contentHash!==ref.refHash||resource.relativePath!==ref.relativePath||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_STATE_CHANGED','本轮固定资源身份或状态已改变');if(ref.refKind==='application-package'){const pack=this.packages.get(ref.refHash);verifyPackageTree(join(this.store.root,ref.relativePath),pack,this.store.storeId);}else if(ref.refKind==='runtime')this.runtimes.verify(ref.refHash);else this.deps.verifyExtraResource(resource,current.snapshot);}
   }
   async addProjectionReference(taskId: string,expectedHash: string,resourceId: string): Promise<void> {

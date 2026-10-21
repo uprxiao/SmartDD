@@ -8,6 +8,10 @@ import { agentFixture } from './agent-fixture';
 let f: Awaited<ReturnType<typeof agentFixture>>;
 beforeEach(async () => { f = await agentFixture(); }); afterEach(() => f.cleanup());
 describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixed adapter packages and actual complete Skill projection plans', () => {
+ it('plans explicit independent Codex standards and context without allowing an app bridge or silently accepting an ordinary empty scope',async()=>{
+  const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),legacy=input.mcp.filter(m=>m.kind==='legacy-project-context'),safe={...input,independentCapabilities:true as const,applicationScope:[],mcp:legacy};expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,applicationScope:[]})).toThrow();expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,applicationScope:[],independentCapabilities:true})).toThrow();const plan=f.adapters.plan(snapshot.adapterBinding.hash,safe),flags=(parseToml(plan.args.find(a=>a.startsWith('skills.config='))!).skills as {config:{path:string;enabled:boolean}[]}).config;for(const p of snapshot.packages)for(const s of p.skills)expect(flags).toContainEqual({path:s.projectionPath,enabled:false});for(const s of snapshot.standardSkills)expect(flags).toContainEqual({path:s.projectionPath,enabled:true});expect(plan.args.join('\n')).not.toContain('mcp_servers.'+snapshot.mcp.find(m=>m.kind==='applications')!.serverName);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(snapshot);
+ });
+
   it('installs complete CJS adapters without replacing one version and retains the old adapter after a new install', async () => {
     const source = bundledAgentAdapters()[0], first = await f.adapters.install(source.metadata,source.files); expect(first.hash).toBe(f.installedAdapters[0].hash);
     const changed = { ...source.files,'planner.cjs': Buffer.from(source.files['planner.cjs'].toString() + '\n// changed\n') }; await expect(f.adapters.install(source.metadata,changed)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' });

@@ -11,13 +11,13 @@ import {canonicalJson,digest} from './manifest';
 import {verifyOwnedBundle} from './owned-bundle';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/);
 export const deliveryOwner=z.object({instanceId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/)}).strict();
-const appIds=z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(1).max(32).refine(a=>new Set(a).size===a.length);
+const appIds=z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(0).max(32).refine(a=>new Set(a).size===a.length);
 const view=z.object({resourceId:z.string(),sourceId:z.string(),hash,generation:z.number().int().positive(),appIds}).strict();
 const participant=z.object({owner:deliveryOwner,leaseId:z.uuid()}).strict();
 const pending=z.object({id:z.uuid(),sourceId:z.string(),hash,appIds,priorHash:hash.nullable(),priorResourceIds:z.array(z.string()).max(1024),resourceId:z.string(),generation:z.number().int().positive(),abandonedStages:z.array(z.string()).max(64),participants:z.array(participant).min(1).max(64),activeOwner:deliveryOwner,stage:z.string(),backup:z.string()}).strict();
 const preparation=z.object({id:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive()}).strict();
 const consumer=z.object({runId:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive(),resourceId:z.string(),hash,generation:z.number().int().positive()}).strict();
-export const claudeSlotSchema=z.object({schema:z.literal(1),storeId:z.uuid(),taskId:id,selectionHash:hash,root:z.string(),anchorId:z.string(),revision:z.number().int().positive(),current:view.nullable(),pending:pending.nullable(),preparation:preparation.nullable(),consumers:z.array(consumer).max(128)}).strict();
+export const claudeSlotSchema=z.object({schema:z.union([z.literal(1),z.literal(2)]),storeId:z.uuid(),taskId:id,selectionHash:hash,root:z.string(),anchorId:z.string(),revision:z.number().int().positive(),current:view.nullable(),pending:pending.nullable(),preparation:preparation.nullable(),consumers:z.array(consumer).max(128)}).strict().superRefine((slot,ctx)=>{if(slot.schema===1&&(slot.current?.appIds.length===0||slot.pending?.appIds.length===0))ctx.addIssue({code:'custom',message:'旧交付记录不能声明空应用范围'});});
 export type ClaudeSlot=z.infer<typeof claudeSlotSchema>;
 export type DeliveryOwner=z.infer<typeof deliveryOwner>;
 export const claudeDeliveryTokenSchema=claudeRunDeliverySchema.extend({preparationId:z.uuid()});
@@ -71,7 +71,7 @@ export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord
  return slot;
 }
 export function assertClaudeReservation(store:ResourceStore,taskId:string,token?:ClaudeDeliveryToken):void{
- const slot=readClaudeSlot(store,taskId);if(!slot){if(token)throw fail();return;}
+ const slot=readClaudeSlot(store,taskId);if(token&&token.schema!==2)throw fail();if(!slot){if(token)throw fail();return;}
  if(!token||slot.pending)throw new ApplicationError('RESOURCE_BUSY','原Claude目录需通过本轮交付占用准备运行');assertClaudePreparation(store,slot);const p=slot.preparation!,v=slot.current!;
  if(token.taskId!==taskId||token.preparationId!==p.id||token.leaseId!==p.leaseId||token.revision!==slot.revision||token.resourceId!==v.resourceId||token.hash!==v.hash||token.generation!==v.generation||canonicalJson(token.appIds)!==canonicalJson(v.appIds))throw fail();
 }
@@ -82,11 +82,11 @@ export function bindClaudeDelivery(store:ResourceStore,token:ClaudeDeliveryToken
  if(!row||row.task_id!==slot.taskId||row.state!=='preparing'||row.owner_instance_id!==p.owner.instanceId||row.owner_pid!==p.owner.pid||row.owner_started_at!==p.owner.startedAt||canonicalJson([...appIds].sort())!==canonicalJson([...token.appIds].sort()))throw fail();
  const stamp=new Date().toISOString();store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(aliasLeaseId,slot.anchorId,runId,p.owner.instanceId,p.owner.pid,p.owner.startedAt,stamp);
  slot.consumers.push({runId,leaseId:aliasLeaseId,owner:p.owner,revision:slot.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation});slot.preparation=null;writeClaudeSlot(store,slot);store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=?").run(stamp,p.leaseId);
- return{taskId:token.taskId,leaseId:aliasLeaseId,revision:token.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation,appIds:[...token.appIds]};
+ return{schema:2,taskId:token.taskId,leaseId:aliasLeaseId,revision:token.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation,appIds:[...token.appIds]};
 }
 export function assertClaudeRunDelivery(store:ResourceStore,runId:string,proof:ClaudeRunDelivery):void{
  const slot=readClaudeSlot(store,proof.taskId),v=slot?.current,c=slot?.consumers.find(c=>c.runId===runId);
- if(!slot||!v||!c||slot.pending||slot.revision!==proof.revision||c.revision!==proof.revision||c.leaseId!==proof.leaseId||c.resourceId!==proof.resourceId||c.hash!==proof.hash||c.generation!==proof.generation||v.resourceId!==proof.resourceId||v.hash!==proof.hash||v.generation!==proof.generation||canonicalJson(v.appIds)!==canonicalJson(proof.appIds))throw fail();
+ if(proof.schema!==2||!slot||!v||!c||slot.pending||slot.revision!==proof.revision||c.revision!==proof.revision||c.leaseId!==proof.leaseId||c.resourceId!==proof.resourceId||c.hash!==proof.hash||c.generation!==proof.generation||v.resourceId!==proof.resourceId||v.hash!==proof.hash||v.generation!==proof.generation||canonicalJson(v.appIds)!==canonicalJson(proof.appIds))throw fail();
  const run=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
  if(!run||run.task_id!==slot.taskId||run.owner_instance_id!==c.owner.instanceId||run.owner_pid!==c.owner.pid||run.owner_started_at!==c.owner.startedAt||['stopped','failed'].includes(run.state))throw fail();lease(store,c.leaseId,c.owner,runId,'run',slot.anchorId,['preparing','active']);
 }

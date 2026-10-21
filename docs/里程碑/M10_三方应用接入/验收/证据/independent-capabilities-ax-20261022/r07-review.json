@@ -1,0 +1,380 @@
+{
+  "recordedAt": "2026-10-21T20:19:52.317226+00:00",
+  "requirementBaseline": "R1.6 including12.21",
+  "requirementSha256": "65029b2a55b57597302247475cb03a1743cd8d352b2068d3ad8ccede126d979e",
+  "sourceBase": "51c8b44850ff23738be1183d90266a692bdaf9bf plus AX16 frozen overlay",
+  "sourceInputs": 2005,
+  "reviewBoundary": "14 numbered R07 rows including parent;static implementation/evidence-gap review,not full87 or formal acceptance",
+  "softwareState": "final full64 completed1279passed0failed0pending;sourceFrozen2005;types0;software only",
+  "currentPhase": 5,
+  "goal": "active full M10;not complete",
+  "rows": [
+    {
+      "id": "M10-R07",
+      "sourceLine": 47,
+      "requirementRowSha256": "5845b53d26fa2c2257aff0cd043c5b145db6e091015b625a42591931a792a108",
+      "assessment": "Parent navigation only;children below are assessed separately",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/task-capability-launcher.ts",
+          "sha256": "5136e31a5549450b88f91386ecc75be05586ff63282971c9e40eeca1825af19a"
+        },
+        {
+          "path": "src/main/core/applications/tool-service.ts",
+          "sha256": "5002ca293b9ba9926207db740584a697a1560152ca61696a090017542ab004aa"
+        }
+      ],
+      "remaining": [
+        "Not a separate completed acceptance case"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-01",
+      "sourceLine": 234,
+      "requirementRowSha256": "f84410cf2fee8848897050e364f44a350f30e13aed23238eee1f5b6d523f0e6d",
+      "assessment": "Known supported CLI resource-fault path implemented in AX;not fully closed",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/task-capability-launcher.ts",
+          "sha256": "5136e31a5549450b88f91386ecc75be05586ff63282971c9e40eeca1825af19a"
+        },
+        {
+          "path": "src/main/core/applications/application-run-scope.ts",
+          "sha256": "6ec554e04008b6720692b6f6e01b050d0cca2fbc58be592b35f54c9a30ab0170"
+        },
+        {
+          "path": "src/main/core/applications/claude-delivery.ts",
+          "sha256": "02d1757e42108011e812e7704e064d014764bc6761dcccc600549e30fb87aceb"
+        }
+      ],
+      "remaining": [
+        "App-specific name/config conflicts remain",
+        "Unknown-version guard with unready source dependency combination untested;see next-guard-audit.md",
+        "Current real App still unexecuted"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-02",
+      "sourceLine": 235,
+      "requirementRowSha256": "7dd8ccc7ffce17e173d92b6e085e72ae70696c1259bc6f68da5c35ee0db838f7",
+      "assessment": "Current-call authorization and same-identity restoration plus stopped-run resource restoration have software paths",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/tool-service.ts",
+          "sha256": "5002ca293b9ba9926207db740584a697a1560152ca61696a090017542ab004aa"
+        },
+        {
+          "path": "src/main/core/applications/execution-context.ts",
+          "sha256": "5a640192413776a8322dfc41f616aba1e46806b3a5fcb1de6dbc04b64d93a13b"
+        },
+        {
+          "path": "src/main/core/applications/task-capability-launcher.ts",
+          "sha256": "5136e31a5549450b88f91386ecc75be05586ff63282971c9e40eeca1825af19a"
+        }
+      ],
+      "remaining": [
+        "Actual Native CLI channel recovery and both-Agent App confirmation pending",
+        "Do not auto-replay external write or force unrelated work to stop"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-03",
+      "sourceLine": 323,
+      "requirementRowSha256": "95a989466c4fcbb8ed8fd69f3c3c2fcf77791416ee6394a8fdc928af0c985a68",
+      "assessment": "Current revocation,impact query and post-await checks implemented;requires final UI/native revalidation",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/execution-context.ts",
+          "sha256": "5a640192413776a8322dfc41f616aba1e46806b3a5fcb1de6dbc04b64d93a13b"
+        },
+        {
+          "path": "src/main/core/applications/connection-service.ts",
+          "sha256": "fcea5abd4dc33b4291b7aabb40ab66d91e2995dcd38ef73c5f27da7029fee353"
+        },
+        {
+          "path": "src/main/core/applications/selection-service.ts",
+          "sha256": "8f1d14771e0a441ca37bd2c5d7c590fcf37d4196a420c7d18bdb60aa1656ed65"
+        },
+        {
+          "path": "src/main/core/applications/activity-service.ts",
+          "sha256": "4e8b0137ea42012a2b4562cb99368d28bdc648016d842c289c47b1055dd6b6c0"
+        }
+      ],
+      "remaining": [
+        "Current App disconnect/remove impact-list UI and in-flight result withholding pending"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-04",
+      "sourceLine": 333,
+      "requirementRowSha256": "00e08302cbdf367e35e81311ce29d7099aae879769a9e627a9a72e984ede33f0",
+      "assessment": "Host-owned run and kernel-bound private bridge gate present;not filesystem secrecy",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/private-broker.ts",
+          "sha256": "b8398aba1ae516e8b824a099f470d8a2cbb112304d2769b47eecd0311f8c02d4"
+        },
+        {
+          "path": "src/main/core/applications/agent-bridge-processes.ts",
+          "sha256": "6d720b29d41c154b5aea9811a0c4c2a9f33b76747ba87f44762acb6b602a2051"
+        },
+        {
+          "path": "src/main/core/applications/run-registry.ts",
+          "sha256": "03d7c66c2f1bd8a49933cd241f9a4cbfac92e36d41cd35e26d13cf6867fed3ca"
+        }
+      ],
+      "remaining": [
+        "External CLI/current App positive and negative authentication combinations need final candidate validation"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-05",
+      "sourceLine": 334,
+      "requirementRowSha256": "e692a76ac001654de6e15de853fd88483f70658d1943b1fdd34bf993ea5da72e",
+      "assessment": "Host close revokes private tickets/peers;old credentials do not create a new owned run",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/private-broker.ts",
+          "sha256": "b8398aba1ae516e8b824a099f470d8a2cbb112304d2769b47eecd0311f8c02d4"
+        },
+        {
+          "path": "src/main/core/applications/run-registry.ts",
+          "sha256": "03d7c66c2f1bd8a49933cd241f9a4cbfac92e36d41cd35e26d13cf6867fed3ca"
+        },
+        {
+          "path": "src/main/core/applications/task-capability-launcher.ts",
+          "sha256": "5136e31a5549450b88f91386ecc75be05586ff63282971c9e40eeca1825af19a"
+        }
+      ],
+      "remaining": [
+        "Current packaged host-exit/restart with actual child lifecycle pending",
+        "Unknown oldAF hold retained;not fabricated as exited"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-06",
+      "sourceLine": 344,
+      "requirementRowSha256": "06b5f00412d1f82d3c04d7e8b437e9fc3edb6edc0d68d7ea6b8f8920e1e03a54",
+      "assessment": "Code remains scoped to macOS arm64 and CC/Codex;final support unproved by current software tests",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/agent-support-service.ts",
+          "sha256": "ebc31595d80c361bd174c6c49e24d545261bb2b185b74a548e7bea91cc6788fd"
+        },
+        {
+          "path": "src/main/core/applications/agent-adapter-registry.ts",
+          "sha256": "29970e1e1d559f9b2071f70c5ca46f2956495770d152cef1568c5cbef33b1bb2"
+        }
+      ],
+      "remaining": [
+        "All current packaged business/native matrix pending",
+        "Other platforms/future Agents remain excluded by approved12.13"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-07",
+      "sourceLine": 345,
+      "requirementRowSha256": "7dd66d55be9a9f04efa5f8a850da3ce73b0a3fa62433c35ed9c46124acd5caaf",
+      "assessment": "Exact CLI/platform/adapter gate exists;version fixtures are not actual CLI support evidence",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/native-launch-context.ts",
+          "sha256": "994e3b879b5e3f618e9d79f48d2371d51cb6506aad01eb186cffb9c2752f6d09"
+        },
+        {
+          "path": "src/main/core/applications/agent-adapter-registry.ts",
+          "sha256": "29970e1e1d559f9b2071f70c5ca46f2956495770d152cef1568c5cbef33b1bb2"
+        },
+        {
+          "path": "src/main/core/applications/session-diagnostics.ts",
+          "sha256": "56cb5df9a9ec232308506bf49bff6cd44e32e694a70e4581e7179aad0ef30a59"
+        }
+      ],
+      "remaining": [
+        "Actual current candidate CC/Codex versions to pin and verify",
+        "Unverified-version plus fault combination remains to test"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-08",
+      "sourceLine": 375,
+      "requirementRowSha256": "4c6f419d9e4088f086633cbeedcf1bd96e7bdd56e184427ecd295018697f84dd",
+      "assessment": "WeakMap host producers and fixed package routing separate UI,Agent and index",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/execution-context.ts",
+          "sha256": "5a640192413776a8322dfc41f616aba1e46806b3a5fcb1de6dbc04b64d93a13b"
+        },
+        {
+          "path": "src/main/core/applications/application-service.ts",
+          "sha256": "397a508badf7f067da3f6d35de322f98b8f9d109418e4e4939709a5cab001cc3"
+        },
+        {
+          "path": "src/main/core/applications/business-data-service.ts",
+          "sha256": "70c25191bfd3fc58c69ef4f8be365e485c88932f8030d3033bdc446ca4ae1ad3"
+        }
+      ],
+      "remaining": [
+        "Final App origin/scope,concurrency and upgrade/revision matrix pending"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-09",
+      "sourceLine": 376,
+      "requirementRowSha256": "492e5d44ba1c8ede930aa2e88ce802d98da44633c95628fc9af34e981afcca9c",
+      "assessment": "Derived read/index context and bounded cancellation paths exist",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/execution-context.ts",
+          "sha256": "5a640192413776a8322dfc41f616aba1e46806b3a5fcb1de6dbc04b64d93a13b"
+        },
+        {
+          "path": "src/main/core/applications/mail-read-data-service.ts",
+          "sha256": "951242a7b124d6f0bd18fc9de1a9a19b32d385a22e2367a2e755bd33198d4df0"
+        },
+        {
+          "path": "src/main/core/applications/providers/mail-worker.ts",
+          "sha256": "c07b3dbef27ebc97ed6343a36a4d285c6dae576dc13cf57710e310789daee1c3"
+        }
+      ],
+      "remaining": [
+        "Real Foxmail permission/identity/incremental and final App concurrency pending",
+        "No scheduler producer implemented or claimed"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-10",
+      "sourceLine": 403,
+      "requirementRowSha256": "c7d336ba6affad7b43c6b4c095e13989ff5ce3e065e282e7ce3488875efbbd69",
+      "assessment": "Bounded read retries/write-never semantics and unavailable diagnostics present",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/tool-service.ts",
+          "sha256": "5002ca293b9ba9926207db740584a697a1560152ca61696a090017542ab004aa"
+        },
+        {
+          "path": "src/main/core/applications/private-broker.ts",
+          "sha256": "b8398aba1ae516e8b824a099f470d8a2cbb112304d2769b47eecd0311f8c02d4"
+        },
+        {
+          "path": "src/main/core/applications/session-diagnostics.ts",
+          "sha256": "56cb5df9a9ec232308506bf49bff6cd44e32e694a70e4581e7179aad0ef30a59"
+        }
+      ],
+      "remaining": [
+        "Adapter metadata bridgeRecovery remains unverified;no actual recovery success inferred",
+        "Native transport failure/recovery must not be replaced by automatic Agent restart"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-11",
+      "sourceLine": 414,
+      "requirementRowSha256": "bfc733cdbc35260eb1bcbe16db643da2886c5c158a3514ba5c50625604eaae41",
+      "assessment": "Owned-resource filtering and policy checked;App-specific conflicts remain a real implementation gap",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/agent-adapter-registry.ts",
+          "sha256": "29970e1e1d559f9b2071f70c5ca46f2956495770d152cef1568c5cbef33b1bb2"
+        },
+        {
+          "path": "src/main/core/applications/discovery-catalog.ts",
+          "sha256": "2c7ac5618d6f10bc8b2c0dfc73c3a542a4cc482018d624c38c50a6146cba112b"
+        },
+        {
+          "path": "src/main/core/applications/task-capability-launcher.ts",
+          "sha256": "5136e31a5549450b88f91386ecc75be05586ff63282971c9e40eeca1825af19a"
+        },
+        {
+          "path": "src/main/core/applications/execution-context.ts",
+          "sha256": "5a640192413776a8322dfc41f616aba1e46806b3a5fcb1de6dbc04b64d93a13b"
+        }
+      ],
+      "remaining": [
+        "Finish App-specific Skill/tool/config conflict isolation without editing user files",
+        "Shared conflicts and independent capability preservation require explicit classification",
+        "Current actual Agent and App user-config regression pending"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-12",
+      "sourceLine": 436,
+      "requirementRowSha256": "3ff12cda855a4efc9504f3b01be936eaf1fd4162a0d2c0d10e3fe31716feb4b4",
+      "assessment": "Existing authorized mechanism research is separate from current final App;development authorization not reopened",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/agent-adapter-registry.ts",
+          "sha256": "29970e1e1d559f9b2071f70c5ca46f2956495770d152cef1568c5cbef33b1bb2"
+        },
+        {
+          "path": "src/main/core/applications/session-projector.ts",
+          "sha256": "eb72336ded861e628db207b6631453b49a799cd18f446fdc0c315fd8fe64468e"
+        }
+      ],
+      "remaining": [
+        "Review historical mechanism evidence scope when reusing;no help/version/file existence substitution",
+        "User permitted dependent verification during development"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    },
+    {
+      "id": "M10-R07-13",
+      "sourceLine": 437,
+      "requirementRowSha256": "2068de449d280870e9777d44e812312f7e33b3695a3d03a2299596be6db71e19",
+      "assessment": "Not reached:phase5 and remaining87-row review precede new package",
+      "staticSourceReview": true,
+      "codeEvidence": [
+        {
+          "path": "src/main/core/applications/task-capability-launcher.ts",
+          "sha256": "5136e31a5549450b88f91386ecc75be05586ff63282971c9e40eeca1825af19a"
+        }
+      ],
+      "remaining": [
+        "New exact-source package/all72 current-scope layers,actual both Agents/system items,fixes/retests and delivery required"
+      ],
+      "complete": false,
+      "currentActualAppEvidence": false
+    }
+  ],
+  "finalSoftwareEvidence": {
+    "path": "regression-result.json",
+    "sha256": "27002a0272d446f7d82df4051cb3e7aec98210782e29faefbbb816b029810701"
+  }
+}

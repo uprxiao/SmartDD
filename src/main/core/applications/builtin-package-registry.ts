@@ -33,7 +33,7 @@ export class BuiltinPackageRegistry {
   }
 
   /** Retained distribution identity only. Never proof that executable bytes exist. */
-  trustedMetadata(hash: string): InstalledApplicationPackage {
+  retainedMetadata(hash: string): InstalledApplicationPackage {
     const installed = this.packages.get(hash);
     const rows = this.store.sqlite.prepare('SELECT source_index_hash,source_index_json FROM capability_builtin_package_sources WHERE package_hash=?').all(hash) as {source_index_hash:string;source_index_json:string}[];
     if (!rows.length || !['zentao','mail'].includes(installed.appId)) throw new ApplicationError('SCOPE_DENIED','应用适配器没有可信内置分发依据');
@@ -43,6 +43,11 @@ export class BuiltinPackageRegistry {
       catch { throw new ApplicationError('HASH_MISMATCH','原内置分发依据损坏，保留记录并停止执行'); }
       if (index.indexHash !== row.source_index_hash || !index.apps.some(a => a.hash === installed.packageHash && a.appId === installed.appId && a.version === installed.version) || !index.runtimes.some(r => r.hash === installed.manifest.runtime.hash && r.id === installed.manifest.runtime.id && r.protocolMajor === installed.manifest.runtime.protocolMajor)) throw new ApplicationError('HASH_MISMATCH','原内置分发依据与固定应用／运行资源不一致');
     }
+    return installed;
+  }
+  /** Executable metadata also requires a ready resource;retained identity grants nothing. */
+  trustedMetadata(hash:string):InstalledApplicationPackage {
+    const installed=this.retainedMetadata(hash);
     const resource = this.store.get(installed.resourceId);
     if (resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定内置应用资源未就绪');
     return installed;

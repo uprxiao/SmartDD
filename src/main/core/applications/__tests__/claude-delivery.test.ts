@@ -4,7 +4,7 @@ import {join} from 'node:path';
 import {afterEach,beforeEach,describe,expect,it} from 'vitest';
 import {ClaudeDeliveryCoordinator,type ClaudeDeliveryCheckpoint} from '../claude-delivery';
 import {readClaudeSlot,writeClaudeSlot,claudeRoot} from '../claude-delivery-state';
-import {digest} from '../manifest';
+import {digest,canonicalJson as canonicalSlot} from '../manifest';
 import {SessionCapabilityProjector} from '../session-projector';
 import {verifyOwnedBundle} from '../owned-bundle';
 import {runFixture,FixtureProcessReader} from './run-fixture';
@@ -16,6 +16,19 @@ const root=()=>join(f.store.root,claudeRoot(f.snapshot.taskId));
 const missing=()=>rmSync(join(f.store.root,f.application!.relativePath),{recursive:true});
 async function scoped(ids=['mail']){const token=await c.prepare(f.snapshot.taskId,ids),run=await f.runs.reserveScoped({taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash,bindings:[]},ids,[token.resourceId],undefined,token);runs.push(run);await run.prepare();return{token,run,proof:c.proof(run.runId,token)};}
 describe('real canonical Claude delivery and independent physical root occupancy',()=>{
+ it('delivers only original standards through an explicit independent slot and run without granting either original application',async()=>{
+  const before=await f.sessions.references(f.snapshot.taskId);for(const p of f.snapshot.packages){rmSync(join(f.store.root,f.store.get('app:'+p.packageHash).relativePath),{recursive:true});f.sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run('app:'+p.packageHash);}
+  await expect(c.prepare(f.snapshot.taskId,[])).rejects.toMatchObject({code:'INVALID_INPUT'});const token=await c.prepareIndependent(f.snapshot.taskId),run=await f.runs.reserveIndependent({taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash,bindings:[]},[token.resourceId],undefined,token);runs.push(run);await run.prepare();const proof=c.proof(run.runId,token);expect(proof).toMatchObject({schema:2,appIds:[]});expect(f.runs.bridgePreparation(run.runId).applicationScope).toEqual([]);expect(readClaudeSlot(f.store,f.snapshot.taskId)).toMatchObject({schema:2,current:{appIds:[]},preparation:null});c.assertRun(run.runId,proof);for(const p of f.snapshot.packages)for(const s of p.skills)expect(existsSync(s.projectionPath)).toBe(false);for(const ref of before)expect(await f.sessions.references(f.snapshot.taskId)).toContainEqual(ref);
+ });
+ it('rejects an old-format preparation token instead of silently upgrading an empty application handoff',async()=>{
+  missing();const token=await c.prepareIndependent(f.snapshot.taskId),{schema:_,...old}=token;let failure:unknown;try{const accepted=await f.runs.reserveIndependent({taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash,bindings:[]},[token.resourceId],undefined,old as never);runs.push(accepted);}catch(error){failure=error;}expect(failure).toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});await c.cancel(token);
+ });
+ it('does not accept a rehashed schema1 slot containing an empty current view or drop its preparation lease',async()=>{
+  missing();const token=await c.prepareIndependent(f.snapshot.taskId),id='claude-delivery-slot:'+f.snapshot.taskId,row=f.sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(id) as {plan_json:string},value=JSON.parse(row.plan_json);value.payload.schema=1;
+  // Hash the same canonical payload,so rejection concerns the old format itself.
+  value.evidenceHash=digest(canonicalSlot(value.payload));try{f.sqlite.prepare('UPDATE capability_resource_operations SET plan_json=? WHERE operation_id=?').run(JSON.stringify(value),id);expect(()=>readClaudeSlot(f.store,f.snapshot.taskId)).toThrow('待核验');expect(f.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE lease_id=?').get(token.leaseId)).toEqual({state:'active'});}finally{f.sqlite.prepare('UPDATE capability_resource_operations SET plan_json=? WHERE operation_id=?').run(row.plan_json,id);}await c.cancel(token);
+ });
+
  it('preserves original S/refs/full archive while delivering only healthy original Skills at their actual original paths',async()=>{
   const fixed=(f.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId) as {snapshot_json:string}).snapshot_json,before=await f.sessions.references(f.snapshot.taskId),old=before.find(r=>r.refKind==='session-projection')!;missing();const token=await c.prepare(f.snapshot.taskId,['mail']),slot=readClaudeSlot(f.store,f.snapshot.taskId)!;
   expect(slot.current?.appIds).toEqual(['mail']);expect(slot.pending).toBeNull();expect(slot.preparation?.leaseId).toBe(token.leaseId);expect(f.store.get(slot.anchorId)).toMatchObject({state:'recovery-required',integrity:'unknown',relativePath:claudeRoot(f.snapshot.taskId)});expect(f.store.get(old.refId)).toMatchObject({contentHash:old.refHash,relativePath:old.relativePath,state:'recovery-required'});

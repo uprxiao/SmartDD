@@ -70,6 +70,10 @@ function dataHost(execute:HostToolOperation['execute'],authorize:HostToolOperati
 }
 
 describe('complete trusted built-in mail and ZenTao packages',()=>{
+ it('retains approved package identity while unready without turning metadata into executable trust',async()=>{
+  const installed=await install('mail'),before=approvals();sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(installed.resourceId);expect(builtin.retainedMetadata(installed.packageHash)).toMatchObject({appId:'mail',packageHash:installed.packageHash});expect(()=>builtin.trustedMetadata(installed.packageHash)).toThrow('未就绪');expect(()=>builtin.assertTrusted(installed.packageHash)).toThrow('未就绪');expect(approvals()).toEqual(before);sqlite.prepare("UPDATE capability_builtin_package_sources SET source_index_json='{}' WHERE package_hash=?").run(installed.packageHash);expect(()=>builtin.retainedMetadata(installed.packageHash)).toThrow('分发依据损坏');
+ });
+
  it('builds both immutable packages with three full Skills,17 bounded contracts and the original pinned runtime',()=>{
    expect(verifyBundles(output,source.index.build.appVersion).apps.map(a=>({id:a.appId,skills:a.skills,tools:a.tools}))).toEqual([{id:'zentao',skills:2,tools:3},{id:'mail',skills:1,tools:14}]);
    const apps=source.applications();expect(apps.map(a=>a.manifest.appId).sort()).toEqual(['mail','zentao']);expect(apps.reduce((n,a)=>n+a.manifest.skills.length,0)).toBe(3);expect(apps.reduce((n,a)=>n+a.manifest.tools.length,0)).toBe(17);

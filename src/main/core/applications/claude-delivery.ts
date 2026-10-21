@@ -46,10 +46,12 @@ export class ClaudeDeliveryCoordinator{
  private claim(slot:ClaudeSlot):void{this.assertPending(slot);const p=slot.pending!;for(const participant of p.participants){const mine=this.sameOwner(participant.owner,this.owner)&&this.operations.has(p.id);if(!mine&&this.processes.state(participant.owner)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原Claude发布者或恢复者仍存活或无法核实');}
   if(!this.sameOwner(p.activeOwner,this.owner)||!this.operations.has(p.id)){if(p.participants.length>=64)throw recovery();const leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-install',p.id,this.owner);p.participants.push({owner:this.owner,leaseId});p.activeOwner=this.owner;writeClaudeSlot(this.store,slot);this.operations.add(p.id);}
  }
- private preparation(slot:ClaudeSlot):ClaudeDeliveryToken{const v=slot.current!;if(!v||slot.pending||slot.preparation)throw recovery();const id=randomUUID(),leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-preparation',id,this.owner);slot.preparation={id,leaseId,owner:this.owner,revision:slot.revision};writeClaudeSlot(this.store,slot);this.preparations.add(id);return{taskId:slot.taskId,preparationId:id,leaseId,revision:slot.revision,resourceId:v.resourceId,hash:v.hash,generation:v.generation,appIds:[...v.appIds]};}
- async prepare(taskId:string,appIds:readonly string[]):Promise<ClaudeDeliveryToken>{
+ private preparation(slot:ClaudeSlot):ClaudeDeliveryToken{const v=slot.current!;if(!v||slot.pending||slot.preparation)throw recovery();const id=randomUUID(),leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-preparation',id,this.owner);slot.preparation={id,leaseId,owner:this.owner,revision:slot.revision};writeClaudeSlot(this.store,slot);this.preparations.add(id);return{schema:2,taskId:slot.taskId,preparationId:id,leaseId,revision:slot.revision,resourceId:v.resourceId,hash:v.hash,generation:v.generation,appIds:[...v.appIds]};}
+ async prepare(taskId:string,appIds:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,appIds,false);}
+ async prepareIndependent(taskId:string):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,[],true);}
+ private async prepareSelection(taskId:string,appIds:readonly string[],independent:boolean):Promise<ClaudeDeliveryToken>{
   if(readClaudeSlot(this.store,taskId)?.pending){const recovered=await this.recover(taskId);if(recovered)await this.cancel(recovered);}
-  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds);if(!source.applicationScope.length)throw recovery();
+  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds,independent);if(!source.applicationScope.length&&!independent)throw recovery();
   const relative=claudeRoot(taskId),root=join(this.store.root,relative);let archiveId:string|null=null;
   // Before the first canonical change, preserve the actual registered complete
   // original tree.Archive creation never guesses a missing original body.
@@ -60,7 +62,7 @@ export class ClaudeDeliveryCoordinator{
     if(present(root)&&!archiveId)throw new ApplicationError('OWNERSHIP_CONFLICT','原目录在准备期间被其他内容占用');
     this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,'claude-delivery-root',?,?,'C',?,?,'recovery-required',1,'unknown',?)").run(anchorId,digest(canonicalJson({taskId,selectionHash,root:relative})),this.store.storeId,`claude-deliveries/${taskId}/anchor`,relative,claudeSlotId(taskId));writeClaudeSlot(this.store,slot);
    }
-   if(slot.selectionHash!==current.selectionHash||slot.pending)throw recovery();this.recoverPreparation(slot);this.idle(slot);
+   if(slot.selectionHash!==current.selectionHash||slot.pending)throw recovery();this.recoverPreparation(slot);this.idle(slot);if(independent)slot.schema=2;
    if(slot.current?.hash===source.bundle.hash){verifyClaudeDelivery(this.store,this.store.get(slot.current.resourceId),current.snapshot);token=this.preparation(slot);return;}
    const priorIds=(this.store.sqlite.prepare("SELECT resource_id FROM capability_resources WHERE path_scope='C' AND COALESCE(scope_relative_path,relative_path)=? AND resource_id<>?").all(relative,slot.anchorId) as {resource_id:string}[]).map(r=>r.resource_id);
    const refs=this.store.sqlite.prepare('SELECT ref_id FROM capability_session_refs WHERE task_id=?').all(taskId) as {ref_id:string}[];
