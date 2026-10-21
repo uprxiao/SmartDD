@@ -1,3 +1,4 @@
+import type {ApplicationImpactQuery} from '@shared/application-impact';
 import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {applicationsChangedEvent} from '@shared/events';
@@ -14,6 +15,7 @@ export function useApplicationEvents(){const client=useQueryClient();useEffect((
 export function useCatalog(){return useQuery({queryKey:['applications','catalog'],queryFn:async()=>unwrap(await rpc.applications.catalog()),retry:false});}
 export function useConnections(appId:ApplicationId){return useQuery({queryKey:['applications','connections',appId],queryFn:async()=>unwrap(await rpc.applications.connections(appId)),retry:false});}
 export function useProjectApplication(projectId:string,appId:ApplicationId){return useQuery({queryKey:['applications','project',projectId,appId],queryFn:async()=>unwrap(await rpc.applications.projectSettings(projectId,appId)),retry:false});}
+export function useApplicationImpact(input:ApplicationImpactQuery|null){return useQuery({queryKey:['applications','impact',input],queryFn:async()=>{if(!input)throw new Error('请选择影响核对目标');return unwrap(await rpc.applications.impact(input));},enabled:input!==null,retry:false,gcTime:0,refetchOnWindowFocus:false});}
 export function useApplicationAction(){
  const client=useQueryClient(),[busy,setBusy]=useState<string|null>(null),[error,setError]=useState('');
  const run=async(key:string,work:()=>Promise<unknown>)=>{if(busy)return false;setBusy(key);setError('');try{await work();await client.invalidateQueries({queryKey:['applications']});return true;}catch(error){setError(rpcErrorMessage(error));return false;}finally{setBusy(null);}};

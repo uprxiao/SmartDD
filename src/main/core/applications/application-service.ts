@@ -1,3 +1,5 @@
+import {ApplicationImpactService} from './application-impact';
+import type {ApplicationImpactQuery} from '@shared/application-impact';
 import {taskUsesApplication} from './application-run-policy';
 import {canonicalJson,digest} from './manifest';
 import {ApplicationTerminalInsertion} from './terminal-insertion';
@@ -108,6 +110,7 @@ export class ApplicationService {
     const unfinished=this.store.sqlite.prepare("SELECT 1 FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing') LIMIT 1").get();
     if(unfinished)try{await this.mailExecution();}catch(error){this.mailRecoveryIssue={code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:'原邮件执行的恢复核查尚未完成；保留原结果，不自动重发'};}
   }
+  impact(sender:ApplicationUiSender,input:ApplicationImpactQuery){this.options.requireSender(sender);return new ApplicationImpactService(this.store).inspect(input);}
   diagnoseSession(sender:ApplicationUiSender,taskId:string){this.options.requireSender(sender);return this.sessionDiagnostics.inspect(taskId);}
   listVersions(sender:ApplicationUiSender,appId:ApplicationId){this.options.requireSender(sender);return this.versions.list(appId);}
   async cleanupVersion(sender:ApplicationUiSender,input:ApplicationVersionCleanup){this.options.requireSender(sender);const result=await this.versions.cleanup(input);this.options.changed?.();return result;}

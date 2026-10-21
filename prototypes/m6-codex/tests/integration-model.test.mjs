@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { initialIntegrationState, projectIntegrationState, validateConnection, availableConnections, saveConnection, referenceText, packageVersion, projectPackages, toggleProjectApplication, integrationSnapshot, snapshotCurrent, simulatePackageUpgrade, selectedConnections, switchProjectZenTao, sessionApplicationState, projectAppEnabled, removeApplication, validMailDays, saveDemoDraft, packageRetention, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted } from '../src/integration-model.mjs';
+import { demoApplicationImpact, demoZenTaoRuns, initialIntegrationState, projectIntegrationState, validateConnection, availableConnections, saveConnection, referenceText, packageVersion, projectPackages, toggleProjectApplication, integrationSnapshot, snapshotCurrent, simulatePackageUpgrade, selectedConnections, switchProjectZenTao, sessionApplicationState, projectAppEnabled, removeApplication, validMailDays, saveDemoDraft, packageRetention, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted } from '../src/integration-model.mjs';
 import { selectProjectMailConnection, sessionCapabilityDiagnostic, recoverSessionCapability, demoDraftSendEligibility, mailSourceDiagnostic } from '../src/integration-model.mjs';
 
 test('projection drops passwords, tokens, unknown apps and dangling project bindings', () => {
@@ -343,4 +343,17 @@ test('mail reading and SMTP slot revisions change independently and retain a cle
  const cleared=selectProjectMailConnection(readChanged,'ais','smtp',''),reselected=selectProjectMailConnection(cleared,'ais','smtp','smtp-slot');
  assert.equal(demoDraftSendEligibility(reselected,'ais',created.draft).changed,true);
  assert.ok(reselected.mailSlotRevisions.ais.smtp>created.draft.mailSendSlotRevision);
+});
+
+
+test('impact lists retain disabled and archived project references without copying connection configuration',()=>{
+ const state=projectIntegrationState(initialIntegrationState());state.projectApps.smartdd.zentao=false;const before=JSON.stringify(state);
+ const impact=demoApplicationImpact(state,{kind:'disconnect',connectionId:'zt-demo'},[{id:'ais',name:'业务项目'},{id:'smartdd',name:'旧项目',archived:true}]);
+ assert.deepEqual(impact.projects.map(p=>[p.id,p.name,p.enabled,p.archived]),[['ais','业务项目',true,false],['smartdd','旧项目',false,true]]);assert.deepEqual(impact.connections.map(c=>Object.keys(c).sort()),[['authorization','enabled','id','name','providerId']]);assert.equal(impact.connections[0].name,'公司禅道');assert.equal(JSON.stringify(impact).includes('demo.user'),false);
+ const removed=demoApplicationImpact(state,{kind:'remove',appId:'mail'},[]);assert.deepEqual(removed.projects.map(p=>p.id),['ais','smartdd']);assert.equal(JSON.stringify(state),before);
+});
+test('prototype switch scope excludes known ordinary/no-app/native-only work and refuses explicitly unknown scope',()=>{
+ const state=projectIntegrationState(initialIntegrationState()),snapshot=integrationSnapshot(state,'ais');
+ const tasks=[{id:'ordinary',project:'ais',status:'running'},{id:'empty',project:'ais',status:'running',integrationSnapshot:{packages:[]}},{id:'native',project:'ais',status:'running',applicationInjection:'native-only',integrationSnapshot:snapshot},{id:'loaded',project:'ais',status:'running',integrationSnapshot:snapshot},{id:'foreign',project:'smartdd',status:'running',integrationSnapshot:snapshot}];
+ assert.deepEqual(demoZenTaoRuns(tasks,'ais').map(t=>t.id),['loaded']);assert.equal(switchProjectZenTao(state,'ais',null,tasks.filter(t=>t.id!=='loaded')).ok,true);assert.throws(()=>demoZenTaoRuns([{id:'unknown',project:'ais',status:'running',integrationScopeUnknown:true}],'ais'),/无法核验/);
 });

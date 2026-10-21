@@ -134,7 +134,7 @@ export function toggleProjectApplication(state, projectId, appId, enabled) {
 export function switchProjectZenTao(state, projectId, connectionId, tasks = []) {
   const candidate = state.connections.find(c => c.id === connectionId && c.app === 'zentao');
   if (connectionId && !candidate) return { ok: false, state, reason: '目标连接不存在。' };
-  const blocked = tasks.filter(t => t.project === projectId && t.status === 'running' && (!t.integrationSnapshot || t.integrationSnapshot.packages.some(p => p.id === 'zentao')));
+  let blocked;try{blocked=demoZenTaoRuns(tasks,projectId);}catch(error){return{ok:false,state,reason:error.message};}
   if (blocked.length) return { ok: false, state, reason: '先停止相关运行；不会自动重启。', tasks: blocked };
   return { ok: true, state: { ...state, bindings: { ...state.bindings, [projectId]: [...(state.bindings[projectId] || []).filter(id => !state.connections.some(c => c.id === id && c.app === 'zentao')), ...(connectionId ? [connectionId] : [])] } } };
 }
@@ -218,4 +218,23 @@ export function saveConnection(state, draft, hasCredential) {
 export function referenceText(type, id, connectionId = type === 'mail' ? 'fox-demo' : 'zt-demo') {
   const source = encodeURIComponent(connectionId);
   return type === 'mail' ? `[邮件 mail://${source}/${id}] 请基于这封示例邮件继续分析。` : `[禅道 ${type === 'story' ? 'Story' : 'Bug'} #${id} zentao://${source}/${type}/${id}] 请读取详情并分析。`;
+}
+
+// Synthetic-only scope. Missing snapshots in this prototype are known ordinary
+// fixtures; an explicitly unknown/corrupt scope must never be treated as empty.
+export function demoZenTaoRuns(tasks,projectId){
+ return tasks.filter(t=>{
+  if(t.project!==projectId||!['running','preparing','stopping'].includes(t.status))return false;
+  if(t.integrationScopeUnknown)throw new Error('无法核验受影响会话的应用范围，已保留原连接选择');
+  if(!t.integrationSnapshot)return false;
+  if(!Array.isArray(t.integrationSnapshot.packages))throw new Error('无法核验受影响会话的应用范围，已保留原连接选择');
+  return t.applicationInjection!=='native-only'&&t.integrationSnapshot.packages.some(p=>p.id==='zentao');
+ });
+}
+export function demoApplicationImpact(state,query,projects=[]){
+ const target=query.kind==='disconnect'?state.connections.find(c=>c.id===query.connectionId):null;
+ if(query.kind==='disconnect'&&!target)throw new Error('该示例连接不存在');
+ const appId=target?.app||query.appId||'zentao',connections=state.connections.filter(c=>query.kind==='disconnect'?c.id===query.connectionId:c.app===appId);
+ const ids=[...new Set([...Object.keys(state.bindings),...Object.keys(state.projectApps||{})])].filter(id=>query.kind!=='disconnect'||state.bindings[id]?.includes(query.connectionId));
+ return{kind:query.kind,appId,connections:connections.map(c=>({id:c.id,name:c.name,providerId:c.kind==='local'?'foxmail':c.kind,enabled:c.enabled,authorization:c.validation==='disconnected'?'disconnected':'connected'})),projects:ids.map(id=>({id,name:projects.find(p=>p.id===id)?.name||id,archived:!!projects.find(p=>p.id===id)?.archived,enabled:projectAppEnabled(state,id,appId),connections:(state.bindings[id]||[]).filter(x=>connections.some(c=>c.id===x)).map(x=>({id:x,slot:connections.find(c=>c.id===x).kind}))})),runs:[]};
 }

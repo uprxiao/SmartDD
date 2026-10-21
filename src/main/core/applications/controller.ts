@@ -1,3 +1,4 @@
+import type {ApplicationImpactQuery} from '@shared/application-impact';
 import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
 import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
 import type {ApplicationActivityQuery} from '@shared/application-activity';
@@ -22,6 +23,7 @@ export function createApplicationController(service:ApplicationService|undefined
     }
   };
   return createScopedRPCController({
+    impact:(event,input:ApplicationImpactQuery)=>run(event,current=>current.impact(event,input)),
     terminalBind:(event,input:ApplicationTerminalBind)=>run(event,current=>current.bindTerminal(event,input)),
     terminalInsert:(event,input:ApplicationTerminalInsert)=>run(event,current=>current.insertTerminal(event,input)),
     terminalRelease:(event,id:string)=>run(event,current=>current.releaseTerminal(event,id)),
