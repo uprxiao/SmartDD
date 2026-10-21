@@ -7,8 +7,8 @@ import type {ResourceStore} from './resource-store';
 import {CapabilitySessionRegistry,canonicalFuturePath,selectionHash,type StoredCapabilitySession} from './session-registry';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
 import {LegacyPluginSources,legacyPluginOrigin} from './legacy-plugin-source';
-import {LegacyTaskEvidenceReader,type LegacySkillVersion} from './legacy-task-evidence';
-import {legacyRetentionIdentitySchema,retainedLegacySource,legacyLogicalEvidence} from './legacy-session-source';
+import {inspectLegacySessionFiles} from './legacy-session-files';
+import {legacyRetentionIdentitySchema,retainedLegacySource} from './legacy-session-source';
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
 const requestSchema=z.object({identity:legacyRetentionIdentitySchema,sourceSnapshotHash:hash,adapterHash:hash,cliVersion:z.string().min(1).max(128),catalogGeneration:z.string().min(1).max(256)}).strict();
 export type LegacyMigrationRequest=z.infer<typeof requestSchema>;
@@ -37,8 +37,7 @@ export class LegacySessionMigration {
    if(!pointer||canonicalJson(pointer)!==canonicalJson(current.pointer))throw new ApplicationError('SNAPSHOT_CORRUPT','已迁移原任务指针缺失或不同');sameTask(row!.runtime_snapshot);await this.sessions.ensureMirror(identity.taskId);return{session:current,reused:true};
   }
   sameTask(original.row.source_record_json);
-  const reader=new LegacyTaskEvidenceReader(this.store.root,identity.home,id=>this.store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(id) as LegacySkillVersion|undefined),inspection=reader.inspect(identity,original.snapshot);
-  if(inspection.state!=='verified'||canonicalJson(legacyLogicalEvidence(inspection.evidence))!==canonicalJson(legacyLogicalEvidence(original.evidence)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4文件未按原依据完整核验，不能迁移');
+  const files=inspectLegacySessionFiles(this.store,original);
   if(original.evidence.pluginRoot&&!original.pluginSource)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Claude插件完整来源尚未保留');
   if(original.pluginSource)new LegacyPluginSources(this.store).verify(original.pluginSource,legacyPluginOrigin(original.evidence));
   const resources=[adapter.resource,...original.snapshot.skills.map(s=>this.store.get('standard-skill:'+s.skillId+':'+s.hash)),this.store.get('legacy-runtime:'+original.evidence.runtimeHash),...(original.pluginSource?[original.pluginSource]:[])];
@@ -47,7 +46,7 @@ export class LegacySessionMigration {
   const bytes=canonicalJson(snapshot),snapshotHash=digest(bytes),selectedHash=selectionHash(snapshot),pointer={schema:2 as const,taskId:identity.taskId,snapshotHash},nextTask=JSON.stringify({...JSON.parse(original.row.source_record_json),sessionCapabilities:pointer});
   await this.checkpoint?.('files-verified');canceled(signal);await this.checkpoint?.('before-commit');canceled(signal);
   const session=await withResourceLock(this.store.root,()=>{
-   canceled(signal);if(!reader.verify(inspection.evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4文件在迁移等待中变化');this.adapters.verify(input.adapterHash);if(original.pluginSource)new LegacyPluginSources(this.store).verify(original.pluginSource,legacyPluginOrigin(original.evidence));
+   canceled(signal);if(!files.verify())throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4文件在迁移等待中变化');this.adapters.verify(input.adapterHash);if(original.pluginSource)new LegacyPluginSources(this.store).verify(original.pluginSource,legacyPluginOrigin(original.evidence));
    return this.store.sqlite.transaction(()=>{
     canceled(signal);sameTask(original.row.source_record_json);const retained=retainedLegacySource(this.store,identity.taskId,'prepared');if(canonicalJson(retained.row)!==canonicalJson(original.row))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4保留依据在迁移中变化');
     const held=this.store.sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(identity.taskId) as {schema_version:number;retention_state:string;legacy_status:string;snapshot_json:string;snapshot_hash:string}|undefined;

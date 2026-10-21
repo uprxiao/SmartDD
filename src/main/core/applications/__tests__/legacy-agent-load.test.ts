@@ -79,3 +79,9 @@ describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('API2 legac
   const value=await previous(),source=bundledLegacyAgentAdapters().find(a=>a.metadata.agentId==='codex')!,original=adapters.verify(value.adapter.hash).hash;await expect(adapters.install(source.metadata,{...source.files,'planner.cjs':Buffer.from(source.files['planner.cjs'].toString()+'\n// changed\n')})).rejects.toMatchObject({code:'VERSION_CONFLICT'});expect(adapters.verify(original).hash).toBe(original);expect(()=>adapters.planLegacy(installed.find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.0.0')!.hash,value.input)).toThrow('旧格式适配器');
  });
 });
+
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64').each(['claude-code','codex'] as const)('plans the original %s paths from the durable source after ended-run cleanup',async runner=>{
+ const value=await previous(runner);value.runtime.release();const plan=adapters.planLegacy(value.adapter.hash,value.input);
+ expect(plan.args.join('\n')).toContain(runner==='codex'?value.runtime.snapshot.skills.find(s=>s.enabled)!.path:join(dirname(value.runtime.snapshot.manifestPath),'plugin'));
+ expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(value.input.taskId)).toEqual({runtime_snapshot:value.raw});expect(sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);
+});

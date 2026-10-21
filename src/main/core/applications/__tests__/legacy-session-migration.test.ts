@@ -1,4 +1,4 @@
-import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync,realpathSync,readdirSync,lstatSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync,realpathSync,readdirSync,lstatSync,renameSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
@@ -18,6 +18,7 @@ import {LegacySessionMigration,type LegacyMigrationRequest} from '../legacy-sess
 import {AgentAdapterRegistry} from '../agent-adapter-registry';
 import {LegacyCapabilityResourceAdopter} from '../legacy-resource-adopter';
 import {LegacyPluginSources,legacyPluginOrigin} from '../legacy-plugin-source';
+import {inspectLegacySessionFiles} from '../legacy-session-files';
 import {retainedLegacySource} from '../legacy-session-source';
 import {bundledLegacyAgentAdapters} from '../agent-assets';
 import {DiscoveryCatalog} from '../discovery-catalog';
@@ -117,4 +118,53 @@ describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('atomic kno
  it('requires a legacy binding only for migrated format2 and preserves ordinary v2 validation',async()=>{
   const value=await previous(),{session}=await migration.migrate(value.request),{legacyBinding,...without}=session.snapshot;expect(capabilitySessionSnapshotSchema.safeParse(without).success).toBe(false);expect(capabilitySessionSnapshotSchema.safeParse({...session.snapshot,provenance:'created'}).success).toBe(false);expect(capabilitySessionSnapshotSchema.safeParse({...without,adapterBinding:{...without.adapterBinding,projectionFormatVersion:1}}).success).toBe(true);
  });
+});
+
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64').each(['claude-code','codex'] as const)('converts the retained %s source after normal transient cleanup and plans the same original paths',async runner=>{
+ const value=await previous(runner),id=value.request.identity.taskId,originalPaths=value.runtime.snapshot.skills.filter(s=>s.enabled).map(s=>s.path);value.runtime.release();
+ const result=await migration.migrate(value.request);expect(result.session.snapshot.standardSkills.map(s=>s.projectionPath)).toEqual(originalPaths);expect(result.session.snapshot.packages).toEqual([]);
+ const plan=adapters.planLegacy(value.adapter.hash,{schema:'m4-legacy-load-request-v1',taskId:id,projectId,sourceSnapshotHash:value.request.sourceSnapshotHash,runId:randomUUID(),cliVersion:value.request.cliVersion,native:{...result.session.snapshot.native,runner,home},catalog:runner==='codex'?await catalog.snapshot():null,userSkillConfig:[],inventory:[]});
+ expect(plan.args.join('\n')).toContain(runner==='codex'?originalPaths[0]:join(dirname(value.runtime.snapshot.manifestPath),'plugin'));expect(plan.args.join('\n')).not.toContain('mcp-bridge.cjs');
+ expect(sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);expect(sqlite.prepare('SELECT * FROM mail_send_grants').all()).toEqual([]);
+});
+
+describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('retained source conversion keeps file, SQL and unknown-owner boundaries',()=>{
+ it.each(['claude-code','codex'] as const)('keeps an all-disabled %s history empty after transient cleanup',async runner=>{
+  for(const skill of capabilities.list(projectId))capabilities.setEnabled(projectId,skill.id,false);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);const value=await previous(runner);value.runtime.release();const result=await migration.migrate(value.request);
+  expect(result.session.snapshot.standardSkills).toEqual([]);expect(result.session.snapshot.mcp).toEqual([]);expect(result.session.snapshot.packages).toEqual([]);expect((await sessions.references(value.request.identity.taskId)).filter(r=>r.refKind==='standard-skill')).toHaveLength(2);expect(sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);
+ });
+ it.each(['claude-code','codex'] as const)('rejects a corrupted original %s projection after cleanup without rewriting it',async runner=>{
+  const value=await previous(runner),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path;value.runtime.release();writeFileSync(file,'user altered original Skill');const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);expect(readFileSync(file,'utf8')).toBe('user altered original Skill');
+ });
+ it.each(['claude-code','codex'] as const)('does not hide a partially present %s run by consuming the durable manifest',async runner=>{
+  const value=await previous(runner);rmSync(join(dirname(value.runtime.snapshot.manifestPath),'context.json'));const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);
+ });
+ it.each(['claude-code','codex'] as const)('rejects a late same-byte original %s Skill inode replacement before publishing SQL',async runner=>{
+  const value=await previous(runner),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path;value.runtime.release();const original=readFileSync(file);let before:ReturnType<typeof records>;
+  const service=new LegacySessionMigration(store,sessions,phase=>{if(phase==='before-commit'){renameSync(file,join(root,'old-original-inode'));writeFileSync(file,original);before=records();}});
+  await expect(service.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(records()).toEqual(before!);expect(readFileSync(file)).toEqual(original);
+ });
+ it.each(['claude-code','codex'] as const)('rejects a late %s source generation change after cleaned-source verification',async runner=>{
+  const value=await previous(runner);value.runtime.release();let before:ReturnType<typeof records>;const service=new LegacySessionMigration(store,sessions,phase=>{if(phase==='before-commit'){sqlite.prepare('UPDATE capability_resources SET generation=generation+1 WHERE resource_id=?').run('legacy-runtime:'+capabilities.runtimeIdentity().hash);before=records();}});
+  await expect(service.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(records()).toEqual(before!);
+ });
+ it.each(['claude-code','codex'] as const)('preserves unknown content which arrives in original %s T before commit',async runner=>{
+  const value=await previous(runner),runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();let before:ReturnType<typeof records>;const service=new LegacySessionMigration(store,sessions,phase=>{if(phase==='before-commit'){mkdirSync(runRoot,{recursive:true});writeFileSync(join(runRoot,'user-note'),'preserve original user data');before=records();}});
+  await expect(service.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(records()).toEqual(before!);expect(readFileSync(join(runRoot,'user-note'),'utf8')).toBe('preserve original user data');
+ });
+ it('rejects an undeclared dependency on a retained original runtime',async()=>{
+  const value=await previous();value.runtime.release();const skill=value.runtime.snapshot.skills[0];sqlite.prepare('INSERT INTO capability_resource_dependencies VALUES(?,?)').run('legacy-runtime:'+capabilities.runtimeIdentity().hash,'standard-skill:'+skill.skillId+':'+skill.hash);const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);
+ });
+ it('keeps a missing original static Claude path unavailable without materializing a replacement',async()=>{
+  const value=await previous('claude-code'),runRoot=dirname(value.runtime.snapshot.manifestPath);value.runtime.release();rmSync(runRoot,{recursive:true,force:true});const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);expect(()=>lstatSync(runRoot)).toThrow();
+ });
+ it('refuses a changed retained Claude archive even when its original static paths still match',async()=>{
+  const value=await previous('claude-code');value.runtime.release();const source=retainedLegacySource(store,value.request.identity.taskId,'prepared'),file=join(store.directory(source.pluginSource!),'plugin/.claude-plugin/plugin.json');writeFileSync(file,'corrupted archive');const before=records();await expect(migration.migrate(value.request)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(records()).toEqual(before);expect(readFileSync(file,'utf8')).toBe('corrupted archive');
+ });
+});
+
+it.skipIf(process.platform!=='darwin'||process.arch!=='arm64').each(['claude-code','codex'] as const)('invalidates the %s file receipt when a caller changes its returned logical evidence',async runner=>{
+ const value=await previous(runner);value.runtime.release();const source=retainedLegacySource(store,value.request.identity.taskId,'prepared'),files=inspectLegacySessionFiles(store,source),before=records();
+ // Explicit private caller-corruption fault; this must not grant a different native name.
+ (files.evidence.skills[0] as {nativeName:string}).nativeName='not-the-original-native-name';expect(files.verify()).toBe(false);expect(records()).toEqual(before);
 });

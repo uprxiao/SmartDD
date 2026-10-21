@@ -1,0 +1,125 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts -t 'undeclared dependency|missing original static Claude' --maxWorkers=1
+
+[1021/150301.570904:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/150302.514869:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (52 tests | 2 failed | 50 skipped) 1000ms
+     × rejects an undeclared dependency on a retained original runtime 659ms
+     × keeps a missing original static Claude path unavailable without materializing a replacement 339ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > retained source conversion keeps file, SQL and unknown-owner boundaries > rejects an undeclared dependency on a retained original runtime
+AssertionError: promise resolved "{ session: { …(6) }, reused: false }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "reused": false,
++   "session": {
++     "discoveryHome": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-E8CeoB/home",
++     "legacyStatus": "migrated-known-legacy",
++     "pointer": {
++       "schema": 2,
++       "snapshotHash": "a4bc5e4e1604ede7d5782ec1172ec04c0b84481f4c07d78ff40a9ed33852b033",
++       "taskId": "76a0045b-5005-40e4-8813-83f73e9bffe8",
++     },
++     "retention": "active",
++     "selectionHash": "62bf58fb1bc48c256f6c6bda6932b1593fcc60a80a106c51e8669462e12376a8",
++     "snapshot": {
++       "adapterBinding": {
++         "hash": "89b38cca2f5123881372b62687c48a4d4a17bc1b379bd3c2a679ad9da4c2c75f",
++         "id": "codex",
++         "nativeToolNames": {},
++         "projectionFormatVersion": 2,
++         "version": "1.1.0",
++       },
++       "agentAtCreation": {
++         "adapterRevision": 2,
++         "version": "0.162.1",
++       },
++       "catalogGeneration": "85326d6f884769bc4b40500e033b0c1004c0f7bc3065e0bae08d362913bd5867",
++       "createdAt": "2026-10-21T07:03:06.145Z",
++       "legacyBinding": {
++         "identityHash": "54e5b43a47595b34fd677d4b383c74363c1bf21ae45f9109fd3d76d27f933ed0",
++         "logicalEvidenceHash": "cc826a374b894a600f0eb49c4ff98ef40164a7726d2b76da902f0adb505ce83d",
++         "manifestHash": "38cb610a781921e21bf1c0ea22a54f5afaa13412372f7d39c80fbdb6b168e64c",
++         "sourceRecordHash": "3de3a5c4cb4a5572b5ea92818e5fa17ed2e9042f872d48fe663867f5712ffe69",
++         "sourceSnapshotHash": "c01f720ee9a48f6afac0237bbb1918454cc94a7798370d5310dc9edd940067cc",
++       },
++       "mcp": [
++         {
++           "kind": "legacy-project-context",
++           "protocolMajor": 1,
++           "runtimeHash": "70c32e91da49eb11fb26ac32d000a45bd1df1de05cbea8b899ec3fa216ced795",
++           "serverName": "smartdd_project_f1c6feffc6b3",
++         },
++       ],
++       "native": {
++         "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-E8CeoB/project",
++         "sessionId": "f70a9db3-e9bc-42fc-bcde-aa8026528556",
++         "stateRoot": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-E8CeoB/home/.codex",
++       },
++       "packages": [],
++       "projectId": "dbf2ae60-1632-4e2b-82db-2c9141f8ab69",
++       "provenance": "migrated-known-legacy",
++       "runner": "codex",
++       "schema": 2,
++       "standardSkills": [
++         {
++           "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++           "hashAlgorithm": "legacy-tree-v1",
++           "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-E8CeoB/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac/SKILL.md",
++           "skillId": "project-db-diagnostics",
++           "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         },
++         {
++           "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++           "hashAlgorithm": "legacy-tree-v1",
++           "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-E8CeoB/home/.agents/skills/smartdd-remote-password-ssh-77df74e9de1a0cc7/SKILL.md",
++           "skillId": "remote-password-ssh",
++           "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         },
++       ],
++       "taskId": "76a0045b-5005-40e4-8813-83f73e9bffe8",
++     },
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:155:350
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > retained source conversion keeps file, SQL and unknown-owner boundaries > keeps a missing original static Claude path unavailable without materializing a replacement
+AssertionError: expected Error: ENOENT: no such file or directory,… { …(4) } to match object { code: 'RESOURCE_RECOVERY_REQUIRED' }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_RECOVERY_REQUIRED",
++ Error {
++   "code": "ENOENT",
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:158:234
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 50 skipped (52)
+   Start at  15:03:02
+   Duration  4.28s (transform 1.81s, setup 0ms, import 2.78s, tests 1.00s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

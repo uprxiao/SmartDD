@@ -4,12 +4,14 @@ import {parseDocument} from 'yaml';
 import {ApplicationError} from '@shared/applications';
 import type {LegacyAgentLoadRequest,AgentLoadRequest} from '@shared/agent-adapters';
 import {capabilitySessionSnapshotSchema} from '@shared/application-session';
+import {inspectLegacySessionFiles} from './legacy-session-files';
+import {retainedLegacySource} from './legacy-session-source';
 import {assertLegacySessionSource} from './legacy-session-source';
 import type {ResourceStore} from './resource-store';
 import {canonicalJson,digest} from './manifest';
 import {verifyOwnedBundle} from './owned-bundle';
 import {readLegacyOwnedTree} from './legacy-resource-adopter';
-import {LegacyTaskEvidenceReader,legacyRuntimeMetadata,type LegacyTaskEvidence,type LegacySkillVersion} from './legacy-task-evidence';
+import {legacyRuntimeMetadata,type LegacyTaskEvidence,type LegacySkillVersion} from './legacy-task-evidence';
 interface Source {source_snapshot_json:string;source_record_json:string;source_snapshot_hash:string;source_identity_json:string;bound_native_session_id:string|null;evidence_json:string;manifest_json:string;manifest_hash:string;state:string}
 interface ManagedSkill {path:string;nativeName:string;sourceHash:string}
 export interface LegacyPlannerInput {cwd:string;pluginRoot:string|null;selectedPaths:string[];managedSkills:ManagedSkill[];userSkillConfig:LegacyAgentLoadRequest['userSkillConfig'];mcpConfigPath:string;mcp:NonNullable<AgentLoadRequest['mcp']>}
@@ -42,8 +44,7 @@ export function legacyPlannerInput(store:ResourceStore,input:LegacyAgentLoadRequ
    const resource=store.get('agent-adapter:'+input.native.runner+':'+adapterHash),ref=store.sqlite.prepare("SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind='agent-adapter' AND ref_id=?").get(input.taskId,resource.resourceId) as {ref_hash:string;relative_path:string}|undefined;
    if(!ref||resource.state!=='ready'||resource.integrity!=='valid'||ref.ref_hash!==resource.contentHash||ref.relative_path!==resource.relativePath)problem('RESOURCE_RECOVERY_REQUIRED','原M4固定适配器引用缺失');
   }
-  const reader=new LegacyTaskEvidenceReader(store.root,home,id=>store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions WHERE id=?').get(id) as LegacySkillVersion|undefined),inspected=reader.inspect({taskId:input.taskId,projectId:input.projectId,runner:input.native.runner},snapshot);
-  if(inspected.state!=='verified')return problem('RESOURCE_RECOVERY_REQUIRED','原M4文件仍需核查或修复');const evidence=inspected.evidence,logical=(value:LegacyTaskEvidence)=>{const{evidenceHash,...identity}=value;return identity;};
+  const files=inspectLegacySessionFiles(store,retainedLegacySource(store,input.taskId,source.state as 'prepared'|'migrated')),evidence=files.evidence,logical=(value:LegacyTaskEvidence)=>{const{evidenceHash,...identity}=value;return identity;};
   if(canonicalJson(logical(evidence))!==canonicalJson(logical(originalEvidence))||evidence.manifestHash!==source.manifest_hash)problem('RESOURCE_RECOVERY_REQUIRED','原M4逻辑来源、名称或路径不符');
   for(const resourceId of [...snapshot.skills.map(s=>'standard-skill:'+s.skillId+':'+s.hash),'legacy-runtime:'+evidence.runtimeHash]){const resource=store.get(resourceId),ref=store.sqlite.prepare('SELECT ref_kind,ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_id=?').get(input.taskId,resourceId) as {ref_kind:string;ref_hash:string;relative_path:string}|undefined;if(!ref||resource.pathScope!=='C'||resource.state!=='ready'||resource.integrity!=='valid'||ref.ref_kind!==resource.kind||ref.ref_hash!==resource.contentHash||ref.relative_path!==resource.relativePath)problem('RESOURCE_RECOVERY_REQUIRED','原M4来源引用缺失或不一致');}
   const selected=evidence.skills.filter(s=>s.enabled),selectedPaths=selected.map(s=>s.projectionPath),managedSkills:ManagedSkill[]=[];let catalogStamp:string|null=null;
@@ -62,7 +63,7 @@ export function legacyPlannerInput(store:ResourceStore,input:LegacyAgentLoadRequ
   const mcp:LegacyPlannerInput['mcp']=contextEnabled?evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,command:'python3',args:[join(evidence.runtimePath,'context_mcp.py'),join(store.root,'runs',input.projectId,input.taskId,input.runId,'context.json')],env:{}})):[];
   const ownPaths=new Set([...managedSkills.map(s=>s.path),...selectedPaths]),selectedNames=new Set(selected.map(s=>s.nativeName));
   for(const item of input.inventory){const own=item.kind==='skill'&&ownPaths.has(item.path)||item.kind==='plugin'&&item.path===evidence.pluginRoot&&item.name===evidence.pluginName;if(own)continue;if(item.kind==='plugin'&&evidence.pluginRoot&&item.name===evidence.pluginName||item.kind==='skill'&&([...selectedNames].some(name=>item.name===name||item.name===evidence.pluginName+':'+name))||item.kind==='mcp'&&mcp.some(m=>m.serverName===item.name))problem('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原M4名称冲突，保留原配置');}
-  if(!reader.verify(evidence)||catalogStamp!==null&&checkCatalog()!==catalogStamp)problem('RESOURCE_RECOVERY_REQUIRED','旧来源在计划准备中变化');
+  if(!files.verify()||catalogStamp!==null&&checkCatalog()!==catalogStamp)problem('RESOURCE_RECOVERY_REQUIRED','旧来源在计划准备中变化');
   return{cwd:input.native.cwd,pluginRoot:evidence.pluginRoot,selectedPaths,managedSkills,userSkillConfig:input.userSkillConfig,mcpConfigPath:join(store.root,'runs',input.projectId,input.taskId,input.runId,'mcp.json'),mcp};
  }catch(error){if(error instanceof ApplicationError)throw error;throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4加载依据缺失或损坏，保留原记录和文件');}
 }
