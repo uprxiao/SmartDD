@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import type { CapabilityRunRecord, CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
+import {launchRestrictionSchema,readLaunchRestriction} from './launch-restriction';
 import type { ResourceRecord, ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import type { CapabilitySessionRegistry, StoredCapabilitySession } from './session-registry';
@@ -84,6 +85,7 @@ export class CapabilityRunRegistry {
   private lifecycle(runId:string):{row:RunRow;owned:OwnedRun;session?:StoredCapabilitySession}{
     const result=this.owner(runId),guard=result.owned.guard;if(!guard)return this.mine(runId);
     if(guard.kind==='fixed'){
+      if(!readLaunchRestriction(this.store,runId,result.row.task_id,result.owned.selectionHash))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原生启动限制回执缺失');
       const session=this.sessions.inspectCoordinated(result.row.task_id);
       if(session.retention!=='active'||session.selectionHash!==result.owned.selectionHash||session.snapshot.projectId!==result.row.project_id||session.snapshot.runner!==result.row.runner||session.pointer.snapshotHash!==result.row.snapshot_hash)throw new ApplicationError('SNAPSHOT_CORRUPT','原生守护的固定会话身份已变化');
       return result; // Lifecycle only: deliberately do not return business authority.
@@ -190,14 +192,17 @@ export class CapabilityRunRegistry {
     await withResourceLock(this.store.root,()=>{
       const {owned}=this.owner(runId);
       const guard=this.store.sqlite.transaction(()=>{
-        const {row,session}=this.mine(runId);
+        const {row,session}=this.lifecycle(runId);
+        if(owned.guard?.kind==='fixed')throw new ApplicationError('RESOURCE_STATE_CHANGED','本轮已经限制为原生运行');
         if(owned.abort.signal.aborted||row.state!=='prepared')throw new ApplicationError('CANCELED','原生降级只允许在启动前执行');
         const children=this.store.sqlite.prepare('SELECT kind,state FROM capability_run_processes WHERE run_id=?').all(runId) as {kind:string;state:string}[];
         if(children.filter(p=>p.kind==='cli').length!==1||children.some(p=>p.kind==='cli'?p.state!=='reserved':!PROCESS_DONE.has(p.state)))throw new ApplicationError('RESOURCE_STATE_CHANGED','已有启动窗口，不能降级或重新启动');
-        this.current(row,session);this.checkProtection(row,owned);
-        const resources=this.closure(row.task_id).map(r=>r.resourceId);
+        this.currentLifecycle(row,session);this.checkProtection(row,owned);
+        const evidence=launchRestrictionSchema.parse({schema:1,runId,taskId:row.task_id,snapshotHash:row.snapshot_hash,selectionHash:owned.selectionHash,reason:'managed_launch_payload_too_large',issueCode:'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:now()}),text=canonicalJson(evidence);
+        this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),evidence.restrictedAt);
+        const resources=this.closure(row.task_id,owned.guard).map(r=>r.resourceId);
         this.store.sqlite.prepare("UPDATE capability_runs SET bindings_json='[]' WHERE run_id=?").run(runId);
-        return {kind:'fixed' as const,snapshotHash:row.snapshot_hash,resources:Object.freeze(resources),verify:()=>this.sessions.verifyResources(row.task_id)};
+        return owned.guard??{kind:'fixed' as const,snapshotHash:row.snapshot_hash,resources:Object.freeze(resources),verify:()=>this.sessions.verifyResources(row.task_id)};
       }).immediate();
       owned.guard=guard;
     });
@@ -274,6 +279,17 @@ export class CapabilityRunRegistry {
         this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE process_id=?").run(now(),id); this.finish(runId);
       }).immediate());
     } };
+  }
+  /** Display-only native liveness, including guarded runs. Never returns a business context. */
+  currentNativeRun(taskId:string,ptyId:string):CapabilityRunRecord|null{
+    const rows=this.store.sqlite.prepare("SELECT run_id FROM capability_runs WHERE task_id=? AND pty_id=? AND owner_instance_id=? AND state='active'").all(taskId,ptyId,this.instanceId) as {run_id:string}[];
+    if(rows.length!==1)return null;
+    const {row,owned}=this.lifecycle(rows[0].run_id);
+    if(owned.abort.signal.aborted||row.revocation_state!=='open'||!row.pid||!row.process_started_at)return null;
+    const child=this.store.sqlite.prepare("SELECT state,pid,process_started_at FROM capability_run_processes WHERE run_id=? AND kind='cli'").get(row.run_id) as {state:string;pid:number|null;process_started_at:string|null}|undefined;
+    const identity=this.deps.processes.read(row.pid);
+    if(!child||child.state!=='active'||child.pid!==row.pid||child.process_started_at!==row.process_started_at||identity?.pid!==row.pid||identity.startedAt!==row.process_started_at)return null;
+    return this.view(row);
   }
   /** Input provenance may only join an actual owned task/PTY, never renderer run claims. */
   inputContext(taskId:string,ptyId:string):RunContext|null{
