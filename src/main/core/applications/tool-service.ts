@@ -1,3 +1,4 @@
+import {applicationConnectionNotice} from './application-run-policy';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -56,7 +57,8 @@ export class ApplicationToolService {
     if (verifyBytes) verifyPackageTree(join(this.store.root,application.relativePath),application,this.store.storeId);
     const schemas = this.packages.toolContractSources(application.packageHash,declaration.name);
     const inputSchema = this.schema(schemas.input);
-    const description = typeof inputSchema.description === 'string' && inputSchema.description.length <= 2000 ? inputSchema.description : application.manifest.description;
+    const originalDescription = typeof inputSchema.description === 'string' && inputSchema.description.length <= 2000 ? inputSchema.description : application.manifest.description,notice=applicationConnectionNotice(this.store,context.snapshot,application.appId);
+    const description=notice?originalDescription+'\n\n'+notice:originalDescription;
     return { application,declaration,tool: { name: declaration.name,description,inputSchema,outputSchema: this.schema(schemas.output),annotations: declaration.annotations,contractMajor: declaration.contractMajor } };
   }
   async list(runId: string): Promise<{ tools: BridgeTool[];unavailable: { appId: string;code: string }[] }> {

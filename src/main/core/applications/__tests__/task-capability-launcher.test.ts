@@ -1,3 +1,4 @@
+import {ApplicationConnectionService} from '../connection-service';
 import {PtyAccess} from '../../../pty-access';
 import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
 import type {ApplicationUiSender} from '../execution-context';
@@ -485,4 +486,67 @@ describe('original activation keeps current permissions, immutable S and recover
 
 it.each(['claude-code','codex'] as const)('recovers a committed original %s migration mirror without replacing a user directory or resetting the fixed session',async runner=>{
  const old=await retainedOriginal(runner),dir=join(support.store.root,'sessions',old.id),note=join(dir,'user-note');mkdirSync(dir,{recursive:true});writeFileSync(note,'preserve foreign session-directory content');const guarded=await tasks.open({taskId:old.id}),fixed=await managed.sessions.get(old.id);expect(fixed.snapshot.provenance).toBe('migrated-known-legacy');expect(guarded.task.runtimeSnapshot!.sessionCapabilities).toEqual(fixed.pointer);expect(()=>managed.runs.assertActive(guarded.task.runtimeSnapshot!.runId)).toThrow('不签发');expect(readFileSync(note,'utf8')).toBe('preserve foreign session-directory content');tasks.kill(old.id);await vi.waitFor(()=>expect(managed.runs.get(guarded.task.runtimeSnapshot!.runId).state).toBe('stopped'));rmSync(note);const opened=await tasks.open({taskId:old.id});expect((await managed.sessions.get(old.id)).pointer).toEqual(fixed.pointer);expect(managed.runs.assertActive(opened.task.runtimeSnapshot!.runId).snapshot).toEqual(fixed.snapshot);expect(JSON.parse(readFileSync(join(dir,'snapshot.json'),'utf8')).snapshotHash).toBe(fixed.pointer.snapshotHash);expect(managed.legacyPreparationWarnings.has(old.id)).toBe(false);tasks.kill(old.id);await vi.waitFor(()=>expect(managed.runs.get(opened.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+});
+
+async function zentaoSwitchFixture(targetProject=projectId){
+ const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});
+ const connections=new ApplicationConnectionService(support.store,secrets,{verify:async c=>({providerId:c.kind,serviceId:'private-switch-service',accountId:c.kind==='foxmail'?c.account:c.username,contractMajor:1})});
+ const a=await connections.save({name:'Private ZenTao A',expectedRevision:0,config:{kind:'zentao',baseUrl:'https://zentao.example.test/biz/',username:'private-a',authMode:'token'},secret:'private-fixture-a'});
+ const b=await connections.save({name:'Private ZenTao B',expectedRevision:0,config:{kind:'zentao',baseUrl:'https://zentao.example.test/biz/',username:'private-b',authMode:'token'},secret:'private-fixture-b'});
+ const sender={} as ApplicationUiSender;await applications.setAdded(sender,'zentao',true,0);await applications.select(sender,{projectId:targetProject,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:a.id}});
+ return {a,b,sender,next:()=>applications.select(sender,{projectId:targetProject,appId:'zentao',enabled:true,expectedRevision:1,connections:{zentao:b.id}})};
+}
+async function stopForSwitchFixture(task:Awaited<ReturnType<typeof create>>,runner:'claude-code'|'codex'){
+ const id=runner==='codex'?randomUUID():task.task.id;seedNativeHistory(runner,id);
+ if(runner==='codex')await vi.waitFor(()=>expect(tasks.get(task.task.id).nativeSessionId).toBe(id),{timeout:6000});
+ expect(tasks.get(task.task.id).recovery).toBe('resumable');tasks.kill(task.task.id);await vi.waitFor(()=>expect(managed.runs.get(task.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+ return id;
+}
+describe('ZenTao switch only affects loaded application runs and gates their fork',()=>{
+ beforeEach(()=>{
+  // TestPtys never forks a native CLI or MCP bridge. Deliver the synthetic
+  // owned bridge exit together with its synthetic CLI exit, as in T64 above.
+  // This is not evidence about actual/unknown processes in production.
+  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),originalPrepare=managed.broker.prepare.bind(managed.broker),originalKill=ptys.kill.bind(ptys);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const prepared=await originalPrepare(...args);handles.set(args[0].ptyId,prepared.bridge);return prepared;});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{originalKill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
+ });
+ it('keeps an unrelated task and another project running while stopping the loaded ZenTao task',async()=>{
+  const unrelated=await create(claudeId),unrelatedPty=tasks.activePty(unrelated.task.id)!,x=await zentaoSwitchFixture();
+  const otherDir=join(root,'other-project');mkdirSync(otherDir);mkdirSync(join(otherDir,'.git'));const other=projects.createProject({name:'other switch scope',aliases:[],description:'',rulesPath:null},[{label:'',path:otherDir}]);
+  await applications.select(x.sender,{projectId:other.id,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:x.a.id}});
+  const foreign=await tasks.create({projectId:other.id,dirId:null,aiProfileId:claudeId,firstMessage:''}),foreignPty=tasks.activePty(foreign.task.id)!,related=await create(claudeId),fixed=await managed.sessions.get(related.task.id);
+  seedNativeHistory('claude-code',related.task.id);expect(tasks.get(related.task.id).recovery).toBe('resumable');
+  const selected=await x.next();expect(selected.connections.zentao).toBe(x.b.id);expect(ptys.live.has(unrelatedPty)).toBe(true);expect(ptys.live.has(foreignPty)).toBe(true);expect(tasks.activePty(related.task.id)).toBeNull();
+  const resumed=await tasks.open({taskId:related.task.id}),again=await managed.sessions.get(related.task.id);expect(again.pointer).toEqual(fixed.pointer);expect(again.snapshot).toEqual(fixed.snapshot);expect(resumed.task.nativeSessionId).toBe(related.task.id);
+  const detail=await applications.diagnoseSession(x.sender,related.task.id),app=detail.applications.find(a=>a.appId==='zentao')!;expect(app.connections[0]).toMatchObject({id:x.b.id,originalId:x.a.id,selection:'changed'});
+  const tools=await new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)).list(resumed.task.runtimeSnapshot!.runId);expect(tools.tools.map(t=>t.name).sort()).toEqual(Object.keys(fixed.snapshot.packages[0].toolContractMajors).sort());for(const tool of tools.tools){expect(tool.description).toContain('Private ZenTao A');expect(tool.description).toContain('Private ZenTao B');expect(tool.description).toContain('旧来源对象引用');}
+ },25000);
+ it.each(['claude-code','codex'] as const)('rejects related %s new/resume while pending but permits an original no-app session',async runner=>{
+  const ordinary=await create(claudeId);await stopForSwitchFixture(ordinary,'claude-code');const x=await zentaoSwitchFixture(),related=await create(runner==='codex'?codexId:claudeId);await stopForSwitchFixture(related,runner);
+  let release!:()=>void,entered!:()=>void;const gate=new Promise<void>(r=>release=r),ready=new Promise<void>(r=>entered=r),original=tasks.stopProject.bind(tasks);
+  const spy=vi.spyOn(tasks,'stopProject').mockImplementation(async(...args)=>{entered();await gate;return original(...args);}),switching=x.next();
+  try{
+   await ready;expect(applications.selections.projectSettings(projectId,'zentao').pendingOperationId).not.toBeNull();const count=ptys.launches.length;
+   await expect(create(runner==='codex'?codexId:claudeId)).rejects.toMatchObject({code:'RESOURCE_BUSY'});await expect(tasks.open({taskId:related.task.id})).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(ptys.launches).toHaveLength(count);
+   const resumed=await tasks.open({taskId:ordinary.task.id});expect(tasks.activePty(ordinary.task.id)).not.toBeNull();expect((await managed.sessions.get(ordinary.task.id)).snapshot.packages).toEqual([]);expect(resumed.task.nativeSessionId).toBe(ordinary.task.id);
+  }finally{release();await switching;spy.mockRestore();}
+ },25000);
+ it('checks a switch that begins after arming immediately before the native fork',async()=>{
+  const x=await zentaoSwitchFixture();let release!:()=>void,entered!:()=>void;const gate=new Promise<void>(r=>release=r),ready=new Promise<void>(r=>entered=r),originalStop=tasks.stopProject.bind(tasks);
+  const stop=vi.spyOn(tasks,'stopProject').mockImplementation(async(...args)=>{entered();await gate;return originalStop(...args);});let switching:Promise<unknown>|undefined;
+  const original=managed.prepare.bind(managed),prepare=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await original(input),before=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await before();switching=x.next();await ready;};return launch;});
+  try{await expect(create(claudeId)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(ptys.launches).toHaveLength(0);expect(sqlite.prepare("SELECT count(*) n FROM capability_runs WHERE state NOT IN ('stopped','failed')").get()).toEqual({n:0});}
+  finally{release();await switching;prepare.mockRestore();stop.mockRestore();}
+ },20000);
+});
+
+describe('ZenTao switch retains already narrowed native-only running work',()=>{
+ it('does not stop a selected but un-injected native-only task while stopping a loaded one',async()=>{
+  const x=await zentaoSwitchFixture(),handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),originalBroker=managed.broker.prepare.bind(managed.broker),originalKill=ptys.kill.bind(ptys);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await originalBroker(...args);handles.set(args[0].ptyId,value.bridge);return value;});vi.spyOn(ptys,'kill').mockImplementation(id=>{originalKill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
+  const loaded=await create(claudeId),originalPrepare=managed.prepare.bind(managed),spy=vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{const launch=await originalPrepare(input);return launch.nativeOnly!('managed_launch_payload_too_large');});
+  const native=await create(claudeId),pty=tasks.activePty(native.task.id)!;spy.mockRestore();expect((await managed.sessions.get(native.task.id)).snapshot.packages.map(p=>p.appId)).toContain('zentao');expect(()=>managed.runs.assertActive(native.task.runtimeSnapshot!.runId)).toThrow('不签发');
+  await x.next();expect(tasks.activePty(loaded.task.id)).toBeNull();expect(ptys.live.has(pty)).toBe(true);expect(tasks.activePty(native.task.id)).toBe(pty);
+ },20000);
 });

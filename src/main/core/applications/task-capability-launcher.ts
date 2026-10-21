@@ -1,3 +1,4 @@
+import {assertNoPendingApplicationSwitch} from './application-run-policy';
 import { mkdirSync, writeFileSync,lstatSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { ApplicationError } from '@shared/applications';
@@ -103,6 +104,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   }
   /** SQL-only recheck under C. Selection is checked once; later calls use current business policy. */
   private assertInitialSelection(snapshot:CapabilitySessionSnapshotV2):void{
+    assertNoPendingApplicationSwitch(this.support.store,snapshot);
     const store=this.support.store,apps=this.selectedApps(snapshot.projectId);
     if(canonicalJson(apps)!==canonicalJson(snapshot.packages.map(p=>({appId:p.appId,packageHash:p.packageHash}))))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目应用或默认版本已变化');
     const actual=store.sqlite.prepare('SELECT v.skill_id AS skillId,v.id AS versionId,v.hash FROM skill_versions v LEFT JOIN project_capabilities p ON p.id=? || v.skill_id WHERE v.active=1 AND COALESCE(p.enabled,1)=1 ORDER BY v.skill_id').all(snapshot.projectId+':');
@@ -172,6 +174,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);
       }else{
       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
+      assertNoPendingApplicationSwitch(this.support.store,planned);
       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
       if(planned.runner==='codex'&&!unavailable&&this.applicationResourcesAvailable(planned)){
@@ -191,7 +194,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       }catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code;}
       if(unavailable||!native)return this.prepareUnavailableSession(input,current,native,unavailable??'AGENT_ADAPTER_UNSUPPORTED',catalog);
     }
-    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
+    const snapshot=current.snapshot;assertNoPendingApplicationSwitch(this.support.store,snapshot);const adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
     if(!this.applicationResourcesAvailable(snapshot))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
     let pluginRoot:string|null=null,pluginHash:string|null=null;
@@ -231,21 +234,23 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       try{await this.applications.sessionDiagnostics.prepared({schema:1,runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:unavailable?'unavailable':'prepared',issueCode:unavailable??null,manifestPath:runtime.snapshot.manifestPath,configPaths,preparedAt:new Date().toISOString()});}catch{/* Missing display evidence never grants capability or blocks ordinary Agent launch. */}
       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
       if(!unavailable&&native)try{this.applications.nativeMessages.register(run.runId,native.version,run.signal);}catch{/* Missing origin evidence grants nothing and must not stop the ordinary Agent. */}
+      let effectiveApplications=!unavailable;
       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared';
       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:runtime.env,command:native?.command,
+        assertBeforeFork:()=>{if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,snapshot);},
         nativeOnly:async reason=>{
           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
           if(unavailable){runtime.snapshot.selfCheck?.issues.push(reason);launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;}
           phase='restricting';
           this.broker.revokeRun(run.runId);await bridge?.bridge.cancelBeforeLaunch();
-          await this.runs.restrictToNative(run.runId);
+          await this.runs.restrictToNative(run.runId);effectiveApplications=false;
           runtime.release();runtime=this.unavailableRuntime(input,current,run.runId,'AGENT_ADAPTER_UNSUPPORTED');
           runtime.snapshot.selfCheck?.issues.push(reason);entry.runtime=runtime;
           launch.runtime=runtime;launch.args=[];launch.env={};launch.initialInput=undefined;
           // The registry recorded the narrowing atomically; initial preparation remains immutable.
           phase='native-only';return launch;
         },
-        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
+        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,snapshot);phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
       return launch;
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }

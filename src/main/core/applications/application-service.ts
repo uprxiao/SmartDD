@@ -1,3 +1,4 @@
+import {taskUsesApplication} from './application-run-policy';
 import {canonicalJson,digest} from './manifest';
 import {ApplicationTerminalInsertion} from './terminal-insertion';
 import {resolveApplicationTerminalSource} from './terminal-sources';
@@ -79,7 +80,7 @@ export class ApplicationService {
     this.nativeMessages=new NativeUserMessages(this.nativeInputs,id=>{if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原生消息来源尚未初始化');return this.runs.assertActive(id);});
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
-    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id),runningInProject:id=>options.tasks.runningInProject(id)});
+    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,'zentao')),runningInProject:id=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,'zentao'))});
     this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty});
     this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,changed:options.changed,assertRun:id=>{
       if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前Agent运行通道尚未完成初始化');return this.runs.assertActive(id);

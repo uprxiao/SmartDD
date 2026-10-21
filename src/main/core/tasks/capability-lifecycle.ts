@@ -13,6 +13,8 @@ export interface TaskCapabilityLaunch {
   command?: string;
   /** Host-only, before any fork window is armed. Never changes the fixed selection. */
   nativeOnly?(reason: 'managed_launch_payload_too_large'): Promise<TaskCapabilityLaunch>;
+  /** Synchronous host policy check immediately before the OS fork. */
+  assertBeforeFork?(): void;
   beforeSpawn(): Promise<void>;
   spawned(nativePid: number | null): Promise<void>;
   initialInput?(sender: TaskInputSender, text: string): void;

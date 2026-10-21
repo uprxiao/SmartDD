@@ -347,12 +347,10 @@ export class TaskService {
   }
 
   /** Stop only this project's owned tasks/preparations; uncertain owners keep the project busy. */
-  async stopProject(projectId:string,timeoutMs=5000):Promise<boolean>{
-    const ids=new Set(this.d.db.select({id:tasks.id}).from(tasks).where(eq(tasks.projectId,projectId)).all().map(r=>r.id));
-    for(const [id,launch] of this.launching)if(launch.projectId===projectId)ids.add(id);
-    for(const id of ids)this.kill(id);
+  async stopProject(projectId:string,timeoutMs=5000,matches?:(taskId:string)=>boolean):Promise<boolean>{
+    for(const id of this.projectActiveTaskIds(projectId))if(!matches||matches(id))this.kill(id);
     const deadline=performance.now()+timeoutMs;
-    while(this.runningInProject(projectId)>0){if(performance.now()>=deadline)return false;await new Promise<void>(resolve=>setTimeout(resolve,Math.min(20,Math.max(1,deadline-performance.now()))));}
+    while(this.runningInProject(projectId,matches)>0){if(performance.now()>=deadline)return false;await new Promise<void>(resolve=>setTimeout(resolve,Math.min(20,Math.max(1,deadline-performance.now()))));}
     return true;
   }
 
@@ -370,11 +368,15 @@ export class TaskService {
   }
 
   /** How many of the project's tasks have a live CLI (a project with any cannot be deleted). */
-  runningInProject(projectId: string): number {
-    const ids = new Set(
-      this.d.db.select({ id: tasks.id }).from(tasks).where(eq(tasks.projectId, projectId)).all().map((r) => r.id)
-    );
-    return new Set([...this.running.keys()].filter(id=>ids.has(id)).concat([...this.launching].filter(([,launch])=>launch.projectId===projectId).map(([id])=>id),[...this.d.managedCapabilities?.activeTaskIds?.(projectId)??[]])).size;
+  private projectActiveTaskIds(projectId:string):Set<string>{
+    const stored=new Set(this.d.db.select({id:tasks.id}).from(tasks).where(eq(tasks.projectId,projectId)).all().map(r=>r.id));
+    const ids=new Set([...this.running.keys()].filter(id=>stored.has(id)));
+    for(const[id,launch]of this.launching)if(launch.projectId===projectId)ids.add(id);
+    for(const id of this.d.managedCapabilities?.activeTaskIds?.(projectId)??[])ids.add(id);
+    return ids;
+  }
+  runningInProject(projectId:string,matches?:(taskId:string)=>boolean):number{
+    const ids=this.projectActiveTaskIds(projectId);return matches?[...ids].filter(matches).length:ids.size;
   }
 
   dispose(): void {
@@ -490,6 +492,7 @@ export class TaskService {
           if (recovery.recovery === 'resumable' && mode !== 'resume') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话历史在准备时发生变化，请重试原会话恢复');
           if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== stateRootFor(profile.runner, env, base))) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
         }
+        launch?.assertBeforeFork?.();
         if (context && !context.newTask && profile.runner === 'claude' && mode === 'reopen') {
           // Persist uncertainty before fork: a host crash must not leave a reusable
           // "never written" claim while the native process may have written history.
