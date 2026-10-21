@@ -103,3 +103,8 @@ describe('original schema1 Codex paths in the shared discovery catalog',()=>{
   await catalog.snapshot();const path=join(catalog.root,'catalog-consumers');rmSync(path,{recursive:true});expect(()=>new DiscoveryCatalog(f.store,f.home,reader)).toThrow();expect(existsSync(path)).toBe(false);
  });
 });
+
+
+it('verifies native isolation only from complete H bytes without treating damaged C source bytes as application authority',async()=>{
+ const snapshot=await catalog.publish([source()]),states=f.sqlite.prepare('SELECT * FROM capability_resources ORDER BY resource_id').all(),h=readFileSync(join(target(),'SKILL.md'));writeFileSync(join(f.standardPath,'SKILL.md'),'damaged original C source');expect(()=>catalog.verify(snapshot)).toThrow();expect(()=>catalog.verifyNativeIsolation(snapshot)).not.toThrow();expect(f.sqlite.prepare('SELECT * FROM capability_resources ORDER BY resource_id').all()).toEqual(states);expect(f.sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);expect(readFileSync(join(target(),'SKILL.md'))).toEqual(h);writeFileSync(join(target(),'SKILL.md'),'damaged shared target');expect(()=>catalog.verifyNativeIsolation(snapshot)).toThrow();expect(readFileSync(join(f.standardPath,'SKILL.md'),'utf8')).toBe('damaged original C source');
+});

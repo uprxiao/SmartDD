@@ -1,3 +1,4 @@
+import { parseDocument } from 'yaml';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -40,7 +41,7 @@ export interface ManagedCapabilityPlacement {
   runtimeHash: string;
   mcpName: string | null;
   skills: RuntimeSkill[];
-  projections: Record<string,{ path: string;nativeName: string;files: Readonly<Record<string,Uint8Array>> }>;
+  projections: Record<string,{ path: string;nativeName: string;format?:'legacy-tree-v1';files: Readonly<Record<string,Uint8Array>> }>;
 }
 
 export interface CapabilityDeps {
@@ -230,7 +231,11 @@ export class CapabilityService {
         const projection = input.managed.projections[selection.versionId];
         if (!projection || !isAbsolute(projection.path) || !projection.path.endsWith('/SKILL.md') || !/^[a-z][a-z0-9-]{0,63}$/.test(projection.nativeName) || Object.keys(projection.files).sort().join('\n') !== Object.keys(source).sort().join('\n')) throw new Error('原标准Skill完整投影未准备好');
         for (const [name,text] of Object.entries(source)) {
-          const expected = name === 'SKILL.md' ? projectSkillName(Buffer.from(text),projection.nativeName) : Buffer.from(text);
+          const expected = name === 'SKILL.md' && projection.format!=='legacy-tree-v1' ? projectSkillName(Buffer.from(text),projection.nativeName) : Buffer.from(text);
+          if(name==='SKILL.md'&&projection.format==='legacy-tree-v1'){
+            const front=/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text),doc=front?parseDocument(front[1],{uniqueKeys:true,logLevel:'silent'}):null;
+            if(!doc||doc.errors.length||doc.get('name')!==projection.nativeName||treeHash(source)!==selection.hash)throw new Error('原标准Skill名称或完整来源不同');
+          }
           if (!expected.equals(Buffer.from(projection.files[name])) || !readFileSync(join(dirname(projection.path),name)).equals(expected)) throw new Error('原标准Skill投影内容不同');
         }
         selection.name = projection.nativeName; selection.path = projection.path;

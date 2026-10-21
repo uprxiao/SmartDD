@@ -183,7 +183,11 @@ export class DiscoveryCatalog {
         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录消费者身份不同'); return value; }); }
     private consumerName(c: Consumer): string { return c.owner.storeId + '-' + c.runId + '.json'; }
     async snapshot(): Promise<NonNullable<AgentLoadRequest['catalog']>> { return this.lock(() => { const c = this.catalog(); return structuredClone({ generation: c.generation, entries: c.entries }); }); }
-    verify(snapshot: NonNullable<AgentLoadRequest['catalog']>): void {
+    verify(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,true);}
+    /** Only for a no-authority native guard: verify complete H bytes/metadata,
+     * not C source bytes that the guarded native process will not consume. */
+    verifyNativeIsolation(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,false);}
+    private verifyCatalog(snapshot: NonNullable<AgentLoadRequest['catalog']>,sourceBytes:boolean): void {
         const parsed = catalogSchema.parse({ schema: 1, homeId: this.homeId, ...snapshot });
         if (parsed.generation !== this.generation(parsed.entries))
             throw new ApplicationError('HASH_MISMATCH', '共享目录集合摘要不同');
@@ -193,7 +197,7 @@ export class DiscoveryCatalog {
             if(entry.format==='legacy-tree-v1'){
                 const identity=verifyLegacyDiscoveryEntry(entry,this.home);
                 if(entry.storeId===this.store.storeId){const r=this.store.get(entry.resourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),source=this.store.get(identity.sourceResourceId);
-                    if(r.kind!=='legacy-agent-projection'||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.contentHash!==entry.projectionHash||r.state!=='ready'||r.integrity!=='valid'||this.store.directory(r)!==dirname(entry.path)||canonicalJson(deps)!==canonicalJson([identity.sourceResourceId])||source.state!=='ready'||source.integrity!=='valid'||source.pathScope!=='C'||canonicalJson({...readLegacyOwnedTree(this.store.directory(source),source.contentHash)})!==canonicalJson({...identity.files}))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H投影本机记录或原来源不完整');}
+                    if(r.kind!=='legacy-agent-projection'||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.contentHash!==entry.projectionHash||r.state!=='ready'||r.integrity!=='valid'||this.store.directory(r)!==dirname(entry.path)||canonicalJson(deps)!==canonicalJson([identity.sourceResourceId])||source.state!=='ready'||source.integrity!=='valid'||source.pathScope!=='C'||sourceBytes&&canonicalJson({...readLegacyOwnedTree(this.store.directory(source),source.contentHash)})!==canonicalJson({...identity.files}))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H投影本机记录或原来源不完整');}
                 continue;
             }
             assertDiscoveryPath(this.home,entry.path);

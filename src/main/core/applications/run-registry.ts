@@ -20,7 +20,7 @@ interface RunRow {
 }
 interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
-interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];verify:()=>Promise<void>}
+interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;verify:()=>Promise<void>}
 interface OwnedRun { guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
 export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal }
 export interface RunRegistryDeps {
@@ -201,7 +201,7 @@ export class CapabilityRunRegistry {
       for(const r of resources)this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
       if(kind==='fixed'){
-        const receipt=launchRestrictionSchema.parse({schema:1,runId,taskId:value.taskId,snapshotHash:value.snapshotHash,selectionHash,reason:'fixed_application_resources_unavailable',issueCode:'CAPABILITY_UNAVAILABLE',restrictedAt:timestamp}),text=canonicalJson(receipt);
+        const receipt=launchRestrictionSchema.parse({schema:1,runId,taskId:value.taskId,snapshotHash:value.snapshotHash,selectionHash,reason:input.restriction?.reason??'fixed_application_resources_unavailable',issueCode:input.restriction?.issueCode??'CAPABILITY_UNAVAILABLE',restrictedAt:timestamp}),text=canonicalJson(receipt);
         this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),timestamp);
       }
     }).immediate());

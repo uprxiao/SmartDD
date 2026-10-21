@@ -1,3 +1,4 @@
+import {parseDocument} from 'yaml';
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -255,4 +256,17 @@ describe('M10 managed placement through the existing production project runtime'
   it('preserves an already-recorded MCP name when an unmanaged legacy task resumes under a new run ID', () => {
     const first = prepare(), oldName = first.snapshot.mcp[0].name; first.release(); const second = prepare(a,'claude',first.snapshot); expect(second.snapshot.runId).not.toBe(first.snapshot.runId); expect(second.snapshot.mcp[0].name).toBe(oldName); expect(Object.keys(JSON.parse(readFileSync(join(dirname(second.snapshot.manifestPath),'mcp.json'),'utf8')).mcpServers)).toEqual([oldName]);
   });
+});
+
+
+function originalManagedPlacement(){
+ const placement=managedPlacement();for(const skill of placement.skills){const source=readOwnedTree(join(tmp,'data/capabilities/packages',skill.skillId,skill.hash)),front=/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(source['SKILL.md'])!,nativeName=parseDocument(front[1]).get('name') as string,dir=join(tmp,'original-static',skill.skillId);writeOwnedTree(dir,source,join(tmp,'conflicts'));placement.projections[skill.versionId]={path:join(dir,'SKILL.md'),nativeName,format:'legacy-tree-v1',files:Object.fromEntries(Object.entries(source).map(([p,t])=>[p,Buffer.from(t)]))};}return placement;
+}
+describe('M4 original complete source placement',()=>{
+ it.each(['claude','codex'] as const)('keeps original %s Skill bytes and names while building a new current-policy transient context',runner=>{
+  const placement=originalManagedPlacement(),before=Object.values(placement.projections).map(p=>readFileSync(p.path)),run=svc.prepare({projectId:a.id,taskId:'task',runner,cwd:a.dirs[0].path,home:join(tmp,'home'),profileArgs:[],managed:placement});expect(run.snapshot.skills.map(s=>s.path)).toEqual(Object.values(placement.projections).map(p=>p.path));Object.values(placement.projections).forEach((p,i)=>{expect(readFileSync(p.path)).toEqual(before[i]);expect(p.files['SKILL.md']).toEqual(before[i]);});expect(runGuard(run).stdout).toContain('RUNNER_REACHED');run.release();
+ });
+ it.each(['name','bytes'] as const)('rejects altered original projection %s without rewriting the source or target',kind=>{
+  const placement=originalManagedPlacement(),p=Object.values(placement.projections)[0],bytes=readFileSync(p.path);if(kind==='name')p.nativeName='different-original-name';else p.files={...p.files,'SKILL.md':Buffer.from('different original bytes')};expect(()=>svc.prepare({projectId:a.id,taskId:'task',runner:'claude',cwd:a.dirs[0].path,home:join(tmp,'home'),profileArgs:[],managed:placement})).toThrow(kind==='name'?'名称':'内容不同');expect(readFileSync(p.path)).toEqual(bytes);
+ });
 });
