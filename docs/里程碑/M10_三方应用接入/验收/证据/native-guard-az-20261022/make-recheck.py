@@ -1,0 +1,16 @@
+from pathlib import Path
+import json,hashlib,datetime
+w=Path('/private/tmp/m10-legacy-recovery-r-20261021/work-r4');e=Path('/private/tmp/m10-native-guard-az-20261022');u=e/'recheck-work';assert not u.exists();u.mkdir();j=json.loads((e/'build-input-snapshot.json').read_text());sha=lambda b:hashlib.sha256(b).hexdigest()
+for f in j['files']:
+ raw=(w/f['path']).read_bytes();assert sha(raw)==f['sha256'];p=u/f['path'];p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(raw)
+(u/'node_modules').symlink_to(w/'node_modules',target_is_directory=True);(u/'out').symlink_to(w/'out',target_is_directory=True)
+p=u/'src/main/core/applications/__tests__/claude-delivery-process.test.ts';s=p.read_text();old="expect((await f.sessions.references(f.snapshot.taskId)).some(r=>r.refKind==='claude-projection-archive'&&r.refHash===pending.priorHash)).toBe(true);";new="expect(f.sqlite.prepare(\"SELECT 1 FROM capability_session_refs WHERE task_id=? AND ref_kind='claude-projection-archive' AND ref_hash=?\").get(f.snapshot.taskId,pending.priorHash)).toBeDefined();";assert s.count(old)==1;s=s.replace(old,new,1);p.write_text(s)
+p=u/'src/main/core/applications/__tests__/session-diagnostics.test.ts';s=p.read_text();s="import {ClaudeDeliveryCoordinator} from '../claude-delivery';\nimport {readClaudeSlot} from '../claude-delivery-state';\n"+s
+old="async function start(){const run=await f.create();handles.push(run);";new="async function start(){let run:OwnedCapabilityRun;if(readClaudeSlot(f.store,f.snapshot.taskId)){const c=new ClaudeDeliveryCoordinator(f.store,f.sessions,new SessionCapabilityProjector(f.store,f.sessions),f.reader,f.runs.instanceId),apps=f.snapshot.packages.map(p=>p.appId),token=await c.prepare(f.snapshot.taskId,apps);run=await f.runs.reserveScoped({taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash,bindings:[]},apps,[token.resourceId],undefined,token);c.proof(run.runId,token);}else run=await f.create();handles.push(run);";assert s.count(old)==1;s=s.replace(old,new,1)
+s=s.replace("if(resource.kind==='session-projection'){", "if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind)){",1);p.write_text(s)
+overlay=[]
+for f in j['files']:
+ raw=(u/f['path']).read_bytes();h=sha(raw)
+ if h!=f['sha256']:overlay.append({'path':f['path'],'bytes':len(raw),'sha256':h,'priorFrozenSha256':f['sha256']})
+assert len(overlay)==2 and all('/__tests__/' in f['path'] for f in overlay)
+(e/'recheck-source.json').write_text(json.dumps({'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source':str(u),'files':overlay,'other2006InputsExactlyMatchMainFrozenSnapshot':True,'nativeAndDependencies':'read-only symlinks to exact private w inputs;no rebuild'},indent=2)+'\n');(e/'fixture-corrections.md').write_text('related2为258过3失败，原始日志/报告保留。两条新增same-hash backed-up/delivered测试在实际子进程持C锁暂停时调用会再获取C锁的sessions.references，属于测试夹具互抢；改为本夹具数据库只读SQL观察已有archive引用，恢复后的完整references断言仍保留。原capacity历史诊断旧夹具在slot初始化后直接f.create绕过真实交付准备，被正确拒绝；现同一start辅助函数在已有slot时走真实ClaudeDeliveryCoordinator prepare/proof与reserveScoped，保持原限制历史/新run/可用断言；inspector随之核验真实view/archive资源。没有改生产输入、删除case或放宽权限。两测试文件在第二隔离副本修改，其余2006输入精确相同，主完整启动回归副本仍不变。\n');print({'recheckSource':str(u),'testOnlyChanges':2,'otherInputsUnchanged':2006})

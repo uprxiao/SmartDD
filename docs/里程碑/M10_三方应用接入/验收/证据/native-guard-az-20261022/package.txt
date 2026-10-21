@@ -1,0 +1,34 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/package-registry.test.ts --maxWorkers=1 --testTimeout=15000 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-native-guard-az-20261022/package-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > installs full runtime and package once, and activates only after explicit selection 688ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 restores a missing original package only from its exact content without selecting the latest default or rewriting history 1052ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at registered under its new durable operation identity 778ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at materialized under its new durable operation identity 786ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at renamed under its new durable operation identity 735ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 defers a missing package while a direct resource consumer still holds a real lease 735ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 defers a missing package while a dependent resource consumer still holds a real lease 787ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 keeps an occupied original package path unchanged: empty-directory 404ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 keeps an occupied original package path unchanged: user-directory 479ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 keeps an occupied original package path unchanged: linked-directory 1068ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 retains a user directory that appears after restoration is registered and leaves recovery pending 572ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > rejects same-version changed content before publication, preserving the old default and files 585ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > does not select a new package when install succeeds or a stale activation plan is submitted 964ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > recovers an interruption at registered without switching defaults or replacing the old package 1003ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > recovers an interruption at materialized without switching defaults or replacing the old package 1047ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > recovers an interruption at renamed without switching defaults or replacing the old package 868ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > verifies actual runtime bytes and rejects a missing runtime before package registration 294ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > keeps historical resource references after deleting the task, with FK protection against accidental resource deletion 267ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > holds a resource lease across asynchronous work and releases it even when the operation fails 322ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > rolls back trusted data migration changes and keeps the old default on migration failure 868ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  05:17:49
+   Duration  14.66s (transform 237ms, setup 0ms, import 279ms, tests 14.30s, environment 0ms)
+
+JSON report written to /private/tmp/m10-native-guard-az-20261022/package-report.json

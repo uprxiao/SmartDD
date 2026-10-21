@@ -1,0 +1,1 @@
+首次pre-slot测试仅查询lease.resource_id，漏查capability_lease_resources，且全应用ready的未知CLI实际走managed reserve后restrict，原C根已被传递保护。因此初次1过1失败不能证明产品缺陷；首次green2仍1失败保留。现使用坏Zen来源使prepareUnavailableSession固定native guard真正触发；租约查询覆盖主记录与依赖明细；publisher场景先同hash恢复源状态但保留原普通guard，再注入原canonical目录缺失。用AY原claude-delivery-state再次红测，随后恢复同一候选修复。不改变根占用、原S/ID、用户文件及零App授权预期。

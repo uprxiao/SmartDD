@@ -1,3 +1,4 @@
+import {captureNativeStaticRoots,nativeStaticSourceIds,verifyNativeStaticRoots,type NativeStaticRoot} from './native-static-roots';
 import {assertClaudeReservation,bindClaudeDelivery,assertClaudeRunDelivery,protectClaudeNativeGuard,type ClaudeDeliveryToken,type ClaudeRunDelivery} from './claude-delivery-state';
 import {assertScopeExclusions,assertIndependentRoots,applicationRunScopeSchema,applicationScopeOperationId,readApplicationRunScope,type ApplicationRunScope,type ApplicationScopeExclusion} from './application-run-scope';
 import { randomUUID } from 'node:crypto';
@@ -21,7 +22,7 @@ interface RunRow {
   bindings_json: string;started_at: string;ended_at: string | null;error_code: string | null;revocation_state: 'open' | 'revoking' | 'revoked';
 }
 interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
-interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
+interface NativeGuard { staticRoots?:readonly NativeStaticRoot[];kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
 interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;verify:()=>Promise<void>}
 interface OwnedRun { delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
 export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
@@ -116,6 +117,7 @@ export class CapabilityRunRegistry {
   private closure(taskId: string,guard?:NativeGuard,scope?:ApplicationRunScope): ResourceRecord[] {
     const roots = guard?guard.resources.map(id=>{const r=this.store.get(id);return{ref_id:id,ref_hash:r.contentHash,ref_kind:r.kind,relative_path:r.relativePath};}):scope?scope.roots.map(r=>({ref_id:r.refId,ref_hash:r.refHash,ref_kind:r.refKind,relative_path:r.relativePath})):this.store.sqlite.prepare('SELECT ref_id,ref_hash,ref_kind,relative_path FROM capability_session_refs WHERE task_id=?').all(taskId) as { ref_id: string;ref_hash: string;ref_kind: string;relative_path: string }[];
     if (!roots.length) throw new ApplicationError('SNAPSHOT_CORRUPT','原会话资源引用缺失');
+    const inert=guard?.staticRoots?nativeStaticSourceIds(this.store,guard.resources,guard.staticRoots):new Set<string>();
     const visited = new Map<string,ResourceRecord>(), visiting = new Set<string>();
     const visit = (id: string,depth = 0): void => {
       if (depth > 256) throw new ApplicationError('INVALID_PACKAGE','资源依赖深度超过预算');
@@ -123,7 +125,7 @@ export class CapabilityRunRegistry {
       if (visited.has(id)) return;
       if (visited.size + visiting.size >= 10000) throw new ApplicationError('INVALID_PACKAGE','资源依赖超过预算');
       const resource = this.store.get(id);
-      if (resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','原会话资源未就绪，不能准备新的运行');
+      if (!inert.has(id)&&(resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('RESOURCE_STATE_CHANGED','原会话资源未就绪，不能准备新的运行');
       visiting.add(id);
       for (const dependency of this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=?').all(id) as { dependency_id: string }[]) visit(dependency.dependency_id,depth + 1);
       visiting.delete(id); visited.set(id,resource);
@@ -143,7 +145,8 @@ export class CapabilityRunRegistry {
     if (!lease || lease.owner_id !== row.run_id || lease.host_instance_id !== this.instanceId || !['preparing','active'].includes(lease.state)) throw new ApplicationError('RESOURCE_STATE_CHANGED','运行资源占用已改变');
     const protectedRows = this.store.sqlite.prepare('SELECT resource_id,content_hash,generation FROM capability_lease_resources WHERE lease_id=?').all(owned.leaseId) as { resource_id: string;content_hash: string;generation: number }[];
     for (const resource of this.closure(row.task_id,owned.guard,owned.scope)) if (!protectedRows.some(r => r.resource_id === resource.resourceId && r.content_hash === resource.contentHash && r.generation === resource.generation)) throw new ApplicationError('RESOURCE_STATE_CHANGED','原资源依赖或代次已改变，保留占用但拒绝启动');
-    for (const protectedRow of protectedRows) { const r = this.store.get(protectedRow.resource_id); if (r.state !== 'ready' || r.integrity !== 'valid' || r.contentHash !== protectedRow.content_hash || r.generation !== protectedRow.generation) throw new ApplicationError('RESOURCE_STATE_CHANGED','被占用资源状态发生改变'); }
+    const inert=owned.guard?.staticRoots?nativeStaticSourceIds(this.store,owned.guard.resources,owned.guard.staticRoots):new Set<string>();
+    for (const protectedRow of protectedRows) { const r = this.store.get(protectedRow.resource_id); if (!inert.has(r.resourceId)&&(r.state !== 'ready' || r.integrity !== 'valid') || r.contentHash !== protectedRow.content_hash || r.generation !== protectedRow.generation) throw new ApplicationError('RESOURCE_STATE_CHANGED','被占用资源状态发生改变'); }
   }
   private view(row: RunRow): CapabilityRunRecord { return { runId: row.run_id,taskId: row.task_id,projectId: row.project_id,runner: row.runner,state: row.state,snapshotHash: row.snapshot_hash,pid: row.pid,processStartedAt: row.process_started_at,startedAt: row.started_at,endedAt: row.ended_at }; }
   get(runId: string): CapabilityRunRecord { return this.view(this.row(runId)); }
@@ -191,7 +194,7 @@ export class CapabilityRunRegistry {
     const parsed=z.object({taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:z.enum(['claude-code','codex']),snapshotHash:z.string().regex(/^[a-f0-9]{64}$/),resourceIds:z.array(z.string().min(1).max(512)).min(1).max(4096)}).strict().safeParse({taskId:input.taskId,projectId:input.projectId,runner:input.runner,snapshotHash:input.snapshotHash,resourceIds:input.resourceIds});
     if(!parsed.success||typeof input.verify!=='function'||reservation&&(!z.uuid().safeParse(reservation.runId).success||!z.uuid().safeParse(reservation.ptyId).success))throw new ApplicationError('INVALID_INPUT','原生历史守护身份无效');
     if(this.closed)throw new ApplicationError('CANCELED','运行服务已关闭');const value=parsed.data,runId=reservation?.runId??randomUUID(),ptyId=reservation?.ptyId??randomUUID(),processId=randomUUID(),leaseId=randomUUID();
-    const guard:NativeGuard={kind,snapshotHash:value.snapshotHash,resources:Object.freeze([...new Set(value.resourceIds)]),verify:input.verify};let selectionHash=value.snapshotHash;
+    const staticRoots=captureNativeStaticRoots(this.store,value.resourceIds),guard:NativeGuard={kind,snapshotHash:value.snapshotHash,resources:Object.freeze([...new Set(value.resourceIds)]),staticRoots,verify:async()=>{verifyNativeStaticRoots(this.store,staticRoots);await input.verify();}};let selectionHash=value.snapshotHash;
     await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
       if(this.closed)throw new ApplicationError('CANCELED','守护准备已取消');
       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId);this.gate();
@@ -239,6 +242,7 @@ export class CapabilityRunRegistry {
         this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),evidence.restrictedAt);
         const resources=this.closure(row.task_id,owned.guard,owned.scope).map(r=>r.resourceId);
         this.store.sqlite.prepare("UPDATE capability_runs SET bindings_json='[]' WHERE run_id=?").run(runId);
+        protectClaudeNativeGuard(this.store,row.task_id,runId);
         return owned.guard??{kind:'fixed' as const,snapshotHash:row.snapshot_hash,resources:Object.freeze(resources),verify:()=>owned.scope?this.sessions.verifyScopedResources(row.task_id,owned.scope.applications.map(p=>p.appId),owned.scopeProjectionIds??[],owned.scope.schema===2):this.sessions.verifyResources(row.task_id)};
       }).immediate();
       owned.guard=guard;

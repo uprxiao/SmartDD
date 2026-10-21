@@ -1,0 +1,8 @@
+
+ it.each(['lease','missing-root'] as const)('freezes the actual original Claude canonical path before its first delivery slot during ordinary resume: %s',async fault=>{
+  await selectBoth();const first=await create(claudeId),nativeId=await stopForSwitchFixture(first,'claude-code'),fixed=await managed.sessions.get(first.task.id),ref=(await managed.sessions.references(first.task.id)).find(r=>r.refKind==='session-projection')!,rootPath=join(support.store.root,ref.relativePath);expect(readClaudeSlot(support.store,first.task.id)).toBeNull();writeFileSync(join(root,'cc-version-fixture'),'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');const started=await tasks.open({taskId:first.task.id});
+  try{const runId=started.task.runtimeSnapshot!.runId;expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(started.task.nativeSessionId).toBe(nativeId);expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);
+   if(fault==='lease'){const leased=sqlite.prepare("SELECT 1 FROM capability_resource_leases l JOIN capability_resources r ON r.resource_id=l.resource_id WHERE l.owner_id=? AND l.state<>'released' AND r.path_scope='C' AND COALESCE(r.scope_relative_path,r.relative_path)=?").get(runId,ref.relativePath);expect(leased).toBeDefined();}
+   else{rmSync(rootPath,{recursive:true});await expect(managed.projector.claude(first.task.id)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(existsSync(rootPath)).toBe(false);expect(ptys.live.has(started.ptyId)).toBe(true);}
+  }finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(started.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
+ },30000);

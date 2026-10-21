@@ -55,7 +55,8 @@ export class ClaudeDeliveryCoordinator{
   const relative=claudeRoot(taskId),root=join(this.store.root,relative);let archiveId:string|null=null;
   // Before the first canonical change, preserve the actual registered complete
   // original tree.Archive creation never guesses a missing original body.
-  if(!readClaudeSlot(this.store,taskId)&&present(root)){const refs=await this.sessions.references(taskId),original=refs.filter(r=>r.refKind==='session-projection'&&r.relativePath===relative);if(original.length!==1)throw new ApplicationError('OWNERSHIP_CONFLICT','原Claude路径不是唯一已登记的完整插件');archiveId=(await this.projector.archiveClaude(taskId,original[0].refId)).resource.resourceId;}
+  const originalSlot=readClaudeSlot(this.store,taskId);
+  if((!originalSlot||!originalSlot.current&&!originalSlot.pending)&&present(root)){const refs=await this.sessions.references(taskId),original=refs.filter(r=>r.refKind==='session-projection'&&r.relativePath===relative);if(original.length!==1)throw new ApplicationError('OWNERSHIP_CONFLICT','原Claude路径不是唯一已登记的完整插件');archiveId=(await this.projector.archiveClaude(taskId,original[0].refId)).resource.resourceId;}
   let token:ClaudeDeliveryToken|undefined;
   await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
    let slot=readClaudeSlot(this.store,taskId);if(!slot){const anchorId=claudeAnchor(taskId),selectionHash=normalizedSelection(current.snapshot);slot={schema:1,storeId:this.store.storeId,taskId,selectionHash,root:relative,anchorId,revision:1,current:null,pending:null,preparation:null,consumers:[]};this.assertNoRuns(taskId);
@@ -94,7 +95,7 @@ export class ClaudeDeliveryCoordinator{
    const fresh=readClaudeSlot(this.store,taskId);if(!fresh?.pending||fresh.pending.id!==id||!this.sameOwner(fresh.pending.activeOwner,this.owner)||!this.operations.has(id))throw recovery();this.claim(fresh);this.idle(fresh);const p=fresh.pending,root=join(this.store.root,fresh.root),backup=join(this.store.root,p.backup);ensureStoreDirectory(this.store.root,dirname(fresh.root));ensureStoreDirectory(this.store.root,dirname(p.backup));
    if(present(backup)){if(!p.priorHash)throw recovery();verifyOwnedBundle(backup,p.priorHash,this.store.storeId);}
    if(present(root)){let next=false;try{verifyOwnedBundle(root,p.hash,this.store.storeId);next=true;}catch{if(!p.priorHash||present(backup))throw recovery();verifyOwnedBundle(root,p.priorHash,this.store.storeId);renameSync(root,backup);sync(dirname(root));sync(dirname(backup));this.checkpoint?.('backed-up');}
-    if(next&&p.priorHash&&!present(backup))throw recovery();
+    if(next&&p.priorHash&&!present(backup)){if(p.priorHash!==p.hash)throw recovery();renameSync(root,backup);sync(dirname(root));sync(dirname(backup));this.checkpoint?.('backed-up');}
    }else if(p.priorHash&&!present(backup))throw recovery();
    if(!present(root)){verifyOwnedBundle(stage,p.hash,this.store.storeId);renameSync(stage,root);sync(dirname(stage));sync(dirname(root));}this.checkpoint?.('delivered');verifyOwnedBundle(root,p.hash,this.store.storeId);
    this.store.sqlite.transaction(()=>{this.assertPending(fresh);const resource=this.store.get(p.resourceId);if(resource.operationId!==p.id||resource.contentHash!==p.hash||resource.relativePath!==fresh.root||resource.generation!==p.generation||resource.state!=='staged')throw recovery();
