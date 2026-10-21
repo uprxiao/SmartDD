@@ -1,0 +1,96 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/coordinator-crash.test.ts src/main/core/applications/__tests__/resource-lock.test.ts src/main/core/applications/__tests__/resource-publication-recovery.test.ts src/main/core/applications/__tests__/discovery-crash.test.ts src/main/core/applications/__tests__/discovery-catalog.test.ts src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/expanded-first-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/discovery-crash.test.ts (5 tests) 17617ms
+     ✓ restores the original intent-recorded operation after SIGKILL, preserving bytes and references  4100ms
+     ✓ restores the original registered operation after SIGKILL, preserving bytes and references  1156ms
+     ✓ restores the original renamed operation after SIGKILL, preserving bytes and references  4112ms
+     ✓ restores the original catalog-published operation after SIGKILL, preserving bytes and references  4049ms
+     ✓ restores the original records-committed operation after SIGKILL, preserving bytes and references  3766ms
+ ✓ src/main/core/applications/__tests__/discovery-catalog.test.ts (31 tests) 35052ms
+     ✓ publishes complete immutable binary/executable trees and records real H locations with full C dependencies  633ms
+     ✓ retains original source bytes and original catalog when publishing the same verified set  783ms
+     ✓ uses one canonical HOME lock/catalog through aliases and distinct identities across two real HOMEs  1089ms
+     ✓ builds a real complete native disable list from the coordinated catalog without changing the fixed snapshot  968ms
+     ✓ blocks new consumers during pending publication and waits for actual CLI exit rather than stop intent  1414ms
+     ✓ retains an armed PID-null window and pending directory protection until the owned exit is recorded  1167ms
+     ✓ keeps a live executor protected after all child processes have exited  1343ms
+     ✓ rolls back only its reservation when the C registration transaction fails  1026ms
+     ✓ holds a reservation when C committed but its callback failed before returning  1185ms
+     ✓ cancels an unpublished waiting intent on cancel and allows exact-content retry  1859ms
+     ✓ cancels an unpublished waiting intent on timeout and allows exact-content retry  1777ms
+     ✓ does not adopt or overwrite an identical namesake belonging to another store  1470ms
+     ✓ respects a different store consumer and never removes its reservation from this database  2434ms
+     ✓ recovers exact original bytes after a controlled registered interruption  791ms
+     ✓ recovers exact original bytes after a controlled materialized interruption  912ms
+     ✓ recovers exact original bytes after a controlled renamed interruption  1100ms
+     ✓ recovers exact original bytes after a controlled catalog-published interruption  1041ms
+     ✓ refuses replacement recovery inputs and an active old owner without weakening the original gate  689ms
+     ✓ retains corrupt consumers and user files and never treats them as stale by age  1268ms
+     ✓ refuses a user-owned target and corrupted source projection without touching either original  1211ms
+     ✓ checks supplied projected bytes against the original source, then safely cancels an unpublished materialization  1562ms
+     ✓ rejects a linked H ancestor and preserves the external target  574ms
+     ✓ does not recreate a deleted initialized catalog as an empty managed set  956ms
+     ✓ rejects a broken linked metadata file without replacing that link  1135ms
+     ✓ retains a dead-looking lock independent of age instead of implicitly stealing it  568ms
+     ✓ recovers a stopped original publication owner using its kernel identity and exact original operation ledger  1446ms
+     ✓ keeps a recovered consumer until the original host and all children are proven stopped in its own C ledger  1253ms
+     ✓ does not silently repair a missing original H dependency ledger on verified reuse  1059ms
+     ✓ preserves the complete source dependency closure when publication is interrupted before copying  530ms
+     ✓ registers an empty-history HOME before the consumer intent and releases only after its owner is proved stopped  751ms
+     ✓ retains living,unknown and live-child owners, then releases exact stopped records while preserving another store  1057ms
+ ✓ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts (37 tests) 28782ms
+     ✓ restores the exact original path, full source and legacy marker without renaming the Skill  525ms
+     ✓ adopts an unchanged original tree without writing any of its files or marker  554ms
+     ✓ keeps the original projection disabled in a new session and preserves user Skill configuration  985ms
+     ✓ waits for Claude consumers too and cancels before changing the original discovery set  1025ms
+     ✓ repairs a missing registered original tree at the same hash and path, retaining the catalog identity  930ms
+     ✓ preserves an occupied original empty tree instead of overwriting it  610ms
+     ✓ preserves an occupied original extra-file tree instead of overwriting it  623ms
+     ✓ preserves an occupied original extra-empty-dir tree instead of overwriting it  605ms
+     ✓ preserves an occupied original marker tree instead of overwriting it  623ms
+     ✓ preserves an occupied original link tree instead of overwriting it  615ms
+     ✓ preserves an occupied original hardlink tree instead of overwriting it  683ms
+     ✓ replays the exact registered operation after its original host is proved stopped  929ms
+     ✓ replays the exact materialized operation after its original host is proved stopped  779ms
+     ✓ replays the exact renamed operation after its original host is proved stopped  1015ms
+     ✓ replays the exact catalog-published operation after its original host is proved stopped  941ms
+     ✓ does not recover a living or unknown publisher and retains its exact operation and lease  608ms
+     ✓ rechecks a late source change before making the H catalog visible  832ms
+     ✓ rechecks a late dangling-target change before making the H catalog visible  1477ms
+     ✓ rechecks a late staging change before making the H catalog visible  741ms
+     ✓ retains a missing original dependency ledger instead of manufacturing one while repairing H  966ms
+     ✓ does not reassign another store’s registered original H path  937ms
+     ✓ preserves a PID-null unknown lease when the registered original directory is missing  915ms
+     ✓ rejects a supplied rename projection instead of changing the legacy selection  557ms
+     ✓ rejects a supplied truncated-hash projection instead of changing the legacy selection  642ms
+     ✓ rejects a supplied different-body projection instead of changing the legacy selection  571ms
+     ✓ rejects a supplied executable projection instead of changing the legacy selection  626ms
+     ✓ rejects a linked ancestor on read-only verification and leaves its external target untouched  1012ms
+     ✓ verifies the original C source on reuse as well as on a new publication  882ms
+     ✓ refuses ready when original H bytes change at the renamed boundary  661ms
+     ✓ refuses ready when original H bytes change at the catalog-published boundary  720ms
+     ✓ refuses a substituted discovery root before acquiring or writing its lock  594ms
+     ✓ cancels waiting adoption without changing a preexisting original H tree or the other consumer  1173ms
+     ✓ rolls back only its unregistered waiting intent when the host guard fails before C commits  907ms
+     ✓ rejects a substituted catalog-consumers child without writing through its alias  656ms
+     ✓ rejects a substituted staging child without writing through its alias  570ms
+     ✓ does not recreate a missing initialized consumer directory as an empty reader set  559ms
+   ✓ verifies native isolation only from complete H bytes without treating damaged C source bytes as application authority  734ms
+ ✓ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (14 tests) 4845ms
+     ✓ keeps a living renamed publisher, then restores the same operation after actual SIGKILL  3227ms
+ ✓ src/main/core/applications/__tests__/coordinator-crash.test.ts (16 tests) 1915ms
+     ✓ serializes concurrent C recovery contenders after the original owner stops  401ms
+     ✓ serializes concurrent H recovery contenders after the original owner stops  409ms
+ ✓ src/main/core/applications/__tests__/resource-lock.test.ts (4 tests) 70ms
+
+ Test Files  6 passed (6)
+      Tests  107 passed (107)
+   Start at  18:46:45
+   Duration  89.43s (transform 206ms, setup 0ms, import 679ms, tests 88.28s, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/expanded-first-report.json

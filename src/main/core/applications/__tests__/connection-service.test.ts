@@ -108,13 +108,26 @@ describe('current connection revisions, tested candidates and encrypted secret c
     const enabled = await service.setEnabled(saved.id, true, disabled.revision);
     expect(enabled).toMatchObject({ enabled: true, health: 'unverified' }); expect(service.authentication(saved.id, authVersion(enabled)).secret).toBe('fixture-secret-first');
   });
-  it('cancels a pending candidate and ignores a provider result arriving after cancellation', async () => {
-    let release!: () => void; const gate = new Promise<void>(r => { release = r; }); verify.mockImplementationOnce(async c => { await gate; return identity(c); });
+  it('cancels a newly visible candidate before verification starts and removes only its staged credential', async () => {
     const pending = service.testCandidate(input()); const observed = expect(pending).rejects.toMatchObject({ code: 'CANCELED' });
     let operationId = '';
     await vi.waitFor(() => { const row = sqlite.prepare("SELECT operation_id FROM application_secret_changes WHERE state='preparing'").get() as { operation_id: string } | undefined; expect(row).toBeDefined(); operationId = row!.operation_id; });
-    await service.discardCandidate(operationId); await observed; release(); await Promise.resolve();
-    expect(service.list()).toHaveLength(0); expect(secretCount()).toBe(0);
+    // The row is visible before testCandidate's awaited C continuation resumes.
+    expect(verify).not.toHaveBeenCalled();
+    await service.discardCandidate(operationId); await observed;
+    expect(verify).not.toHaveBeenCalled(); expect(service.list()).toHaveLength(0); expect(secretCount()).toBe(0);
+    expect(sqlite.prepare('SELECT state,error_code FROM application_secret_changes WHERE operation_id=?').get(operationId)).toEqual({state:'failed',error_code:'CANCELED'});
+  });
+  it('cancels a pending candidate and ignores a provider result arriving after cancellation', async () => {
+    let release!: () => void, entered!: () => void;
+    const gate = new Promise<void>(r => { release = r; }), ready = new Promise<void>(r => { entered = r; });
+    verify.mockImplementationOnce(async c => { entered(); await gate; return identity(c); });
+    const pending = service.testCandidate(input()); const observed = expect(pending).rejects.toMatchObject({ code: 'CANCELED' });
+    await ready;
+    const row = sqlite.prepare("SELECT operation_id FROM application_secret_changes WHERE state='preparing'").get() as { operation_id: string };
+    await service.discardCandidate(row.operation_id); await observed; release(); await Promise.resolve();
+    expect(verify).toHaveBeenCalledOnce(); expect(service.list()).toHaveLength(0); expect(secretCount()).toBe(0);
+    expect(sqlite.prepare('SELECT state,error_code FROM application_secret_changes WHERE operation_id=?').get(row.operation_id)).toEqual({state:'failed',error_code:'CANCELED'});
   });
   it('bounds a provider that does not finish and discards its staged credential', async () => {
     verify.mockImplementationOnce(async () => new Promise<never>(() => {}));

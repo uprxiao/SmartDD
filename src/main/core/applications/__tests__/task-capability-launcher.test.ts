@@ -55,10 +55,11 @@ afterEach(async()=>{tasks?.dispose();for(const id of ptys?.live?.keys()??[])ptys
 const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
 const consumers=()=>readdirSync(join(home,'.agents/smartdd-runtime/catalog-consumers'));
 // Historical success fixtures need actual native history, not only a claimed ID/root.
+const codexDayDirectory=(stateRoot:string,stamp:number)=>{const day=new Date(stamp),pad=(n:number)=>String(n).padStart(2,'0');return join(stateRoot,'sessions',String(day.getFullYear()),pad(day.getMonth()+1),pad(day.getDate()));};
 const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(home,runner==='codex'?'.codex':'.claude'))=>{
- const folder=runner==='codex'?join(stateRoot,'sessions','2026','10','21'):join(stateRoot,'projects',encodeClaudeDir(cwd));mkdirSync(folder,{recursive:true});
+ const stamp=Date.now(),folder=runner==='codex'?codexDayDirectory(stateRoot,stamp):join(stateRoot,'projects',encodeClaudeDir(cwd));mkdirSync(folder,{recursive:true});
  const file=join(folder,runner==='codex'?'rollout-private-'+id+'.jsonl':id+'.jsonl');
- writeFileSync(file,JSON.stringify(runner==='codex'?{type:'session_meta',payload:{id,cwd,timestamp:new Date().toISOString(),originator:'codex_cli_rs'}}:{type:'user',message:{role:'user',content:'synthetic retained native history'}})+'\n');return file;
+ writeFileSync(file,JSON.stringify(runner==='codex'?{type:'session_meta',payload:{id,cwd,timestamp:new Date(stamp).toISOString(),originator:'codex_cli_rs'}}:{type:'user',message:{role:'user',content:'synthetic retained native history'}})+'\n');return file;
 };
 
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
@@ -332,7 +333,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   writeFileSync(script,"const fs=require('node:fs');if(process.argv.includes('--version')){console.log('99.0.0');process.exit(0);}fs.writeFileSync(process.env.M10_ORDINARY_REPORT,JSON.stringify({pid:process.pid,argv:process.argv.slice(2),home:process.env.HOME,stateRoot:process.env.CODEX_HOME,cwd:process.cwd()}));console.log('M10_ORDINARY_NATIVE_READY');setInterval(()=>{},1000);\n");
   writeFileSync(command,'#!/bin/sh\nexec '+quote(process.execPath)+' '+quote(script)+' "$@"\n',{mode:0o700});
   const args=['--config','model="unchanged-ordinary-user-model"'],profile=profiles.create({name:'Actual PTY unknown-version fixture, not a real model CLI',runner:'codex',executable:command,args,env:[{name:'M10_ORDINARY_REPORT',value:report,secret:false},{name:'ELECTRON_RUN_AS_NODE',value:'1',secret:false}],color:null,isDefault:false});
-  const id=randomUUID(),nativeId=randomUUID(),stamp=Date.now(),stateRoot=join(home,'.codex'),sessionDir=join(stateRoot,'sessions','2026','10','21');mkdirSync(sessionDir,{recursive:true});const config=join(stateRoot,'config.toml'),configText='model="preserved-user-model"\n';writeFileSync(config,configText);writeFileSync(join(sessionDir,'rollout-fixture-'+nativeId+'.jsonl'),JSON.stringify({type:'session_meta',payload:{id:nativeId,cwd,timestamp:new Date(stamp).toISOString(),originator:'codex_cli_rs'}})+'\n');
+  const id=randomUUID(),nativeId=randomUUID(),stamp=Date.now(),stateRoot=join(home,'.codex'),sessionDir=codexDayDirectory(stateRoot,stamp);mkdirSync(sessionDir,{recursive:true});const config=join(stateRoot,'config.toml'),configText='model="preserved-user-model"\n';writeFileSync(config,configText);writeFileSync(join(sessionDir,'rollout-fixture-'+nativeId+'.jsonl'),JSON.stringify({type:'session_meta',payload:{id:nativeId,cwd,timestamp:new Date(stamp).toISOString(),originator:'codex_cli_rs'}})+'\n');
   db.insert(schema.tasks).values({id,projectId,cwd,aiProfileId:profile.id,runner:'codex',nativeSessionId:nativeId,title:'isolated native-only actual process',runtimeSnapshot:null,configVersion:0,stateRoot,createdAt:stamp,updatedAt:stamp}).run();
   tasks=new TaskService({db,ptys:real,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',SHELL:'/bin/sh'}),onChanged:()=>{}});
   applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:task=>tasks.activePty(task),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:resolve('out/native/willyou-process-identity'),stopPty:pty=>real.kill(pty),pollMs:20});tasks.attachManagedCapabilities(managed);

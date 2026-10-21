@@ -1,0 +1,18 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/core/applications/__tests__/session-diagnostics.test.ts --maxWorkers=1 '--testNamePattern=substituted parent|clock rollback' --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/root-alias-retest-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (99 tests | 98 skipped) 430ms
+   ✓ does not publish through a substituted parent of the original store root  429ms
+ ✓ src/main/core/applications/__tests__/session-diagnostics.test.ts (14 tests | 13 skipped) 3124ms
+     ✓ finds the owned current run even when a clock rollback leaves more than six future-dated history rows  3123ms
+
+ Test Files  2 passed (2)
+      Tests  2 passed | 111 skipped (113)
+   Start at  19:04:07
+   Duration  4.59s (transform 438ms, setup 0ms, import 814ms, tests 3.55s, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/root-alias-retest-report.json

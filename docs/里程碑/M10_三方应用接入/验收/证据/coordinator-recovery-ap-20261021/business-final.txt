@@ -1,0 +1,361 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/connection-service.test.ts src/main/core/applications/__tests__/selection-service.test.ts src/main/core/applications/__tests__/application-controller.test.ts src/main/core/applications/__tests__/business-data.test.ts src/main/core/applications/__tests__/mail-cache.test.ts src/main/core/applications/__tests__/mail-cache-process.test.ts src/main/core/applications/__tests__/mail-drafts.test.ts src/main/core/applications/__tests__/mail-execution.test.ts src/main/core/applications/__tests__/mail-read-data.test.ts src/main/core/applications/__tests__/mail-send-data.test.ts src/main/core/applications/__tests__/tool-service.test.ts src/main/core/applications/__tests__/activity.test.ts src/main/core/applications/__tests__/zentao-data.test.ts src/main/core/applications/__tests__/agent-bridge-processes.test.ts src/main/core/applications/__tests__/private-broker.test.ts src/main/core/applications/__tests__/bridge-runtime.test.ts --maxWorkers=1 --testTimeout=15000 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/business-test-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (74 tests | 2 failed) 266345ms
+     ✓ checks old send ownership on App startup without network replay: stopped  3262ms
+     ✓ checks old send ownership on App startup without network replay: unknown  2741ms
+     ✓ refuses to display success when a persisted execution and its send intent disagree  3551ms
+     ✓ reads unknown SMTP history with original frozen content after app removal and never replays a send  4257ms
+     ✓ rejects a corrupted frozen review instead of showing the current draft as the historical send  3478ms
+     × migrates only the provable original prepare identity and leaves frozen sends unchanged on replay 3253ms
+     ✓ uses the same frozen send engine from explicit trusted UI preparation,review and execution  3657ms
+     ✓ confirms an existing claude-code intent in UI and executes only through its original run once  7206ms
+     ✓ confirms an existing codex intent in UI and executes only through its original run once  4511ms
+     ✓ records only the trusted owned PTY input across first native binding and never turns origin evidence into a send grant  3306ms
+     ✓ matches actual native user-file records on claude-code send preparation without minting semantic permission  8143ms
+     ✓ matches actual native user-file records on codex send preparation without minting semantic permission  7018ms
+     ✓ uses a matched claude-code explicit fixed-revision instruction without a redundant UI confirmation  5887ms
+     ✓ uses a matched codex explicit fixed-revision instruction without a redundant UI confirmation  2281ms
+     ✓ authorizes an already frozen intent when the subsequent exact native user instruction arrives  2015ms
+     ✓ does not mint a native grant for default evidence  1839ms
+     ✓ does not mint a native grant for analysis evidence  1851ms
+     ✓ does not mint a native grant for stale evidence  1881ms
+     ✓ does not mint a native grant for other-run evidence  1825ms
+     ✓ invalidates a native send authorization before SMTP on cancel  2034ms
+     ✓ invalidates a native send authorization before SMTP on new-input  2037ms
+     ✓ invalidates a native send authorization before SMTP on unknown-input  1944ms
+     ✓ invalidates a native send authorization before SMTP on tampered-file  1984ms
+     ✓ retains explicit UI authorization after an earlier native source has been superseded  2348ms
+     ✓ keeps the existing draft lock when two different prepare operations race  2211ms
+     ✓ deduplicates concurrent late native authorization and execute for one existing intent  2334ms
+     ✓ returns the existing execution when a second source claim completes after SMTP has settled  2281ms
+     ✓ rechecks the latest user turn synchronously in C while all native file verification stays outside C  2061ms
+     ✓ cannot reuse the same native turn for a second send intent after canceling the first  2304ms
+     ✓ never autoauthorizes an unknown send ancestry from a simple repeated native send instruction  3652ms
+     ✓ cannot revive a persistent native source after run-exit  2497ms
+     ✓ cannot revive a persistent native source after restart  3172ms
+     ✓ cannot revive a persistent native source after expiry  4074ms
+     ✓ revokes native authority if cancellation arrives after file verification but before the send transaction  3083ms
+     ✓ does not accept modified persistent native provenance as a live authorization  4006ms
+     ✓ binds native approval to the whole frozen draft including stable attachment bytes and BCC envelope  4026ms
+     ✓ does not authorize an old native instruction after binding-roundtrip before prepare  4776ms
+     ✓ does not authorize an old native instruction after policy-roundtrip before prepare  5216ms
+     ✓ reports a superseded native grant as awaiting authorization in the shared UI and agent data view  3619ms
+     ✓ resolves the immediately preceding genuine claude-code draft reference for a later explicit send command  2963ms
+     ✓ resolves the immediately preceding genuine codex draft reference for a later explicit send command  2223ms
+     ✓ refuses to infer a contextual send from missing history  1864ms
+     ✓ refuses to infer a contextual send from other-run history  2430ms
+     ✓ refuses to infer a contextual send from multiple history  4086ms
+     ✓ refuses to infer a contextual send from stale history  4045ms
+     ✓ refuses to infer a contextual send from intervening history  3182ms
+     ✓ refuses to infer a contextual send from cancel-gap history  3686ms
+     ✓ refuses to infer a contextual send from history-gap history  3854ms
+     ✓ refuses to infer a contextual send from policy-change history  2380ms
+     ✓ refuses to infer a contextual send from binding-change history  2614ms
+     ✓ refuses to infer a contextual send from unobserved history  2206ms
+     ✓ rechecks the previous claude-code user row even when the latest command row is still authentic  2329ms
+     ✓ rechecks the previous codex user row even when the latest command row is still authentic  3778ms
+     ✓ checks both source objects in C and verifies both original rows outside C for contextual authorization  4207ms
+     ✓ does not grant contextual authority if cancel arrives immediately after the previous row is verified  3938ms
+     ✓ binds contextual explicit recipient requests to the original exact frozen message and envelope  3676ms
+     ✓ notifies the UI when a user cancellation invalidates native authority without emitting on every keystroke  3885ms
+     ✓ deduplicates contextual provenance and returns the existing SMTP execution when a second claim arrives late  7030ms
+     ✓ freezes without decrypting SMTP secrets and rejects fabricated model approval before network work  3376ms
+     ✓ executes one actual frozen SMTP submission for claude-code and shares the durable result  3117ms
+     ✓ executes one actual frozen SMTP submission for codex and shares the durable result  3897ms
+     ✓ binds each UI display receipt to sender,frame,project,intent and hash and consumes it once  4680ms
+     ✓ consumes a display receipt atomically under concurrent confirmations  4299ms
+     ✓ sends the exact stable attachment bytes,without adding paths or changing the frozen message  5559ms
+     ✓ does not let another Agent execute the original run intent or reuse it in a different project  4890ms
+     ✓ releases a canceled unsubmitted draft and never accepts its old confirmation  3794ms
+     ✓ rejects confirmation after origin exit and invalidates outstanding grants on host close  4522ms
+     ✓ revokes old intents immediately on SMTP policy change while retaining independently editable drafts  3558ms
+     ✓ keeps a lost SMTP receipt unknown and never automatically submits that intent again  4899ms
+     ✓ denies a disk-only or stale RAM source record as authority for actual execution  5145ms
+     ✓ retains actual producer lease and waits for settlement after cancellation returns unknown  5845ms
+     × upgrades v18 send records and retains metadata-only user-source provenance on migration replay 3882ms
+     ✓ uses the current rotated secret for the same identity without changing the reviewed bytes  3965ms
+     ✓ does not turn send-only internal access into permission to mutate another draft  3491ms
+ ✓ src/main/core/applications/__tests__/mail-read-data.test.ts (27 tests) 154008ms
+     ✓ exposes actual scan progress and last complete refresh to UI without extending the original v1 tool result  3561ms
+     ✓ uses real CJS contracts for current-source search,read,UTF-8 chunks and exact attachment bytes without modifying the source  5522ms
+     ✓ paginates more than200 matches without omission and reuses completed persistent checks without reparsing unchanged messages  9647ms
+     ✓ persists partial scan checkpoints and resumes after service reconstruction without inventing a complete empty query  7121ms
+     ✓ distinguishes source deletion from a missing local file and never serves old cached bodies as current mail  7413ms
+     ✓ rechecks current source existence before delivering a cached ToolService query receipt  3102ms
+     ✓ rejects changed source bytes,forged identity or expanded model scope before returning resources  5332ms
+     ✓ uses independent project cursors and resource authorization even when two projects explicitly share the same connection  6150ms
+     ✓ rebuilds resources after deliberate cache clear using the original source reference and keeps stable IDs  5715ms
+     ✓ shares an in-flight check while cancellation of one waiter leaves the other authorized project running  4655ms
+     ✓ reuses durable per-message fulltext across queries and reparses only added,changed or moved files  7180ms
+     ✓ rejects a source that changes after a batch and retries a transient incomplete check on a fresh query  4862ms
+     ✓ retains the last cancelled shared producer and its package lease until its actual work settles  3401ms
+     ✓ keeps a shared check alive when one project revokes its selection  4502ms
+     ✓ pins the full original mail revision during the separate attachment read even if attachment bytes are unchanged  7405ms
+     ✓ encodes chunks that split multibyte UTF-8 as exact base64 bytes  13087ms
+     ✓ derives reply/reply-all from real headers and the explicitly selected SMTP identity without retrieving its secret  11047ms
+     ✓ creates replies with no SMTP and preserves their independent content after source deletion and reconnection loss  5871ms
+     ✓ refuses invalid reply links,missing addresses and a sender outside the current SMTP slot  5536ms
+     ✓ copies exact MIME attachment bytes to persistent business storage once and keeps them after cache/source loss  6211ms
+     ✓ rejects cross-project,modified and oversized resource imports and does not accept model-supplied filesystem paths  5115ms
+     ✓ captures current-workspace capabilities and imports real native file bytes without granting arbitrary paths  3772ms
+     ✓ denies a workspace reference in another project and after the original file root closes  2158ms
+     ✓ refuses replacement by a symlink and capture of a real file above the attachment budget  1512ms
+     ✓ does not commit an attachment when cancellation arrives while actual source work is pending  1901ms
+     ✓ rejects a file modified between native chunks without saving a mixed attachment  2749ms
+     ✓ denies the configured date boundary even when a caller knows the exact old file hash  3878ms
+ ✓ src/main/core/applications/__tests__/mail-execution.test.ts (27 tests) 16394ms
+     ✓ freezes BCC/content/attachments with no send and rejects a model approval assertion  640ms
+     ✓ returns one preparation identity on duplicate requests and releases invalid incomplete preparation  441ms
+     ✓ persists the claim and consumes the exact proof before invoking the provider exactly once  506ms
+     ✓ does not submit a second request while the first execution is still pending  448ms
+     ✓ uses a newly rotated secret for the same verified identity without changing the frozen review  753ms
+     ✓ invalidates an approved intent after config changes without submitting  539ms
+     ✓ invalidates an approved intent after binding changes without submitting  472ms
+     ✓ invalidates an approved intent after disable-enable changes without submitting  486ms
+     ✓ invalidates an approved intent after disconnect changes without submitting  471ms
+     ✓ keeps SMTP intent usable when only the independent reading slot changes or becomes unavailable  511ms
+     ✓ does not resurrect an old grant after clear-reselect returns to the same account  469ms
+     ✓ does not resurrect an old grant after global-disable-enable returns to the same account  546ms
+     ✓ does not display or use an expired grant and does not accept a modified frozen envelope  607ms
+     ✓ runs the full connection/freeze/claim/SMTP chain with receipt loss=false on loopback only  694ms
+     ✓ runs the full connection/freeze/claim/SMTP chain with receipt loss=true on loopback only  617ms
+     ✓ binds evidence to scope, revision and live provenance and prevents using one event for another intent  674ms
+     ✓ does not let another run or project execute or invalidate the original run intent  499ms
+     ✓ keeps a canceled intent canceled when a late confirmation or execution arrives  511ms
+     ✓ preserves partial recipient results and never retries a definitively failed attempt automatically  791ms
+     ✓ requires explicit verification provenance for copied unknown content and never repeats the original attempt  778ms
+     ✓ aborts an in-flight operation when its run ends and retains unknown when the provider ignores cancellation  659ms
+     ✓ bounds a provider that never finishes and keeps an interrupted claimed attempt unknown on recovery  964ms
+     ✓ retains an interrupted accepted submission as unknown without resubmitting and rejects forged receipts  897ms
+     ✓ expires abandoned waiting grants only after an outside-lock process proof and preserves unknown owners  404ms
+     ✓ keeps live prepared work through same-service recovery and revokes its grant on graceful close  593ms
+     ✓ cleans a stopped terminal producer lease by exact PID/start identity without rewriting an unknown result  441ms
+     ✓ rejects modified frozen bytes before claiming and closes active operations before disposal returns  981ms
+ ✓ src/main/core/applications/__tests__/business-data.test.ts (30 tests) 70771ms
+     ✓ creates without either external slot and lets the other supported Agent and UI read the same business object  2461ms
+     ✓ continues across Agents with CAS and preserves revision-bound original body resources  2613ms
+     ✓ keeps immutable resource identities across a business-service restart and expires old actor capabilities  1756ms
+     ✓ copies an owned draft to a distinct object without new source access  1664ms
+     ✓ cannot fake reply provenance or silently substitute a model-supplied project or approval  1368ms
+     ✓ rejects cross-project drafts and references even when their valid IDs and hashes are known  2600ms
+     ✓ rejects changed resource metadata, oversized chunks and offsets past the original length  2913ms
+     ✓ chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text  3448ms
+     ✓ does not trust JSON copies of host scopes or callers  2509ms
+     ✓ records UI and Agent roles separately without inventing tasks for UI reads  2550ms
+     ✓ permits configuration while project use is off but cannot upgrade configuration scope to reading or sending  2022ms
+     ✓ gives an index child its own read-only identity and parent reference without a fake model task  2224ms
+     ✓ rejects an in-flight result after global disable and reenable, preserving the original operation record  2643ms
+     ✓ changes source and SMTP slots without invalidating independent local draft operations  2381ms
+     ✓ pins the exact source of an in-flight read and denies source ABA even when the original account is selected again  2142ms
+     ✓ uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit  1485ms
+     ✓ returns cached business receipts only while the original authorization generation remains valid and never duplicates writes  1477ms
+     ✓ keeps pending UI resource leases until ignored cancellation actually settles  1132ms
+     ✓ keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown  1303ms
+     ✓ waits for actual UI work on service shutdown and rejects its eventual result  1246ms
+     ✓ returns stable,lossless binary attachment chunks from the durable copy rather than a source path  1985ms
+     ✓ keeps an existing reference unchanged when the same logical revision is offered different content  2571ms
+     ✓ paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor  4647ms
+     ✓ invalidates old local operations when project enablement changes off and on even without changing any external slot  2590ms
+   ✓ does not begin a queued configuration provider after host shutdown while C acquisition was pending  3414ms
+     ✓ leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests  3860ms
+     ✓ lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts  2718ms
+     ✓ does not create a cache for forged or destroyed UI senders  1791ms
+     ✓ preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown  1978ms
+     ✓ discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection  2409ms
+ ✓ src/main/core/applications/__tests__/zentao-data.test.ts (22 tests) 58996ms
+     ✓ lists only the current assigned-self source and preserves large exact IDs and a confirmed empty Story result  1224ms
+     ✓ paginates with an opaque project/source-bound cursor and detects changed limits or duplicate pages  1570ms
+     ✓ returns a changed total as explicitly incomplete without pretending an empty complete search  1266ms
+     ✓ uses the same current data for trusted UI and Agent and keeps full body,history and field values in bounded resources  2245ms
+     ✓ reads nested Story description and acceptance criteria without incorrectly marking the body missing  2515ms
+     ✓ downloads ordinary,historical and inline files only through the fixed same-origin API and preserves binary bytes  2955ms
+     ✓ reports missing,oversized and redirected files as partial without following a supplied URL or claiming complete  2685ms
+     ✓ does not treat malformed history and file metadata as a complete object  2500ms
+     ✓ rejects forged or foreign-project source references and resource metadata before exposing data  3116ms
+     ✓ rechecks assignment for detail,old resources and cached list/detail/resource receipts  3615ms
+     ✓ does not replay cached attachment bytes once the file no longer belongs to the current assigned object  4021ms
+     ✓ keeps old explicit revisions readable while new detail and changed file bytes get new references  3988ms
+     ✓ invalidates old cursors and references on explicit connection switch without changing the original fixed package  2753ms
+     ✓ uses a rotated current secret under the same identity and never persists it in business operations or fetched payloads  2523ms
+     ✓ uses the single outer read retry budget for transient failures and never retries explicit authentication failure  3205ms
+     ✓ withholds an injected outside-assignee list and never records it as fetched project data  2189ms
+     ✓ updates current health separately from the saved test and recovers without changing policy or secret revisions  1649ms
+     ✓ does not return old body bytes as current data after the source object disappears  3017ms
+     ✓ cancels an active read on connection disconnect and withholds the late HTTP result  2364ms
+     ✓ bounds a cancelled cached-receipt permission check without restarting the Agent or replaying the original read  2247ms
+   ✓ reconstructs the business service with the same persisted source and resource revisions without relying on a prior in-memory client  2953ms
+   ✓ binds stored source content to its canonical revision and rejects a corrupt retained reference before requesting fresh data  3530ms
+ ✓ src/main/core/applications/__tests__/mail-cache.test.ts (37 tests) 18456ms
+     ✓ keeps immutable bytes and source-local deduplication without granting another source the same object  341ms
+     ✓ preserves cache identities and LRU state when the engine is reconstructed  403ms
+     ✓ reserves before writing and evicts actual least-recently-used files within the shared source budget  1016ms
+     ✓ does not evict another file just to reuse an already-ready object near capacity  475ms
+     ✓ does not treat refresh-only writes as query usage when choosing LRU victims  872ms
+     ✓ protects actual readers while clear reclaims only unleased data and retained business files remain untouched  435ms
+     ✓ detects missing or damaged bytes and permits rebuilding the same logical content after owned cleanup  327ms
+     ✓ invalidates a coverage record when lazy record bytes are corrupted and allows rebuilding its body  349ms
+     ✓ keeps leases until every lazy load actually settles even when its callback returns without awaiting it  438ms
+     ✓ counts unknown nested files and link entries without following or deleting their targets  585ms
+     ✓ shares quota and read protection across two engines using the same U  436ms
+     ✓ uses a shared SQLite CAS to prevent a late checkpoint from overwriting a newer engine result  1087ms
+     ✓ does not cancel another valid waiter when the original put caller cancels  326ms
+     ✓ counts a successful use by a shared waiter independently of the refresh producer timestamp  879ms
+     ✓ keeps the actual pending write charged after the last waiter cancels until its producer settles  516ms
+     ✓ does not return success when a lazy required load failed before the callback completed  388ms
+     ✓ waits for ignored read cancellation on shutdown before releasing its real activity and closing SQLite  657ms
+     ✓ does not replay stage allocation when a real external SQLite reader blocks commit after the write callback ran  457ms
+     ✓ can retry reconciliation of its own settled write after cleanup failed without stealing an active producer  351ms
+     ✓ keeps index growth bounded and still allows owned cleanup when record capacity is exhausted  564ms
+   ✓ enforces the exact production 500000000-byte cache ceiling including stage and SQLite files on real disk  4477ms
+ ❯ src/main/core/applications/__tests__/connection-service.test.ts (18 tests | 1 failed) 12734ms
+     ✓ keeps a tested candidate separate from saved state and exposes no credential references or values 103ms
+     ✓ rejects invalid config and unsafe URL fields without calling the provider 11ms
+     ✓ refuses unavailable encryption before verification without persisting plaintext or partial state 34ms
+     ✓ keeps the old credential and configuration when a rotation fails, and sanitizes provider error text 103ms
+     ✓ uses CAS for concurrent rotations and only cleans the losing operation secret 157ms
+     ✓ requires a new connection for a verified account identity change 122ms
+     ✓ stores Foxmail without an SMTP secret and refuses replacing the source path in place 91ms
+     ✓ keeps SMTP mode and port explicit and separate from source configuration 72ms
+     ✓ revokes before secret cleanup, then recovers cleanup without restoring authorization 115ms
+     ✓ keeps a credential on disable and makes stale in-flight candidate results ineffective 180ms
+     × cancels a pending candidate and ignores a provider result arriving after cancellation 10103ms
+     ✓ bounds a provider that does not finish and discards its staged credential 148ms
+     ✓ expires a validated candidate without losing an existing credential  311ms
+     ✓ reports incompatible fixed-package authentication and commits only the explicitly reviewed plan  427ms
+     ✓ rejects a compatibility plan if a new historical package reference appeared after testing  612ms
+     ✓ does not invoke a provider or stage credentials for an already cancelled parent 11ms
+     ✓ does not stage a credential or start a provider after cancellation while C acquisition was queued 60ms
+     ✓ propagates a parent cancellation and discards only its candidate despite a late successful provider result 72ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts (18 tests) 21106ms
+     ✓ lists actual fixed package schemas and routes using host project/task/package context  1053ms
+     ✓ preserves permitted reads when a fixed session deliberately excludes the write permission  1743ms
+     ✓ rejects unselected tools, mismatched contracts, spoofed scopes and invalid schema before executing  897ms
+     ✓ deduplicates parallel and completed identical requests, rejecting changed arguments under the same ID  1232ms
+     ✓ never re-executes an invocation when its in-memory receipt is absent  1260ms
+     ✓ rechecks current binding even for cached responses and permits the same identity after recovery  1199ms
+     ✓ allows at most two retries for an explicitly safe read, with one operation ID and unchanged scope  1075ms
+     ✓ ends exhausted safe reads and never retries explicit auth failures  1456ms
+     ✓ persists unknown before invoking a write and never retries it or leaks arbitrary thrown text  1127ms
+     ✓ keeps fixed version routing after a new default is activated  1479ms
+     ✓ reports a damaged package without fake empty success and restores only the same original bytes  1146ms
+     ✓ does not trust corrupted saved schemas or overwrite them from a default or same-version reinstall  1074ms
+     ✓ holds the activity until an executor ignoring cancellation settles and withholds its late result  1279ms
+     ✓ returns a bounded timeout receipt while keeping an ignoring write executor protected until real settlement  985ms
+     ✓ rejects invalid outputs and bounds recursive structures before hashing them  874ms
+     ✓ awaits the real receipt check and never returns its old payload after asynchronous denial  1123ms
+     ✓ keeps the owned activity until an ignoring receipt checker settles with write=false and never replays its effect  1009ms
+     ✓ keeps the owned activity until an ignoring receipt checker settles with write=true and never replays its effect  1096ms
+ ✓ src/main/core/applications/__tests__/agent-bridge-processes.test.ts (9 tests) 5619ms
+     ✓ automatically binds a real child bridge during CLI handoff and calls the original CJS tool without a caller PID receipt  789ms
+     ✓ rejects a genuine Electron peer outside the selected CLI ancestry and never claims or signals it  488ms
+     ✓ rejects missing peer proof before process attachment or signalling  554ms
+     ✓ rejects image peer proof before process attachment or signalling  626ms
+     ✓ rejects birth peer proof before process attachment or signalling  537ms
+     ✓ joins disposal to the actual pending identity query without granting credentials after closure  645ms
+     ✓ does not treat a socket disconnect as exit and retains leases while a proved child is still alive or its identity is unknown  806ms
+ ✓ src/main/core/applications/__tests__/private-broker.test.ts (11 tests) 8747ms
+     ✓ allows one asynchronous peer claim and rejects concurrent use of its same ticket  479ms
+     ✓ does not issue credentials when the run is revoked while a peer identity probe is awaiting completion  521ms
+     ✓ creates a short 0700 endpoint root and 0600 socket/bootstrap, consuming a ticket exactly once  502ms
+     ✓ keeps tokens bound to their authenticated socket and rejects scope fields or forged run IDs  522ms
+     ✓ rotates credentials without accepting the old token and expires unrenewed credentials  690ms
+     ✓ withholds expired delivery without misreporting a completed write as never started  1137ms
+     ✓ rejects an expired ticket and a ticket for a bridge that was never armed  714ms
+     ✓ the actual client consumes its one-use file, renews and returns structured results without storing credentials  1268ms
+     ✓ rejects linked or over-permissioned bootstrap files without deleting other content  984ms
+     ✓ invalidates old credentials immediately on host stop and on a different broker generation  967ms
+     ✓ cancels only a request on the authenticated connection and does not equate request with external rollback  961ms
+ ✓ src/main/core/applications/__tests__/mail-drafts.test.ts (12 tests) 5920ms
+     ✓ deduplicates identical bytes without granting another project access to an attachment ID  317ms
+     ✓ refuses corrupt attachment bytes before saving a draft or displaying them as usable  319ms
+     ✓ recovers a private blob interrupted after staged without inventing a saved draft  506ms
+     ✓ recovers a private blob interrupted after published without inventing a saved draft  3131ms
+ ✓ src/main/core/applications/__tests__/mail-cache-process.test.ts (7 tests) 4323ms
+     ✓ retains a live writer reservation and discards its empty stage only after kernel-proved exit  343ms
+     ✓ recovers complete written bytes exactly once without inventing complete query coverage  669ms
+     ✓ recovers complete renamed bytes exactly once without inventing complete query coverage  417ms
+     ✓ protects a real child reader during clear and releases only that exited process lease  463ms
+     ✓ keeps unknown process leases until actual identity can be checked  533ms
+     ✓ serializes simultaneous reservations from two native processes under one U budget  510ms
+     ✓ recovers an actual hot rollback journal after killing its registered writer inside a SQLite commit  590ms
+ ✓ src/main/core/applications/__tests__/selection-service.test.ts (11 tests) 2304ms
+     ✓ holds a pending switch gate and rejects a competing selection without borrowing a later result  308ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts (13 tests) 9ms
+ ✓ src/main/core/applications/__tests__/bridge-runtime.test.ts (3 tests) 3402ms
+     ✓ launches immutable CJS with Electron Node, preserves fixed annotations/schemas and records the host-derived invocation  1494ms
+     ✓ terminates a refused real broker handshake without leaving an open socket or printing its ticket  755ms
+ ✓ src/main/core/applications/__tests__/activity.test.ts (6 tests) 1541ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/connection-service.test.ts > current connection revisions, tested candidates and encrypted secret changes > cancels a pending candidate and ignores a provider result arriving after cancellation
+AssertionError: expected ApplicationError: 连接测试超时 { code: 'TI…' } to match object { code: 'CANCELED' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "CANCELED",
++ ApplicationError {
++   "code": "TIMEOUT",
+  }
+
+ ❯ src/main/core/applications/__tests__/connection-service.test.ts:113:84
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > migrates only the provable original prepare identity and leaves frozen sends unchanged on replay
+AssertionError: expected [ …(6) ] to deeply equal [ …(5) ]
+
+- Expected
++ Received
+
+@@ -2,6 +2,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:115:146
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > upgrades v18 send records and retains metadata-only user-source provenance on migration replay
+AssertionError: expected [ …(7) ] to deeply equal [ …(6) ]
+
+- Expected
++ Received
+
+@@ -3,6 +3,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:342:142
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 14 passed (16)
+      Tests  3 failed | 322 passed (325)
+   Start at  19:23:42
+   Duration  656.23s (transform 1.25s, setup 0ms, import 3.78s, tests 650.68s, environment 1ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/business-test-report.json
+ ELIFECYCLE  Test failed. See above for more details.

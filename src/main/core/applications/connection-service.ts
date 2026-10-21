@@ -123,14 +123,19 @@ export class ApplicationConnectionService {
     const id = old?.id ?? randomUUID(), operationId = randomUUID(), secretRef = request.secret ? 'application:' + id + ':secret:' + operationId : old?.secret_ref ?? null;
     const candidate: CandidateConfig = { id, name: request.name, config: request.config, expectedRevision: request.expectedRevision };
     const candidateHash = digest(canonicalJson({ ...candidate, secretRef, operationId })), expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
-    await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
-      if(signal?.aborted)throw new ApplicationError('CANCELED','连接测试已取消');
-      this.checkRevision(request.id, request.expectedRevision);
-      if (request.secret) this.secrets.set(secretRef!, request.secret);
-      this.store.sqlite.prepare(`INSERT INTO application_secret_changes(operation_id,connection_id,expected_revision,old_secret_ref,new_secret_ref,candidate_hash,candidate_json,expires_at,state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'preparing',?,?)`).run(operationId, id, request.expectedRevision, old?.secret_ref ?? null, secretRef, candidateHash, canonicalJson(candidate), expiresAt, new Date().toISOString(), new Date().toISOString());
-    }).immediate());
+    // Register cancellation before the staged row becomes visible to other callers.
     const controller = new AbortController(),cancel=()=>controller.abort(new ApplicationError('CANCELED','连接测试已取消'));this.tests.set(operationId,controller);signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
+    let staged = false;
     try {
+      await withResourceLock(this.store.root, () => {
+        this.store.sqlite.transaction(() => {
+          if(controller.signal.aborted)throw new ApplicationError('CANCELED','连接测试已取消');
+          this.checkRevision(request.id, request.expectedRevision);
+          if (request.secret) this.secrets.set(secretRef!, request.secret);
+          this.store.sqlite.prepare(`INSERT INTO application_secret_changes(operation_id,connection_id,expected_revision,old_secret_ref,new_secret_ref,candidate_hash,candidate_json,expires_at,state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'preparing',?,?)`).run(operationId, id, request.expectedRevision, old?.secret_ref ?? null, secretRef, candidateHash, canonicalJson(candidate), expiresAt, new Date().toISOString(), new Date().toISOString());
+        }).immediate();
+        staged = true;
+      });
       const secret = secretRef ? this.secrets.get(secretRef) : null;
       if (request.config.kind !== 'foxmail' && !secret) throw new ApplicationError('AUTH_REQUIRED', '请配置本连接的认证凭据');
       const identity = await this.verify(request.config, secret, controller, activity);
@@ -144,7 +149,10 @@ export class ApplicationConnectionService {
         this.store.sqlite.prepare("UPDATE application_secret_changes SET state='validated',verified_identity_json=?,compatibility_plan_json=?,updated_at=? WHERE operation_id=?").run(canonicalJson(identity), canonicalJson(compatibility), new Date().toISOString(), operationId);
       }).immediate());
       return { operationId, connectionId: id, candidateHash, expectedRevision: request.expectedRevision, identity, compatibility, expiresAt };
-    } catch (error) { await this.discardCandidate(operationId, error instanceof ApplicationError ? error.code : 'CONNECTION_UNAVAILABLE'); throw safeVerificationError(error); }
+    } catch (error) {
+      if (!staged) throw error;
+      await this.discardCandidate(operationId, error instanceof ApplicationError ? error.code : 'CONNECTION_UNAVAILABLE'); throw safeVerificationError(error);
+    }
     finally { signal?.removeEventListener('abort',cancel);this.tests.delete(operationId); }
   }
   async commitCandidate(operationId: string, candidateHash: string, acceptedImpactHash?: string): Promise<ApplicationConnection> {

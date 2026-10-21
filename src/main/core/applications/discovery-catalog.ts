@@ -120,11 +120,13 @@ export class DiscoveryCatalog {
     constructor(readonly store: ResourceStore, home: string, private readonly processes: ProcessIdentityReader, options: {
         instanceId?: string;
         checkpoint?: (phase: DiscoveryCheckpoint) => void;
+        intentCheckpoint?:()=>void;
     } = {}) {
         this.home = realpathSync(home);
         this.homeId = digest(this.home);
         this.instanceId = options.instanceId ?? randomUUID();
         this.checkpoint = options.checkpoint;
+        this.intentCheckpoint = options.intentCheckpoint;
         const host = processes.read(process.pid);
         if (!host || host.pid !== process.pid)
             throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '无法核验发现目录持有者');
@@ -152,9 +154,10 @@ export class DiscoveryCatalog {
         }
     }
     private readonly checkpoint?: (phase: DiscoveryCheckpoint) => void;
+    private readonly intentCheckpoint?:()=>void;
     private lock<T>(action: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
         const verify=()=>{assertDiscoveryPath(this.home,this.root);const stat=lstatSync(this.root);if(stat.dev!==this.rootIdentity.dev||stat.ino!==this.rootIdentity.ino)throw new ApplicationError('OWNERSHIP_CONFLICT','共享目录已被替换，保留原目录');for(const[child,id]of Object.entries(this.childIdentities)){const path=join(this.root,child);assertDiscoveryPath(this.home,path);const st=lstatSync(path);if(!st.isDirectory()||st.dev!==id.dev||st.ino!==id.ino)throw new ApplicationError('OWNERSHIP_CONFLICT','共享目录的读者或暂存记录已被替换，保留原记录');}};
-        return Promise.resolve().then(()=>{verify();return withDiscoveryLock(this.root,this.host,()=>{verify();return action();},{signal});});
+        return Promise.resolve().then(()=>{verify();return withDiscoveryLock(this.root,this.host,()=>{verify();return action();},{signal,processes:this.processes});});
     }
     private generation(entries: Entry[]): string { return digest(canonicalJson({ homeId: this.homeId, entries })); }
     private catalog(): Catalog {
@@ -276,8 +279,9 @@ export class DiscoveryCatalog {
         if(plan.bundle)writeOwnedBundle(path,plan.bundle,this.store.storeId);
         else writeOwnedTree(path,Object.fromEntries(Object.entries(plan.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')])),join(this.root,'staging-conflicts'));
     }
-    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions): Promise<void> {
+    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions,assertEarly?:()=>void): Promise<void> {
         await withResourceLock(this.store.root, () => {options.assertPublish?.(pending.operationId);return this.store.sqlite.transaction(() => {
+            assertEarly?.();
             const oldHome = this.store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(this.homeId) as {
                 home: string;
             } | undefined;
@@ -361,6 +365,21 @@ export class DiscoveryCatalog {
         const plans=this.plans(sources),operation=await this.lock(()=>{const prior=this.pending();if(!prior)return null;if(prior.owner.storeId!==this.store.storeId||canonicalJson(prior.entries)!==canonicalJson(plans.map(p=>p.entry)))throw new ApplicationError('RESOURCE_BUSY','共享目录仍有其他待核查操作');return prior.operationId;},options.signal);
         return this.publication(plans,options,operation??undefined);
     }
+    /** An intent persisted under H can precede the first C transaction. Require
+     * the exact unchanged base, no C/staging footprint and a separately stopped
+     * original publisher. Never infer this case by deleting a committed ledger. */
+    private assertEarlyIntent(prior:Pending,current:Catalog,plans:Planned[]):void{
+        if(prior.phase!=='waiting'||current.generation!==prior.baseGeneration||canonicalJson(current.entries)!==canonicalJson(prior.baseEntries)||present(join(this.root,'staging',prior.operationId)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','早期H意图已物化或基线不同，保留原操作');
+        if(this.store.sqlite.prepare('SELECT 1 FROM capability_resource_operations WHERE operation_id=?').get(prior.operationId)||this.store.sqlite.prepare('SELECT 1 FROM capability_resources WHERE operation_id=? LIMIT 1').get(prior.operationId)||this.store.sqlite.prepare('SELECT 1 FROM capability_resource_leases WHERE owner_id=? LIMIT 1').get(prior.operationId))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H操作已有登记或占用，不能按未登记意图恢复');
+        this.assertNoOtherHolds(prior);
+        for(const p of plans){
+            this.verifySource(p);
+            if(present(dirname(p.entry.path))){
+                if(p.entry.format!=='legacy-tree-v1'&&!prior.baseEntries.some(e=>canonicalJson(e)===canonicalJson(p.entry)))throw new ApplicationError('OWNERSHIP_CONFLICT','未登记的原H意图已有目标内容，保留现场');
+                this.verifyProjection(p,dirname(p.entry.path));
+            }
+        }
+    }
     private async publication(plans: Planned[], options: DiscoveryPublicationOptions, recoverId?: string): Promise<NonNullable<AgentLoadRequest['catalog']>> {
         let pending: Pending | undefined, reuse = false;
         const operationId = recoverId ?? randomUUID();
@@ -370,6 +389,7 @@ export class DiscoveryCatalog {
         try {
             await this.lock(async () => {
                 const current = this.catalog(), prior = this.pending();
+                let assertEarly:(()=>void)|undefined;
                 if (recoverId) {
                     if (!prior || prior.operationId !== recoverId || prior.owner.storeId !== this.store.storeId || prior.owner.uFingerprint !== this.owner.uFingerprint || canonicalJson(prior.entries) !== canonicalJson(plans.map(p => p.entry)))
                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '缺少相同归属及内容的原维护记录');
@@ -377,11 +397,13 @@ export class DiscoveryCatalog {
                         plan: string;
                     } | undefined;
                     const original = ledger ? pendingSchema.safeParse(JSON.parse(ledger.plan)) : null;
-                    if (!original?.success || canonicalJson(original.data.owner) !== canonicalJson(prior.owner) || canonicalJson(original.data.entries) !== canonicalJson(prior.entries) || original.data.baseGeneration !== prior.baseGeneration || canonicalJson(original.data.baseEntries) !== canonicalJson(prior.baseEntries))
+                    if (ledger&&(!original?.success || canonicalJson(original.data.owner) !== canonicalJson(prior.owner) || canonicalJson(original.data.entries) !== canonicalJson(prior.entries) || original.data.baseGeneration !== prior.baseGeneration || canonicalJson(original.data.baseEntries) !== canonicalJson(prior.baseEntries)))
                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原H意图与本数据根操作账不同，保留现场');
                     if (canonicalJson(prior.owner)!==canonicalJson(this.owner) && this.processes.state({ pid: prior.owner.pid, startedAt: prior.owner.startedAt }) !== 'stopped')
                         throw new ApplicationError('RESOURCE_BUSY', '原目录维护者仍存活或身份未知');
-                    this.assertPublisherLeases(prior,true);this.assertNoOtherHolds(prior);
+                    if(ledger)this.assertPublisherLeases(prior,true);
+                    else{assertEarly=()=>this.assertEarlyIntent(prior,this.catalog(),plans);assertEarly();}
+                    this.assertNoOtherHolds(prior);
                     pending = { ...prior, token: randomUUID(), owner: this.owner };
                     atomicJson(join(this.root, 'pending.json'), pending);
                 }
@@ -399,8 +421,9 @@ export class DiscoveryCatalog {
                     }
                     pending = { schema: 1, operationId, token: randomUUID(), homeId: this.homeId, owner: this.owner, baseGeneration: current.generation, baseEntries: current.entries, entries: plans.map(p => p.entry), phase: 'waiting' };
                     atomicJson(join(this.root, 'pending.json'), pending);
+                    this.intentCheckpoint?.();
                 }
-                await this.register(plans, pending!,options);
+                await this.register(plans, pending!,options,assertEarly);
             }, options.signal);
             if (reuse) {
                 const snapshot = await this.snapshot();

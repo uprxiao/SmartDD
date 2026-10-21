@@ -1,0 +1,122 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/coordinator-crash.test.ts src/main/core/applications/__tests__/resource-publication-recovery.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/red-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (14 tests | 1 failed) 6616ms
+     ✓ does not publish ready when target bytes change after rename and before the final transaction 21ms
+     ✓ does not publish ready when the recorded dependency set changes after rename 14ms
+     ✓ restores registered only after the original kernel identity has stopped, keeping the exact operation and bytes 14ms
+     ✓ restores materialized only after the original kernel identity has stopped, keeping the exact operation and bytes 14ms
+     ✓ restores renamed only after the original kernel identity has stopped, keeping the exact operation and bytes 15ms
+     ✓ retains running original owner and unchanged resources, plan and install leases 11ms
+     ✓ retains unknown original owner and unchanged resources, plan and install leases 11ms
+     ✓ does not release an unknown later install resumer even when the original operation says failed 11ms
+     ✓ preserves unrelated unknown resource readers instead of completing a half-published resource 12ms
+     ✓ does not infer stopped from a missing PID or an approximate historical timestamp 12ms
+     ✓ retains an active second resumer after the original publisher is proven stopped 10ms
+     ✓ keeps a living registered publisher, then restores the same operation after actual SIGKILL 78ms
+     ✓ keeps a living materialized publisher, then restores the same operation after actual SIGKILL 77ms
+     × keeps a living renamed publisher, then restores the same operation after actual SIGKILL 6082ms
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts (6 tests | 5 failed) 2494ms
+     × keeps a live C owner then reacquires after SIGKILL without changing the business ledger 1092ms
+     × keeps a live H owner then reacquires after SIGKILL without changing the business ledger 61ms
+     × serializes concurrent C recovery contenders after the original owner stops 1048ms
+     × serializes concurrent H recovery contenders after the original owner stops 64ms
+     ✓ preserves unrecognized legacy C owners even with an absent PID 21ms
+     × preserves unrecognized legacy H owners even with an absent PID 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > keeps a live C owner then reacquires after SIGKILL without changing the business ledger
+ApplicationError: 资源正在使用，请稍后重试
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:20:15
+     18|         try { const owner = JSON.parse(readFileSync(join(path, 'owner.…
+     19|         catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+     20|         throw new ApplicationError('RESOURCE_BUSY', '资源正在使用，请稍后重试');
+       |               ^
+     21|       }
+     22|       await new Promise<void>(resolve => setTimeout(resolve, Math.min(…
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:36:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > keeps a live H owner then reacquires after SIGKILL without changing the business ledger
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > serializes concurrent H recovery contenders after the original owner stops
+Error: coordinator exited before checkpoint ApplicationError: 共享目录的规范位置或归属已变化，保留原锁
+    at assertRoot (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-coordinator-build-pN2hfG/child.cjs:6114:160)
+    at withDiscoveryLock (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-coordinator-build-pN2hfG/child.cjs:6116:3)
+    at Object.<anonymous> (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-coordinator-build-pN2hfG/child.cjs:6169:53)
+    at Module._compile (node:internal/modules/cjs/loader:1880:14)
+    at Object..js (node:internal/modules/cjs/loader:2013:10)
+    at Module.load (node:internal/modules/cjs/loader:1601:32)
+    at node:internal/modules/cjs/loader:1403:12
+    at Module._load (node:electron/js2c/node_init:2:18159)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:262:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:169:5) {
+  code: 'RESOURCE_RECOVERY_REQUIRED'
+}
+
+ ❯ assertRoot ../../../var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-coordinator-build-pN2hfG/child.cjs:6114:160
+ ❯ withDiscoveryLock ../../../var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-coordinator-build-pN2hfG/child.cjs:6116:3
+ ❯ Object.<anonymous> ../../../var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-coordinator-build-pN2hfG/child.cjs:6169:53
+ ❯ ChildProcess.<anonymous> src/main/core/applications/__tests__/coordinator-crash.test.ts:21:119
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > serializes concurrent C recovery contenders after the original owner stops
+ApplicationError: 资源正在使用，请稍后重试
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:20:15
+     18|         try { const owner = JSON.parse(readFileSync(join(path, 'owner.…
+     19|         catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+     20|         throw new ApplicationError('RESOURCE_BUSY', '资源正在使用，请稍后重试');
+       |               ^
+     21|       }
+     22|       await new Promise<void>(resolve => setTimeout(resolve, Math.min(…
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:41:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > preserves unrecognized legacy H owners even with an absent PID
+AssertionError: expected ApplicationError: 共享目录的规范位置或归属已变化，保留原锁 { code: '…' } to match object { code: 'RESOURCE_BUSY' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ ApplicationError {
++   "code": "RESOURCE_RECOVERY_REQUIRED",
+  }
+
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:46:50
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > actual private C publisher termination at original publication checkpoints > keeps a living renamed publisher, then restores the same operation after actual SIGKILL
+ApplicationError: 资源正在使用，请稍后重试
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:20:15
+     18|         try { const owner = JSON.parse(readFileSync(join(path, 'owner.…
+     19|         catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+     20|         throw new ApplicationError('RESOURCE_BUSY', '资源正在使用，请稍后重试');
+       |               ^
+     21|       }
+     22|       await new Promise<void>(resolve => setTimeout(resolve, Math.min(…
+ ❯ ResourceStore.recover src/main/core/applications/resource-store.ts:265:5
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts:78:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 14 passed (20)
+   Start at  18:40:15
+   Duration  9.60s (transform 156ms, setup 0ms, import 324ms, tests 9.11s, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/red-report.json
+ ELIFECYCLE  Test failed. See above for more details.

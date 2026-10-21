@@ -1,0 +1,77 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/coordinator-crash.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/red-canonical-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts (6 tests | 4 failed) 4572ms
+     × keeps a live C owner then reacquires after SIGKILL without changing the business ledger 1092ms
+     × keeps a live H owner then reacquires after SIGKILL without changing the business ledger 1106ms
+     × serializes concurrent C recovery contenders after the original owner stops 1060ms
+     × serializes concurrent H recovery contenders after the original owner stops 1065ms
+     ✓ preserves unrecognized legacy C owners even with an absent PID 22ms
+     ✓ preserves unrecognized legacy H owners even with an absent PID 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > keeps a live C owner then reacquires after SIGKILL without changing the business ledger
+ApplicationError: 资源正在使用，请稍后重试
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:20:15
+     18|         try { const owner = JSON.parse(readFileSync(join(path, 'owner.…
+     19|         catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+     20|         throw new ApplicationError('RESOURCE_BUSY', '资源正在使用，请稍后重试');
+       |               ^
+     21|       }
+     22|       await new Promise<void>(resolve => setTimeout(resolve, Math.min(…
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:36:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > keeps a live H owner then reacquires after SIGKILL without changing the business ledger
+ApplicationError: 共享目录仍有协调者；不按年龄或PID抢锁
+ ❯ withDiscoveryLock src/main/core/applications/discovery-catalog-lock.ts:35:19
+     33|                 throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+     34|             }
+     35|             throw new ApplicationError('RESOURCE_BUSY', '共享目录仍有协调者；不按年…
+       |                   ^
+     36|         }
+     37|         await new Promise<void>(resolve => setTimeout(resolve, Math.mi…
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:36:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > serializes concurrent C recovery contenders after the original owner stops
+ApplicationError: 资源正在使用，请稍后重试
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:20:15
+     18|         try { const owner = JSON.parse(readFileSync(join(path, 'owner.…
+     19|         catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+     20|         throw new ApplicationError('RESOURCE_BUSY', '资源正在使用，请稍后重试');
+       |               ^
+     21|       }
+     22|       await new Promise<void>(resolve => setTimeout(resolve, Math.min(…
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:41:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > serializes concurrent H recovery contenders after the original owner stops
+ApplicationError: 共享目录仍有协调者；不按年龄或PID抢锁
+ ❯ withDiscoveryLock src/main/core/applications/discovery-catalog-lock.ts:35:19
+     33|                 throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+     34|             }
+     35|             throw new ApplicationError('RESOURCE_BUSY', '共享目录仍有协调者；不按年…
+       |                   ^
+     36|         }
+     37|         await new Promise<void>(resolve => setTimeout(resolve, Math.mi…
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:41:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  18:41:17
+   Duration  4.72s (transform 30ms, setup 0ms, import 82ms, tests 4.57s, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/red-canonical-report.json
+ ELIFECYCLE  Test failed. See above for more details.

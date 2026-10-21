@@ -1,0 +1,40 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/discovery-crash.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/h-red-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+stderr | src/main/core/applications/__tests__/discovery-crash.test.ts
+✗ Build failed in 39ms
+
+ ❯ src/main/core/applications/__tests__/discovery-crash.test.ts (5 tests | 5 skipped) 62ms
+     ↓ restores the original intent-recorded operation after SIGKILL, preserving bytes and references
+     ↓ restores the original registered operation after SIGKILL, preserving bytes and references
+     ↓ restores the original renamed operation after SIGKILL, preserving bytes and references
+     ↓ restores the original catalog-published operation after SIGKILL, preserving bytes and references
+     ↓ restores the original records-committed operation after SIGKILL, preserving bytes and references
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/discovery-crash.test.ts [ src/main/core/applications/__tests__/discovery-crash.test.ts ]
+Error: [vite:import-glob] Invalid glob: "@root/resources/standard-skills/**" (resolved: "@root/resources/standard-skills/**"). It must start with '/' or './'
+file: /private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/capabilities/assets.ts
+ ❯ toAbsoluteGlob node_modules/.pnpm/vite@6.4.4_@types+node@22.20.5_jiti@2.7.0_lightningcss@1.32.0_yaml@2.9.1/node_modules/vite/dist/node/chunks/dep-3O3b9SCF.js:14044:9
+ ❯ node_modules/.pnpm/vite@6.4.4_@types+node@22.20.5_jiti@2.7.0_lightningcss@1.32.0_yaml@2.9.1/node_modules/vite/dist/node/chunks/dep-3O3b9SCF.js:13842:27
+ ❯ parseImportGlob node_modules/.pnpm/vite@6.4.4_@types+node@22.20.5_jiti@2.7.0_lightningcss@1.32.0_yaml@2.9.1/node_modules/vite/dist/node/chunks/dep-3O3b9SCF.js:13864:11
+ ❯ transformGlobImport node_modules/.pnpm/vite@6.4.4_@types+node@22.20.5_jiti@2.7.0_lightningcss@1.32.0_yaml@2.9.1/node_modules/vite/dist/node/chunks/dep-3O3b9SCF.js:13895:19
+ ❯ Object.handler node_modules/.pnpm/vite@6.4.4_@types+node@22.20.5_jiti@2.7.0_lightningcss@1.32.0_yaml@2.9.1/node_modules/vite/dist/node/chunks/dep-3O3b9SCF.js:13642:24
+ ❯ transform node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:22301:16
+ ❯ ModuleLoader.addModuleSource node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:22530:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 skipped (5)
+   Start at  18:44:44
+   Duration  501ms (transform 184ms, setup 0ms, import 313ms, tests 62ms, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/h-red-report.json
+ ELIFECYCLE  Test failed. See above for more details.

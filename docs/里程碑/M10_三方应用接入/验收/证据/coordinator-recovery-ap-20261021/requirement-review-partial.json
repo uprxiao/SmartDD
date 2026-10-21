@@ -1,0 +1,110 @@
+{
+  "at": "2026-10-21T16:04:49.447743+00:00",
+  "basis": "M10 R1.6 incl12.21; AP final source.json/build-input-snapshot.json; requirements still sole business authority",
+  "layer": "static code/coverage review only; final r3 and App/system conclusions independent",
+  "full87ReviewCompleted": false,
+  "reviewedRows": [
+    {
+      "id": "M10-R01-01",
+      "codeReview": "connection-service.setEnabled preserves secret/config/selected slots; authentication rejects disabled connection; execution contexts recheck policy revisions",
+      "coverageToCheck": "connection-service.test.ts; selection-service.test.ts; business-data.test.ts",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R01-02",
+      "codeReview": "disconnect commits auth revocation and null secret_ref before cleanup journal; shared references checked before deletion; retained source/config/history untouched",
+      "coverageToCheck": "connection-service.test.ts; business-data.test.ts; zentao-data.test.ts",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R01-03",
+      "codeReview": "selection-service.setAdded(false) disables all projects and clears pending changes while retaining bindings; readd does not enable projects or remove business/history resources",
+      "coverageToCheck": "selection-service.test.ts; version-maintenance.test.ts",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R01-04",
+      "codeReview": "same identity enforced by verified identity hash; new/history package selection flows are distinct; original fixed S remains and no failed write replay",
+      "coverageToCheck": "connection-service.test.ts; task-capability-launcher.test.ts; legacy-agent-load.test.ts",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R01-05",
+      "codeReview": "same-identity config/secret revisions separate; verify rejects changed provider, Foxmail source or verified identity; current secret read at invocation; package config compatibility gates saving",
+      "coverageToCheck": "connection-service.test.ts; business-data.test.ts; zentao-data.test.ts; mail-send-data.test.ts",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R02-01",
+      "codeReview": "nullable single zentao slot validated in shared schema/service and database; no health/name/sequence fallback; other projects have independent keys",
+      "coverageToCheck": "selection-service.test.ts; workspace.test.tsx",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R02-05",
+      "codeReview": "project enabled/policy revision preserves connections; no automatic reenabling on global reconnection; execution contexts bind policy generation",
+      "coverageToCheck": "selection-service.test.ts; business-data.test.ts",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R02-09",
+      "codeReview": "separate nullable foxmail/smtp slots; malformed selections rejected, do not select first; source verifier owns one account identity; local drafts rely on application policy only",
+      "coverageToCheck": "selection-service.test.ts; business-data.test.ts; workspace.test.tsx",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    },
+    {
+      "id": "M10-R03-01",
+      "codeReview": "provider verifies current account then assignedTo on list/detail; detail requires original project/source reference; cached receipt/resource rechecks current assignment; bounded pagination/fields/history/files completeness",
+      "coverageToCheck": "zentao-data.test.ts; providers/zentao.ts; zentao-data-service.ts",
+      "conclusion": "implementation and software assertions identified; App/system acceptance outstanding"
+    }
+  ],
+  "openScopeFindings": [
+    "DEV-02-HANDOFF",
+    "REVIEW-02-SWITCH",
+    "REVIEW-01",
+    "REVIEW-03-IMPACT"
+  ],
+  "sourceEvidence": [
+    {
+      "path": "src/main/core/applications/application-service.ts",
+      "sha256": "69448076602c9101138827b4b6298404ce8e0ddb7b36d4c51998d88feeb19561"
+    },
+    {
+      "path": "src/main/core/applications/connection-service.ts",
+      "sha256": "fcea5abd4dc33b4291b7aabb40ab66d91e2995dcd38ef73c5f27da7029fee353"
+    },
+    {
+      "path": "src/main/core/applications/discovery-catalog.ts",
+      "sha256": "ed26ada32d53f3f5c80f6367d6576720535c602e16037cc68bad26ebd46c8864"
+    },
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "sha256": "24312d5c6f7149c51ef4a8ee7b87c6d6e344a3ddeaa086cc7e9eec36ca37c5a9"
+    },
+    {
+      "path": "src/main/core/applications/providers/zentao.ts",
+      "sha256": "3651b14e3fa59cb3237964978528f7e40d4bb931d996b5b6f0fb94ab05b7efde"
+    },
+    {
+      "path": "src/main/core/applications/selection-service.ts",
+      "sha256": "8f1d14771e0a441ca37bd2c5d7c590fcf37d4196a420c7d18bdb60aa1656ed65"
+    },
+    {
+      "path": "src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "6e65e16b4355b539c52bcbb7184b160034ff3a72a83b665730898c3b9ebd52e0"
+    },
+    {
+      "path": "src/main/core/applications/zentao-data-service.ts",
+      "sha256": "6507e8689777891736c7493083c505c0b75f0e7b2fd079e0d470259a977e0ece"
+    },
+    {
+      "path": "src/main/core/tasks/task-service.ts",
+      "sha256": "b15c8adfb037b920948d6bf25ecccef8f1e5dc3f6774384797e5d79de3733d71"
+    },
+    {
+      "path": "src/renderer/features/applications/workspace.tsx",
+      "sha256": "9dafb24d56fc30aa0215f7abecbbc2585cf2896876044fa176021424ddd45055"
+    }
+  ]
+}

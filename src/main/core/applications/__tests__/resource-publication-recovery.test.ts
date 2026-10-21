@@ -65,16 +65,16 @@ describe('C publication recovery uses original kernel identity and every install
 });
 
 
-describe.skipIf(process.platform!=='darwin')('actual private C publisher termination outside the short coordinator lock',()=>{
+describe.skipIf(process.platform!=='darwin')('actual private C publisher termination at original publication checkpoints',()=>{
  let build:string,native:string;const children=new Set<ChildProcess>();
  beforeAll(async()=>{build=mkdtempSync(join(tmpdir(),'willyou-c-publisher-build-'));native=resolve('out/native/willyou-process-identity');await viteBuild({configFile:false,publicDir:false,logLevel:'error',resolve:{alias:{'@shared':resolve('src/shared')}},ssr:{noExternal:true},build:{ssr:resolve('src/main/core/applications/__tests__/fixtures/resource-publisher-process.ts'),target:'node22',outDir:build,emptyOutDir:false,minify:false,rollupOptions:{external:id=>id==='better-sqlite3'||id.startsWith('node:')||builtinModules.includes(id),output:{format:'cjs',entryFileNames:'child.cjs',inlineDynamicImports:true}}}});});
  afterAll(()=>rmSync(build,{recursive:true,force:true}));
  afterEach(async()=>{for(const child of children){const done=once(child,'exit');child.kill('SIGKILL');await done;}children.clear();});
- it.each(['registered','materialized'] as const)('keeps a living %s publisher, then restores the same operation after actual SIGKILL',async phase=>{
+ it.each(['registered','materialized','renamed'] as const)('keeps a living %s publisher, then restores the same operation after actual SIGKILL',async phase=>{
   const processes=new MacProcessIdentityReader(native),child=spawn(process.execPath,[join(build,'child.cjs'),root,native,phase],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',NODE_PATH:resolve('node_modules')},stdio:['ignore','pipe','pipe']});children.add(child);let stderr='';child.stderr!.on('data',data=>stderr+=data.toString());
   const message=await new Promise<{phase:string;pid:number}>((resolveMessage,reject)=>{let text='';const timer=setTimeout(()=>reject(Error('private publisher checkpoint timeout '+stderr)),5000);child.stdout!.on('data',data=>{text+=data.toString();if(text.includes('\n')){clearTimeout(timer);try{resolveMessage(JSON.parse(text.split('\n')[0]));}catch(error){reject(error);}}});child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',()=>{clearTimeout(timer);reject(Error('private publisher exited before checkpoint '+stderr));});});
   expect(message.phase).toBe(phase);expect(message.pid).toBe(child.pid);const original=processes.read(child.pid!)!,store=new ResourceStore(sqlite,root,undefined,{processes}),record=store.get(spec().resourceId),plan=sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(record.operationId) as {plan_json:string};expect(JSON.parse(plan.plan_json).host).toEqual(original);const before=leases(record.operationId!);
   await expect(store.recover(spec(),record.operationId!)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(leases(record.operationId!)).toEqual(before);const done=once(child,'exit');child.kill('SIGKILL');await done;children.delete(child);expect(processes.state(original)).toBe('stopped');
   expect(await store.recover(spec(),record.operationId!)).toMatchObject({state:'ready',operationId:record.operationId,relativePath:'original-static'});expect(readFileSync(join(store.root,'original-static/entry'),'utf8')).toBe('original immutable C resource');expect(leases(record.operationId!).every((x:any)=>x.state==='released')).toBe(true);
- });
+ },10000);
 });

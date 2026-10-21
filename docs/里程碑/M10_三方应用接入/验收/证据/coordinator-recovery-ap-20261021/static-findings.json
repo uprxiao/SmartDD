@@ -1,0 +1,94 @@
+{
+  "status": "static review;requires red tests and implementation;not App acceptance",
+  "requirementAuditAll87Completed": false,
+  "findings": [
+    {
+      "id": "DEV-02-HANDOFF",
+      "requirements": [
+        "R10-19",
+        "R10-20"
+      ],
+      "source": "src/main/core/applications/discovery-catalog.ts",
+      "observation": "Recovery writes new pending owner before C register updates original plan and install leases; next recovery compares owner exactly. A hard termination in this handoff gap can leave a mismatch. No new red test for this gap in AP.",
+      "next": "Add real second-resumer termination checkpoint and same-operation replay without dropping unknown owners."
+    },
+    {
+      "id": "REVIEW-02-SWITCH",
+      "requirements": [
+        "R02-02",
+        "R02-03"
+      ],
+      "sources": [
+        "src/main/core/applications/application-service.ts",
+        "src/main/core/applications/selection-service.ts",
+        "src/main/core/tasks/task-service.ts",
+        "src/main/core/applications/task-capability-launcher.ts"
+      ],
+      "observation": "Selection callback currently maps stopProjectRuns to all project tasks. Task launch composition does not query pending ZenTao binding changes, whereas business calls do. Need verify the loaded-ZenTao subset and new/resume gate with paired tasks.",
+      "next": "Add software cases for an unrelated task, loaded ZenTao task and new/resume during pending switch before changing production."
+    },
+    {
+      "id": "REVIEW-01",
+      "requirements": [
+        "R07-01",
+        "R07-09",
+        "R07-11",
+        "R10-17"
+      ],
+      "source": "src/main/core/applications/task-capability-launcher.ts",
+      "observation": "applicationResourcesAvailable still returns a global bool; one package failure sends the whole session to prepareUnavailableSession.",
+      "next": "Keep original S and fixed versions; implement per-application resource and authority isolation after two-app reds."
+    },
+    {
+      "id": "REVIEW-03-IMPACT",
+      "requirements": [
+        "R07-03"
+      ],
+      "source": "src/renderer/features/applications/workspace.tsx",
+      "observation": "Disconnect/remove confirmation currently renders generic impact text and the selected connection/application name. App detail does not receive a project list or query affected project bindings; no affected-project list is rendered in its dialog. No new component red executed in this batch.",
+      "next": "Add affected-project/connection confirmation component and trusted read-only impact query tests before implementing; preserve existing revocation/data semantics."
+    }
+  ],
+  "sourceEvidence": [
+    {
+      "path": "src/main/core/applications/application-service.ts",
+      "sha256": "69448076602c9101138827b4b6298404ce8e0ddb7b36d4c51998d88feeb19561"
+    },
+    {
+      "path": "src/main/core/applications/connection-service.ts",
+      "sha256": "fcea5abd4dc33b4291b7aabb40ab66d91e2995dcd38ef73c5f27da7029fee353"
+    },
+    {
+      "path": "src/main/core/applications/discovery-catalog.ts",
+      "sha256": "ed26ada32d53f3f5c80f6367d6576720535c602e16037cc68bad26ebd46c8864"
+    },
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "sha256": "24312d5c6f7149c51ef4a8ee7b87c6d6e344a3ddeaa086cc7e9eec36ca37c5a9"
+    },
+    {
+      "path": "src/main/core/applications/providers/zentao.ts",
+      "sha256": "3651b14e3fa59cb3237964978528f7e40d4bb931d996b5b6f0fb94ab05b7efde"
+    },
+    {
+      "path": "src/main/core/applications/selection-service.ts",
+      "sha256": "8f1d14771e0a441ca37bd2c5d7c590fcf37d4196a420c7d18bdb60aa1656ed65"
+    },
+    {
+      "path": "src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "6e65e16b4355b539c52bcbb7184b160034ff3a72a83b665730898c3b9ebd52e0"
+    },
+    {
+      "path": "src/main/core/applications/zentao-data-service.ts",
+      "sha256": "6507e8689777891736c7493083c505c0b75f0e7b2fd079e0d470259a977e0ece"
+    },
+    {
+      "path": "src/main/core/tasks/task-service.ts",
+      "sha256": "b15c8adfb037b920948d6bf25ecccef8f1e5dc3f6774384797e5d79de3733d71"
+    },
+    {
+      "path": "src/renderer/features/applications/workspace.tsx",
+      "sha256": "9dafb24d56fc30aa0215f7abecbbc2585cf2896876044fa176021424ddd45055"
+    }
+  ]
+}

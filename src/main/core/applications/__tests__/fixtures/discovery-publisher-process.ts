@@ -1,0 +1,11 @@
+import {readFileSync,writeSync} from 'node:fs';
+import {join} from 'node:path';
+import Database from 'better-sqlite3';
+import {ResourceStore} from '../../resource-store';
+import {DiscoveryCatalog,type DiscoveryProjectionSource} from '../../discovery-catalog';
+import {MacProcessIdentityReader} from '../../process-identity';
+const [root,home,helper,phase,sourcesFile]=process.argv.slice(2),sqlite=new Database(join(root,'state.sqlite')),processes=new MacProcessIdentityReader(helper),store=new ResourceStore(sqlite,root,undefined,{processes});
+const checkpoint=(at:string)=>{if(at===phase){writeSync(1,JSON.stringify({phase:at,pid:process.pid})+'\n');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);}};
+const catalog=new DiscoveryCatalog(store,home,processes,{checkpoint,intentCheckpoint:()=>checkpoint('intent-recorded')});
+const sources=(JSON.parse(readFileSync(sourcesFile,'utf8')) as {nativeName:string;sourceHash:string;sourceResourceId:string;files:Record<string,string>;executables:string[]}[]).map(s=>({...s,files:Object.fromEntries(Object.entries(s.files).map(([p,b])=>[p,Buffer.from(b,'base64')])),executables:new Set(s.executables)})) satisfies DiscoveryProjectionSource[];
+void catalog.publish(sources).catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>sqlite.close());
