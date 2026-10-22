@@ -1,4 +1,4 @@
-import {verifyModernDiscoveryProjection} from './native-discovery-exclusions';
+import {verifyModernDiscoveryProjection,nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof,type NativeGuardDiscoverySelection} from './native-discovery-exclusions';
 import { randomUUID } from 'node:crypto';
 import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -197,17 +197,23 @@ export class DiscoveryCatalog {
         for(const skill of selected){const entry=raw.entries.find(e=>e.path===skill.path);if(entry&&entry.storeId===this.store.storeId&&entry.sourceHash===skill.hash&&valid.has(skill.path)){this.verifyReference(this.store.get(entry.resourceId),snapshot);owned.add(skill.path);}else if(entry&&(entry.storeId!==this.store.storeId||entry.sourceHash!==skill.hash)||present(dirname(skill.path)))occupied.add(skill.path);}
         return{owned,occupied,generation:raw.generation,excludedPaths};
     });}
+    /** Read-only candidate,not a verified guard receipt or loading authority. */
+    async nativeGuardSelection():Promise<NativeGuardDiscoverySelection|undefined>{return this.lock(()=>{
+        const raw=this.catalog(),paths:string[]=[];for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);}catch(error){if(error instanceof ApplicationError&&['OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))paths.push(entry.path);else throw error;}}
+        return paths.length?{schema:'native-guard-discovery-omissions-v1' as const,home:this.home,catalog:structuredClone({generation:raw.generation,entries:raw.entries}),paths}:undefined;
+    });}
     verify(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,true);}
     /** Only for a no-authority native guard: verify complete H bytes/metadata,
      * not C source bytes that the guarded native process will not consume. */
-    verifyNativeIsolation(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,false);}
-    private verifyCatalog(snapshot: NonNullable<AgentLoadRequest['catalog']>,sourceBytes:boolean): void {
+    verifyNativeIsolation(snapshot:NonNullable<AgentLoadRequest['catalog']>,discovery?:NativeGuardDiscoveryProof,verifyLegacySource?:true):void{this.verifyCatalog(snapshot,verifyLegacySource===true,discovery?nativeGuardCatalogOmissions(this.store,discovery,this.home,snapshot):undefined);}
+    private verifyCatalog(snapshot: NonNullable<AgentLoadRequest['catalog']>,sourceBytes:boolean,omitted:ReadonlySet<string>=new Set()): void {
         const parsed = catalogSchema.parse({ schema: 1, homeId: this.homeId, ...snapshot });
         if (parsed.generation !== this.generation(parsed.entries))
             throw new ApplicationError('HASH_MISMATCH', '共享目录集合摘要不同');
         for (const entry of parsed.entries) {
             if (entry.path !== join(this.home, '.agents/skills', entry.nativeName, 'SKILL.md'))
                 throw new ApplicationError('OWNERSHIP_CONFLICT', '投影越过实际发现根');
+            if(omitted.has(entry.path)){if(entry.format)throw new ApplicationError('SCOPE_DENIED','旧目录不参与普通守护的新格式排除');continue;}
             if(entry.format==='legacy-tree-v1'){
                 const identity=verifyLegacyDiscoveryEntry(entry,this.home);
                 if(entry.storeId===this.store.storeId){const r=this.store.get(entry.resourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),source=this.store.get(identity.sourceResourceId);

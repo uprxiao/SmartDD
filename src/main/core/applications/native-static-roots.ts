@@ -1,3 +1,4 @@
+import {nativeGuardResourceOmissions,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
 import {basename,join} from 'node:path';
 import {ApplicationError} from '@shared/applications';
 import {canonicalJson,digest} from './manifest';
@@ -24,12 +25,13 @@ export function captureNativeStaticRoots(store:ResourceStore,ids:readonly string
 }
 /** Called outside C, only after the ordinary native run holds every source.
  * A full static copy does not make its C source executable or give App access. */
-export function verifyNativeStaticRoots(store:ResourceStore,roots:readonly NativeStaticRoot[]):void{
+export function verifyNativeStaticRoots(store:ResourceStore,roots:readonly NativeStaticRoot[],discovery?:NativeGuardDiscoveryProof):void{
+ const omitted=discovery?nativeGuardResourceOmissions(store,discovery):new Set<string>();
  for(const proof of roots){
   const [current]=captureNativeStaticRoots(store,[proof.resource.resourceId]);
   if(!current||canonicalJson(current)!==canonicalJson(proof))throw invalid();
   const r=proof.resource,home=(store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(r.scopeIdentity) as {home:string}|undefined)?.home;
-  if(!home||digest(home)!==r.scopeIdentity)throw invalid();const directory=store.directory(r),name=basename(directory),path=join(directory,'SKILL.md');assertDiscoveryPath(home,path);
+  if(!home||digest(home)!==r.scopeIdentity)throw invalid();const directory=store.directory(r),name=basename(directory),path=join(directory,'SKILL.md');if(omitted.has(r.resourceId)){if(r.kind!=='agent-projection')throw invalid();continue;}assertDiscoveryPath(home,path);
   if(r.kind==='legacy-agent-projection'){
    const identity=verifyLegacyDiscoveryEntry({resourceId:r.resourceId,storeId:store.storeId,path,nativeName:name,sourceHash:r.contentHash,projectionHash:r.contentHash,format:'legacy-tree-v1'},home);if(identity.sourceResourceId!==proof.sourceId)throw invalid();
   }else{
