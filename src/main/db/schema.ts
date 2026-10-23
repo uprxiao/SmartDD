@@ -449,3 +449,8 @@ export const capabilityLegacyHBindings=sqliteTable('capability_legacy_h_bindings
  taskId:text('task_id').primaryKey().references(()=>capabilityLegacyMigrationPreparations.taskId),
  bindingJson:text('binding_json').notNull(),bindingHash:text('binding_hash').notNull(),createdAt:text('created_at').notNull(),
 });
+
+// Host-observed metadata retained per run; never used as application authority.
+export const capabilitySkillObservations=sqliteTable('capability_skill_observations',{
+ runId:text('run_id').notNull().references(()=>capabilityRuns.runId),appId:text('app_id').notNull(),skillId:text('skill_id').notNull(),kind:text('kind',{enum:['discovery','read']}).notNull(),evidenceJson:text('evidence_json').notNull(),evidenceHash:text('evidence_hash').notNull(),observedAt:text('observed_at').notNull(),
+},t=>({pk:primaryKey({columns:[t.runId,t.appId,t.skillId,t.kind]})}));

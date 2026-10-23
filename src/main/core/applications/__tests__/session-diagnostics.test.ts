@@ -97,3 +97,10 @@ it('only exposes complete current-run Skill observations and drops them when own
 });
 
 it('shows native discovery independently and clears current evidence after stop',async()=>{const run=await start();discoveryObserver=async(id,targets)=>targets.map(t=>({skillId:t.id,observedAt:new Date().toISOString(),callId:'catalog',recordHash:'c'.repeat(64)}));const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.applications[0].evidence).toMatchObject({skillDiscovery:'verified',skillRead:'unverified',toolRequests:0});expect(value.applications[0].evidence.skillDiscoveryObservations?.[0].runId).toBe(run.runId);activePty=null;expect((await diagnostics.inspect(f.snapshot.taskId)).applications[0].evidence.skillDiscovery).toBe('unverified');});
+
+it('retains scoped discovery metadata across stop and rejects damaged historical evidence',async()=>{
+ const run=await start();await diagnostics.prepared(prepared(run));discoveryObserver=async(id,targets)=>targets.map(t=>({skillId:t.id,observedAt:new Date().toISOString(),callId:'catalog',recordHash:'d'.repeat(64)}));await diagnostics.inspect(f.snapshot.taskId);
+ const stored=f.sqlite.prepare('SELECT evidence_json FROM capability_skill_observations WHERE run_id=?').all(run.runId) as {evidence_json:string}[];expect(stored.length).toBeGreaterThan(0);expect(stored[0].evidence_json).not.toContain('do-not-copy-user-message');
+ await run.cli.exited();await run.stop();activePty=null;let value=await diagnostics.inspect(f.snapshot.taskId);expect(value.applications[0].evidence.skillDiscovery).toBe('unverified');expect(value.recentRuns.find(r=>r.id===run.runId)?.skillObservations).toMatchObject([{kind:'discovery',runId:run.runId}]);
+ f.sqlite.prepare("UPDATE capability_skill_observations SET evidence_hash='broken' WHERE run_id=?").run(run.runId);value=await diagnostics.inspect(f.snapshot.taskId);expect(value.recentRuns.find(r=>r.id===run.runId)).toMatchObject({skillObservations:[],skillObservationIssue:'RESOURCE_RECOVERY_REQUIRED'});
+});

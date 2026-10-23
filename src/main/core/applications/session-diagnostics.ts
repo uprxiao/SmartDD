@@ -23,6 +23,7 @@ import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import {readLaunchRestriction} from './launch-restriction';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
+const skillObservationSchema=z.object({runId:id,appId:z.enum(['mail','zentao']),skillId:id,kind:z.enum(['discovery','read']),packageHash:hash,recordHash:hash,observedAt:z.iso.datetime(),cliVersion:z.string().min(1).max(128)}).strict();
 const path=z.string().min(1).max(4096).refine(v=>v.startsWith('/')&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(v));
 const preparationV1=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:hash,cliVersion:z.string().min(1).max(128).regex(/^[\x20-\x7e]+$/).nullable(),adapterHash:hash,state:z.enum(['prepared','unavailable']),issueCode:issue.nullable(),manifestPath:path,configPaths:z.array(path).max(16),preparedAt:z.iso.datetime()}).strict();
 const preparationSchema=z.discriminatedUnion('schema',[preparationV1,preparationV1.extend({schema:z.literal(2),capabilities:nativeCapabilityPreparationSchema})]).refine(v=>(v.state==='prepared')===(v.issueCode===null));
@@ -75,7 +76,15 @@ export class ApplicationSessionDiagnostics {
   for(const observation of observations)try{const parsed=bridgeSchema.parse(JSON.parse(observation.evidence_json));const child=this.store.sqlite.prepare("SELECT pid,process_started_at FROM capability_run_processes WHERE run_id=? AND process_id=? AND kind='bridge'").get(row.run_id,observation.bridge_id) as {pid:number;process_started_at:string}|undefined;if(parsed.runId!==row.run_id||parsed.bridgeId!==observation.bridge_id||parsed.observedAt!==observation.observed_at||digest(canonicalJson(parsed))!==observation.evidence_hash||!child||parsed.pid!==child.pid||parsed.startedAt!==child.process_started_at)throw new Error();observedAt??=parsed.observedAt;}catch{bridgeIssue='RESOURCE_RECOVERY_REQUIRED';}
   let connected=false;try{connected=current&&!!this.inspector?.channelConnected(row.run_id);}catch{/* display unknown, never infer liveness */}
   if(current&&!connected&&!bridgeIssue)try{bridgeIssue=this.inspector?.recoveryIssue?.(row.run_id)??null;}catch{/* Missing recovery evidence stays unknown. */}
-  return{id:row.run_id,state:row.state,startedAt:row.started_at,endedAt:row.ended_at,current,preparation,preparationIssue,restriction,restrictionIssue,bridge:{connected,observedAt,issueCode:bridgeIssue}};
+  const skillObservations:NonNullable<SessionRunDiagnostic['skillObservations']>=[];let skillObservationIssue:string|null=null;
+  const skillRows=this.store.sqlite.prepare('SELECT * FROM capability_skill_observations WHERE run_id=? LIMIT 513').all(row.run_id) as {app_id:string;skill_id:string;kind:string;evidence_json:string;evidence_hash:string;observed_at:string}[];
+  if(skillRows.length>512)skillObservationIssue='RESOURCE_RECOVERY_REQUIRED';
+  for(const record of skillRows.slice(0,512))try{
+   const value=skillObservationSchema.parse(JSON.parse(record.evidence_json)),fixed=session?.snapshot.packages.find(p=>p.appId===value.appId);
+   if(value.cliVersion!==preparation?.cliVersion||value.runId!==row.run_id||value.appId!==record.app_id||value.skillId!==record.skill_id||value.kind!==record.kind||value.observedAt!==record.observed_at||digest(canonicalJson(value))!==record.evidence_hash||fixed?.packageHash!==value.packageHash||!fixed.skills.some(s=>s.skillId===value.skillId)||Date.parse(value.observedAt)<Date.parse(row.started_at)||(row.ended_at&&Date.parse(value.observedAt)>Date.parse(row.ended_at)))throw new Error('invalid historical observation');
+   skillObservations.push(value);
+  }catch{skillObservationIssue='RESOURCE_RECOVERY_REQUIRED';}
+  return{skillObservations,skillObservationIssue,id:row.run_id,state:row.state,startedAt:row.started_at,endedAt:row.ended_at,current,preparation,preparationIssue,restriction,restrictionIssue,bridge:{connected,observedAt,issueCode:bridgeIssue}};
  }
  private directory(resource:ResourceRecord):string{
   const path=this.store.directory(resource),root=path.slice(0,-resource.relativePath.length).replace(/\/$/,'');let current=root;for(const part of ['',...resource.relativePath.split('/')]){if(part)current=join(current,part);const st=lstatSync(current);if(st.isSymbolicLink()||!st.isDirectory())throw new ApplicationError('OWNERSHIP_CONFLICT','原资源目录包含链接或异常归属');}return path;
@@ -117,6 +126,20 @@ export class ApplicationSessionDiagnostics {
    const discovery=discovered.get(app.appId)??[];app.evidence.skillDiscoveryObservations=discovery.map(r=>({...r,runId}));
    if(app.skills.length&&app.skills.every(s=>discovery.some(r=>r.skillId===s.id)))app.evidence.skillDiscovery='verified';
   }
+  await withResourceLock(this.store.root,()=>{
+   const pty=this.deps.activePty?.(taskId),run=pty?this.deps.runs()?.currentNativeRun(taskId,pty):null;if(run?.runId!==runId)return;
+   const session=this.sessions.inspectCoordinated(taskId);
+   for(const app of fresh.applications){
+    if(app.resourceState!=='verified'||this.resourceIssue(session,app.appId))continue;
+    const fixed=session.snapshot.packages.find(p=>p.appId===app.appId);if(fixed?.packageHash!==app.packageHash)continue;
+    const version=fresh.currentRun?.preparation?.cliVersion;if(!version)continue;
+    for(const [kind,observations] of [['read',app.evidence.skillReadObservations],['discovery',app.evidence.skillDiscoveryObservations]] as const)for(const item of observations??[]){
+     const value=skillObservationSchema.parse({runId,appId:app.appId,skillId:item.skillId,kind,packageHash:app.packageHash,recordHash:item.recordHash,observedAt:item.observedAt,cliVersion:version});
+     if(!fixed.skills.some(s=>s.skillId===value.skillId)||Date.parse(value.observedAt)<Date.parse(run.startedAt)||Date.parse(value.observedAt)>Date.now())continue;
+     const text=canonicalJson(value);this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_skill_observations VALUES(?,?,?,?,?,?,?)').run(runId,app.appId,value.skillId,kind,text,digest(text),value.observedAt);
+    }
+   }
+  });
   return fresh;
  }
  private inspectBase(taskId:string):Promise<ApplicationSessionDiagnostic>{id.parse(taskId);return withResourceLock(this.store.root,()=>{
