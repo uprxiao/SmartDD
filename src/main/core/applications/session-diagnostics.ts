@@ -120,10 +120,20 @@ export class ApplicationSessionDiagnostics {
   for(const app of fresh.applications){
    const original=before.applications.find(a=>a.appId===app.appId);
    if(app.resourceState!=='verified'||original?.packageHash!==app.packageHash||JSON.stringify(original.skills)!==JSON.stringify(app.skills))continue;
-   const reads=observed.get(app.appId)??[];
-   app.evidence.skillReadObservations=reads.map(r=>({...r,runId}));
+   // Retain already verified evidence only from this still-owned run. Bounded
+   // log tails can move past a successful read; that does not undo the event.
+   // Stored metadata intentionally omits native call IDs; never invent one.
+   const retained=fresh.currentRun.skillObservationIssue?[]:(fresh.currentRun.skillObservations??[]).filter(item=>item.runId===runId&&item.appId===app.appId&&item.packageHash===app.packageHash&&Date.parse(item.observedAt)<=Date.now());
+   const merge=(kind:'read'|'discovery',latest:SkillReadObservation[])=>{
+    const bySkill=new Map<string,{skillId:string;observedAt:string;callId:string|null;recordHash:string;runId:string}>();
+    for(const item of retained.filter(item=>item.kind===kind))bySkill.set(item.skillId,{skillId:item.skillId,observedAt:item.observedAt,recordHash:item.recordHash,runId,callId:null});
+    for(const item of latest)bySkill.set(item.skillId,{...item,runId});
+    return [...bySkill.values()];
+   };
+   const reads=merge('read',observed.get(app.appId)??[]);
+   app.evidence.skillReadObservations=reads;
    if(app.skills.length&&app.skills.every(s=>reads.some(r=>r.skillId===s.id)))app.evidence.skillRead='verified';
-   const discovery=discovered.get(app.appId)??[];app.evidence.skillDiscoveryObservations=discovery.map(r=>({...r,runId}));
+   const discovery=merge('discovery',discovered.get(app.appId)??[]);app.evidence.skillDiscoveryObservations=discovery;
    if(app.skills.length&&app.skills.every(s=>discovery.some(r=>r.skillId===s.id)))app.evidence.skillDiscovery='verified';
   }
   await withResourceLock(this.store.root,()=>{

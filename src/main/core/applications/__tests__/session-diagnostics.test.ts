@@ -106,3 +106,10 @@ it('retains scoped discovery metadata across stop and rejects damaged historical
 });
 
 it('does not collect a replacement run for a stale background observer',async()=>{const run=await start();await diagnostics.prepared(prepared(run));let calls=0;skillObserver=async()=>{calls++;return [];};await diagnostics.inspect(f.snapshot.taskId,'old-run');expect(calls).toBe(0);await diagnostics.inspect(f.snapshot.taskId,run.runId);expect(calls).toBeGreaterThan(0);});
+
+it('retains verified observations within one live run after they leave the bounded native tail',async()=>{
+ const run=await start();await diagnostics.prepared(prepared(run));skillObserver=async(id,targets)=>targets.map(t=>({skillId:t.id,observedAt:new Date().toISOString(),callId:'read-once',recordHash:'e'.repeat(64)}));
+ const first=await diagnostics.inspect(f.snapshot.taskId);expect(first.applications[0].evidence.skillRead).toBe('verified');skillObserver=async()=>[];
+ const later=await diagnostics.inspect(f.snapshot.taskId);expect(later.applications[0].evidence.skillRead).toBe('verified');expect(later.applications[0].evidence.skillReadObservations?.[0].recordHash).toBe('e'.repeat(64));
+ f.sqlite.prepare("UPDATE capability_skill_observations SET evidence_hash='damaged' WHERE run_id=?").run(run.runId);expect((await diagnostics.inspect(f.snapshot.taskId)).applications[0].evidence.skillRead).toBe('unverified');
+});
