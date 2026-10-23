@@ -1,6 +1,6 @@
 // Trusted built-in package sources. Package versions are independent from the App version.
 // A change to the pinned runtime or any released file requires a new application version.
-const runtime = { id: 'applications', hash: 'f34e03358e928de47d897e2bc412774d50c4523c1cf9ccf224168d696a971c7e', protocolMajor: 1 };
+const runtime = { id: 'applications', hash: 'adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625', protocolMajor: 1 };
 const str = (maxLength = 4096) => ({ type: 'string', maxLength });
 const integer = (minimum = 0, maximum = Number.MAX_SAFE_INTEGER) => ({ type: 'integer', minimum, maximum });
 const uuid = { type: 'string', pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$' };
@@ -48,7 +48,7 @@ const tool = (appId, name, description, permission, method, input, output, seman
 });
 const zt = (name, description, method, input, output) => tool('zentao',name,description,'zentao.read',method,input,output,'read','safe-read');
 const mail = (name, description, permission, method, input, output, semantics = 'read', openWorld = false) => tool('mail',name,description,permission,method,input,output,semantics,semantics === 'read' ? 'safe-read' : 'never',openWorld);
-const common = { schema: 'smartdd-app-package-v1', version: '1.0.2', hostApi: { min: 1, max: 1 }, dataApi: 1, runtime, adapter: { entry: 'adapter/index.cjs', format: 'cjs' }, migrations: [] };
+const common = { schema: 'smartdd-app-package-v1', version: '1.0.3', hostApi: { min: 1, max: 1 }, dataApi: 1, runtime, adapter: { entry: 'adapter/index.cjs', format: 'cjs' }, migrations: [] };
 const zentaoConfig = object({ kind: { const: 'zentao' }, baseUrl: str(2048), username: str(512), authMode: enumeration('token','password') });
 const foxmailConfig = object({ kind: { const: 'foxmail' }, sourcePath: str(4096), account: str(512), queryDays: integer(1,100) },['kind','sourcePath','account']);
 const smtpConfig = object({ kind: { const: 'smtp' }, host: str(512), port: integer(1,65535), username: str(512), fromAddress: str(512), authMode: { const: 'password' }, mode: enumeration('plain','starttls','implicit-tls') });

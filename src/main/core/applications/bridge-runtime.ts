@@ -39,7 +39,16 @@ async function main(): Promise<void> {
       return response.status === 'ok' ? { content: [{ type: 'text',text: JSON.stringify(response.value) }],structuredContent: response.value as Record<string,unknown>,_meta: { 'willyou/operationId': response.operationId } } : { isError: true,content: [{ type: 'text',text: JSON.stringify({ error: response.error,operationId: response.operationId }) }] };
     } catch { return { isError: true,content: [{ type: 'text',text: '应用通道本次调用未完成。请核对已有执行记录；不要自动重发外部写操作。' }] }; }
   });
-  const close = () => { client.close(); void server.close().catch(() => undefined); };
+  let closing = false;
+  const close = () => {
+    if (closing) return;
+    closing = true;
+    process.stdin.unpipe(input);
+    process.stdin.destroy();
+    input.destroy();
+    client.close();
+    void server.close().catch(() => undefined);
+  };
   process.stdin.once('end',close); process.once('SIGTERM',close); server.onclose = () => client.close();
   // The SDK silently discards JSON syntax errors. Validate bounded frames first
   // so malformed input is observable without copying any input into diagnostics.

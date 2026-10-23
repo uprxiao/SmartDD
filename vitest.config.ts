@@ -6,6 +6,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   esbuild: { jsx: 'automatic' },
   resolve: {
+    // Shared prototype components must use the same React instance as the test renderer.
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@root': resolve('.'),
       '@shared': resolve('src/shared'),

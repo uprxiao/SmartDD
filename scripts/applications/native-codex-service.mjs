@@ -13,6 +13,7 @@ import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 
+const bridgeFaultSignal=process.env.WILLYOU_BRIDGE_FAULT_SIGNAL==='SIGTERM'?'SIGTERM':'SIGKILL';
 const bridgeFaultCheck=process.env.WILLYOU_BRIDGE_FAULT_CHECK==='1';
 const restartCheck=process.env.WILLYOU_RESTART_CHECK==='1';
 const sharedProjectCheck=process.env.WILLYOU_SHARED_PROJECT_CHECK==='1';
@@ -29,7 +30,7 @@ const result={schema:'m10-packaged-native-service-v1',startedAt:new Date().toISO
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
  layer:'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
  isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
- bridgeFaultCheck,restartCheck,sharedProjectCheck,unselectedProject,marker,requests:[],checks:[],status:'running'};
+ bridgeFaultSignal,bridgeFaultCheck,restartCheck,sharedProjectCheck,unselectedProject,marker,requests:[],checks:[],status:'running'};
 assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
 assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
 result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
@@ -211,8 +212,8 @@ try{
    const helper=join(appRoot,'Contents/Resources/native/willyou-process-identity');
    const actual=JSON.parse(execFileSync(helper,[String(owned.pid)],{encoding:'utf8'}));
    assert.equal(actual.state,'running');assert.equal(actual.startedAt,owned.process_started_at);assert.equal(actual.pid,owned.pid);
-   result.bridgeFault={kind:'SIGKILL abrupt crash of this private current run bridge after kernel identity check',runId:resumed.currentRun.id,owned,actual};
-   process.kill(owned.pid,'SIGKILL');
+   result.bridgeFault={kind:bridgeFaultSignal+' of this private current run bridge after kernel identity check',runId:resumed.currentRun.id,owned,actual};
+   process.kill(owned.pid,bridgeFaultSignal);
    await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&!d.value.currentRun?.bridge.connected;},15000);
    const alive=await app.invoke('tasks.get',task.id);assert.equal(alive.ptyId,task.ptyId);assert.equal(alive.nativeSessionId,task.nativeSessionId);
   }
