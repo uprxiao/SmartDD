@@ -16,12 +16,13 @@ import type { BridgeResponse, BridgeBootstrap } from '../../../src/shared/applic
 
 it('T68 routes simultaneous project/version runs by host scope and rejects cross-socket credentials and forged overrides',async()=>{
  const reader=new FixtureProcessReader(),f=await runFixture(reader,{application:true});
+ const replies:BridgeResponse[]=[];
  const sockets:Socket[]=[];let broker:PrivateApplicationBroker|undefined,calls=0;
  async function peer(endpoint:string){
   const socket=connect(endpoint);sockets.push(socket);socket.on('error',()=>{});await once(socket,'connect');let buffer='';
   const waiting=new Map<string,{resolve:(v:BridgeResponse)=>void,reject:(e:Error)=>void,timer:ReturnType<typeof setTimeout>}>();
   socket.on('close',()=>{for(const p of waiting.values()){clearTimeout(p.timer);p.reject(new Error('closed'));}waiting.clear();});
-  socket.on('data',chunk=>{buffer+=chunk.toString();while(buffer.includes('\n')){const i=buffer.indexOf('\n'),v=JSON.parse(buffer.slice(0,i)) as BridgeResponse;buffer=buffer.slice(i+1);const p=waiting.get(v.id);if(p){clearTimeout(p.timer);waiting.delete(v.id);p.resolve(v);}}});
+  socket.on('data',chunk=>{buffer+=chunk.toString();while(buffer.includes('\n')){const i=buffer.indexOf('\n'),v=JSON.parse(buffer.slice(0,i)) as BridgeResponse;buffer=buffer.slice(i+1);replies.push(v);const p=waiting.get(v.id);if(p){clearTimeout(p.timer);waiting.delete(v.id);p.resolve(v);}}});
   return {socket,send:(request:Record<string,unknown>)=>new Promise<BridgeResponse>((resolve,reject)=>{const id=randomUUID(),timer=setTimeout(()=>{waiting.delete(id);reject(new Error('bounded protocol timeout'));},3000);waiting.set(id,{resolve,reject,timer});socket.write(JSON.stringify({schema:1,...request,id})+'\n');})};
  }
  try{
@@ -71,6 +72,13 @@ it('T68 routes simultaneous project/version runs by host scope and rejects cross
   expect(fresh.token).not.toBe(a.token);expect(restored.runId).not.toBe(one.runId);
   expect(await fresh.client.send({method:'tools/call',token:fresh.token,call})).toMatchObject({status:'ok',value:{projectId:'p1',taskId:f.snapshot.taskId,packageHash:f.application!.packageHash}});
   await restored.stop();await restored.cli.exited();await fresh.bridge.exited();
+  const rejected=replies.filter(r=>r.status==='error');expect(rejected.length).toBeGreaterThan(10);
+  for(const response of rejected){
+   const row=response.auditId?f.sqlite.prepare('SELECT * FROM capability_broker_denials WHERE audit_id=?').get(response.auditId):response.operationId?f.sqlite.prepare('SELECT * FROM application_invocations WHERE operation_id=?').get(response.operationId):undefined;
+   expect(row,JSON.stringify(response)).toBeDefined();
+   expect(JSON.stringify(row)).not.toContain(a.token);expect(JSON.stringify(row)).not.toContain(b.token);
+  }
+
 
  }finally{for(const socket of sockets)socket.destroy();await broker?.close();f.cleanup();}
 },30000);
