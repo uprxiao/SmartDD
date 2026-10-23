@@ -13,6 +13,7 @@ import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 
+const unselectedProject=process.env.WILLYOU_UNSELECTED_PROJECT==='1';
 const root=await mkdtemp('/private/tmp/willyou-m10-native-service-');
 const home=join(root,'home'),state=join(root,'codex'),cwd=join(root,'project'),userData=join(root,'userdata');
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,cli=process.env.WILLYOU_CODEX_CLI;
@@ -25,7 +26,7 @@ const result={schema:'m10-packaged-native-service-v1',startedAt:new Date().toISO
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
  layer:'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
  isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
- marker,requests:[],checks:[],status:'running'};
+ unselectedProject,marker,requests:[],checks:[],status:'running'};
 assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
 assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
 result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
@@ -47,7 +48,7 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m10-owned-config'),
   toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
- if(taskRequest&&!result.issuedRead){
+ if(taskRequest&&!unselectedProject&&!result.issuedRead){
   const skillRoot=join(home,'.agents/skills');const names=readdirSync(skillRoot).filter(n=>n.startsWith('smartdd-a-mail-work-assistant-'));assert.equal(names.length,1);const path=join(skillRoot,names[0],'SKILL.md');const contents=readFileSync(path,'utf8');
   result.issuedRead={path,sha256:sha(contents),bytes:Buffer.byteLength(contents),callId:'call_m10_skill_read',method:'actual Codex exec_command /bin/cat of this private fixed Skill only;synthetic provider selects read'};
   const command='/bin/cat '+"'"+path.replaceAll("'", "'\\''")+"'";
@@ -55,8 +56,8 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
   send('response.created',{response:{id:'resp_m10_read',object:'response',status:'in_progress',output:[]}});send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});send('response.output_item.done',{output_index:0,item:call});send('response.completed',{response:{id:'resp_m10_read',object:'response',status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
  }
- if(taskRequest&&result.issuedRead&&!result.nativeSkillReadOutput){const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id===result.issuedRead.callId);assert(output,'Missing actual native Skill read output');const contents=readFileSync(result.issuedRead.path,'utf8');assert(output.output.includes(contents.trim()),'Native read output must contain the entire selected Skill body');result.nativeSkillReadOutput=output;}
- if(taskRequest&&!result.issuedTool){
+ if(taskRequest&&!unselectedProject&&result.issuedRead&&!result.nativeSkillReadOutput){const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id===result.issuedRead.callId);assert(output,'Missing actual native Skill read output');const contents=readFileSync(result.issuedRead.path,'utf8');assert(output.output.includes(contents.trim()),'Native read output must contain the entire selected Skill body');result.nativeSkillReadOutput=output;}
+ if(taskRequest&&!unselectedProject&&!result.issuedTool){
   const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_create_v1'));
   assert(ns,'Actual native request is missing the local draft MCP function');
   const argumentsText=JSON.stringify({content:{mode:'new',sourceMessageRef:null,senderConnectionId:null,to:[],cc:[],bcc:[],subject:marker+'_LOCAL_DRAFT',inReplyTo:null,references:[],attachmentIds:[],text:marker+'_LOCAL_BODY',html:null}});
@@ -70,7 +71,7 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   send('response.output_item.done',{output_index:0,item:call});
   send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
  }
- if(taskRequest&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;}
+ if(taskRequest&&!unselectedProject&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;}
  const id='msg_m10_'+result.requests.length,message={id,type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text,annotations:[]}]};
  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
  send('response.created',{response:{id:'resp_'+id,object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
@@ -101,14 +102,14 @@ try{
  stage='prerequisites';await progress();
  project=await app.invoke('projects.create',{name:'M10 原生 CLI 隔离项目',aliases:[],description:'Private native Task prerequisite',rulesPath:null},[{label:'fixture',path:cwd}]);result.projectId=project.id;
  const catalog=await app.invoke('applications.catalog');assert(catalog.ok);const mail=catalog.value.find(x=>x.appId==='mail');assert((await app.invoke('applications.setAdded','mail',true,mail.revision)).ok);
- assert((await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}})).ok);
+ if(!unselectedProject)assert((await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}})).ok);
  const args=['--profile','m10-native','--disable','hooks','--disable','apps','--disable','remote_plugin','--disable','multi_agent','--disable','shell_snapshot','-c','web_search="disabled"','-c','skills.config=[]','--sandbox','read-only','--ask-for-approval','never'];
  profile=await app.invoke('aiProfiles.create',{name:'M10 私有 Codex 0.162.1',runner:'codex',executable:cli,env:Object.entries(privateEnv).map(([name,value])=>({name,value,secret:false})),args,color:null,isDefault:true});result.profileId=profile.id;
  stage='profile-health';await progress();const health=await poll(async()=>{const p=await app.invoke('aiProfiles.get',profile.id);return !p.checking&&p.check?p:null;},45000);result.profileHealth=health.check;assert.equal(health.check.status,'ok');
  checked('Automatic AI-profile health check is separately classified and completed against private provider');
  stage='service-task-launch';await progress();
  await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true`);
- const prompt=marker+': Create one LOCAL DRAFT only, subject '+marker+'_LOCAL_DRAFT, body '+marker+'_LOCAL_BODY. No recipients, attachments, SMTP or sending. No external services.';
+ const prompt=unselectedProject?marker+': Reply with the completion marker only. Do not invoke tools, read files, create drafts or send mail.':marker+': Create one LOCAL DRAFT only, subject '+marker+'_LOCAL_DRAFT, body '+marker+'_LOCAL_BODY. No recipients, attachments, SMTP or sending. No external services.';
  const before=await app.invoke('tasks.list',{includeArchived:true});assert.equal(before.length,0);
  const opened=await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:profile.id,firstMessage:prompt,cols:100,rows:30});task=opened.task;result.taskId=task.id;
  checked('Production TaskService IPC created exactly one native Task;not composer/UI coverage',{taskId:task.id});
@@ -118,6 +119,22 @@ try{
  checked('Real Task CLI used native profile model and preserved profile-disabled user Skill under later CLI empty array',{requestCount:requests.length});
  stage='session-diagnostics';await progress();const session=await app.invoke('applications.session',task.id);assert(session.ok,session.message);result.session=session.value;result.finalTask=await app.invoke('tasks.get',task.id);assert(result.finalTask.ptyId);
  await app.screenshot(join(root,'task-native-response.png'));
+ if(unselectedProject){
+  assert.equal(session.value.applications.length,0,'Unselected project must have an empty application snapshot');
+  assert(requests.every(r=>r.toolNames.every(n=>!String(n).startsWith('mcp__wy_'))),'Unselected native request contains application namespace');
+  assert(!result.issuedRead&&!result.issuedTool);
+  const drafts=await app.invoke('applications.drafts',project.id,{limit:50});result.unselectedDraftListResponse=drafts;
+  assert.equal(drafts.ok,false);assert.equal(drafts.code,'SCOPE_DENIED');
+  const stored=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); print(json.dumps({'draftCount':c.execute('SELECT count(*) FROM mail_drafts WHERE project_id=?',(sys.argv[2],)).fetchone()[0]})); c.close()",join(userData,'smartdd.db'),project.id],{encoding:'utf8'}));
+  result.unselectedStoredData=stored;assert.equal(stored.draftCount,0);
+  const selectedProjectionNames=readdirSync(join(home,'.agents/skills')).filter(n=>n.startsWith('smartdd-a-'));
+  assert.deepEqual(selectedProjectionNames,[]);
+  result.unselectedProjections=selectedProjectionNames;
+  checked('Production project without selection has empty application snapshot, no native app tools/projections and no drafts');
+  stage='unselected-native-id';await progress();
+  result.nativeBoundTask=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);
+  checked('Unselected project still completes real native Codex work and binds native session ID');
+ }else{
  assert(result.issuedTool);assert(result.nativeToolOutputs?.length===1,'Native CLI did not return the real MCP tool result');
  const drafts=await app.invoke('applications.drafts',project.id,{limit:50});assert(drafts.ok,drafts.message);assert.equal(drafts.value.items.length,1);const draft=drafts.value.items[0];assert.equal(draft.subject,marker+'_LOCAL_DRAFT');result.createdDraft=draft;
  const detail=await app.invoke('applications.draft',project.id,draft.id,draft.revision);assert(detail.ok,detail.message);result.createdDraftDetail=detail.value;assert.equal(detail.value.draft.sourceTaskId,task.id);assert(result.nativeToolOutputs[0].output.includes(draft.id));assert.equal(detail.value.draft.content.senderConnectionId,null);assert.deepEqual(detail.value.draft.content.to,[]);
@@ -127,6 +144,7 @@ try{
  stage='native-id-binding';await progress();const bound=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);result.nativeBoundTask=bound;const fixed=await app.invoke('applications.session',task.id);assert(fixed.ok);result.nativeBoundSession=fixed.value;assert.equal(fixed.value.applications.find(a=>a.appId==='mail').packageHash,usage.applications.find(a=>a.appId==='mail').packageHash);
  checked('Actual native session ID is bound while fixed Mail package hash remains unchanged',{nativeSessionId:bound.nativeSessionId,snapshotHash:fixed.value.snapshotHash});
  checked('Production draft read interface returns actual persisted native-tool output;no UI assertion');
+ }
  assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);const profileAfter=await readFile(join(state,'m10-native.config.toml'),'utf8');assert.equal(profileAfter,profileText+nativeNoticeState);result.nativeConfigWrite={actor:'actual isolated Codex TUI',historicalControl:'docs/里程碑/M10_三方应用接入/验收/证据/m10-packaged-native-task-t-20261021.json (prior control only; no new standalone control claimed)',beforeSha256:sha(profileText),afterSha256:sha(profileAfter),delta:nativeNoticeState};result.originalConfigBytesUnchanged={base:true,profile:false,businessFieldsPreserved:true};
  checked('Base config bytes and original profile business fields retained; native TUI notice-only mutation recorded separately');
  assert.deepEqual(app.rendererErrors,[]);result.status='passed-partial';
