@@ -7,7 +7,7 @@ import { BRIDGE_LIMITS, boundedJson, bridgeRequestSchema, type BridgeBootstrap, 
 import { digest } from './manifest';
 import type { CapabilityRunRegistry, OwnedCapabilityRun, OwnedRunProcess } from './run-registry';
 import type { ApplicationToolService } from './tool-service';
-interface Ticket { runId: string;bridge: OwnedRunProcess;path: string;dev: number;ino: number;expiresAt: number;claiming?:boolean }
+interface Ticket { runId: string;bridge: OwnedRunProcess;path: string;dev: number;ino: number;expiresAt: number;claiming?:boolean;expiry?:ReturnType<typeof setTimeout> }
 interface Binding { runId: string;bridgeId: string;digest: string;expiresAt: number;revoked: boolean }
 interface Peer { socket: Socket;binding?: Binding;buffer: Buffer;controllers: Map<string,AbortController>;inFlight: number }
 const errorResponse = (id: string,error: unknown): BridgeResponse => ({ schema: 1,id,status: 'error',error: { code: error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE',message: error instanceof ApplicationError ? error.message : '本机应用通道不可用',layer: 'bridge',retryable: false,attemptCount: 0,retryExhausted: false,effectState: 'not-started',nextAction: '查看应用能力状态；不要自动重发外部写操作' } });
@@ -21,6 +21,7 @@ export class PrivateApplicationBroker {
   private readonly bindings = new Map<string,Binding>();
   private readonly peers = new Set<Peer>();
   private closed = false;
+  private readonly expiredReservations=new Set<Promise<void>>();
   constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;authenticated?:(runId:string,bridgeId:string)=>Promise<void>;disconnected?:(runId:string,bridgeId:string)=>void;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
   private clock(): number { return this.options.now?.() ?? Date.now(); }
   get endpoint(): string { if (!this.server || this.closed) throw new ApplicationError('CAPABILITY_UNAVAILABLE','本机应用通道尚未启动'); return join(this.directory,'broker.sock'); }
@@ -34,7 +35,7 @@ export class PrivateApplicationBroker {
     try { await new Promise<void>((resolve,reject) => { server.once('error',reject); server.listen(endpoint,() => { server.off('error',reject); resolve(); }); }); chmodSync(endpoint,0o600); const stat = lstatSync(endpoint); this.socketIdentity = { dev: stat.dev,ino: stat.ino }; server.on('error',() => { for (const peer of this.peers) peer.socket.destroy(); }); }
     catch { await this.close(); throw new ApplicationError('CAPABILITY_UNAVAILABLE','无法建立本次私有应用通道'); }
   }
-  async prepare(run: OwnedCapabilityRun,serverName: string): Promise<{ bootstrapPath: string;bridge: OwnedRunProcess }> {
+  async prepare(run: OwnedCapabilityRun,serverName: string): Promise<{ bootstrapPath: string;bridge: OwnedRunProcess;cancel(): Promise<void> }> {
     const endpoint = this.endpoint, bridge = await run.reserveBridge();
     try {
       // The owned run handle, not caller-supplied project/package fields, authorizes preparation.
@@ -42,11 +43,25 @@ export class PrivateApplicationBroker {
       if (!context.snapshot.mcp.some(m => m.kind === 'applications' && m.serverName === serverName)) throw new ApplicationError('SCOPE_DENIED','此服务名不属于原会话应用桥');
       const secret = randomBytes(32).toString('hex'), path = join(this.directory,bridge.processId + '.json'), expiresAt = this.clock() + Math.min(60000,Math.max(1,this.options.ticketTtlMs ?? 30000));
       const bootstrap: BridgeBootstrap = { schema: 1,endpoint,runId: run.runId,bridgeId: bridge.processId,secret,hostGeneration: this.hostGeneration,expiresAt };
-      writeFileSync(path,JSON.stringify(bootstrap) + '\n',{ flag: 'wx',mode: 0o600 }); const stat = lstatSync(path); this.tickets.set(digest(secret),{ runId: run.runId,bridge,path,expiresAt,dev: stat.dev,ino: stat.ino });
-      return { bootstrapPath: path,bridge };
+      writeFileSync(path,JSON.stringify(bootstrap) + '\n',{ flag: 'wx',mode: 0o600 }); const stat = lstatSync(path);
+      const ticket:Ticket={runId:run.runId,bridge,path,expiresAt,dev:stat.dev,ino:stat.ino};this.tickets.set(digest(secret),ticket);
+      ticket.expiry=setTimeout(()=>{
+        if(this.tickets.get(digest(secret))!==ticket)return;
+        this.tickets.delete(digest(secret));this.cleanupTicket(ticket);
+        // Only a never-armed reservation can be released; unknown native children retain protection.
+        const cleanup=bridge.cancelBeforeLaunch().catch(()=>undefined);this.expiredReservations.add(cleanup);void cleanup.finally(()=>this.expiredReservations.delete(cleanup));
+      },Math.max(1,expiresAt-this.clock()));ticket.expiry.unref();
+      return { bootstrapPath: path,bridge,cancel: async () => {
+        // This host closure owns exactly one instance; never revoke another replacement.
+        const ticket=this.tickets.get(digest(secret));
+        if(ticket?.bridge===bridge){this.tickets.delete(digest(secret));this.cleanupTicket(ticket);}
+        for(const peer of this.peers)if(peer.binding?.runId===run.runId&&peer.binding.bridgeId===bridge.processId){this.revokePeer(peer);peer.socket.destroy();}
+        // An armed/unknown fork cannot be declared exited merely because its ticket is revoked.
+        await bridge.cancelBeforeLaunch();
+      } };
     } catch (error) { await bridge.cancelBeforeLaunch().catch(() => undefined); throw error; }
   }
-  private cleanupTicket(ticket: Ticket): void { try { const stat = lstatSync(ticket.path); if (!stat.isSymbolicLink() && stat.isFile() && stat.dev === ticket.dev && stat.ino === ticket.ino) unlinkSync(ticket.path); } catch { /* consumed or no longer ours */ } }
+  private cleanupTicket(ticket: Ticket): void { clearTimeout(ticket.expiry); try { const stat = lstatSync(ticket.path); if (!stat.isSymbolicLink() && stat.isFile() && stat.dev === ticket.dev && stat.ino === ticket.ino) unlinkSync(ticket.path); } catch { /* consumed or no longer ours */ } }
   private accept(socket: Socket): void {
     const peer: Peer = { socket,buffer: Buffer.alloc(0),controllers: new Map(),inFlight: 0 }; this.peers.add(peer); socket.setTimeout(10000,() => socket.destroy()); socket.on('error',() => undefined);
     socket.on('close',() => { this.peers.delete(peer); this.revokePeer(peer); if(peer.binding&&!this.closed)try{this.options.disconnected?.(peer.binding.runId,peer.binding.bridgeId);}catch{/* Observer errors cannot revive a closed transport. */} });
@@ -116,6 +131,7 @@ export class PrivateApplicationBroker {
     for (const peer of this.peers) { this.revokePeer(peer); peer.socket.destroy(); } for (const ticket of this.tickets.values()) this.cleanupTicket(ticket); this.tickets.clear(); this.bindings.clear();
     if (this.server) { const server = this.server; this.server = undefined; await new Promise<void>(resolve => { try { server.close(() => resolve()); } catch { resolve(); } }); }
     try { const path = join(this.directory,'broker.sock'), stat = lstatSync(path); if (this.socketIdentity && stat.dev === this.socketIdentity.dev && stat.ino === this.socketIdentity.ino && stat.isSocket()) unlinkSync(path); } catch { /* Node normally unlinks its listening socket. */ }
+    await Promise.allSettled([...this.expiredReservations]);
     if (this.directory) try { rmdirSync(this.directory); } catch { /* Never recursively delete unknown contents. */ }
   }
 }

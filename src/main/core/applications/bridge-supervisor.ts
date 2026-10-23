@@ -22,6 +22,7 @@ interface Entry {
   pending?: Promise<RecoveryResult>;
   recoveryGeneration?: number;
   result?: RecoveryResult;
+  currentAttempt?: { instanceId: string; generation: number; reported?: boolean };
 }
 /** Host-only finite recovery coordination. Never restarts an Agent or replays business calls. */
 export class BridgeSupervisor {
@@ -42,6 +43,13 @@ export class BridgeSupervisor {
     if (!entry) return;
     entry.revoked = true;
     entry.controller?.abort();
+  }
+  /** A host-verified handshake result belongs to one current instance and generation only. */
+  reportAttempt(runId: string, serverName: string, instanceId: string, generation: number, connected: boolean): boolean {
+    const entry = this.entries.get(this.key(runId, serverName)), attempt = entry?.currentAttempt;
+    if (!entry || entry.revoked || !entry.workerActive || entry.controller?.signal.aborted || !attempt || attempt.instanceId !== instanceId || attempt.generation !== generation || entry.generation !== generation || attempt.reported !== undefined) return false;
+    attempt.reported = connected;
+    return true;
   }
   /** Release a stopped run's in-memory state; cancellation still reaches any late worker. */
   release(runId: string, serverName: string): void {
@@ -94,12 +102,13 @@ export class BridgeSupervisor {
         if (controller.signal.aborted) return result(entry.revoked ? 'RECOVERY_REVOKED' : 'RECOVERY_EXHAUSTED');
         entry.attempts++;
         const generation = ++entry.generation;
-        let connected = false;
-        try { connected = await entry.authority.replace!({ instanceId: randomUUID(), generation, signal: controller.signal }); } catch { /* Same finite budget; no business replay. */ }
+        const attempt = { instanceId: randomUUID(), generation, reported: undefined as boolean | undefined };
+        entry.currentAttempt = attempt;
+        try { const connected = await entry.authority.replace!({ instanceId: attempt.instanceId, generation, signal: controller.signal });this.reportAttempt(runId, serverName, attempt.instanceId, generation, connected); } catch { this.reportAttempt(runId, serverName, attempt.instanceId, generation, false); }
         if (controller.signal.aborted) return result(entry.revoked ? 'RECOVERY_REVOKED' : 'RECOVERY_EXHAUSTED');
         try { await entry.authority.validate(); } catch { entry.revoked = true; controller.abort(); return result('RECOVERY_REVOKED'); }
         if (controller.signal.aborted) return result(entry.revoked ? 'RECOVERY_REVOKED' : 'RECOVERY_EXHAUSTED');
-        if (connected && entry.generation === generation) return result('CONNECTED');
+        if (attempt.reported === true && entry.generation === generation) return result('CONNECTED');
       }
       return result('RECOVERY_EXHAUSTED');
     };

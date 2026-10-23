@@ -65,6 +65,18 @@ describe('host bridge recovery coordination', () => {
     expect(await supervisor.prepareReplacement('run', 'mail', 2)).toMatchObject({ code: 'CONNECTED', attempts: 1, generation: 3 });
     expect(replace).toHaveBeenCalledTimes(2);
   });
+  it('rejects wrong instance and old generation reports during a new attempt',async()=>{
+    const supervisor=new BridgeSupervisor();let current!:RecoveryAttempt;let finish!:(value:boolean)=>void;
+    supervisor.register('run','mail',{capability:'supported',evidence:'fixture',validate:async()=>{},replace:async attempt=>{current=attempt;return new Promise<boolean>(resolve=>{finish=resolve;});}});
+    const pending=supervisor.prepareReplacement('run','mail',0);
+    await vi.waitFor(()=>expect(current).toBeDefined());
+    expect(supervisor.reportAttempt('run','mail','old-instance',current.generation,true)).toBe(false);
+    expect(supervisor.reportAttempt('run','mail',current.instanceId,current.generation-1,true)).toBe(false);
+    expect(supervisor.reportAttempt('run','mail',current.instanceId,current.generation,true)).toBe(true);
+    expect(supervisor.reportAttempt('run','mail',current.instanceId,current.generation,false)).toBe(false);
+    finish(true);expect((await pending).code).toBe('CONNECTED');
+    expect(supervisor.reportAttempt('run','mail',current.instanceId,current.generation,true)).toBe(false);
+  });
   it('rechecks current authorization after handshake and rejects stale generations', async () => {
     const supervisor = new BridgeSupervisor(); let authorized = true;
     supervisor.register('run', 'mail', { capability: 'supported', evidence: 'fixture', validate: async () => { if (!authorized) throw Error('revoked'); }, replace: async () => { authorized = false; return true; } });

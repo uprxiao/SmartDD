@@ -1,3 +1,4 @@
+import {BridgeSupervisor} from '../bridge-supervisor';
 import { randomUUID } from 'node:crypto';
 import { chmodSync, existsSync, lstatSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { connect, type Socket } from 'node:net';
@@ -11,6 +12,7 @@ import { PrivateApplicationBroker } from '../private-broker';
 import { ApplicationBridgeClient, consumeBridgeBootstrap } from '../bridge-client';
 import { FixtureProcessReader, runFixture } from './run-fixture';
 let f: Awaited<ReturnType<typeof runFixture>>, broker: PrivateApplicationBroker, run: Awaited<ReturnType<typeof f.create>>, time: number, count: number, onInvoke: (() => void) | undefined;
+let ticketTtlMs:number|undefined;
 let disconnected: ReturnType<typeof vi.fn<(runId:string,bridgeId:string)=>void>>;
 const peers = new Set<Socket>();
 async function peer(endpoint: string) {
@@ -23,9 +25,49 @@ async function ticket() { const ticket = await broker.prepare(run,f.snapshot.mcp
 const exchange = (data: BridgeBootstrap) => ({ schema: 1,method: 'exchange',runId: data.runId,bridgeId: data.bridgeId,secret: data.secret });
 const valueToken = (response: BridgeResponse) => { expect(response.status).toBe('ok'); return (response as Extract<BridgeResponse,{ status: 'ok' }>).value as { token: string;hostGeneration: string }; };
 describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials, one-use files and request boundaries', () => {
-  beforeEach(async () => { time = Date.now(); count = 0; disconnected=vi.fn(); onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
-    const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time, disconnected }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
+  beforeEach(async () => { time = Date.now(); count = 0; ticketTtlMs=undefined; disconnected=vi.fn(); onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
+    const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time, disconnected, get ticketTtlMs(){return ticketTtlMs;} }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
   afterEach(async () => { for (const socket of peers) socket.destroy(); await broker.close(); f.cleanup(); });
+  it('expires an unconsumed ticket without a client request and releases only its reserved window',async()=>{
+    ticketTtlMs=30;const prepared=await broker.prepare(run,f.snapshot.mcp[0].serverName);
+    expect(existsSync(prepared.bootstrapPath)).toBe(true);
+    await vi.waitFor(()=>expect(existsSync(prepared.bootstrapPath)).toBe(false));
+    await vi.waitFor(()=>expect(f.sqlite.prepare('SELECT state FROM capability_run_processes WHERE process_id=?').get(prepared.bridge.processId)).toEqual({state:'canceled'}));
+    expect(f.runs.get(run.runId).state).toBe('active');
+  });
+  it('expires an armed ticket without fabricating a native child exit',async()=>{
+    ticketTtlMs=30;const prepared=await ticket();
+    await vi.waitFor(()=>expect(existsSync(prepared.bootstrapPath)).toBe(false));
+    expect(f.sqlite.prepare('SELECT state FROM capability_run_processes WHERE process_id=?').get(prepared.bridge.processId)).toEqual({state:'armed'});
+    await prepared.bridge.exited();
+  });
+  it('cancels only its owned unconsumed ticket and leaves a later instance usable', async () => {
+    const first=await broker.prepare(run,f.snapshot.mcp[0].serverName),second=await ticket();
+    const old=JSON.parse(readFileSync(first.bootstrapPath,'utf8')) as BridgeBootstrap;
+    await first.cancel();
+    expect(existsSync(first.bootstrapPath)).toBe(false);
+    expect(existsSync(second.bootstrapPath)).toBe(true);
+    const client=await peer(broker.endpoint);
+    expect(await client.send(exchange(old))).toMatchObject({status:'error'});
+    valueToken(await client.send(exchange(second.data)));
+    expect(broker.hasAuthenticated(run.runId)).toBe(true);
+    await second.bridge.exited();
+  });
+  it('coordinates a controlled replacement through a fresh broker ticket without replaying business', async () => {
+    const supervisor=new BridgeSupervisor(),server=f.snapshot.mcp[0].serverName;
+    let replacement:Awaited<ReturnType<typeof ticket>>|undefined;
+    supervisor.register(run.runId,server,{capability:'supported',evidence:'controlled adapter plus real Unix socket, not native CLI evidence',validate:async()=>{f.runs.bridgePreparation(run.runId);},replace:async attempt=>{
+      replacement=await ticket();
+      if(attempt.signal.aborted){await replacement.cancel();return false;}
+      const client=await peer(broker.endpoint);valueToken(await client.send(exchange(replacement.data)));
+      return broker.hasAuthenticated(run.runId);
+    }});
+    expect(await supervisor.prepareReplacement(run.runId,server,0)).toMatchObject({code:'CONNECTED',attempts:1});
+    expect(count).toBe(0);
+    expect(existsSync(replacement!.bootstrapPath)).toBe(false);
+    expect(f.runs.get(run.runId).state).toBe('active');
+    await replacement!.bridge.exited();
+  });
   it('reports only authenticated bridge loss with the host-bound run and instance', async () => {
     const unknown=await peer(broker.endpoint);unknown.socket.destroy();
     await new Promise<void>(resolve=>setImmediate(resolve));
