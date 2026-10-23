@@ -191,13 +191,27 @@ export class DiscoveryCatalog {
     async hasPendingPublication():Promise<boolean>{return this.lock(()=>this.pending()!==null);}
     async snapshot(): Promise<NonNullable<AgentLoadRequest['catalog']>> { return this.lock(() => { const c = this.catalog(); return structuredClone({ generation: c.generation, entries: c.entries }); }); }
     /** Read-only attribution,not a publication or file-readiness receipt. */
-    async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
-        const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>();
-        for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);valid.add(entry.path);}catch(error){if(error instanceof ApplicationError&&['OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))excludedPaths.push(entry.path);else throw error;}}
-        const selected=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash}))];
-        for(const skill of selected){const entry=raw.entries.find(e=>e.path===skill.path);if(entry&&entry.storeId===this.store.storeId&&entry.sourceHash===skill.hash&&valid.has(skill.path)){this.verifyReference(this.store.get(entry.resourceId),snapshot);owned.add(skill.path);}else if(entry&&(entry.storeId!==this.store.storeId||entry.sourceHash!==skill.hash)||present(dirname(skill.path)))occupied.add(skill.path);}
-        return{owned,occupied,generation:raw.generation,excludedPaths};
+    async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;unavailable:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
+        const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),unavailable=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>(),failures=new Map<string,'OWNERSHIP_CONFLICT'|'HASH_MISMATCH'>();
+        for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);valid.add(entry.path);}catch(error){if(error instanceof ApplicationError&&(error.code==='OWNERSHIP_CONFLICT'||error.code==='HASH_MISMATCH')){excludedPaths.push(entry.path);failures.set(entry.path,error.code);}else throw error;}}
+        const selected=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash,sourceId:'app:'+p.packageHash,sourceHash:p.packageHash,sourceKind:'application-package'}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash,sourceId:'standard-skill:'+s.skillId+':'+s.hash,sourceHash:s.hash,sourceKind:'standard-skill'}))];
+        for(const skill of selected){
+            const entry=raw.entries.find(e=>e.path===skill.path),same=entry&&entry.storeId===this.store.storeId&&entry.sourceHash===skill.hash;
+            if(same&&valid.has(skill.path)){this.verifyReference(this.store.get(entry.resourceId),snapshot);owned.add(skill.path);}
+            else if(same&&failures.get(skill.path)==='HASH_MISMATCH'){
+                // HASH_MISMATCH is emitted only after the existing bounded,
+                // no-follow marker check. Attribute registered damage,not repair rights.
+                this.assertRegisteredProjectionIdentity(entry,skill.sourceId,skill.sourceHash,skill.sourceKind);unavailable.add(skill.path);
+            }else if(entry&&(entry.storeId!==this.store.storeId||entry.sourceHash!==skill.hash)||present(dirname(skill.path)))occupied.add(skill.path);
+        }
+        return{owned,occupied,unavailable,generation:raw.generation,excludedPaths};
     });}
+    private assertRegisteredProjectionIdentity(entry:Entry,sourceId:string,sourceHash:string,sourceKind:string):void{
+        try{
+            const r=this.store.get(entry.resourceId),source=this.store.get(sourceId),dependencies=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);
+            if(entry.format||entry.resourceId!=='h-projection:'+digest(canonicalJson({homeId:this.homeId,storeId:this.store.storeId,nativeName:entry.nativeName,hash:entry.projectionHash}))||r.kind!=='agent-projection'||r.ownerStoreId!==this.store.storeId||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.relativePath!=='.agents/skills/'+entry.nativeName||r.contentHash!==entry.projectionHash||r.state!=='ready'||r.integrity!=='valid'||this.store.directory(r)!==dirname(entry.path)||canonicalJson(dependencies)!==canonicalJson([sourceId])||source.pathScope!=='C'||source.ownerStoreId!==this.store.storeId||source.kind!==sourceKind||source.contentHash!==sourceHash)throw new Error();
+        }catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原受管投影内容不同且登记来源无法核验，保留原目录与占用');}
+    }
     /** Read-only candidate,not a verified guard receipt or loading authority. */
     async nativeGuardSelection():Promise<NativeGuardDiscoverySelection|undefined>{return this.lock(()=>{
         const raw=this.catalog(),paths:string[]=[];let legacy=false;for(const entry of raw.entries)if(nativeGuardEntryUnavailable(entry,this.home,true)){paths.push(entry.path);if(entry.format)legacy=true;}

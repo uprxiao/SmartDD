@@ -1,0 +1,13 @@
+# BH implementation review
+
+Parent0c96b4f,2011 inputs frozen.3production/2test files change. Default bundle verification,modern marker reader,legacy formats,immutable adapter artifacts,broker/lease/recovery schemas and UI remain unchanged.
+
+verifyModernDiscoveryProjection already checks the bounded no-follow marker before content verification. OWNERSHIP_CONFLICT is retained for absent,foreign,linked or invalid marker/path. HASH_MISMATCH follows that marker check;selected matching entries are also checked against this C store's exact H resource identity,owner/home/path/hash/ready metadata and original single dependency to the expected App or standard source identity. Missing or inconsistent C metadata causes RESOURCE_RECOVERY_REQUIRED and stays untouched.
+
+This permits a read-only registered-content mismatch classification. It is not proof no user edited the bytes,and never authorizes repair,overwrite,GC or reassignment. A restored same hash is tested by explicit fixture action after no production mutation. Physical catalog and raw files remain unchanged during all launches.
+
+Availability and name/config conflict sets are distinct. An inventory entry at the exact registered damaged path does not invent a user-name conflict;another user's matching name or explicit false choice still does. App and standard selection are narrowed separately. Exact current per-run exclusion codes preserve CAPABILITY_UNAVAILABLE versus AGENT_CAPABILITY_NAME_CONFLICT;immutable C scope,healthy Mail,original S/native identity/refs and no live widening are verified. User/unknown paths are omitted from generated managed flags;other intact paths in the same excluded App are disabled. No original config is written.
+
+Initial14 selected outcomes were4pass10fail:6classification/metadata failures and4overbroad new flag assertions. First correction omitted all paths of the excluded App and4controls still failed;second correction asserted only the untrusted path is omitted while other intact paths are false. Original production then passed those4controls. No original preexisting case or assertion was removed. Final18 selected cases and typecheck passed,including4more App/standard conflict precedence cases. Intermediate snapshots/logs preserve both fixture mistakes and actual reds.
+
+At this review capture,the whole suites were running. Their separate terminal reports determine the final result;partial output is not a pass. Runtime selfCheck/file preparation is about delivered subset only,not Agent discovery/read or all selected features. Current source still needs per-capability visible diagnostics review,original87-row audit,R08/R09/GC and packaged App/all72/system acceptance. No new support claim,actual Agent session,network business,build or Release.
