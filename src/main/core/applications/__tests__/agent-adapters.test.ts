@@ -18,6 +18,18 @@ describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixe
   const snapshot=f.plan('codex'),p=snapshot.packages[0],name=kind==='skill'?'smartdd-session:'+p.skills[0].nativeName:kind==='mcp'?snapshot.mcp.find(m=>m.kind==='applications')!.serverName:snapshot.adapterBinding.nativeToolNames[Object.keys(p.toolContractMajors)[0]],input={command:'/private/version-only',version:'0.162.1',userSkillConfig:[],inventory:[{kind,name,path:'/private/user-owned',ownerStoreId:null,contentHash:null}]};expect([...nativeApplicationConflicts(snapshot,input)].sort()).toEqual((kind==='mcp'?snapshot.packages.map(p=>p.appId):[p.appId]).sort());input.inventory[0].name=name+'-unrelated';expect([...nativeApplicationConflicts(snapshot,input)]).toEqual([]);
  });
 
+  it('requires a callable fixed recovery entry and exact native-version evidence',async()=>{
+    const source=bundledAgentAdapters()[0],version='1.0.7';
+    const metadata={...source.metadata,version,bridgeRecovery:'supported' as const,configReload:'supported' as const,recoveryRequiresAgentRestart:false,recoveryEntry:'replaceBridge' as const,recoveryEvidence:source.metadata.cliVersions.map(cliVersion=>({cliVersion,baseline:'controlled adapter fixture only'}))};
+    const files={...source.files,'index.cjs':Buffer.from(source.files['index.cjs'].toString().replace("exports.version = '1.0.0'",`exports.version = '${version}'`))};
+    const missing=await f.adapters.install(metadata,files);
+    expect(()=>f.adapters.recovery(missing.hash,metadata.cliVersions[0])).toThrow('已验证入口');
+    const readyVersion='1.0.8',ready=await f.adapters.install({...metadata,version:readyVersion},{...files,'index.cjs':Buffer.from(files['index.cjs'].toString().replace(`exports.version = '${version}'`,`exports.version = '${readyVersion}'`)+"\nexports.replaceBridge = async function(request) { if (request.signal.aborted) throw new Error('aborted'); };\n")});
+    const descriptor=f.adapters.recovery(ready.hash,metadata.cliVersions[0]);expect(descriptor.capability).toBe('supported');expect(descriptor.replace).toBeTypeOf('function');
+    expect(f.adapters.recovery(ready.hash,'99.99.99')).toEqual({capability:'unverified'});
+    const controller=new AbortController();controller.abort();
+    await expect(descriptor.replace!({runId:'fixture',serverName:'mail',bridgeInstanceId:'fixture',generation:1,bootstrapPath:'/private/fixture',signal:controller.signal})).rejects.toMatchObject({code:'CANCELED'});
+  });
   it('installs complete CJS adapters without replacing one version and retains the old adapter after a new install', async () => {
     const source = bundledAgentAdapters()[0], first = await f.adapters.install(source.metadata,source.files); expect(first.hash).toBe(f.installedAdapters[0].hash);
     const changed = { ...source.files,'planner.cjs': Buffer.from(source.files['planner.cjs'].toString() + '\n// changed\n') }; await expect(f.adapters.install(source.metadata,changed)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' });

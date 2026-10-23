@@ -32,6 +32,7 @@ export class AgentBridgeProcesses {
   if(!old){const aborted=()=>this.signal(identity),entry:Tracked={runId,handle,identity,detach:()=>context.signal.removeEventListener('abort',aborted),state:'active'};this.tracked.set(handle.processId,entry);context.signal.addEventListener('abort',aborted,{once:true});if(context.signal.aborted||this.closed||socket.destroyed)this.signal(identity);}
   if(this.closed||socket.destroyed||context.signal.aborted)throw new ApplicationError('CANCELED','桥启动核验已取消');this.runs.assertBridge(runId,handle.processId);
  }
+ revokeBridge(runId:string,processId:string):void {const entry=this.tracked.get(processId);if(entry?.runId===runId)this.signal(entry.identity);}
  private signal(identity:ProcessIdentity):void{if(this.processes.state(identity)!=='running')return;try{if(this.options.signal)this.options.signal(identity);else process.kill(identity.pid,'SIGTERM');}catch{/* Recheck actual identity later,never infer exit from signalling. */}}
  revokeRun(runId:string):void{for(const entry of this.tracked.values())if(entry.runId===runId)this.signal(entry.identity);}
  poll():Promise<void>{return this.sweep(false);}

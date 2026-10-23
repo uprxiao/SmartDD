@@ -11,12 +11,28 @@ import {legacyPlannerInput} from './legacy-agent-load';
 import {verifyLegacyDiscoveryEntry} from './legacy-discovery';
 import { ownedBundle, writeOwnedBundle, verifyOwnedBundle, type OwnedBundleManifest } from './owned-bundle';
 import type { PublishResource, ResourceRecord, ResourceStore } from './resource-store';
+export interface NativeBridgeReplacement {
+  runId:string;serverName:string;bridgeInstanceId:string;generation:number;bootstrapPath:string;signal:AbortSignal;
+}
 interface AdapterRow { agent_id: string;version: string;adapter_hash: string;resource_id: string;manifest_json: string }
 export interface InstalledAgentAdapter { metadata: AgentAdapterMetadata;hash: string;resource: ResourceRecord;manifest: OwnedBundleManifest }
 const loader = createRequire(import.meta.url);
 const within = (root: string,path: string): boolean => { const r = relative(root,path); return r === '' || (!r.startsWith('..') && !r.startsWith('/')); };
 export class AgentAdapterRegistry {
   constructor(readonly store: ResourceStore) {}
+  recovery(hash:string,cliVersion:string):{capability:AgentAdapterMetadata['bridgeRecovery'];evidence?:string;replace?:(request:NativeBridgeReplacement)=>Promise<void>} {
+    const installed=this.verify(hash),meta=installed.metadata;
+    if(!meta.cliVersions.includes(cliVersion)||!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64'))return{capability:'unverified'};
+    if(meta.bridgeRecovery!=='supported')return{capability:meta.bridgeRecovery};
+    const evidence=meta.recoveryEvidence?.find(item=>item.cliVersion===cliVersion)?.baseline;
+    const module=loader(join(this.store.root,installed.resource.relativePath,meta.entry)) as {agentId?:string;version?:string;replaceBridge?:(request:NativeBridgeReplacement)=>Promise<void>};
+    if(!evidence||meta.recoveryRequiresAgentRestart!==false||meta.configReload!=='supported'||meta.recoveryEntry!=='replaceBridge'||module.agentId!==meta.agentId||module.version!==meta.version||typeof module.replaceBridge!=='function')throw new ApplicationError('HOST_INCOMPATIBLE','独立恢复声明缺少原适配器的已验证入口');
+    return{capability:'supported',evidence,replace:async request=>{
+      this.verify(hash); // Recheck the fixed bytes at the moment of invocation.
+      if(request.signal.aborted)throw new ApplicationError('CANCELED','本次恢复已取消');
+      await module.replaceBridge!(request);
+    }};
+  }
   async install(metadata: AgentAdapterMetadata,input: Readonly<Record<string,Uint8Array>>): Promise<InstalledAgentAdapter> {
     const parsed = agentAdapterMetadataSchema.safeParse(metadata); if (!parsed.success || !input[metadata.entry]) throw new ApplicationError('INVALID_PACKAGE','Agent适配器声明无效');
     const bundle = ownedBundle(parsed.data,input), id = `agent-adapter:${metadata.agentId}:${bundle.hash}`;
@@ -102,7 +118,7 @@ export class AgentAdapterRegistry {
     try {
       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
+      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner || plan.bridgeRecovery !== installed.metadata.bridgeRecovery) throw new Error(); return plan; }
     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
   }
   planLegacy(hash:string,value:unknown):AgentLoadPlan {
@@ -111,7 +127,7 @@ export class AgentAdapterRegistry {
     if(meta.projectionFormatVersion!==2||meta.agentId!==input.native.runner)throw new ApplicationError('HOST_INCOMPATIBLE','原M4来源必须使用相应的旧格式适配器');
     if(!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64')||!meta.cliVersions.includes(input.cliVersion))throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此原生版本尚未验证旧能力加载机制');
     const prepared=legacyPlannerInput(this.store,input,installed.hash);
-    try{const module=loader(join(this.store.root,installed.resource.relativePath,meta.entry)) as {api:number;agentId:string;version:string;prepare(value:unknown):unknown};if(module.api!==2||module.agentId!==meta.agentId||module.version!==meta.version||typeof module.prepare!=='function')throw Error('legacy adapter');const plan=agentLoadPlanSchema.parse(module.prepare(prepared));if(plan.agentId!==meta.agentId)throw Error('legacy agent');return plan;}
+    try{const module=loader(join(this.store.root,installed.resource.relativePath,meta.entry)) as {api:number;agentId:string;version:string;prepare(value:unknown):unknown};if(module.api!==2||module.agentId!==meta.agentId||module.version!==meta.version||typeof module.prepare!=='function')throw Error('legacy adapter');const plan=agentLoadPlanSchema.parse(module.prepare(prepared));if(plan.agentId!==meta.agentId||plan.bridgeRecovery!==meta.bridgeRecovery)throw Error('legacy agent');return plan;}
     catch(error){if((error as {code?:string}).code==='AGENT_CAPABILITY_NAME_CONFLICT')throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停配置与原M4选择冲突，保留原配置');throw new ApplicationError('HOST_INCOMPATIBLE','原M4适配器无法生成本次加载计划');}
   }
   verifyReference(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void { const installed = this.verify(snapshot.adapterBinding.hash); if (resource.resourceId !== installed.resource.resourceId) throw new ApplicationError('SNAPSHOT_CORRUPT','适配资源不属于原会话'); }

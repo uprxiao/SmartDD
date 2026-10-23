@@ -1,3 +1,4 @@
+import {ApplicationBridgeClient,consumeBridgeBootstrap} from '../bridge-client';
 import {LegacyCapabilityResourceAdopter,readLegacyOwnedTree} from '../legacy-resource-adopter';
 import {treeHash} from '../../capabilities/assets';
 import {writeOwnedTree} from '../../capabilities/files';
@@ -95,6 +96,26 @@ const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(h
 };
 
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+ it('connects the host recovery descriptor to a fresh authenticated broker instance without replacing the Agent',async()=>{
+  const clients:ApplicationBridgeClient[]=[];
+  vi.spyOn(support.adapters,'recovery').mockReturnValue({capability:'supported',evidence:'controlled adapter and kernel-peer fixture only',replace:async request=>{const client=new ApplicationBridgeClient(consumeBridgeBootstrap(request.bootstrapPath));clients.push(client);await client.start();}});
+  vi.spyOn(managed.bridges,'attach').mockImplementation(async(_socket,_runId,handle)=>{const pid=42001;reader.identities.set(pid,'darwin-proc-v1:400:42001');await handle.attach(pid,'darwin-proc-v1:400:42001');});
+  const preparation=vi.spyOn(managed.broker,'prepare');
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const first=await create(),runId=first.task.runtimeSnapshot!.runId,session=await managed.sessions.get(first.task.id),server=session.snapshot.mcp.find(m=>m.kind==='applications')!.serverName;
+  try{
+    expect(await managed.bridgeRecovery.prepareReplacement(runId,server,0)).toMatchObject({code:'CONNECTED',attempts:1});
+    expect(preparation).toHaveBeenCalledTimes(2);
+    expect(managed.broker.hasAuthenticated(runId)).toBe(true);
+    expect(ptys.launches).toHaveLength(1);expect(ptys.live.has(first.ptyId)).toBe(true);
+    expect((await managed.sessions.get(first.task.id)).pointer).toEqual(session.pointer);
+    expect((await applications.sessionDiagnostics.inspect(first.task.id)).currentRun?.bridge.connected).toBe(true);
+  }finally{
+    tasks.kill(first.task.id);for(const client of clients)client.close();
+    for(const result of preparation.mock.results)if(result.type==='return')await (await result.value).bridge.exited();
+  }
+  await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));
+ },15000);
  it('registers host recovery for the original application service and releases it after the owned run stops',async()=>{
   const preparation=vi.spyOn(managed.broker,'prepare');
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});

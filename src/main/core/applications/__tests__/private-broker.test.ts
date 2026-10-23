@@ -28,6 +28,24 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
   beforeEach(async () => { time = Date.now(); count = 0; ticketTtlMs=undefined; disconnected=vi.fn(); onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
     const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time, disconnected, get ticketTtlMs(){return ticketTtlMs;} }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
   afterEach(async () => { for (const socket of peers) socket.destroy(); await broker.close(); f.cleanup(); });
+  it('waits for the exact replacement instance and ends its waiter on cancellation',async()=>{
+    const first=await ticket(),second=await ticket(),controller=new AbortController();
+    let settled=false;const waiting=broker.waitForAuthentication(run.runId,second.bridge.processId,controller.signal).then(value=>{settled=true;return value;});
+    const client=await peer(broker.endpoint);valueToken(await client.send(exchange(first.data)));
+    expect(settled).toBe(false);
+    controller.abort();expect(await waiting).toBe(false);
+    expect(await broker.waitForAuthentication(run.runId,first.bridge.processId,new AbortController().signal)).toBe(true);
+    await first.bridge.exited();await second.bridge.exited();
+  });
+  it('resolves only a newly authenticated replacement and releases waiters on host close',async()=>{
+    const first=await ticket(),second=await ticket();
+    const waiting=broker.waitForAuthentication(run.runId,first.bridge.processId,new AbortController().signal);
+    const closing=broker.waitForAuthentication(run.runId,second.bridge.processId,new AbortController().signal);
+    const client=await peer(broker.endpoint);valueToken(await client.send(exchange(first.data)));
+    expect(await waiting).toBe(true);
+    await broker.close();expect(await closing).toBe(false);
+    await first.bridge.exited();await second.bridge.exited();
+  });
   it('expires an unconsumed ticket without a client request and releases only its reserved window',async()=>{
     ticketTtlMs=30;const prepared=await broker.prepare(run,f.snapshot.mcp[0].serverName);
     expect(existsSync(prepared.bootstrapPath)).toBe(true);

@@ -88,7 +88,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     },revoke:runId=>{const recoveryService=this.recoveryServices.get(runId);if(recoveryService)this.bridgeRecovery.revoke(runId,recoveryService);this.broker?.revokeRun(runId);this.bridges?.revokeRun(runId);const entry=this.active.get(runId);if(entry)this.options.stopPty(entry.run.ptyId);}});
     this.claudeDelivery=new ClaudeDeliveryCoordinator(store,this.sessions,this.projector,this.processes,this.runs.instanceId);
     this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
-    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId)});
+    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId),rejectedReplacement:(runId,bridgeId)=>this.bridges.revokeBridge(runId,bridgeId)});
     applications.sessionDiagnostics.attach({channelConnected:id=>this.broker.hasAuthenticated(id),recoveryIssue:id=>{const server=this.recoveryServices.get(id);const result=server?this.bridgeRecovery.inspect(id,server)?.result:undefined;return result&&result.code!=='CONNECTED'?result.code:null;},verify:(resource,snapshot,home)=>{
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind))this.projector.verify(resource,snapshot);
@@ -258,7 +258,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(!unavailable&&facets&&(facets.applications.size||facets.standardSkills.size||facets.projectMcp))runtime.snapshot.selfCheck={status:'failed',issues:[...new Set([...runtime.snapshot.selfCheck.issues,'AGENT_CAPABILITY_NAME_CONFLICT'])],at:Date.now()};
       await run.prepare();if(unavailable)await this.runs.restrictToNative(run.runId,{reason:'managed_capabilities_unavailable',issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED'});const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
       let plan:AgentLoadPlan|undefined;
-      if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(mcp){this.bridgeRecovery.register(run.runId,mcp.serverName,{capability:plan.bridgeRecovery,validate:async()=>{if(run.signal.aborted||this.runs.get(run.runId).state!=='active')throw new ApplicationError('CANCELED','原运行已停止');this.runs.bridgePreparation(run.runId);}});this.recoveryServices.set(run.runId,mcp.serverName);}}
+      if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(mcp){this.registerBridgeRecovery(run,mcp.serverName,snapshot.adapterBinding.hash,request.cliVersion);}}
       else if(legacyRequest)plan=legacyPlan();
       if(plan){args=plan.args;const root=dirname(runtime.snapshot.manifestPath);for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});configPaths.push(join(root,name));}}
 
@@ -354,6 +354,28 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private unavailableRuntime(input:TaskLaunchInput,current:StoredCapabilitySession,runId:string,code:string):PreparedRuntime{
     const check:RuntimeSnapshot['selfCheck']={status:'failed',issues:[code],at:Date.now()};
     return{args:[],env:{},secretValues:[],snapshot:{runId,projectId:input.projectId,configVersion:input.previous?.configVersion??0,configHash:current.selectionHash,manifestPath:join(this.support.store.root,'sessions',input.taskId,'snapshot.json'),auditPath:join(this.support.store.root,'resource-audit',input.projectId,input.taskId+'.jsonl'),skills:[],mcp:[],selfCheck:check,sessionCapabilities:current.pointer},wrap:(command,args)=>({command,args}),check:()=>check,release:()=>{}};
+  }
+  private registerBridgeRecovery(run:OwnedCapabilityRun,server:string,adapterHash:string,cliVersion:string):void {
+    const recovery=this.support.adapters.recovery(adapterHash,cliVersion);
+    this.bridgeRecovery.register(run.runId,server,{
+      capability:recovery.capability,evidence:recovery.evidence,
+      validate:async()=>{if(run.signal.aborted||this.closed||this.runs.get(run.runId).state!=='active')throw new ApplicationError('CANCELED','原运行已停止');this.runs.bridgePreparation(run.runId);},
+      ...(recovery.replace?{replace:async(attempt:{instanceId:string;generation:number;signal:AbortSignal})=>{
+        const prepared=await this.broker.prepare(run,server);let connected=false;
+        const cancel=()=>{this.bridges.revokeBridge(run.runId,prepared.bridge.processId);return prepared.cancel().catch(()=>undefined);};
+        const aborted=()=>{void cancel();};attempt.signal.addEventListener('abort',aborted,{once:true});
+        try{
+          if(attempt.signal.aborted)return false;
+          await prepared.bridge.arm();
+          if(attempt.signal.aborted)return false;
+          const handshake=this.broker.waitForAuthentication(run.runId,prepared.bridge.processId,attempt.signal);
+          await recovery.replace!({runId:run.runId,serverName:server,bridgeInstanceId:prepared.bridge.processId,generation:attempt.generation,bootstrapPath:prepared.bootstrapPath,signal:attempt.signal});
+          connected=await handshake;
+          return connected&&!attempt.signal.aborted;
+        }finally{attempt.signal.removeEventListener('abort',aborted);if(!connected||attempt.signal.aborted)await cancel();}
+      }}:{}),
+    });
+    this.recoveryServices.set(run.runId,server);
   }
   private bridgeDisconnected(runId:string):void {
     const server=this.recoveryServices.get(runId),entry=this.active.get(runId);
