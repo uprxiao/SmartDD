@@ -8,9 +8,11 @@ import { withResourceLock } from './resource-lock';
 import {NativeUserMessages,type NativeUserMessage} from './native-user-messages';
 import {resolveReferencedMailSend,resolveContextualMailSend,nativeMailConnectionHash} from './native-mail-intent';
 import {resolveOrderedContextualMailSend} from './ordered-native-mail-context';
+import {resolveLiteralMailSend,type NativeLiteralMailAction} from './native-literal-mail-intent';
+import type {MailAttachment} from '@shared/mail-drafts';
 const confirmSchema=z.object({intentId:z.uuid(),expectedReviewHash:z.string().regex(/^[a-f0-9]{64}$/),displayReceiptId:z.uuid(),reviewedUnknownExecutionIds:z.array(z.uuid()).max(100).default([])}).strict();
 interface Display {sender:ApplicationUiSender['sender'];frame:ApplicationUiSender['senderFrame'];projectId:string;intentId:string;reviewHash:string;expiresAt:number}
-interface Action {value:VerifiedMailUserAction;provenance:string;originSignal:AbortSignal|null;native?:NativeUserMessage;nativeContext?:readonly NativeUserMessage[]}
+interface Action {value:VerifiedMailUserAction;provenance:string;originSignal:AbortSignal|null;native?:NativeUserMessage;nativeContext?:readonly NativeUserMessage[];literalAttachments?:readonly MailAttachment[]}
 /** Only host-observed sources mint authority. Persistent provenance alone is never a live grant. */
 export class MailUserAuthorizations {
  private readonly displays=new Map<string,Display>();private readonly actions=new Map<string,Action>();private closed=false;private nativeSources?:NativeUserMessages;private nativePolicyHash?:(projectId:string)=>string|null;
@@ -45,7 +47,17 @@ export class MailUserAuthorizations {
   const first=message.receipt.inputSequence-previous.length;
   return first>=0&&previous.every((value,index)=>value.receipt.inputSequence===first+index&&this.contextLive(message,value)&&(index===0||previous[index-1].timestamp<=value.timestamp));
  }
- private nativeActionLive(action:Action):boolean{return !!action.native&&this.nativeContextLive(action.native,action.nativeContext??[]);}
+ /** Local SQLite-only checks,also safe inside the authorization transaction.
+  * A name alone is accepted only for one pre-existing project-local byte identity. */
+ private literalAttachmentsLive(message:NativeUserMessage,attachments:readonly MailAttachment[]|undefined):boolean{
+  if(!attachments)return true;if(attachments.length>100)return false;
+  try{const query=this.contexts.store.sqlite.prepare("SELECT id,filename,content_hash,byte_size,content_type,created_at FROM mail_attachment_objects WHERE project_id=? AND filename=? AND kind='attachment' LIMIT 257");return attachments.every(item=>{
+   const rows=query.all(message.receipt.projectId,item.filename) as {id:string;filename:string;content_hash:string;byte_size:number;content_type:string;created_at:string}[];
+   if(rows.length>256)return false;const actual=rows.find(row=>row.id===item.id),identity=(row:typeof rows[number])=>canonicalJson({hash:row.content_hash,size:row.byte_size,type:row.content_type});
+   return !!actual&&actual.content_hash===item.contentHash&&actual.byte_size===item.size&&actual.content_type===item.contentType&&actual.created_at===item.createdAt&&Number.isFinite(Date.parse(actual.created_at))&&Date.parse(actual.created_at)<=message.receipt.observedAt&&new Set(rows.map(identity)).size===1;
+  });}catch{return false;}
+ }
+ private nativeActionLive(action:Action):boolean{return !!action.native&&this.nativeContextLive(action.native,action.nativeContext??[])&&this.literalAttachmentsLive(action.native,action.literalAttachments);}
  private async verifyNativeAction(action:Action):Promise<boolean>{
   const sources=this.nativeSources;if(!sources||!action.native||!this.nativeActionLive(action))return false;
   for(const value of [...action.nativeContext??[],action.native])if(!await sources.verify(value))return false;
@@ -63,29 +75,31 @@ export class MailUserAuthorizations {
   if(old?.native&&await this.verifyNativeAction(old)){this.contexts.require(context,'mail.send');return old.value.id;}
   const observed=await sources.read(context.runId);this.contexts.require(context,'mail.send');
   const message=observed.messages.find(value=>this.nativeLive(value));if(!message||observed.messages[0]!==message||message.receipt.mailSendScope?.connectionHash!==nativeMailConnectionHash(review))return null;
-  let resolved:ReturnType<typeof resolveReferencedMailSend>|ReturnType<typeof resolveContextualMailSend>=resolveReferencedMailSend(message.text,review);let nativeContext:readonly NativeUserMessage[]=[];
-  if(!resolved&&!message.text.includes('mail-draft://')){
+  let resolved:ReturnType<typeof resolveReferencedMailSend>|ReturnType<typeof resolveContextualMailSend>|NativeLiteralMailAction=resolveReferencedMailSend(message.text,review);let nativeContext:readonly NativeUserMessage[]=[],literalAttachments:readonly MailAttachment[]|undefined;
+  const literalValid=()=>this.literalAttachmentsLive(message,literalAttachments);
+  if(!resolved){
    const descending:NativeUserMessage[]=[];let expected=message.receipt.inputSequence-1,later=message.timestamp;
    for(const value of observed.messages.slice(1)){
     if(value.receipt.inputSequence!==expected||!this.contextLive(message,value)||value.timestamp>later)break;
     descending.push(value);expected--;later=value.timestamp;
    }
-   const previous=descending.reverse(),contextual=resolveOrderedContextualMailSend(message.text,previous.map(value=>value.text),review);
-   if(contextual){resolved=contextual.action;nativeContext=Object.freeze(previous.slice(contextual.start));}
+   const previous=descending.reverse(),texts=previous.map(value=>value.text),literal=resolveLiteralMailSend(message.text,texts,review),contextual=!literal&&!message.text.includes('mail-draft://')?resolveOrderedContextualMailSend(message.text,texts,review):null;
+   const selected=literal??contextual;
+   if(selected){resolved=selected.action;nativeContext=Object.freeze(previous.slice(selected.start));if(literal)literalAttachments=Object.freeze(review.attachments.map(item=>Object.freeze({...item})));}
   }
-  if(!resolved||!this.nativeContextLive(message,nativeContext))return null;
-  for(const value of nativeContext)if(!await sources.verify(value)||!this.nativeContextLive(message,nativeContext))return null;
+  if(!resolved||!this.nativeContextLive(message,nativeContext)||!literalValid())return null;
+  for(const value of nativeContext)if(!await sources.verify(value)||!this.nativeContextLive(message,nativeContext)||!literalValid())return null;
   await sources.claim(message,intent.id);this.contexts.require(context,'mail.send');
-  const originSignal=this.contexts.assertSendOrigin(intent.projectId,review.sourceTaskId,review.sourceRunId);if(!originSignal||originSignal.aborted||!this.nativeLive(message)||!this.nativeContextLive(message,nativeContext))return null;
+  const originSignal=this.contexts.assertSendOrigin(intent.projectId,review.sourceTaskId,review.sourceRunId);if(!originSignal||originSignal.aborted||!this.nativeLive(message)||!this.nativeContextLive(message,nativeContext)||!literalValid())return null;
   const at=new Date(message.receipt.observedAt).toISOString(),id='native-'+digest(canonicalJson({receiptId:message.receipt.id,intentId:intent.id,reviewHash:intent.reviewHash})),provenance=canonicalJson({schema:1,kind:'native-user-message',intentId:intent.id,reviewHash:intent.reviewHash,projectId:intent.projectId,taskId:context.taskId,runId:context.runId,nativeSessionId:message.nativeSessionId,runner:message.runner,cliVersion:message.cliVersion,nativeRecordHash:message.recordHash,nativeTimestamp:message.timestamp,inputReceipt:message.receipt,contextSources:nativeContext.map(value=>({nativeRecordHash:value.recordHash,nativeTimestamp:value.timestamp,inputReceipt:value.receipt})),action:resolved,at}),sourceHash=digest(provenance);
   const value:VerifiedMailUserAction=Object.freeze({id,source:'native-user-message',sourceHash,intentId:intent.id,reviewHash:intent.reviewHash,projectId:intent.projectId,taskId:review.sourceTaskId,runId:review.sourceRunId,createdAt:at,expiresAt:new Date(Math.min(message.receipt.observedAt,...nativeContext.map(value=>value.receipt.observedAt))+600000).toISOString(),reviewedUnknownExecutionIds:Object.freeze([]) as unknown as string[]});
   await withResourceLock(this.contexts.store.root,()=>{
-   this.contexts.require(context,'mail.send');this.cleanup();if(this.closed||originSignal.aborted||!this.nativeLive(message)||!this.nativeContextLive(message,nativeContext)||Date.parse(value.expiresAt)<=this.now())throw new ApplicationError('AUTHORIZATION_REQUIRED','本次原生具体指令已失效');
+   this.contexts.require(context,'mail.send');this.cleanup();if(this.closed||originSignal.aborted||!this.nativeLive(message)||!this.nativeContextLive(message,nativeContext)||!literalValid()||Date.parse(value.expiresAt)<=this.now())throw new ApplicationError('AUTHORIZATION_REQUIRED','本次原生具体指令已失效');
    if(!this.actions.has(id)&&this.actions.size>=1024)throw new ApplicationError('RESOURCE_BUSY','当前发送证据已满');
    const row=this.contexts.store.sqlite.prepare('SELECT intent_id,source_kind,source_hash,provenance_json FROM mail_user_action_sources WHERE evidence_id=?').get(id) as {intent_id:string;source_kind:string;source_hash:string;provenance_json:string}|undefined;
    if(row&&(row.intent_id!==intent.id||row.source_kind!==value.source||row.source_hash!==sourceHash||row.provenance_json!==provenance))throw new ApplicationError('HASH_MISMATCH','同一原生用户来源已有不同记录');
    if(!row)this.contexts.store.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(id,intent.id,value.source,sourceHash,provenance,at);
-   this.actions.set(id,{value,provenance,originSignal,native:message,nativeContext});
+   this.actions.set(id,{value,provenance,originSignal,native:message,nativeContext,literalAttachments});
   });return id;
  }
  async revalidateNative(context:ApplicationExecutionContext,intent:MailSendIntent):Promise<void>{

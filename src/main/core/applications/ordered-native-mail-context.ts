@@ -4,7 +4,7 @@ import {resolveContextualMailSend} from './native-mail-intent';
 
 type Review=Pick<MailSendReview,'draftId'|'draftRevision'|'draftContentHash'|'priorUnknownExecutionIds'> & {content:Pick<MailSendReview['content'],'mode'|'to'|'cc'|'bcc'>};
 const normalizeName=(value:string)=>value.replace(/\s+/gu,'');
-function bindings(text:string):[string,string][]|null{
+export function nativeMailContextBindings(text:string):[string,string][]|null{
  if(Buffer.byteLength(text)>65536)return null;
  const lines=text.trim().split(/\n/u),result:[string,string][]=[];
  if(!lines.length||lines.length>100)return null;
@@ -15,7 +15,7 @@ function bindings(text:string):[string,string][]|null{
  }
  return result;
 }
-function unchanged(text:string):boolean{
+export function unchangedNativeMailContext(text:string):boolean{
  return /^(?:这份|这封|该)?(?:草稿|邮件)?(?:保持当前收件人、正文和附件，不作修改|保持原样|保持当前修订|不修改收件人、正文和附件)[。.!！]?$/u.test(text.trim())||/^(?:keep (?:this|the) (?:draft|message) unchanged|keep the current recipients, body and attachments unchanged)[.!]?$/iu.test(text.trim());
 }
 /** Text interpretation only. The host must supply a complete ordered suffix of
@@ -27,12 +27,12 @@ export function resolveOrderedContextualMailSend(text:string,previous:readonly s
  let anchor=-1;for(let index=previous.length-1;index>=0;index--)if(previous[index].includes('mail-draft://')){anchor=index;break;}
  if(anchor<0)return null;
  let start=anchor;
- while(start>0&&(bindings(previous[start-1])||unchanged(previous[start-1])))start--;
+ while(start>0&&(nativeMailContextBindings(previous[start-1])||unchangedNativeMailContext(previous[start-1])))start--;
  const names=new Map<string,Set<string>>();
  for(let index=start;index<previous.length;index++){
   if(index===anchor)continue;
-  const found=bindings(previous[index]);
-  if(!found&&!unchanged(previous[index]))return null;
+  const found=nativeMailContextBindings(previous[index]);
+  if(!found&&!unchangedNativeMailContext(previous[index]))return null;
   for(const [name,address]of found??[]){const addresses=names.get(name)??new Set<string>();addresses.add(address);names.set(name,addresses);}
  }
  const aliases=new Map<string,string>();

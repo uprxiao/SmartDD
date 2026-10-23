@@ -29,18 +29,15 @@ export function resolveReferencedMailSend(text: string, review: DraftReview): Na
   return direct||objectFirst||english?{schema:'native-mail-reference-v1',...parsed.identity}:null;
 }
 export interface NativeContextualMailAction extends Omit<NativeReferencedMailAction,'schema'> {schema:'native-mail-context-v1';recipientSetHash:string|null}
-/** Resolve the next actual user turn against one exact preceding reference-only turn.
- * The caller must authenticate both turns, their adjacency, scope, policy and original rows.
- * This is an implemented conversational path, not a claim of complete language understanding.
- */
-export function resolveContextualMailSend(text:string,previousText:string,review:ContextReview,recipientAliases?:ReadonlyMap<string,string>):NativeContextualMailAction|null{
+/** Only interprets an explicit send imperative. A host caller must separately
+ * authenticate all user sources and bind exact target/content before authorizing. */
+export function resolveMailSendImperative(text:string,content:ContextReview['content'],recipientAliases?:ReadonlyMap<string,string>):{recipientSetHash:string|null}|null{
   if(typeof text!=='string'||Buffer.byteLength(text)>1024*1024||text.includes('mail-draft://'))return null;
-  const parsed=reference(previousText,review);if(!parsed||parsed.action)return null;
   let action=text.trim().replace(/[。.!！]+$/u,'').trim(),recipientSetHash:string|null=null;
   const recipients=(value:string)=>{
     const addresses=value.split(/(?:[,，、;；]|\s+and\s+|和)/iu).map(v=>v.trim()).map(v=>recipientAliases?.get(v.replace(/\s+/gu,''))??v);if(!addresses.length||addresses.length>100||addresses.some(v=>!z.email().safeParse(v).success))return false;
     const normalized=(address:string)=>{const at=address.lastIndexOf('@');return address.slice(0,at+1)+address.slice(at+1).toLowerCase();};
-    const actual=[...new Set(addresses.map(normalized))].sort(),expected=[...new Set([...review.content.to,...review.content.cc,...review.content.bcc].map(normalized))].sort();
+    const actual=[...new Set(addresses.map(normalized))].sort(),expected=[...new Set([...content.to,...content.cc,...content.bcc].map(normalized))].sort();
     if(canonicalJson(actual)!==canonicalJson(expected))return false;recipientSetHash=digest(canonicalJson(actual));return true;
   };
   const prefix='(?:请帮我|请|帮我|麻烦你|麻烦)?(?:那就|就)?(?:现在|立即|直接)?',unchanged='(?:原样|按当前修订|按此修订)?';
@@ -58,9 +55,17 @@ export function resolveContextualMailSend(text:string,previousText:string,review
     const english=/^(?:please )?(?:send|email|mail) (?<object>it|that|this|(?:the |that |this )?(?:previous(?:ly confirmed)? |last |approved )?(?:draft|message|email|reply)|the (?:draft|reply) we just (?:reviewed|confirmed))(?: (?:as[- ]is|unchanged))?(?: to (?<recipients>.+))?$/i.exec(action);
     if(english){if(english.groups?.recipients&&!recipients(english.groups.recipients))return null;accepted=true;reply=/\breply\b/i.test(english.groups?.object??'');}
   }
-  if(!accepted||reply&&review.content.mode==='new')return null;
-  return{schema:'native-mail-context-v1',...parsed.identity,recipientSetHash};
+  if(!accepted||reply&&content.mode==='new')return null;
+  return{recipientSetHash};
 }
+/** One exact preceding reference, or an unchanged ordered context verified by
+ * the host. This parser itself provides neither origin proof nor send authority. */
+export function resolveContextualMailSend(text:string,previousText:string,review:ContextReview,recipientAliases?:ReadonlyMap<string,string>):NativeContextualMailAction|null{
+  const parsed=reference(previousText,review);if(!parsed||parsed.action)return null;
+  const action=resolveMailSendImperative(text,review.content,recipientAliases);
+  return action?{schema:'native-mail-context-v1',...parsed.identity,...action}:null;
+}
+
 
 export interface NativeMailSendScope { readonly connectionHash: string; readonly policyHash: string }
 /** Same non-secret identity at the actual user input and at frozen preparation. */
