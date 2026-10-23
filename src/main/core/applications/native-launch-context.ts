@@ -6,7 +6,7 @@ import { agentLoadRequestSchema, type AgentLoadRequest } from '@shared/agent-ada
 import { discoverCapabilities, type DiscoveryContext, type NativeDiscoveryDetails } from '../capabilities/discovery';
 import type { TaskCapabilityLauncher } from '../tasks/capability-lifecycle';
 export type TaskLaunchInput = Parameters<TaskCapabilityLauncher['prepare']>[0];
-export interface NativeLaunchContext { command: string; version: string; inventory: AgentLoadRequest['inventory']; userSkillConfig: AgentLoadRequest['userSkillConfig'] }
+export interface NativeLaunchContext { command: string; version: string; inventory: AgentLoadRequest['inventory']; userSkillConfig: AgentLoadRequest['userSkillConfig'];skillConfigSources?:NativeDiscoveryDetails['skillConfigSources'] }
 /** Read only native files and execute exactly --version, never profile arguments, login helpers or a model. */
 export async function inspectNativeLaunch(input: TaskLaunchInput): Promise<NativeLaunchContext> {
   const env = input.environment, requested = input.profile.command;
@@ -25,5 +25,5 @@ export async function inspectNativeLaunch(input: TaskLaunchInput): Promise<Nativ
   const found = discoverCapabilities(context);
   const userSkillConfig=details.effectiveSkillConfig??details.userSkillConfig;
   if (details.issues.length || found.length >= 2000 || !agentLoadRequestSchema.shape.userSkillConfig.safeParse(userSkillConfig).success) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生能力配置尚未完整核验；本次不覆盖用户能力配置');
-  return {command,version,userSkillConfig,inventory:[...found.map(row=>({kind:row.kind,name:row.name,path:row.path,ownerStoreId:null,contentHash:null})),...details.plugins.map(p=>({kind:'plugin' as const,...p,ownerStoreId:null,contentHash:null}))]};
+  return {command,version,userSkillConfig,skillConfigSources:details.skillConfigSources??[],inventory:[...found.map(row=>({kind:row.kind,name:row.name,path:row.path,ownerStoreId:null,contentHash:null})),...details.plugins.map(p=>({kind:'plugin' as const,...p,ownerStoreId:null,contentHash:null}))]};
 }

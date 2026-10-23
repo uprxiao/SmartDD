@@ -118,6 +118,7 @@ export function SessionApplications({ task, integration, onUse, onNewTask, onCon
         </>}
       </section>;
     })}
+    <details className="m10-runtime-demo"><summary>本次能力准备与冲突来源</summary><p className="m10-muted">仅记录准备结果，不证明 Agent 已发现或读取。当前原型使用合成数据，不读取或修改本机配置。</p>{apps.map(app=>{const fixed=snapshot?.packages?.find(p=>p.id===app.id),status=sessionCapabilityDiagnostic(snapshot,data,task.project,app.id,faults[app.id]);return <section key={app.id}><strong>{app.name}</strong><p>{fixed?(status.usable?'合成文件准备可用 · 使用未验证':'模拟未准备 · '+status.code):'未记录本会话选用'}</p>{status.fault==='nameConflict'&&<p className="m10-message-id">配置文件：/示例/.codex/config.toml<br/>来源：应用同名能力或启停配置 · 合成路径，未读取本机</p>}</section>;})}<p className="m10-muted">独立 Skill／项目 MCP 沿用既有管理入口。当前合成会话未记录其逐项准备证据，不从项目默认配置推断。</p></details>
     <div className="m10-session-footer"><button className="button secondary" onClick={() => nav('project/' + task.project + '/apps')}>项目应用</button><button className="button primary" onClick={onNewTask}>使用当前版本新建会话</button></div>
     <p className="m10-muted">恢复时继续引用原包，不同步替换新版。用户自行安装的 Skill / MCP 保持原配置。故障切换与修复仅模拟，不修改真实文件、连接、终端或邮件。示例只插入输入，不自动发送。</p>
   </div>;

@@ -19,6 +19,7 @@ export interface NativeDiscoveryDetails {
   issues: string[];
   /** Native per-path flags include lower-layer paths absent from the final raw array. Host only. */
   effectiveSkillConfig?: Obj[];
+  skillConfigSources?: {path:string;configurationPath:string|null;location:'file'|'profile-arguments'}[];
 }
 
 export interface DiscoveryContext {
@@ -269,24 +270,24 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     }
     configs.push(...layers.map(p => ({ path: join(p, '.codex', 'config.toml'), source: 'project' })));
     for (const p of layers) scanDir(join(p, '.agents', 'skills'), 'project');
-    const overrides: { config: Obj; base: string }[] = [];
+    const overrides: { config: Obj; base: string;configurationPath:string|null;location:'file'|'profile-arguments' }[] = [];
     for (const file of configs) {
       const config = readConfig(file.path);
       if (!config) continue;
       if (config.profile !== undefined) c.details?.issues.push('profile_configuration_unverified');
       addMcp(config.mcp_servers, file.path, file.source);
-      overrides.push({ config, base: dirname(file.path) });
+      overrides.push({ config, base: dirname(file.path),configurationPath:file.path,location:'file' });
     }
     for (const config of args.overrides) {
       addMcp(config.mcp_servers, 'profile arguments', 'profile');
-      overrides.push({ config, base: c.cwd });
+      overrides.push({ config, base: c.cwd,configurationPath:null,location:'profile-arguments' });
     }
     // The raw config field is the last whole array. Codex 0.162.1 Skill discovery
     // separately keeps lower-layer paths missing from that array; a later explicit
     // entry for the same path wins. config/read alone does not prove loaded state.
     let finalFlags: Obj[] = [];
-    const effective = new Map<string, Obj>();
-    for (const { config, base } of overrides) {
+    const effective = new Map<string, Obj>(),sources=new Map<string,{path:string;configurationPath:string|null;location:'file'|'profile-arguments'}>();
+    for (const { config, base,configurationPath,location } of overrides) {
       if (config.skills !== undefined && !isObject(config.skills)) c.details?.issues.push('skill_configuration_unverified');
       const flags = object(config.skills).config;
       if (flags !== undefined) {
@@ -305,6 +306,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
             } catch { /* retain the resolved future path; do not invent existence */ }
             // Canonicalize identity for comparison, preserving the user alias in argv.
             effective.set(path, { ...raw, path: absolute });
+            sources.set(path,{path:absolute,configurationPath,location});
           }
         }
       }
@@ -312,6 +314,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     if (c.details) {
       c.details.userSkillConfig = finalFlags;
       c.details.effectiveSkillConfig = [...effective.values()];
+      c.details.skillConfigSources=[...sources.values()];
     }
     for (const [canonical, o] of effective) {
       for (const r of rows) if (r.kind === 'skill') {

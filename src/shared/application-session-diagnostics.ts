@@ -1,8 +1,17 @@
 import type {ApplicationId,ApplicationProvider} from './application-connections';
-export interface SessionPreparationEvidence {
- schema:1;runId:string;selectionHash:string;cliVersion:string|null;adapterHash:string;
+export interface NativePreparationSource {
+ kind:'skill'|'mcp'|'plugin'|'native-tool'|'skill-config'|'projection'|'resource'|'policy';name:string;
+ path:string|null;configurationPath:string|null;location:'file'|'profile-arguments'|'unrecorded';
+}
+export interface NativePreparationCapability {
+ kind:'application'|'standard-skill'|'project-mcp';id:string;name:string;selectedHash:string;paths:string[];
+ state:'prepared'|'unavailable'|'disabled'|'unverified';issueCode:string|null;sources:NativePreparationSource[];
+}
+interface SessionPreparationBase {
+ runId:string;selectionHash:string;cliVersion:string|null;adapterHash:string;
  state:'prepared'|'unavailable';issueCode:string|null;manifestPath:string;configPaths:string[];preparedAt:string;
 }
+export type SessionPreparationEvidence = SessionPreparationBase & ({schema:1}|{schema:2;capabilities:NativePreparationCapability[]});
 export interface SessionBridgeEvidence {schema:1;runId:string;bridgeId:string;pid:number;startedAt:string;observedAt:string;source:'kernel-peer';}
 export interface SessionLaunchRestriction {
  schema:1;runId:string;taskId:string;snapshotHash:string;selectionHash:string;

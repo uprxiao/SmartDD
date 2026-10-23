@@ -179,3 +179,13 @@ describe('Codex effective configuration precedence',()=>{
     expect(detail.issues).toContain('profile_configuration_unverified');expect(detail.userSkillConfig).toEqual([]);
   });
 });
+
+describe('host-only exact Skill configuration source diagnostics',()=>{
+ it('keeps lower-layer source locations when a later raw array omits that path',()=>{
+  const a=join(tmp,'first/SKILL.md'),b=join(tmp,'second/SKILL.md'),user=file('custom/config.toml','[skills]\nconfig=[{path="'+a+'",enabled=false,custom="MUST_NOT_PERSIST_TOKEN"}]\n'),project=file('repo/.codex/config.toml','[skills]\nconfig=[{path="'+b+'",enabled=true}]\n'),details={userSkillConfig:[],plugins:[],issues:[]} as NonNullable<DiscoveryContext['details']>;discoverCapabilities({...c,nativeVersion:'0.162.1',details});expect(details.effectiveSkillConfig).toEqual([{path:a,enabled:false,custom:'MUST_NOT_PERSIST_TOKEN'},{path:b,enabled:true}]);expect(details.skillConfigSources).toEqual([{path:a,configurationPath:user,location:'file'},{path:b,configurationPath:project,location:'file'}]);expect(JSON.stringify(details.skillConfigSources)).not.toContain('MUST_NOT_PERSIST_TOKEN');
+ });
+ it.each(['file','profile-arguments'] as const)('retains only the winning %s location without changing effective native flags or exposing values',location=>{
+  const path=join(tmp,'native-target','SKILL.md'),source=file('custom/config.toml','[skills]\nconfig=[{path="'+path+'",enabled=false}]\n[mcp_servers.private]\ncommand="/usr/bin/false"\nargs=["MUST_NOT_PERSIST_ARG"]\nenv={TOKEN="MUST_NOT_PERSIST_TOKEN"}\n'),details={userSkillConfig:[],plugins:[],issues:[]} as NonNullable<DiscoveryContext['details']>;
+  discoverCapabilities({...c,nativeVersion:'0.162.1',details,...(location==='profile-arguments'?{args:['-c','skills.config=[{path="'+path+'",enabled=false}]']}: {})});expect(details.effectiveSkillConfig).toEqual([{path,enabled:false}]);expect(details.skillConfigSources).toEqual([{path,configurationPath:location==='file'?source:null,location}]);expect(JSON.stringify(details.skillConfigSources)).not.toMatch(/MUST_NOT_PERSIST/);
+ });
+});

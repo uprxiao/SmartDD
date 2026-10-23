@@ -1,3 +1,4 @@
+import {nativeCapabilityPreparationSchema,assertNativeCapabilityPreparation} from './native-preparation-diagnostics';
 import {readApplicationRunScope} from './application-run-scope';
 import {readClaudeSlot} from './claude-delivery-state';
 import {lstatSync} from 'node:fs';
@@ -21,11 +22,18 @@ import {withResourceLock} from './resource-lock';
 import {readLaunchRestriction} from './launch-restriction';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
 const path=z.string().min(1).max(4096).refine(v=>v.startsWith('/')&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(v));
-const preparationSchema=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:hash,cliVersion:z.string().min(1).max(128).regex(/^[\x20-\x7e]+$/).nullable(),adapterHash:hash,state:z.enum(['prepared','unavailable']),issueCode:issue.nullable(),manifestPath:path,configPaths:z.array(path).max(16),preparedAt:z.iso.datetime()}).strict().refine(v=>(v.state==='prepared')===(v.issueCode===null));
+const preparationV1=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:hash,cliVersion:z.string().min(1).max(128).regex(/^[\x20-\x7e]+$/).nullable(),adapterHash:hash,state:z.enum(['prepared','unavailable']),issueCode:issue.nullable(),manifestPath:path,configPaths:z.array(path).max(16),preparedAt:z.iso.datetime()}).strict();
+const preparationSchema=z.discriminatedUnion('schema',[preparationV1,preparationV1.extend({schema:z.literal(2),capabilities:nativeCapabilityPreparationSchema})]).refine(v=>(v.state==='prepared')===(v.issueCode===null));
 const bridgeSchema=z.object({schema:z.literal(1),runId:z.uuid(),bridgeId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/),observedAt:z.iso.datetime(),source:z.literal('kernel-peer')}).strict();
 interface RunRow {run_id:string;task_id:string;project_id:string;pty_id:string|null;state:string;started_at:string;ended_at:string|null;}
 interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2,home:string):void;channelConnected(runId:string):boolean;}
 const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_REQUIRED';
+function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshotV2,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
+ const scope=readApplicationRunScope(store,runId,snapshot);
+ if(scope&&evidence.capabilities.some(item=>item.kind==='application'&&item.state==='prepared'&&!scope.applications.some(app=>app.appId===item.id)))throw new ApplicationError('SCOPE_DENIED','原运行范围排除的应用不能显示为已准备');
+ return scope;
+}
+
 /** Display-only evidence: no discoveries inferred from files, no approvals inferred
  * from a tool call, and no current grants inferred from an older run. */
 export class ApplicationSessionDiagnostics {
@@ -37,6 +45,13 @@ export class ApplicationSessionDiagnostics {
  async prepared(value:SessionPreparationEvidence):Promise<void>{
   const evidence=preparationSchema.parse(value),text=canonicalJson(evidence);
   await withResourceLock(this.store.root,()=>{const run=this.store.sqlite.prepare('SELECT task_id FROM capability_runs WHERE run_id=?').get(evidence.runId) as {task_id:string}|undefined;if(!run)throw new ApplicationError('NOT_FOUND','运行记录不存在');const session=this.sessions.inspectCoordinated(run.task_id);if(session.selectionHash!==evidence.selectionHash||session.snapshot.adapterBinding.hash!==evidence.adapterHash)throw new ApplicationError('SCOPE_DENIED','准备证据不属于固定会话');
+   if(evidence.schema===2){
+    assertNativeCapabilityPreparation(session.snapshot,evidence.capabilities);
+    const runtime=this.deps.runs(),owner=this.store.sqlite.prepare('SELECT owner_instance_id,owner_pid,owner_started_at FROM capability_runs WHERE run_id=?').get(evidence.runId) as {owner_instance_id:string;owner_pid:number;owner_started_at:string};
+    if(!runtime||runtime.store!==this.store||owner.owner_instance_id!==runtime.instanceId||owner.owner_pid!==runtime.host.pid||owner.owner_started_at!==runtime.host.startedAt)throw new ApplicationError('SCOPE_DENIED','逐项准备证据不属于当前宿主运行');
+    const scope=assertPreparationScope(this.store,evidence.runId,session.snapshot,evidence),restriction=readLaunchRestriction(this.store,evidence.runId,session.snapshot.taskId,session.selectionHash);
+    if(evidence.capabilities.some(item=>item.state==='prepared'&&(!!restriction||item.kind==='application'&&scope&&!scope.applications.some(app=>app.appId===item.id))))throw new ApplicationError('SCOPE_DENIED','未加载或已停用的能力不能记录为本轮已准备');
+   }
    const previous=this.store.sqlite.prepare('SELECT evidence_json FROM capability_run_preparations WHERE run_id=?').get(evidence.runId) as {evidence_json:string}|undefined;if(previous&&previous.evidence_json!==text)throw new ApplicationError('RESOURCE_STATE_CHANGED','本次准备证据已经固定');if(!previous)this.store.sqlite.prepare('INSERT INTO capability_run_preparations VALUES(?,?,?,?)').run(evidence.runId,text,digest(text),evidence.preparedAt);
   });
  }
@@ -50,7 +65,7 @@ export class ApplicationSessionDiagnostics {
   const runtime=this.deps.runs();let current=false;try{current=!!row.pty_id&&this.deps.activePty?.(row.task_id)===row.pty_id&&runtime?.currentNativeRun(row.task_id,row.pty_id)?.runId===row.run_id;}catch{/* An orphaned or damaged run is not the current owned terminal. */}
   const prep=this.store.sqlite.prepare('SELECT * FROM capability_run_preparations WHERE run_id=?').get(row.run_id) as {evidence_json:string;evidence_hash:string;prepared_at:string}|undefined;
   let preparation:SessionPreparationEvidence|null=null,preparationIssue:string|null=null;
-  if(prep)try{const parsed=preparationSchema.parse(JSON.parse(prep.evidence_json));if(digest(canonicalJson(parsed))!==prep.evidence_hash||parsed.runId!==row.run_id||parsed.preparedAt!==prep.prepared_at||!session||parsed.selectionHash!==session.selectionHash||parsed.adapterHash!==session.snapshot.adapterBinding.hash)throw new Error();preparation=parsed;}catch{preparationIssue='RESOURCE_RECOVERY_REQUIRED';}
+  if(prep)try{const parsed=preparationSchema.parse(JSON.parse(prep.evidence_json));if(digest(canonicalJson(parsed))!==prep.evidence_hash||parsed.runId!==row.run_id||parsed.preparedAt!==prep.prepared_at||!session||parsed.selectionHash!==session.selectionHash||parsed.adapterHash!==session.snapshot.adapterBinding.hash)throw new Error();if(parsed.schema===2){assertNativeCapabilityPreparation(session.snapshot,parsed.capabilities);assertPreparationScope(this.store,row.run_id,session.snapshot,parsed);}preparation=parsed;}catch{preparationIssue='RESOURCE_RECOVERY_REQUIRED';}
   let restriction:SessionRunDiagnostic['restriction']=null,restrictionIssue:string|null=null;
   try{const basis=session?.selectionHash??(this.store.sqlite.prepare('SELECT snapshot_hash FROM capability_session_snapshots WHERE task_id=? AND schema_version=0').get(row.task_id) as {snapshot_hash:string}|undefined)?.snapshot_hash;if(basis)restriction=readLaunchRestriction(this.store,row.run_id,row.task_id,basis);else if(this.store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(row.run_id))throw new Error();}catch{restrictionIssue='RESOURCE_RECOVERY_REQUIRED';}
   const observations=this.store.sqlite.prepare('SELECT * FROM capability_bridge_observations WHERE run_id=? ORDER BY observed_at DESC,bridge_id').all(row.run_id) as {bridge_id:string;evidence_json:string;evidence_hash:string;observed_at:string}[];
