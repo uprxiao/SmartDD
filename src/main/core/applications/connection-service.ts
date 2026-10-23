@@ -1,20 +1,18 @@
 import { randomUUID } from 'node:crypto';
-import { isAbsolute } from 'node:path';
 import type { SecretsStore } from '../../secrets';
 import { ApplicationError } from '@shared/applications';
-import { connectionConfigSchema, providerApplication, saveConnectionSchema, verifiedConnectionIdentitySchema,
-  type ApplicationConnection, type ConnectionChangePlan, type ConnectionCompatibilityImpact, type ConnectionConfig,
-  type SaveApplicationConnection, type VerifiedConnectionCandidate, type VerifiedConnectionIdentity } from '@shared/application-connections';
-import { canonicalJson, digest, parseManifest } from './manifest';
+import type {ApplicationConnection,ConnectionChangePlan,ConnectionCompatibilityImpact,ConnectionConfig,ApplicationId} from '@shared/application-connections';
+import {canonicalJson,digest,parseManifest} from './manifest';
+import {HostApplicationRegistry,builtinHostApplications,type HostedConfiguration,type HostApplicationDefinitions,type HostedConnection,type HostedIdentity,type HostedCandidate,type HostedSave} from './host-application-registry';
 import { withResourceLock } from './resource-lock';
 import type { ResourceStore } from './resource-store';
 
-export interface ConnectionVerifier {
-  verify(config: ConnectionConfig, secret: string | null, signal: AbortSignal): Promise<VerifiedConnectionIdentity>;
+export interface ConnectionVerifier<C extends HostedConfiguration=ConnectionConfig> {
+ verify(config:C,secret:string|null,signal:AbortSignal):Promise<HostedIdentity<C>>;
 }
-type VerificationActivity = (work:()=>Promise<VerifiedConnectionIdentity>)=>Promise<VerifiedConnectionIdentity>;
-interface ConnectionRow {
-  id: string; app_id: 'zentao' | 'mail'; provider_id: ConnectionConfig['kind']; name: string; config_json: string; config_schema_version: number;
+type VerificationActivity<C extends HostedConfiguration>=(work:()=>Promise<HostedIdentity<C>>)=>Promise<HostedIdentity<C>>;
+interface ConnectionRow<C extends HostedConfiguration,A extends string> {
+  id:string;app_id:A;provider_id:C['kind']; name: string; config_json: string; config_schema_version: number;
   revision: number; config_revision: number; identity_revision: number; verified_identity_json: string; identity_hash: string;
   secret_ref: string | null; secret_revision: number; policy_revision: number; enabled: number; auth_state: 'connected' | 'disconnected';
   health: ApplicationConnection['health']; health_code: string | null; health_message: string | null; tested_at: string | null;
@@ -25,7 +23,7 @@ interface CandidateRow {
   candidate_hash: string; candidate_json: string; verified_identity_json: string | null; compatibility_plan_json: string | null;
   expires_at: string; state: string;
 }
-type CandidateConfig = { id: string; name: string; config: ConnectionConfig; expectedRevision: number };
+type CandidateConfig<C extends HostedConfiguration>={id:string;name:string;config:C;expectedRevision:number};
 const safeVerificationError = (error: unknown): ApplicationError => {
   const code = error instanceof ApplicationError ? error.code : 'CONNECTION_UNAVAILABLE';
   const messages: Record<string, string> = { AUTH_REQUIRED: '请核对认证凭据和当前服务身份', AUTH_FAILED: '账号认证失败，请核对当前凭据', IDENTITY_CHANGE_REQUIRES_SELECTION: '测试识别到其他身份，请新建连接并显式选用', REVISION_CONFLICT: '连接已变更，请重新载入再测试', TIMEOUT: '连接测试超时', CANCELED: '连接测试已取消', CONFIG_PLAN_STALE: '测试结果已失效，请重新测试' };
@@ -34,36 +32,46 @@ const safeVerificationError = (error: unknown): ApplicationError => {
 };
 
 /** One current connection per identity, revisioned encrypted secrets, no credential cache. */
-export class ApplicationConnectionService {
+export class ApplicationConnectionService<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
+  readonly registry:HostApplicationRegistry<C,A>;
   private readonly tests = new Map<string, AbortController>();
-  constructor(readonly store: ResourceStore, private readonly secrets: SecretsStore, private readonly verifier: ConnectionVerifier, private readonly timeoutMs = 10000) {}
-  private row(id: string): ConnectionRow {
-    const row = this.store.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(id) as ConnectionRow | undefined;
+  constructor(readonly store:ResourceStore,private readonly secrets:SecretsStore,private readonly verifier:ConnectionVerifier<C>,private readonly timeoutMs=10000,definitions?:HostApplicationDefinitions<C,A>){
+    // The omitted-definition constructor retains the exact built-in product
+    // boundary. Explicit generic callers still pass through those runtime parsers.
+    this.registry=new HostApplicationRegistry(definitions??builtinHostApplications as unknown as HostApplicationDefinitions<C,A>);this.registry.register(store.sqlite);
+  }
+  private row(id: string): ConnectionRow<C,A> {
+    const row = this.store.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(id) as ConnectionRow<C,A> | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND', '连接不存在'); return row;
   }
-  get(id: string): ApplicationConnection {
-    const r = this.row(id);
-    return { id: r.id, appId: r.app_id, providerId: r.provider_id, name: r.name, config: connectionConfigSchema.parse(JSON.parse(r.config_json)),
+  private decodeRow(r:ConnectionRow<C,A>){
+    const config=this.registry.parseConfig(JSON.parse(r.config_json)),provider=this.registry.provider(config.kind),identity=this.registry.parseIdentity(JSON.parse(r.verified_identity_json),config.kind);
+    if(r.provider_id!==config.kind||r.app_id!==provider.appId||r.config_schema_version!==provider.configApiMajor)throw new ApplicationError('CONFIG_INCOMPATIBLE','已保存连接与当前宿主契约不符，保留原数据');
+    return{config,provider,identity};
+  }
+  get(id:string):HostedConnection<C,A>{
+    const r=this.row(id),{config,provider,identity}=this.decodeRow(r);
+    return {id:r.id,appId:provider.appId,providerId:provider.id,name:r.name,config,
       revision: r.revision, configRevision: r.config_revision, identityRevision: r.identity_revision, secretRevision: r.secret_revision, policyRevision: r.policy_revision,
-      identity: verifiedConnectionIdentitySchema.parse(JSON.parse(r.verified_identity_json)), enabled: r.enabled === 1, authorization: r.auth_state,
+      identity, enabled: r.enabled === 1, authorization: r.auth_state,
       health: r.health, healthCode: r.health_code, healthMessage: r.health_message, testedAt: r.tested_at,
       hasSecret: !!r.secret_ref && this.secrets.has(r.secret_ref), cleanupPending: r.cleanup_pending === 1, createdAt: r.created_at, updatedAt: r.updated_at };
   }
-  list(): ApplicationConnection[] {
+  list():HostedConnection<C,A>[] {
     return (this.store.sqlite.prepare('SELECT id FROM application_connections ORDER BY created_at,id').all() as { id: string }[]).map(r => this.get(r.id));
   }
   private candidate(id: string): CandidateRow {
     const row = this.store.sqlite.prepare('SELECT * FROM application_secret_changes WHERE operation_id=?').get(id) as CandidateRow | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND', '测试结果不存在'); return row;
   }
-  private checkRevision(id: string | undefined, expected: number): ConnectionRow | null {
+  private checkRevision(id: string | undefined, expected: number): ConnectionRow<C,A> | null {
     const old = id ? this.row(id) : null;
     if ((old?.revision ?? 0) !== expected || (!old && expected !== 0)) throw new ApplicationError('REVISION_CONFLICT', '连接已变更，请重新载入再测试');
     return old;
   }
   planConfigChange(id: string | undefined, expectedRevision: number, input: unknown): ConnectionChangePlan {
-    const config = connectionConfigSchema.parse(input); this.checkRevision(id, expectedRevision);
-    const appId = providerApplication(config.kind), records: { taskId: string | null; hash: string; version: string; manifest: string; snapshotHash?: string }[] = [];
+    const config=this.registry.parseConfig(input); this.checkRevision(id, expectedRevision);
+    const appId = this.registry.providerApplication(config.kind), records: { taskId: string | null; hash: string; version: string; manifest: string; snapshotHash?: string }[] = [];
     const active = this.store.sqlite.prepare(`SELECT p.package_hash AS hash,p.version,p.manifest_json AS manifest FROM capability_active_packages a JOIN capability_packages p ON p.package_hash=a.package_hash WHERE a.app_id=?`).get(appId) as { hash: string; version: string; manifest: string } | undefined;
     if (active) records.push({ ...active, taskId: null });
     if (id) {
@@ -84,7 +92,7 @@ export class ApplicationConnectionService {
       let status: 'incompatible' | 'unverified' | null = null, reason = '';
       try {
         const manifest = parseManifest(JSON.parse(record.manifest)), contract = manifest.connectionContracts.find(c => c.providerId === config.kind);
-        const authMode = config.kind === 'foxmail' ? 'local-readonly' : config.authMode;
+        const authMode=this.registry.authMode(config);
         if (!contract || contract.configApiMajor !== 1 || contract.identityContractMajor !== 1) { status = 'unverified'; reason = '缺少已支持的连接配置转换契约'; }
         else if (!contract.authModes.includes(authMode)) { status = 'incompatible'; reason = '此版本不支持候选认证方式'; }
       } catch { status = 'unverified'; reason = '历史包契约无法核验'; }
@@ -93,7 +101,7 @@ export class ApplicationConnectionService {
     const plan = { connectionId: id ?? null, expectedRevision, configHash: digest(canonicalJson(config)), referenceHash: digest(canonicalJson(records.map(r => ({ taskId: r.taskId, hash: r.hash, snapshotHash: r.snapshotHash ?? null })))), impacts };
     return { ...plan, planHash: digest(canonicalJson(plan)) };
   }
-  private async verify(config: ConnectionConfig, secret: string | null, controller: AbortController, activity?:VerificationActivity): Promise<VerifiedConnectionIdentity> {
+  private async verify(config:C, secret: string | null, controller: AbortController, activity?:VerificationActivity<C>): Promise<HostedIdentity<C>> {
     if(controller.signal.aborted)throw safeVerificationError(controller.signal.reason instanceof ApplicationError?controller.signal.reason:new ApplicationError('CANCELED','连接测试已取消'));
     let timer: ReturnType<typeof setTimeout> | undefined, onAbort: (() => void) | undefined;
     try {
@@ -105,23 +113,16 @@ export class ApplicationConnectionService {
       });
       const producer=()=>{if(controller.signal.aborted)throw new ApplicationError('CANCELED','连接测试已取消');return this.verifier.verify(config,secret,controller.signal);};
       const result = await Promise.race([activity?activity(producer):producer(), aborted]);
-      const identity = verifiedConnectionIdentitySchema.safeParse(result);
-      if (!identity.success || identity.data.providerId !== config.kind) throw new ApplicationError('AUTH_REQUIRED', '无法核实当前服务和账号身份');
-      return identity.data;
+      return this.registry.parseIdentity(result,config.kind);
     } catch (error) { throw safeVerificationError(error); }
     finally { if (timer) clearTimeout(timer); if (onAbort) controller.signal.removeEventListener('abort', onAbort); }
   }
-  async testCandidate(input: SaveApplicationConnection, signal?: AbortSignal, activity?:VerificationActivity): Promise<VerifiedConnectionCandidate> {
+  async testCandidate(input:HostedSave<C>, signal?: AbortSignal, activity?:VerificationActivity<C>): Promise<HostedCandidate<C>> {
     if(signal?.aborted)throw new ApplicationError('CANCELED','连接测试已取消');
-    const parsed = saveConnectionSchema.safeParse(input);
-    if (!parsed.success) throw new ApplicationError('INVALID_INPUT', '连接字段无效，请核对表单');
-    const request = parsed.data, old = this.checkRevision(request.id, request.expectedRevision);
-    if (request.config.kind === 'foxmail' && !isAbsolute(request.config.sourcePath)) throw new ApplicationError('INVALID_INPUT', '请选择本机Foxmail的完整来源路径');
-    if (old && old.provider_id !== request.config.kind) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '已有连接不能替换应用类型，请新建连接');
-    if (old && request.config.kind === 'foxmail' && (JSON.parse(old.config_json) as ConnectionConfig & { sourcePath?: string }).sourcePath !== request.config.sourcePath) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '已有来源路径不能覆盖，请新建来源并显式选用');
-    if (request.config.kind === 'foxmail' && request.secret) throw new ApplicationError('INVALID_INPUT', '本地只读来源不保存发件凭据');
+    const request=this.registry.parseSave(input),old=this.checkRevision(request.id,request.expectedRevision);
+    this.registry.validateCandidate(request.config,old?this.registry.parseConfig(JSON.parse(old.config_json)):null,!!request.secret);
     const id = old?.id ?? randomUUID(), operationId = randomUUID(), secretRef = request.secret ? 'application:' + id + ':secret:' + operationId : old?.secret_ref ?? null;
-    const candidate: CandidateConfig = { id, name: request.name, config: request.config, expectedRevision: request.expectedRevision };
+    const candidate:CandidateConfig<C> = { id, name: request.name, config: request.config, expectedRevision: request.expectedRevision };
     const candidateHash = digest(canonicalJson({ ...candidate, secretRef, operationId })), expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
     // Register cancellation before the staged row becomes visible to other callers.
     const controller = new AbortController(),cancel=()=>controller.abort(new ApplicationError('CANCELED','连接测试已取消'));this.tests.set(operationId,controller);signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
@@ -137,7 +138,7 @@ export class ApplicationConnectionService {
         staged = true;
       });
       const secret = secretRef ? this.secrets.get(secretRef) : null;
-      if (request.config.kind !== 'foxmail' && !secret) throw new ApplicationError('AUTH_REQUIRED', '请配置本连接的认证凭据');
+      if(this.registry.requiresSecret(request.config)&&!secret) throw new ApplicationError('AUTH_REQUIRED', '请配置本连接的认证凭据');
       const identity = await this.verify(request.config, secret, controller, activity);
       if (old && digest(canonicalJson(identity)) !== old.identity_hash) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '测试识别到其他服务或账号，请新建连接并显式选用');
       let compatibility!: ConnectionChangePlan;
@@ -155,22 +156,22 @@ export class ApplicationConnectionService {
     }
     finally { signal?.removeEventListener('abort',cancel);this.tests.delete(operationId); }
   }
-  async commitCandidate(operationId: string, candidateHash: string, acceptedImpactHash?: string): Promise<ApplicationConnection> {
+  async commitCandidate(operationId: string, candidateHash: string, acceptedImpactHash?: string): Promise<HostedConnection<C,A>> {
     let committed!: CandidateRow;
     try {
       await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
         const change = this.candidate(operationId);
         if (change.candidate_hash !== candidateHash || change.state !== 'validated' || change.expires_at <= new Date().toISOString()) throw new ApplicationError('CONFIG_PLAN_STALE', '测试结果已过期或表单已变化，请重新测试');
-        const value = JSON.parse(change.candidate_json) as CandidateConfig;
+        const value = JSON.parse(change.candidate_json) as CandidateConfig<C>;
         const old = this.checkRevision(value.expectedRevision ? value.id : undefined, value.expectedRevision);
         const originalPlan = JSON.parse(change.compatibility_plan_json!) as ConnectionChangePlan;
         const currentPlan = this.planConfigChange(old?.id, value.expectedRevision, value.config);
         if (currentPlan.planHash !== originalPlan.planHash) throw new ApplicationError('CONFIG_PLAN_STALE', '连接或历史引用已变化，请重新检查影响');
         if (currentPlan.impacts.length && acceptedImpactHash !== currentPlan.planHash) throw new ApplicationError(currentPlan.impacts.some(i => i.status === 'unverified') ? 'CONFIG_COMPATIBILITY_UNVERIFIED' : 'CONFIG_INCOMPATIBLE', '此配置影响历史会话，请查看具体版本影响后明确保存');
-        const identity = verifiedConnectionIdentitySchema.parse(JSON.parse(change.verified_identity_json!));
+        const identity = this.registry.parseIdentity(JSON.parse(change.verified_identity_json!),value.config.kind);
         if (old && digest(canonicalJson(identity)) !== old.identity_hash) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '连接身份已变化，请显式选择新连接');
         const now = new Date().toISOString(), changedSecret = change.new_secret_ref !== change.old_secret_ref;
-        const args = { id: value.id, appId: providerApplication(value.config.kind), provider: value.config.kind, name: value.name, config: canonicalJson(value.config), revision: (old?.revision ?? 0) + 1,
+        const args = { id: value.id, appId: this.registry.providerApplication(value.config.kind), provider: value.config.kind, name: value.name, config: canonicalJson(value.config), revision: (old?.revision ?? 0) + 1,
           configRevision: old ? old.config_revision + (old.config_json !== canonicalJson(value.config) ? 1 : 0) : 1, identityRevision: old?.identity_revision ?? 1, identity: canonicalJson(identity), identityHash: digest(canonicalJson(identity)), secretRef: change.new_secret_ref,
           secretRevision: (old?.secret_revision ?? 0) + (changedSecret ? 1 : 0), policyRevision: (old?.policy_revision ?? 0) + (!old || old.auth_state === 'disconnected' ? 1 : 0), enabled: old?.enabled ?? 1, createdAt: old?.created_at ?? now, now };
         if (old) this.store.sqlite.prepare(`UPDATE application_connections SET name=@name,config_json=@config,revision=@revision,config_revision=@configRevision,verified_identity_json=@identity,identity_hash=@identityHash,secret_ref=@secretRef,secret_revision=@secretRevision,policy_revision=@policyRevision,auth_state='connected',health='healthy',health_code='OK',health_message='连接已核验',tested_at=@now,updated_at=@now WHERE id=@id`).run(args);
@@ -185,7 +186,7 @@ export class ApplicationConnectionService {
     this.cleanupObsoleteSecret(committed);
     return this.get(committed.connection_id);
   }
-  async save(input: SaveApplicationConnection): Promise<ApplicationConnection> {
+  async save(input:HostedSave<C>): Promise<HostedConnection<C,A>> {
     const candidate = await this.testCandidate(input);
     return this.commitCandidate(candidate.operationId, candidate.candidateHash, input.acceptedImpactHash);
   }
@@ -217,13 +218,13 @@ export class ApplicationConnectionService {
       } catch { this.store.sqlite.prepare("UPDATE application_secret_changes SET error_code='SECRET_CLEANUP_PENDING' WHERE operation_id=?").run(operationId); }
     }
   }
-  async setEnabled(id: string, enabled: boolean, expectedRevision: number): Promise<ApplicationConnection> {
+  async setEnabled(id: string, enabled: boolean, expectedRevision: number): Promise<HostedConnection<C,A>> {
     await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
       this.checkRevision(id, expectedRevision);
       this.store.sqlite.prepare("UPDATE application_connections SET enabled=?,revision=revision+1,policy_revision=policy_revision+1,health='unverified',health_code=NULL,health_message=NULL,updated_at=? WHERE id=?").run(enabled ? 1 : 0, new Date().toISOString(), id);
     }).immediate()); return this.get(id);
   }
-  async disconnect(id: string, expectedRevision: number): Promise<ApplicationConnection> {
+  async disconnect(id: string, expectedRevision: number): Promise<HostedConnection<C,A>> {
     const operationId = randomUUID();
     await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
       const old = this.checkRevision(id, expectedRevision)!, now = new Date().toISOString();
@@ -250,12 +251,12 @@ export class ApplicationConnectionService {
       this.store.sqlite.prepare('UPDATE application_connections SET health=?,health_code=?,health_message=?,updated_at=? WHERE id=?').run(code?'unavailable':'healthy',code,message,new Date().toISOString(),id);return true;
     });
   }
-  authentication(id: string, expected: { identityRevision: number; configRevision: number; secretRevision: number; policyRevision: number }): { config: ConnectionConfig; secret: string | null } {
+  authentication(id: string, expected: { identityRevision: number; configRevision: number; secretRevision: number; policyRevision: number }): {config:C;secret:string|null} {
     const row = this.row(id);
     if (!row.enabled || row.auth_state !== 'connected') throw new ApplicationError('AUTH_REQUIRED', '此连接当前未获授权');
     if (row.identity_revision !== expected.identityRevision || row.config_revision !== expected.configRevision || row.secret_revision !== expected.secretRevision || row.policy_revision !== expected.policyRevision) throw new ApplicationError('REVISION_CONFLICT', '连接修订已变化，请重新核验本次操作');
-    const config = connectionConfigSchema.parse(JSON.parse(row.config_json)), secret = row.secret_ref ? this.secrets.get(row.secret_ref) : null;
-    if (config.kind !== 'foxmail' && !secret) throw new ApplicationError('AUTH_REQUIRED', '此连接缺少当前认证凭据');
+    const{config}=this.decodeRow(row),secret=row.secret_ref?this.secrets.get(row.secret_ref):null;
+    if(this.registry.requiresSecret(config)&&!secret) throw new ApplicationError('AUTH_REQUIRED', '此连接缺少当前认证凭据');
     return { config, secret };
   }
 }

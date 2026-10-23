@@ -70,7 +70,11 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
     throw new Error(`数据库已执行 ${done} 个迁移，当前版本只包含 ${migrations.length} 个，请使用更新版本的 WillYou`);
   }
   const pending = migrations.slice(done);
-  connection.transaction(() => {
+  const rebuilding=pending.some(m=>/^-- @smartdd-foreign-key-rebuild$/m.test(m.sql));
+  if(rebuilding&&connection.inTransaction)throw new Error('宿主连接表重建需要在独立迁移事务中执行');
+  const foreignKeys=connection.pragma('foreign_keys',{simple:true});
+  if(rebuilding)connection.pragma('foreign_keys=OFF');
+  try { connection.transaction(() => {
     const record = connection.prepare('INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)');
     for (const m of pending) {
       for (const stmt of m.sql.split('--> statement-breakpoint')) {
@@ -79,7 +83,8 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
       }
       record.run(m.hash, m.when);
     }
-  })();
+    if(rebuilding){const violations=connection.pragma('foreign_key_check');if(!Array.isArray(violations)||violations.length)throw new Error('宿主连接迁移外键核验失败，已保留原数据');}
+  })(); } finally {if(rebuilding)connection.pragma('foreign_keys='+(foreignKeys?'ON':'OFF'));}
   return pending.map((m) => m.tag);
 }
 
