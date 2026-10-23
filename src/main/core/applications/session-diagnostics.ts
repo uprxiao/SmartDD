@@ -1,3 +1,4 @@
+import type {NativeUserMessages} from './native-user-messages';
 import {nativeCapabilityPreparationSchema,assertNativeCapabilityPreparation} from './native-preparation-diagnostics';
 import {readApplicationRunScope} from './application-run-scope';
 import {readClaudeSlot} from './claude-delivery-state';
@@ -41,7 +42,7 @@ function assertPreparationScope(store:ResourceStore,runId:string,snapshot:Capabi
  * from a tool call, and no current grants inferred from an older run. */
 export class ApplicationSessionDiagnostics {
  private readonly sessions:CapabilitySessionRegistry;private readonly packages:PackageRegistry;private inspector?:Inspector;
- constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillDiscoveries?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>}){
+ constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;prepareStoppedSkillRead?:NativeUserMessages['prepareStoppedSkillRead'];skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillDiscoveries?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>}){
   this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw new Error('read only');},verifyExtraResource:()=>{throw new Error('read only');}});this.packages=new PackageRegistry(store,'diagnostic-reader');
  }
  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}
@@ -101,6 +102,47 @@ export class ApplicationSessionDiagnostics {
    }
    const projectionRoots:string[]=[];for(const ref of refs){const resource=this.store.get(ref.ref_id);const directory=this.directory(resource);if(['session-projection','agent-projection','standard-skill','legacy-static-plugin','legacy-agent-projection','claude-delivery'].includes(resource.kind))projectionRoots.push(directory);if(resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源未就绪');if(resource.kind==='application-package'){const pack=this.packages.get(resource.contentHash);verifyPackageTree(directory,pack,this.store.storeId);}else if(resource.kind==='runtime')new RuntimeRegistry(this.store).verify(resource.contentHash);else if(this.inspector)this.inspector.verify(resource,session.snapshot,session.discoveryHome);else throw new ApplicationError('CAPABILITY_UNAVAILABLE','完整投影核验尚无所属宿主');}
    for(const skill of skills){const owned=projectionRoots.some(root=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});if(!owned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill缺少所属投影引用');const st=lstatSync(skill.projectionPath);if(st.isSymbolicLink()||!st.isFile())throw new ApplicationError('OWNERSHIP_CONFLICT','原Skill投影不是受管文件');}return null;}catch(e){return code(e);}
+ }
+ /** Prepare synchronously before stop revokes the run. Completion writes only
+  * the captured historical run, never a current-run display or authorization. */
+ prepareStop(taskId:string,runId:string):()=>Promise<void>{
+  const noop=async()=>{};
+  try{
+   const runtime=this.deps.runs(),pty=this.deps.activePty?.(taskId);
+   if(!runtime||!pty||runtime.currentNativeRun(taskId,pty)?.runId!==runId||!this.deps.prepareStoppedSkillRead)return noop;
+   const context=runtime.assertActive(runId),session=this.sessions.inspectCoordinated(taskId),through=Date.now();
+   const row=this.store.sqlite.prepare('SELECT * FROM capability_runs WHERE run_id=? AND task_id=?').get(runId,taskId) as RunRow|undefined;
+   if(!row)return noop;
+   const preparation=this.run(row,session).preparation;
+   if(!preparation?.cliVersion||preparation.state!=='prepared')return noop;
+   const captures=session.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(pack=>{
+    if(this.resourceIssue(session,pack.appId))return [];
+    const targets=pack.skills.map(skill=>{const fd=openSync(skill.projectionPath,constants.O_RDONLY|constants.O_NOFOLLOW);try{const stat=fstatSync(fd);if(!stat.isFile()||stat.size>1024*1024)throw new Error('bounded Skill required');const bytes=Buffer.alloc(stat.size);if(readSync(fd,bytes,0,bytes.length,0)!==bytes.length||fstatSync(fd).size!==stat.size)throw new Error('changed Skill');return{id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:new TextDecoder('utf-8',{fatal:true}).decode(bytes)};}finally{closeSync(fd);}});
+    return [{pack,read:this.deps.prepareStoppedSkillRead!(runId,targets)}];
+   });
+   let consumed=false;
+   return async()=>{
+    if(consumed)return;consumed=true;
+    if(!context.signal.aborted)return;
+    for(const capture of captures){
+     try{
+      const result=await capture.read();
+      await withResourceLock(this.store.root,()=>{
+       const current=this.sessions.inspectCoordinated(taskId),stored=this.store.sqlite.prepare('SELECT * FROM capability_runs WHERE run_id=? AND task_id=? AND owner_instance_id=?').get(runId,taskId,runtime.instanceId) as RunRow|undefined;
+       if(!stored||stored.started_at!==row.started_at||!['stopping','stopped','failed'].includes(stored.state)||current.pointer.snapshotHash!==session.pointer.snapshotHash||this.resourceIssue(current,capture.pack.appId))return;
+       const history=this.run(stored,current);
+       if(history.preparationIssue||history.preparation?.cliVersion!==preparation.cliVersion||history.skillObservationIssue)return;
+       const upper=Math.min(through,stored.ended_at?Date.parse(stored.ended_at):through);
+       for(const [kind,observations] of [['read',result.reads],['discovery',result.discoveries]] as const)for(const observation of observations){
+        const value=skillObservationSchema.parse({runId,appId:capture.pack.appId,skillId:observation.skillId,kind,packageHash:capture.pack.packageHash,recordHash:observation.recordHash,observedAt:observation.observedAt,cliVersion:preparation.cliVersion});
+        if(!capture.pack.skills.some(s=>s.skillId===value.skillId)||Date.parse(value.observedAt)<Date.parse(stored.started_at)||Date.parse(value.observedAt)>upper)continue;
+        const text=canonicalJson(value);this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_skill_observations VALUES(?,?,?,?,?,?,?)').run(runId,value.appId,value.skillId,kind,text,digest(text),value.observedAt);
+       }
+      });
+     }catch{/* Failed diagnostic collection must not interfere with stop. */}
+    }
+   };
+  }catch{return noop;}
  }
  async inspect(taskId:string,expectedRunId?:string):Promise<ApplicationSessionDiagnostic>{
   const before=await this.inspectBase(taskId),runId=before.currentRun?.id;

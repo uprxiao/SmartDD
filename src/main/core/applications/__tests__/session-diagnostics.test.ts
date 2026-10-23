@@ -1,3 +1,4 @@
+import type {NativeUserMessages} from '../native-user-messages';
 import type {SkillReadTarget,SkillReadObservation} from '../codex-skill-read-evidence';
 import {ClaudeDeliveryCoordinator} from '../claude-delivery';
 import {readClaudeSlot} from '../claude-delivery-state';
@@ -13,15 +14,16 @@ import type {ApplicationSelectionService} from '../selection-service';
 import type {OwnedCapabilityRun,OwnedRunProcess} from '../run-registry';
 import {runFixture,FixtureProcessReader} from './run-fixture';
 import {canonicalJson,digest} from '../manifest';
+let stopReader:NativeUserMessages['prepareStoppedSkillRead']|undefined;
 let recoveryIssue:string|null=null;
 let discoveryObserver:((id:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>)|undefined;
 let skillObserver:((id:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>)|undefined;
 let f:Awaited<ReturnType<typeof runFixture>>,diagnostics:ApplicationSessionDiagnostics,activePty:string|null,connected:boolean,handles:OwnedCapabilityRun[],bridges:OwnedRunProcess[];
 async function start(){let run:OwnedCapabilityRun;if(readClaudeSlot(f.store,f.snapshot.taskId)){const c=new ClaudeDeliveryCoordinator(f.store,f.sessions,new SessionCapabilityProjector(f.store,f.sessions),f.reader,f.runs.instanceId),apps=f.snapshot.packages.map(p=>p.appId),token=await c.prepare(f.snapshot.taskId,apps);run=await f.runs.reserveScoped({taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash,bindings:[]},apps,[token.resourceId],undefined,token);c.proof(run.runId,token);}else run=await f.create();handles.push(run);await run.prepare();await run.cli.arm();const pid=19000+handles.length;(f.reader as FixtureProcessReader).identities.set(pid,'darwin-proc-v1:100:'+pid);await run.cli.attach(pid);activePty=run.ptyId;return run;}
 const prepared=(run:OwnedCapabilityRun):SessionPreparationEvidence=>({schema:1,runId:run.runId,selectionHash:f.session.selectionHash,cliVersion:'fixture-cli-1',adapterHash:f.snapshot.adapterBinding.hash,state:'prepared',issueCode:null,manifestPath:join(f.root,'host/manifest.json'),configPaths:[join(f.root,'host/mcp.json')],preparedAt:new Date().toISOString()});
-beforeEach(async()=>{f=await runFixture(new FixtureProcessReader(),{application:true,fullProjection:true});activePty=null;connected=false;skillObserver=undefined;discoveryObserver=undefined;recoveryIssue=null;handles=[];bridges=[];f.sqlite.prepare("INSERT INTO tasks(id,project_id,cwd,runner,title,first_message,runtime_snapshot,created_at,updated_at) VALUES(?,'p1',?,'claude','private fixture','do-not-copy-user-message','{\"secret\":\"never-copy-raw-config\"}',1,1)").run(f.snapshot.taskId,f.root);
+beforeEach(async()=>{f=await runFixture(new FixtureProcessReader(),{application:true,fullProjection:true});activePty=null;connected=false;stopReader=undefined;skillObserver=undefined;discoveryObserver=undefined;recoveryIssue=null;handles=[];bridges=[];f.sqlite.prepare("INSERT INTO tasks(id,project_id,cwd,runner,title,first_message,runtime_snapshot,created_at,updated_at) VALUES(?,'p1',?,'claude','private fixture','do-not-copy-user-message','{\"secret\":\"never-copy-raw-config\"}',1,1)").run(f.snapshot.taskId,f.root);
  const selections={requireEnabled:()=>({enabled:true}),connectionSlot:()=>({connectionId:null,identityRevision:null,revision:0})} as unknown as ApplicationSelectionService;
- diagnostics=new ApplicationSessionDiagnostics(f.store,{} as ApplicationConnectionService,selections,{runs:()=>f.runs,activePty:()=>activePty,skillReads:async(id,targets)=>skillObserver?skillObserver(id,targets):[],skillDiscoveries:async(id,targets)=>discoveryObserver?discoveryObserver(id,targets):[]});diagnostics.attach({channelConnected:()=>connected,recoveryIssue:()=>recoveryIssue,verify:(resource,snapshot)=>{if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind)){new SessionCapabilityProjector(f.store,f.sessions).verify(resource,snapshot);return;}const bytes=readFileSync(join(f.store.root,resource.relativePath,'entry.cjs'));if(digest(bytes)!==resource.contentHash)throw new Error('fixture bytes');}});
+ diagnostics=new ApplicationSessionDiagnostics(f.store,{} as ApplicationConnectionService,selections,{runs:()=>f.runs,activePty:()=>activePty,prepareStoppedSkillRead:(id,targets)=>stopReader?.(id,targets)??(async()=>({reads:[],discoveries:[]})),skillReads:async(id,targets)=>skillObserver?skillObserver(id,targets):[],skillDiscoveries:async(id,targets)=>discoveryObserver?discoveryObserver(id,targets):[]});diagnostics.attach({channelConnected:()=>connected,recoveryIssue:()=>recoveryIssue,verify:(resource,snapshot)=>{if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind)){new SessionCapabilityProjector(f.store,f.sessions).verify(resource,snapshot);return;}const bytes=readFileSync(join(f.store.root,resource.relativePath,'entry.cjs'));if(digest(bytes)!==resource.contentHash)throw new Error('fixture bytes');}});
 });
 afterEach(async()=>{f.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,snapshot_hash=? WHERE task_id=?').run(JSON.stringify(f.snapshot),f.session.pointer.snapshotHash,f.snapshot.taskId);for(const child of bridges)await child.exited().catch(()=>{});for(const run of handles){await run.cli.exited().catch(()=>{});await run.stop().catch(()=>{});}await f.runs.dispose();f.cleanup();});
 describe('run-scoped read-only session diagnostics',()=>{
@@ -112,4 +114,23 @@ it('retains verified observations within one live run after they leave the bound
  const first=await diagnostics.inspect(f.snapshot.taskId);expect(first.applications[0].evidence.skillRead).toBe('verified');skillObserver=async()=>[];
  const later=await diagnostics.inspect(f.snapshot.taskId);expect(later.applications[0].evidence.skillRead).toBe('verified');expect(later.applications[0].evidence.skillReadObservations?.[0].recordHash).toBe('e'.repeat(64));
  f.sqlite.prepare("UPDATE capability_skill_observations SET evidence_hash='damaged' WHERE run_id=?").run(run.runId);expect((await diagnostics.inspect(f.snapshot.taskId)).applications[0].evidence.skillRead).toBe('unverified');
+});
+
+it('records stop-only Skill evidence under the old run even after a new run starts',async()=>{
+ const run=await start();await diagnostics.prepared(prepared(run));
+ stopReader=(id,targets)=>{expect(id).toBe(run.runId);const reads=targets.map(t=>({skillId:t.id,observedAt:f.runs.get(run.runId).startedAt,callId:'final',recordHash:'f'.repeat(64)}));return async()=>({reads,discoveries:[]});};
+ const finish=diagnostics.prepareStop(f.snapshot.taskId,run.runId);await run.stop();await run.cli.exited();const next=await start();await diagnostics.prepared(prepared(next));await finish();await finish();
+ const view=await diagnostics.inspect(f.snapshot.taskId);expect(view.currentRun?.id).toBe(next.runId);expect(view.applications[0].evidence.skillRead).toBe('unverified');expect(view.recentRuns.find(r=>r.id===run.runId)?.skillObservations).toMatchObject([{kind:'read',runId:run.runId}]);
+ expect(f.sqlite.prepare('SELECT COUNT(*) n FROM capability_skill_observations WHERE run_id=?').get(next.runId)).toEqual({n:0});
+});
+it('does not persist a stop read before revocation or after resource damage',async()=>{
+ const run=await start();await diagnostics.prepared(prepared(run));stopReader=(id,targets)=>{const reads=targets.map(t=>({skillId:t.id,observedAt:f.runs.get(run.runId).startedAt,callId:'final',recordHash:'f'.repeat(64)}));return async()=>({reads,discoveries:[]});};
+ const early=diagnostics.prepareStop(f.snapshot.taskId,run.runId);await early();expect(f.sqlite.prepare('SELECT COUNT(*) n FROM capability_skill_observations').get()).toEqual({n:0});
+ const finish=diagnostics.prepareStop(f.snapshot.taskId,run.runId);await run.stop();await run.cli.exited();const skill=f.snapshot.packages[0].skills[0],bytes=readFileSync(skill.projectionPath);writeFileSync(skill.projectionPath,'damaged');
+ try{await finish();expect(f.sqlite.prepare('SELECT COUNT(*) n FROM capability_skill_observations').get()).toEqual({n:0});}finally{writeFileSync(skill.projectionPath,bytes);}
+});
+it('ignores foreign and future stop observations and contains collection failure',async()=>{
+ const run=await start();await diagnostics.prepared(prepared(run));stopReader=(id,targets)=>async()=>({reads:[{skillId:'foreign',observedAt:f.runs.get(run.runId).startedAt,callId:'f',recordHash:'f'.repeat(64)},{skillId:targets[0].id,observedAt:'2099-01-01T00:00:00.000Z',callId:'f',recordHash:'f'.repeat(64)}],discoveries:[]});
+ const finish=diagnostics.prepareStop(f.snapshot.taskId,run.runId);stopReader=()=>async()=>{throw new Error('source gone');};const failure=diagnostics.prepareStop(f.snapshot.taskId,run.runId);
+ await run.stop();await run.cli.exited();await expect(finish()).resolves.toBeUndefined();await expect(failure()).resolves.toBeUndefined();expect(f.sqlite.prepare('SELECT COUNT(*) n FROM capability_skill_observations').get()).toEqual({n:0});
 });
