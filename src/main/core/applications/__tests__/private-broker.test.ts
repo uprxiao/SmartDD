@@ -29,6 +29,26 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
   beforeEach(async () => { time = Date.now(); count = 0; ticketTtlMs=undefined; disconnected=vi.fn(); onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
     const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time, disconnected, get ticketTtlMs(){return ticketTtlMs;} }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
   afterEach(async () => { for (const socket of peers) socket.destroy(); await broker.close(); f.cleanup(); });
+  it('persists redacted broker denials with only server-owned scope and a response audit reference',async()=>{
+    const prepared=await ticket(),owned=await peer(broker.endpoint),token=valueToken(await owned.send(exchange(prepared.data))).token;
+    const forgedProject=randomUUID(),canary='RAW_ARGUMENT_SECRET_MUST_NOT_PERSIST';
+    const denied=await owned.send({schema:1,method:'tools/call',token,projectId:forgedProject,call:{operation:'smartdd_zentao_query_v1',contractMajor:1,connectionId:null,arguments:{value:canary}}});
+    expect(denied).toMatchObject({status:'error',auditId:expect.any(String)});
+    const external=await peer(broker.endpoint),untrusted=await external.send({schema:1,method:'tools/list',token:'f'.repeat(64)});
+    expect(untrusted).toMatchObject({status:'error',auditId:expect.any(String)});
+    const rows=f.sqlite.prepare('SELECT * FROM capability_broker_denials ORDER BY rowid').all();
+    expect(rows).toHaveLength(2);expect(rows[0]).toMatchObject({run_id:run.runId,bridge_id:prepared.bridge.processId,method:'tools/call',error_code:'INVALID_INPUT'});expect(rows[1]).toMatchObject({run_id:null,bridge_id:null,method:'tools/list',error_code:'AUTH_REQUIRED'});
+    for(const value of [token,'f'.repeat(64),canary,forgedProject])expect(JSON.stringify(rows)).not.toContain(value);
+    expect(count).toBe(0);await broker.close();expect(f.sqlite.prepare('SELECT count(*) n FROM capability_broker_denials').get()).toEqual({n:2});
+  });
+  it('keeps refusing unauthenticated requests when denial storage fails and reports the missing audit',async()=>{
+    f.sqlite.exec('CREATE TEMP VIEW capability_broker_denials AS SELECT * FROM main.capability_broker_denials');
+    try{
+      const client=await peer(broker.endpoint),response=await client.send({schema:1,method:'tools/list',token:'f'.repeat(64)});
+      expect(response).toMatchObject({status:'error',auditUnavailable:true,error:{code:'AUTH_REQUIRED'}});expect(response).not.toHaveProperty('auditId');expect(count).toBe(0);
+    }finally{f.sqlite.exec('DROP VIEW temp.capability_broker_denials');}
+    const fresh=await peer(broker.endpoint);expect(await fresh.send({schema:1,method:'tools/list',token:'e'.repeat(64)})).toMatchObject({status:'error',auditId:expect.any(String)});expect(f.sqlite.prepare('SELECT count(*) n FROM capability_broker_denials').get()).toEqual({n:1});
+  });
   it('waits for the exact replacement instance and ends its waiter on cancellation',async()=>{
     const first=await ticket(),second=await ticket(),controller=new AbortController();
     let settled=false;const waiting=broker.waitForAuthentication(run.runId,second.bridge.processId,controller.signal).then(value=>{settled=true;return value;});

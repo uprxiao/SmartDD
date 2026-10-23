@@ -109,13 +109,27 @@ export class PrivateApplicationBroker {
     try{binding.authorize?.();}catch(error){this.revokePeer(peer);throw error;}
     this.runs.assertBridge(binding.runId,binding.bridgeId);
   }
+  private recordDenial(peer:Peer,method:string,response:BridgeResponse):BridgeResponse {
+    if(response.status!=='error')return response;
+    // Only fixed protocol classifications and server-owned identities cross this boundary.
+    // Never persist caller IDs, token digests, provider error text or arguments.
+    const codes=['INVALID_INPUT','AUTH_REQUIRED','SCOPE_DENIED','TOO_LARGE','RESOURCE_STATE_CHANGED','CAPABILITY_UNAVAILABLE'];
+    const code=codes.includes(response.error.code)?response.error.code:'CAPABILITY_UNAVAILABLE';
+    const binding=peer.binding?.ready?peer.binding:undefined,auditId=randomUUID();
+    try{
+      this.runs.store.sqlite.prepare('INSERT INTO capability_broker_denials(audit_id,host_generation,run_id,bridge_id,method,error_code,observed_at) VALUES(?,?,?,?,?,?,?)').run(auditId,this.hostGeneration,binding?.runId??null,binding?.bridgeId??null,method,code,new Date(this.clock()).toISOString());
+      response.auditId=auditId;
+    }catch{response.auditUnavailable=true;}
+    return response;
+  }
   private async receive(peer: Peer,bytes: Buffer): Promise<BridgeResponse> {
-    let id: string = randomUUID();
+    let id: string = randomUUID(), method='unknown';
     try {
       let input: unknown;
       try { input = JSON.parse(bytes.toString('utf8')); }
       catch { throw new ApplicationError('INVALID_INPUT','通道JSON格式无效'); }
       if (input && typeof input === 'object' && 'id' in input && typeof input.id === 'string' && /^[a-f0-9-]{36}$/.test(input.id)) id = input.id;
+      if(input&&typeof input==='object'&&'method' in input&&typeof input.method==='string'&&['exchange','renew','tools/list','tools/call','cancel'].includes(input.method))method=input.method;
       if (!boundedJson(input)) throw new ApplicationError('INVALID_INPUT','通道JSON结构超过预算');
       const parsed = bridgeRequestSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','通道请求包含未允许字段或格式无效');
       const request = parsed.data; id = request.id;
@@ -127,10 +141,10 @@ export class PrivateApplicationBroker {
       try {
         const response: BridgeResponse = request.method === 'tools/list' ? { schema: 1,id,status: 'ok',value: await this.tools.list(binding.runId) } : await this.tools.call(binding.runId,id,request.call,controller.signal);
         try { this.checkBinding(peer,binding); }
-        catch (error) { const denied = errorResponse(id,error); if (denied.status === 'error' && response.operationId) { denied.operationId = response.operationId; denied.error.effectState = response.status === 'error' ? response.error.effectState : response.effectState ?? 'unknown'; denied.error.nextAction = '查看此operationId关联的已有业务记录，不要重复提交'; } return denied; }
-        return response;
+        catch (error) { const denied = errorResponse(id,error); if (denied.status === 'error' && response.operationId) { denied.operationId = response.operationId; denied.error.effectState = response.status === 'error' ? response.error.effectState : response.effectState ?? 'unknown'; denied.error.nextAction = '查看此operationId关联的已有业务记录，不要重复提交'; } return this.recordDenial(peer,method,denied); }
+        return response.status==='error'&&['AUTH_REQUIRED','SCOPE_DENIED','INVALID_INPUT'].includes(response.error.code)?this.recordDenial(peer,method,response):response;
       } finally { peer.controllers.delete(id); }
-    } catch (error) { return errorResponse(id,error); }
+    } catch (error) { return this.recordDenial(peer,method,errorResponse(id,error)); }
   }
   private async exchange(peer: Peer,request: Extract<BridgeRequest,{ method: 'exchange' }>): Promise<BridgeResponse> {
     if (peer.binding) throw new ApplicationError('AUTH_REQUIRED','此连接已消费过启动票据');

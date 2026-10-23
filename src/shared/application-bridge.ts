@@ -14,7 +14,7 @@ export type BridgeRequest = z.infer<typeof bridgeRequestSchema>;
 export const bridgeBootstrapSchema = z.object({ schema: z.literal(1),endpoint: z.string().min(1).max(100),runId: id,bridgeId: id,secret,hostGeneration: id,expiresAt: z.number().int().positive() }).strict();
 export type BridgeBootstrap = z.infer<typeof bridgeBootstrapSchema>;
 export interface BridgeFailure { code: string;message: string;layer: 'bridge' | 'auth' | 'config' | 'provider';retryable: boolean;attemptCount: number;retryExhausted: boolean;effectState: 'not-started' | 'read-only' | 'completed' | 'unknown';nextAction: string }
-export type BridgeResponse = { schema: 1;id: string;status: 'ok';value: unknown;operationId?: string;effectState?: BridgeFailure['effectState'] } | { schema: 1;id: string;status: 'error';error: BridgeFailure;operationId?: string };
+export type BridgeResponse = { schema: 1;id: string;status: 'ok';value: unknown;operationId?: string;effectState?: BridgeFailure['effectState'] } | { schema: 1;id: string;status: 'error';error: BridgeFailure;auditId?: string;auditUnavailable?: boolean;operationId?: string };
 export interface BridgeTool { name: string;description: string;inputSchema: { type: 'object';[key: string]: unknown };outputSchema: { type: 'object';[key: string]: unknown };annotations: { readOnlyHint: boolean;destructiveHint: boolean;idempotentHint: boolean;openWorldHint: boolean };contractMajor: number }
 /** Validate iterative structure before recursive schema/hash operations. No remote refs or prototypes. */
 export function boundedJson(value: unknown): boolean {
