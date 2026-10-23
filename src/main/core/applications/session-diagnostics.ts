@@ -40,7 +40,7 @@ function assertPreparationScope(store:ResourceStore,runId:string,snapshot:Capabi
  * from a tool call, and no current grants inferred from an older run. */
 export class ApplicationSessionDiagnostics {
  private readonly sessions:CapabilitySessionRegistry;private readonly packages:PackageRegistry;private inspector?:Inspector;
- constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>}){
+ constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillDiscoveries?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>}){
   this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw new Error('read only');},verifyExtraResource:()=>{throw new Error('read only');}});this.packages=new PackageRegistry(store,'diagnostic-reader');
  }
  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}
@@ -96,12 +96,13 @@ export class ApplicationSessionDiagnostics {
  async inspect(taskId:string):Promise<ApplicationSessionDiagnostic>{
   const before=await this.inspectBase(taskId),runId=before.currentRun?.id;
   if(!runId||!this.deps.skillReads)return before;
-  const observed=new Map<string,SkillReadObservation[]>();
+  const observed=new Map<string,SkillReadObservation[]>(),discovered=new Map<string,SkillReadObservation[]>();
   for(const app of before.applications){
    if(app.resourceState!=='verified'||!app.skills.length)continue;
    try{
-    const targets=app.skills.map(skill=>{const fd=openSync(skill.projectionPath,constants.O_RDONLY|constants.O_NOFOLLOW);try{const stat=fstatSync(fd);if(!stat.isFile()||stat.size>1024*1024)throw new Error('bounded Skill source required');const bytes=Buffer.alloc(stat.size);if(readSync(fd,bytes,0,bytes.length,0)!==bytes.length||fstatSync(fd).size!==stat.size)throw new Error('Skill source changed');return {id:skill.id,path:skill.projectionPath,content:new TextDecoder('utf-8',{fatal:true}).decode(bytes)};}finally{closeSync(fd);}});
+    const targets=app.skills.map(skill=>{const fd=openSync(skill.projectionPath,constants.O_RDONLY|constants.O_NOFOLLOW);try{const stat=fstatSync(fd);if(!stat.isFile()||stat.size>1024*1024)throw new Error('bounded Skill source required');const bytes=Buffer.alloc(stat.size);if(readSync(fd,bytes,0,bytes.length,0)!==bytes.length||fstatSync(fd).size!==stat.size)throw new Error('Skill source changed');return {id:skill.id,nativeName:skill.name,path:skill.projectionPath,content:new TextDecoder('utf-8',{fatal:true}).decode(bytes)};}finally{closeSync(fd);}});
     observed.set(app.appId,await this.deps.skillReads(runId,targets));
+    if(this.deps.skillDiscoveries)discovered.set(app.appId,await this.deps.skillDiscoveries(runId,targets));
    }catch{/* Unavailable evidence remains unverified. */}
   }
   // Native IO is outside the resource coordinator; reacquire it for a fresh view.
@@ -113,6 +114,8 @@ export class ApplicationSessionDiagnostics {
    const reads=observed.get(app.appId)??[];
    app.evidence.skillReadObservations=reads.map(r=>({...r,runId}));
    if(app.skills.length&&app.skills.every(s=>reads.some(r=>r.skillId===s.id)))app.evidence.skillRead='verified';
+   const discovery=discovered.get(app.appId)??[];app.evidence.skillDiscoveryObservations=discovery.map(r=>({...r,runId}));
+   if(app.skills.length&&app.skills.every(s=>discovery.some(r=>r.skillId===s.id)))app.evidence.skillDiscovery='verified';
   }
   return fresh;
  }

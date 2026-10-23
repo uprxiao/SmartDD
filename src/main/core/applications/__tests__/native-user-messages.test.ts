@@ -122,3 +122,12 @@ for (const runner of ['claude-code', 'codex'] as const) describe(runner + ' nati
   it('rejects foreign targets, disabled applications, revoked runs and old-run observations',async()=>{const target=skillRecords();expect(await messages.skillReads(current.run.runId,[{...target,path:'/foreign/SKILL.md'}])).toEqual([]);current.applicationScope=[];expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);current.applicationScope=undefined;current.run.startedAt=new Date(now+1).toISOString();expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);abort.abort();expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);});
   it('rejects a replaced native header and symbolic-link source',async()=>{const target=skillRecords();renameSync(file,file+'.original');symlinkSync(file+'.original',file);expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);rmSync(file);writeFileSync(file,JSON.stringify({type:'session_meta',payload:{id:'foreign',cwd}})+'\n');expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);});
  });
+
+it('keeps owned native catalog discovery separate from reading and rejects revoked scope',async()=>{
+ setup('codex');const skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:'not read'};
+ const rootPath=target.path.slice(0,target.path.lastIndexOf('/'));
+ const catalog='<skills_instructions>\n## Skills\n### Skill roots\n- `r0` = `'+rootPath+'`\n### Available skills\n- '+target.nativeName+': description (file: r0/SKILL.md)\n</skills_instructions>';
+ write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'message',role:'developer',content:[{type:'input_text',text:catalog}]}});
+ expect(await messages.skillDiscoveries(current.run.runId,[target])).toHaveLength(1);expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);
+ current.applicationScope=[];expect(await messages.skillDiscoveries(current.run.runId,[target])).toEqual([]);
+});

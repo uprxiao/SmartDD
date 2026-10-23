@@ -84,7 +84,7 @@ export class ApplicationService {
     this.builtin=new BuiltinPackageRegistry(store);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
     this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,'zentao')),runningInProject:id=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,'zentao'))});
-    this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty,skillReads:(runId,targets)=>this.nativeMessages.skillReads(runId,targets)});
+    this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty,skillReads:(runId,targets)=>this.nativeMessages.skillReads(runId,targets),skillDiscoveries:(runId,targets)=>this.nativeMessages.skillDiscoveries(runId,targets)});
     this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,changed:options.changed,assertRun:id=>{
       if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前Agent运行通道尚未完成初始化');return this.runs.assertActive(id);
     }});

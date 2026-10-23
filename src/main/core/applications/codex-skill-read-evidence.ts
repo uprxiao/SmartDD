@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-export interface SkillReadTarget { id:string; path:string; content:string }
+export interface SkillReadTarget { id:string; path:string; content:string; nativeName?:string }
 export interface SkillReadObservation { skillId:string; observedAt:string; callId:string; recordHash:string }
 const hash=(text:string)=>createHash('sha256').update(text).digest('hex');
 const quote=(text:string)=>"'"+text.replaceAll("'","'\\''")+"'";

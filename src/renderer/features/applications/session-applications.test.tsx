@@ -74,3 +74,5 @@ describe('application conflict source disclosure uses this run only',()=>{
 });
 
 it('shows verified current Skill reads without claiming discovery or adding tool use',async()=>{const value=fixture();value.applications[0].evidence.skillRead='verified';value.applications[0].evidence.toolRequests=0;m.session.mockResolvedValue({ok:true,value});mount();await screen.findByText(/已核验本次原生读取/);expect(screen.getByText(/Agent 发现 Skill：未验证/)).toBeTruthy();expect(m.create).not.toHaveBeenCalled();});
+
+it('shows catalog discovery without claiming Skill body reading',async()=>{const value=fixture();value.applications[0].evidence.skillDiscovery='verified';m.session.mockResolvedValue({ok:true,value});mount();await screen.findByText(/已核验本次原生清单/);expect(screen.getByText(/Agent 读取 Skill：未验证/)).toBeTruthy();});

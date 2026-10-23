@@ -1,3 +1,4 @@
+import {codexSkillDiscoveryEvidence} from './codex-skill-discovery-evidence';
 import {codexSkillReadEvidence,type SkillReadTarget,type SkillReadObservation} from './codex-skill-read-evidence';
 import { constants } from 'node:fs';
 import { open, opendir, lstat, realpath } from 'node:fs/promises';
@@ -153,12 +154,14 @@ export class NativeUserMessages {
     }
   }
   /** Host-only diagnostic observation. Does not create or consume user-input receipts. */
-  async skillReads(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{
+  async skillReads(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'read');}
+  async skillDiscoveries(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'discovery');}
+  private async skillObservations(runId:string,targets:readonly SkillReadTarget[],kind:'read'|'discovery'):Promise<SkillReadObservation[]>{
     try{
       const {context,registration}=this.context(runId);
       if(context.snapshot.runner!=='codex'||registration.version!=='0.162.1')return [];
       const allowed=context.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
-      if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path)))return [];
+      if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return [];
       const located=await this.locate(context),file=await this.openFile(located.root,located.file);
       try{
         const before=await file.stat(),header=await this.header(file,context),cwd=await realpath(context.snapshot.native.cwd);
@@ -167,7 +170,7 @@ export class NativeUserMessages {
         const first=start?data.indexOf(10)+1:0;if(start&&first===0)return [];
         const last=data.lastIndexOf(10);if(last<first)return [];
         const lines=utf8(data.subarray(first,last)).split('\n');
-        const observations=codexSkillReadEvidence(lines,targets,Date.parse(context.run.startedAt),this.now());
+        const observations=(kind==='read'?codexSkillReadEvidence:codexSkillDiscoveryEvidence)(lines,targets,Date.parse(context.run.startedAt),this.now());
         const after=await file.stat(),pathState=await lstat(located.file),again=Buffer.alloc(data.length),reread=await file.read(again,0,again.length,start);
         if(after.size<before.size||!pathState.isFile()||pathState.isSymbolicLink()||pathState.dev!==before.dev||pathState.ino!==before.ino||after.dev!==before.dev||after.ino!==before.ino||reread.bytesRead!==data.length||!again.equals(data)||await this.header(file,context)!==header||await realpath(context.snapshot.native.stateRoot)!==located.root||await realpath(context.snapshot.native.cwd)!==cwd)return [];
         const fresh=this.context(runId).context;

@@ -31,7 +31,7 @@ export interface SessionApplicationDiagnostic {
  appId:ApplicationId;name:string;fixedVersion:string|null;defaultVersion:string|null;packageHash:string|null;
  policy:'enabled'|'disabled'|'unverified';resourceState:'verified'|'unavailable'|'unverified';issueCode:string|null;
  skills:{id:string;name:string;sourceHash:string;projectionPath:string}[];permissions:string[];connections:SessionConnectionDiagnostic[];
- evidence:{skillDiscovery:'unverified';skillRead:'unverified'|'verified';skillReadObservations?:{skillId:string;observedAt:string;callId:string;recordHash:string;runId:string}[];toolRequests:number;successfulToolRequests:number;latestToolAt:string|null;latestErrorCode:string|null;latestEffectState:string|null};
+ evidence:{skillDiscovery:'unverified'|'verified';skillDiscoveryObservations?:{skillId:string;observedAt:string;callId:string;recordHash:string;runId:string}[];skillRead:'unverified'|'verified';skillReadObservations?:{skillId:string;observedAt:string;callId:string;recordHash:string;runId:string}[];toolRequests:number;successfulToolRequests:number;latestToolAt:string|null;latestErrorCode:string|null;latestEffectState:string|null};
 }
 export interface DeliveryCopyDiagnostic {
  deliveryId:string;relativePath:string;contentHash:string|null;
