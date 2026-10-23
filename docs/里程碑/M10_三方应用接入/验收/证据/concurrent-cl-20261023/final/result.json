@@ -1,0 +1,306 @@
+{
+  "root": "/private/tmp/willyou-m10-concurrent-read-4Fh73R",
+  "startedAt": "2026-10-23T17:00:44.825Z",
+  "layer": "real CLI with synthetic provider;not real model or packaged App",
+  "cliVersion": "0.162.1",
+  "requests": [
+    {
+      "number": 1,
+      "sha256": "bd7e6e43eeb1925d3c37a486821e7e09fe17947c591180e7a7d0fcac10fbc905",
+      "v1Body": true,
+      "v2Body": false,
+      "model": "m10-synthetic"
+    },
+    {
+      "number": 2,
+      "sha256": "b2c3707381144d38560786c1fb186797db915cbc09a7f291f0000b8ce97e88ca",
+      "v1Body": false,
+      "v2Body": true,
+      "model": "m10-synthetic"
+    },
+    {
+      "number": 3,
+      "sha256": "67867a18d3e4322493dc7e666f596b202f3aaa7628a6ce350d689dfe8dc3256e",
+      "v1Body": true,
+      "v2Body": false,
+      "model": "m10-synthetic"
+    }
+  ],
+  "checks": [
+    {
+      "name": "concurrent body read v1",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 1,
+          "sha256": "bd7e6e43eeb1925d3c37a486821e7e09fe17947c591180e7a7d0fcac10fbc905",
+          "v1Body": true,
+          "v2Body": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "concurrent body read v2",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 2,
+          "sha256": "b2c3707381144d38560786c1fb186797db915cbc09a7f291f0000b8ce97e88ca",
+          "v1Body": false,
+          "v2Body": true,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "concurrent fixed tool v1",
+      "status": "passed",
+      "value": {
+        "version": "v1",
+        "packageHash": "c5fda131ab5d360cc9eb09ebd838a8f397f26430903d70c8e2a63530fc23d9cd",
+        "skillSha256": "c87a27da848902dbfc1757a203646ba38246d9a94a676c32664f66e6efeb4706",
+        "marker": "M10_FIXED_TOOL_v1"
+      }
+    },
+    {
+      "name": "concurrent fixed tool v2",
+      "status": "passed",
+      "value": {
+        "version": "v2",
+        "packageHash": "d93165586c7803c69daa9ba065505fae4d4531236abee7746ace3af13ac04a21",
+        "skillSha256": "21e4c31440611e70a18fb7199f35a2f86ff3bb38cccda4fdd07f7406fd1604c7",
+        "marker": "M10_FIXED_TOOL_v2"
+      }
+    },
+    {
+      "name": "resume old v1 body with v2 still alive",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 3,
+          "sha256": "67867a18d3e4322493dc7e666f596b202f3aaa7628a6ce350d689dfe8dc3256e",
+          "v1Body": true,
+          "v2Body": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "resume old v1 fixed tool",
+      "status": "passed",
+      "value": {
+        "version": "v1",
+        "packageHash": "c5fda131ab5d360cc9eb09ebd838a8f397f26430903d70c8e2a63530fc23d9cd",
+        "skillSha256": "c87a27da848902dbfc1757a203646ba38246d9a94a676c32664f66e6efeb4706",
+        "marker": "M10_FIXED_TOOL_v1"
+      }
+    },
+    {
+      "name": "v2 fixed tool remains unchanged after v1 restart",
+      "status": "passed",
+      "value": {
+        "version": "v2",
+        "packageHash": "d93165586c7803c69daa9ba065505fae4d4531236abee7746ace3af13ac04a21",
+        "skillSha256": "21e4c31440611e70a18fb7199f35a2f86ff3bb38cccda4fdd07f7406fd1604c7",
+        "marker": "M10_FIXED_TOOL_v2"
+      }
+    }
+  ],
+  "status": "passed-with-boundaries",
+  "sourceCommit": "affc34fcd991f2d8e191613aa5aeafb9d9e72fc1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cliEntrySha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+  "skills": {
+    "v1": {
+      "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v1/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v1_4Fh73R",
+      "sha256": "c87a27da848902dbfc1757a203646ba38246d9a94a676c32664f66e6efeb4706"
+    },
+    "v2": {
+      "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v2/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v2_4Fh73R",
+      "sha256": "21e4c31440611e70a18fb7199f35a2f86ff3bb38cccda4fdd07f7406fd1604c7"
+    }
+  },
+  "toolPackages": {
+    "v1": {
+      "kind": "controlled-probe-package-not-production-app-manifest",
+      "version": "v1",
+      "skillSha256": "c87a27da848902dbfc1757a203646ba38246d9a94a676c32664f66e6efeb4706",
+      "toolSourceSha256": "26d51d0351abc1b90fa4c05343e7b3cbe89e1c28ba013fb2658384d0e4ae8f85",
+      "marker": "M10_FIXED_TOOL_v1",
+      "packageHash": "c5fda131ab5d360cc9eb09ebd838a8f397f26430903d70c8e2a63530fc23d9cd",
+      "manifestPath": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/fixture-package-v1.json"
+    },
+    "v2": {
+      "kind": "controlled-probe-package-not-production-app-manifest",
+      "version": "v2",
+      "skillSha256": "21e4c31440611e70a18fb7199f35a2f86ff3bb38cccda4fdd07f7406fd1604c7",
+      "toolSourceSha256": "26d51d0351abc1b90fa4c05343e7b3cbe89e1c28ba013fb2658384d0e4ae8f85",
+      "marker": "M10_FIXED_TOOL_v2",
+      "packageHash": "d93165586c7803c69daa9ba065505fae4d4531236abee7746ace3af13ac04a21",
+      "manifestPath": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/fixture-package-v2.json"
+    }
+  },
+  "nativeBinary": {
+    "path": "/private/tmp/willyou-m10-codex-pin-lq8vtwk1/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+    "sha256": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0"
+  },
+  "launches": [
+    {
+      "label": "concurrent-v1",
+      "version": "v1",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:64464/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/fixture-package-v1.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/project"
+    },
+    {
+      "label": "concurrent-v2",
+      "version": "v2",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:64464/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v1/SKILL.md\",enabled=false},{path=\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v2/SKILL.md\",enabled=true}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/fixture-package-v2.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/project"
+    },
+    {
+      "label": "resume-v1-while-v2-live",
+      "version": "v1",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:64464/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-concurrent-read-4Fh73R/fixture-package-v1.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/project"
+    }
+  ],
+  "threads": {
+    "v1": "01a169b5-325f-7022-b672-c6ffd6b7fad4",
+    "v2": "01a169b5-3291-7762-81e6-ec12f7627b7b"
+  },
+  "concurrentPids": [
+    86736,
+    86742
+  ],
+  "discovery": {
+    "v1": [
+      {
+        "name": "read-v1",
+        "enabled": true,
+        "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v1/SKILL.md"
+      },
+      {
+        "name": "read-v2",
+        "enabled": false,
+        "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v2/SKILL.md"
+      }
+    ],
+    "v2": [
+      {
+        "name": "read-v1",
+        "enabled": false,
+        "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v1/SKILL.md"
+      },
+      {
+        "name": "read-v2",
+        "enabled": true,
+        "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v2/SKILL.md"
+      }
+    ]
+  },
+  "resumedDiscovery": [
+    {
+      "name": "read-v1",
+      "enabled": true,
+      "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v1/SKILL.md"
+    },
+    {
+      "name": "read-v2",
+      "enabled": false,
+      "path": "/private/tmp/willyou-m10-concurrent-read-4Fh73R/home/.agents/skills/read-v2/SKILL.md"
+    }
+  ],
+  "allChildrenExited": true,
+  "finishedAt": "2026-10-23T17:00:45.208Z"
+}

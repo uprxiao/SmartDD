@@ -1,0 +1,309 @@
+{
+  "root": "/private/tmp/willyou-m10-concurrent-read-RZkuZE",
+  "startedAt": "2026-10-23T17:00:20.005Z",
+  "layer": "real CLI with synthetic provider;not real model or packaged App",
+  "cliVersion": "0.162.1",
+  "requests": [
+    {
+      "number": 1,
+      "sha256": "dbac5c14372076d3a1bcd47f715f35f0500a3eb7dff06319ad2d02fa077776b3",
+      "v1Body": true,
+      "v2Body": false,
+      "model": "m10-synthetic"
+    },
+    {
+      "number": 2,
+      "sha256": "3949871148799657353c560bb5358126ce0f205168f98615310e6f4c4e6c1f04",
+      "v1Body": false,
+      "v2Body": true,
+      "model": "m10-synthetic"
+    },
+    {
+      "number": 3,
+      "sha256": "804f9b6af5f6e212ace9a1ea0b90f998b1249be1022e217daf50cca9478261bb",
+      "v1Body": true,
+      "v2Body": false,
+      "model": "m10-synthetic"
+    }
+  ],
+  "checks": [
+    {
+      "name": "concurrent body read v1",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 1,
+          "sha256": "dbac5c14372076d3a1bcd47f715f35f0500a3eb7dff06319ad2d02fa077776b3",
+          "v1Body": true,
+          "v2Body": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "concurrent body read v2",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 1,
+          "sha256": "dbac5c14372076d3a1bcd47f715f35f0500a3eb7dff06319ad2d02fa077776b3",
+          "v1Body": true,
+          "v2Body": false,
+          "model": "m10-synthetic"
+        },
+        {
+          "number": 2,
+          "sha256": "3949871148799657353c560bb5358126ce0f205168f98615310e6f4c4e6c1f04",
+          "v1Body": false,
+          "v2Body": true,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "concurrent fixed tool v1",
+      "status": "passed",
+      "value": {
+        "version": "v1",
+        "packageHash": "7055d9eeafdd3eec920559177d5e6cb5bf4713a60772cd0b15dec54c7ef9c398",
+        "skillSha256": "2c04a8c98baa62564b1045bbd3ae74d52529eb747a4c6041b6bcdc0da7c5f119",
+        "marker": "M10_FIXED_TOOL_v1"
+      }
+    },
+    {
+      "name": "concurrent fixed tool v2",
+      "status": "passed",
+      "value": {
+        "version": "v2",
+        "packageHash": "38b66e1136468854609fe0211f646275c7259dcbf616089267ba2f5adc302a08",
+        "skillSha256": "d270d3964150bd0319319760b36bf86569a06227d4eeb0fdf015ada91494fd65",
+        "marker": "M10_FIXED_TOOL_v2"
+      }
+    },
+    {
+      "name": "resume old v1 body with v2 still alive",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 3,
+          "sha256": "804f9b6af5f6e212ace9a1ea0b90f998b1249be1022e217daf50cca9478261bb",
+          "v1Body": true,
+          "v2Body": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "resume old v1 fixed tool",
+      "status": "passed",
+      "value": {
+        "version": "v1",
+        "packageHash": "7055d9eeafdd3eec920559177d5e6cb5bf4713a60772cd0b15dec54c7ef9c398",
+        "skillSha256": "2c04a8c98baa62564b1045bbd3ae74d52529eb747a4c6041b6bcdc0da7c5f119",
+        "marker": "M10_FIXED_TOOL_v1"
+      }
+    },
+    {
+      "name": "v2 fixed tool remains unchanged after v1 restart",
+      "status": "passed",
+      "value": {
+        "version": "v2",
+        "packageHash": "38b66e1136468854609fe0211f646275c7259dcbf616089267ba2f5adc302a08",
+        "skillSha256": "d270d3964150bd0319319760b36bf86569a06227d4eeb0fdf015ada91494fd65",
+        "marker": "M10_FIXED_TOOL_v2"
+      }
+    }
+  ],
+  "status": "passed-with-boundaries",
+  "sourceCommit": "affc34fcd991f2d8e191613aa5aeafb9d9e72fc1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cliEntrySha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+  "skills": {
+    "v1": {
+      "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v1/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v1_RZkuZE",
+      "sha256": "2c04a8c98baa62564b1045bbd3ae74d52529eb747a4c6041b6bcdc0da7c5f119"
+    },
+    "v2": {
+      "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v2/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v2_RZkuZE",
+      "sha256": "d270d3964150bd0319319760b36bf86569a06227d4eeb0fdf015ada91494fd65"
+    }
+  },
+  "toolPackages": {
+    "v1": {
+      "kind": "controlled-probe-package-not-production-app-manifest",
+      "version": "v1",
+      "skillSha256": "2c04a8c98baa62564b1045bbd3ae74d52529eb747a4c6041b6bcdc0da7c5f119",
+      "toolSourceSha256": "26d51d0351abc1b90fa4c05343e7b3cbe89e1c28ba013fb2658384d0e4ae8f85",
+      "marker": "M10_FIXED_TOOL_v1",
+      "packageHash": "7055d9eeafdd3eec920559177d5e6cb5bf4713a60772cd0b15dec54c7ef9c398",
+      "manifestPath": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/fixture-package-v1.json"
+    },
+    "v2": {
+      "kind": "controlled-probe-package-not-production-app-manifest",
+      "version": "v2",
+      "skillSha256": "d270d3964150bd0319319760b36bf86569a06227d4eeb0fdf015ada91494fd65",
+      "toolSourceSha256": "26d51d0351abc1b90fa4c05343e7b3cbe89e1c28ba013fb2658384d0e4ae8f85",
+      "marker": "M10_FIXED_TOOL_v2",
+      "packageHash": "38b66e1136468854609fe0211f646275c7259dcbf616089267ba2f5adc302a08",
+      "manifestPath": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/fixture-package-v2.json"
+    }
+  },
+  "launches": [
+    {
+      "label": "concurrent-v1",
+      "version": "v1",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:64413/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/fixture-package-v1.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/project"
+    },
+    {
+      "label": "concurrent-v2",
+      "version": "v2",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:64413/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v1/SKILL.md\",enabled=false},{path=\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v2/SKILL.md\",enabled=true}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/fixture-package-v2.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/project"
+    },
+    {
+      "label": "resume-v1-while-v2-live",
+      "version": "v1",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:64413/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-concurrent-read-RZkuZE/fixture-package-v1.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/project"
+    }
+  ],
+  "threads": {
+    "v1": "01a169b4-d0f9-7eb3-97af-6f26131a0d52",
+    "v2": "01a169b4-d12a-7920-9eb4-3302e3e2c548"
+  },
+  "concurrentPids": [
+    86663,
+    86669
+  ],
+  "discovery": {
+    "v1": [
+      {
+        "name": "read-v1",
+        "enabled": true,
+        "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v1/SKILL.md"
+      },
+      {
+        "name": "read-v2",
+        "enabled": false,
+        "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v2/SKILL.md"
+      }
+    ],
+    "v2": [
+      {
+        "name": "read-v1",
+        "enabled": false,
+        "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v1/SKILL.md"
+      },
+      {
+        "name": "read-v2",
+        "enabled": true,
+        "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v2/SKILL.md"
+      }
+    ]
+  },
+  "resumedDiscovery": [
+    {
+      "name": "read-v1",
+      "enabled": true,
+      "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v1/SKILL.md"
+    },
+    {
+      "name": "read-v2",
+      "enabled": false,
+      "path": "/private/tmp/willyou-m10-concurrent-read-RZkuZE/home/.agents/skills/read-v2/SKILL.md"
+    }
+  ],
+  "allChildrenExited": true,
+  "finishedAt": "2026-10-23T17:00:20.274Z"
+}
