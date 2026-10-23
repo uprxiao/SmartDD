@@ -53,6 +53,13 @@ export interface OwnedCapabilityRun {
   cancelBeforeFork(): Promise<CapabilityRunRecord>;
   stop(reason?: string): Promise<CapabilityRunRecord>;
 }
+// Only a handle minted by reserveGuard can request waiting-phase H admission.
+const nativeGuardReservations = new WeakMap<OwnedCapabilityRun,{store:ResourceStore;assert:(runner:'claude-code'|'codex',resources:readonly string[],phase:'preparing'|'prepared')=>void}>();
+export function assertNativeGuardReservation(store:ResourceStore,run:OwnedCapabilityRun,runner:'claude-code'|'codex',resources:readonly string[],phase:'preparing'|'prepared'):void {
+  const proof=nativeGuardReservations.get(run);
+  if(!proof||proof.store!==store)throw new ApplicationError('SCOPE_DENIED','维护等待只允许当前宿主签发的普通原生守护');
+  proof.assert(runner,resources,phase);
+}
 const TERMINAL = new Set(['stopped','failed']);
 const PROCESS_DONE = new Set(['exited','canceled']);
 const now = () => new Date().toISOString();
@@ -229,7 +236,17 @@ export class CapabilityRunRegistry {
     }).immediate());
     this.owned.set(runId,{guard,selectionHash,leaseId,abort:new AbortController(),processes:new Set([processId])});
     if(this.closed){await this.stop(runId,'host-shutdown');throw new ApplicationError('CANCELED','守护准备期间服务已关闭');}
-    return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),cancelBeforeFork:()=>this.cancelBeforeFork(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
+    const handle:OwnedCapabilityRun={runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),cancelBeforeFork:()=>this.cancelBeforeFork(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
+    nativeGuardReservations.set(handle,{store:this.store,assert:(runner,resources,phase)=>{
+      const {row,owned,session}=this.lifecycle(runId);
+      if(this.closed||owned.guard!==guard||owned.abort.signal.aborted||handle.signal!==owned.abort.signal||handle.runId!==runId||handle.ptyId!==ptyId||row.pty_id!==ptyId||row.runner!==runner||row.task_id!==value.taskId||row.project_id!==value.projectId||row.snapshot_hash!==value.snapshotHash||row.state!==phase||row.pid!==null||row.process_started_at!==null||handle.cli.processId!==processId||handle.cli.launchKey!==ptyId||owned.processes.size!==1||!owned.processes.has(processId)||row.revocation_state!=='open'||row.bindings_json!=='[]'||owned.scope||!resources.every(id=>guard.resources.includes(id)))throw new ApplicationError('SCOPE_DENIED','普通原生守护身份、阶段或完整H来源不同');
+      const children=this.store.sqlite.prepare('SELECT process_id,kind,state,pid,process_started_at FROM capability_run_processes WHERE run_id=?').all(runId) as {process_id:string;kind:string;state:string;pid:number|null;process_started_at:string|null}[];
+      if(children.length!==1||children[0].process_id!==processId||children[0].kind!=='cli'||children[0].state!=='reserved'||children[0].pid!==null||children[0].process_started_at!==null)throw new ApplicationError('SCOPE_DENIED','普通原生守护已存在桥或原生启动窗口');
+      const lease=this.store.sqlite.prepare('SELECT owner_kind,pid,process_started_at FROM capability_resource_leases WHERE lease_id=?').get(leaseId) as {owner_kind:string;pid:number|null;process_started_at:string|null}|undefined;
+      if(!lease||lease.owner_kind!=='run'||lease.pid!==this.host.pid||lease.process_started_at!==this.host.startedAt)throw new ApplicationError('RESOURCE_STATE_CHANGED','普通原生守护的原C占用身份已变化');
+      this.currentLifecycle(row,session);this.checkProtection(row,owned);
+    }});
+    return handle;
   }
   /** Narrow an owned prepared run before any child can exist. Not an RPC surface. */
   async restrictToNative(runId:string,cause?:ManagedCapabilityRestriction):Promise<void>{

@@ -1,0 +1,35 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-maintenance-bf-20261023/candidate
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/discovery-catalog.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 --testTimeout=15000 -t 'ordinary native work while actual H publication waits|authenticated native guard admission while H maintenance waits' --reporter=json --reporter=default --outputFile=/private/tmp/m10-maintenance-bf-20261023/extra2-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-maintenance-bf-20261023/candidate
+
+ ✓ src/main/core/applications/__tests__/task-capability-launcher.test.ts (220 tests | 212 skipped) 58878ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex new known  7511ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex resume known  6053ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex new unknown  7489ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex resume unknown  7855ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: claude-code new unknown  7954ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: claude-code resume unknown  7615ms
+     ✓ keeps a supported private-Claude plugin independent from H maintenance: new  7424ms
+     ✓ keeps a supported private-Claude plugin independent from H maintenance: resume  6976ms
+ ✓ src/main/core/applications/__tests__/discovery-catalog.test.ts (42 tests | 31 skipped) 18771ms
+     ✓ keeps default run admission strict before invoking even an authentic native guard callback  1692ms
+     ✓ refuses managed-run as maintenance-wait authority and retains any committed C/H evidence  1711ms
+     ✓ refuses copied-guard as maintenance-wait authority and retains any committed C/H evidence  1721ms
+     ✓ refuses incomplete-H as maintenance-wait authority and retains any committed C/H evidence  1860ms
+     ✓ refuses new readers after the materialized checkpoint without invoking C registration  1445ms
+     ✓ refuses new readers after the renamed checkpoint without invoking C registration  1404ms
+     ✓ refuses new readers after the catalog-published checkpoint without invoking C registration  1395ms
+     ✓ refuses a self-consistent pending base that differs from the complete live catalog  1603ms
+     ✓ rechecks the exact native handle at activation and refuses an injected bridge window  2306ms
+     ✓ defers missing base-H state/generation changes until all original and ordinary readers end  2183ms
+     ✓ closes waiting admission under H before allowing a racing reader to register C  1451ms
+
+ Test Files  2 passed (2)
+      Tests  19 passed | 243 skipped (262)
+   Start at  12:04:07
+   Duration  78.62s (transform 539ms, setup 0ms, import 823ms, tests 77.65s, environment 0ms)
+
+JSON report written to /private/tmp/m10-maintenance-bf-20261023/extra2-report.json
