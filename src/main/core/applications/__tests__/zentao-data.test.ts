@@ -107,6 +107,16 @@ describe('original ZenTao tools to actual provider and host-scoped business reso
   objects.set('story:8',{fields:{id:'8',title:'研发需求',status:'active',assignedTo:{account:'tester'},spec:{spec:'<p>需求原文</p>',verify:'验收标准'},files:[]},actions:[]});
   const found=await list('story'),object=await detail(found.items[0].reference,'story');expect(object.complete).toBe(true);expect(JSON.parse((await whole(object.body!)).toString())).toEqual({spec:{spec:'<p>需求原文</p>',verify:'验收标准'}});
  });
+ it('keeps Bug and Story with the same numeric ID separate through real tool contracts and stored resources',async()=>{
+  objects.set('story:'+id,{fields:{id,title:'Same ID Story',status:'active',assignedTo:{account:'tester'},spec:{spec:'STORY_ONLY_BODY',verify:'STORY_ONLY_CRITERIA'},files:[]},actions:[]});
+  const bug=(await list('bug')).items[0].reference,story=(await list('story')).items[0].reference;
+  expect(bug.nativeId).toBe(story.nativeId);expect(bug.connectionId).toBe(story.connectionId);expect(bug.contentRevision).not.toBe(story.contentRevision);
+  const a=await detail(bug,'bug'),b=await detail(story,'story');expect(a.body!.id).not.toBe(b.body!.id);
+  expect(JSON.parse((await whole(a.body!)).toString()).steps).toBe('<p>复现步骤</p>');expect(JSON.parse((await whole(b.body!)).toString()).spec.spec).toBe('STORY_ONLY_BODY');
+  const before=paths.length;
+  for(const input of [{kind:'story',reference:bug},{kind:'bug',reference:story}])expect(await call('object_get',input)).toMatchObject({status:'error',error:{code:'NOT_FOUND'}});
+  expect(paths).toHaveLength(before);
+ });
  it('downloads ordinary,historical and inline files only through the fixed same-origin API and preserves binary bytes',async()=>{
   const object=objects.get('bug:'+id)!;object.fields.files=[{id:'11',title:'binary',extension:'bin',size:4}];object.fields.steps='<img src="/biz/file-read-22.png?x=1&amp;y=2"><img src="https://outside.example.test/file-read-99.png">';object.actions=[{comment:'历史',files:{'12':{id:'12',title:'history',size:3}}}];files.set('11',Buffer.from([0,255,128,1]));files.set('12',Buffer.from('old'));files.set('22',Buffer.from('img'));
   const objectData=await detail((await list()).items[0].reference);expect(objectData.complete).toBe(true);expect(objectData.attachments.map(a=>a.filename)).toEqual(['binary.bin','history','file-22']);expect(await whole(objectData.attachments[0].resource)).toEqual(files.get('11'));
