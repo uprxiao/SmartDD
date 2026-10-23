@@ -64,7 +64,7 @@ export function guardedRebuildAlreadyApplied(connection: BetterSqlite3.Database,
  * Applies every migration past the recorded count, all inside one transaction: either the
  * whole batch lands or the database is left exactly as it was. Returns the applied tags.
  */
-export function runMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[]): string[] {
+export function runMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[], options: { recordCommit?: (applied: readonly string[]) => void } = {}): string[] {
   const recorded = appliedRecords(connection), done = recorded.length;
   if (done > migrations.length) {
     // A newer SmartDD already migrated this database; running older code on it is unsafe.
@@ -94,6 +94,9 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
       record.run(m.hash, m.when);
     }
     if(rebuilding){const violations=connection.pragma('foreign_key_check');if(!Array.isArray(violations)||violations.length)throw new Error('宿主连接迁移外键核验失败，已保留原数据');}
+    // The startup coordinator records its operation in this same transaction.
+    // A failed receipt must roll back the schema and migration watermark too.
+    options.recordCommit?.(pending.map(m => m.tag));
   })(); } finally {if(rebuilding)connection.pragma('foreign_keys='+(foreignKeys?'ON':'OFF'));}
   return pending.map((m) => m.tag);
 }

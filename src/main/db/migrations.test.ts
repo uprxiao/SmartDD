@@ -316,6 +316,14 @@ describe('runMigrations', () => {
     expect(db.prepare('SELECT * FROM retained').all()).toEqual([{value:'original business data'}]);expect(tables(db)).not.toContain('new_schema');
   });
 
+  it('commits the operation receipt with the schema and rolls both back when the receipt fails',()=>{
+    const db=memoryDb(),batch=[m(0,'CREATE TABLE receipt (id TEXT PRIMARY KEY); CREATE TABLE business (value TEXT)')];
+    expect(()=>runMigrations(db,batch,{recordCommit:()=>{db.exec("INSERT INTO receipt VALUES('operation')");throw new Error('receipt failure');}})).toThrow('receipt failure');
+    expect(tables(db)).toEqual(['__drizzle_migrations']);expect(recorded(db)).toEqual([]);
+    expect(runMigrations(db,batch,{recordCommit:applied=>{expect(applied).toEqual(['m0']);db.exec("INSERT INTO receipt VALUES('operation')");}})).toEqual(['m0']);
+    expect(db.prepare('SELECT * FROM receipt').all()).toEqual([{id:'operation'}]);expect(recorded(db)).toEqual(['h0']);
+  });
+
   it('rolls back the whole batch when one statement fails', () => {
     const db = memoryDb();
     const batch = [m(0, 'CREATE TABLE a (x)'), m(1, 'CREATE TABLE b (x);\n--> statement-breakpoint\nNOT SQL')];
