@@ -30,6 +30,7 @@ import type { ResourceStore } from './resource-store';
 import { ApplicationExecutionContexts, type ApplicationUiSender } from './execution-context';
 import { ApplicationDataResources } from './data-resources';
 import { MailCache } from './mail-cache';
+import {mailBusinessUsage} from './mail-storage-usage';
 import { MacProcessIdentityReader,type ProcessIdentityReader } from './process-identity';
 import { MailBlobStore } from './mail-blob-store';
 import { MailDraftService } from './mail-draft-service';
@@ -183,7 +184,10 @@ export class ApplicationService {
     }
     return this.cachePromise;
   }
-  mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);return cache.usage();});}
+  mailCacheStatus(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.status',semantics:'read'},async context=>{
+    const cache=await this.mailCache(),[usage,business,versions]=await Promise.all([cache.usage(),mailBusinessUsage(this.store,this.blobs.root),this.versions.list('mail').catch(()=>null)]);
+    this.contexts.assertActive(context);return{...usage,storage:{business,versions}};
+  });}
   clearMailCache(sender:ApplicationUiSender){return this.contexts.withManagement(sender,{appId:'mail',action:'application.cache.clear',semantics:'write'},async context=>{const cache=await this.mailCache();this.contexts.assertActive(context);const result=await cache.clear(context.signal);this.options.changed?.();return result;});}
   dispose():Promise<void>{
     if(this.closing)return this.closing;this.closed=true;this.terminal?.dispose();this.nativeMessages.dispose();this.nativeInputs.dispose();this.fileAttachments.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);

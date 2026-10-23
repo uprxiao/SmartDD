@@ -218,6 +218,18 @@ it('does not begin a queued configuration provider after host shutdown while C a
 
 
 describe('actual host composition for U-local mail cache management',()=>{
+ it('reports persistent mail storage and original package usage separately from the rebuildable cache',async()=>{
+  const created=await draft();const status=await app.mailCacheStatus(sender);
+  expect(status).toHaveProperty('storage.business.files.complete',true);
+  expect(status.storage.business.files.bytes).toBeGreaterThan(0);
+  expect(status.storage.business.drafts).toBe(1);
+  expect(status.storage.business.sharedDatabase.complete).toBe(true);
+  expect(status.storage.business.sharedDatabase.bytes).toBeGreaterThan(0);
+  expect(status.storage.versions!.items.some(item=>item.packageHash===app.builtin.packages.active('mail')!.packageHash&&item.sourceBytes!>0)).toBe(true);
+  const before=status.storage.business.files.bytes;await app.clearMailCache(sender);
+  expect((await app.mailCacheStatus(sender)).storage.business.files.bytes).toBe(before);
+  expect(await app.readBusinessResource(sender,'p1',{resource:created.content.text,offset:0,length:100})).toMatchObject({data:'隔离草稿第一版'});
+ });
  it('leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests',async()=>{
   await draft();expect(existsSync(join(f.root,'cache/mail'))).toBe(false);const [a,b]=await Promise.all([app.mailCacheStatus(sender),app.mailCacheStatus(sender)]);expect(a.limit).toBe(500000000);expect(b.actual.total).toBe(a.actual.total);expect(await app.mailCache()).toBe(await app.mailCache());
  });
