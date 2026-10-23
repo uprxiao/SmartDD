@@ -5,6 +5,8 @@ import {ApplicationError} from '@shared/applications';
 import {connectionConfigSchema,type ApplicationId,type ConnectionConfig,type ApplicationConnection,type SaveApplicationConnection,type VerifiedConnectionIdentity,type VerifiedConnectionCandidate,type ProjectApplicationSelection,type ProjectApplicationSelectionInput} from '@shared/application-connections';
 
 export interface HostedConfiguration {kind:string}
+/** Main-process compiled identities only; persisted rows never implement this catalog. */
+export interface ApplicationHostCatalog {appIds():readonly string[]}
 export type HostedIdentity<C extends HostedConfiguration>=Omit<VerifiedConnectionIdentity,'providerId'>&{providerId:C['kind']};
 export type HostedConnection<C extends HostedConfiguration,A extends string>=Omit<ApplicationConnection,'appId'|'providerId'|'config'|'identity'>&{appId:A;providerId:C['kind'];config:C;identity:HostedIdentity<C>};
 export type HostedSave<C extends HostedConfiguration>=Omit<SaveApplicationConnection,'config'>&{config:C};

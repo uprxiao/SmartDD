@@ -10,9 +10,10 @@ import type { RunContext } from './run-registry';
 import { RuntimeRegistry } from './runtime-registry';
 import type { ResourceStore } from './resource-store';
 import type { ApplicationToolHost, HostToolOperation } from './tool-service';
+import type {ApplicationHostCatalog} from './host-application-registry';
 
 const descriptor = z.object({
-  method: z.string().regex(/^(zentao|mail)\.[a-z][a-z0-9.-]*$/).max(128),
+  method: z.string().regex(/^[a-z][a-z0-9-]*\.[a-z][a-z0-9.-]*$/).max(128),
   semantics: z.enum(['read','write']), retry: z.enum(['safe-read','never']),
   timeoutMs: z.number().int().min(1).max(120000),
 }).strict();
@@ -33,8 +34,8 @@ export class ApplicationAdapterRegistry implements ApplicationToolHost {
   private readonly builtin: BuiltinPackageRegistry;
   private readonly runtimes: RuntimeRegistry;
   private readonly cache = new Map<string,FixedApplicationAdapter>();
-  constructor(readonly store: ResourceStore,private readonly data: ApplicationDataHost) {
-    this.builtin = new BuiltinPackageRegistry(store);
+  constructor(readonly store: ResourceStore,private readonly data: ApplicationDataHost,hosts?:ApplicationHostCatalog) {
+    this.builtin = new BuiltinPackageRegistry(store,hosts);
     this.runtimes = new RuntimeRegistry(store);
   }
 

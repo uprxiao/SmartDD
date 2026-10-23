@@ -14,6 +14,8 @@ import { PackageRegistry } from './package-registry';
 import type { ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import type { CapabilityRunRegistry, RunContext } from './run-registry';
+/** AbortSignal.any retains the first reason; a later deadline cannot replace an earlier caller cancellation. */
+const interruptionCode=(signal:AbortSignal,timeout:AbortSignal):'TIMEOUT'|'CANCELED'=>timeout.aborted&&signal.reason===timeout.reason?'TIMEOUT':'CANCELED';
 export interface ApplicationOperationContext { operationId: string;requestId: string;attempt: number;deadline: number;signal: AbortSignal;packageHash: string;appId: string;toolName: string;contractMajor: number;connectionId: string | null }
 export interface HostToolOperation {
   semantics: 'read' | 'write';
@@ -96,7 +98,7 @@ export class ApplicationToolService {
       handler.authorize(context,call.connectionId);
       const budget = Math.min(120000,Math.max(1,handler.timeoutMs ?? (handler.semantics === 'read' ? 30000 : 60000))), timeout = AbortSignal.timeout(budget), operationSignal = AbortSignal.any([context.signal,timeout,...(signal ? [signal] : [])]), deadline = this.clock() + budget;
       let onAbort!: () => void;
-      const interrupted = new Promise<BridgeResponse>(resolve => { onAbort = () => { const row = this.store.sqlite.prepare('SELECT operation_id,effect_state,attempt_count FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,requestId) as InvocationRow | undefined; resolve({ schema: 1,id: requestId,status: 'error',error: failure(new ApplicationError(timeout.aborted ? 'TIMEOUT' : 'CANCELED','本次等待已结束，执行者尚未返回时须核对已有业务记录'),row?.attempt_count ?? 0,row?.effect_state ?? 'not-started'),...(row ? { operationId: row.operation_id } : {}) }); }; operationSignal.addEventListener('abort',onAbort,{ once: true }); if (operationSignal.aborted) onAbort(); });
+      const interrupted = new Promise<BridgeResponse>(resolve => { onAbort = () => { const row = this.store.sqlite.prepare('SELECT operation_id,effect_state,attempt_count FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,requestId) as InvocationRow | undefined; resolve({ schema: 1,id: requestId,status: 'error',error: failure(new ApplicationError(interruptionCode(operationSignal,timeout),'本次等待已结束，执行者尚未返回时须核对已有业务记录'),row?.attempt_count ?? 0,row?.effect_state ?? 'not-started'),...(row ? { operationId: row.operation_id } : {}) }); }; operationSignal.addEventListener('abort',onAbort,{ once: true }); if (operationSignal.aborted) onAbort(); });
       const execution = Promise.resolve().then(() => this.execute(runId,requestId,call,hash,{ signal: operationSignal,deadline,timeout }));
       const work = Promise.race([execution,interrupted]).finally(() => operationSignal.removeEventListener('abort',onAbort)); this.pending.set(key,{ hash,work });
       void work.then(response => { const bytes = Buffer.byteLength(JSON.stringify(response)); this.cache.set(key,{ hash,response,bytes }); this.cacheBytes += bytes; while (this.cache.size > 256 || this.cacheBytes > 16 * 1024 * 1024) { const first = this.cache.keys().next().value!; this.cacheBytes -= this.cache.get(first)!.bytes; this.cache.delete(first); } },() => undefined).finally(() => this.pending.delete(key));
@@ -111,11 +113,11 @@ export class ApplicationToolService {
       const current=this.runs.assertActive(runId),timeout=AbortSignal.timeout(Math.min(30000,handler.timeoutMs??30000)),signal=AbortSignal.any([current.signal,timeout,...(callerSignal?[callerSignal]:[])]);
       if(signal.aborted)return Promise.resolve(failed(new ApplicationError('CANCELED','本次回执核对已取消')));
       let onAbort!:()=>void;
-      const interrupted=new Promise<BridgeResponse>(resolve=>{onAbort=()=>resolve(failed(new ApplicationError(timeout.aborted?'TIMEOUT':'CANCELED','本次回执核对未完成，原执行记录保留')));signal.addEventListener('abort',onAbort,{once:true});});
+      const interrupted=new Promise<BridgeResponse>(resolve=>{onAbort=()=>resolve(failed(new ApplicationError(interruptionCode(signal,timeout),'本次回执核对未完成，原执行记录保留')));signal.addEventListener('abort',onAbort,{once:true});});
       const verification=this.runs.withActivity(runId,async fresh=>{
         if(signal.aborted)throw new ApplicationError('CANCELED','本次回执核对已取消');handler.authorize(fresh,call.connectionId);
         if(response.operationId)await handler.authorizeReceipt?.(fresh,response.operationId,call.connectionId,signal);
-        if(signal.aborted)throw new ApplicationError(timeout.aborted?'TIMEOUT':'CANCELED','本次回执核对已取消');handler.authorize(this.runs.assertActive(runId),call.connectionId);return response;
+        if(signal.aborted)throw new ApplicationError(interruptionCode(signal,timeout),'本次回执核对已取消');handler.authorize(this.runs.assertActive(runId),call.connectionId);return response;
       }).catch(failed);
       return Promise.race([verification,interrupted]).finally(()=>signal.removeEventListener('abort',onAbort));
     }catch(error){return Promise.resolve(failed(error));}
@@ -123,7 +125,7 @@ export class ApplicationToolService {
   private async execute(runId: string,requestId: string,call: BridgeToolCall,hash: string,control: { signal: AbortSignal;deadline: number;timeout: AbortSignal }): Promise<BridgeResponse> {
     let operationId: string | undefined, attempts = 0, effect: BridgeFailure['effectState'] = 'not-started', exhausted = false;
     try {
-      if (control.signal.aborted) throw new ApplicationError(control.timeout.aborted ? 'TIMEOUT' : 'CANCELED','本次调用已取消');
+      if (control.signal.aborted) throw new ApplicationError(interruptionCode(control.signal,control.timeout),'本次调用已取消');
       return await this.runs.withActivity(runId,async context => {
         const selected = this.selected(context,call), handler = this.host.resolve(selected.application.packageHash,call.operation,call.contractMajor);
         if (handler.semantics === 'write' && (handler.retry !== 'never' || selected.declaration.annotations.readOnlyHint)) throw new ApplicationError('HOST_INCOMPATIBLE','写操作不能使用通用自动重试');
@@ -141,11 +143,11 @@ export class ApplicationToolService {
         const { signal,deadline,timeout } = control;
         const outputValidator = this.validator.getValidator(selected.tool.outputSchema as JsonSchemaType), canRetry = handler.semantics === 'read' && handler.retry === 'safe-read';
         while (true) {
-          if (signal.aborted) throw new ApplicationError(timeout.aborted ? 'TIMEOUT' : 'CANCELED','调用已取消或到达本次时限');
+          if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'调用已取消或到达本次时限');
           const fresh = this.runs.assertActive(runId); handler.authorize(fresh,call.connectionId); attempts++;
           effect = handler.semantics === 'read' ? 'read-only' : 'unknown';
           await withResourceLock(this.store.root,() => { this.store.sqlite.prepare('UPDATE application_invocations SET attempt_count=?,effect_state=? WHERE operation_id=?').run(attempts,effect,operationId); });
-          if (signal.aborted) throw new ApplicationError(timeout.aborted ? 'TIMEOUT' : 'CANCELED','执行前调用已取消');
+          if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'执行前调用已取消');
           this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
           // An executor may ignore cancellation; its activity lease stays held until it really settles.
           try {
@@ -153,7 +155,7 @@ export class ApplicationToolService {
             if (!boundedJson(value) || Buffer.byteLength(JSON.stringify(value)) > BRIDGE_LIMITS.responseBytes - 4096) throw new ApplicationError('TOO_LARGE','响应超过本次预算，请使用分页或有界资源');
             if (!outputValidator(value).valid) throw new ApplicationError('INVALID_RESPONSE','结果不符合固定工具输出契约');
             this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
-            if (signal.aborted) throw new ApplicationError(timeout.aborted ? 'TIMEOUT' : 'CANCELED','本次等待已结束，请查看已有业务执行记录');
+            if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'本次等待已结束，请查看已有业务执行记录');
             effect = handler.semantics === 'read' ? 'read-only' : 'completed'; await this.end(operationId!,'succeeded',attempts,effect,null);
             return { schema: 1 as const,id: requestId,status: 'ok' as const,value,operationId,effectState: effect };
           } catch (error) {
@@ -162,13 +164,17 @@ export class ApplicationToolService {
             if (attempts >= 3) { exhausted = true; throw error; }
             const wait = Math.min(5000,Math.max(0,this.options.retryDelays?.[attempts - 1] ?? ([1000,3000][attempts - 1] + Math.floor(Math.random() * 100))));
             if (this.clock() + wait >= deadline) { exhausted = true; throw error; }
-            try { await delay(wait,undefined,{ signal }); } catch { throw new ApplicationError(timeout.aborted ? 'TIMEOUT' : 'CANCELED','重试等待已取消'); }
+            try { await delay(wait,undefined,{ signal }); } catch { throw new ApplicationError(interruptionCode(signal,timeout),'重试等待已取消'); }
           }
         }
       });
     } catch (error) {
-      if (operationId && !(error instanceof ApplicationError && error.code === 'REPLAY_UNAVAILABLE')) await this.end(operationId,(effect as BridgeFailure['effectState']) === 'unknown' ? 'unknown' : 'failed',attempts,effect,error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE');
-      return { schema: 1,id: requestId,status: 'error',error: failure(error,attempts,effect,exhausted),...(operationId ? { operationId } : {}) };
+      // A cooperative producer reports local cancellation for either upstream
+      // cause. Persist the original host deadline cause,without changing effect
+      // state or interpreting an unknown write as canceled or retryable.
+      const cause=error instanceof ApplicationError&&error.code==='CANCELED'&&control.signal.aborted&&interruptionCode(control.signal,control.timeout)==='TIMEOUT'?new ApplicationError('TIMEOUT','调用已到达本次时限，原业务结果按执行记录核对'):error;
+      if (operationId && !(cause instanceof ApplicationError && cause.code === 'REPLAY_UNAVAILABLE')) await this.end(operationId,(effect as BridgeFailure['effectState']) === 'unknown' ? 'unknown' : 'failed',attempts,effect,cause instanceof ApplicationError ? cause.code : 'CAPABILITY_UNAVAILABLE');
+      return { schema: 1,id: requestId,status: 'error',error: failure(cause,attempts,effect,exhausted),...(operationId ? { operationId } : {}) };
     }
   }
   private async end(id: string,state: 'succeeded' | 'failed' | 'unknown',attempts: number,effect: BridgeFailure['effectState'],code: string | null): Promise<void> {

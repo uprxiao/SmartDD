@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
+import { ApplicationError,applicationManifestSchema,type InstalledApplicationPackage } from '@shared/applications';
 import type { CapabilityBundleIndex } from '@shared/capability-bundles';
 import { CapabilityBundleSource, parseCapabilityBundleIndex } from './bundle-source';
 import { canonicalJson } from './manifest';
@@ -8,14 +8,20 @@ import { verifyPackageTree } from './package-files';
 import { PackageRegistry } from './package-registry';
 import { withResourceLock } from './resource-lock';
 import type { ResourceStore } from './resource-store';
+import {builtinHostApplications,type ApplicationHostCatalog} from './host-application-registry';
 
 /** Only the trusted distribution bootstrap calls install; this is not an arbitrary package installer. */
 export class BuiltinPackageRegistry {
   readonly packages: PackageRegistry;
-  constructor(readonly store: ResourceStore) { this.packages = new PackageRegistry(store,'builtin-reader'); }
+  private readonly supported:ReadonlySet<string>;
+  constructor(readonly store:ResourceStore,hosts?:ApplicationHostCatalog){
+    const ids=hosts?.appIds()??builtinHostApplications.applications.map(a=>a.id);
+    if(!ids.length||ids.length>128||new Set(ids).size!==ids.length||ids.some(id=>!applicationManifestSchema.shape.appId.safeParse(id).success))throw new ApplicationError('INVALID_PACKAGE','受信宿主应用目录无效');
+    this.supported=new Set(ids);this.packages=new PackageRegistry(store,'builtin-reader');
+  }
 
   async install(source: CapabilityBundleSource, entry: CapabilityBundleIndex['apps'][number]): Promise<InstalledApplicationPackage> {
-    if (!['zentao','mail'].includes(entry.appId)) throw new ApplicationError('INVALID_PACKAGE','本版本不提供该内置应用');
+    if (!this.supported.has(entry.appId)) throw new ApplicationError('INVALID_PACKAGE','本版本不提供该内置应用');
     parseCapabilityBundleIndex(source.index);
     const bundle = source.application(entry);
     const installer = new PackageRegistry(this.store,`builtin:${source.index.build.appVersion}:${source.index.indexHash}`);
@@ -36,7 +42,7 @@ export class BuiltinPackageRegistry {
   retainedMetadata(hash: string): InstalledApplicationPackage {
     const installed = this.packages.get(hash);
     const rows = this.store.sqlite.prepare('SELECT source_index_hash,source_index_json FROM capability_builtin_package_sources WHERE package_hash=?').all(hash) as {source_index_hash:string;source_index_json:string}[];
-    if (!rows.length || !['zentao','mail'].includes(installed.appId)) throw new ApplicationError('SCOPE_DENIED','应用适配器没有可信内置分发依据');
+    if (!rows.length || !this.supported.has(installed.appId)) throw new ApplicationError('SCOPE_DENIED','应用适配器没有可信内置分发依据');
     for (const row of rows) {
       let index: CapabilityBundleIndex;
       try { index = parseCapabilityBundleIndex(JSON.parse(row.source_index_json)); }
