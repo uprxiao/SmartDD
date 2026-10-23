@@ -95,6 +95,28 @@ const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(h
 };
 
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+ it('T49 keeps one Mail Skill and shared discovery entry for two selected connections across new sessions',async()=>{
+  // Real selection, SQLite, bundled package and launcher composition; verification,
+  // secret encryption and PTY/native version are isolated service fixtures only.
+  const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});
+  const connections=new ApplicationConnectionService(support.store,secrets,{verify:async c=>({providerId:c.kind,serviceId:'t49-private-mail-service',accountId:c.kind==='foxmail'?c.account:c.username,contractMajor:1})});
+  const sourcePath=join(root,'foxmail-prerequisite');mkdirSync(sourcePath);
+  const foxmail=await connections.save({name:'T49 private source',expectedRevision:0,config:{kind:'foxmail',sourcePath,account:'t49-private',queryDays:30}});
+  const smtp=await connections.save({name:'T49 private sender',expectedRevision:0,config:{kind:'smtp',host:'smtp.example.test',port:587,username:'t49-private',fromAddress:'t49@example.test',authMode:'password',mode:'starttls'},secret:'private-fixture-only'});
+  await applications.selections.setAdded('mail',true,0);
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:foxmail.id,smtp:smtp.id}});
+  const first=await create(),original=await managed.sessions.get(first.task.id),mail=original.snapshot.packages.filter(p=>p.appId==='mail');
+  expect(mail).toHaveLength(1);expect(mail[0].bindings.map(b=>b.connectionId).sort()).toEqual([foxmail.id,smtp.id].sort());expect(mail[0].skills).toHaveLength(1);
+  const nativeName=mail[0].skills[0].nativeName,catalog=new DiscoveryCatalog(support.store,home,reader);
+  const entries=(await catalog.snapshot()).entries.filter(e=>e.nativeName===nativeName);
+  expect(entries).toHaveLength(1);expect(readFileSync(entries[0].path,'utf8')).toContain('name: '+nativeName);
+  const second=await create(),next=await managed.sessions.get(second.task.id),nextMail=next.snapshot.packages.filter(p=>p.appId==='mail');
+  expect(nextMail).toHaveLength(1);expect(nextMail[0].bindings.map(b=>b.connectionId).sort()).toEqual([foxmail.id,smtp.id].sort());expect(nextMail[0].skills.map(s=>s.nativeName)).toEqual([nativeName]);
+  expect((await catalog.snapshot()).entries.filter(e=>e.nativeName===nativeName)).toEqual(entries);
+  expect(await managed.sessions.get(first.task.id)).toEqual(original);
+  expect(support.store.sqlite.prepare('SELECT count(*) AS n FROM capability_packages WHERE app_id=? AND package_hash=?').get('mail',mail[0].packageHash)).toEqual({n:1});
+ });
+
  it('imports known original H directories before a new native session and disables every unselected old path',async()=>{
   const old=capabilities.prepare({projectId,taskId:randomUUID(),runner:'codex',cwd,home,profileArgs:[]}),paths=old.snapshot.skills.filter(s=>s.enabled).map(s=>s.path),before=paths.map(p=>readFileSync(p));old.release();const started=await create(),current=await managed.sessions.get(started.task.id),config=(parseToml(ptys.launches[0].args.find(a=>a.startsWith('skills.config='))!).skills as {config:{path:string;enabled:boolean}[]}).config;
   for(let i=0;i<paths.length;i++){expect(config).toContainEqual({path:paths[i],enabled:false});expect(readFileSync(paths[i])).toEqual(before[i]);}expect(config.filter(s=>s.enabled).map(s=>s.path).sort()).toEqual(current.snapshot.standardSkills.map(s=>s.projectionPath).sort());expect(current.snapshot.standardSkills.every(s=>!paths.includes(s.projectionPath))).toBe(true);expect(managed.runs.assertActive(started.task.runtimeSnapshot!.runId).snapshot).toEqual(current.snapshot);tasks.kill(started.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));

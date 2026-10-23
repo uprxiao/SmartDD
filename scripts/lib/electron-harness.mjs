@@ -39,35 +39,62 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
     const pending = new Map();
     const cdpListeners = new Map();
     const rendererErrors = [];
+    const navigationWaits = [];
+    let targetCrashed = false;
     ws.addEventListener('message', ({ data }) => {
       const message = JSON.parse(data);
       if (message.id) {
         const request = pending.get(message.id);
         if (!request) return;
         clearTimeout(request.timer); pending.delete(message.id);
-        message.error ? request.reject(new Error(message.error.message)) : request.resolve(message.result);
+        message.error ? request.reject(Object.assign(new Error(message.error.message), {
+          cdpMethod: request.method, cdpCode: message.error.code,
+        })) : request.resolve(message.result);
       }
+      if (message.method === 'Inspector.targetCrashed') targetCrashed = true;
       if (message.method === 'Runtime.exceptionThrown') rendererErrors.push(message.params.exceptionDetails.text);
       for (const listener of cdpListeners.get(message.method) ?? []) listener(message.params);
     });
     const cdp = (method, params = {}, timeoutMs = 25_000) => new Promise((resolve, reject) => {
       const id = ++seq;
       const timer = setTimeout(() => { pending.delete(id); reject(new Error(`Electron ${method} timed out`)); }, timeoutMs);
-      pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params }));
+      pending.set(id, { resolve, reject, timer, method }); ws.send(JSON.stringify({ id, method, params }));
     });
     await cdp('Runtime.enable');
+    await cdp('Inspector.enable');
     const evaluate = async (expression, timeoutMs) => {
       const result = await cdp('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, timeoutMs);
       if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
       return result.result.value;
     };
-    const waitFor = async (expression, ms = 10_000) => {
-      const started = Date.now();
-      while (Date.now() - started < ms) { if (await evaluate(expression)) return; await pause(100); }
+    // Navigation retries are opt-in for read-only DOM conditions. Never replay
+    // inputs, invoke calls or arbitrary evaluate expressions after navigation.
+    const waitFor = async (expression, ms = 10_000, { navigation = false } = {}) => {
+      const deadline = Date.now() + ms;
+      const alive = () => child.exitCode === null && child.signalCode === null && ws.readyState === WebSocket.OPEN && !targetCrashed;
+      while (Date.now() < deadline) {
+        if (!alive()) throw new Error('Isolated Electron target stopped during condition wait');
+        try { if (await evaluate(expression, Math.max(1, deadline - Date.now()))) return; }
+        catch (error) {
+          const contextChanged = error.cdpMethod === 'Runtime.evaluate' && /^(Inspected target navigated or closed|Execution context was destroyed.*|Cannot find context with specified id.*)$/.test(error.message);
+          if (!navigation || !contextChanged || !alive() || Date.now() >= deadline) throw error;
+          // Confirm the original page still belongs to our original process/port.
+          // A closed/crashed/replaced target is a failure, never a reattachment.
+          let targets;
+          try {
+            targets = await (await fetch(`http://127.0.0.1:${port}/json/list`, {
+              signal: AbortSignal.timeout(Math.max(1, Math.min(1000, deadline - Date.now()))),
+            })).json();
+          } catch { throw error; }
+          if (!alive() || !targets.some(target => target.id === page.id && target.type === 'page' && target.webSocketDebuggerUrl === page.webSocketDebuggerUrl)) throw error;
+          navigationWaits.push({ at: new Date().toISOString(), pageId: page.id, code: error.cdpCode, message: error.message });
+        }
+        if (Date.now() < deadline) await pause(Math.min(100, deadline - Date.now()));
+      }
       // Expressions may contain test parameters; never echo them on failure.
       throw new Error('Electron test condition timed out');
     };
-    await waitFor('Boolean(window.electronAPI && document.querySelector("[data-testid=nav-settings]"))');
+    await waitFor('Boolean(window.electronAPI && document.querySelector("[data-testid=nav-settings]"))', 10_000, { navigation: true });
     await evaluate(`window.__m5 = { output: {}, exits: {} };
       window.electronAPI.eventOn('pty:data', e => { window.__m5.output[e.ptyId] = (window.__m5.output[e.ptyId] || '') + e.data; });
       window.electronAPI.eventOn('pty:exit', e => { window.__m5.exits[e.ptyId] = e.code; }); true`);
@@ -93,7 +120,7 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
       } finally { socket.close(); }
     };
     return {
-      cdp, evaluate, mainEvaluate, waitFor, invoke, rendererErrors,
+      cdp, evaluate, mainEvaluate, waitFor, invoke, rendererErrors, navigationWaits,
       onCDP: (method, listener) => {
         const listeners = cdpListeners.get(method) ?? new Set();
         listeners.add(listener); cdpListeners.set(method, listeners);
