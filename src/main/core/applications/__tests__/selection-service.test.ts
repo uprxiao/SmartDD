@@ -61,6 +61,17 @@ describe('explicit project application slots and stop-before-switch', () => {
     expect(service.projectSettings('p1', 'zentao')).toEqual(selected);
     expect(() => sqlite.prepare('INSERT INTO application_project_bindings VALUES(?,?,?,?,?)').run('p1', 'zentao', 'zentao', a.id, 1)).toThrow(/UNIQUE/);
   });
+  it('rejects mail multi-selection in either slot and atomically chooses one concurrent revision',async()=>{
+    await service.setAdded('mail',true,0);const a=await connection('foxmail','source-a'),b=await connection('foxmail','source-b'),x=await connection('smtp','sender-a'),y=await connection('smtp','sender-b');
+    const original=await service.select({projectId:'p1',appId:'mail',expectedRevision:0,enabled:true,connections:{foxmail:a.id,smtp:x.id}});
+    for(const connections of [{foxmail:[a.id,b.id],smtp:x.id},{foxmail:a.id,smtp:[x.id,y.id]}])await expect(service.select({projectId:'p1',appId:'mail',expectedRevision:original.revision,enabled:true,connections} as unknown as ProjectApplicationSelectionInput)).rejects.toMatchObject({code:'INVALID_INPUT'});
+    expect(service.projectSettings('p1','mail')).toEqual(original);
+    for(const [slot,id] of [['foxmail',b.id],['smtp',y.id]])expect(()=>sqlite.prepare('INSERT INTO application_project_bindings VALUES(?,?,?,?,?)').run('p1','mail',slot,id,1)).toThrow(/UNIQUE/);
+    const choices=[{foxmail:b.id,smtp:x.id},{foxmail:a.id,smtp:y.id}];
+    const results=await Promise.allSettled(choices.map(connections=>service.select({projectId:'p1',appId:'mail',expectedRevision:original.revision,enabled:true,connections})));
+    expect(results.filter(r=>r.status==='fulfilled')).toHaveLength(1);expect(results.find(r=>r.status==='rejected')).toMatchObject({reason:{code:'REVISION_CONFLICT'}});
+    const winner=results.findIndex(r=>r.status==='fulfilled');expect(service.projectSettings('p1','mail').connections).toEqual(choices[winner]);expect(service.projectSettings('p2','mail').enabled).toBe(false);expect(stop).not.toHaveBeenCalled();
+  });
   it('stops project runs before committing another ZenTao source', async () => {
     await service.setAdded('zentao', true, 0); const a = await connection('zentao'), b = await connection('zentao', 'b');
     const selected = await service.select(selectZen(a.id, 0)); expect(stop).not.toHaveBeenCalled(); live = 1;

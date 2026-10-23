@@ -116,6 +116,17 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
   add(1);add(2);const first=await query({limit:1}),mail=await read(first.items[0].reference);f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','other mail fixture',1,1)");await enable('p2');const second=await start('codex',90103,'p2');
   expect(await call('query',{cursor:first.nextCursor},second)).toMatchObject({status:'error',error:{code:'REVISION_CONFLICT'}});expect(await call('resource_read',{resource:mail.text,offset:0,length:10},second)).toMatchObject({status:'error',error:{code:'SOURCE_UNAVAILABLE'}});expect((await query({},second)).matched).toBe(2);
  });
+ nativeIt('isolates different mailboxes with identical Message-ID and numeric native ID',async()=>{
+  add(1,clock,'SOURCE_A_ONLY');const secondRoot=join(f.root,'second-foxmail');mkdirSync(join(secondRoot,'Mail/Inbox'),{recursive:true});await fox.backup(join(secondRoot,'messages.db'));
+  writeFileSync(join(secondRoot,'Mail/Inbox/1.mail'),readFileSync(join(sourceRoot,'Mail/Inbox/1.mail'),'utf8').replace('SOURCE_A_ONLY','SOURCE_B_ONLY'));
+  const checked=await app.testConnection(sender,{name:'Second private mailbox',expectedRevision:0,config:{kind:'foxmail',sourcePath:secondRoot,account:'second-private-fixture',queryDays:30}}),secondConnection=await app.saveConnection(sender,'mail',checked.operationId,checked.candidateHash);
+  f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','other mail fixture',1,1)");await app.select(sender,{projectId:'p2',appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:secondConnection.id,smtp:null}});const second=await start('codex',90103,'p2');
+  const a=(await query()).items[0],b=(await query({},second)).items[0];expect(a.messageId).toBe(b.messageId);expect(a.reference.nativeId).toBe(b.reference.nativeId);expect(a.reference.connectionId).not.toBe(b.reference.connectionId);
+  const firstBody=(await read(a.reference)).text,secondBody=(await read(b.reference,second)).text;expect(firstBody.id).not.toBe(secondBody.id);
+  // PostalMime normalizes a single-part text body to a terminal LF; assert exact isolated content.
+  expect(await call('resource_read',{resource:firstBody,offset:0,length:100})).toMatchObject({status:'ok',value:{data:'SOURCE_A_ONLY\n'}});expect(await call('resource_read',{resource:secondBody,offset:0,length:100},second)).toMatchObject({status:'ok',value:{data:'SOURCE_B_ONLY\n'}});
+  for(const [reference,run] of [[a.reference,second],[b.reference,cc]] as const){const result=await call('read',{reference},run);expect(result.status).toBe('error');expect(JSON.stringify(result)).not.toMatch(/SOURCE_[AB]_ONLY/);}
+ });
  nativeIt('rebuilds resources after deliberate cache clear using the original source reference and keeps stable IDs',async()=>{
   add(1);const reference=(await query()).items[0].reference,old=await read(reference);await app.clearMailCache(sender);expect(await call('resource_read',{resource:old.text,offset:0,length:100})).toMatchObject({status:'error',error:{code:'SOURCE_UNAVAILABLE'}});const rebuilt=await read(reference);expect(rebuilt.text).toEqual(old.text);expect(await call('resource_read',{resource:old.text,offset:0,length:100})).toMatchObject({status:'ok'});
  });
