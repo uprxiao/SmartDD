@@ -7,6 +7,7 @@ import { canonicalJson,digest } from './manifest';
 import { withResourceLock } from './resource-lock';
 import {NativeUserMessages,type NativeUserMessage} from './native-user-messages';
 import {resolveReferencedMailSend,resolveContextualMailSend,nativeMailConnectionHash} from './native-mail-intent';
+import {resolveOrderedContextualMailSend} from './ordered-native-mail-context';
 const confirmSchema=z.object({intentId:z.uuid(),expectedReviewHash:z.string().regex(/^[a-f0-9]{64}$/),displayReceiptId:z.uuid(),reviewedUnknownExecutionIds:z.array(z.uuid()).max(100).default([])}).strict();
 interface Display {sender:ApplicationUiSender['sender'];frame:ApplicationUiSender['senderFrame'];projectId:string;intentId:string;reviewHash:string;expiresAt:number}
 interface Action {value:VerifiedMailUserAction;provenance:string;originSignal:AbortSignal|null;native?:NativeUserMessage;nativeContext?:readonly NativeUserMessage[]}
@@ -37,9 +38,14 @@ export class MailUserAuthorizations {
  }
  private contextLive(message:NativeUserMessage,previous:NativeUserMessage):boolean{
   const a=message.receipt,b=previous.receipt,scope=a.mailSendScope,prior=b.mailSendScope;
-  return !!this.nativeSources?.isRetained(previous)&&this.nativeLive(message)&&!!scope&&!!prior&&scope.connectionHash===prior.connectionHash&&scope.policyHash===prior.policyHash&&a.inputSequence===b.inputSequence+1&&a.projectId===b.projectId&&a.taskId===b.taskId&&a.runId===b.runId&&a.ptyId===b.ptyId&&a.selectionHash===b.selectionHash&&message.nativeSessionId===previous.nativeSessionId&&message.runner===previous.runner&&message.cliVersion===previous.cliVersion&&previous.timestamp<=message.timestamp;
+  return !!this.nativeSources?.isRetained(previous)&&this.nativeLive(message)&&!!scope&&!!prior&&scope.connectionHash===prior.connectionHash&&scope.policyHash===prior.policyHash&&a.inputSequence>b.inputSequence&&a.projectId===b.projectId&&a.taskId===b.taskId&&a.runId===b.runId&&a.ptyId===b.ptyId&&a.selectionHash===b.selectionHash&&message.nativeSessionId===previous.nativeSessionId&&message.runner===previous.runner&&message.cliVersion===previous.cliVersion&&previous.timestamp<=message.timestamp;
  }
- private nativeActionLive(action:Action):boolean{return !!action.native&&this.nativeLive(action.native)&&(action.nativeContext??[]).every(value=>this.contextLive(action.native!,value));}
+ private nativeContextLive(message:NativeUserMessage,previous:readonly NativeUserMessage[]):boolean{
+  if(previous.length>63||!this.nativeLive(message))return false;
+  const first=message.receipt.inputSequence-previous.length;
+  return first>=0&&previous.every((value,index)=>value.receipt.inputSequence===first+index&&this.contextLive(message,value)&&(index===0||previous[index-1].timestamp<=value.timestamp));
+ }
+ private nativeActionLive(action:Action):boolean{return !!action.native&&this.nativeContextLive(action.native,action.nativeContext??[]);}
  private async verifyNativeAction(action:Action):Promise<boolean>{
   const sources=this.nativeSources;if(!sources||!action.native||!this.nativeActionLive(action))return false;
   for(const value of [...action.nativeContext??[],action.native])if(!await sources.verify(value))return false;
@@ -56,20 +62,25 @@ export class MailUserAuthorizations {
   const old=[...this.actions.values()].find(action=>action.native&&action.value.intentId===intent.id&&action.value.reviewHash===intent.reviewHash);
   if(old?.native&&await this.verifyNativeAction(old)){this.contexts.require(context,'mail.send');return old.value.id;}
   const observed=await sources.read(context.runId);this.contexts.require(context,'mail.send');
-  const message=observed.messages.find(value=>this.nativeLive(value));if(!message||message.receipt.mailSendScope?.connectionHash!==nativeMailConnectionHash(review))return null;
+  const message=observed.messages.find(value=>this.nativeLive(value));if(!message||observed.messages[0]!==message||message.receipt.mailSendScope?.connectionHash!==nativeMailConnectionHash(review))return null;
   let resolved:ReturnType<typeof resolveReferencedMailSend>|ReturnType<typeof resolveContextualMailSend>=resolveReferencedMailSend(message.text,review);let nativeContext:readonly NativeUserMessage[]=[];
   if(!resolved&&!message.text.includes('mail-draft://')){
-   const previous=observed.messages.find(value=>this.contextLive(message,value));
-   if(previous){resolved=resolveContextualMailSend(message.text,previous.text,review);if(resolved)nativeContext=Object.freeze([previous]);}
+   const descending:NativeUserMessage[]=[];let expected=message.receipt.inputSequence-1,later=message.timestamp;
+   for(const value of observed.messages.slice(1)){
+    if(value.receipt.inputSequence!==expected||!this.contextLive(message,value)||value.timestamp>later)break;
+    descending.push(value);expected--;later=value.timestamp;
+   }
+   const previous=descending.reverse(),contextual=resolveOrderedContextualMailSend(message.text,previous.map(value=>value.text),review);
+   if(contextual){resolved=contextual.action;nativeContext=Object.freeze(previous.slice(contextual.start));}
   }
-  if(!resolved)return null;
-  for(const value of nativeContext)if(!await sources.verify(value)||!this.contextLive(message,value))return null;
+  if(!resolved||!this.nativeContextLive(message,nativeContext))return null;
+  for(const value of nativeContext)if(!await sources.verify(value)||!this.nativeContextLive(message,nativeContext))return null;
   await sources.claim(message,intent.id);this.contexts.require(context,'mail.send');
-  const originSignal=this.contexts.assertSendOrigin(intent.projectId,review.sourceTaskId,review.sourceRunId);if(!originSignal||originSignal.aborted||!this.nativeLive(message)||nativeContext.some(value=>!this.contextLive(message,value)))return null;
+  const originSignal=this.contexts.assertSendOrigin(intent.projectId,review.sourceTaskId,review.sourceRunId);if(!originSignal||originSignal.aborted||!this.nativeLive(message)||!this.nativeContextLive(message,nativeContext))return null;
   const at=new Date(message.receipt.observedAt).toISOString(),id='native-'+digest(canonicalJson({receiptId:message.receipt.id,intentId:intent.id,reviewHash:intent.reviewHash})),provenance=canonicalJson({schema:1,kind:'native-user-message',intentId:intent.id,reviewHash:intent.reviewHash,projectId:intent.projectId,taskId:context.taskId,runId:context.runId,nativeSessionId:message.nativeSessionId,runner:message.runner,cliVersion:message.cliVersion,nativeRecordHash:message.recordHash,nativeTimestamp:message.timestamp,inputReceipt:message.receipt,contextSources:nativeContext.map(value=>({nativeRecordHash:value.recordHash,nativeTimestamp:value.timestamp,inputReceipt:value.receipt})),action:resolved,at}),sourceHash=digest(provenance);
   const value:VerifiedMailUserAction=Object.freeze({id,source:'native-user-message',sourceHash,intentId:intent.id,reviewHash:intent.reviewHash,projectId:intent.projectId,taskId:review.sourceTaskId,runId:review.sourceRunId,createdAt:at,expiresAt:new Date(Math.min(message.receipt.observedAt,...nativeContext.map(value=>value.receipt.observedAt))+600000).toISOString(),reviewedUnknownExecutionIds:Object.freeze([]) as unknown as string[]});
   await withResourceLock(this.contexts.store.root,()=>{
-   this.contexts.require(context,'mail.send');this.cleanup();if(this.closed||originSignal.aborted||!this.nativeLive(message)||nativeContext.some(value=>!this.contextLive(message,value))||Date.parse(value.expiresAt)<=this.now())throw new ApplicationError('AUTHORIZATION_REQUIRED','本次原生具体指令已失效');
+   this.contexts.require(context,'mail.send');this.cleanup();if(this.closed||originSignal.aborted||!this.nativeLive(message)||!this.nativeContextLive(message,nativeContext)||Date.parse(value.expiresAt)<=this.now())throw new ApplicationError('AUTHORIZATION_REQUIRED','本次原生具体指令已失效');
    if(!this.actions.has(id)&&this.actions.size>=1024)throw new ApplicationError('RESOURCE_BUSY','当前发送证据已满');
    const row=this.contexts.store.sqlite.prepare('SELECT intent_id,source_kind,source_hash,provenance_json FROM mail_user_action_sources WHERE evidence_id=?').get(id) as {intent_id:string;source_kind:string;source_hash:string;provenance_json:string}|undefined;
    if(row&&(row.intent_id!==intent.id||row.source_kind!==value.source||row.source_hash!==sourceHash||row.provenance_json!==provenance))throw new ApplicationError('HASH_MISMATCH','同一原生用户来源已有不同记录');

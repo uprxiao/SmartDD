@@ -33,12 +33,12 @@ export interface NativeContextualMailAction extends Omit<NativeReferencedMailAct
  * The caller must authenticate both turns, their adjacency, scope, policy and original rows.
  * This is an implemented conversational path, not a claim of complete language understanding.
  */
-export function resolveContextualMailSend(text:string,previousText:string,review:ContextReview):NativeContextualMailAction|null{
+export function resolveContextualMailSend(text:string,previousText:string,review:ContextReview,recipientAliases?:ReadonlyMap<string,string>):NativeContextualMailAction|null{
   if(typeof text!=='string'||Buffer.byteLength(text)>1024*1024||text.includes('mail-draft://'))return null;
   const parsed=reference(previousText,review);if(!parsed||parsed.action)return null;
   let action=text.trim().replace(/[。.!！]+$/u,'').trim(),recipientSetHash:string|null=null;
   const recipients=(value:string)=>{
-    const addresses=value.split(/(?:[,，、;；]|\s+and\s+|和)/iu).map(v=>v.trim());if(!addresses.length||addresses.length>100||addresses.some(v=>!z.email().safeParse(v).success))return false;
+    const addresses=value.split(/(?:[,，、;；]|\s+and\s+|和)/iu).map(v=>v.trim()).map(v=>recipientAliases?.get(v.replace(/\s+/gu,''))??v);if(!addresses.length||addresses.length>100||addresses.some(v=>!z.email().safeParse(v).success))return false;
     const normalized=(address:string)=>{const at=address.lastIndexOf('@');return address.slice(0,at+1)+address.slice(at+1).toLowerCase();};
     const actual=[...new Set(addresses.map(normalized))].sort(),expected=[...new Set([...review.content.to,...review.content.cc,...review.content.bcc].map(normalized))].sort();
     if(canonicalJson(actual)!==canonicalJson(expected))return false;recipientSetHash=digest(canonicalJson(actual));return true;
