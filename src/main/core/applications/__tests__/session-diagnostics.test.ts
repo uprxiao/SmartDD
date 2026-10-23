@@ -104,3 +104,5 @@ it('retains scoped discovery metadata across stop and rejects damaged historical
  await run.cli.exited();await run.stop();activePty=null;let value=await diagnostics.inspect(f.snapshot.taskId);expect(value.applications[0].evidence.skillDiscovery).toBe('unverified');expect(value.recentRuns.find(r=>r.id===run.runId)?.skillObservations).toMatchObject([{kind:'discovery',runId:run.runId}]);
  f.sqlite.prepare("UPDATE capability_skill_observations SET evidence_hash='broken' WHERE run_id=?").run(run.runId);value=await diagnostics.inspect(f.snapshot.taskId);expect(value.recentRuns.find(r=>r.id===run.runId)).toMatchObject({skillObservations:[],skillObservationIssue:'RESOURCE_RECOVERY_REQUIRED'});
 });
+
+it('does not collect a replacement run for a stale background observer',async()=>{const run=await start();await diagnostics.prepared(prepared(run));let calls=0;skillObserver=async()=>{calls++;return [];};await diagnostics.inspect(f.snapshot.taskId,'old-run');expect(calls).toBe(0);await diagnostics.inspect(f.snapshot.taskId,run.runId);expect(calls).toBeGreaterThan(0);});

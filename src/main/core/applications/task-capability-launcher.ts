@@ -1,3 +1,4 @@
+import {SkillObservationMonitor} from './skill-observation-monitor';
 import {BridgeSupervisor} from './bridge-supervisor';
 import {nativeCapabilityPreparation} from './native-preparation-diagnostics';
 import {nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
@@ -56,6 +57,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly bridges:AgentBridgeProcesses;
   readonly broker:PrivateApplicationBroker;
   readonly bridgeRecovery=new BridgeSupervisor();
+  private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.inspect(taskId,runId);});
   private readonly recoveryServices=new Map<string,string>();
   readonly claudeDelivery:ClaudeDeliveryCoordinator;
   private readonly catalogs=new Map<string,DiscoveryCatalog>();
@@ -281,7 +283,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
           // The registry recorded the narrowing atomically; initial preparation remains immutable.
           phase='native-only';return launch;
         },
-        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
+        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:async pid=>{await run.cli.attach(pid??0);if(!unavailable&&native)this.skillObservations.start(input.taskId,run.runId,run.signal);},initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;if(!unavailable&&native)this.skillObservations.start(input.taskId,run.runId,run.signal);}};
       return launch;
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
@@ -398,5 +400,5 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private async sweep():Promise<void>{if(this.sweeping)return;this.sweeping=true;try{await Promise.allSettled([...this.active.values()].map(entry=>this.releaseStopped(entry)));}finally{this.sweeping=false;}}
   tombstone(taskId:string):Promise<void>{return this.sessions.tombstone(taskId);}
   activeTaskIds(projectId:string):ReadonlySet<string>{return new Set((this.support.store.sqlite.prepare("SELECT task_id AS id FROM capability_runs WHERE project_id=? AND state NOT IN ('stopped','failed')").all(projectId) as {id:string}[]).map(r=>r.id));}
-  dispose():Promise<void>{if(this.closing)return this.closing;this.closed=true;clearInterval(this.timer);this.closing=(async()=>{await Promise.allSettled([...this.pending]);const results=await Promise.allSettled([this.runs.dispose(),this.bridges.dispose(),this.broker.close()]);const deadline=performance.now()+2000;do{await this.sweep();if(!this.active.size)break;await new Promise<void>(done=>setTimeout(done,10));}while(performance.now()<deadline);if(results.some(result=>result.status==='rejected'))throw new ApplicationError('RUN_STOP_FAILED','部分运行关闭尚未完成；私有通道已撤销，未知占用继续保留');})();return this.closing;}
+  dispose():Promise<void>{if(this.closing)return this.closing;this.closed=true;this.skillObservations.close();clearInterval(this.timer);this.closing=(async()=>{await Promise.allSettled([...this.pending]);const results=await Promise.allSettled([this.runs.dispose(),this.bridges.dispose(),this.broker.close()]);const deadline=performance.now()+2000;do{await this.sweep();if(!this.active.size)break;await new Promise<void>(done=>setTimeout(done,10));}while(performance.now()<deadline);if(results.some(result=>result.status==='rejected'))throw new ApplicationError('RUN_STOP_FAILED','部分运行关闭尚未完成；私有通道已撤销，未知占用继续保留');})();return this.closing;}
 }

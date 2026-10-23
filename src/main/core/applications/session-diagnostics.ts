@@ -102,9 +102,9 @@ export class ApplicationSessionDiagnostics {
    const projectionRoots:string[]=[];for(const ref of refs){const resource=this.store.get(ref.ref_id);const directory=this.directory(resource);if(['session-projection','agent-projection','standard-skill','legacy-static-plugin','legacy-agent-projection','claude-delivery'].includes(resource.kind))projectionRoots.push(directory);if(resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源未就绪');if(resource.kind==='application-package'){const pack=this.packages.get(resource.contentHash);verifyPackageTree(directory,pack,this.store.storeId);}else if(resource.kind==='runtime')new RuntimeRegistry(this.store).verify(resource.contentHash);else if(this.inspector)this.inspector.verify(resource,session.snapshot,session.discoveryHome);else throw new ApplicationError('CAPABILITY_UNAVAILABLE','完整投影核验尚无所属宿主');}
    for(const skill of skills){const owned=projectionRoots.some(root=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});if(!owned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill缺少所属投影引用');const st=lstatSync(skill.projectionPath);if(st.isSymbolicLink()||!st.isFile())throw new ApplicationError('OWNERSHIP_CONFLICT','原Skill投影不是受管文件');}return null;}catch(e){return code(e);}
  }
- async inspect(taskId:string):Promise<ApplicationSessionDiagnostic>{
+ async inspect(taskId:string,expectedRunId?:string):Promise<ApplicationSessionDiagnostic>{
   const before=await this.inspectBase(taskId),runId=before.currentRun?.id;
-  if(!runId||!this.deps.skillReads)return before;
+  if(!runId||(expectedRunId!==undefined&&runId!==expectedRunId)||!this.deps.skillReads)return before;
   const observed=new Map<string,SkillReadObservation[]>(),discovered=new Map<string,SkillReadObservation[]>();
   for(const app of before.applications){
    if(app.resourceState!=='verified'||!app.skills.length)continue;
