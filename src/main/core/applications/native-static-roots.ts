@@ -31,7 +31,7 @@ export function verifyNativeStaticRoots(store:ResourceStore,roots:readonly Nativ
   const [current]=captureNativeStaticRoots(store,[proof.resource.resourceId]);
   if(!current||canonicalJson(current)!==canonicalJson(proof))throw invalid();
   const r=proof.resource,home=(store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(r.scopeIdentity) as {home:string}|undefined)?.home;
-  if(!home||digest(home)!==r.scopeIdentity)throw invalid();const directory=store.directory(r),name=basename(directory),path=join(directory,'SKILL.md');if(omitted.has(r.resourceId)){if(r.kind!=='agent-projection')throw invalid();continue;}assertDiscoveryPath(home,path);
+  if(!home||digest(home)!==r.scopeIdentity)throw invalid();const directory=store.directory(r),name=basename(directory),path=join(directory,'SKILL.md');if(omitted.has(r.resourceId))continue;assertDiscoveryPath(home,path);
   if(r.kind==='legacy-agent-projection'){
    const identity=verifyLegacyDiscoveryEntry({resourceId:r.resourceId,storeId:store.storeId,path,nativeName:name,sourceHash:r.contentHash,projectionHash:r.contentHash,format:'legacy-tree-v1'},home);if(identity.sourceResourceId!==proof.sourceId)throw invalid();
   }else{

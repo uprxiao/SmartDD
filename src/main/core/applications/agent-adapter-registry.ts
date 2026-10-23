@@ -1,4 +1,4 @@
-import {validateNativeDiscoveryExclusions} from './native-discovery-exclusions';
+import {validateNativeDiscoveryExclusions,nativeGuardPlanOmissions,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
 import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
 import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-state';
 import { createRequire } from 'node:module';
@@ -41,7 +41,7 @@ export class AgentAdapterRegistry {
     const manifest = verifyOwnedBundle(join(this.store.root,installed.resource.relativePath),hash,this.store.storeId);
     if (canonicalJson(manifest) !== canonicalJson(installed.manifest)) throw new ApplicationError('HASH_MISMATCH','Agent适配器完整树已改变'); return installed;
   }
-  private preflight(installed: InstalledAgentAdapter,input: AgentLoadRequest): void {
+  private preflight(installed: InstalledAgentAdapter,input: AgentLoadRequest,guardOmissions?:ReadonlySet<string>): void {
     const snapshot = input.snapshot, meta = installed.metadata;
     if (snapshot.runner !== meta.agentId || snapshot.adapterBinding.hash !== installed.hash || snapshot.adapterBinding.id !== meta.agentId || snapshot.adapterBinding.version !== meta.version || snapshot.adapterBinding.projectionFormatVersion !== meta.projectionFormatVersion) throw new ApplicationError('SNAPSHOT_CORRUPT','固定适配器与原快照不一致');
     if (!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64') || !meta.cliVersions.includes(input.cliVersion)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此Agent／平台版本尚未验证所需加载机制，保留Agent原功能');
@@ -53,7 +53,7 @@ export class AgentAdapterRegistry {
     const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
     if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
     const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...standards.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
-    const excludedH=validateNativeDiscoveryExclusions(this.store,input,allSkills.map(s=>s.path));
+    const excludedH=guardOmissions??validateNativeDiscoveryExclusions(this.store,input,allSkills.map(s=>s.path));
     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
       if (input.pluginRoot !== expected || !input.pluginHash || allSkills.some(s => !within(join(expected,'skills'),s.path))) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude必须沿用原会话稳定插件路径');
@@ -94,13 +94,15 @@ export class AgentAdapterRegistry {
       if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && allSkills.length>0 && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
     }
   }
-  plan(hash: string,value: AgentLoadRequest): AgentLoadPlan {
+  plan(hash:string,value:AgentLoadRequest):AgentLoadPlan{return this.planChecked(hash,value);}
+  planNativeGuard(hash:string,value:AgentLoadRequest,proof:NativeGuardDiscoveryProof):AgentLoadPlan{return this.planChecked(hash,value,proof);}
+  private planChecked(hash:string,value:AgentLoadRequest,proof?:NativeGuardDiscoveryProof):AgentLoadPlan {
     const parsed = agentLoadRequestSchema.safeParse(value); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','Agent加载计划包含未允许字段或格式错误');
-    const input = parsed.data, installed = this.verify(hash);if(installed.metadata.projectionFormatVersion!==1)throw new ApplicationError('HOST_INCOMPATIBLE','旧格式适配器须从原M4来源生成计划');this.preflight(installed,input);
+    const input = parsed.data, installed = this.verify(hash);if(installed.metadata.projectionFormatVersion!==1)throw new ApplicationError('HOST_INCOMPATIBLE','旧格式适配器须从原M4来源生成计划');const omitted=proof?nativeGuardPlanOmissions(this.store,proof,input):undefined;this.preflight(installed,input,omitted);
     try {
       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&input.catalogExclusions?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!input.catalogExclusions!.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
+      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
   }
   planLegacy(hash:string,value:unknown):AgentLoadPlan {

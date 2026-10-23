@@ -1,0 +1,191 @@
+{
+  "at": "2026-10-23T02:47:56.728244+00:00",
+  "baseline": "R1.6+12.21",
+  "requirementSha256": "65029b2a55b57597302247475cb03a1743cd8d352b2068d3ad8ccede126d979e",
+  "numberRows": 87,
+  "parentRows": 10,
+  "newObservations": 5,
+  "sourceBase": "1d1fd835a630722571fbeac680bfda82ba5b9b63",
+  "phase": 5,
+  "observations": [
+    {
+      "id": "M10-R02-06",
+      "source": [
+        "src/shared/project-transfer.ts",
+        "src/main/core/projects/transfer-format.ts",
+        "src/main/core/projects/transfer-service.ts"
+      ],
+      "observation": "strict v1 retains the original explicit capabilities/database/server/profile/credential whitelist. snapshot constructs those fields;commit inserts only the original project records. App tables,mail blobs/cache/drafts and session resources are not serialized or imported.",
+      "softwareSource": [
+        "src/main/core/projects/transfer-format.test.ts:I06 unknown fields",
+        "src/main/core/projects/transfer-service.test.ts:E03 selected AI secrets"
+      ],
+      "assessment": "source whitelist confirmed;M10-specific populated-App exclusion regression still required;not an end-to-end or complete row pass"
+    },
+    {
+      "id": "M10-R02-07",
+      "source": [
+        "src/main/core/projects/transfer-service.ts",
+        "src/main/core/applications/selection-service.ts"
+      ],
+      "observation": "Import allocates a new project ID without writing application_project_settings/bindings/global connection records. projectSettings with no row returns enabled false and null slots;no name/directory-based App matching path was found in the actual import transaction.",
+      "assessment": "source default confirmed;actual import with existing global connections/other projects still needs software and App verification"
+    },
+    {
+      "id": "M10-R02-08",
+      "source": [
+        "src/renderer/views/projects/project-transfer.tsx"
+      ],
+      "observation": "Export shows general saved credentials without the required App/data exclusion text. Import success shows only saved project/credentials,not the required local App re-selection explanation. Its actions open generic project or new task;there is no project applications action.",
+      "assessment": "confirmed implementation gap REVIEW-04;same existing requirement,not a new feature or scope decision",
+      "requiredNext": "Reuse the existing confirmed prototype wording/action in the actual App,add real component/navigation and M10 transfer exclusion/default-off regressions;no new prototype UI design required",
+      "prototype": "Confirmed shared prototype ProjectTransfer.jsx:161/163 already contains exact export exclusion text,import explanation and onOpenApplications action;App.jsx wires project/<id>/apps"
+    },
+    {
+      "id": "M10-R05-08",
+      "source": [
+        "src/main/core/applications/providers/foxmail-source.ts",
+        "src/main/core/applications/providers/mail-worker.ts",
+        "native/applications/foxmail.mm"
+      ],
+      "observation": "Mail files open O_RDONLY|O_NOFOLLOW with before/after stamps and bounded reads. Native VFS rejects readwrite/create/delete and returns READONLY for write/truncate/delete;SQLite opens READONLY with query_only. This is source evidence of read-only design,not an OS permission/actual Foxmail matrix verdict.",
+      "softwareSource": [
+        "src/main/core/applications/__tests__/foxmail-worker.test.ts:leaves every source byte unchanged/missing bodies/incomplete output",
+        "src/main/core/applications/__tests__/foxmail-native.test.ts"
+      ],
+      "assessment": "source and existing assertions inspected;not rerun in BD related selection;full current-source software matrix and real App/System layers remain"
+    },
+    {
+      "id": "M10-R06-13",
+      "source": [
+        "src/main/core/applications/mail-execution-service.ts",
+        "src/main/core/applications/mail-send-data-service.ts"
+      ],
+      "observation": "current() requires the project SMTP slot and enabled/connected provider. prepare rejects an explicit draft sender different from the selected connection. Frozen intent stores connection/identity/config/policy/binding revisions;assertCurrent checks all plus current draft revision/hash. Reading slot is checked separately.",
+      "softwareSource": [
+        "src/main/core/applications/__tests__/mail-execution.test.ts:invalidates approved intent after config/binding/disable/disconnect",
+        "src/main/core/applications/__tests__/mail-execution.test.ts:independent reading slot",
+        "src/main/core/applications/__tests__/mail-send-data.test.ts:binding-change contextual evidence"
+      ],
+      "assessment": "source contract and existing assertions inspected;cross-Agent App send/identity-switch verification remains;R08-01 named/earlier user context is still a separate known gap"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "native/applications/foxmail.mm",
+      "sha256": "a4f8d3d7d92f8168f61feadfa6df943429d39e98baaabd8e506fb6acc2c2d9a3",
+      "bytes": 9976,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/__tests__/foxmail-native.test.ts",
+      "sha256": "1b1dde1e0f4109b3fd06bc76d31438ef7717a734c3c1d40a302dfeff0792067c",
+      "bytes": 4156,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/__tests__/foxmail-worker.test.ts",
+      "sha256": "110c63d4e072a20ff866e892dd557fbeb75c79cef67f8bc46d4393192abfdb4e",
+      "bytes": 12384,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/__tests__/mail-execution.test.ts",
+      "sha256": "3b28a7f9d361ddacf4101401fd694af5463830b6516d0a6cba1d19617971dc33",
+      "bytes": 32540,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/__tests__/mail-send-data.test.ts",
+      "sha256": "39b3a44a52d9b92c296edbb5950a256434e645b90eb925b02b35c9ab3d37ceda",
+      "bytes": 67209,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/mail-execution-service.ts",
+      "sha256": "0a9c91422ea4015feeb8aaff961acec1280d2a77e11ddf28b7669db77223e4b1",
+      "bytes": 37583,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/mail-send-data-service.ts",
+      "sha256": "c0c57ceed80a7d46e856fd9d5882eaf7e33d69bff290d7083640b41b011783f3",
+      "bytes": 7861,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/providers/foxmail-source.ts",
+      "sha256": "3710134547eda24eb130f3e569172275f0b31bed00f323ffbdb9c71d12d10a2a",
+      "bytes": 23263,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/providers/mail-worker.ts",
+      "sha256": "c07b3dbef27ebc97ed6343a36a4d285c6dae576dc13cf57710e310789daee1c3",
+      "bytes": 5081,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/applications/selection-service.ts",
+      "sha256": "8f1d14771e0a441ca37bd2c5d7c590fcf37d4196a420c7d18bdb60aa1656ed65",
+      "bytes": 16034,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/projects/transfer-format.test.ts",
+      "sha256": "5cf58bd5fb001e7ff77f80e46ecd90b8dc5102ce9a6f1497196233864dda426a",
+      "bytes": 8371,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/projects/transfer-format.ts",
+      "sha256": "3340424f58da0d760891dec11f79aac87ed3cc621db99c0a638716d6af0f8c03",
+      "bytes": 12040,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/projects/transfer-service.test.ts",
+      "sha256": "0791adf4e4b7238480ef983d7401dfa0ebc24e27bec780e22dfb14a897f08779",
+      "bytes": 31735,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/main/core/projects/transfer-service.ts",
+      "sha256": "f415dee2e35296de5cff42ef032ec12ca1a466ae2a5bce75e2c2d9ce18027326",
+      "bytes": 27345,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/renderer/views/projects/project-transfer.tsx",
+      "sha256": "d9b4631f83ee29228ebcaa21dc731ae8e26d84db753b46a78eaed15c5fb33525",
+      "bytes": 24920,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "src/shared/project-transfer.ts",
+      "sha256": "b573767f7b69e13b8b78e6c3c0d8afe6ee79493737a342decbfba22456e1907b",
+      "bytes": 4180,
+      "canonicalAndFrozenCandidateIdentical": true
+    },
+    {
+      "path": "prototypes/m6-codex/src/ProjectTransfer.jsx",
+      "sha256": "006b72afb8f8143dccad407c349fee0495b765906a4aec59a03f5c6eb213258e",
+      "bytes": 26193,
+      "actualCanonicalPrototypeRead": true,
+      "notBorrowedFromInheritedDifferences": true
+    },
+    {
+      "path": "prototypes/m6-codex/src/App.jsx",
+      "sha256": "9de5fcdc0b721d046deac9406dfd8c814ffecc3cf06d3cade3439c1f31263277",
+      "bytes": 65224,
+      "actualCanonicalPrototypeRead": true,
+      "notBorrowedFromInheritedDifferences": true
+    }
+  ],
+  "whole87AuditComplete": false,
+  "formalCaseStatusChanged": false,
+  "newRequirementAdded": false,
+  "softwareBoundary": "Listed softwareSource entries were read,not newly executed by this audit. BD currentfull tests tracked separately. No row is marked complete from source observations.",
+  "newGap": "REVIEW-04:existing R02-08 App exclusion/default-off guidance and import-success project App navigation,plus M10 regression coverage",
+  "goal": "active full M10;not complete"
+}

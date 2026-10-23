@@ -1,4 +1,4 @@
-import {verifyModernDiscoveryProjection,nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof,type NativeGuardDiscoverySelection} from './native-discovery-exclusions';
+import {verifyModernDiscoveryProjection,nativeGuardEntryUnavailable,nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof,type NativeGuardDiscoverySelection} from './native-discovery-exclusions';
 import { randomUUID } from 'node:crypto';
 import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -199,8 +199,8 @@ export class DiscoveryCatalog {
     });}
     /** Read-only candidate,not a verified guard receipt or loading authority. */
     async nativeGuardSelection():Promise<NativeGuardDiscoverySelection|undefined>{return this.lock(()=>{
-        const raw=this.catalog(),paths:string[]=[];for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);}catch(error){if(error instanceof ApplicationError&&['OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))paths.push(entry.path);else throw error;}}
-        return paths.length?{schema:'native-guard-discovery-omissions-v1' as const,home:this.home,catalog:structuredClone({generation:raw.generation,entries:raw.entries}),paths}:undefined;
+        const raw=this.catalog(),paths:string[]=[];let legacy=false;for(const entry of raw.entries)if(nativeGuardEntryUnavailable(entry,this.home,true)){paths.push(entry.path);if(entry.format)legacy=true;}
+        return paths.length?{schema:legacy?'native-guard-retention-omissions-v1' as const:'native-guard-discovery-omissions-v1' as const,home:this.home,catalog:structuredClone({generation:raw.generation,entries:raw.entries}),paths}:undefined;
     });}
     verify(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,true);}
     /** Only for a no-authority native guard: verify complete H bytes/metadata,
@@ -213,7 +213,7 @@ export class DiscoveryCatalog {
         for (const entry of parsed.entries) {
             if (entry.path !== join(this.home, '.agents/skills', entry.nativeName, 'SKILL.md'))
                 throw new ApplicationError('OWNERSHIP_CONFLICT', '投影越过实际发现根');
-            if(omitted.has(entry.path)){if(entry.format)throw new ApplicationError('SCOPE_DENIED','旧目录不参与普通守护的新格式排除');continue;}
+            if(omitted.has(entry.path))continue;
             if(entry.format==='legacy-tree-v1'){
                 const identity=verifyLegacyDiscoveryEntry(entry,this.home);
                 if(entry.storeId===this.store.storeId){const r=this.store.get(entry.resourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),source=this.store.get(identity.sourceResourceId);

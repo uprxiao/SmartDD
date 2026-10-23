@@ -5,7 +5,7 @@ import {dirname,join} from 'node:path';
 import {ApplicationError} from '@shared/applications';
 import type {AgentLoadRequest} from '@shared/agent-adapters';
 import {canonicalJson,digest} from './manifest';
-import {assertDiscoveryPath} from './legacy-discovery';
+import {assertDiscoveryPath,legacyDiscoveryEntry,verifyLegacyDiscoveryEntry} from './legacy-discovery';
 import {verifyOwnedBundle} from './owned-bundle';
 import type {ResourceStore} from './resource-store';
 type Entry=NonNullable<AgentLoadRequest['catalog']>['entries'][number];
@@ -25,6 +25,22 @@ export function verifyModernDiscoveryProjection(entry:Entry,home:string):void{
  if(manifest.metadata.kind!=='codex-agent-projection-v1'||manifest.metadata.homeId!==digest(home)||manifest.metadata.nativeName!==entry.nativeName||manifest.metadata.sourceHash!==entry.sourceHash)throw new ApplicationError('HASH_MISMATCH','原投影内容或原生身份不同');
 }
 
+/** A retention candidate is not an ownership claim. Legacy identity must still
+ * match the complete registered entry before any physical failure can be omitted. */
+export function nativeGuardEntryUnavailable(entry:Entry,home:string,legacy=false):boolean{
+ if(entry.format){
+  if(!legacy)throw new ApplicationError('SCOPE_DENIED','旧格式目录不能使用现代加载排除');
+  const match=/^smartdd-([a-z][a-z0-9-]{0,63})-([a-f0-9]{16})$/.exec(entry.nativeName);
+  if(!match||canonicalJson(legacyDiscoveryEntry(entry.storeId,home,match[1],entry.sourceHash))!==canonicalJson(entry))throw recovery();
+ }
+ try{if(entry.format)verifyLegacyDiscoveryEntry(entry,home);else verifyModernDiscoveryProjection(entry,home);return false;}
+ catch(error){
+  if(error instanceof ApplicationError&&['HASH_MISMATCH','OWNERSHIP_CONFLICT',...(entry.format?['RESOURCE_RECOVERY_REQUIRED']:[])].includes(error.code))return true;
+  if(entry.format&&['ENOENT','ENOTDIR','EACCES','EPERM','ELOOP'].includes((error as NodeJS.ErrnoException).code??''))return true;
+  throw error;
+ }
+}
+
 interface CatalogBinding {runId:string;taskId:string;projectId:string;runner:'claude-code'|'codex';home:string;catalog:NonNullable<AgentLoadRequest['catalog']>}
 function boundCatalog(store:ResourceStore,input:CatalogBinding){
  const {catalog,home}=input,homeId=digest(home);if(digest(canonicalJson({homeId,entries:catalog.entries}))!==catalog.generation)throw recovery();
@@ -36,9 +52,9 @@ function boundCatalog(store:ResourceStore,input:CatalogBinding){
  if(consumer.schema!==1||consumer.homeId!==homeId||consumer.generation!==catalog.generation||consumer.runner!==input.runner||consumer.runId!==input.runId||consumer.ptyId!==run.pty_id||!['preparing','active'].includes(String(consumer.phase))||!owner||owner.storeId!==store.storeId||owner.uFingerprint!==digest(dirname(store.root))||owner.instanceId!==run.owner_instance_id||owner.pid!==run.owner_pid||owner.startedAt!==run.owner_started_at)throw recovery();
  return run;
 }
-function unverifiedPaths(catalog:CatalogBinding['catalog'],home:string,paths:readonly string[],selectedPaths:readonly string[]):Set<string>{
+function unverifiedPaths(catalog:CatalogBinding['catalog'],home:string,paths:readonly string[],selectedPaths:readonly string[],legacy=false):Set<string>{
  if(new Set(paths).size!==paths.length)throw recovery();const excluded=new Set(paths);
- for(const path of excluded){const entry=catalog.entries.find(e=>e.path===path);if(!entry||entry.format||selectedPaths.includes(path))throw new ApplicationError('SCOPE_DENIED','不能排除旧格式、未知路径或本轮启用的受管Skill');let unavailable=false;try{verifyModernDiscoveryProjection(entry,home);}catch(error){if(error instanceof ApplicationError&&['HASH_MISMATCH','OWNERSHIP_CONFLICT'].includes(error.code))unavailable=true;else throw error;}if(!unavailable)throw new ApplicationError('RESOURCE_STATE_CHANGED','原目录已恢复受管归属，须重新准备而非扩大本轮加载');}
+ for(const path of excluded){const entry=catalog.entries.find(e=>e.path===path);if(!entry||entry.format&&!legacy||selectedPaths.includes(path))throw new ApplicationError('SCOPE_DENIED','不能排除旧格式、未知路径或本轮启用的受管Skill');if(!nativeGuardEntryUnavailable(entry,home,legacy))throw new ApplicationError('RESOURCE_STATE_CHANGED','原目录已恢复受管归属，须重新准备而非扩大本轮加载');}
  return excluded;
 }
 /** Explicit host-only omission of physically unverified modern entries.The raw
@@ -51,7 +67,8 @@ export function validateNativeDiscoveryExclusions(store:ResourceStore,input:Agen
  return unverifiedPaths(catalog,home,proof.paths,selectedPaths);
 }
 const hash=z.string().regex(/^[a-f0-9]{64}$/),absolute=z.string().min(1).max(4096).refine(s=>s.startsWith('/')&&!/[\x00\r\n]/.test(s));
-const guardSelectionSchema=z.object({schema:z.literal('native-guard-discovery-omissions-v1'),home:absolute,catalog:agentLoadRequestSchema.shape.catalog.unwrap(),paths:z.array(absolute.refine(p=>p.endsWith('/SKILL.md'))).min(1).max(4096).refine(p=>new Set(p).size===p.length)}).strict();
+const modernGuardSelectionSchema=z.object({schema:z.literal('native-guard-discovery-omissions-v1'),home:absolute,catalog:agentLoadRequestSchema.shape.catalog.unwrap(),paths:z.array(absolute.refine(p=>p.endsWith('/SKILL.md'))).min(1).max(4096).refine(p=>new Set(p).size===p.length)}).strict();
+const guardSelectionSchema=z.discriminatedUnion('schema',[modernGuardSelectionSchema,modernGuardSelectionSchema.extend({schema:z.literal('native-guard-retention-omissions-v1')}).strict()]);
 export type NativeGuardDiscoverySelection=z.infer<typeof guardSelectionSchema>;
 const guardContextSchema=z.object({runId:z.uuid(),taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:z.enum(['claude-code','codex']),snapshotHash:hash,kind:z.enum(['history','fixed'])}).strict();
 export interface NativeGuardDiscoveryProof {readonly schema:'native-guard-discovery-proof-v1';readonly runId:string}
@@ -67,7 +84,8 @@ function guardRecord(store:ResourceStore,proof:NativeGuardDiscoveryProof):GuardR
  if(!source||source.snapshot_hash!==context.snapshotHash||digest(source.snapshot_json)!==context.snapshotHash)throw recovery();
  if(context.kind==='fixed'){if(source.schema_version!==2||source.retention_state!=='active'||!store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(context.runId))throw recovery();}
  else if(source.schema_version!==0||source.retention_state!=='hold'||source.legacy_status!=='history-unknown')throw recovery();
- unverifiedPaths(selection.catalog,selection.home,selection.paths,[]);record.assertOwnedGuard();return record;
+ if(selection.schema==='native-guard-retention-omissions-v1'&&!selection.paths.some(path=>selection.catalog.entries.find(e=>e.path===path)?.format==='legacy-tree-v1'))throw recovery();
+ unverifiedPaths(selection.catalog,selection.home,selection.paths,[],selection.schema==='native-guard-retention-omissions-v1');record.assertOwnedGuard();return record;
 }
 /** Mint only after the actual no-authority guard owns its complete C lease and H
  * consumer.The retained input is parsed/cloned;JSON copies are not receipts. */
@@ -81,9 +99,23 @@ export function nativeGuardCatalogOmissions(store:ResourceStore,proof:NativeGuar
 export function nativeGuardResourceOmissions(store:ResourceStore,proof:NativeGuardDiscoveryProof):Set<string>{
  const {selection}=guardRecord(store,proof),ids=new Set<string>();
  for(const path of selection.paths){const entry=selection.catalog.entries.find(e=>e.path===path)!;if(entry.storeId!==store.storeId)continue;const r=store.get(entry.resourceId);
-  if(r.kind!=='agent-projection'||r.pathScope!=='H'||r.ownerStoreId!==store.storeId||r.scopeIdentity!==digest(selection.home)||r.relativePath!=='.agents/skills/'+entry.nativeName||r.contentHash!==entry.projectionHash)throw recovery();ids.add(r.resourceId);}
+  if(r.kind!==(entry.format?'legacy-agent-projection':'agent-projection')||r.pathScope!=='H'||r.ownerStoreId!==store.storeId||r.scopeIdentity!==digest(selection.home)||r.relativePath!=='.agents/skills/'+entry.nativeName||r.contentHash!==entry.projectionHash)throw recovery();ids.add(r.resourceId);}
  return ids;
 }
 export function nativeGuardAdapterExclusions(store:ResourceStore,proof:NativeGuardDiscoveryProof):NonNullable<AgentLoadRequest['catalogExclusions']>{
- const {selection,context}=guardRecord(store,proof);if(context.runner!=='codex')throw recovery();return{schema:'native-discovery-exclusions-v1',generation:selection.catalog.generation,paths:[...selection.paths]};
+ const {selection,context}=guardRecord(store,proof);if(context.runner!=='codex')throw recovery();if(selection.paths.some(path=>selection.catalog.entries.find(e=>e.path===path)?.format))throw new ApplicationError('SCOPE_DENIED','旧格式排除只能用于本轮零授权守护规划');return{schema:'native-discovery-exclusions-v1',generation:selection.catalog.generation,paths:[...selection.paths]};
+}
+
+/** Pure-false planning only. The opaque live guard is independent from the old
+ * serialized modern-exclusion field, whose legacy rejection stays unchanged. */
+export function nativeGuardPlanOmissions(store:ResourceStore,proof:NativeGuardDiscoveryProof,input:AgentLoadRequest):Set<string>{
+ const {selection,context}=guardRecord(store,proof),snapshot=input.snapshot;
+ if(context.runner!=='codex'||input.runId!==context.runId||snapshot.runner!==context.runner||snapshot.taskId!==context.taskId||snapshot.projectId!==context.projectId||snapshot.packages.length||snapshot.standardSkills.length||snapshot.mcp.length||Object.keys(snapshot.adapterBinding.nativeToolNames).length||snapshot.legacyBinding||input.mcp.length||input.pluginRoot!==null||input.pluginHash!==null||input.catalogExclusions||input.applicationScope||input.standardSkillScope||input.claudeDelivery||input.currentExecutable!==process.execPath||!input.catalog)throw recovery();
+ const omitted=nativeGuardCatalogOmissions(store,proof,input.native.home,input.catalog);
+ const row=store.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(context.taskId) as {snapshot_json:string};
+ const source=JSON.parse(row.snapshot_json),native=context.kind==='fixed'?source.native:source;
+ if(input.native.runner!==context.runner||input.native.cwd!==native.cwd||input.native.stateRoot!==native.stateRoot||input.native.sessionId!==native.sessionId)throw recovery();
+ const adapter=store.get('agent-adapter:'+context.runner+':'+snapshot.adapterBinding.hash);
+ const held=store.sqlite.prepare("SELECT 1 FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_kind='run' AND l.owner_id=? AND r.resource_id=? AND r.content_hash=? AND r.generation=?").get(context.runId,adapter.resourceId,adapter.contentHash,adapter.generation);if(!held)throw recovery();
+ return omitted;
 }
