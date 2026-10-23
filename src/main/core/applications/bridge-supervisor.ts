@@ -17,6 +17,7 @@ interface Entry {
   generation: number;
   attempts: number;
   revoked: boolean;
+  stopped?: boolean;
   workerActive?: boolean;
   controller?: AbortController;
   pending?: Promise<RecoveryResult>;
@@ -42,6 +43,7 @@ export class BridgeSupervisor {
     const entry = this.entries.get(this.key(runId, serverName));
     if (!entry) return;
     entry.revoked = true;
+    entry.stopped = true;
     entry.controller?.abort();
   }
   /** A host-verified handshake result belongs to one current instance and generation only. */
@@ -59,10 +61,12 @@ export class BridgeSupervisor {
   /** Host calls only for a newly observed disconnection or explicit user retry/config repair. */
   beginRecovery(runId: string, serverName: string, expectedGeneration: number, reason: 'disconnected' | 'user-retry' | 'configuration-repaired'): boolean {
     const entry = this.entries.get(this.key(runId, serverName));
-    if (!entry || entry.revoked || entry.pending || entry.workerActive || entry.generation !== expectedGeneration) return false;
+    if (!entry || entry.stopped || entry.pending || entry.workerActive || entry.generation !== expectedGeneration) return false;
+    if (entry.revoked && reason === 'disconnected') return false;
     if (reason === 'disconnected' && entry.result?.code !== 'CONNECTED') return false;
     // Advance before a new episode so delayed callers cannot spend its budget.
     entry.generation++;
+    entry.revoked = false;
     entry.attempts = 0;
     entry.result = undefined;
     return true;

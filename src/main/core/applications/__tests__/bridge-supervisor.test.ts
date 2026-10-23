@@ -77,6 +77,17 @@ describe('host bridge recovery coordination', () => {
     finish(true);expect((await pending).code).toBe('CONNECTED');
     expect(supervisor.reportAttempt('run','mail',current.instanceId,current.generation,true)).toBe(false);
   });
+  it('allows explicit repair to revalidate policy but never reopens a stopped run',async()=>{
+    const supervisor=new BridgeSupervisor();let authorized=false;const replace=vi.fn(async()=>true);
+    supervisor.register('run','mail',{capability:'supported',evidence:'fixture',validate:async()=>{if(!authorized)throw Error('disabled');},replace});
+    expect((await supervisor.prepareReplacement('run','mail',0)).code).toBe('RECOVERY_REVOKED');
+    expect(supervisor.beginRecovery('run','mail',0,'disconnected')).toBe(false);
+    expect(supervisor.beginRecovery('run','mail',0,'user-retry')).toBe(true);
+    expect((await supervisor.prepareReplacement('run','mail',1)).code).toBe('RECOVERY_REVOKED');expect(replace).not.toHaveBeenCalled();
+    authorized=true;expect(supervisor.beginRecovery('run','mail',1,'configuration-repaired')).toBe(true);
+    expect((await supervisor.prepareReplacement('run','mail',2)).code).toBe('CONNECTED');expect(replace).toHaveBeenCalledOnce();
+    supervisor.revoke('run','mail');expect(supervisor.beginRecovery('run','mail',3,'user-retry')).toBe(false);
+  });
   it('rechecks current authorization after handshake and rejects stale generations', async () => {
     const supervisor = new BridgeSupervisor(); let authorized = true;
     supervisor.register('run', 'mail', { capability: 'supported', evidence: 'fixture', validate: async () => { if (!authorized) throw Error('revoked'); }, replace: async () => { authorized = false; return true; } });
