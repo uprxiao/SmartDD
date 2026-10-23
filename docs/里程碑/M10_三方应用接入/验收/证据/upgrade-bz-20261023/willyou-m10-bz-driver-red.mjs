@@ -1,0 +1,53 @@
+// T46: current synthetic prototype UI only; not product credentials or business E2E.
+import assert from 'node:assert/strict';
+import {initialIntegrationState,projectIntegrationState} from '../../prototypes/m6-codex/src/integration-model.mjs';
+import {createServer} from 'node:http';
+import {mkdtemp,mkdir,readFile,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,resolve,sep,extname} from 'node:path';
+import {createHash} from 'node:crypto';
+import {openElectron} from '../lib/electron-harness.mjs';
+import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
+const executable=process.env.WILLYOU_ACCEPTANCE_APP,staticRoot=resolve(process.env.M10_PROTOTYPE_STATIC_ROOT??'prototypes/m6-codex/dist/client');assert(executable);
+const root=await mkdtemp(join(tmpdir(),'willyou-m10-prototype-upgrade-'));
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const result={layer:'P only: real browser interaction with current synthetic prototype;not packaged App business acceptance',startedAt:new Date().toISOString(),root,staticRoot,indexSha256:sha(await readFile(join(staticRoot,'index.html'))),cases:[],requests:[]};
+const server=createServer(async(req,res)=>{try{const path=resolve(staticRoot,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(req.method!=='GET'||path!==staticRoot&&!path.startsWith(staticRoot+sep)){res.writeHead(403);res.end();return;}const file=path===staticRoot?join(staticRoot,'index.html'):path;const bytes=await readFile(file);res.writeHead(200,{'content-type':({'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2','.json':'application/json'})[extname(file)]??'application/octet-stream'});res.end(bytes);}catch{res.writeHead(404);res.end();}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
+let app,record,stage;
+const mark=(name,detail={})=>{record.checks.push({name,at:new Date().toISOString(),...detail});console.log(JSON.stringify({case:record.id,checkpoint:name}));};
+const phase=name=>{stage=name;console.log(JSON.stringify({case:record?.id,stage:name}));};
+const visibleText=()=>app.evaluate('document.body.innerText');
+const waitText=text=>app.waitFor(`(document.body?.innerText??"").includes(${JSON.stringify(text)})`,10000);
+async function click(selector,text){
+ const point=await app.evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`}&&e.getBoundingClientRect().width&&e.getBoundingClientRect().height);if(!e)throw Error('Prototype control missing');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Prototype control blocked');return{x,y};})()`);
+ for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...point,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});
+}
+async function key(key,code=key,modifiers=0){const windowsVirtualKeyCode=({Home:36,End:35,ArrowDown:40,ArrowUp:38,Enter:13,Tab:9,Escape:27,Backspace:8,a:65})[key]??0;for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode,modifiers,...(process.platform==='darwin'?{nativeVirtualKeyCode:({Home:115,End:119,ArrowDown:125,ArrowUp:126,Enter:36,Tab:48,Escape:53,Backspace:51})[key]??0}:{}),...(type==='keyDown'&&key==='Enter'?{text:'\r'}:{}),...(type==='keyDown'&&key==='a'&&modifiers===4?{commands:['selectAll']}:{})});}
+async function type(label,text){await click('dialog [aria-label='+JSON.stringify(label)+']');await key('a','KeyA',4);if(text)await app.cdp('Input.insertText',{text});else await key('Backspace');assert.equal(await app.evaluate(`document.querySelector('dialog [aria-label='+${JSON.stringify(JSON.stringify(label))}+']').value`),text);}
+async function select(selector,index){const choice=await app.evaluate(`(()=>{const options=[...document.querySelector(${JSON.stringify(selector)}).options].map(o=>({value:o.value,label:o.textContent.trim()})),o=options[${index}];if(!o)return null;let prefix=o.label;for(let n=1;n<=o.label.length;n++){const p=o.label.slice(0,n);if(options.filter(v=>v.label.startsWith(p)).length===1){prefix=p;break;}}return{...o,prefix};})()`);assert(choice);for(let n=0;n<35;n++){if(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(selector)})===true`))break;await key('Tab');}assert.equal(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(selector)})===true`),true);const text=choice.prefix;for(const character of Array.from(text))await app.cdp('Input.dispatchKeyEvent',{type:'char',key:character,text:character});await app.waitFor(`document.querySelector(${JSON.stringify(selector)})?.value===${JSON.stringify(choice.value)}`,2000);record.selectInputs??=[];record.selectInputs.push({selector,expected:choice.value,labelPrefix:text,method:'browser keyboard type-ahead;no DOM/store mutation'});await key('Tab');}
+const saved=()=>app.evaluate('localStorage.getItem("willyou-m10-prototype-v2")');
+async function cancel(){await click('dialog button','取消');await app.waitFor('!document.querySelector("dialog")');}
+async function addZen(){await click('.m10-app-heading button','添加连接');await waitText('添加禅道连接');}
+async function setup(name){
+ record={id:name,checks:[],status:'running'};phase('setup');result.cases.push(record);const directory=join(root,name);await mkdir(directory);
+ app=await openElectron({executable,userData:join(directory,'userdata')});installAppFocusGuard(app,record);
+ record.console=[];app.onCDP('Runtime.consoleAPICalled',e=>record.console.push(e.args.map(a=>a.value??a.description)));await app.cdp('Network.enable');app.onCDP('Network.requestWillBeSent',e=>result.requests.push({case:name,url:e.request.url,method:e.request.method}));
+ await app.cdp('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.origin===${JSON.stringify(origin)}){if(!localStorage.getItem('willyou-m9-prototype-panel-width'))localStorage.setItem('willyou-m9-prototype-panel-width','413');if(!localStorage.getItem('willyou-m9-prototype-v1'))localStorage.setItem('willyou-m9-prototype-v1',JSON.stringify({canary:'M9-private-prerequisite'}));}`});
+ const seed=projectIntegrationState(initialIntegrationState());seed.activity.push({id:'T46-existing',app:'zentao',operation:'读取',status:'success',project:'ais',connectionId:'zt-demo',at:'10:30',actor:'synthetic'});
+ await app.cdp('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.origin===${JSON.stringify(origin)}&&!localStorage.getItem('willyou-m10-prototype-v2'))localStorage.setItem('willyou-m10-prototype-v2',${JSON.stringify(JSON.stringify(seed))});`});
+ phase('prototype-navigation');await app.cdp('Page.navigate',{url:origin+'/?preview=m10#apps/zentao'});await app.waitFor('!!document.querySelector(".m10-app-heading")&&(document.body?.innerText??"").includes("M10 交互原型 · 合成数据")',15000,{navigation:true});await app.evaluate(`document.title='P · M10 · isolated '+${JSON.stringify(name)};true`);
+}
+async function finish(){if(app){record.rendererErrors=app.rendererErrors;record.navigationWaits=app.navigationWaits;await writeFile(join(root,record.id,'electron.log'),app.logs());await app.close();app=null;}}
+const definitions=[['T46',async()=>{
+ phase('original-data');const before=JSON.parse(await saved());assert(before.connections.length>0&&before.activity.length>0);assert.deepEqual(before.packages,{zentao:'1.0.0',mail:'1.0.0'});record.before=before;
+ await click('.m10-upgrade-control');await waitText('仅合成状态，不更新程序或真实SQLite');
+ phase('failure');await click('dialog button','模拟准备失败');await waitText('模拟准备失败：未切换默认版本');assert.deepEqual(JSON.parse(await saved()),before);await app.screenshot(join(root,'T46','failed-preserved.png'));mark('Failed upgrade preserves the entire original serialized state and old versions');
+ phase('retry-success');await click('dialog button','模拟升级并保留数据');await waitText('模拟校验并启用新版');const upgraded=JSON.parse(await saved());assert.deepEqual(upgraded.packages,{zentao:'1.1.0',mail:'1.1.0'});assert.equal(upgraded.dataSchema,2);for(const k of Object.keys(before).filter(k=>!['packages','installedVersions','dataSchema'].includes(k)))assert.deepEqual(upgraded[k],before[k],k);record.after=upgraded;await app.screenshot(join(root,'T46','upgraded-preserved.png'));mark('Explicit retry upgrades both packages atomically while every unrelated persisted field remains identical');
+ await key('Escape');await app.waitFor('!document.querySelector("dialog")');const time=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${time}&&!!document.querySelector('.m10-app-heading')`,15000,{navigation:true});assert.deepEqual(JSON.parse(await saved()),upgraded);await click('.m10-upgrade-control');await waitText('已模拟升级');assert.equal(await app.evaluate(`[...document.querySelectorAll('dialog button')].find(e=>e.textContent==='已模拟升级').disabled`),true);await app.screenshot(join(root,'T46','reload-preserved.png'));mark('Closing and real browser reload restore upgraded versions and exact original business data; UI explicitly remains synthetic');
+}]];
+try{
+ for(const [id,execute]of definitions.filter(([id])=>!process.env.M10_CASES||process.env.M10_CASES.split(',').includes(id))){try{await setup(id);await execute();assert.deepEqual(app.rendererErrors,[]);record.status='passed';}catch(error){record.status='failed';record.stage=stage;record.error=String(error);record.stack=error.stack;if(app)try{record.dom=await visibleText();await app.screenshot(join(root,id,'failure.png'));}catch{}if(isAppFocusYield(error)){result.yielded=true;break;}}finally{await finish();}}
+ assert(result.requests.every(r=>!/^https?:/.test(r.url)||new URL(r.url).origin===origin));result.status=result.cases.length===(process.env.M10_CASES?.split(',').length??1)&&result.cases.every(c=>c.status==='passed')?'passed':'partial-failed';if(result.status!=='passed')process.exitCode=1;
+}catch(error){result.status='failed';result.error=String(error);process.exitCode=1;}
+finally{server.closeAllConnections();await new Promise(r=>server.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,cases:result.cases.map(c=>({id:c.id,status:c.status,stage:c.stage,error:c.error})),artifacts:root}));}
