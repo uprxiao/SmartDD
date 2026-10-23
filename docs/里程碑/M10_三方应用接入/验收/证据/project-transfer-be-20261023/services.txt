@@ -1,0 +1,80 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-project-transfer-be-20261023/candidate
+> node scripts/run-tests.mjs src/main/core/projects/transfer-service.test.ts src/main/core/projects/transfer-format.test.ts src/main/core/projects/transfer-controller.test.ts src/main/core/projects/transfer-files.test.ts src/main/core/projects/transfer-crash.test.ts src/shared/project-transfer.test.ts --maxWorkers=1 --testTimeout=15000 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-project-transfer-be-20261023/services-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-project-transfer-be-20261023/candidate
+
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > I01/D07/S01 imports atomically with new ids, receiver encryption, no tasks or old default changes 1601ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D09/D10/S02 imports only selected profiles without replacing defaults and permits missing CLI 635ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D02/D03/D04 requires an explicitly picked local directory or available source and rejects conflicts/symlinks 640ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D01/D05/D08 rechecks names, requires zero-source main folder, and clears unavailable rules 645ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D03 rejects duplicate realpaths within the same package, then accepts distinct mappings 630ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D06 preserves the second directory/default DB and all resource associations 632ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S03 retains same-as-login sudo and selected secret/non-secret AI env through a full snapshot 655ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > F07 returns a committed receipt on identical retry, rejects changed selection and survives reopening 621ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > I07/F06 binds tokens to their window, disposes and expires previews 1205ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > I07 expires a selected encrypted file before starting a busy unlock 308ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > F01/F03 rolls back rows and all secrets when encryption fails mid-transaction, then retries 631ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S03/F02/F03 cleans key files on failure at journal and preserves existing data 716ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S03/F02/F03 cleans key files on failure at key-staged and preserves existing data 719ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S03/F02/F03 cleans key files on failure at key-renamed and preserves existing data 753ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S03/F02/F03 cleans key files on failure at keys and preserves existing data 668ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S03/F02/F03 cleans key files on failure at rows and preserves existing data 680ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S03/F02/F03 cleans key files on failure at secrets and preserves existing data 736ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > F04 recovers interrupted key staging without a receipt and keeps unrelated external keys 81ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > F04/F07 recovers an already committed import without duplicating or removing keys 684ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > E04 requires explicit empty-password confirmation and never skips missing credentials 645ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > E06 preserves existing destination and removes temporary ciphertext on write failure 1534ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S02/S03 restores a real encrypted SSH key and authenticates only after an explicit connection test 1106ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > S04 refuses an import when safeStorage is unavailable, then succeeds after it recovers 620ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > E07 exports one consistent selected project snapshot and never includes task history or another project 636ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > F04/S05 rejects parallel operations and discards a decrypt result if its window closes 631ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D06/D09 imports only one of two AI configurations, never makes the first imported profile the default 637ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > F05/F07 allows a second copy only with an independent name and unoccupied mapped directory 1242ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D01/D03 archives free names and directory identities; duplicate long names remain bounded 645ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D06/S07 preserves zero default DB, empty passwords and a key without a passphrase 682ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D10 rejects unknown/duplicate profile refs and rolls back selected AI secrets before a single retry 634ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > D07 keeps an imported command blocked through metadata edits and clears it when explicitly configured 619ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > E03 exports only selected AI secrets, excludes unselected profiles, and leaves the original default unchanged 1862ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M8 real SQLite transfer services > F08 preserves referenced and external keys; unreadable ownership remains registered for recovery 1256ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M10 application boundaries in real strict v1 project transfer > excludes real App connections,secret,draft and attachment state while importing disabled Apps beside unchanged local selections 3053ms
+ ✓ src/main/core/projects/transfer-service.test.ts > M10 application boundaries in real strict v1 project transfer > rejects application and historical-session additions to strict v1 rather than silently importing them 4ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > E02 accepts eight characters, preserves whitespace/Chinese, and enforces UTF-8 length 1182ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I01/S01 authenticates before exposing data and uses a fresh salt and nonce 873ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I03 rejects tampered ciphertext, nonce, salt and tag 1471ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I04/I05 rejects unsupported versions, limits, invalid encoding and expensive KDFs before deriving 292ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I06 rejects duplicate JSON keys including escaped equivalents and excessive nesting 1ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I06 rejects unknown fields, orphan credentials, missing credentials and invalid defaults 2ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I05 bounds resource counts and private key size 2ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I05 rejects ciphertext over the plaintext cap before any password derivation 635ms
+ ✓ src/main/core/projects/transfer-format.test.ts > M8 portable encryption and strict input > I04/I06 rejects authenticated malformed payloads without exposing the values 5248ms
+ ✓ src/main/core/projects/transfer-controller.test.ts > M8 native dialogs and sender-bound IPC > E02 refuses a short or mismatched password without opening the native save dialog 2ms
+ ✓ src/main/core/projects/transfer-controller.test.ts > M8 native dialogs and sender-bound IPC > E05/I07 picker cancellation neither writes nor creates a preview 1ms
+ ✓ src/main/core/projects/transfer-controller.test.ts > M8 native dialogs and sender-bound IPC > E01/E05 exports only to the native-selected file and scopes Finder reveal to its sender 1ms
+ ✓ src/main/core/projects/transfer-controller.test.ts > M8 native dialogs and sender-bound IPC > D02 registers only the directory returned by the system picker 0ms
+ ✓ src/main/core/projects/transfer-controller.test.ts > M8 native dialogs and sender-bound IPC > I07/S05 rejects subframes and disposes preview sessions on navigation and destruction 0ms
+ ✓ src/main/core/projects/transfer-controller.test.ts > M8 native dialogs and sender-bound IPC > S05 never returns raw filesystem/secret exceptions across IPC 0ms
+ ✓ src/main/core/projects/transfer-files.test.ts > M8 owned files and atomic ciphertext > S06 never accepts caller-supplied paths as managed key identities 53ms
+ ✓ src/main/core/projects/transfer-files.test.ts > M8 owned files and atomic ciphertext > S06 preserves a pre-existing directory when exclusive key creation fails 58ms
+ ✓ src/main/core/projects/transfer-files.test.ts > M8 owned files and atomic ciphertext > S06 refuses a symlink destination and leaves the external target intact 45ms
+ ✓ src/main/core/projects/transfer-files.test.ts > M8 owned files and atomic ciphertext > S06 rechecks the root before recovery/cleanup and never follows a replaced root 60ms
+ ✓ src/main/core/projects/transfer-files.test.ts > M8 owned files and atomic ciphertext > S02/F03 restores strict modes and recovers only a matching owned operation 76ms
+ ✓ src/main/core/projects/transfer-files.test.ts > M8 owned files and atomic ciphertext > I05/S06 bounded reads reject symlinks, directories and oversized files 28ms
+ ✓ src/main/core/projects/transfer-files.test.ts > M8 owned files and atomic ciphertext > E06/F02 failed rename leaves prior bytes and no intermediate file, then permits retry 51ms
+ ✓ src/shared/project-transfer.test.ts > M8 frontend draft and validation > E02 accepts exactly eight characters including spaces and checks confirmation verbatim 1ms
+ ✓ src/shared/project-transfer.test.ts > M8 frontend draft and validation > D02/D08 starts with a required empty local choice even if the sender path exists 0ms
+ ✓ src/shared/project-transfer.test.ts > M8 frontend draft and validation > D09 selects 0 → 2 → 1 → 0 and removes every unselected command 0ms
+ ✓ src/shared/project-transfer.test.ts > M8 frontend draft and validation > D01/F07 rejects invalid names and extra client fields before committing 1ms
+ ✓ src/shared/project-transfer.test.ts > M8 frontend draft and validation > I02 distinguishes an error from a native picker cancellation 0ms
+ ✓ src/main/core/projects/transfer-crash.test.ts > M8 process-kill recovery (backend integration, not UI evidence) > F03 survives SIGKILL at key-staged and recovers on a fresh process 810ms
+ ✓ src/main/core/projects/transfer-crash.test.ts > M8 process-kill recovery (backend integration, not UI evidence) > F03 survives SIGKILL at key-renamed and recovers on a fresh process 807ms
+ ✓ src/main/core/projects/transfer-crash.test.ts > M8 process-kill recovery (backend integration, not UI evidence) > F03 survives SIGKILL at rows and recovers on a fresh process 798ms
+ ✓ src/main/core/projects/transfer-crash.test.ts > M8 process-kill recovery (backend integration, not UI evidence) > F03 survives SIGKILL at committed and recovers on a fresh process 856ms
+
+ Test Files  6 passed (6)
+      Tests  66 passed (66)
+   Start at  10:58:42
+   Duration  43.68s (transform 350ms, setup 0ms, import 803ms, tests 42.46s, environment 0ms)
+
+JSON report written to /private/tmp/m10-project-transfer-be-20261023/services-report.json

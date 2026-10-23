@@ -1,0 +1,13 @@
+
+
+describe('M10 existing project transfer application boundary',()=>{
+ it('shows the confirmed application and mail exclusions before exporting',async()=>{
+  render(<ProjectTransfer mode="export" projectId="p" onClose={vi.fn()}/>);await screen.findByText('迁移项目');
+  expect(screen.getByText('应用配置、应用连接与凭据、邮件数据、草稿和发送记录不包含在项目文件中；在目标电脑重新选用本机连接。')).toBeDefined();
+ });
+ it('explains local application selection after import and opens only that new project application page',async()=>{
+  const close=vi.fn();render(<ProjectTransfer mode="import" onClose={close}/>);await unlock();await pick();fireEvent.click(button('导入项目'));await screen.findByRole('heading',{name:'项目已导入'});
+  const explanation=screen.getByText('应用配置与数据不随项目导入。请在项目应用中明确选择这台电脑已有的连接；缺少时再添加，不自动匹配同名账号。');expect(explanation.closest('[role="status"]')).not.toBeNull();expect(explanation.closest('.is-error')).toBeNull();expect(mocks.openProject).not.toHaveBeenCalled();expect(mocks.newTask).not.toHaveBeenCalled();
+  fireEvent.click(button('配置项目应用'));expect(mocks.openProject).toHaveBeenCalledExactlyOnceWith('new-project','applications');expect(mocks.newTask).not.toHaveBeenCalled();expect(close).toHaveBeenCalledOnce();expect(mocks.api.commit).toHaveBeenCalledOnce();
+ });
+});

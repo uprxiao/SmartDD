@@ -1,0 +1,30 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-project-transfer-be-20261023/candidate
+> node scripts/run-tests.mjs src/renderer/views/projects/project-transfer.test.tsx --maxWorkers=1 --testTimeout=15000 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-project-transfer-be-20261023/ui-fix-report.json
+
+[1023/105638.704244:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-project-transfer-be-20261023/candidate
+
+[1023/105638.851908:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > E02/E03/E05 preserves password on native cancellation and exports the selected AI only 124ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > E06 clears passwords on write failure and permits a new successful export 30ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > I01/I02 clears a wrong password and retries without creating any project 32ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > I04 rejects invalid files at selection and permits a valid replacement without an empty project 26ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > D02/D09 keeps local directory drafts and collapses the AI section when all choices are cleared 222ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > D08 keeps an empty AI checkbox visible and disables the unavailable original directory 215ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > D04 refreshes a stale usable-directory status after commit rejection and keeps selections for retry 596ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > F04 blocks repeated submit and closure while saving, and recovers a lost commit response 210ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > F06 preserves edits when the confirmation is dismissed and disposes previews only after leaving 268ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > F06 restores the persistent menu trigger after discarding a dialog opened by a removed menu item 77ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > F06 backdrop dismissal preserves the draft until explicitly discarded and is blocked while saving 277ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M8 real transfer form interactions > I07 returns to file selection after expiry and releases a late decrypt result after unmount 212ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M10 existing project transfer application boundary > shows the confirmed application and mail exclusions before exporting 9ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx > M10 existing project transfer application boundary > explains local application selection after import and opens only that new project application page 211ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  10:56:38
+   Duration  3.05s (transform 107ms, setup 0ms, import 274ms, tests 2.51s, environment 186ms)
+
+JSON report written to /private/tmp/m10-project-transfer-be-20261023/ui-fix-report.json

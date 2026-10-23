@@ -1,3 +1,8 @@
+import { ResourceStore } from '../applications/resource-store';
+import { ApplicationConnectionService } from '../applications/connection-service';
+import { ApplicationSelectionService } from '../applications/selection-service';
+import { MailBlobStore } from '../applications/mail-blob-store';
+import { MailDraftService } from '../applications/mail-draft-service';
 import { randomUUID } from 'node:crypto';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -14,7 +19,7 @@ import { SecretsStore } from '../../secrets';
 import { AiProfileService } from '../ai/ai-profile-service';
 import { ProjectService } from './project-service';
 import { ProjectTransferService, transferFilename } from './transfer-service';
-import { decryptProject, encryptProject } from './transfer-format';
+import { decryptProject, encryptProject, validatePayload } from './transfer-format';
 import { transferFixture } from './transfer-fixtures';
 import { generateSshTestKey } from '../../test-ssh-keys';
 import { SSH_TEST_COMMAND, testSsh } from '../connections/ssh-tester';
@@ -334,4 +339,23 @@ describe('M8 real SQLite transfer services', () => {
     a.projects.updateServer(replaced.id, { ...f.servers[0], privateKeyPath: external });
     expect(existsSync(replacedKey)).toBe(false); expect(readFileSync(external, 'utf8')).toBe('external');
   });
+});
+
+describe('M10 application boundaries in real strict v1 project transfer',()=>{
+ async function applicationFixture(a:ReturnType<typeof setup>,projectId:string,suffix:string){
+  const store=new ResourceStore(a.client.sqlite,a.home),connections=new ApplicationConnectionService(store,a.secrets,{verify:async config=>({providerId:config.kind,serviceId:'private-transfer-service-'+suffix,accountId:config.kind==='foxmail'?config.account:config.username,contractMajor:1})}),selections=new ApplicationSelectionService(store,connections,{requireProject:id=>{a.projects.getProject(id);},stopProjectRuns:async()=>true,runningInProject:()=>0});
+  const smtp=await connections.save({name:'M10 SMTP '+suffix,expectedRevision:0,config:{kind:'smtp',host:'fixture.example.test',port:587,username:suffix,fromAddress:suffix+'@example.test',authMode:'password',mode:'starttls'},secret:'M10-SMTP-SECRET-'+suffix}),foxmail=await connections.save({name:'M10 local '+suffix,expectedRevision:0,config:{kind:'foxmail',sourcePath:folder('mail-source-'+suffix),account:suffix,queryDays:30}});
+  await selections.setAdded('mail',true,0);await selections.setAdded('zentao',true,0);await selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:foxmail.id,smtp:smtp.id}});
+  const actor={projectId,taskId:null},policy={requireDrafts:(value:{projectId:string})=>{a.projects.getProject(value.projectId);}},blobs=new MailBlobStore(store,join(a.home,'mail-business'),policy),drafts=new MailDraftService(store,blobs,policy),bytes=Buffer.from('M10-PRIVATE-ATTACHMENT-'+suffix),attachment=await blobs.save(actor,{operationId:randomUUID(),filename:'private-'+suffix+'.txt',contentType:'text/plain'},bytes),draft=await drafts.create(actor,{operationId:randomUUID(),content:{mode:'new',sourceMessageRef:null,senderConnectionId:smtp.id,to:['recipient@example.test'],cc:[],bcc:[],subject:'M10-PRIVATE-SUBJECT-'+suffix,text:'M10-PRIVATE-BODY-'+suffix,html:null,inReplyTo:null,references:[],attachmentIds:[attachment.id]}});
+  return{store,connections,selections,smtp,foxmail,actor,blobs,drafts,draft,attachment,bytes};
+ }
+ it('excludes real App connections,secret,draft and attachment state while importing disabled Apps beside unchanged local selections',async()=>{
+  const a=setup('m10-source'),b=setup('m10-receiver'),pa=await unlock(a.svc),source=a.svc.commit(1,pa.token,randomUUID(),ready(a.svc,pa)),pb=await unlock(b.svc),existing=b.svc.commit(1,pb.token,randomUUID(),ready(b.svc,pb,'Existing local project')),sa=await applicationFixture(a,source.projectId,'source'),sb=await applicationFixture(b,existing.projectId,'receiver');
+  const beforeSelection=sb.selections.projectSettings(existing.projectId,'mail'),beforeConnections=sb.connections.list(),beforeCatalog=sb.selections.catalogState('mail'),beforeDraft=sb.drafts.get(sb.actor,sb.draft.id),beforeSource=sa.drafts.get(sa.actor,sa.draft.id),path=join(root,'m10-v1.willyou');await a.svc.exportTo(path,source.projectId,[],[],'12345678');
+  const payload=await decryptProject(readFileSync(path),'12345678'),json=JSON.stringify(payload);expect(Object.keys(payload).sort()).toEqual(['schemaVersion','exportedAt','producer','project','directories','databases','servers','capabilities','profiles','credentials'].sort());expect(payload.schemaVersion).toBe(1);expect(payload.capabilities.map(c=>c.id).sort()).toEqual(['project-db-diagnostics','remote-password-ssh','smartdd-project-context'].sort());for(const value of [sa.smtp.id,sa.foxmail.id,sa.draft.id,sa.attachment.id,'M10-SMTP-SECRET-source','M10-PRIVATE-BODY-source',sa.foxmail.config.kind==='foxmail'?sa.foxmail.config.sourcePath:'unexpected'])expect(json).not.toContain(value);
+  const file=b.svc.choose(2,path),preview=await b.svc.unlock(2,file.fileToken,'12345678'),received=b.svc.commit(2,preview.token,randomUUID(),ready(b.svc,preview,'Imported without Apps',2));expect(received.projectId).not.toBe(source.projectId);expect(received.projectId).not.toBe(existing.projectId);expect(sb.selections.projectSettings(received.projectId,'mail')).toMatchObject({enabled:false,revision:0,connections:{foxmail:null,smtp:null}});expect(sb.selections.projectSettings(received.projectId,'zentao')).toMatchObject({enabled:false,revision:0,connections:{zentao:null}});expect(sb.connections.list()).toEqual(beforeConnections);expect(sb.selections.catalogState('mail')).toEqual(beforeCatalog);expect(sb.selections.projectSettings(existing.projectId,'mail')).toEqual(beforeSelection);expect(sb.drafts.get(sb.actor,sb.draft.id)).toEqual(beforeDraft);expect(sb.blobs.read(sb.actor,sb.attachment.id)).toEqual(sb.bytes);expect(sa.drafts.get(sa.actor,sa.draft.id)).toEqual(beforeSource);expect(sa.blobs.read(sa.actor,sa.attachment.id)).toEqual(sa.bytes);expect(b.client.sqlite.prepare('SELECT count(*) n FROM mail_drafts WHERE project_id=?').get(received.projectId)).toEqual({n:0});expect(b.client.sqlite.prepare('SELECT count(*) n FROM tasks WHERE project_id=?').get(received.projectId)).toEqual({n:0});
+ });
+ it('rejects application and historical-session additions to strict v1 rather than silently importing them',()=>{
+  for(const key of ['applications','applicationConnections','mailDrafts','capabilitySessionSnapshots'])expect(()=>validatePayload({...transferFixture(),[key]:[{private:'M10 must not migrate'}]})).toThrow();
+ });
 });
