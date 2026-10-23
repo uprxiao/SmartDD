@@ -1,0 +1,148 @@
+{
+  "root": "/private/tmp/willyou-m10-skill-read-Alka1v",
+  "startedAt": "2026-10-23T16:43:56.154Z",
+  "layer": "real CLI with synthetic provider;not real model or packaged App",
+  "cliVersion": "0.162.1",
+  "requests": [
+    {
+      "number": 1,
+      "sha256": "ad4639baae76ce2b4ec877102b4e45fd1be18fd1180ce7bb38f9c63e69e2bc65",
+      "selectedBody": true,
+      "disabledBody": false,
+      "model": "m10-synthetic"
+    },
+    {
+      "number": 2,
+      "sha256": "abdf97c00f3a156eadd3fe0d0ccdd0b9375c69845d2a9a72d6d82ad81bde32f3",
+      "selectedBody": true,
+      "disabledBody": false,
+      "model": "m10-synthetic"
+    }
+  ],
+  "checks": [
+    {
+      "name": "new actual CLI loads attached Skill body into provider request;disabled body absent",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 1,
+          "sha256": "ad4639baae76ce2b4ec877102b4e45fd1be18fd1180ce7bb38f9c63e69e2bc65",
+          "selectedBody": true,
+          "disabledBody": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "same native thread resumes after a completed synthetic turn and reads original Skill",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 2,
+          "sha256": "abdf97c00f3a156eadd3fe0d0ccdd0b9375c69845d2a9a72d6d82ad81bde32f3",
+          "selectedBody": true,
+          "disabledBody": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    }
+  ],
+  "status": "passed-with-boundaries",
+  "sourceCommit": "92a6543edd7642b4f523253a313ddf81233d7e50",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cliEntrySha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+  "skills": {
+    "v1": {
+      "path": "/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v1/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v1_Alka1v",
+      "sha256": "65ab0b0869dfc20b44fcffba9e5f292bdbe3de008bdd3d945d7b2bddd44503c8"
+    },
+    "v2": {
+      "path": "/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v2/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v2_Alka1v",
+      "sha256": "30384cb3d928c56045c7eb48a50fbc3e2cb00644292311c7f5826eaba717bfa8"
+    }
+  },
+  "launches": [
+    {
+      "label": "new",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:63333/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-skill-read-Alka1v/project"
+    },
+    {
+      "label": "resume",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:63333/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-skill-read-Alka1v/project"
+    }
+  ],
+  "discovery": [
+    {
+      "name": "read-v1",
+      "enabled": true,
+      "path": "/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v1/SKILL.md"
+    },
+    {
+      "name": "read-v2",
+      "enabled": false,
+      "path": "/private/tmp/willyou-m10-skill-read-Alka1v/home/.agents/skills/read-v2/SKILL.md"
+    }
+  ],
+  "threadId": "01a169a5-cdf0-7283-86e7-bb4d40c25098",
+  "allChildrenExited": true,
+  "finishedAt": "2026-10-23T16:43:56.365Z"
+}

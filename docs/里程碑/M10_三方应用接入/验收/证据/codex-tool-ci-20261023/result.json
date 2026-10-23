@@ -1,0 +1,181 @@
+{
+  "root": "/private/tmp/willyou-m10-skill-read-dPhQIH",
+  "startedAt": "2026-10-23T16:46:08.724Z",
+  "layer": "real CLI with synthetic provider;not real model or packaged App",
+  "cliVersion": "0.162.1",
+  "requests": [
+    {
+      "number": 1,
+      "sha256": "c6670e274f2f2527956e132f89d8dd797eaa5274b314e7f0f9c095932208ef1f",
+      "selectedBody": true,
+      "disabledBody": false,
+      "model": "m10-synthetic"
+    },
+    {
+      "number": 2,
+      "sha256": "f2b910c53fe0852b1adbcad901b2655d8a1caadbe712cde8340b9ddcb6288dd0",
+      "selectedBody": true,
+      "disabledBody": false,
+      "model": "m10-synthetic"
+    }
+  ],
+  "checks": [
+    {
+      "name": "new actual CLI loads attached Skill body into provider request;disabled body absent",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 1,
+          "sha256": "c6670e274f2f2527956e132f89d8dd797eaa5274b314e7f0f9c095932208ef1f",
+          "selectedBody": true,
+          "disabledBody": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "new native thread direct harmless MCP call matches fixed Skill/tool manifest hash",
+      "status": "passed",
+      "value": {
+        "version": "1.0.0",
+        "packageHash": "1b99d5ddfd973727d132a77b11304af328681473ba2d16ccb29cbd20532314ad",
+        "skillSha256": "07493bf873e5497b403d9db727feae340421521f38e4ea774e4474f3dba2af7e",
+        "marker": "M10_FIXED_TOOL_V1"
+      }
+    },
+    {
+      "name": "same native thread resumes after a completed synthetic turn and reads original Skill",
+      "status": "completed",
+      "requests": [
+        {
+          "number": 2,
+          "sha256": "f2b910c53fe0852b1adbcad901b2655d8a1caadbe712cde8340b9ddcb6288dd0",
+          "selectedBody": true,
+          "disabledBody": false,
+          "model": "m10-synthetic"
+        }
+      ]
+    },
+    {
+      "name": "resumed native thread direct MCP call retains original manifest hash",
+      "status": "passed",
+      "value": {
+        "version": "1.0.0",
+        "packageHash": "1b99d5ddfd973727d132a77b11304af328681473ba2d16ccb29cbd20532314ad",
+        "skillSha256": "07493bf873e5497b403d9db727feae340421521f38e4ea774e4474f3dba2af7e",
+        "marker": "M10_FIXED_TOOL_V1"
+      }
+    }
+  ],
+  "status": "passed-with-boundaries",
+  "sourceCommit": "92a6543edd7642b4f523253a313ddf81233d7e50",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cliEntrySha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+  "skills": {
+    "v1": {
+      "path": "/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v1/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v1_dPhQIH",
+      "sha256": "07493bf873e5497b403d9db727feae340421521f38e4ea774e4474f3dba2af7e"
+    },
+    "v2": {
+      "path": "/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v2/SKILL.md",
+      "bodyMarker": "M10_BODY_ONLY_v2_dPhQIH",
+      "sha256": "d09af95370ee32cda3e1ed9828b80f1af50375c2c373e1449f9438bfaf557e11"
+    }
+  },
+  "toolPackage": {
+    "kind": "controlled-probe-package-not-production-app-manifest",
+    "version": "1.0.0",
+    "skillSha256": "07493bf873e5497b403d9db727feae340421521f38e4ea774e4474f3dba2af7e",
+    "toolSourceSha256": "26d51d0351abc1b90fa4c05343e7b3cbe89e1c28ba013fb2658384d0e4ae8f85",
+    "marker": "M10_FIXED_TOOL_V1",
+    "packageHash": "1b99d5ddfd973727d132a77b11304af328681473ba2d16ccb29cbd20532314ad",
+    "manifestPath": "/private/tmp/willyou-m10-skill-read-dPhQIH/fixture-package.json"
+  },
+  "launches": [
+    {
+      "label": "new",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:63498/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-skill-read-dPhQIH/fixture-package.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-skill-read-dPhQIH/project"
+    },
+    {
+      "label": "resume",
+      "args": [
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "shell_snapshot",
+        "--disable",
+        "hooks",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "model=\"m10-synthetic\"",
+        "-c",
+        "model_provider=\"m10\"",
+        "-c",
+        "model_providers.m10={name=\"M10 private fixture\",base_url=\"http://127.0.0.1:63498/v1\",wire_api=\"responses\",requires_openai_auth=false}",
+        "-c",
+        "skills.config=[{path=\"/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v1/SKILL.md\",enabled=true},{path=\"/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v2/SKILL.md\",enabled=false}]",
+        "-c",
+        "mcp_servers.m10_marker={command=\"/opt/homebrew/Cellar/node/26.5.0_1/bin/node\",args=[\"/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/codex-marker-mcp.mjs\",\"/private/tmp/willyou-m10-skill-read-dPhQIH/fixture-package.json\"]}",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "feedback.enabled=false",
+        "app-server",
+        "--stdio"
+      ],
+      "cwd": "/private/tmp/willyou-m10-skill-read-dPhQIH/project"
+    }
+  ],
+  "discovery": [
+    {
+      "name": "read-v1",
+      "enabled": true,
+      "path": "/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v1/SKILL.md"
+    },
+    {
+      "name": "read-v2",
+      "enabled": false,
+      "path": "/private/tmp/willyou-m10-skill-read-dPhQIH/home/.agents/skills/read-v2/SKILL.md"
+    }
+  ],
+  "threadId": "01a169a7-d3ad-7032-936b-463c8ca65175",
+  "allChildrenExited": true,
+  "finishedAt": "2026-10-23T16:46:08.947Z"
+}
