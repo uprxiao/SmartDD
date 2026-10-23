@@ -119,7 +119,8 @@ it('retains verified observations within one live run after they leave the bound
 it('records stop-only Skill evidence under the old run even after a new run starts',async()=>{
  const run=await start();await diagnostics.prepared(prepared(run));
  stopReader=(id,targets)=>{expect(id).toBe(run.runId);const reads=targets.map(t=>({skillId:t.id,observedAt:f.runs.get(run.runId).startedAt,callId:'final',recordHash:'f'.repeat(64)}));return async()=>({reads,discoveries:[]});};
- const finish=diagnostics.prepareStop(f.snapshot.taskId,run.runId);await run.stop();await run.cli.exited();const next=await start();await diagnostics.prepared(prepared(next));await finish();await finish();
+ // TaskService marks this PTY as stopping before invoking the managed stop hook.
+ activePty=null;const finish=diagnostics.prepareStop(f.snapshot.taskId,run.runId);await run.stop();await run.cli.exited();const next=await start();await diagnostics.prepared(prepared(next));await finish();await finish();
  const view=await diagnostics.inspect(f.snapshot.taskId);expect(view.currentRun?.id).toBe(next.runId);expect(view.applications[0].evidence.skillRead).toBe('unverified');expect(view.recentRuns.find(r=>r.id===run.runId)?.skillObservations).toMatchObject([{kind:'read',runId:run.runId}]);
  expect(f.sqlite.prepare('SELECT COUNT(*) n FROM capability_skill_observations WHERE run_id=?').get(next.runId)).toEqual({n:0});
 });

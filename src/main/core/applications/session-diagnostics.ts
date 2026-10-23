@@ -108,9 +108,13 @@ export class ApplicationSessionDiagnostics {
  prepareStop(taskId:string,runId:string):()=>Promise<void>{
   const noop=async()=>{};
   try{
-   const runtime=this.deps.runs(),pty=this.deps.activePty?.(taskId);
-   if(!runtime||!pty||runtime.currentNativeRun(taskId,pty)?.runId!==runId||!this.deps.prepareStoppedSkillRead)return noop;
-   const context=runtime.assertActive(runId),session=this.sessions.inspectCoordinated(taskId),through=Date.now();
+   const runtime=this.deps.runs();
+   if(!runtime||!this.deps.prepareStoppedSkillRead)return noop;
+   // The task UI hides a stopping PTY before it invokes this host-owned hook.
+   // Authenticate the captured run itself, never a renderer/current-PTY claim.
+   const context=runtime.assertActive(runId);
+   if(context.run.taskId!==taskId)return noop;
+   const session=this.sessions.inspectCoordinated(taskId),through=Date.now();
    const row=this.store.sqlite.prepare('SELECT * FROM capability_runs WHERE run_id=? AND task_id=?').get(runId,taskId) as RunRow|undefined;
    if(!row)return noop;
    const preparation=this.run(row,session).preparation;
