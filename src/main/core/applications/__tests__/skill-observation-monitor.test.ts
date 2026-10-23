@@ -3,7 +3,7 @@ import {SkillObservationMonitor} from '../skill-observation-monitor';
 afterEach(()=>vi.useRealTimers());
 it('collects without a UI query, serializes slow reads and cancels on run revocation',async()=>{
  vi.useFakeTimers();let finish!:()=>void;const collect=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve;}));
- const monitor=new SkillObservationMonitor(collect,20),abort=new AbortController();monitor.start('task','run',abort.signal);monitor.start('task','run',abort.signal);
+ const monitor=new SkillObservationMonitor(collect,20),abort=new AbortController();monitor.start('task','run',abort.signal);
  expect(collect).toHaveBeenCalledExactlyOnceWith('task','run');await vi.advanceTimersByTimeAsync(100);expect(collect).toHaveBeenCalledTimes(1);
  finish();await vi.advanceTimersByTimeAsync(20);expect(collect).toHaveBeenCalledTimes(2);
  abort.abort();finish();await vi.advanceTimersByTimeAsync(100);expect(collect).toHaveBeenCalledTimes(2);monitor.close();
@@ -20,4 +20,16 @@ it('keeps simultaneous run ownership independent and cancels pending work at shu
  monitor.start('task-a','run-a',a.signal);monitor.start('task-b','run-b',b.signal);expect(collect.mock.calls).toEqual([['task-a','run-a'],['task-b','run-b']]);
  a.abort();resolvers[0]();resolvers[1]();await vi.advanceTimersByTimeAsync(20);expect(collect).toHaveBeenCalledTimes(3);expect(collect).toHaveBeenLastCalledWith('task-b','run-b');
  monitor.close();resolvers[2]();await vi.advanceTimersByTimeAsync(100);expect(collect).toHaveBeenCalledTimes(3);expect(vi.getTimerCount()).toBe(0);
+});
+
+it('refreshes after native binding without waiting for the polling interval or overlapping reads',async()=>{
+ vi.useFakeTimers();const finishes:(()=>void)[]=[],collect=vi.fn(()=>new Promise<void>(resolve=>finishes.push(resolve)));
+ const monitor=new SkillObservationMonitor(collect,2000),abort=new AbortController();
+ monitor.start('task','run',abort.signal);
+ monitor.start('task','run',abort.signal);monitor.start('task','run',abort.signal);
+ expect(collect).toHaveBeenCalledTimes(1);finishes[0]();
+ await vi.advanceTimersByTimeAsync(0);expect(collect).toHaveBeenCalledTimes(2);
+ finishes[1]();await vi.advanceTimersByTimeAsync(0);
+ monitor.start('task','run',abort.signal);expect(collect).toHaveBeenCalledTimes(3);
+ abort.abort();finishes[2]();await vi.advanceTimersByTimeAsync(4000);expect(collect).toHaveBeenCalledTimes(3);monitor.close();
 });
