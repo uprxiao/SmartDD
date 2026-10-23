@@ -21,6 +21,12 @@ beforeEach(async()=>{f=await runFixture(new FixtureProcessReader(),{application:
 });
 afterEach(async()=>{f.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,snapshot_hash=? WHERE task_id=?').run(JSON.stringify(f.snapshot),f.session.pointer.snapshotHash,f.snapshot.taskId);for(const child of bridges)await child.exited().catch(()=>{});for(const run of handles){await run.cli.exited().catch(()=>{});await run.stop().catch(()=>{});}await f.runs.dispose();f.cleanup();});
 describe('run-scoped read-only session diagnostics',()=>{
+ it('exposes current-task copy diagnostics through the real read service without taking lifecycle actions',async()=>{
+  const c=new ClaudeDeliveryCoordinator(f.store,f.sessions,new SessionCapabilityProjector(f.store,f.sessions),f.reader,f.runs.instanceId),token=await c.prepare(f.snapshot.taskId,f.snapshot.packages.map(p=>p.appId));await c.cancel(token);
+  const before=f.sqlite.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all(),value=await diagnostics.inspect(f.snapshot.taskId);
+  expect(value.deliveryCopies).toMatchObject({incomplete:false,issueCode:null});expect(value.deliveryCopies!.records.some(item=>item.relativePath.endsWith('/previous')&&item.state==='unprocessed')).toBe(true);
+  expect(value.currentRun).toBeNull();expect(f.sqlite.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all()).toEqual(before);expect(f.sqlite.prepare('SELECT COUNT(*) n FROM mail_send_grants').get()).toEqual({n:0});
+ });
  it('identifies a live native-only capacity run without restoring business authority or rewriting initial preparation',async()=>{
   const run=await f.create();handles.push(run);await run.prepare();const original=prepared(run);await diagnostics.prepared(original);const bridge=await run.reserveBridge();await bridge.cancelBeforeLaunch();await f.runs.restrictToNative(run.runId);await run.cli.arm();(f.reader as FixtureProcessReader).identities.set(19001,'darwin-proc-v1:100:19001');await run.cli.attach(19001);activePty=run.ptyId;
   expect(f.runs.inputContext(f.snapshot.taskId,run.ptyId)).toBeNull();expect(()=>f.runs.assertActive(run.runId)).toThrow('不签发');const value=await diagnostics.inspect(f.snapshot.taskId);

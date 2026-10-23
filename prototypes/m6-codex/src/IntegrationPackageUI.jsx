@@ -92,7 +92,7 @@ function MailProjectConnections({ data, project, installed, setData }) {
 
 export function SessionApplications({ task, integration, onUse, onNewTask, onContinue, nav }) {
   const { data, setData } = integration, current = projectPackages(data, task.project), snapshot = task.integrationSnapshot;
-  const [faults, setFaults] = useState({}), [outcomes, setOutcomes] = useState({}), [messages, setMessages] = useState({});
+  const [faults, setFaults] = useState({}), [outcomes, setOutcomes] = useState({}), [messages, setMessages] = useState({}), [copyState,setCopyState] = useState('held');
   useEffect(() => { setFaults({}); setOutcomes({}); setMessages({}); }, [task.id]);
   const apps = APP_DEFINITIONS.filter(a => current.some(p => p.id === a.id) || snapshot?.packages?.some(p => p.id === a.id));
   const supported = ['claude','codex'].includes(task.runner || 'claude');
@@ -119,6 +119,7 @@ export function SessionApplications({ task, integration, onUse, onNewTask, onCon
       </section>;
     })}
     <details className="m10-runtime-demo"><summary>本次能力准备与冲突来源</summary><p className="m10-muted">仅记录准备结果，不证明 Agent 已发现或读取。当前原型使用合成数据，不读取或修改本机配置。</p>{apps.map(app=>{const fixed=snapshot?.packages?.find(p=>p.id===app.id),status=sessionCapabilityDiagnostic(snapshot,data,task.project,app.id,faults[app.id]);return <section key={app.id}><strong>{app.name}</strong><p>{fixed?(status.usable?'合成文件准备可用 · 使用未验证':'模拟未准备 · '+status.code):'未记录本会话选用'}</p>{status.fault==='nameConflict'&&<p className="m10-message-id">配置文件：/示例/.codex/config.toml<br/>来源：应用同名能力或启停配置 · 合成路径，未读取本机</p>}</section>;})}<p className="m10-muted">独立 Skill／项目 MCP 沿用既有管理入口。当前合成会话未记录其逐项准备证据，不从项目默认配置推断。</p></details>
+    {(task.runner || 'claude') === 'claude' && <details className="m10-runtime-demo"><summary>交付副本保留与清理记录</summary><p className="m10-muted">只读展示最近处理记录，不触发清理或重启。仅有完成记录不证明当前路径已不存在，也不表示原版本可以删除。</p><label>副本记录场景 · 合成演示<select aria-label="副本记录场景" value={copyState} onChange={e=>setCopyState(e.target.value)}><option value="held">占用中，保留</option><option value="deleting">中断后待核查</option><option value="committed">原回收记录已完成</option><option value="unverified">记录未核实</option></select></label><p>{copyState==='held'?'保留：仍有占用或引用待核查':copyState==='deleting'?'部分清理，待恢复核查':copyState==='committed'?'原回收记录已完成':'处理记录未核实，保留原内容'}</p><p className="m10-message-id">示例相对路径：claude-deliveries/示例任务/示例交付/previous</p><p className="m10-muted">合成记录，未读取本机文件或执行清理。实际产品展示本会话原操作账、内容标识与保留原因；截断或损坏明确标为未完整核对。</p></details>}
     <div className="m10-session-footer"><button className="button secondary" onClick={() => nav('project/' + task.project + '/apps')}>项目应用</button><button className="button primary" onClick={onNewTask}>使用当前版本新建会话</button></div>
     <p className="m10-muted">恢复时继续引用原包，不同步替换新版。用户自行安装的 Skill / MCP 保持原配置。故障切换与修复仅模拟，不修改真实文件、连接、终端或邮件。示例只插入输入，不自动发送。</p>
   </div>;

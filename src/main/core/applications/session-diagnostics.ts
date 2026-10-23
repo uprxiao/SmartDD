@@ -1,6 +1,7 @@
 import {nativeCapabilityPreparationSchema,assertNativeCapabilityPreparation} from './native-preparation-diagnostics';
 import {readApplicationRunScope} from './application-run-scope';
 import {readClaudeSlot} from './claude-delivery-state';
+import {inspectClaudeDeliveryCopies} from './claude-delivery-copies';
 import {lstatSync} from 'node:fs';
 import {join,relative,isAbsolute} from 'node:path';
 import {z} from 'zod';
@@ -123,6 +124,7 @@ export class ApplicationSessionDiagnostics {
    const appResourceIssue=session&&fixed?this.resourceIssue(session,appId):null;if(appResourceIssue)issues.push(appResourceIssue);
    applications.push({appId,name:appId==='mail'?'邮件':'禅道',fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:excluded?.excludedApplications?.find(p=>p.appId===appId)?.code??(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null}});
   }
-  return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
+  const deliveryCopies=task.runner==='claude'?inspectClaudeDeliveryCopies(this.store,taskId):null;
+  return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,deliveryCopies,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
  });}
 }

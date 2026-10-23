@@ -11,6 +11,7 @@ import {claudeAnchor,claudeDeliveryPendingSchema,claudeRoot,claudeSlotId,deliver
 import {verifyOwnedBundle} from './owned-bundle';
 import {ensureStoreDirectory} from './package-files';
 import {canonicalJson,digest} from './manifest';
+import type {DeliveryCopyDiagnostic,DeliveryCopyDiagnostics} from '@shared/application-session-diagnostics';
 
 export type ClaudeCopyCheckpoint='gc-marked'|'gc-renamed'|'gc-file-removed'|'gc-removed';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),relative=z.string().refine(isPackagePath);
@@ -148,4 +149,44 @@ export class ClaudeDeliveryCopies {
   }
   save(rows.length<16?{rowId:0,index:0}:{rowId:rows.at(-1)!.seq+1,index:0});
  }
+}
+
+/** Read-only, bounded journal display. A recorded phase is never deletion authority
+ * or proof that the current path is absent. Called under the store coordinator. */
+export function inspectClaudeDeliveryCopies(store:ResourceStore,taskId:string):DeliveryCopyDiagnostics{
+ const result:DeliveryCopyDiagnostics={records:[],incomplete:false,issueCode:null};
+ const unknown=()=>{result.incomplete=true;result.issueCode='RESOURCE_RECOVERY_REQUIRED';};
+ try{
+  readClaudeSlot(store,taskId);
+  const rows=store.sqlite.prepare("SELECT * FROM capability_resource_operations WHERE kind='claude-delivery-install' AND owner_store_id=? AND CASE WHEN json_valid(plan_json) THEN json_extract(plan_json,'$.slotId') ELSE NULL END=? ORDER BY rowid DESC LIMIT 17").all(store.storeId,claudeSlotId(taskId)) as Operation[];
+  if(rows.length>16)result.incomplete=true;
+  for(const row of rows.slice(0,16)){
+   if(row.state!=='committed'){unknown();continue;}
+   let p:z.infer<typeof claudeDeliveryPendingSchema>;
+   try{
+    const origin=z.object({slotId:z.literal(claudeSlotId(taskId)),completedPending:claudeDeliveryPendingSchema}).strict().parse(JSON.parse(row.plan_json));p=origin.completedPending;
+    const prefix=`claude-deliveries/${taskId}/${p.id}/stages/`,stage=(path:string)=>path.startsWith(prefix)&&z.uuid().safeParse(path.slice(prefix.length)).success;
+    if(p.id!==row.operation_id||p.sourceId!==`claude-projection-source:${taskId}:${p.hash}`||p.resourceId!==`claude-delivery:${taskId}:${p.hash}`||p.backup!==`claude-deliveries/${taskId}/${p.id}/previous`||!stage(p.stage)||p.abandonedStages.some(path=>!stage(path))||new Set([p.stage,...p.abandonedStages]).size!==p.abandonedStages.length+1)throw fail();
+   }catch{unknown();continue;}
+   const copies=[{relativePath:p.backup,hash:p.priorHash},{relativePath:p.stage,hash:p.hash},...p.abandonedStages.map(relativePath=>({relativePath,hash:p.hash}))];
+   for(const copy of copies){
+    if(result.records.length===64){result.incomplete=true;return result;}
+    const c={...copy,taskId,deliveryId:p.id},operation=store.sqlite.prepare('SELECT * FROM capability_resource_operations WHERE operation_id=?').get(identity(c)) as (Operation&{updated_at:string})|undefined;
+    const record:DeliveryCopyDiagnostic={deliveryId:p.id,relativePath:copy.relativePath,contentHash:copy.hash,state:'unprocessed',issueCode:null,updatedAt:null};
+    try{
+     if(!operation){if(!present(join(store.root,copy.relativePath)))continue;}
+     else{
+      if(operation.kind!==kind||operation.owner_store_id!==store.storeId)throw fail();
+      const parsed=operation.state==='held'?candidate.parse(parseEnvelope(operation.plan_json)):planSchema.parse(parseEnvelope(operation.plan_json));
+      if(canonicalJson(asCandidate(parsed))!==canonicalJson(c)||('storeId' in parsed&&parsed.storeId!==store.storeId)||!['held','preparing','renamed','deleting','removed','committed'].includes(operation.state))throw fail();
+      record.state=operation.state as DeliveryCopyDiagnostic['state'];
+      record.issueCode=operation.error_code===null?null:z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/).parse(operation.error_code);
+      record.updatedAt=z.iso.datetime().parse(operation.updated_at);
+     }
+    }catch{record.state='unverified';record.issueCode='RESOURCE_RECOVERY_REQUIRED';unknown();}
+    result.records.push(record);
+   }
+  }
+ }catch{unknown();}
+ return result;
 }

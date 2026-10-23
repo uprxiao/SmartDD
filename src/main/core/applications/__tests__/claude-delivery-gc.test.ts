@@ -9,6 +9,7 @@ import type {OwnedCapabilityRun} from '../run-registry';
 import {SessionCapabilityProjector} from '../session-projector';
 import {verifyOwnedBundle} from '../owned-bundle';
 import {readClaudeSlot} from '../claude-delivery-state';
+import {inspectClaudeDeliveryCopies} from '../claude-delivery-copies';
 import {FixtureProcessReader,runFixture} from './run-fixture';
 let f:Awaited<ReturnType<typeof runFixture>>,reader:FixtureProcessReader,projector:SessionCapabilityProjector,c:ClaudeDeliveryCoordinator,checkpoint:((phase:ClaudeDeliveryCheckpoint)=>void)|undefined;const runs:OwnedCapabilityRun[]=[];
 beforeEach(async()=>{reader=new FixtureProcessReader();f=await runFixture(reader,{application:true,secondApplication:true,fullProjection:true});projector=new SessionCapabilityProjector(f.store,f.sessions);checkpoint=undefined;c=new ClaudeDeliveryCoordinator(f.store,f.sessions,projector,reader,f.runs.instanceId,p=>checkpoint?.(p));});
@@ -80,4 +81,44 @@ it('keeps its verified archive choice when an additional equivalent full source 
 });
 it('bounds one preparation cleanup batch and continues remaining registered copies on the next preparation',async()=>{
  const {origin,backup}=await initial(),p=origin.pending,source=await projector.readClaudeArtifact(f.snapshot.taskId,p.sourceId),stages=Array.from({length:6},()=>`claude-deliveries/${f.snapshot.taskId}/${origin.id}/stages/${randomUUID()}`);for(const stage of stages)writeOwnedBundle(join(f.store.root,stage),source.bundle,f.store.storeId);p.abandonedStages=stages;f.sqlite.prepare('UPDATE capability_resource_operations SET plan_json=? WHERE operation_id=?').run(canonicalJson({slotId:'claude-delivery-slot:'+f.snapshot.taskId,completedPending:p}),origin.id);const paths=[backup,...stages.map(v=>join(f.store.root,v))];expect(paths.filter(existsSync)).toHaveLength(7);await tick();expect(paths.filter(existsSync)).toHaveLength(3);await tick();expect(paths.filter(existsSync)).toHaveLength(0);
+});
+
+describe('read-only delivery copy diagnostic reachability',()=>{
+ const journal=()=>f.sqlite.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all();
+ it('shows original retained and completed backup receipts without modifying journals or files',async()=>{
+  const {origin,backup}=await initial(),before=journal(),bytes=readFileSync(join(backup,'bundle.json'));
+  const first=inspectClaudeDeliveryCopies(f.store,f.snapshot.taskId);
+  expect(first).toMatchObject({incomplete:false,issueCode:null});
+  expect(first.records).toContainEqual({deliveryId:origin.id,relativePath:origin.pending.backup,contentHash:origin.pending.priorHash,state:'unprocessed',issueCode:null,updatedAt:null});
+  expect(journal()).toEqual(before);expect(readFileSync(join(backup,'bundle.json'))).toEqual(bytes);
+  await tick();const completed=journal();
+  expect(inspectClaudeDeliveryCopies(f.store,f.snapshot.taskId).records).toContainEqual(expect.objectContaining({relativePath:origin.pending.backup,state:'committed',issueCode:null}));
+  expect(journal()).toEqual(completed);
+ });
+ it('exposes a retained foreign-file reason without reading or deleting the unknown content',async()=>{
+  const {origin,backup}=await initial();writeFileSync(join(backup,'unknown-user-file'),'private-content-not-for-diagnostic');await tick();
+  const before=journal(),value=inspectClaudeDeliveryCopies(f.store,f.snapshot.taskId);
+  expect(value.records).toContainEqual(expect.objectContaining({relativePath:origin.pending.backup,state:'held',issueCode:'HASH_MISMATCH'}));
+  expect(JSON.stringify(value)).not.toContain('private-content-not-for-diagnostic');expect(readFileSync(join(backup,'unknown-user-file'),'utf8')).toBe('private-content-not-for-diagnostic');expect(journal()).toEqual(before);
+ });
+ it.each(['hash','owner','state'] as const)('marks damaged %s evidence unverified rather than reporting successful cleanup',async damage=>{
+  const {origin,backup}=await initial();await tick();const op=gc(origin.pending.backup);
+  if(damage==='hash'){const raw=JSON.parse(op.plan_json);raw.evidenceHash='0'.repeat(64);f.sqlite.prepare('UPDATE capability_resource_operations SET plan_json=? WHERE operation_id=?').run(JSON.stringify(raw),op.operation_id);}
+  else if(damage==='owner')f.sqlite.prepare('UPDATE capability_resource_operations SET owner_store_id=? WHERE operation_id=?').run(randomUUID(),op.operation_id);
+  else f.sqlite.prepare("UPDATE capability_resource_operations SET state='invented' WHERE operation_id=?").run(op.operation_id);
+  const before=journal(),value=inspectClaudeDeliveryCopies(f.store,f.snapshot.taskId);
+  expect(value).toMatchObject({incomplete:true,issueCode:'RESOURCE_RECOVERY_REQUIRED'});expect(value.records).toContainEqual(expect.objectContaining({relativePath:origin.pending.backup,state:'unverified',issueCode:'RESOURCE_RECOVERY_REQUIRED'}));expect(journal()).toEqual(before);expect(existsSync(backup)).toBe(false);
+ });
+ it('keeps recreated paths separate from a historical committed receipt and isolates another task',async()=>{
+  const {origin,backup}=await initial();await tick();mkdirSync(backup);writeFileSync(join(backup,'new-user-content'),'keep');await tick();const before=journal();
+  expect(inspectClaudeDeliveryCopies(f.store,f.snapshot.taskId).records).toContainEqual(expect.objectContaining({state:'committed',issueCode:'OWNERSHIP_CONFLICT'}));
+  expect(inspectClaudeDeliveryCopies(f.store,'other-task').records).toEqual([]);expect(readFileSync(join(backup,'new-user-content'),'utf8')).toBe('keep');expect(journal()).toEqual(before);
+ });
+ it('bounds display independently of cleanup and explicitly marks omitted candidates',async()=>{
+  const {origin}=await initial(),p=origin.pending;
+  p.abandonedStages=Array.from({length:64},()=>`claude-deliveries/${f.snapshot.taskId}/${origin.id}/stages/${randomUUID()}`);
+  for(const relative of p.abandonedStages)mkdirSync(join(f.store.root,relative),{recursive:true});
+  f.sqlite.prepare('UPDATE capability_resource_operations SET plan_json=? WHERE operation_id=?').run(canonicalJson({slotId:'claude-delivery-slot:'+f.snapshot.taskId,completedPending:p}),origin.id);
+  const before=journal(),value=inspectClaudeDeliveryCopies(f.store,f.snapshot.taskId);expect(value.incomplete).toBe(true);expect(value.records).toHaveLength(64);expect(journal()).toEqual(before);expect(p.abandonedStages.every((path:string)=>existsSync(join(f.store.root,path)))).toBe(true);
+ });
 });

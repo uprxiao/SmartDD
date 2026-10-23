@@ -1,4 +1,5 @@
 import {ApplicationTerminalButton} from './terminal-insertion';
+import {DeliveryCopies} from './delivery-copies';
 import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {RefreshCw} from 'lucide-react';
@@ -39,6 +40,7 @@ export function SessionApplicationsPanel({taskId,onClose,runIdentity=''}:{taskId
  {app.evidence.latestErrorCode&&<p className="m10-note" role="status">最近调用：{app.evidence.latestErrorCode} · {app.evidence.latestEffectState==='unknown'?'结果未知，先核实原执行，不自动重发':'核对本次错误及原连接条件'}</p>}
  {app.connections.map(connection=><p key={connection.slot}>{connection.slot==='smtp'?'发件账号':connection.slot==='foxmail'?'邮件来源':'禅道连接'}：{connection.name??(connection.id?'原连接':'未选用')} · {healthLabel[connection.health]??'待核查'}<br/><small>创建时：{connection.originalName??(connection.originalId?'原连接身份 '+connection.originalId:'未选用')}<br/>相对创建时选用：{connection.selection==='same'?'原身份':connection.selection==='changed'?'已变化':connection.selection==='missing'?'未选用':'待核查'} · 原包配置{connection.compatibility==='compatible'?'兼容':connection.compatibility==='incompatible'?'不兼容':'兼容性待核查'}{connection.issueCode?' · '+connection.issueCode:''}</small></p>)}
  {value.projectId&&app.skills.map(skill=><ApplicationTerminalButton key={skill.id} projectId={value.projectId!} source={{kind:'skill',appId:app.appId,skillId:skill.id}} onInserted={onClose} disabled={!!app.issueCode||app.resourceState!=='verified'||value.currentRun?.preparation?.state!=='prepared'||!!value.currentRun?.restriction||!!value.currentRun?.restrictionIssue} label="插入示例到终端"/>)}<details><summary>固定包与 Skill 来源</summary><p className="m10-message-id">包：{app.packageHash??'本会话未选用'}</p>{app.skills.map(skill=><p className="m10-message-id" key={skill.id}>{skillNames[skill.id]??skill.id}<br/>内容：{skill.sourceHash}<br/>原投影：{skill.projectionPath}</p>)}</details><button className="m10-button secondary" onClick={()=>configure(app.appId)}>检查{app.name}与连接</button>{value.projectId&&<button className="m10-button secondary" onClick={()=>{onClose();navigation.openApplicationActivity({appId:app.appId,projectId:value.projectId!});}}>查看项目调用记录</button>}</section>)}
+ <DeliveryCopies value={value.deliveryCopies}/>
  {!!value.recentRuns.length&&<details><summary>最近 {value.recentRuns.length} 次{value.recentRuns.some(run=>!['stopped','failed'].includes(run.state))?'其他运行记录':'历史运行证据'}</summary>{value.recentRuns.map(run=><section className="m10-session-history" key={run.id}><RunEvidence run={run}/></section>)}</details>}
  <p className="m10-muted">创建时 CLI：{value.createdCliVersion??'未记录'} · 最近检查：{timeText(value.checkedAt)}</p>
  </>}{notice&&<p className="m10-note" role="status">{notice}</p>}
