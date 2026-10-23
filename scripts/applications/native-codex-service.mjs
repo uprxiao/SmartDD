@@ -13,9 +13,16 @@ import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 
+const expectSkillHistory=process.env.WILLYOU_EXPECT_SKILL_HISTORY==='1';
+const expectSkillDiscovery=process.env.WILLYOU_EXPECT_SKILL_DISCOVERY==='1';
+const expectSkillRead=process.env.WILLYOU_EXPECT_SKILL_READ==='1';
+const expectRecoveryUnsupported=process.env.WILLYOU_EXPECT_RECOVERY_UNSUPPORTED==='1';
 const bridgeFaultSignal=process.env.WILLYOU_BRIDGE_FAULT_SIGNAL==='SIGTERM'?'SIGTERM':'SIGKILL';
 const bridgeFaultCheck=process.env.WILLYOU_BRIDGE_FAULT_CHECK==='1';
 const restartCheck=process.env.WILLYOU_RESTART_CHECK==='1';
+const forgeScope=process.env.WILLYOU_FORGE_SCOPE==='1';
+const crossProjectTool=process.env.WILLYOU_CROSS_PROJECT_TOOL==='1';
+const selectedSecondProject=process.env.WILLYOU_SELECTED_SECOND_PROJECT==='1';
 const sharedProjectCheck=process.env.WILLYOU_SHARED_PROJECT_CHECK==='1';
 const unselectedProject=process.env.WILLYOU_UNSELECTED_PROJECT==='1';
 const root=await mkdtemp('/private/tmp/willyou-m10-native-service-');
@@ -24,13 +31,16 @@ const executable=process.env.WILLYOU_ACCEPTANCE_APP,cli=process.env.WILLYOU_CODE
 assert(executable&&cli,'Set WILLYOU_ACCEPTANCE_APP and WILLYOU_CODEX_CLI to this private package and isolated Codex executable');
 const appRoot=resolve(dirname(executable),'../..');
 const sha=b=>createHash('sha256').update(b).digest('hex');
+const bundleIndexBytes=await readFile(join(appRoot,'Contents/Resources/capability-bundles/index.json'));
+const bundleIndex=JSON.parse(bundleIndexBytes);
 const marker='M10_UI_NATIVE_TASK_'+root.split('-').at(-1);
 const result={schema:'m10-packaged-native-service-v1',startedAt:new Date().toISOString(),root,userData,home,state,cwd,
  branch:execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim(),sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),sourceDirty:!!execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),
+ packageBuild:bundleIndex.build,bundleIndexSha256:sha(bundleIndexBytes),
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
  layer:'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
  isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
- bridgeFaultSignal,bridgeFaultCheck,restartCheck,sharedProjectCheck,unselectedProject,marker,requests:[],checks:[],status:'running'};
+ expectSkillHistory,expectSkillDiscovery,expectSkillRead,expectRecoveryUnsupported,bridgeFaultSignal,bridgeFaultCheck,restartCheck,sharedProjectCheck,selectedSecondProject,crossProjectTool,forgeScope,unselectedProject,marker,requests:[],checks:[],status:'running'};
 assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
 assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
 result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
@@ -54,6 +64,17 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m10-owned-config'),
   toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
+ if(secondProjectRequest&&crossProjectTool){
+  if(!result.issuedCrossProjectTool){
+   assert(selectedSecondProject&&result.createdDraft);
+   const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_get_v1'));assert(ns);
+   const argumentsText=JSON.stringify({draftId:result.createdDraft.id,revision:result.createdDraft.revision,...(forgeScope?{projectId:project.id,taskId:task.id}:{})});
+   const call={type:'function_call',id:'fc_m10_cross_project',call_id:'call_m10_cross_project',name:'smartdd_mail_draft_get_v1',namespace:ns.name,arguments:argumentsText,status:'completed'};result.issuedCrossProjectTool=call;
+   const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+   send('response.created',{response:{id:'resp_cross_project',object:'response',status:'in_progress',output:[]}});send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});send('response.output_item.done',{output_index:0,item:call});send('response.completed',{response:{id:'resp_cross_project',object:'response',status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+  }
+  const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id==='call_m10_cross_project');assert(output);result.crossProjectToolOutput=output;
+ }
  if(taskRequest&&!secondProjectRequest&&!unselectedProject&&!result.issuedRead){
   const skillRoot=join(home,'.agents/skills');const names=readdirSync(skillRoot).filter(n=>n.startsWith('smartdd-a-mail-work-assistant-'));assert.equal(names.length,1);const path=join(skillRoot,names[0],'SKILL.md');const contents=readFileSync(path,'utf8');
   result.issuedRead={path,sha256:sha(contents),bytes:Buffer.byteLength(contents),callId:'call_m10_skill_read',method:'actual Codex exec_command /bin/cat of this private fixed Skill only;synthetic provider selects read'};
@@ -163,25 +184,30 @@ try{
  checked('Actual native Codex function call crossed the real M10 MCP bridge and persisted one draft without SMTP or recipients');
  assert(result.nativeSkillReadOutput);const selected=usage.applications.find(a=>a.appId==='mail');assert(selected.skills.some(s=>s.projectionPath===result.issuedRead.path));result.readToPackage={taskId:task.id,packageHash:selected.packageHash,skillPath:result.issuedRead.path,skillFileSha256:result.issuedRead.sha256,declaredSourceHash:selected.skills[0].sourceHash};checked('Actual native shell read of fixed production Mail Skill precedes real MCP operation in the same Task');
  stage='native-id-binding';await progress();const bound=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);result.nativeBoundTask=bound;const fixed=await app.invoke('applications.session',task.id);assert(fixed.ok);result.nativeBoundSession=fixed.value;assert.equal(fixed.value.applications.find(a=>a.appId==='mail').packageHash,usage.applications.find(a=>a.appId==='mail').packageHash);
+ if(expectSkillRead){const observed=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.applications.find(a=>a.appId==='mail')?.evidence.skillRead==='verified'?d.value:null;},10000);const evidence=observed.applications.find(a=>a.appId==='mail').evidence;assert.equal(evidence.skillDiscovery,expectSkillDiscovery?'verified':'unverified');if(expectSkillDiscovery){assert(evidence.skillDiscoveryObservations.length>0);assert(evidence.skillDiscoveryObservations.every(r=>r.runId===observed.currentRun.id));}assert(evidence.skillReadObservations.length>0);assert(evidence.skillReadObservations.every(r=>r.runId===observed.currentRun.id));result.nativeSkillDiagnostic=observed;checked('Production diagnostics verifies complete actual native Skill reading in the current run, without inferring discovery');}
  checked('Actual native session ID is bound while fixed Mail package hash remains unchanged',{nativeSessionId:bound.nativeSessionId,snapshotHash:fixed.value.snapshotHash});
  checked('Production draft read interface returns actual persisted native-tool output;no UI assertion');
  if(sharedProjectCheck){
   stage='same-instance-project-b';await progress();
   const cwdB=join(root,'project-b');await mkdir(join(cwdB,'.git'),{recursive:true});
-  const other=await app.invoke('projects.create',{name:'M10 未选邮件项目 B',aliases:[],description:'Same App shared-H negative project',rulesPath:null},[{label:'fixture-b',path:cwdB}]);
-  const next=await app.invoke('tasks.create',{projectId:other.id,dirId:null,aiProfileId:profile.id,firstMessage:marker+'_PROJECT_B: Reply with the completion marker only. No tools, no files, no drafts, no mail.',cols:100,rows:30});secondTask=next.task;
+  const other=await app.invoke('projects.create',{name:selectedSecondProject?'M10 已选邮件项目 B':'M10 未选邮件项目 B',aliases:[],description:'Same App shared-H negative project',rulesPath:null},[{label:'fixture-b',path:cwdB}]);
+  if(selectedSecondProject)assert((await app.invoke('applications.select',{projectId:other.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}})).ok);
+  const next=await app.invoke('tasks.create',{projectId:other.id,dirId:null,aiProfileId:profile.id,firstMessage:marker+'_PROJECT_B: '+(crossProjectTool?'Read the supplied isolated cross-project draft ID once to verify denial. Do not create or modify anything.':'Reply with the completion marker only. No tools, no files, no drafts, no mail.'),cols:100,rows:30});secondTask=next.task;
   await poll(async()=>{const t=await app.invoke('tasks.get',secondTask.id);secondTask=t;return t.ptyId&&(await app.output(t.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
+  if(crossProjectTool){const output=JSON.stringify(result.crossProjectToolOutput);assert((forgeScope?/INVALID_INPUT/:/NOT_FOUND/).test(output),'Native tool must reject the supplied cross-project request with the expected error');assert(!output.includes(marker+'_LOCAL_BODY'));checked(forgeScope?'B actual native MCP rejects forged project/task arguments without returning A body':'B actual native MCP draft read rejects A draft identity without returning A body');}
   const bRequests=result.requests.filter(r=>r.kind==='project-b-task');assert(bRequests.length>0);
-  assert(bRequests.every(r=>r.toolNames.every(n=>!String(n).startsWith('mcp__wy_'))));
-  const bSession=await app.invoke('applications.session',secondTask.id);assert(bSession.ok);assert.deepEqual(bSession.value.applications,[]);
-  const bDrafts=await app.invoke('applications.drafts',other.id,{limit:50});assert.equal(bDrafts.ok,false);assert.equal(bDrafts.code,'SCOPE_DENIED');
+  assert(bRequests.every(r=>selectedSecondProject?r.toolNames.some(n=>String(n).startsWith('mcp__wy_')):r.toolNames.every(n=>!String(n).startsWith('mcp__wy_'))));
+  const bSession=await app.invoke('applications.session',secondTask.id);assert(bSession.ok);
+  const bDrafts=await app.invoke('applications.drafts',other.id,{limit:50});
+  if(selectedSecondProject){assert.equal(bSession.value.currentRun.state,'active');assert.equal(bSession.value.currentRun.bridge.connected,true);assert.equal(bSession.value.applications.find(a=>a.appId==='mail').packageHash,selected.packageHash);assert.equal(bDrafts.ok,true);assert.deepEqual(bDrafts.value.items,[]);}
+  else{assert.deepEqual(bSession.value.applications,[]);assert.equal(bDrafts.ok,false);assert.equal(bDrafts.code,'SCOPE_DENIED');}
   const oldSession=await app.invoke('applications.session',task.id);assert(oldSession.ok);assert.equal(oldSession.value.snapshotHash,fixed.value.snapshotHash);
   assert.equal(oldSession.value.applications.find(a=>a.appId==='mail').packageHash,selected.packageHash);
   const retained=await app.invoke('applications.draft',project.id,draft.id,draft.revision);assert(retained.ok);assert.equal(retained.value.draft.sourceTaskId,task.id);
-  const wrongProject=await app.invoke('applications.draft',other.id,draft.id,draft.revision);assert.equal(wrongProject.ok,false);assert.equal(wrongProject.code,'SCOPE_DENIED');
+  const wrongProject=await app.invoke('applications.draft',other.id,draft.id,draft.revision);assert.equal(wrongProject.ok,false);assert(['SCOPE_DENIED','NOT_FOUND'].includes(wrongProject.code));if(selectedSecondProject){assert.equal(oldSession.value.currentRun.state,'active');assert.equal(oldSession.value.currentRun.bridge.connected,true);assert.notEqual(oldSession.value.currentRun.id,bSession.value.currentRun.id);}
   result.sharedProjects={projectA:project.id,projectB:other.id,taskA:task.id,taskB:secondTask.id,bSession:bSession.value,bDraftList:bDrafts,wrongProjectDraft:wrongProject,aSessionAfterB:oldSession.value,bRequests};
-  checked('Same App: unselected B native request has no application tools despite A fixed Skill projection existing');
-  checked('Same App: B draft list and A draft access denied; A original draft and fixed snapshot retained');
+  checked(selectedSecondProject?'Same App: two selected projects have simultaneously active native runs and authenticated application bridges':'Same App: unselected B native request has no application tools despite A fixed Skill projection existing');
+  checked(selectedSecondProject?'Same App: selected B draft list is empty and A draft access is denied; A original draft and fixed snapshot retained':'Same App: B draft list and A draft access denied; A original draft and fixed snapshot retained');
  }
 
  }
@@ -228,7 +254,9 @@ try{
   if(bridgeFaultCheck)assert(/Transport closed/.test(JSON.stringify(result.nativeResumeOutputs[0].output)),'Native tool must report bridge failure');
   else assert(result.nativeResumeOutputs[0].output.includes(result.createdDraft.id));
   const after=await app.invoke('applications.session',task.id);assert(after.ok);assert.equal(after.value.currentRun.id,resumed.currentRun.id);
-  if(bridgeFaultCheck){assert.equal(after.value.currentRun.bridge.connected,false);assert.equal(after.value.applications.find(a=>a.appId==='mail').evidence.successfulToolRequests,0);assert.equal((await app.invoke('tasks.get',task.id)).ptyId,task.ptyId);}
+  if(expectSkillRead){const evidence=after.value.applications.find(a=>a.appId==='mail').evidence;assert.equal(evidence.skillRead,'unverified');assert.deepEqual(evidence.skillReadObservations,[]);if(!expectSkillDiscovery)assert.equal(evidence.skillDiscovery,'unverified');else assert((evidence.skillDiscoveryObservations??[]).every(r=>r.runId===after.value.currentRun.id&&Date.parse(r.observedAt)>=Date.parse(after.value.currentRun.startedAt)));checked('New run after host restart does not reuse old native Skill-read evidence, even after a new successful MCP call');}
+  if(expectSkillHistory){const history=after.value.recentRuns.find(r=>r.id===original.currentRun.id);assert(history);assert.equal(history.skillObservationIssue,null);for(const kind of ['read','discovery']){const old=result.nativeSkillDiagnostic.applications.find(a=>a.appId==='mail').evidence[kind==='read'?'skillReadObservations':'skillDiscoveryObservations'];assert(old.length>0);assert(history.skillObservations.some(r=>r.kind===kind&&r.runId===original.currentRun.id&&r.recordHash===old[0].recordHash));}result.retainedSkillHistory=history;checked('Historical native discovery and reading metadata survive actual host restart and remain assigned to the old run');}
+  if(bridgeFaultCheck){assert.equal(after.value.currentRun.bridge.connected,false);if(expectRecoveryUnsupported)assert.equal(after.value.currentRun.bridge.issueCode,'RECOVERY_UNSUPPORTED','Unverified native reload must be explicitly diagnosed');assert.equal(after.value.applications.find(a=>a.appId==='mail').evidence.successfulToolRequests,0);assert.equal((await app.invoke('tasks.get',task.id)).ptyId,task.ptyId);}
   else assert(after.value.applications.find(a=>a.appId==='mail').evidence.successfulToolRequests>=1);
   const draftsAfter=await app.invoke('applications.drafts',project.id,{limit:50});assert(draftsAfter.ok);assert.equal(draftsAfter.value.items.length,1);assert.equal(draftsAfter.value.items[0].revision,result.createdDraft.revision);
   result.resumedRead={inputLayer:'trusted renderer production PTY event; not UI',output:result.nativeResumeOutputs[0],session:after.value,draftCount:1};

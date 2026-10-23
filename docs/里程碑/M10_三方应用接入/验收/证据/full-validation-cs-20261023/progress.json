@@ -1,0 +1,54 @@
+{
+  "commit": "a055ffc29d0a7fe28bbdf781b867f22a7cb2f266",
+  "startedAt": 1792776456.675305,
+  "kind": "local full validation; not GitHub Actions",
+  "steps": [
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "startedAt": 1792776456.67535,
+      "status": "passed",
+      "exitCode": 0,
+      "finishedAt": 1792776468.252686
+    },
+    {
+      "name": "release",
+      "command": [
+        "pnpm",
+        "test:release"
+      ],
+      "startedAt": 1792776468.256347,
+      "status": "passed",
+      "exitCode": 0,
+      "finishedAt": 1792776469.083025
+    },
+    {
+      "name": "prepare",
+      "command": [
+        "pnpm",
+        "test:prepare"
+      ],
+      "startedAt": 1792776469.083292,
+      "status": "passed",
+      "exitCode": 0,
+      "finishedAt": 1792776472.927737
+    },
+    {
+      "name": "tests",
+      "command": [
+        "pnpm",
+        "test",
+        "--maxWorkers=2",
+        "--reporter=json",
+        "--outputFile=/private/tmp/willyou-m10-cs-checks/tests.json"
+      ],
+      "startedAt": 1792776472.927967,
+      "status": "failed",
+      "exitCode": 1,
+      "finishedAt": 1792778356.328021
+    }
+  ]
+}
