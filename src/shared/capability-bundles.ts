@@ -6,5 +6,5 @@ export type CapabilityBundleIndex = z.infer<typeof capabilityBundleIndexSchema>;
 export interface AgentSupportState {
   state: 'preparing' | 'ready' | 'partial' | 'unavailable';errorCode: string | null;legacyResourceCount: number;runtimeHash: string | null;
   applications: { appId: 'zentao' | 'mail';version: string;hash: string;filesReady: boolean;defaultForNewSessions: boolean;errorCode: string | null }[];
-  adapters: { agentId: 'claude-code' | 'codex';version: string;hash: string;cliVersions: string[];filesReady: boolean;nativeDiscovery: 'unverified';bridgeRecovery: 'unverified' }[];
+  adapters: { agentId: 'claude-code' | 'codex';version: string;hash: string;cliVersions: string[];filesReady: boolean;nativeDiscovery: 'unverified';bridgeRecovery: 'supported'|'unsupported'|'unverified';configReload?:'supported'|'unsupported'|'unverified';recoveryRequiresAgentRestart?:boolean|null;recoveryEvidence?:{cliVersion:string;baseline:string}[] }[];
 }

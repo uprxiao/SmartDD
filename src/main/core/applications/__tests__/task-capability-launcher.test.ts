@@ -116,6 +116,15 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   }
   await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));
  },15000);
+ it('does not issue a replacement after all original application policy is revoked',async()=>{
+  const replace=vi.fn(async()=>{});vi.spyOn(support.adapters,'recovery').mockReturnValue({capability:'supported',evidence:'controlled fixture only',replace});
+  const preparation=vi.spyOn(managed.broker,'prepare');await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const first=await create(),runId=first.task.runtimeSnapshot!.runId,session=await managed.sessions.get(first.task.id),server=session.snapshot.mcp.find(m=>m.kind==='applications')!.serverName;
+  await applications.selections.setGlobalEnabled('mail',false,1);
+  expect((await managed.bridgeRecovery.prepareReplacement(runId,server,0)).code).toBe('RECOVERY_REVOKED');
+  expect(replace).not.toHaveBeenCalled();expect(preparation).toHaveBeenCalledTimes(1);expect(ptys.live.has(first.ptyId)).toBe(true);
+  tasks.kill(first.task.id);await (await preparation.mock.results[0].value).bridge.exited();
+ },15000);
  it('registers host recovery for the original application service and releases it after the owned run stops',async()=>{
   const preparation=vi.spyOn(managed.broker,'prepare');
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});

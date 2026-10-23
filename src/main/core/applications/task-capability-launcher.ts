@@ -357,11 +357,19 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   }
   private registerBridgeRecovery(run:OwnedCapabilityRun,server:string,adapterHash:string,cliVersion:string):void {
     const recovery=this.support.adapters.recovery(adapterHash,cliVersion);
+    const authorize=()=>{
+        if(run.signal.aborted||this.closed||this.runs.get(run.runId).state!=='active')throw new ApplicationError('CANCELED','原运行已停止');
+        const context=this.runs.bridgePreparation(run.runId);
+        // Shared transport may recover for a still-enabled original application, never an added one.
+        const permitted=context.snapshot.packages.filter(pack=>!context.applicationScope||context.applicationScope.includes(pack.appId));
+        const eligible=permitted.some(pack=>this.support.store.sqlite.prepare('SELECT 1 FROM application_catalog_state c JOIN application_project_settings p ON p.app_id=c.app_id WHERE c.app_id=? AND p.project_id=? AND c.added=1 AND c.enabled=1 AND p.enabled=1 AND p.pending_operation_id IS NULL').get(pack.appId,context.snapshot.projectId));
+        if(!eligible)throw new ApplicationError('SCOPE_DENIED','原运行应用已停用或正在变更，不能重新签发工具通道');
+      };
     this.bridgeRecovery.register(run.runId,server,{
       capability:recovery.capability,evidence:recovery.evidence,
-      validate:async()=>{if(run.signal.aborted||this.closed||this.runs.get(run.runId).state!=='active')throw new ApplicationError('CANCELED','原运行已停止');this.runs.bridgePreparation(run.runId);},
+      validate:async()=>authorize(),
       ...(recovery.replace?{replace:async(attempt:{instanceId:string;generation:number;signal:AbortSignal})=>{
-        const prepared=await this.broker.prepare(run,server);let connected=false;
+        const prepared=await this.broker.prepare(run,server,authorize);let connected=false;
         const cancel=()=>{this.bridges.revokeBridge(run.runId,prepared.bridge.processId);return prepared.cancel().catch(()=>undefined);};
         const aborted=()=>{void cancel();};attempt.signal.addEventListener('abort',aborted,{once:true});
         try{
@@ -370,7 +378,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
           if(attempt.signal.aborted)return false;
           const handshake=this.broker.waitForAuthentication(run.runId,prepared.bridge.processId,attempt.signal);
           await recovery.replace!({runId:run.runId,serverName:server,bridgeInstanceId:prepared.bridge.processId,generation:attempt.generation,bootstrapPath:prepared.bootstrapPath,signal:attempt.signal});
-          connected=await handshake;
+          const authenticated=await handshake;authorize();connected=authenticated;
           return connected&&!attempt.signal.aborted;
         }finally{attempt.signal.removeEventListener('abort',aborted);if(!connected||attempt.signal.aborted)await cancel();}
       }}:{}),

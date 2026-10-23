@@ -1,3 +1,4 @@
+import {ApplicationError} from '@shared/applications';
 import {BridgeSupervisor} from '../bridge-supervisor';
 import { randomUUID } from 'node:crypto';
 import { chmodSync, existsSync, lstatSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
@@ -132,6 +133,47 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
   it('allows one asynchronous peer claim and rejects concurrent use of its same ticket',async()=>{
     await broker.close();let entered!:()=>void,release!:()=>void;const ready=new Promise<void>(done=>entered=done),gate=new Promise<void>(done=>release=done);let attempts=0;broker=new PrivateApplicationBroker(f.runs,new ApplicationToolService(f.store,f.runs,{resolve:()=>{throw new Error('unused');}}),{now:()=>time,attachPeer:async()=>{attempts++;entered();await gate;}});await broker.start();const prepared=await ticket(),a=await peer(broker.endpoint),b=await peer(broker.endpoint),first=a.send(exchange(prepared.data));await ready;
     try{expect(await b.send(exchange(prepared.data))).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});expect(attempts).toBe(1);}finally{release();}expect(valueToken(await first).token).toMatch(/^[a-f0-9]{64}$/);expect(attempts).toBe(1);
+  });
+  it('rejects a canceled replacement after late peer attachment without revoking a sibling ticket',async()=>{
+    await broker.close();let entered!:()=>void,release!:()=>void;
+    const ready=new Promise<void>(resolve=>entered=resolve),gate=new Promise<void>(resolve=>release=resolve),rejected=vi.fn();
+    broker=new PrivateApplicationBroker(f.runs,new ApplicationToolService(f.store,f.runs,{resolve:()=>{throw Error('unused');}}),{now:()=>time,attachPeer:async()=>{entered();await gate;},rejectedReplacement:rejected});
+    await broker.start();const first=await ticket(),sibling=await ticket(),client=await peer(broker.endpoint);
+    const waiting=broker.waitForAuthentication(run.runId,first.bridge.processId,new AbortController().signal),response=client.send(exchange(first.data));await ready;
+    try{await expect(first.cancel()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(await waiting).toBe(false);expect(existsSync(sibling.bootstrapPath)).toBe(true);}finally{release();}
+    expect(await response).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+    expect(rejected).toHaveBeenCalledExactlyOnceWith(run.runId,first.bridge.processId);
+    const healthy=await peer(broker.endpoint);valueToken(await healthy.send(exchange(sibling.data)));
+    expect(broker.hasAuthenticated(run.runId)).toBe(true);expect(f.runs.get(run.runId).state).toBe('active');
+    await first.bridge.exited();await sibling.bridge.exited();
+  });
+  it('denies a recovery token when application authorization is revoked during peer validation',async()=>{
+    await broker.close();let entered!:()=>void,release!:()=>void,authorized=true;
+    const ready=new Promise<void>(resolve=>entered=resolve),gate=new Promise<void>(resolve=>release=resolve),rejected=vi.fn();
+    broker=new PrivateApplicationBroker(f.runs,new ApplicationToolService(f.store,f.runs,{resolve:()=>{throw Error('unused');}}),{attachPeer:async()=>{entered();await gate;},rejectedReplacement:rejected});await broker.start();
+    const prepared=await broker.prepare(run,f.snapshot.mcp[0].serverName,()=>{if(!authorized)throw new ApplicationError('SCOPE_DENIED','fixture policy revoked');});await prepared.bridge.arm();
+    const data=JSON.parse(readFileSync(prepared.bootstrapPath,'utf8')) as BridgeBootstrap,client=await peer(broker.endpoint),waiting=broker.waitForAuthentication(run.runId,prepared.bridge.processId,new AbortController().signal),response=client.send(exchange(data));
+    await ready;authorized=false;release();
+    try{
+      expect(await response).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+      expect(await waiting).toBe(false);expect(broker.hasAuthenticated(run.runId)).toBe(false);
+      expect(rejected).toHaveBeenCalledExactlyOnceWith(run.runId,prepared.bridge.processId);
+      expect(f.runs.get(run.runId).state).toBe('active');
+    }finally{await prepared.bridge.exited();}
+  });
+  it('rechecks recovery policy after asynchronous authentication diagnostics before returning a token',async()=>{
+    await broker.close();let authorized=true;
+    broker=new PrivateApplicationBroker(f.runs,new ApplicationToolService(f.store,f.runs,{resolve:()=>{throw Error('unused');}}),{attachPeer:async()=>{},authenticated:async()=>{authorized=false;}});await broker.start();
+    const prepared=await broker.prepare(run,f.snapshot.mcp[0].serverName,()=>{if(!authorized)throw new ApplicationError('SCOPE_DENIED','revoked during diagnostic');});await prepared.bridge.arm();
+    const waiting=broker.waitForAuthentication(run.runId,prepared.bridge.processId,new AbortController().signal),client=await peer(broker.endpoint),data=JSON.parse(readFileSync(prepared.bootstrapPath,'utf8')) as BridgeBootstrap;
+    expect(await client.send(exchange(data))).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(await waiting).toBe(false);expect(broker.hasAuthenticated(run.runId)).toBe(false);await prepared.bridge.exited();
+  });
+  it('does not revive a recovery credential after policy revocation and later reenablement',async()=>{
+    let authorized=true;const prepared=await broker.prepare(run,f.snapshot.mcp[0].serverName,()=>{if(!authorized)throw new ApplicationError('SCOPE_DENIED','revoked');});await prepared.bridge.arm();
+    const client=await peer(broker.endpoint),data=JSON.parse(readFileSync(prepared.bootstrapPath,'utf8')) as BridgeBootstrap,token=valueToken(await client.send(exchange(data))).token;
+    authorized=false;expect(await client.send({schema:1,method:'tools/list',token})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+    authorized=true;expect(await client.send({schema:1,method:'tools/list',token})).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+    expect(f.runs.get(run.runId).state).toBe('active');await prepared.bridge.exited();
   });
   it('does not issue credentials when the run is revoked while a peer identity probe is awaiting completion',async()=>{
     await broker.close();let entered!:()=>void,release!:()=>void;const ready=new Promise<void>(done=>entered=done),gate=new Promise<void>(done=>release=done);broker=new PrivateApplicationBroker(f.runs,new ApplicationToolService(f.store,f.runs,{resolve:()=>{throw new Error('unused');}}),{now:()=>time,attachPeer:async()=>{entered();await gate;}});await broker.start();const prepared=await ticket(),a=await peer(broker.endpoint),first=a.send(exchange(prepared.data));await ready;try{await run.stop();}finally{release();}expect(await first).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
