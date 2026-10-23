@@ -357,3 +357,11 @@ test('prototype switch scope excludes known ordinary/no-app/native-only work and
  const tasks=[{id:'ordinary',project:'ais',status:'running'},{id:'empty',project:'ais',status:'running',integrationSnapshot:{packages:[]}},{id:'native',project:'ais',status:'running',applicationInjection:'native-only',integrationSnapshot:snapshot},{id:'loaded',project:'ais',status:'running',integrationSnapshot:snapshot},{id:'foreign',project:'smartdd',status:'running',integrationSnapshot:snapshot}];
  assert.deepEqual(demoZenTaoRuns(tasks,'ais').map(t=>t.id),['loaded']);assert.equal(switchProjectZenTao(state,'ais',null,tasks.filter(t=>t.id!=='loaded')).ok,true);assert.throws(()=>demoZenTaoRuns([{id:'unknown',project:'ais',status:'running',integrationScopeUnknown:true}],'ais'),/无法核验/);
 });
+
+test('T27 rejects unsupported authentication and SMTP transport without rejecting legacy defaults', () => {
+  const zen = initialIntegrationState().connections.find(c => c.kind === 'zentao');
+  const smtp = { kind: 'smtp', name: 'sender', host: 'smtp.example.invalid', port: 465, account: 'demo@example.invalid' };
+  for (const draft of [{ ...zen, auth: 'unsupported-auth' }, { ...smtp, auth: 'unsupported-auth' }, { ...smtp, transport: 'unsupported-transport' }, { ...smtp, kind: 'unsupported-kind' }]) assert.ok(validateConnection(draft, 'synthetic-only'));
+  for (const auth of ['password', 'token']) assert.equal(validateConnection({ ...zen, auth }, 'synthetic-only'), '');
+  for (const transport of ['implicit-tls', 'starttls', 'plain', undefined]) assert.equal(validateConnection({ ...smtp, transport }, 'synthetic-only'), '');
+});

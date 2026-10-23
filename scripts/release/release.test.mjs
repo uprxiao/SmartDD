@@ -89,8 +89,14 @@ test('native probe finishes after PTY exit even if a worker handle remains open'
     // A mocked native-binding marker belongs only to this all-mocked probe fixture.
     require.cache[__filename + '.fixture-watcher.node'] = { exports: {} };
     exports.subscribe = async (directory, listener) => {
-      const watcher = require('node:fs').watch(directory, (_event, name) => listener(null, [{path:require('node:path').join(directory, String(name))}]));
-      return {unsubscribe: async () => watcher.close()};
+      // This test isolates lingering PTY worker handles. Native watcher delivery
+      // is checked by each real platform package, not by this lifecycle fixture.
+      const file = require('node:path').join(directory, 'probe.txt');
+      const event = setImmediate(() => {
+        require('node:assert/strict').equal(require('node:fs').readFileSync(file, 'utf8'), 'watch fixture');
+        listener(null, [{path:file}]);
+      });
+      return {unsubscribe: async () => clearImmediate(event)};
     };
   `);
   put('preload.cjs', "Object.defineProperty(process.versions, 'electron', {value:'fixture'}); Object.defineProperty(process, 'platform', {value:'win32'});");

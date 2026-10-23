@@ -37,14 +37,18 @@ export function projectIntegrationState(value) {
   };
 }
 export function validateConnection(draft, secret = '') {
+  if (!['zentao', 'local', 'smtp'].includes(draft.kind)) return '不支持的连接类型。';
   if (!draft.name?.trim()) return '请输入连接名称。';
   if (draft.name.length > 120) return '连接名称最多120个字符。';
   if (draft.kind === 'local') return draft.path?.startsWith('/') && !/[\x00-\x1f]/.test(draft.path) ? '' : '请选择完整的本地来源路径。';
   if (draft.kind === 'zentao') {
+    if (draft.auth !== undefined && !['password', 'token'].includes(draft.auth)) return '不支持的禅道认证方式。';
     try { const u = new URL(draft.url); if (!['http:', 'https:'].includes(u.protocol) || u.username || u.password || u.hash || u.search) return '请填写不含凭据、查询参数或片段的 HTTP(S) 服务地址。'; }
     catch { return '请输入有效的禅道服务地址。'; }
     if (draft.auth !== 'token' && !draft.account?.trim()) return '请输入用户名。';
   } else {
+    if (draft.auth !== undefined && draft.auth !== 'password') return '不支持的发件认证方式。';
+    if (draft.transport !== undefined && !['implicit-tls', 'starttls', 'plain'].includes(draft.transport)) return '不支持的 SMTP 连接方式。';
     if (!draft.host?.trim() || /[\s/@?#]/.test(draft.host)) return '请填写邮件服务主机名。';
     if (!Number.isInteger(Number(draft.port)) || Number(draft.port) < 1 || Number(draft.port) > 65535) return '端口必须为1–65535之间的整数。';
     if (!draft.account?.includes('@')) return '请输入发件账号的邮件地址。';

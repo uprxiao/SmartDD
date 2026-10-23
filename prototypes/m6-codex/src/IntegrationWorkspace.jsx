@@ -19,9 +19,17 @@ const STATUS = { sending: '提交中', success: '已完成', failed: '失败', u
 function AppMark({ app, large = false }) { return <span className={'m10-appmark ' + app + (large ? ' large' : '')}>{app === 'mail' ? <Mail size={large ? 31 : 23} strokeWidth={1.7} /> : <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 10h16L10 22h14M7 16h6" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}</span>; }
 function SmallButton({ icon: Icon, label, onClick, ...props }) { return <button className="m10-icon" title={label} aria-label={label} onClick={onClick} {...props}><Icon size={17} strokeWidth={1.6} /></button>; }
 function Switch({ checked, onChange, label }) { return <button className={'m10-switch ' + (checked ? 'on' : '')} role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)}><span /></button>; }
-function M10Dialog({ title, children, onClose, wide = false }) {
+function M10Dialog({ title, children, onClose, wide = false, returnFocusLabel, returnFocusSelector }) {
   const ref = useRef(null);
-  useEffect(() => { const previous = document.activeElement; ref.current.showModal(); return () => { ref.current?.close(); previous?.isConnected && previous.focus(); }; }, []);
+  useEffect(() => {
+    const previous = document.activeElement; ref.current.showModal();
+    return () => {
+      ref.current?.close();
+      const original = previous?.isConnected && previous !== document.body ? previous : null;
+      const trigger = returnFocusLabel ? [...document.querySelectorAll('button[aria-label]')].find(e => e.getAttribute('aria-label') === returnFocusLabel) : null;
+      (original || trigger || (returnFocusSelector ? document.querySelector(returnFocusSelector) : null))?.focus();
+    };
+  }, []);
   return <dialog ref={ref} className={'m10-dialog ' + (wide ? 'wide' : '')} aria-label={title} onCancel={e => { e.preventDefault(); onClose(); }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}><header><h2>{title}</h2><SmallButton icon={X} label="关闭弹窗" onClick={onClose} /></header>{children}</dialog>;
 }
 function Field({ title, children, note }) { return <label className="m10-field"><span>{title}</span>{children}{note && <small>{note}</small>}</label>; }
@@ -43,7 +51,7 @@ function ConnectionForm({ kind, connection, scene, onClose, onSave }) {
       setError(issue); setPhase(issue ? 'failed' : 'ready');
     }, 450);
   };
-  return <M10Dialog title={(connection ? '编辑' : '添加') + (kind === 'zentao' ? '禅道连接' : kind === 'local' ? '本地邮件来源' : '发件通道')} onClose={onClose}>
+  return <M10Dialog title={(connection ? '编辑' : '添加') + (kind === 'zentao' ? '禅道连接' : kind === 'local' ? '本地邮件来源' : '发件通道')} onClose={onClose} returnFocusLabel={connection ? '管理' + connection.name : undefined} returnFocusSelector={kind === 'smtp' ? '.m10-sender-row button' : '.m10-app-heading .m10-button.primary'}>
     <div className="m10-form-intro"><ShieldCheck size={17} /><span>交互原型使用合成配置，请勿输入真实凭据。</span><button onClick={example}>填入示例</button></div>
     <form onSubmit={e => { e.preventDefault(); if (connectionIdentityChanged(connection, draft)) { setError("账号或服务身份变化不能直接覆盖；请添加新连接，再到项目侧切换。"); setPhase("failed"); return; } if (phase === 'ready' && !validateConnection(draft, secret)) onSave(draft, !!secret || draft.credentialPresent); }}>
       {connection && kind !== "local" && <p className="m10-note">此处仅更新同一身份的配置／认证。更换账号或服务地址请添加新连接，再在项目侧选择；已有项目不自动改用新身份。</p>}<Field title="连接名称"><input aria-label="连接名称" maxLength={120} value={draft.name} onChange={e => change('name', e.target.value)} placeholder="例如：公司禅道" /></Field>
