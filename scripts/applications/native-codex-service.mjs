@@ -13,6 +13,8 @@ import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 
+const bridgeFaultCheck=process.env.WILLYOU_BRIDGE_FAULT_CHECK==='1';
+const restartCheck=process.env.WILLYOU_RESTART_CHECK==='1';
 const sharedProjectCheck=process.env.WILLYOU_SHARED_PROJECT_CHECK==='1';
 const unselectedProject=process.env.WILLYOU_UNSELECTED_PROJECT==='1';
 const root=await mkdtemp('/private/tmp/willyou-m10-native-service-');
@@ -27,7 +29,7 @@ const result={schema:'m10-packaged-native-service-v1',startedAt:new Date().toISO
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
  layer:'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
  isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
- sharedProjectCheck,unselectedProject,marker,requests:[],checks:[],status:'running'};
+ bridgeFaultCheck,restartCheck,sharedProjectCheck,unselectedProject,marker,requests:[],checks:[],status:'running'};
 assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
 assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
 result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
@@ -45,7 +47,8 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
  if(body.tools?.some(x=>(x.name??'').startsWith('mcp__wy_')))writeFile(join(root,'native-tool-definitions.json'),JSON.stringify(body.tools.filter(x=>(x.name??'').startsWith('mcp__wy_')),null,2)+'\n').catch(()=>{});
  const raw=JSON.stringify(body),taskRequest=raw.includes(marker),healthCode=raw.match(/SMARTDD-OK-[0-9a-f]{8}/)?.[0];
  const secondProjectRequest=raw.includes(marker+'_PROJECT_B');
- const text=secondProjectRequest?marker+'_PROJECT_B_DONE':taskRequest?marker+'_DONE':healthCode??'M10_PRIVATE_FIXTURE_OK';
+ const isResume=restartCheck&&raw.includes(marker+'_RESUME_READ');
+ const text=isResume?marker+'_RESUMED_DONE':secondProjectRequest?marker+'_PROJECT_B_DONE':taskRequest?marker+'_DONE':healthCode??'M10_PRIVATE_FIXTURE_OK';
  const item={at:new Date().toISOString(),kind:secondProjectRequest?'project-b-task':taskRequest?'ui-task':healthCode?'profile-health':'unclassified',model:body.model,
   requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m10-owned-config'),
   toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
@@ -74,6 +77,21 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
  }
  if(taskRequest&&!secondProjectRequest&&!unselectedProject&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;}
+ if(taskRequest&&isResume&&!result.issuedResumeTool){
+  const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_list_v1'));
+  assert(ns,'Actual native request is missing the local draft MCP function');
+  const argumentsText='{}';
+  const call={type:'function_call',id:'fc_m10_resume_list',call_id:'call_m10_resume_list',name:'smartdd_mail_draft_list_v1',namespace:ns.name,arguments:argumentsText,status:'completed'};
+  result.issuedResumeTool={...call,at:new Date().toISOString(),fixture:'private synthetic provider chooses local draft list in the actual resumed native session'};
+  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+  send('response.created',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
+  send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});
+  send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});
+  send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});
+  send('response.output_item.done',{output_index:0,item:call});
+  send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+ }
+ if(taskRequest&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;result.nativeResumeOutputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_resume_list');}
  const id='msg_m10_'+result.requests.length,message={id,type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text,annotations:[]}]};
  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
  send('response.created',{response:{id:'resp_'+id,object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
@@ -164,6 +182,56 @@ try{
   checked('Same App: unselected B native request has no application tools despite A fixed Skill projection existing');
   checked('Same App: B draft list and A draft access denied; A original draft and fixed snapshot retained');
  }
+
+ }
+ if(restartCheck){
+  assert(!unselectedProject&&!sharedProjectCheck,'Restart mode uses one selected production Task');
+  stage='service-stop-before-host-restart';await progress();
+  const original=result.nativeBoundSession,nativeId=result.nativeBoundTask.nativeSessionId,oldPid=app.processId;
+  await app.invoke('tasks.kill',task.id);
+  await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.recentRuns.some(r=>r.id===original.currentRun.id&&r.state==='stopped');},30000);
+  const stopped=await app.invoke('tasks.get',task.id);assert.equal(stopped.nativeSessionId,nativeId);assert.equal(stopped.recovery,'resumable');
+  await writeFile(join(root,'electron-before-restart.txt'),app.logs());assert.deepEqual(app.rendererErrors,[]);
+  await app.close();result.firstHostExit=await app.waitForExit(5000);app=undefined;
+  stage='service-host-reopen';await progress();app=await openElectron({executable,userData,cwd,env:privateEnv});installAppFocusGuard(app,result);
+  assert.notEqual(app.processId,oldPid);result.reopenedPid=app.processId;
+  const recovered=await app.invoke('tasks.get',task.id);assert.equal(recovered.nativeSessionId,nativeId);assert(!recovered.ptyId);
+  await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true`);
+  stage='service-resume-original-task';await progress();await app.invoke('tasks.open',{taskId:task.id,cols:100,rows:30});
+  const resumed=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.currentRun?.id!==original.currentRun.id&&d.value.currentRun?.bridge.connected?d.value:null;},45000);
+  task=await app.invoke('tasks.get',task.id);assert.equal(task.nativeSessionId,nativeId);assert(task.ptyId);
+  assert.equal(resumed.snapshotHash,original.snapshotHash);assert.equal(resumed.applications.find(a=>a.appId==='mail').packageHash,original.applications.find(a=>a.appId==='mail').packageHash);
+  const retained=await app.invoke('applications.draft',project.id,result.createdDraft.id,result.createdDraft.revision);assert(retained.ok);assert.equal(retained.value.draft.sourceTaskId,task.id);
+  result.restart={kind:'TaskService stop then harness SIGTERM host close and same isolated userData reopen; not UI quit',original,resumed,task,retainedDraftId:retained.value.draft.id};
+  checked('Actual App host restart and TaskService resume preserve native identity, snapshot and draft; new run establishes real MCP bridge');
+  if(bridgeFaultCheck){
+   stage='owned-bridge-fault';await progress();
+   const rows=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); c.row_factory=sqlite3.Row; print(json.dumps([dict(r) for r in c.execute(\"SELECT process_id,pid,process_started_at FROM capability_run_processes WHERE run_id=? AND kind='bridge' AND state='active'\",(sys.argv[2],))])); c.close()",join(userData,'smartdd.db'),resumed.currentRun.id],{encoding:'utf8'}));
+   assert.equal(rows.length,1);const owned=rows[0];
+   const helper=join(appRoot,'Contents/Resources/native/willyou-process-identity');
+   const actual=JSON.parse(execFileSync(helper,[String(owned.pid)],{encoding:'utf8'}));
+   assert.equal(actual.state,'running');assert.equal(actual.startedAt,owned.process_started_at);assert.equal(actual.pid,owned.pid);
+   result.bridgeFault={kind:'SIGKILL abrupt crash of this private current run bridge after kernel identity check',runId:resumed.currentRun.id,owned,actual};
+   process.kill(owned.pid,'SIGKILL');
+   await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&!d.value.currentRun?.bridge.connected;},15000);
+   const alive=await app.invoke('tasks.get',task.id);assert.equal(alive.ptyId,task.ptyId);assert.equal(alive.nativeSessionId,task.nativeSessionId);
+  }
+  stage='service-resumed-read';await progress();
+  const text=marker+'_RESUME_READ: List the local drafts only. Do not create, change or send anything.';
+  // Trusted renderer's production PTY event, with both task and current PTY identity.
+  // Service integration only: this is not keyboard, focus or UI acceptance.
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:text})});true`);
+  await poll(async()=>(await app.output(task.ptyId)).includes(marker+'_RESUME_READ'),10000);
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'\r'})});true`);
+  await poll(async()=>result.nativeResumeOutputs?.length===1&&(await app.output(task.ptyId)).includes(marker+'_RESUMED_DONE'),30000);
+  if(bridgeFaultCheck)assert(/Transport closed/.test(JSON.stringify(result.nativeResumeOutputs[0].output)),'Native tool must report bridge failure');
+  else assert(result.nativeResumeOutputs[0].output.includes(result.createdDraft.id));
+  const after=await app.invoke('applications.session',task.id);assert(after.ok);assert.equal(after.value.currentRun.id,resumed.currentRun.id);
+  if(bridgeFaultCheck){assert.equal(after.value.currentRun.bridge.connected,false);assert.equal(after.value.applications.find(a=>a.appId==='mail').evidence.successfulToolRequests,0);assert.equal((await app.invoke('tasks.get',task.id)).ptyId,task.ptyId);}
+  else assert(after.value.applications.find(a=>a.appId==='mail').evidence.successfulToolRequests>=1);
+  const draftsAfter=await app.invoke('applications.drafts',project.id,{limit:50});assert(draftsAfter.ok);assert.equal(draftsAfter.value.items.length,1);assert.equal(draftsAfter.value.items[0].revision,result.createdDraft.revision);
+  result.resumedRead={inputLayer:'trusted renderer production PTY event; not UI',output:result.nativeResumeOutputs[0],session:after.value,draftCount:1};
+  checked(bridgeFaultCheck?'Actual owned bridge fault leaves native Agent running; tool reports failure, no false recovery or draft mutation':'Resumed actual Codex invokes production MCP list, returns original draft and does not duplicate or modify it');
 
  }
  assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);const profileAfter=await readFile(join(state,'m10-native.config.toml'),'utf8');assert.equal(profileAfter,profileText+nativeNoticeState);result.nativeConfigWrite={actor:'actual isolated Codex TUI',historicalControl:'docs/里程碑/M10_三方应用接入/验收/证据/m10-packaged-native-task-t-20261021.json (prior control only; no new standalone control claimed)',beforeSha256:sha(profileText),afterSha256:sha(profileAfter),delta:nativeNoticeState};result.originalConfigBytesUnchanged={base:true,profile:false,businessFieldsPreserved:true};
