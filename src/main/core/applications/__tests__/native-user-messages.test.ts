@@ -118,6 +118,31 @@ for (const runner of ['claude-code', 'codex'] as const) describe(runner + ' nati
    write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call',name:'exec_command',call_id:'skill-read',arguments:JSON.stringify({cmd:"/bin/cat '"+target.path+"'"})}});
    write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call_output',call_id:'skill-read',output:'Chunk ID: abc123\nWall time: 0.0100 seconds\nProcess exited with code 0\nOriginal token count: 5\nOutput:\n'+target.content}});return target;
   }
+  it('seals a one-shot historical read before revocation without restoring input authority',async()=>{
+   const target=skillRecords(),runId=current.run.runId,finish=messages.prepareStoppedSkillRead(runId,[target]);
+   abort.abort();failRun=true;current.snapshot.native.sessionId='replacement';
+   expect((await finish()).reads).toHaveLength(1);expect(await finish()).toEqual({reads:[],discoveries:[]});
+   expect(await messages.skillReads(runId,[target])).toEqual([]);expect((await messages.read(runId)).messages).toEqual([]);
+  });
+  it('does not collect events after the sealed stop cutoff',async()=>{
+   const skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,path:skill.projectionPath,content:'Complete fixed skill\n'};
+   const finish=messages.prepareStoppedSkillRead(current.run.runId,[target]);now+=100;skillRecords();abort.abort();expect((await finish()).reads).toEqual([]);
+  });
+  it('rejects stop reads prepared after revocation, foreign targets and calls before revocation',async()=>{
+   const target=skillRecords(),early=messages.prepareStoppedSkillRead(current.run.runId,[target]),foreign=messages.prepareStoppedSkillRead(current.run.runId,[{...target,path:'/foreign'}]);
+   expect((await early()).reads).toEqual([]);abort.abort();expect((await early()).reads).toEqual([]);expect((await foreign()).reads).toEqual([]);
+   expect((await messages.prepareStoppedSkillRead(current.run.runId,[target])()).reads).toEqual([]);
+  });
+  it('freezes target content and path for the original run',async()=>{
+   const target=skillRecords(),finish=messages.prepareStoppedSkillRead(current.run.runId,[target]);target.content='changed';target.path='/other';abort.abort();expect((await finish()).reads).toHaveLength(1);
+  });
+  it('does not read a sealed source after host source shutdown',async()=>{
+   const target=skillRecords(),finish=messages.prepareStoppedSkillRead(current.run.runId,[target]);abort.abort();messages.dispose();expect(await finish()).toEqual({reads:[],discoveries:[]});
+  });
+  it('keeps symlink and native identity validation for a sealed stop read',async()=>{
+   const target=skillRecords(),finish=messages.prepareStoppedSkillRead(current.run.runId,[target]);abort.abort();renameSync(file,file+'.original');symlinkSync(file+'.original',file);
+   expect((await finish()).reads).toEqual([]);
+  });
   it('binds a read to the active native session without manufacturing user authorization',async()=>{const target=skillRecords();expect(await messages.skillReads(current.run.runId,[target])).toHaveLength(1);expect((await messages.read(current.run.runId)).messages).toEqual([]);});
   it('rejects foreign targets, disabled applications, revoked runs and old-run observations',async()=>{const target=skillRecords();expect(await messages.skillReads(current.run.runId,[{...target,path:'/foreign/SKILL.md'}])).toEqual([]);current.applicationScope=[];expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);current.applicationScope=undefined;current.run.startedAt=new Date(now+1).toISOString();expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);abort.abort();expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);});
   it('rejects a replaced native header and symbolic-link source',async()=>{const target=skillRecords();renameSync(file,file+'.original');symlinkSync(file+'.original',file);expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);rmSync(file);writeFileSync(file,JSON.stringify({type:'session_meta',payload:{id:'foreign',cwd}})+'\n');expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);});

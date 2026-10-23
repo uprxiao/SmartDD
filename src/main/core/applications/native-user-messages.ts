@@ -156,12 +156,39 @@ export class NativeUserMessages {
   /** Host-only diagnostic observation. Does not create or consume user-input receipts. */
   async skillReads(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'read');}
   async skillDiscoveries(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'discovery');}
+  /** Seal a display-only stop read while the run is still owned. The returned
+   * one-shot reader works only after revocation and never creates input receipts.
+   * Its time range ends at capture, so later runs cannot extend this evidence. */
+  prepareStoppedSkillRead(runId:string,targets:readonly SkillReadTarget[]):()=>Promise<{reads:SkillReadObservation[];discoveries:SkillReadObservation[]}>{
+    const empty=()=>({reads:[],discoveries:[]});
+    try{
+      const {context,registration}=this.context(runId);
+      if(context.snapshot.runner!=='codex'||registration.version!=='0.162.1')return async()=>empty();
+      const allowed=context.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
+      if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return async()=>empty();
+      const frozen:RunContext={...context,run:structuredClone(context.run),snapshot:structuredClone(context.snapshot),bindings:[],applicationScope:context.applicationScope?.slice()},fixed=structuredClone(targets),through=this.now();
+      let consumed=false;
+      return async()=>{
+        if(consumed)return empty();consumed=true;
+        if(this.closed||!registration.signal.aborted)return empty();
+        const valid=()=>!this.closed&&registration.signal.aborted;
+        const reads=await this.readSkillObservations(frozen,fixed,'read',through,valid);
+        const discoveries=await this.readSkillObservations(frozen,fixed,'discovery',through,valid);
+        return valid()?{reads,discoveries}:empty();
+      };
+    }catch{return async()=>empty();}
+  }
   private async skillObservations(runId:string,targets:readonly SkillReadTarget[],kind:'read'|'discovery'):Promise<SkillReadObservation[]>{
     try{
       const {context,registration}=this.context(runId);
       if(context.snapshot.runner!=='codex'||registration.version!=='0.162.1')return [];
       const allowed=context.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
       if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return [];
+      return await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId).context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
+    }catch{return [];}
+  }
+  private async readSkillObservations(context:RunContext,targets:readonly SkillReadTarget[],kind:'read'|'discovery',through:number,validate:()=>boolean):Promise<SkillReadObservation[]>{
+    try{
       const located=await this.locate(context),file=await this.openFile(located.root,located.file);
       try{
         const before=await file.stat(),header=await this.header(file,context),cwd=await realpath(context.snapshot.native.cwd);
@@ -170,11 +197,10 @@ export class NativeUserMessages {
         const first=start?data.indexOf(10)+1:0;if(start&&first===0)return [];
         const last=data.lastIndexOf(10);if(last<first)return [];
         const lines=utf8(data.subarray(first,last)).split('\n');
-        const observations=(kind==='read'?codexSkillReadEvidence:codexSkillDiscoveryEvidence)(lines,targets,Date.parse(context.run.startedAt),this.now());
+        const observations=(kind==='read'?codexSkillReadEvidence:codexSkillDiscoveryEvidence)(lines,targets,Date.parse(context.run.startedAt),through);
         const after=await file.stat(),pathState=await lstat(located.file),again=Buffer.alloc(data.length),reread=await file.read(again,0,again.length,start);
         if(after.size<before.size||!pathState.isFile()||pathState.isSymbolicLink()||pathState.dev!==before.dev||pathState.ino!==before.ino||after.dev!==before.dev||after.ino!==before.ino||reread.bytesRead!==data.length||!again.equals(data)||await this.header(file,context)!==header||await realpath(context.snapshot.native.stateRoot)!==located.root||await realpath(context.snapshot.native.cwd)!==cwd)return [];
-        const fresh=this.context(runId).context;
-        if(fresh.snapshot.native.sessionId!==context.snapshot.native.sessionId||fresh.run.startedAt!==context.run.startedAt)return [];
+        if(!validate())return [];
         return observations;
       }finally{await file.close();}
     }catch{return [];}
