@@ -142,6 +142,18 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
     }
     expect(await connection.send({schema:1,method:'tools/list',token})).toMatchObject({status:'ok',value:{tools:expect.any(Array)}});expect(count).toBe(0);
   });
+  it('audits an in-flight input flood and preserves a separate authenticated peer',async()=>{
+    const rejected=await peer(broker.endpoint),rejectedToken=valueToken(await rejected.send(exchange((await ticket()).data))).token;
+    const healthy=await peer(broker.endpoint),token=valueToken(await healthy.send(exchange((await ticket()).data))).token;
+    // One transport write makes all frames arrive before asynchronous responses settle.
+    rejected.socket.write(Array.from({length:33},()=>JSON.stringify({schema:1,id:randomUUID(),method:'tools/list',token:rejectedToken})+'\n').join(''));
+    await vi.waitFor(()=>expect(rejected.socket.destroyed).toBe(true),{timeout:2000});
+    const rows=f.sqlite.prepare("SELECT * FROM capability_broker_denials WHERE error_code='RESOURCE_BUSY'").all();
+    expect(rows).toHaveLength(1);expect(rows[0]).toMatchObject({run_id:run.runId,method:'unknown',error_code:'RESOURCE_BUSY'});
+    expect(JSON.stringify(rows)).not.toContain(rejectedToken);expect(count).toBe(0);
+    expect(await healthy.send({schema:1,method:'tools/list',token})).toMatchObject({status:'ok',value:{tools:expect.any(Array)}});
+    expect(f.runs.get(run.runId).state).toBe('active');
+  });
   it.each([false,true])('bounds an oversized request with newline=%s and keeps another authenticated socket usable',async newline=>{
     const rejected=await peer(broker.endpoint),rejectedToken=valueToken(await rejected.send(exchange((await ticket()).data))).token;
     const healthy=await peer(broker.endpoint),token=valueToken(await healthy.send(exchange((await ticket()).data))).token;
