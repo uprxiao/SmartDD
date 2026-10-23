@@ -148,6 +148,8 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
     const oversized=JSON.stringify({schema:1,id:randomUUID(),method:'tools/call',token:rejectedToken,call:{operation:'smartdd_zentao_query_v1',contractMajor:1,connectionId:null,arguments:{value:'x'.repeat(BRIDGE_LIMITS.requestBytes)}}});
     rejected.socket.write(oversized+(newline?'\n':''));
     await vi.waitFor(()=>expect(rejected.socket.destroyed).toBe(true),{timeout:2000});expect(count).toBe(0);
+    const denials=f.sqlite.prepare('SELECT run_id,method,error_code FROM capability_broker_denials').all();expect(denials).toEqual([{run_id:run.runId,method:'unknown',error_code:'TOO_LARGE'}]);
+    expect(JSON.stringify(f.sqlite.prepare('SELECT * FROM capability_broker_denials').all())).not.toContain(rejectedToken);
     expect(await healthy.send({schema:1,method:'tools/call',token,call:{operation:'smartdd_zentao_query_v1',contractMajor:1,connectionId:null,arguments:{value:'after-oversized-request'}}})).toMatchObject({status:'ok',value:{value:'after-oversized-request',projectId:'p1'}});expect(count).toBe(1);
   });
   it('allows one asynchronous peer claim and rejects concurrent use of its same ticket',async()=>{

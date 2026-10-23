@@ -86,8 +86,8 @@ export class PrivateApplicationBroker {
     socket.on('data',chunk => {
       peer.buffer = Buffer.concat([peer.buffer,chunk]);
       while (peer.buffer.length) {
-        const end = peer.buffer.indexOf(10); if (end < 0) { if (peer.buffer.length > BRIDGE_LIMITS.requestBytes) socket.destroy(); return; }
-        if (end > BRIDGE_LIMITS.requestBytes || peer.inFlight >= 32) { socket.destroy(); return; }
+        const end = peer.buffer.indexOf(10); if (end < 0) { if (peer.buffer.length > BRIDGE_LIMITS.requestBytes) { this.recordDenial(peer,'unknown',errorResponse(randomUUID(),new ApplicationError('TOO_LARGE','通道输入超过预算'))); socket.destroy(); } return; }
+        if (end > BRIDGE_LIMITS.requestBytes || peer.inFlight >= 32) { this.recordDenial(peer,'unknown',errorResponse(randomUUID(),new ApplicationError(end > BRIDGE_LIMITS.requestBytes?'TOO_LARGE':'RESOURCE_BUSY','通道输入超过预算'))); socket.destroy(); return; }
         const bytes = peer.buffer.subarray(0,end); peer.buffer = peer.buffer.subarray(end + 1); peer.inFlight++;
         void this.receive(peer,bytes).then(response => this.send(peer,response),() => socket.destroy()).finally(() => { peer.inFlight--; });
       }
@@ -113,7 +113,7 @@ export class PrivateApplicationBroker {
     if(response.status!=='error')return response;
     // Only fixed protocol classifications and server-owned identities cross this boundary.
     // Never persist caller IDs, token digests, provider error text or arguments.
-    const codes=['INVALID_INPUT','AUTH_REQUIRED','SCOPE_DENIED','TOO_LARGE','RESOURCE_STATE_CHANGED','CAPABILITY_UNAVAILABLE'];
+    const codes=['INVALID_INPUT','AUTH_REQUIRED','SCOPE_DENIED','TOO_LARGE','RESOURCE_BUSY','RESOURCE_STATE_CHANGED','CAPABILITY_UNAVAILABLE'];
     const code=codes.includes(response.error.code)?response.error.code:'CAPABILITY_UNAVAILABLE';
     const binding=peer.binding?.ready?peer.binding:undefined,auditId=randomUUID();
     try{
