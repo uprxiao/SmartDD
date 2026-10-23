@@ -1,3 +1,4 @@
+import {BridgeSupervisor} from './bridge-supervisor';
 import {nativeCapabilityPreparation} from './native-preparation-diagnostics';
 import {nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
 import {nativeCapabilityConflicts} from './native-application-conflicts';
@@ -54,6 +55,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly runs:CapabilityRunRegistry;
   readonly bridges:AgentBridgeProcesses;
   readonly broker:PrivateApplicationBroker;
+  readonly bridgeRecovery=new BridgeSupervisor();
+  private readonly recoveryServices=new Map<string,string>();
   readonly claudeDelivery:ClaudeDeliveryCoordinator;
   private readonly catalogs=new Map<string,DiscoveryCatalog>();
   private readonly active=new Map<string,ActiveLaunch>();
@@ -82,11 +85,11 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       // Application enablement and current slots belong to each business call, not Agent liveness.
       const project=store.sqlite.prepare('SELECT archived_at FROM projects WHERE id=?').get(snapshot.projectId) as {archived_at:number|null}|undefined;
       if(!project||project.archived_at!==null)throw new ApplicationError('SCOPE_DENIED','项目已删除或归档，不能继续使用此运行');
-    },revoke:runId=>{this.broker?.revokeRun(runId);this.bridges?.revokeRun(runId);const entry=this.active.get(runId);if(entry)this.options.stopPty(entry.run.ptyId);}});
+    },revoke:runId=>{const recoveryService=this.recoveryServices.get(runId);if(recoveryService)this.bridgeRecovery.revoke(runId,recoveryService);this.broker?.revokeRun(runId);this.bridges?.revokeRun(runId);const entry=this.active.get(runId);if(entry)this.options.stopPty(entry.run.ptyId);}});
     this.claudeDelivery=new ClaudeDeliveryCoordinator(store,this.sessions,this.projector,this.processes,this.runs.instanceId);
     this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
-    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId)});
-    applications.sessionDiagnostics.attach({channelConnected:id=>this.broker.hasAuthenticated(id),verify:(resource,snapshot,home)=>{
+    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId)});
+    applications.sessionDiagnostics.attach({channelConnected:id=>this.broker.hasAuthenticated(id),recoveryIssue:id=>{const server=this.recoveryServices.get(id);const result=server?this.bridgeRecovery.inspect(id,server)?.result:undefined;return result&&result.code!=='CONNECTED'?result.code:null;},verify:(resource,snapshot,home)=>{
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind))this.projector.verify(resource,snapshot);
       else if(resource.kind==='agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');catalog.verifyReference(resource,snapshot);}
@@ -255,7 +258,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(!unavailable&&facets&&(facets.applications.size||facets.standardSkills.size||facets.projectMcp))runtime.snapshot.selfCheck={status:'failed',issues:[...new Set([...runtime.snapshot.selfCheck.issues,'AGENT_CAPABILITY_NAME_CONFLICT'])],at:Date.now()};
       await run.prepare();if(unavailable)await this.runs.restrictToNative(run.runId,{reason:'managed_capabilities_unavailable',issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED'});const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
       let plan:AgentLoadPlan|undefined;
-      if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);}
+      if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(mcp){this.bridgeRecovery.register(run.runId,mcp.serverName,{capability:plan.bridgeRecovery,validate:async()=>{if(run.signal.aborted||this.runs.get(run.runId).state!=='active')throw new ApplicationError('CANCELED','原运行已停止');this.runs.bridgePreparation(run.runId);}});this.recoveryServices.set(run.runId,mcp.serverName);}}
       else if(legacyRequest)plan=legacyPlan();
       if(plan){args=plan.args;const root=dirname(runtime.snapshot.manifestPath);for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});configPaths.push(join(root,name));}}
 
@@ -352,7 +355,16 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const check:RuntimeSnapshot['selfCheck']={status:'failed',issues:[code],at:Date.now()};
     return{args:[],env:{},secretValues:[],snapshot:{runId,projectId:input.projectId,configVersion:input.previous?.configVersion??0,configHash:current.selectionHash,manifestPath:join(this.support.store.root,'sessions',input.taskId,'snapshot.json'),auditPath:join(this.support.store.root,'resource-audit',input.projectId,input.taskId+'.jsonl'),skills:[],mcp:[],selfCheck:check,sessionCapabilities:current.pointer},wrap:(command,args)=>({command,args}),check:()=>check,release:()=>{}};
   }
-  private releaseStopped(entry:ActiveLaunch):Promise<void>{if(this.runs.get(entry.run.runId).state!=='stopped')return Promise.resolve();if(entry.releasing)return entry.releasing;const work=(async()=>{await entry.hold?.release();entry.runtime?.release();this.active.delete(entry.run.runId);})();entry.releasing=work;void work.catch(()=>{entry.releasing=undefined;});return work;}
+  private bridgeDisconnected(runId:string):void {
+    const server=this.recoveryServices.get(runId),entry=this.active.get(runId);
+    if(!server||!entry||entry.run.signal.aborted||this.closed||this.broker.hasAuthenticated(runId))return;
+    const state=this.bridgeRecovery.inspect(runId,server);if(!state||state.revoked)return;
+    if(state.result?.code==='CONNECTED')this.bridgeRecovery.beginRecovery(runId,server,state.generation,'disconnected');
+    const generation=this.bridgeRecovery.inspect(runId,server)!.generation;
+    // Unsupported native versions report unavailable; never stop/resume their Agent.
+    void this.bridgeRecovery.prepareReplacement(runId,server,generation);
+  }
+  private releaseStopped(entry:ActiveLaunch):Promise<void>{if(this.runs.get(entry.run.runId).state!=='stopped')return Promise.resolve();if(entry.releasing)return entry.releasing;const work=(async()=>{await entry.hold?.release();entry.runtime?.release();const server=this.recoveryServices.get(entry.run.runId);if(server)this.bridgeRecovery.release(entry.run.runId,server);this.recoveryServices.delete(entry.run.runId);this.active.delete(entry.run.runId);})();entry.releasing=work;void work.catch(()=>{entry.releasing=undefined;});return work;}
   private async sweep():Promise<void>{if(this.sweeping)return;this.sweeping=true;try{await Promise.allSettled([...this.active.values()].map(entry=>this.releaseStopped(entry)));}finally{this.sweeping=false;}}
   tombstone(taskId:string):Promise<void>{return this.sessions.tombstone(taskId);}
   activeTaskIds(projectId:string):ReadonlySet<string>{return new Set((this.support.store.sqlite.prepare("SELECT task_id AS id FROM capability_runs WHERE project_id=? AND state NOT IN ('stopped','failed')").all(projectId) as {id:string}[]).map(r=>r.id));}

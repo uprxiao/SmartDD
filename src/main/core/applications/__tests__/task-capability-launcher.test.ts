@@ -95,6 +95,21 @@ const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(h
 };
 
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+ it('registers host recovery for the original application service and releases it after the owned run stops',async()=>{
+  const preparation=vi.spyOn(managed.broker,'prepare');
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const first=await create(),runId=first.task.runtimeSnapshot!.runId,session=await managed.sessions.get(first.task.id),server=session.snapshot.mcp.find(m=>m.kind==='applications')!.serverName;
+  expect(managed.bridgeRecovery.inspect(runId,server)).toMatchObject({generation:0,attempts:0,revoked:false});
+  // Host-only call, not an actual native bridge crash or a verified reload entry.
+  expect((await managed.bridgeRecovery.prepareReplacement(runId,server,0)).code).toBe('RECOVERY_UNSUPPORTED');
+  expect(ptys.live.has(first.ptyId)).toBe(true);
+  expect((await applications.sessionDiagnostics.inspect(first.task.id)).currentRun?.bridge.issueCode).toBe('RECOVERY_UNSUPPORTED');
+  tasks.kill(first.task.id);
+  await vi.waitFor(()=>expect(managed.bridgeRecovery.inspect(runId,server)?.revoked).toBe(true));
+  // Synthetic PTY has no child: explicitly settle its owned fork window.
+  const prepared=await preparation.mock.results[0].value;await prepared.bridge.exited();
+  await vi.waitFor(()=>expect(managed.bridgeRecovery.inspect(runId,server)).toBeUndefined());
+ },15000);
  it('T49 keeps one Mail Skill and shared discovery entry for two selected connections across new sessions',async()=>{
   // Real selection, SQLite, bundled package and launcher composition; verification,
   // secret encryption and PTY/native version are isolated service fixtures only.

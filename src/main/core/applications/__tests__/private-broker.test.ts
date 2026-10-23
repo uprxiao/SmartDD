@@ -11,6 +11,7 @@ import { PrivateApplicationBroker } from '../private-broker';
 import { ApplicationBridgeClient, consumeBridgeBootstrap } from '../bridge-client';
 import { FixtureProcessReader, runFixture } from './run-fixture';
 let f: Awaited<ReturnType<typeof runFixture>>, broker: PrivateApplicationBroker, run: Awaited<ReturnType<typeof f.create>>, time: number, count: number, onInvoke: (() => void) | undefined;
+let disconnected: ReturnType<typeof vi.fn<(runId:string,bridgeId:string)=>void>>;
 const peers = new Set<Socket>();
 async function peer(endpoint: string) {
   const socket = connect(endpoint); peers.add(socket); let buffer = ''; const waiting = new Map<string,{ resolve(value: BridgeResponse): void;reject(error: Error): void;timer: ReturnType<typeof setTimeout> }>();
@@ -22,9 +23,22 @@ async function ticket() { const ticket = await broker.prepare(run,f.snapshot.mcp
 const exchange = (data: BridgeBootstrap) => ({ schema: 1,method: 'exchange',runId: data.runId,bridgeId: data.bridgeId,secret: data.secret });
 const valueToken = (response: BridgeResponse) => { expect(response.status).toBe('ok'); return (response as Extract<BridgeResponse,{ status: 'ok' }>).value as { token: string;hostGeneration: string }; };
 describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials, one-use files and request boundaries', () => {
-  beforeEach(async () => { time = Date.now(); count = 0; onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
-    const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
+  beforeEach(async () => { time = Date.now(); count = 0; disconnected=vi.fn(); onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
+    const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time, disconnected }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
   afterEach(async () => { for (const socket of peers) socket.destroy(); await broker.close(); f.cleanup(); });
+  it('reports only authenticated bridge loss with the host-bound run and instance', async () => {
+    const unknown=await peer(broker.endpoint);unknown.socket.destroy();
+    await new Promise<void>(resolve=>setImmediate(resolve));
+    expect(disconnected).not.toHaveBeenCalled();
+    const prepared=await ticket(),client=await peer(broker.endpoint);
+    valueToken(await client.send(exchange(prepared.data)));
+    expect(broker.hasAuthenticated(run.runId)).toBe(true);
+    client.socket.destroy();
+    await vi.waitFor(()=>expect(disconnected).toHaveBeenCalledExactlyOnceWith(run.runId,prepared.bridge.processId));
+    expect(broker.hasAuthenticated(run.runId)).toBe(false);
+    expect(f.runs.get(run.runId).state).toBe('active');
+    await prepared.bridge.exited();
+  });
   it('classifies malformed JSON as an input failure without leaking it or losing the next authorized request',async()=>{
     const prepared=await ticket(),connection=await peer(broker.endpoint);
     expect(await connection.send({schema:1,method:'tools/list',token:'0'.repeat(64)})).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});

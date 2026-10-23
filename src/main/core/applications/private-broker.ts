@@ -21,7 +21,7 @@ export class PrivateApplicationBroker {
   private readonly bindings = new Map<string,Binding>();
   private readonly peers = new Set<Peer>();
   private closed = false;
-  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;authenticated?:(runId:string,bridgeId:string)=>Promise<void>;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
+  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;authenticated?:(runId:string,bridgeId:string)=>Promise<void>;disconnected?:(runId:string,bridgeId:string)=>void;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
   private clock(): number { return this.options.now?.() ?? Date.now(); }
   get endpoint(): string { if (!this.server || this.closed) throw new ApplicationError('CAPABILITY_UNAVAILABLE','本机应用通道尚未启动'); return join(this.directory,'broker.sock'); }
   async start(): Promise<void> {
@@ -49,7 +49,7 @@ export class PrivateApplicationBroker {
   private cleanupTicket(ticket: Ticket): void { try { const stat = lstatSync(ticket.path); if (!stat.isSymbolicLink() && stat.isFile() && stat.dev === ticket.dev && stat.ino === ticket.ino) unlinkSync(ticket.path); } catch { /* consumed or no longer ours */ } }
   private accept(socket: Socket): void {
     const peer: Peer = { socket,buffer: Buffer.alloc(0),controllers: new Map(),inFlight: 0 }; this.peers.add(peer); socket.setTimeout(10000,() => socket.destroy()); socket.on('error',() => undefined);
-    socket.on('close',() => { this.peers.delete(peer); this.revokePeer(peer); });
+    socket.on('close',() => { this.peers.delete(peer); this.revokePeer(peer); if(peer.binding&&!this.closed)try{this.options.disconnected?.(peer.binding.runId,peer.binding.bridgeId);}catch{/* Observer errors cannot revive a closed transport. */} });
     socket.on('data',chunk => {
       peer.buffer = Buffer.concat([peer.buffer,chunk]);
       while (peer.buffer.length) {

@@ -27,7 +27,7 @@ const preparationV1=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:h
 const preparationSchema=z.discriminatedUnion('schema',[preparationV1,preparationV1.extend({schema:z.literal(2),capabilities:nativeCapabilityPreparationSchema})]).refine(v=>(v.state==='prepared')===(v.issueCode===null));
 const bridgeSchema=z.object({schema:z.literal(1),runId:z.uuid(),bridgeId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/),observedAt:z.iso.datetime(),source:z.literal('kernel-peer')}).strict();
 interface RunRow {run_id:string;task_id:string;project_id:string;pty_id:string|null;state:string;started_at:string;ended_at:string|null;}
-interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2,home:string):void;channelConnected(runId:string):boolean;}
+interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;}
 const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_REQUIRED';
 function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshotV2,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
  const scope=readApplicationRunScope(store,runId,snapshot);
@@ -73,6 +73,7 @@ export class ApplicationSessionDiagnostics {
   let observedAt:string|null=null,bridgeIssue:string|null=null;
   for(const observation of observations)try{const parsed=bridgeSchema.parse(JSON.parse(observation.evidence_json));const child=this.store.sqlite.prepare("SELECT pid,process_started_at FROM capability_run_processes WHERE run_id=? AND process_id=? AND kind='bridge'").get(row.run_id,observation.bridge_id) as {pid:number;process_started_at:string}|undefined;if(parsed.runId!==row.run_id||parsed.bridgeId!==observation.bridge_id||parsed.observedAt!==observation.observed_at||digest(canonicalJson(parsed))!==observation.evidence_hash||!child||parsed.pid!==child.pid||parsed.startedAt!==child.process_started_at)throw new Error();observedAt??=parsed.observedAt;}catch{bridgeIssue='RESOURCE_RECOVERY_REQUIRED';}
   let connected=false;try{connected=current&&!!this.inspector?.channelConnected(row.run_id);}catch{/* display unknown, never infer liveness */}
+  if(current&&!connected&&!bridgeIssue)try{bridgeIssue=this.inspector?.recoveryIssue?.(row.run_id)??null;}catch{/* Missing recovery evidence stays unknown. */}
   return{id:row.run_id,state:row.state,startedAt:row.started_at,endedAt:row.ended_at,current,preparation,preparationIssue,restriction,restrictionIssue,bridge:{connected,observedAt,issueCode:bridgeIssue}};
  }
  private directory(resource:ResourceRecord):string{
