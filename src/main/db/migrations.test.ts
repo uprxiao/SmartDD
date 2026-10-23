@@ -219,7 +219,11 @@ describe('bundled migrations', () => {
     db.exec("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at) VALUES('historical-run','history-task','retained-project','codex','stopped','2026-10-20T00:00:00Z')");
     runBundledMigrations(db); db.exec("DELETE FROM projects WHERE id='retained-project'");
     expect(db.prepare('SELECT run_id,project_id,state FROM capability_runs').all()).toEqual([{ run_id: 'historical-run',project_id: 'retained-project',state: 'stopped' }]);
-    db.exec('DELETE FROM __drizzle_migrations WHERE id=11'); runBundledMigrations(db);
+    db.exec('DELETE FROM __drizzle_migrations WHERE id=11');
+    expect(()=>runBundledMigrations(db)).toThrow(/迁移记录.*不一致/);
+    // A missing middle entry is not a valid replay watermark. Replaying the
+    // complete suffix exercises the original guarded rebuild instead.
+    db.exec('DELETE FROM __drizzle_migrations WHERE id>=11'); runBundledMigrations(db);
     expect(db.prepare('SELECT count(*) AS n FROM capability_runs').get()).toEqual({ n: 1 }); expect(tables(db)).not.toContain('capability_runs_retained');
   });
 
@@ -299,6 +303,17 @@ describe('runMigrations', () => {
     expect(runMigrations(db, [m(0, 'CREATE TABLE a (x)'), m(1, 'CREATE TABLE b (x)')])).toEqual(['m1']);
     expect(tables(db)).toEqual(['__drizzle_migrations', 'a', 'b']);
     expect(recorded(db)).toEqual(['h0', 'h1']);
+  });
+
+  it.each(['checksum','watermark'] as const)('refuses changed migration %s before executing pending SQL',kind=>{
+    const db=memoryDb(),first=m(0,'CREATE TABLE retained (value TEXT)');runMigrations(db,[first]);
+    db.exec("INSERT INTO retained VALUES('original business data')");
+    if(kind==='checksum')db.prepare('UPDATE __drizzle_migrations SET hash=?').run('foreign-history');
+    else db.prepare('UPDATE __drizzle_migrations SET created_at=?').run(99);
+    const before=db.prepare('SELECT * FROM __drizzle_migrations').all();
+    expect(()=>runMigrations(db,[first,m(1,'CREATE TABLE new_schema (x)')])).toThrow(/迁移记录.*不一致/);
+    expect(db.prepare('SELECT * FROM __drizzle_migrations').all()).toEqual(before);
+    expect(db.prepare('SELECT * FROM retained').all()).toEqual([{value:'original business data'}]);expect(tables(db)).not.toContain('new_schema');
   });
 
   it('rolls back the whole batch when one statement fails', () => {

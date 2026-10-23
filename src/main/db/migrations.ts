@@ -29,7 +29,8 @@ export function bundledMigrations(): MigrationRecord[] {
   });
 }
 
-function appliedCount(connection: BetterSqlite3.Database): number {
+type AppliedMigration = { hash: string; created_at: number | null };
+function appliedRecords(connection: BetterSqlite3.Database): AppliedMigration[] {
   connection.exec(`
     CREATE TABLE IF NOT EXISTS __drizzle_migrations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +38,7 @@ function appliedCount(connection: BetterSqlite3.Database): number {
       created_at NUMERIC
     )
   `);
-  return (connection.prepare('SELECT COUNT(*) AS n FROM __drizzle_migrations').get() as { n: number }).n;
+  return connection.prepare('SELECT hash, created_at FROM __drizzle_migrations ORDER BY id').all() as AppliedMigration[];
 }
 
 // SQLite has no `ADD COLUMN IF NOT EXISTS`; drizzle-kit writes `ALTER TABLE `t` ADD `c` ...`.
@@ -64,10 +65,16 @@ export function guardedRebuildAlreadyApplied(connection: BetterSqlite3.Database,
  * whole batch lands or the database is left exactly as it was. Returns the applied tags.
  */
 export function runMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[]): string[] {
-  const done = appliedCount(connection);
+  const recorded = appliedRecords(connection), done = recorded.length;
   if (done > migrations.length) {
     // A newer SmartDD already migrated this database; running older code on it is unsafe.
     throw new Error(`数据库已执行 ${done} 个迁移，当前版本只包含 ${migrations.length} 个，请使用更新版本的 WillYou`);
+  }
+  for (const [index, row] of recorded.entries()) {
+    const expected = migrations[index];
+    if (row.hash !== expected.hash || row.created_at !== expected.when) {
+      throw new Error(`迁移记录与当前程序不一致（${expected.tag}），已保留原数据库，请核查原版本`);
+    }
   }
   const pending = migrations.slice(done);
   const rebuilding=pending.some(m=>/^-- @smartdd-foreign-key-rebuild$/m.test(m.sql));
@@ -75,6 +82,9 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
   const foreignKeys=connection.pragma('foreign_keys',{simple:true});
   if(rebuilding)connection.pragma('foreign_keys=OFF');
   try { connection.transaction(() => {
+    // Recheck under the transaction before applying the previously planned suffix.
+    const current = appliedRecords(connection);
+    if (JSON.stringify(current) !== JSON.stringify(recorded)) throw new Error('迁移记录在预检后变化，已保留原数据库，请重新预检');
     const record = connection.prepare('INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)');
     for (const m of pending) {
       for (const stmt of m.sql.split('--> statement-breakpoint')) {
