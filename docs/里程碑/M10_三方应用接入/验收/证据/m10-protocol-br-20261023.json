@@ -1,0 +1,46 @@
+{
+  "checkpoint": "BR-20261023",
+  "at": "2026-10-23T14:06:07.316836+00:00",
+  "branch": "feature/0.0.2",
+  "sourceBase": "bc4298be6b6b44adfb20611b49f570414cd3a856",
+  "requirements": "R1.6 plus §12.21; T05 software input boundary",
+  "stage": "step5 software defect fix; no formal App batch",
+  "defect": {
+    "trigger": "Owned authenticated Unix socket sends malformed JSON, then a valid fixed-package read",
+    "before": "CAPABILITY_UNAVAILABLE incorrectly classified a JSON parse failure",
+    "after": "Static redacted INVALID_INPUT, zero adapter calls for invalid input, same socket can perform the next authorized request",
+    "authorizationChanged": false,
+    "businessDeadlinesChanged": false
+  },
+  "software": {
+    "unique": 76,
+    "passed": 76,
+    "files": 5,
+    "newChecks": 4,
+    "typecheck": "passed"
+  },
+  "build": {
+    "packagedDirectory": "passed",
+    "nativeSmoke": "passed",
+    "metadata": "protocol-br-20261023/package.json",
+    "appUi": false
+  },
+  "evidence": {
+    "raw": "protocol-br-20261023/raw-index.json",
+    "source": "protocol-br-20261023/source-final.json",
+    "software": "protocol-br-20261023/software-results.json",
+    "manifest": "protocol-br-20261023/manifest.json"
+  },
+  "ci": {
+    "previousCommitRun": 39965290619,
+    "previousCommitOnly": true,
+    "latestFixFullCi": "pending commit push"
+  },
+  "formal": {
+    "added": 0,
+    "passed": 5,
+    "total": 72
+  },
+  "next": "Finish full CI against the corrected commit before entering the concentrated formal acceptance batch.",
+  "published": false
+}

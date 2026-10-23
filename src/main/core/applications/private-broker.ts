@@ -77,7 +77,9 @@ export class PrivateApplicationBroker {
   private async receive(peer: Peer,bytes: Buffer): Promise<BridgeResponse> {
     let id: string = randomUUID();
     try {
-      const input: unknown = JSON.parse(bytes.toString('utf8'));
+      let input: unknown;
+      try { input = JSON.parse(bytes.toString('utf8')); }
+      catch { throw new ApplicationError('INVALID_INPUT','通道JSON格式无效'); }
       if (input && typeof input === 'object' && 'id' in input && typeof input.id === 'string' && /^[a-f0-9-]{36}$/.test(input.id)) id = input.id;
       if (!boundedJson(input)) throw new ApplicationError('INVALID_INPUT','通道JSON结构超过预算');
       const parsed = bridgeRequestSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','通道请求包含未允许字段或格式无效');

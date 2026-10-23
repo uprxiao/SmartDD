@@ -2,9 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { chmodSync, existsSync, lstatSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { connect, type Socket } from 'node:net';
 import { once } from 'node:events';
+import { createInterface } from 'node:readline';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { BridgeBootstrap, BridgeResponse } from '@shared/application-bridge';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { BRIDGE_LIMITS, type BridgeBootstrap, type BridgeResponse } from '@shared/application-bridge';
 import { ApplicationToolService } from '../tool-service';
 import { PrivateApplicationBroker } from '../private-broker';
 import { ApplicationBridgeClient, consumeBridgeBootstrap } from '../bridge-client';
@@ -24,6 +25,36 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
   beforeEach(async () => { time = Date.now(); count = 0; onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
     const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
   afterEach(async () => { for (const socket of peers) socket.destroy(); await broker.close(); f.cleanup(); });
+  it('classifies malformed JSON as an input failure without leaking it or losing the next authorized request',async()=>{
+    const prepared=await ticket(),connection=await peer(broker.endpoint);
+    expect(await connection.send({schema:1,method:'tools/list',token:'0'.repeat(64)})).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+    const token=valueToken(await connection.send(exchange(prepared.data))).token;
+    const lines=createInterface({input:connection.socket});
+    try{
+      const response=once(lines,'line',{signal:AbortSignal.timeout(2000)});
+      connection.socket.write('{"private":"malformed-input-canary",\n');
+      const error=JSON.parse(String((await response)[0]));
+      expect(error).toMatchObject({schema:1,status:'error',error:{code:'INVALID_INPUT',layer:'bridge',effectState:'not-started',retryable:false}});
+      expect(JSON.stringify(error)).not.toContain('malformed-input-canary');expect(count).toBe(0);
+      expect(await connection.send({schema:1,method:'tools/call',token,call:{operation:'smartdd_zentao_query_v1',contractMajor:1,connectionId:null,arguments:{value:'after-invalid-json'}}})).toMatchObject({status:'ok',value:{value:'after-invalid-json',packageHash:f.application!.packageHash,projectId:'p1'}});
+      expect(count).toBe(1);
+    }finally{lines.close();}
+  });
+  it('rejects invalid method,missing and mistyped fields without invoking the adapter or revoking a valid socket',async()=>{
+    const prepared=await ticket(),connection=await peer(broker.endpoint),token=valueToken(await connection.send(exchange(prepared.data))).token;
+    for(const request of [{schema:1,method:'not-declared',token},{schema:1,method:'tools/call',token},{schema:1,method:'tools/list',token:12},{schema:1,method:'tools/list',token,approved:true},{schema:1,method:'tools/list',token,callerKind:'ui'}]){
+      expect(await connection.send(request)).toMatchObject({status:'error',error:{code:'INVALID_INPUT',effectState:'not-started'}});expect(count).toBe(0);
+    }
+    expect(await connection.send({schema:1,method:'tools/list',token})).toMatchObject({status:'ok',value:{tools:expect.any(Array)}});expect(count).toBe(0);
+  });
+  it.each([false,true])('bounds an oversized request with newline=%s and keeps another authenticated socket usable',async newline=>{
+    const rejected=await peer(broker.endpoint),rejectedToken=valueToken(await rejected.send(exchange((await ticket()).data))).token;
+    const healthy=await peer(broker.endpoint),token=valueToken(await healthy.send(exchange((await ticket()).data))).token;
+    const oversized=JSON.stringify({schema:1,id:randomUUID(),method:'tools/call',token:rejectedToken,call:{operation:'smartdd_zentao_query_v1',contractMajor:1,connectionId:null,arguments:{value:'x'.repeat(BRIDGE_LIMITS.requestBytes)}}});
+    rejected.socket.write(oversized+(newline?'\n':''));
+    await vi.waitFor(()=>expect(rejected.socket.destroyed).toBe(true),{timeout:2000});expect(count).toBe(0);
+    expect(await healthy.send({schema:1,method:'tools/call',token,call:{operation:'smartdd_zentao_query_v1',contractMajor:1,connectionId:null,arguments:{value:'after-oversized-request'}}})).toMatchObject({status:'ok',value:{value:'after-oversized-request',projectId:'p1'}});expect(count).toBe(1);
+  });
   it('allows one asynchronous peer claim and rejects concurrent use of its same ticket',async()=>{
     await broker.close();let entered!:()=>void,release!:()=>void;const ready=new Promise<void>(done=>entered=done),gate=new Promise<void>(done=>release=done);let attempts=0;broker=new PrivateApplicationBroker(f.runs,new ApplicationToolService(f.store,f.runs,{resolve:()=>{throw new Error('unused');}}),{now:()=>time,attachPeer:async()=>{attempts++;entered();await gate;}});await broker.start();const prepared=await ticket(),a=await peer(broker.endpoint),b=await peer(broker.endpoint),first=a.send(exchange(prepared.data));await ready;
     try{expect(await b.send(exchange(prepared.data))).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});expect(attempts).toBe(1);}finally{release();}expect(valueToken(await first).token).toMatch(/^[a-f0-9]{64}$/);expect(attempts).toBe(1);
