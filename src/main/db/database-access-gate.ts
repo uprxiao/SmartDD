@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import {constants,openSync,closeSync,lstatSync,realpathSync} from 'node:fs';
 import {join} from 'node:path';
 
-export interface DatabaseAccessLease {mode:'shared'|'maintenance';assertHeld():void;release():void}
+export interface DatabaseAccessLease {root:string;mode:'shared'|'maintenance';assertHeld():void;release():void}
 const schema='CREATE TABLE database_access_identity (id INTEGER PRIMARY KEY CHECK(id=1), binding TEXT NOT NULL)';
 const busy=(error:unknown)=>['SQLITE_BUSY','SQLITE_LOCKED'].includes((error as {code?:string}).code??'');
 
@@ -44,7 +44,7 @@ export async function acquireDatabaseAccess(rootInput:string,mode:DatabaseAccess
      verify();connection.exec('COMMIT');
     }
     connection.exec(mode==='maintenance'?'BEGIN EXCLUSIVE':'BEGIN');verify();check();cancel();
-    return{mode,assertHeld(){if(released||!connection.open||!connection.inTransaction)throw new Error('数据库协调占用已释放');check();verify();},release(){if(released)return;released=true;try{if(connection.inTransaction)connection.exec('ROLLBACK');}finally{connection.close();}}};
+    return{root,mode,assertHeld(){if(released||!connection.open||!connection.inTransaction)throw new Error('数据库协调占用已释放');check();verify();},release(){if(released)return;released=true;try{if(connection.inTransaction)connection.exec('ROLLBACK');}finally{connection.close();}}};
    }catch(error){
     if(connection.inTransaction)connection.exec('ROLLBACK');
     if(!busy(error))throw error;
