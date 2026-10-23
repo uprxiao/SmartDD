@@ -249,6 +249,25 @@ describe('actual host composition for U-local mail cache management',()=>{
 
 
 describe('trusted connection form candidate lifecycle',()=>{
+ it('tests configuration and reads an owned UI draft with all Agent runs stopped and without creating tasks',async()=>{
+  await cc.cli.exited();await codex.cli.exited();
+  expect(runs.get(cc.runId).state).toBe('stopped');expect(runs.get(codex.runId).state).toBe('stopped');
+  const tasksBefore=f.sqlite.prepare('SELECT * FROM tasks ORDER BY id').all();
+  f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','unselected configuration',1,1)");
+  expect(await app.projectSettings(sender,'p2','mail')).toMatchObject({enabled:false});
+  const verify=vi.spyOn(ProviderConnectionVerifier.prototype,'verify').mockImplementation(async config=>({providerId:config.kind,serviceId:'isolated-config-test',accountId:'isolated-account',contractMajor:1}));
+  const candidate=await app.testConnection(sender,{name:'No Agent required',expectedRevision:0,config:smtpConfig(),secret:'synthetic-no-agent'});
+  expect(verify).toHaveBeenCalledTimes(1);
+  await app.discardConnectionTest(sender,'mail',candidate.operationId);
+  const created=await ui(async scope=>app.drafts.create(app.contexts.actor(scope),{operationId:scope.operationId,content:content('UI-owned draft')}));
+  const read=await app.viewDraft(sender,'p1',created.id);
+  expect(read.draft.id).toBe(created.id);
+  await expect(Promise.resolve().then(()=>app.viewDraft(sender,'p2',created.id))).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  expect(f.sqlite.prepare('SELECT * FROM tasks ORDER BY id').all()).toEqual(tasksBefore);
+  const operations=f.sqlite.prepare("SELECT caller_kind,task_id,run_id FROM application_data_operations WHERE caller_kind='ui'").all();
+  expect(operations.length).toBeGreaterThan(0);for(const row of operations)expect(row).toMatchObject({caller_kind:'ui',task_id:null,run_id:null});
+ });
+
  it('discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection',async()=>{
   vi.spyOn(ProviderConnectionVerifier.prototype,'verify').mockImplementation(async config=>({providerId:config.kind,serviceId:'private-form-service',accountId:'private-form-account',contractMajor:1}));
   const input={name:'Private SMTP form',expectedRevision:0,config:smtpConfig(),secret:'form-only-canary'},candidate=await app.testConnection(sender,input),row=f.sqlite.prepare('SELECT new_secret_ref AS ref FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId) as {ref:string};expect(secrets.has(row.ref)).toBe(true);expect(app.connections.list()).toEqual([]);
