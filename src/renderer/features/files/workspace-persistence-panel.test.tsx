@@ -70,7 +70,7 @@ describe('M9-DEV-036 visible persistence conflict actions', () => {
   it('shows explicit layout overwrite and reread actions; a clean reread adopts latest routes', async () => {
     const f = await fixture(), user = userEvent.setup();
     act(() => f.external());
-    expect(screen.getByRole('alert').textContent).toContain('当前标签、选择与草稿已保留');
+    expect((await screen.findByRole('alert')).textContent).toContain('当前标签、选择与草稿已保留');
     expect(screen.getByRole('button', { name: '保存当前窗口标签' })).toBeDefined();
     expect((screen.getByRole('button', { name: '读取最新标签' }) as HTMLButtonElement).disabled).toBe(false);
     await user.click(screen.getByRole('button', { name: '读取最新标签' }));
@@ -81,7 +81,7 @@ describe('M9-DEV-036 visible persistence conflict actions', () => {
   it('disables reread while dirty and explicit layout save retains the editor bytes and dirty state', async () => {
     const f = await fixture(), user = userEvent.setup(), buffer = f.b.buffer!;
     act(() => { f.editor.dispatch({ changes: { from: 0, insert: 'LOCAL ' } }); f.external(); });
-    expect((screen.getByRole('button', { name: '读取最新标签' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((await screen.findByRole('button', { name: '读取最新标签' }) as HTMLButtonElement).disabled).toBe(true);
     await user.click(screen.getByRole('button', { name: '保存当前窗口标签' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: '保存当前窗口标签' })).toBeNull());
     expect(f.store.active?.buffer).toBe(buffer); expect(buffer.raw).toBe('LOCAL BASE\n'); expect(buffer.dirty).toBe(true);
