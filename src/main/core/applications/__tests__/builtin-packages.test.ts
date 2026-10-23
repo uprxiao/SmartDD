@@ -120,7 +120,7 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    expect(readFileSync(join(store.root,old.relativePath,'adapter/operations.json'))).toEqual(bundle('zentao').files['adapter/operations.json']);
    expect(sqlite.prepare("SELECT state FROM capability_resource_operations WHERE kind='restore-application-package'").all()).toEqual([{state:'committed'}]);
    for(const table of ['application_catalog_state','application_connections','application_project_settings'])expect(sqlite.prepare(`SELECT count(*) AS n FROM ${table}`).get()).toEqual({n:0});
- });
+ },15000); // Multiple trusted installs, full-file verification and cold restoration; no production deadline change.
  it('T64 rejects an altered trusted-distribution copy before repairing a missing original package',async()=>{
    const old=await install('zentao'),proof=approvals(),target=join(store.root,old.relativePath),copy=join(root,'unusable-repair-source');cpSync(output,copy,{recursive:true});
    writeFileSync(join(copy,entry('zentao').path,'skills/'+bundle('zentao').manifest.skills[0].id+'/SKILL.md'),'altered repair content');rmSync(target,{recursive:true});

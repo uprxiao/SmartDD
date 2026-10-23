@@ -30,7 +30,7 @@ describe.skipIf(process.platform !== 'darwin')('standalone CJS bridge through ac
     } finally { await client.close().catch(() => undefined); if (cli && cli.exitCode === null && cli.signalCode === null) { const done = once(cli,'exit'); cli.kill('SIGKILL'); await done; } await broker?.close(); f.cleanup(); }
   },30000);
 
-  it('rejects raw MCP requests before initialization and recovers from invalid stdio frames without business calls',async()=>{
+  it.each([false,true])('rejects raw MCP requests and closes oversized stdio frames with newline=%s',async newline=>{
     const f=await runFixture(reader,{application:true,runtime:bundle});let cli:ChildProcess|undefined,child:ChildProcess|undefined,broker:PrivateApplicationBroker|undefined;let calls=0;
     try{
       const run = await f.create(); await run.prepare(); await run.cli.arm(); cli = spawn(process.execPath,['-e','setInterval(() => {}, 10000)'],{ cwd: f.home,env: { HOME: f.home,ELECTRON_RUN_AS_NODE: '1' },stdio: 'ignore' }); await once(cli,'spawn'); await run.cli.attach(cli.pid!);
@@ -45,11 +45,12 @@ describe.skipIf(process.platform !== 'darwin')('standalone CJS bridge through ac
       const earlyList=await send('tools/list',{});expect(earlyList).toHaveProperty('error');expect(calls).toBe(0);
       const early=await send('tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:'before-initialize'}});expect(early).toHaveProperty('error');expect(calls).toBe(0);
       const initialized=await send('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'raw-protocol-fixture',version:'1.0.0'}});expect(initialized).toHaveProperty('result');const notReady=await send('tools/list',{});expect(notReady).toHaveProperty('error');expect(calls).toBe(0);child.stdin!.write(JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized'})+'\n');
-      child.stdin!.write('{"malformed":"private-canary",\n');
+      child.stdin!.write('{"malformed":"private-canary",\n'.repeat(3));
       for(const [method,params] of [['unknown-method',{}],['tools/call',{}],['tools/call',{name:12}],['tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:12}}]] as const){const response=await send(method,params);expect(response.error||(response.result as {isError?:boolean})?.isError).toBeTruthy();expect(calls).toBe(0);}
       const valid=await send('tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:'valid-after-invalid'}});expect(valid).not.toHaveProperty('error');expect((valid.result as {isError?:boolean}).isError).not.toBe(true);expect(calls).toBe(1);
-      expect(stderr).not.toContain('private-canary');expect(stderr).not.toMatch(/token|secret|bootstrap/i);
-      lines.close();const exited=once(child,'exit');child.stdin!.end();await exited;await prepared.bridge.exited();const cliExit=once(cli!,'exit');cli!.kill('SIGTERM');await cliExit;await run.cli.exited();expect(f.runs.get(run.runId).state).toBe('stopped');
+      await vi.waitFor(()=>expect(stderr).toContain('WillYou application MCP input rejected: INVALID_JSON'),{timeout:2000});
+      expect(stderr.match(/INVALID_JSON/g)).toHaveLength(1);expect(stderr).not.toContain('private-canary');expect(stderr).not.toMatch(/token|secret|bootstrap/i);
+      const exited=once(child,'exit',{signal:AbortSignal.timeout(5000)});child.stdin!.write('x'.repeat(262145)+(newline?'\n':''));await exited;expect(calls).toBe(1);expect(stderr).toContain('WillYou application MCP input rejected: INPUT_TOO_LARGE');lines.close();await prepared.bridge.exited();const cliExit=once(cli!,'exit');cli!.kill('SIGTERM');await cliExit;await run.cli.exited();expect(f.runs.get(run.runId).state).toBe('stopped');
     }finally{for(const process of [child,cli])if(process&&process.exitCode===null&&process.signalCode===null){const done=once(process,'exit');process.kill('SIGKILL');await done;}await broker?.close();f.cleanup();}
   },30000);
   it('terminates a refused real broker handshake without leaving an open socket or printing its ticket', async () => {

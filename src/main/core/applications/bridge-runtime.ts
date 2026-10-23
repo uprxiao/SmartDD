@@ -1,4 +1,5 @@
 // This entry is bundled with the public MCP SDK into an immutable, standalone CJS resource.
+import { Transform } from 'node:stream';
 import { Server } from '@modelcontextprotocol/server';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import type { BridgeTool } from '@shared/application-bridge';
@@ -7,6 +8,18 @@ async function main(): Promise<void> {
   if (process.argv.length !== 4 || process.argv[2] !== '--bootstrap') throw new Error('invalid invocation');
   const client = new ApplicationBridgeClient(consumeBridgeBootstrap(process.argv[3])); await client.start();
   const server = new Server({ name: 'WillYou applications',version: '1.0.0' },{ capabilities: { tools: {} } });
+  // Never echo parser messages: JSON errors may contain input or credentials.
+  // Emit each bounded diagnostic once per bridge to prevent input-driven log growth.
+  const reportedInputErrors = new Set<string>();
+  const reportInputError = (error: Error) => {
+    const code = error instanceof SyntaxError ? 'INVALID_JSON'
+      : error.message === 'ReadBuffer exceeded maximum size of 262144 bytes' ? 'INPUT_TOO_LARGE' : 'INVALID_PROTOCOL';
+    if (!reportedInputErrors.has(code)) {
+      reportedInputErrors.add(code);
+      process.stderr.write('WillYou application MCP input rejected: ' + code + '\n');
+    }
+  };
+  server.onerror = reportInputError;
   let initialized = false;
   server.oninitialized = () => { initialized = server.getClientVersion() !== undefined; };
   const requireInitialized = () => { if (!initialized) throw new Error('WillYou application MCP initialization required'); };
@@ -28,6 +41,24 @@ async function main(): Promise<void> {
   });
   const close = () => { client.close(); void server.close().catch(() => undefined); };
   process.stdin.once('end',close); process.once('SIGTERM',close); server.onclose = () => client.close();
-  await server.connect(new StdioServerTransport(process.stdin,process.stdout,{ maxBufferSize: 256 * 1024 }));
+  // The SDK silently discards JSON syntax errors. Validate bounded frames first
+  // so malformed input is observable without copying any input into diagnostics.
+  let buffered: Buffer = Buffer.alloc(0);
+  const input = new Transform({ transform(chunk: Buffer, _encoding, callback) {
+    if (buffered.length + chunk.length > 256 * 1024) {
+      callback(new Error('ReadBuffer exceeded maximum size of 262144 bytes')); return;
+    }
+    buffered = Buffer.concat([buffered, chunk]);
+    let newline: number;
+    while ((newline = buffered.indexOf(10)) !== -1) {
+      const frame = buffered.subarray(0, newline + 1); buffered = buffered.subarray(newline + 1);
+      try { JSON.parse(frame.toString('utf8')); this.push(frame); }
+      catch (error) { reportInputError(error instanceof Error ? error : new Error('Invalid input')); }
+    }
+    callback();
+  } });
+  input.on('error', error => { reportInputError(error); process.stdin.unpipe(input); process.stdin.destroy(); close(); });
+  await server.connect(new StdioServerTransport(input,process.stdout,{ maxBufferSize: 256 * 1024 }));
+  process.stdin.pipe(input);
 }
 void main().catch(() => { process.stderr.write('WillYou application bridge unavailable\n'); process.exitCode = 1; });
