@@ -266,7 +266,7 @@ test('changing project mail sender invalidates old draft intent and requires exp
  const switched=selectProjectMailConnection(created.state,'ais','smtp','smtp-b');
  assert.equal(demoDraftSendEligibility(switched,'ais',created.draft).changed,true);
  assert.equal(switched.drafts[0].senderId,'smtp-a');
- const updated=saveDemoDraft(switched,'ais',created.draft.id,created.draft.revision);
+ const updated=saveDemoDraft(switched,'ais',created.draft.id,created.draft.revision,{adoptCurrentSender:true});
  assert.equal(updated.draft.senderId,'smtp-b');assert.equal(updated.draft.revision,2);
  assert.equal(demoDraftSendEligibility(updated.state,'ais',updated.draft).ok,true);
  const removed=selectProjectMailConnection(updated.state,'ais','smtp','');
@@ -364,4 +364,46 @@ test('T27 rejects unsupported authentication and SMTP transport without rejectin
   for (const draft of [{ ...zen, auth: 'unsupported-auth' }, { ...smtp, auth: 'unsupported-auth' }, { ...smtp, transport: 'unsupported-transport' }, { ...smtp, kind: 'unsupported-kind' }]) assert.ok(validateConnection(draft, 'synthetic-only'));
   for (const auth of ['password', 'token']) assert.equal(validateConnection({ ...zen, auth }, 'synthetic-only'), '');
   for (const transport of ['implicit-tls', 'starttls', 'plain', undefined]) assert.equal(validateConnection({ ...smtp, transport }, 'synthetic-only'), '');
+});
+
+
+test('content-only draft revision retains sender identity until an explicit adoption and rejects stale adoption', () => {
+ let source=projectIntegrationState(initialIntegrationState());
+ source.connections.push({id:'sender-old',app:'mail',kind:'smtp',enabled:true,validation:'ready'},{id:'sender-new',app:'mail',kind:'smtp',enabled:true,validation:'ready'});
+ source=selectProjectMailConnection(source,'ais','smtp','sender-old');
+ const created=saveDemoDraft(source,'ais');
+ const switched=selectProjectMailConnection(created.state,'ais','smtp','sender-new');
+ const edit=saveDemoDraft(switched,'ais',created.draft.id,1);
+ assert.equal(edit.ok,true);assert.equal(edit.draft.senderId,'sender-old');
+ assert.equal(edit.draft.mailSendSlotRevision,created.draft.mailSendSlotRevision);
+ assert.equal(demoDraftSendEligibility(edit.state,'ais',edit.draft).changed,true);
+ const stale=saveDemoDraft(edit.state,'ais',created.draft.id,1,{adoptCurrentSender:true});
+ assert.equal(stale.ok,false);assert.equal(stale.state,edit.state);
+ const adopted=saveDemoDraft(edit.state,'ais',created.draft.id,2,{adoptCurrentSender:true});
+ assert.equal(adopted.draft.senderId,'sender-new');assert.equal(adopted.draft.revision,3);
+ assert.equal(demoDraftSendEligibility(adopted.state,'ais',adopted.draft).ok,true);
+ assert.equal(created.draft.senderId,'sender-old');
+});
+
+
+test('stale missing draft references cannot silently create new drafts', () => {
+ const source=projectIntegrationState(initialIntegrationState()),before=JSON.stringify(source);
+ const result=saveDemoDraft(source,'ais','removed-draft',2);
+ assert.equal(result.ok,false);assert.equal(result.state,source);assert.equal(JSON.stringify(source),before);
+});
+
+test('sent and unknown records remain immutable while an explicit new draft preserves original evidence', () => {
+ const created=saveDemoDraft(projectIntegrationState(initialIntegrationState()),'ais');
+ for(const status of ['sending','success','unknown']){
+  const source={...created.state,drafts:[{...created.draft,status}],activity:[{id:'send-proof',draftId:created.draft.id,revision:1,status,project:'ais',app:'mail'}]};
+  const before=JSON.stringify(source),blocked=saveDemoDraft(source,'ais',created.draft.id,1);
+  assert.equal(blocked.ok,false);assert.equal(blocked.state,source);assert.equal(JSON.stringify(source),before);
+  if(status==='success'){
+   const copy=saveDemoDraft(source,'ais');assert.equal(copy.ok,true);assert.notEqual(copy.draft.id,created.draft.id);
+   assert.equal(copy.draft.status,'draft');assert.equal(copy.draft.revision,1);
+   assert.deepEqual(copy.state.drafts.find(d=>d.id===created.draft.id),source.drafts[0]);assert.deepEqual(copy.state.activity,source.activity);
+   const restored=projectIntegrationState(copy.state);assert.equal(restored.drafts.find(d=>d.id===created.draft.id).status,'success');
+   assert.equal(JSON.stringify(source),before);
+  }
+ }
 });

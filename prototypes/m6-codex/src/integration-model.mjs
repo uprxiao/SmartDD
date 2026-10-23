@@ -183,12 +183,14 @@ function projectDrafts(drafts) {
   // Persist only a fixture identity and lifecycle metadata; never user-entered mail text.
   return (Array.isArray(drafts) ? drafts : []).filter(d => d.fixture === 'm10-review').map(d => ({ id: String(d.id), project: String(d.project), fixture: 'm10-review', revision: Number(d.revision) || 1, senderId: typeof d.senderId === 'string' ? d.senderId : '', mailBindingRevision: Number.isSafeInteger(d.mailBindingRevision) ? d.mailBindingRevision : -1,mailSendSlotRevision: Number.isSafeInteger(d.mailSendSlotRevision) ? d.mailSendSlotRevision : -1, status: ['draft','sending','success','failed','unknown'].includes(d.status) ? d.status : 'draft', at: String(d.at || '') }));
 }
-export function saveDemoDraft(state, project, existingId, expectedRevision) {
+export function saveDemoDraft(state, project, existingId, expectedRevision, { adoptCurrentSender = false } = {}) {
   const old = state.drafts?.find(d => d.id === existingId);
+  if (existingId && !old) return { ok: false, state, reason: '草稿已不存在，请重新打开草稿列表。' };
   if (old && old.project !== project) return { ok: false, state, reason: '不能覆盖其他项目的草稿。' };
   if (old && old.revision !== expectedRevision) return { ok: false, state, reason: '草稿已由其他会话修改，请重新打开。' };
   if (old && ['sending','success','unknown'].includes(old.status)) return { ok: false, state, reason: '发送中、已发送或结果未知的记录不能覆盖；先核实结果。' };
   const draft = { id: old?.id || 'draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), project, fixture: 'm10-review', revision: (old?.revision || 0) + 1, senderId: selectedConnections(state, project, 'mail').find(c => c.kind === 'smtp')?.id || '', mailBindingRevision: state.mailBindingRevisions?.[project] || 0,mailSendSlotRevision: mailSlotRevision(state,project,'smtp'), status: 'draft', at: new Date().toLocaleString('zh-CN') };
+  if (old && !adoptCurrentSender) { draft.senderId = old.senderId; draft.mailBindingRevision = old.mailBindingRevision; draft.mailSendSlotRevision = old.mailSendSlotRevision; }
   return { ok: true, state: { ...state, drafts: [draft, ...(state.drafts || []).filter(d => d.id !== draft.id)] }, draft };
 }
 export function demoDraftSendEligibility(state, projectId, draft) {

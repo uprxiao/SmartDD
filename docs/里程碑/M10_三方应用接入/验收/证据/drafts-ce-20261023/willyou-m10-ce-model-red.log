@@ -1,0 +1,70 @@
+✔ projection drops passwords, tokens, unknown apps and dangling project bindings (0.949209ms)
+✔ availability checks current project binding, connection health and application installation (0.106833ms)
+✔ editing a paused connection keeps it paused and stores a credential-presence flag only (0.118459ms)
+✔ ZenTao config rejects embedded secrets, query strings and non-HTTP addresses (0.383167ms)
+✔ local mailbox needs an absolute source and never needs a password (0.085375ms)
+✔ sender validates account, service and integer port separately from local reading (0.108583ms)
+✔ object references preserve Bug/Story namespace and contain no executable control characters (0.124667ms)
+✔ new prototype projects keep bindings through persistence projection (0.084291ms)
+✔ old saved configurations gain package metadata without replacing connections or project bindings (0.117083ms)
+✔ project application enablement bundles skills once and never enables pending external writes (0.158583ms)
+✔ application disablement preserves selection and other projects; enabling never selects a fallback (0.081959ms)
+✔ fixed session identity survives edits, upgrades and revocation but cannot cross projects (0.187667ms)
+✔ simulated upgrade preserves all local records; a failed migration leaves the original state untouched (0.124875ms)
+✔ unhealthy connections do not remove capabilities from a new snapshot (0.098583ms)
+✔ mail can be enabled without any connection and draft ability does not imply SMTP availability (0.077ms)
+✔ ZenTao switching is rejected until all related runs stop and leaves other projects unchanged (0.152666ms)
+✔ removal preserves credentials, history, drafts and references; adding again does not re-enable projects (8.512875ms)
+✔ mail query days enforce integers 1–100 and migration preserves an existing valid 7 (0.074333ms)
+✔ synthetic draft roundtrip keeps identity and revision, drops arbitrary body and detects concurrent edits (0.128834ms)
+✔ stopped and archived sessions protect old versions; unknown historical capability is conservative (0.093917ms)
+✔ shared-discovery runs postpone upgrade publication without stopping the Agent or changing defaults (0.058834ms)
+✔ editing an existing account identity is rejected; ordinary same-identity credential rotation remains allowed (0.069ms)
+✔ natural-day query windows include today and pin a concrete range (0.328625ms)
+✔ verifying an unknown send synchronizes only the exact related draft revision without a second send (0.084459ms)
+✔ mail has independent nullable source and sender selections; legacy ambiguous groups fail closed (0.215459ms)
+✔ clearing the last mail connection preserves independent enablement and draft capability across reload (0.183667ms)
+✔ changing project mail sender invalidates old draft intent and requires explicit new revision (0.17575ms)
+✔ fixed-package fault repairs preserve session identity, default version, business data and failure state (0.237667ms)
+✔ bridge that requires next launch cannot be reconnected in place or bypass current revocation (0.069292ms)
+✔ capability name conflicts require explicit resolved evidence and never overwrite or rename user capabilities (0.095666ms)
+✔ Foxmail partial, unsupported and failed reads never masquerade as a complete empty search (0.070833ms)
+✔ mail reading and SMTP slot revisions change independently and retain a clear/reselect tombstone (0.091833ms)
+✔ impact lists retain disabled and archived project references without copying connection configuration (0.191584ms)
+✔ prototype switch scope excludes known ordinary/no-app/native-only work and refuses explicitly unknown scope (0.186875ms)
+✔ T27 rejects unsupported authentication and SMTP transport without rejecting legacy defaults (0.070875ms)
+✖ content-only draft revision retains sender identity until an explicit adoption and rejects stale adoption (0.470792ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 35
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 54.297125
+
+✖ failing tests:
+
+test at prototypes/m6-codex/tests/integration-model.test.mjs:370:1
+✖ content-only draft revision retains sender identity until an explicit adoption and rejects stale adoption (0.470792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'sender-new'
+  - 'sender-old'
+            ^
+  
+      at TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/integration-model.test.mjs:377:36)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'sender-new',
+    expected: 'sender-old',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
