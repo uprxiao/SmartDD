@@ -64,6 +64,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly active=new Map<string,ActiveLaunch>();
   private readonly initialApplicationScopes=new Map<string,{selectionHash:string;appIds:readonly string[]}>();
   private readonly pending=new Set<Promise<TaskCapabilityLaunch>>();
+  private readonly stopping=new Map<string,Promise<void>>();
   private readonly processes:ProcessIdentityReader;
   private readonly timer:ReturnType<typeof setInterval>;
   readonly recoveryWarnings:{homeId:string;code:string}[]=[];
@@ -396,14 +397,17 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     // Unsupported native versions report unavailable; never stop/resume their Agent.
     void this.bridgeRecovery.prepareReplacement(runId,server,generation);
   }
-  private async stopWithSkillHistory(taskId:string,entry:ActiveLaunch,reason?:string):Promise<void>{
+  private stopWithSkillHistory(taskId:string,entry:ActiveLaunch,reason?:string):Promise<void>{
+    const previous=this.stopping.get(entry.run.runId);if(previous)return previous;
     const finish=this.applications.sessionDiagnostics.prepareStop(taskId,entry.run.runId);
-    try{await entry.run.stop(reason);}finally{await finish();}
-    await this.releaseStopped(entry);
+    const work=(async()=>{try{await entry.run.stop(reason);}finally{await finish();}await this.releaseStopped(entry);})();
+    this.stopping.set(entry.run.runId,work);
+    void work.finally(()=>{if(this.stopping.get(entry.run.runId)===work)this.stopping.delete(entry.run.runId);}).catch(()=>{});
+    return work;
   }
   private releaseStopped(entry:ActiveLaunch):Promise<void>{if(this.runs.get(entry.run.runId).state!=='stopped')return Promise.resolve();if(entry.releasing)return entry.releasing;const work=(async()=>{await entry.hold?.release();entry.runtime?.release();const server=this.recoveryServices.get(entry.run.runId);if(server)this.bridgeRecovery.release(entry.run.runId,server);this.recoveryServices.delete(entry.run.runId);this.active.delete(entry.run.runId);})();entry.releasing=work;void work.catch(()=>{entry.releasing=undefined;});return work;}
   private async sweep():Promise<void>{if(this.sweeping)return;this.sweeping=true;try{await Promise.allSettled([...this.active.values()].map(entry=>this.releaseStopped(entry)));}finally{this.sweeping=false;}}
   tombstone(taskId:string):Promise<void>{return this.sessions.tombstone(taskId);}
   activeTaskIds(projectId:string):ReadonlySet<string>{return new Set((this.support.store.sqlite.prepare("SELECT task_id AS id FROM capability_runs WHERE project_id=? AND state NOT IN ('stopped','failed')").all(projectId) as {id:string}[]).map(r=>r.id));}
-  dispose():Promise<void>{if(this.closing)return this.closing;this.closed=true;this.skillObservations.close();clearInterval(this.timer);this.closing=(async()=>{await Promise.allSettled([...this.pending]);const results=await Promise.allSettled([this.runs.dispose(),this.bridges.dispose(),this.broker.close()]);const deadline=performance.now()+2000;do{await this.sweep();if(!this.active.size)break;await new Promise<void>(done=>setTimeout(done,10));}while(performance.now()<deadline);if(results.some(result=>result.status==='rejected'))throw new ApplicationError('RUN_STOP_FAILED','部分运行关闭尚未完成；私有通道已撤销，未知占用继续保留');})();return this.closing;}
+  dispose():Promise<void>{if(this.closing)return this.closing;this.closed=true;this.skillObservations.close();clearInterval(this.timer);this.closing=(async()=>{await Promise.allSettled([...this.pending]);const finishes=[...this.active.values()].filter(entry=>!this.stopping.has(entry.run.runId)).map(entry=>this.applications.sessionDiagnostics.prepareStop(this.runs.get(entry.run.runId).taskId,entry.run.runId));const results=await Promise.allSettled([...this.stopping.values(),this.runs.dispose(),this.bridges.dispose(),this.broker.close()]);await Promise.allSettled(finishes.map(finish=>finish()));const deadline=performance.now()+2000;do{await this.sweep();if(!this.active.size)break;await new Promise<void>(done=>setTimeout(done,10));}while(performance.now()<deadline);if(results.some(result=>result.status==='rejected'))throw new ApplicationError('RUN_STOP_FAILED','部分运行关闭尚未完成；私有通道已撤销，未知占用继续保留');})();return this.closing;}
 }

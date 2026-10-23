@@ -508,6 +508,17 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));const row=sqlite.prepare('SELECT snapshot_json,retention_state,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(first.task.id),stored=JSON.parse((sqlite.prepare('SELECT runtime_snapshot AS json FROM tasks WHERE id=?').get(first.task.id) as {json:string}).json);delete stored.sessionCapabilities;const raw=JSON.stringify(stored);sqlite.prepare('UPDATE tasks SET runtime_snapshot=? WHERE id=?').run(raw,first.task.id);
   await expect(tasks.open({taskId:first.task.id})).rejects.toMatchObject({code:'SNAPSHOT_CORRUPT'});expect(ptys.launches).toHaveLength(1);expect(sqlite.prepare('SELECT snapshot_json,retention_state,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(first.task.id)).toEqual(row);expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(first.task.id)).toEqual({runtime_snapshot:raw});
  });
+ it('waits for an already-started stop history write before completing managed shutdown',async()=>{
+  const first=await create(),runId=first.task.runtimeSnapshot!.runId;let release!:()=>void,entered=false,closed=false;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  const capture=vi.spyOn(applications.sessionDiagnostics,'prepareStop').mockReturnValue(async()=>{entered=true;await gate;});
+  try{
+   tasks.kill(first.task.id);await vi.waitFor(()=>expect(entered).toBe(true));
+   expect(()=>managed.runs.assertActive(runId)).toThrow();
+   const closing=managed.dispose().then(()=>{closed=true;});await new Promise(resolve=>setTimeout(resolve,50));expect(closed).toBe(false);
+   release();await closing;expect(closed).toBe(true);expect(capture).toHaveBeenCalledTimes(1);
+  }finally{release();capture.mockRestore();}
+ });
  it('revokes the private broker even if an owned PTY stop fails and retains the actual child lease',async()=>{
   const first=await create(),runId=first.task.runtimeSnapshot!.runId,stop=vi.spyOn(ptys,'kill').mockImplementationOnce(()=>{throw new Error('private owned stop failure');}),closing=managed.dispose();expect(managed.dispose()).toBe(closing);
   try{await closing;throw new Error('expected close failure');}catch(error){expectedDisposeError=error;expect(error).toMatchObject({code:'RUN_STOP_FAILED'});}finally{stop.mockRestore();}

@@ -298,8 +298,9 @@ async function main(): Promise<void> {
       }
       tasks.dispose();
       ptys.killAll();
-      await applications?.dispose();
-      await managedTasks?.dispose();
+      // Keep read-only native evidence and storage available until owned run
+      // shutdown has drained. Revocation itself still happens immediately.
+      try { await managedTasks?.dispose(); } finally { await applications?.dispose(); }
       quitConfirmed = true; markAppQuitting(); app.quit();
     })().catch((error) => {
       const win = getMainWindow();
