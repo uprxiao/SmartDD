@@ -72,6 +72,21 @@ describe('explicit project application slots and stop-before-switch', () => {
     expect(results.filter(r=>r.status==='fulfilled')).toHaveLength(1);expect(results.find(r=>r.status==='rejected')).toMatchObject({reason:{code:'REVISION_CONFLICT'}});
     const winner=results.findIndex(r=>r.status==='fulfilled');expect(service.projectSettings('p1','mail').connections).toEqual(choices[winner]);expect(service.projectSettings('p2','mail').enabled).toBe(false);expect(stop).not.toHaveBeenCalled();
   });
+  it.each(['foxmail','smtp'] as const)('rejects ambiguous persisted %s bindings without silently choosing an account',async slot=>{
+    await service.setAdded('mail',true,0);const source=await connection('foxmail','source-a'),sender=await connection('smtp','sender-a'),other=await connection(slot,'other');
+    const original=await service.select({projectId:'p1',appId:'mail',expectedRevision:0,enabled:true,connections:{foxmail:source.id,smtp:sender.id}});
+    // Fault injection: shadow this connection's table with an unconstrained legacy copy.
+    // Current schema forbids duplicate slots; test the reader's fail-closed compatibility path.
+    sqlite.exec('CREATE TEMP TABLE application_project_bindings AS SELECT * FROM main.application_project_bindings');
+    try{
+      sqlite.prepare('INSERT INTO temp.application_project_bindings VALUES(?,?,?,?,?)').run('p1','mail',slot,other.id,other.identityRevision);
+      for(let attempt=0;attempt<2;attempt++)expect(()=>service.projectSettings('p1','mail')).toThrowError(expect.objectContaining({code:'CONFIG_COMPATIBILITY_UNVERIFIED',message:expect.stringContaining('明确重新选择')}));
+      expect(()=>service.requireEnabled('p1','mail')).toThrowError(expect.objectContaining({code:'CONFIG_COMPATIBILITY_UNVERIFIED'}));
+      expect(sqlite.prepare('SELECT count(*) n FROM temp.application_project_bindings WHERE project_id=? AND slot=?').get('p1',slot)).toEqual({n:2});
+      expect(stop).not.toHaveBeenCalled();
+    }finally{sqlite.exec('DROP TABLE temp.application_project_bindings');}
+    expect(service.projectSettings('p1','mail')).toEqual(original);
+  });
   it('stops project runs before committing another ZenTao source', async () => {
     await service.setAdded('zentao', true, 0); const a = await connection('zentao'), b = await connection('zentao', 'b');
     const selected = await service.select(selectZen(a.id, 0)); expect(stop).not.toHaveBeenCalled(); live = 1;
