@@ -13,6 +13,7 @@ import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 
+const sharedProjectCheck=process.env.WILLYOU_SHARED_PROJECT_CHECK==='1';
 const unselectedProject=process.env.WILLYOU_UNSELECTED_PROJECT==='1';
 const root=await mkdtemp('/private/tmp/willyou-m10-native-service-');
 const home=join(root,'home'),state=join(root,'codex'),cwd=join(root,'project'),userData=join(root,'userdata');
@@ -26,7 +27,7 @@ const result={schema:'m10-packaged-native-service-v1',startedAt:new Date().toISO
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
  layer:'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
  isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
- unselectedProject,marker,requests:[],checks:[],status:'running'};
+ sharedProjectCheck,unselectedProject,marker,requests:[],checks:[],status:'running'};
 assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
 assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
 result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
@@ -34,7 +35,7 @@ assert.equal(result.cli.version,'codex-cli 0.162.1');
 for(const p of [home,state,join(cwd,'.git'),join(home,'.agents/skills/m10-owned-config')])await mkdir(p,{recursive:true});
 const skill=join(home,'.agents/skills/m10-owned-config/SKILL.md');
 await writeFile(skill,'---\nname: m10-owned-config\ndescription: Private configuration preservation marker.\n---\nNo action is required.\n');
-let stage='setup',app,task,project,profile;
+let stage='setup',app,task,project,profile,secondTask;
 const sockets=new Set();
 const progress=async()=>{const value={at:new Date().toISOString(),stage,root,pid:app?.processId,taskId:task?.id,requests:result.requests.length};await writeFile(join(root,'progress.json'),JSON.stringify(value,null,2)+'\n');console.log(JSON.stringify(value));};
 const checked=(name,details={})=>{result.checks.push({name,at:new Date().toISOString(),passed:true,...details});};
@@ -43,12 +44,13 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
  let body;try{body=JSON.parse(Buffer.concat(chunks).toString())}catch{res.writeHead(400);res.end('{}');return;}
  if(body.tools?.some(x=>(x.name??'').startsWith('mcp__wy_')))writeFile(join(root,'native-tool-definitions.json'),JSON.stringify(body.tools.filter(x=>(x.name??'').startsWith('mcp__wy_')),null,2)+'\n').catch(()=>{});
  const raw=JSON.stringify(body),taskRequest=raw.includes(marker),healthCode=raw.match(/SMARTDD-OK-[0-9a-f]{8}/)?.[0];
- const text=taskRequest?marker+'_DONE':healthCode??'M10_PRIVATE_FIXTURE_OK';
- const item={at:new Date().toISOString(),kind:taskRequest?'ui-task':healthCode?'profile-health':'unclassified',model:body.model,
+ const secondProjectRequest=raw.includes(marker+'_PROJECT_B');
+ const text=secondProjectRequest?marker+'_PROJECT_B_DONE':taskRequest?marker+'_DONE':healthCode??'M10_PRIVATE_FIXTURE_OK';
+ const item={at:new Date().toISOString(),kind:secondProjectRequest?'project-b-task':taskRequest?'ui-task':healthCode?'profile-health':'unclassified',model:body.model,
   requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m10-owned-config'),
   toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
- if(taskRequest&&!unselectedProject&&!result.issuedRead){
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&!result.issuedRead){
   const skillRoot=join(home,'.agents/skills');const names=readdirSync(skillRoot).filter(n=>n.startsWith('smartdd-a-mail-work-assistant-'));assert.equal(names.length,1);const path=join(skillRoot,names[0],'SKILL.md');const contents=readFileSync(path,'utf8');
   result.issuedRead={path,sha256:sha(contents),bytes:Buffer.byteLength(contents),callId:'call_m10_skill_read',method:'actual Codex exec_command /bin/cat of this private fixed Skill only;synthetic provider selects read'};
   const command='/bin/cat '+"'"+path.replaceAll("'", "'\\''")+"'";
@@ -56,8 +58,8 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
   send('response.created',{response:{id:'resp_m10_read',object:'response',status:'in_progress',output:[]}});send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});send('response.output_item.done',{output_index:0,item:call});send('response.completed',{response:{id:'resp_m10_read',object:'response',status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
  }
- if(taskRequest&&!unselectedProject&&result.issuedRead&&!result.nativeSkillReadOutput){const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id===result.issuedRead.callId);assert(output,'Missing actual native Skill read output');const contents=readFileSync(result.issuedRead.path,'utf8');assert(output.output.includes(contents.trim()),'Native read output must contain the entire selected Skill body');result.nativeSkillReadOutput=output;}
- if(taskRequest&&!unselectedProject&&!result.issuedTool){
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&result.issuedRead&&!result.nativeSkillReadOutput){const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id===result.issuedRead.callId);assert(output,'Missing actual native Skill read output');const contents=readFileSync(result.issuedRead.path,'utf8');assert(output.output.includes(contents.trim()),'Native read output must contain the entire selected Skill body');result.nativeSkillReadOutput=output;}
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&!result.issuedTool){
   const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_create_v1'));
   assert(ns,'Actual native request is missing the local draft MCP function');
   const argumentsText=JSON.stringify({content:{mode:'new',sourceMessageRef:null,senderConnectionId:null,to:[],cc:[],bcc:[],subject:marker+'_LOCAL_DRAFT',inReplyTo:null,references:[],attachmentIds:[],text:marker+'_LOCAL_BODY',html:null}});
@@ -71,7 +73,7 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   send('response.output_item.done',{output_index:0,item:call});
   send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
  }
- if(taskRequest&&!unselectedProject&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;}
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;}
  const id='msg_m10_'+result.requests.length,message={id,type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text,annotations:[]}]};
  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
  send('response.created',{response:{id:'resp_'+id,object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
@@ -144,12 +146,31 @@ try{
  stage='native-id-binding';await progress();const bound=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);result.nativeBoundTask=bound;const fixed=await app.invoke('applications.session',task.id);assert(fixed.ok);result.nativeBoundSession=fixed.value;assert.equal(fixed.value.applications.find(a=>a.appId==='mail').packageHash,usage.applications.find(a=>a.appId==='mail').packageHash);
  checked('Actual native session ID is bound while fixed Mail package hash remains unchanged',{nativeSessionId:bound.nativeSessionId,snapshotHash:fixed.value.snapshotHash});
  checked('Production draft read interface returns actual persisted native-tool output;no UI assertion');
+ if(sharedProjectCheck){
+  stage='same-instance-project-b';await progress();
+  const cwdB=join(root,'project-b');await mkdir(join(cwdB,'.git'),{recursive:true});
+  const other=await app.invoke('projects.create',{name:'M10 未选邮件项目 B',aliases:[],description:'Same App shared-H negative project',rulesPath:null},[{label:'fixture-b',path:cwdB}]);
+  const next=await app.invoke('tasks.create',{projectId:other.id,dirId:null,aiProfileId:profile.id,firstMessage:marker+'_PROJECT_B: Reply with the completion marker only. No tools, no files, no drafts, no mail.',cols:100,rows:30});secondTask=next.task;
+  await poll(async()=>{const t=await app.invoke('tasks.get',secondTask.id);secondTask=t;return t.ptyId&&(await app.output(t.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
+  const bRequests=result.requests.filter(r=>r.kind==='project-b-task');assert(bRequests.length>0);
+  assert(bRequests.every(r=>r.toolNames.every(n=>!String(n).startsWith('mcp__wy_'))));
+  const bSession=await app.invoke('applications.session',secondTask.id);assert(bSession.ok);assert.deepEqual(bSession.value.applications,[]);
+  const bDrafts=await app.invoke('applications.drafts',other.id,{limit:50});assert.equal(bDrafts.ok,false);assert.equal(bDrafts.code,'SCOPE_DENIED');
+  const oldSession=await app.invoke('applications.session',task.id);assert(oldSession.ok);assert.equal(oldSession.value.snapshotHash,fixed.value.snapshotHash);
+  assert.equal(oldSession.value.applications.find(a=>a.appId==='mail').packageHash,selected.packageHash);
+  const retained=await app.invoke('applications.draft',project.id,draft.id,draft.revision);assert(retained.ok);assert.equal(retained.value.draft.sourceTaskId,task.id);
+  const wrongProject=await app.invoke('applications.draft',other.id,draft.id,draft.revision);assert.equal(wrongProject.ok,false);assert.equal(wrongProject.code,'SCOPE_DENIED');
+  result.sharedProjects={projectA:project.id,projectB:other.id,taskA:task.id,taskB:secondTask.id,bSession:bSession.value,bDraftList:bDrafts,wrongProjectDraft:wrongProject,aSessionAfterB:oldSession.value,bRequests};
+  checked('Same App: unselected B native request has no application tools despite A fixed Skill projection existing');
+  checked('Same App: B draft list and A draft access denied; A original draft and fixed snapshot retained');
+ }
+
  }
  assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);const profileAfter=await readFile(join(state,'m10-native.config.toml'),'utf8');assert.equal(profileAfter,profileText+nativeNoticeState);result.nativeConfigWrite={actor:'actual isolated Codex TUI',historicalControl:'docs/里程碑/M10_三方应用接入/验收/证据/m10-packaged-native-task-t-20261021.json (prior control only; no new standalone control claimed)',beforeSha256:sha(profileText),afterSha256:sha(profileAfter),delta:nativeNoticeState};result.originalConfigBytesUnchanged={base:true,profile:false,businessFieldsPreserved:true};
  checked('Base config bytes and original profile business fields retained; native TUI notice-only mutation recorded separately');
  assert.deepEqual(app.rendererErrors,[]);result.status='passed-partial';
 }catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{result.dom=await app.evaluate('document.body.innerText');if(task?.ptyId)await writeFile(join(root,'terminal-failure.txt'),await app.output(task.ptyId));await app.screenshot(join(root,'failure.png'));}catch{}}
 finally{
- if(app){if(task?.id)try{result.cleanupTask=await app.invoke('tasks.kill',task.id);}catch(e){result.cleanupTaskError=String(e);}result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.ownAppCleanupComplete=true;}
+ if(app){if(secondTask?.id)try{result.cleanupSecondTask=await app.invoke('tasks.kill',secondTask.id);}catch(e){result.cleanupSecondTaskError=String(e);}if(task?.id)try{result.cleanupTask=await app.invoke('tasks.kill',task.id);}catch(e){result.cleanupTaskError=String(e);}result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.ownAppCleanupComplete=true;}
  for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');await writeFile('/private/tmp/willyou-m10-native-service-latest-result.txt',join(root,'result.json')+'\n');console.log(JSON.stringify({status:result.status,stage,checks:result.checks.length,error:result.error,result:join(root,'result.json')}));
 }
