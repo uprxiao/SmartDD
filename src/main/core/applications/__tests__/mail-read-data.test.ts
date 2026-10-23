@@ -63,13 +63,15 @@ async function query(args:Record<string,unknown>={},run=cc){const result=await c
 async function read(reference:MailQueryData['items'][number]['reference'],run=cc){const result=await call('read',{reference},run);expect(result.status,JSON.stringify(result)).toBe('ok');if(result.status!=='ok')throw new Error('read failed');return result.value as MailReadData;}
 const ui=<T>(work:(scope:ApplicationExecutionContext)=>Promise<T>,projectId='p1',signal?:AbortSignal)=>app.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.integration',operations:['mail.read'],semantics:'read',signal},work);
 describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/read/resource through host,Worker,native SQLite and durable quota',()=>{
+ // Fresh native compiles plus Worker/runtime/bundle construction exceeded the
+ // default 10s hook on CI. This setup budget does not change business deadlines.
  beforeAll(()=>{
   build=mkdtempSync(join(tmpdir(),'willyou-m10-mail-data-build-'));worker=join(build,'mail.cjs');native=join(build,'foxmail');
   fileNative=join(build,'files');execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O1','-Wno-deprecated-declarations','-framework','Foundation','-framework','AppKit','-framework','ImageIO','-framework','CoreGraphics','-framework','CoreText',resolve('native/files/broker.mm'),'-o',fileNative],{stdio:'pipe'});
   execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O2','-framework','Foundation','-lsqlite3',resolve('native/applications/foxmail.mm'),'-o',native]);execFileSync('xcrun',['clang++','-std=c++17','-O2',resolve('native/applications/process-identity.cc'),'-o',join(build,'willyou-process-identity')]);
   const require=createRequire(import.meta.url),esbuild=createRequire(require.resolve('electron-vite/package.json'))('esbuild');esbuild.buildSync({entryPoints:[resolve('src/main/core/applications/providers/mail-worker.ts')],bundle:true,platform:'node',format:'cjs',outfile:worker,alias:{'@shared':resolve('src/shared')}});
   execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',join(build,'runtime')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(build,'runtime/mcp-bridge.cjs')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});bundles=new CapabilityBundleSource(join(build,'bundles'));
- });
+ },60000);
  afterAll(()=>rmSync(build,{recursive:true,force:true}));
  beforeEach(async()=>{
   f=await agentFixture({applicationVersion:'2.0.0'});const database=drizzle(f.sqlite,{schema});secrets=new SecretsStore(database,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(database,secrets);clock=new Date(2026,9,20,12);
