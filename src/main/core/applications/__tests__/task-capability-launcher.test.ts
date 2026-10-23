@@ -48,6 +48,17 @@ import {CapabilityBundleSource} from '../bundle-source';
 let root:string,home:string,cwd:string,sqlite:Database.Database,capabilities:CapabilityService,support:AgentSupportService,applications:ApplicationService,managed:ManagedTaskCapabilities,tasks:TaskService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,ptys:TestPtys,projectId:string,codexId:string,claudeId:string;
 let expectedDisposeError:unknown;
 let argMax:number|null;
+// TestPtys has no native bridge child. Its synthetic exit callbacks must settle
+// before their SQLite store/root is closed; retain every rejection for teardown.
+let fixtureBridgeExits:Promise<PromiseSettledResult<void>>[]=[];
+function queueFixtureBridgeExit(handle:{exited():Promise<void>}):void{
+ fixtureBridgeExits.push(handle.exited().then(value=>({status:'fulfilled' as const,value}),reason=>({status:'rejected' as const,reason})));
+}
+async function drainFixtureBridgeExits():Promise<unknown[]>{
+ const failures:unknown[]=[];
+ while(fixtureBridgeExits.length){for(const result of await Promise.all(fixtureBridgeExits.splice(0)))if(result.status==='rejected')failures.push(result.reason);}
+ return failures;
+}
 class TestPtys extends EventEmitter implements PtyHost{
  readonly live=new Map<string,number>();readonly launches:SpawnOptions[]=[];
  spawn(options:SpawnOptions){this.launches.push(options);const pid=31000+this.launches.length;this.live.set(options.id!,pid);reader.identities.set(pid,'darwin-proc-v1:300:'+pid);return options.id!;}
@@ -55,7 +66,7 @@ class TestPtys extends EventEmitter implements PtyHost{
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
 beforeEach(async()=>{
- expectedDisposeError=undefined;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
+ fixtureBridgeExits=[];expectedDisposeError=undefined;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
@@ -64,7 +75,15 @@ beforeEach(async()=>{
  capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,peers:{read:async()=>null},stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
 });
-afterEach(async()=>{tasks?.dispose();for(const id of ptys?.live?.keys()??[])ptys.kill(id);await applications?.dispose();try{await managed?.dispose();}catch(error){if(error!==expectedDisposeError)throw error;}capabilities?.dispose();sqlite?.close();rmSync(root,{recursive:true,force:true});});
+afterEach(async()=>{
+ const failures:unknown[]=[];
+ try{tasks?.dispose();for(const id of ptys?.live?.keys()??[])ptys.kill(id);await applications?.dispose();}catch(error){failures.push(error);}
+ failures.push(...await drainFixtureBridgeExits());
+ try{await managed?.dispose();}catch(error){if(error!==expectedDisposeError)failures.push(error);}
+ failures.push(...await drainFixtureBridgeExits());
+ capabilities?.dispose();sqlite?.close();rmSync(root,{recursive:true,force:true});
+ if(failures.length)throw new AggregateError(failures,'Synthetic bridge exits and fixture disposal must complete before store cleanup');
+});
 const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
 const consumers=()=>readdirSync(join(home,'.agents/smartdd-runtime/catalog-consumers'));
 // Historical success fixtures need actual native history, not only a claimed ID/root.
@@ -521,7 +540,7 @@ describe('ZenTao switch only affects loaded application runs and gates their for
   // This is not evidence about actual/unknown processes in production.
   const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),originalPrepare=managed.broker.prepare.bind(managed.broker),originalKill=ptys.kill.bind(ptys);
   vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const prepared=await originalPrepare(...args);handles.set(args[0].ptyId,prepared.bridge);return prepared;});
-  vi.spyOn(ptys,'kill').mockImplementation(id=>{originalKill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{originalKill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
  });
  it('keeps an unrelated task and another project running while stopping the loaded ZenTao task',async()=>{
   const unrelated=await create(claudeId),unrelatedPty=tasks.activePty(unrelated.task.id)!,x=await zentaoSwitchFixture();
@@ -556,7 +575,7 @@ describe('ZenTao switch only affects loaded application runs and gates their for
 describe('ZenTao switch retains already narrowed native-only running work',()=>{
  it('does not stop a selected but un-injected native-only task while stopping a loaded one',async()=>{
   const x=await zentaoSwitchFixture(),handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),originalBroker=managed.broker.prepare.bind(managed.broker),originalKill=ptys.kill.bind(ptys);
-  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await originalBroker(...args);handles.set(args[0].ptyId,value.bridge);return value;});vi.spyOn(ptys,'kill').mockImplementation(id=>{originalKill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await originalBroker(...args);handles.set(args[0].ptyId,value.bridge);return value;});vi.spyOn(ptys,'kill').mockImplementation(id=>{originalKill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
   const loaded=await create(claudeId),originalPrepare=managed.prepare.bind(managed),spy=vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{const launch=await originalPrepare(input);return launch.nativeOnly!('managed_launch_payload_too_large');});
   const native=await create(claudeId),pty=tasks.activePty(native.task.id)!;spy.mockRestore();expect((await managed.sessions.get(native.task.id)).snapshot.packages.map(p=>p.appId)).toContain('zentao');expect(()=>managed.runs.assertActive(native.task.runtimeSnapshot!.runId)).toThrow('不签发');
   await x.next();expect(tasks.activePty(loaded.task.id)).toBeNull();expect(ptys.live.has(pty)).toBe(true);expect(tasks.activePty(native.task.id)).toBe(pty);
@@ -904,7 +923,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
   // healthy controls deliver only their own synthetic child exits, as in T64.
   const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
   vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
-  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
  });
  it.each(['claude-code','codex'] as const)('allows original Mail draft contracts in a healthy two-app %s run',async runner=>{
   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
@@ -939,7 +958,7 @@ describe('registered legacy H damage retains ordinary native work',()=>{
   // synthetic bridge exit to its own synthetic CLI exit, as in the existing controls.
   const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
   vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
-  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
  });
  it.each(['claude-code','codex'].flatMap(runner=>['new','resume'].flatMap(mode=>['owned-byte-edit','user-replacement'].map(fault=>[runner,mode,fault] as const))))('retains registered legacy H and full original C without application grants: %s %s %s',async(runner,mode,fault)=>{
   const old=capabilities.prepare({projectId,taskId:randomUUID(),runner:'codex',cwd,home,profileArgs:[]}),originalPath=old.snapshot.skills.find(s=>s.enabled)!.path;old.release();
@@ -1009,7 +1028,7 @@ describe('ordinary native work while actual H publication waits',()=>{
  beforeEach(()=>{
   // TestPtys has no OS children. Deliver only matching synthetic bridge exits.
   const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
-  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const v=await prepare(...args);handles.set(args[0].ptyId,v.bridge);return v;});vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const h=handles.get(id);if(h){handles.delete(id);void h.exited();}});
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const v=await prepare(...args);handles.set(args[0].ptyId,v.bridge);return v;});vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const h=handles.get(id);if(h){handles.delete(id);queueFixtureBridgeExit(h);}});
  });
  async function waiting(runner:'claude-code'|'codex'){
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
@@ -1036,7 +1055,7 @@ describe('ordinary native work while actual H publication waits',()=>{
 describe('classified original H content failure keeps healthy actual application work',()=>{
  beforeEach(()=>{
   const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
-  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const v=await prepare(...args);handles.set(args[0].ptyId,v.bridge);return v;});vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const h=handles.get(id);if(h){handles.delete(id);void h.exited();}});
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const v=await prepare(...args);handles.set(args[0].ptyId,v.bridge);return v;});vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const h=handles.get(id);if(h){handles.delete(id);queueFixtureBridgeExit(h);}});
  });
  it.each(['new','resume'].flatMap(mode=>['owned-content','missing-marker','foreign-marker'].map(fault=>[mode,fault] as const)))('keeps healthy Mail and original identity while classifying ZenTao %s %s',async(mode,fault)=>{
   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
@@ -1052,7 +1071,7 @@ describe('classified original H content failure keeps healthy actual application
 });
 
 describe('actual host preparation records independent native diagnostics',()=>{
- beforeEach(()=>{const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const v=await prepare(...args);handles.set(args[0].ptyId,v.bridge);return v;});vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const h=handles.get(id);if(h){handles.delete(id);void h.exited();}});});
+ beforeEach(()=>{const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const v=await prepare(...args);handles.set(args[0].ptyId,v.bridge);return v;});vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const h=handles.get(id);if(h){handles.delete(id);queueFixtureBridgeExit(h);}});});
  it.each(['native-conflicts','app-and-independent-conflicts','unknown-cli'] as const)('retains every original independent selection with truthful %s display and no secrets',async fault=>{
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});const seed=await create(codexId),nativeId=await stopForSwitchFixture(seed,'codex'),fixed=await managed.sessions.get(seed.task.id),skill=fixed.snapshot.standardSkills[0],mcp=fixed.snapshot.mcp.find(m=>m.kind==='legacy-project-context')!,config=join(home,'.codex/config.toml'),text='[skills]\nconfig=[{path="'+skill.projectionPath+'",enabled=false}]\n[mcp_servers.'+mcp.serverName+']\ncommand="/usr/bin/false"\nargs=["MUST_NOT_PERSIST_ARG"]\nenv={TOKEN="MUST_NOT_PERSIST_TOKEN"}\n'+(fault==='app-and-independent-conflicts'?'[mcp_servers.'+fixed.snapshot.mcp.find(m=>m.kind==='applications')!.serverName+']\ncommand="/usr/bin/false"\n':'');if(fault!=='unknown-cli')writeFileSync(config,text);else writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');let running:Awaited<ReturnType<typeof create>>|undefined;
   try{running=await tasks.open({taskId:seed.task.id});const diagnostic=await applications.sessionDiagnostics.inspect(seed.task.id),preparation=diagnostic.currentRun!.preparation as unknown as {schema:number;capabilities:{kind:string;id:string;state:string;issueCode:string|null;sources:{kind:string;configurationPath:string|null;path:string|null}[]}[]};expect(preparation.schema).toBe(2);expect(preparation.capabilities).toHaveLength(fixed.snapshot.packages.length+fixed.snapshot.standardSkills.length+1);const standard=preparation.capabilities.find(i=>i.kind==='standard-skill'&&i.id===skill.skillId)!;expect(standard).toMatchObject({state:'unavailable',issueCode:fault!=='unknown-cli'?'AGENT_CAPABILITY_NAME_CONFLICT':'AGENT_ADAPTER_UNSUPPORTED'});const context=preparation.capabilities.find(i=>i.kind==='project-mcp')!;expect(context).toMatchObject({id:mcp.serverName,state:'unavailable'});if(fault!=='unknown-cli'){expect(standard.sources).toContainEqual(expect.objectContaining({kind:'skill-config',configurationPath:config}));expect(context.sources).toContainEqual(expect.objectContaining({kind:'mcp',path:config}));expect(readFileSync(config,'utf8')).toBe(text);if(fault==='native-conflicts')expect(preparation.capabilities.find(i=>i.id==='mail')).toMatchObject({state:'prepared',issueCode:null});else{

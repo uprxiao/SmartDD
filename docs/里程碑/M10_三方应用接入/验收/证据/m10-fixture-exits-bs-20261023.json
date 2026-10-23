@@ -1,0 +1,42 @@
+{
+  "checkpoint": "BS-20261023",
+  "at": "2026-10-23T14:13:10.511109+00:00",
+  "branch": "feature/0.0.2",
+  "sourceBase": "895d335dff0c3ced69ae9007734dd968f7a774a9",
+  "stage": "step5 software CI gate",
+  "originalCi": {
+    "id": 39965290619,
+    "url": "https://github.com/uprxiao/SmartDD/actions/runs/39965290619",
+    "conclusion": "failure",
+    "passed": 3740,
+    "skipped": 781,
+    "failedAssertions": 0,
+    "unhandledRejections": 1,
+    "build": "skipped"
+  },
+  "diagnosis": "CI unhandled rejection comes from synthetic bridge-exit fixture callbacks that used void handle.exited(); pending callbacks were not joined before fixture store deletion. Production TaskService already catches the owned exit promise. Original CI timing is preserved; no exact original local scheduling replay is claimed.",
+  "fix": {
+    "testCallbackSites": 7,
+    "joinBeforeStoreClose": true,
+    "captureRejectionImmediately": true,
+    "surfaceAllRejectionsAsTeardownFailures": true,
+    "runtimePermissionsOrLockRulesChanged": false
+  },
+  "focusedVerification": {
+    "passed": 6,
+    "failed": 0,
+    "notSelected": 223,
+    "unhandled": 0,
+    "typecheck": "passed",
+    "notFull229Rerun": true
+  },
+  "packageReuse": "fixture-exits-bs-20261023/package-reuse.json",
+  "evidenceRoot": "fixture-exits-bs-20261023",
+  "formal": {
+    "passed": 5,
+    "total": 72,
+    "added": 0
+  },
+  "fullLatestCi": "pending corrected commit push;39967011574 covers parent without this fixture change",
+  "published": false
+}
