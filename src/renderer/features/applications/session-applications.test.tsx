@@ -72,3 +72,5 @@ describe('application conflict source disclosure uses this run only',()=>{
   m.session.mockResolvedValue({ok:true,value});mount();await screen.findByRole('button',{name:'查看冲突'});expect(screen.queryByText('以下为本轮准备时记录的冲突来源；不会修改配置或重新启动 Agent。')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'查看冲突'}));expect(screen.getByRole('button',{name:'查看冲突'}).getAttribute('aria-expanded')).toBe('true');if(recorded)expect(screen.getByText(/来源路径：\/private\/user\/\.mcp.json/)).toBeTruthy();else expect(screen.getByText(/本轮未记录具体冲突来源/)).toBeTruthy();expect(m.session).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
  });
 });
+
+it('shows verified current Skill reads without claiming discovery or adding tool use',async()=>{const value=fixture();value.applications[0].evidence.skillRead='verified';value.applications[0].evidence.toolRequests=0;m.session.mockResolvedValue({ok:true,value});mount();await screen.findByText(/已核验本次原生读取/);expect(screen.getByText(/Agent 发现 Skill：未验证/)).toBeTruthy();expect(m.create).not.toHaveBeenCalled();});

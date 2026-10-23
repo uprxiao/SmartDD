@@ -111,3 +111,14 @@ for (const runner of ['claude-code', 'codex'] as const) describe(runner + ' nati
     expect((await messages.read(current.run.runId)).messages).toEqual([]);
   });
 });
+
+ describe('host-only Skill read observations',()=>{
+  beforeEach(()=>setup('codex'));
+  function skillRecords(){const skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,path:skill.projectionPath,content:'Complete fixed skill\n'};
+   write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call',name:'exec_command',call_id:'skill-read',arguments:JSON.stringify({cmd:"/bin/cat '"+target.path+"'"})}});
+   write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call_output',call_id:'skill-read',output:'Chunk ID: abc123\nWall time: 0.0100 seconds\nProcess exited with code 0\nOriginal token count: 5\nOutput:\n'+target.content}});return target;
+  }
+  it('binds a read to the active native session without manufacturing user authorization',async()=>{const target=skillRecords();expect(await messages.skillReads(current.run.runId,[target])).toHaveLength(1);expect((await messages.read(current.run.runId)).messages).toEqual([]);});
+  it('rejects foreign targets, disabled applications, revoked runs and old-run observations',async()=>{const target=skillRecords();expect(await messages.skillReads(current.run.runId,[{...target,path:'/foreign/SKILL.md'}])).toEqual([]);current.applicationScope=[];expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);current.applicationScope=undefined;current.run.startedAt=new Date(now+1).toISOString();expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);abort.abort();expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);});
+  it('rejects a replaced native header and symbolic-link source',async()=>{const target=skillRecords();renameSync(file,file+'.original');symlinkSync(file+'.original',file);expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);rmSync(file);writeFileSync(file,JSON.stringify({type:'session_meta',payload:{id:'foreign',cwd}})+'\n');expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);});
+ });

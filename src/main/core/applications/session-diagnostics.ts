@@ -2,7 +2,8 @@ import {nativeCapabilityPreparationSchema,assertNativeCapabilityPreparation} fro
 import {readApplicationRunScope} from './application-run-scope';
 import {readClaudeSlot} from './claude-delivery-state';
 import {inspectClaudeDeliveryCopies} from './claude-delivery-copies';
-import {lstatSync} from 'node:fs';
+import {lstatSync,openSync,closeSync,fstatSync,readSync,constants} from 'node:fs';
+import type {SkillReadTarget,SkillReadObservation} from './codex-skill-read-evidence';
 import {join,relative,isAbsolute} from 'node:path';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
@@ -39,7 +40,7 @@ function assertPreparationScope(store:ResourceStore,runId:string,snapshot:Capabi
  * from a tool call, and no current grants inferred from an older run. */
 export class ApplicationSessionDiagnostics {
  private readonly sessions:CapabilitySessionRegistry;private readonly packages:PackageRegistry;private inspector?:Inspector;
- constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null}){
+ constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>}){
   this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw new Error('read only');},verifyExtraResource:()=>{throw new Error('read only');}});this.packages=new PackageRegistry(store,'diagnostic-reader');
  }
  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}
@@ -92,7 +93,30 @@ export class ApplicationSessionDiagnostics {
    const projectionRoots:string[]=[];for(const ref of refs){const resource=this.store.get(ref.ref_id);const directory=this.directory(resource);if(['session-projection','agent-projection','standard-skill','legacy-static-plugin','legacy-agent-projection','claude-delivery'].includes(resource.kind))projectionRoots.push(directory);if(resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源未就绪');if(resource.kind==='application-package'){const pack=this.packages.get(resource.contentHash);verifyPackageTree(directory,pack,this.store.storeId);}else if(resource.kind==='runtime')new RuntimeRegistry(this.store).verify(resource.contentHash);else if(this.inspector)this.inspector.verify(resource,session.snapshot,session.discoveryHome);else throw new ApplicationError('CAPABILITY_UNAVAILABLE','完整投影核验尚无所属宿主');}
    for(const skill of skills){const owned=projectionRoots.some(root=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});if(!owned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill缺少所属投影引用');const st=lstatSync(skill.projectionPath);if(st.isSymbolicLink()||!st.isFile())throw new ApplicationError('OWNERSHIP_CONFLICT','原Skill投影不是受管文件');}return null;}catch(e){return code(e);}
  }
- inspect(taskId:string):Promise<ApplicationSessionDiagnostic>{id.parse(taskId);return withResourceLock(this.store.root,()=>{
+ async inspect(taskId:string):Promise<ApplicationSessionDiagnostic>{
+  const before=await this.inspectBase(taskId),runId=before.currentRun?.id;
+  if(!runId||!this.deps.skillReads)return before;
+  const observed=new Map<string,SkillReadObservation[]>();
+  for(const app of before.applications){
+   if(app.resourceState!=='verified'||!app.skills.length)continue;
+   try{
+    const targets=app.skills.map(skill=>{const fd=openSync(skill.projectionPath,constants.O_RDONLY|constants.O_NOFOLLOW);try{const stat=fstatSync(fd);if(!stat.isFile()||stat.size>1024*1024)throw new Error('bounded Skill source required');const bytes=Buffer.alloc(stat.size);if(readSync(fd,bytes,0,bytes.length,0)!==bytes.length||fstatSync(fd).size!==stat.size)throw new Error('Skill source changed');return {id:skill.id,path:skill.projectionPath,content:new TextDecoder('utf-8',{fatal:true}).decode(bytes)};}finally{closeSync(fd);}});
+    observed.set(app.appId,await this.deps.skillReads(runId,targets));
+   }catch{/* Unavailable evidence remains unverified. */}
+  }
+  // Native IO is outside the resource coordinator; reacquire it for a fresh view.
+  const fresh=await this.inspectBase(taskId);
+  if(fresh.currentRun?.id!==runId||fresh.snapshotHash!==before.snapshotHash)return fresh;
+  for(const app of fresh.applications){
+   const original=before.applications.find(a=>a.appId===app.appId);
+   if(app.resourceState!=='verified'||original?.packageHash!==app.packageHash||JSON.stringify(original.skills)!==JSON.stringify(app.skills))continue;
+   const reads=observed.get(app.appId)??[];
+   app.evidence.skillReadObservations=reads.map(r=>({...r,runId}));
+   if(app.skills.length&&app.skills.every(s=>reads.some(r=>r.skillId===s.id)))app.evidence.skillRead='verified';
+  }
+  return fresh;
+ }
+ private inspectBase(taskId:string):Promise<ApplicationSessionDiagnostic>{id.parse(taskId);return withResourceLock(this.store.root,()=>{
   const db=this.store.sqlite,task=db.prepare('SELECT id,project_id,title,runner,CASE WHEN native_session_id IS NOT NULL OR runtime_snapshot IS NOT NULL THEN 1 ELSE 0 END AS has_history FROM tasks WHERE id=?').get(taskId) as {id:string;project_id:string|null;title:string;runner:string;has_history:number}|undefined;if(!task)throw new ApplicationError('NOT_FOUND','该任务已删除，不能把其他会话当作原任务');
   const row=db.prepare('SELECT schema_version,snapshot_hash,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;legacy_status:string}|undefined;
   let session:StoredCapabilitySession|null=null,selection:ApplicationSessionDiagnostic['selection']=row||task.has_history?'unknown-history':'not-recorded';const issues:string[]=[];
