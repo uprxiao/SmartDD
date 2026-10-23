@@ -1,7 +1,7 @@
 import {spawn,type ChildProcess} from 'node:child_process';
 import {once} from 'node:events';
 import {builtinModules} from 'node:module';
-import {mkdtempSync,rmSync,existsSync} from 'node:fs';
+import {mkdtempSync,rmSync,existsSync,readFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
@@ -9,6 +9,8 @@ import {build as viteBuild} from 'vite';
 import {afterAll,afterEach,beforeAll,beforeEach,describe,expect,it} from 'vitest';
 import {ClaudeDeliveryCoordinator} from '../claude-delivery';
 import {readClaudeSlot} from '../claude-delivery-state';
+import {digest} from '../manifest';
+import {verifyOwnedBundle} from '../owned-bundle';
 import {SessionCapabilityProjector} from '../session-projector';
 import {MacProcessIdentityReader} from '../process-identity';
 import {runFixture,FixtureProcessReader} from './run-fixture';
@@ -38,4 +40,12 @@ describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('actual iso
   const original=await publisher('backed-up');await kill(original);const second=await publisher('claimed','recover'),before=readClaudeSlot(f.store,f.snapshot.taskId)!;expect(before.pending!.participants).toHaveLength(2);const ids=before.pending!.participants.map(p=>p.leaseId);await kill(second);
   const token=await c.recover(f.snapshot.taskId),op=f.sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(before.pending!.id) as {plan_json:string},participants=JSON.parse(op.plan_json).completedPending.participants as {leaseId:string}[];console.log('CLAUDE_DELIVERY_PROCESS_EVIDENCE '+JSON.stringify({phase:'recovery-owner-killed-after-C-registration',operationId:before.pending!.id,participants,parent:processes.read(process.pid),actualAgent:false}));expect(participants).toHaveLength(3);for(const id of ids)expect(participants.map(p=>p.leaseId)).toContain(id);for(const p of participants)expect(f.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE lease_id=?').get(p.leaseId)).toEqual({state:'released'});await c.cancel(token!);
  },25000);
+ it.each(['gc-marked','gc-renamed','gc-file-removed','gc-removed'] as const)('recovers the original copy cleanup after actual SIGKILL at %s',async phase=>{
+  const first=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(first);const origin=f.sqlite.prepare("SELECT operation_id,plan_json FROM capability_resource_operations WHERE kind='claude-delivery-install' AND state='committed'").get() as {operation_id:string;plan_json:string},p=JSON.parse(origin.plan_json).completedPending,child=await publisher(phase),id='claude-copy-gc:'+origin.operation_id+':'+digest(p.backup),before=f.sqlite.prepare('SELECT state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(id) as {state:string;plan_json:string},plan=JSON.parse(before.plan_json).payload,owner=processes.read(child.pid!)!;
+  expect(plan.owner.pid).toBe(child.pid);expect(plan.owners).toHaveLength(1);await kill(child);expect(processes.state(owner)).toBe('stopped');const next=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(next);const after=f.sqlite.prepare('SELECT state,plan_json,error_code FROM capability_resource_operations WHERE operation_id=?').get(id) as {state:string;plan_json:string;error_code:string|null},final=JSON.parse(after.plan_json).payload;expect(after).toMatchObject({state:'committed',error_code:null});expect(final.owners).toHaveLength(2);expect(final.files).toEqual(plan.files);expect(existsSync(join(f.store.root,p.backup))).toBe(false);const source=f.store.get(plan.sourceId);verifyOwnedBundle(f.store.directory(source),plan.hash,f.store.storeId);console.log('CLAUDE_COPY_GC_PROCESS_EVIDENCE '+JSON.stringify({phase,operationId:id,originalOwner:owner,originalOwnerState:processes.state(owner),owners:final.owners,files:plan.files.length,actualAgent:false}));
+ },25000);
+ it('retains every cleanup owner when a first recovery process is also actually killed',async()=>{
+  const first=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(first);const original=await publisher('gc-renamed'),firstOwner=processes.read(original.pid!)!;await kill(original);const second=await publisher('gc-file-removed'),secondOwner=processes.read(second.pid!)!,row=f.sqlite.prepare("SELECT operation_id,plan_json FROM capability_resource_operations WHERE kind='cleanup-claude-delivery-copy' AND state='deleting'").get() as {operation_id:string;plan_json:string},plan=JSON.parse(row.plan_json).payload;expect(plan.owners).toHaveLength(2);await kill(second);const next=await c.prepare(f.snapshot.taskId,['mail']);await c.cancel(next);const after=f.sqlite.prepare('SELECT state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(row.operation_id) as {state:string;plan_json:string},final=JSON.parse(after.plan_json).payload;expect(after.state).toBe('committed');expect(final.owners).toHaveLength(3);expect(final.owners.slice(0,2)).toEqual(plan.owners);expect(final.files).toEqual(plan.files);verifyOwnedBundle(f.store.directory(f.store.get(plan.sourceId)),plan.hash,f.store.storeId);console.log('CLAUDE_COPY_GC_PROCESS_EVIDENCE '+JSON.stringify({phase:'second-recovery-SIGKILL',operationId:row.operation_id,firstOwner,firstOwnerState:processes.state(firstOwner),secondOwner,secondOwnerState:processes.state(secondOwner),owners:final.owners,actualAgent:false}));
+ },25000);
+
 });

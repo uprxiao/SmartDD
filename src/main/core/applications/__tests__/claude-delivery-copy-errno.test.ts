@@ -1,0 +1,21 @@
+import {dirname,join} from 'node:path';
+import {readFileSync,readlinkSync,rmSync,symlinkSync,writeFileSync} from 'node:fs';
+import {afterEach,beforeEach,expect,it} from 'vitest';
+import {ClaudeDeliveryCoordinator} from '../claude-delivery';
+import {SessionCapabilityProjector} from '../session-projector';
+import {digest} from '../manifest';
+import {FixtureProcessReader,runFixture} from './run-fixture';
+let f:Awaited<ReturnType<typeof runFixture>>,coordinator:ClaudeDeliveryCoordinator;
+beforeEach(async()=>{const reader=new FixtureProcessReader();f=await runFixture(reader,{application:true,secondApplication:true,fullProjection:true});coordinator=new ClaudeDeliveryCoordinator(f.store,f.sessions,new SessionCapabilityProjector(f.store,f.sessions),reader,f.runs.instanceId);});
+afterEach(async()=>{await f.runs.dispose();f.cleanup();});
+it.each(['file','link-loop'] as const)('retains an unknown %s stage ancestor without blocking the next ordinary preparation',async fault=>{
+ rmSync(join(f.store.root,f.application!.relativePath),{recursive:true});
+ const first=await coordinator.prepare(f.snapshot.taskId,['mail']);await coordinator.cancel(first);
+ const row=f.sqlite.prepare("SELECT operation_id,plan_json FROM capability_resource_operations WHERE kind='claude-delivery-install' AND state='committed' ORDER BY rowid LIMIT 1").get() as {operation_id:string;plan_json:string};
+ const pending=JSON.parse(row.plan_json).completedPending,parent=dirname(join(f.store.root,pending.stage));
+ rmSync(parent,{recursive:true});if(fault==='file')writeFileSync(parent,'unknown fixture entry retained');else symlinkSync(parent,parent);
+ const next=await coordinator.prepare(f.snapshot.taskId,['mail']);await coordinator.cancel(next);
+ if(fault==='file')expect(readFileSync(parent,'utf8')).toBe('unknown fixture entry retained');else expect(readlinkSync(parent)).toBe(parent);
+ const operation=f.sqlite.prepare('SELECT state,error_code FROM capability_resource_operations WHERE operation_id=?').get('claude-copy-gc:'+row.operation_id+':'+digest(pending.stage));
+ expect(operation).toEqual({state:'held',error_code:'RESOURCE_RECOVERY_REQUIRED'});
+});

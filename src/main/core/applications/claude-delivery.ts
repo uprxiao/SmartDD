@@ -10,16 +10,17 @@ import {canonicalJson,digest} from './manifest';
 import {ensureStoreDirectory} from './package-files';
 import {verifyOwnedBundle,writeOwnedBundle} from './owned-bundle';
 import {withResourceLock} from './resource-lock';
+import {ClaudeDeliveryCopies,type ClaudeCopyCheckpoint} from './claude-delivery-copies';
 import {assertClaudeInstallLease,assertClaudePreparation,assertClaudeRunDelivery,claudeAnchor,claudeRoot,claudeSlotId,deliveryOwner,normalizedSelection,readClaudeSlot,verifyClaudeDelivery,writeClaudeSlot,type ClaudeSlot,type ClaudeDeliveryToken,type ClaudeRunDelivery,type DeliveryOwner} from './claude-delivery-state';
-export type ClaudeDeliveryCheckpoint='registered'|'claimed'|'copied'|'backed-up'|'delivered'|'committed';
+export type ClaudeDeliveryCheckpoint='registered'|'claimed'|'copied'|'backed-up'|'delivered'|'committed'|ClaudeCopyCheckpoint;
 const recovery=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','Claude原目录交付或占用未能核验，保留原路径和现场');
 const present=(p:string)=>{try{return lstatSync(p);}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;}};
 const sync=(p:string)=>{const fd=openSync(p,constants.O_RDONLY|constants.O_NOFOLLOW);try{fsyncSync(fd);}finally{closeSync(fd);}};
 /** Per-task canonical delivery.All filesystem replacement is covered by a durable
  * pending intent and an independent root occupancy;immutable depot is never an alias. */
 export class ClaudeDeliveryCoordinator{
- private readonly owner:DeliveryOwner;private readonly operations=new Set<string>();private readonly preparations=new Set<string>();
- constructor(private readonly store:ResourceStore,private readonly sessions:CapabilitySessionRegistry,private readonly projector:SessionCapabilityProjector,private readonly processes:ProcessIdentityReader,instanceId:string,private readonly checkpoint?:(phase:ClaudeDeliveryCheckpoint)=>void){const host=processes.read(process.pid);if(!host)throw recovery();this.owner=deliveryOwner.parse({instanceId,pid:host.pid,startedAt:host.startedAt});}
+ private readonly owner:DeliveryOwner;private readonly operations=new Set<string>();private readonly preparations=new Set<string>();private readonly copies:ClaudeDeliveryCopies;
+ constructor(private readonly store:ResourceStore,private readonly sessions:CapabilitySessionRegistry,private readonly projector:SessionCapabilityProjector,private readonly processes:ProcessIdentityReader,instanceId:string,private readonly checkpoint?:(phase:ClaudeDeliveryCheckpoint)=>void){const host=processes.read(process.pid);if(!host)throw recovery();this.owner=deliveryOwner.parse({instanceId,pid:host.pid,startedAt:host.startedAt});this.copies=new ClaudeDeliveryCopies(store,sessions,projector,processes,this.owner,checkpoint);}
  has(taskId:string):boolean{return readClaudeSlot(this.store,taskId)!==null;}
  private putLease(id:string,anchor:string,kind:string,ownerId:string,owner:DeliveryOwner):void{this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,?,?,?,?,?,'active',?)").run(id,anchor,kind,ownerId,owner.instanceId,owner.pid,owner.startedAt,new Date().toISOString());}
  private release(id:string):void{this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=?").run(new Date().toISOString(),id);}
@@ -51,6 +52,9 @@ export class ClaudeDeliveryCoordinator{
  async prepareIndependent(taskId:string,standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,[],true,standardSkillScope);}
  private async prepareSelection(taskId:string,appIds:readonly string[],independent:boolean,standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{
   if(readClaudeSlot(this.store,taskId)?.pending){const recovered=await this.recover(taskId);if(recovered)await this.cancel(recovered);}
+  // Cleanup has its own durable phases and must not be enclosed by the later
+  // handoff SQLite transaction. A retained copy never prevents ordinary work.
+  await withResourceLock(this.store.root,()=>{const slot=readClaudeSlot(this.store,taskId);if(slot?.current&&!slot.pending&&!slot.preparation)this.copies.collectCoordinated(taskId,()=>this.idle(readClaudeSlot(this.store,taskId)!));});
   const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds,independent,standardSkillScope);if(!source.applicationScope.length&&!independent)throw recovery();
   const relative=claudeRoot(taskId),root=join(this.store.root,relative);let archiveId:string|null=null;
   // Before the first canonical change, preserve the actual registered complete
