@@ -7,13 +7,18 @@ async function main(): Promise<void> {
   if (process.argv.length !== 4 || process.argv[2] !== '--bootstrap') throw new Error('invalid invocation');
   const client = new ApplicationBridgeClient(consumeBridgeBootstrap(process.argv[3])); await client.start();
   const server = new Server({ name: 'WillYou applications',version: '1.0.0' },{ capabilities: { tools: {} } });
+  let initialized = false;
+  server.oninitialized = () => { initialized = server.getClientVersion() !== undefined; };
+  const requireInitialized = () => { if (!initialized) throw new Error('WillYou application MCP initialization required'); };
   const contracts = new Map<string,number>();
   server.setRequestHandler('tools/list',async () => {
+    requireInitialized();
     const response = await client.request('tools/list'); if (response.status !== 'ok') throw new Error('WillYou application capabilities unavailable');
     const value = response.value as { tools: BridgeTool[];unavailable: unknown }; contracts.clear();
     return { tools: value.tools.map(tool => { contracts.set(tool.name,tool.contractMajor); const { contractMajor: _,...definition } = tool; return definition; }),_meta: { 'willyou/unavailable': value.unavailable } };
   });
   server.setRequestHandler('tools/call',async (request,extra) => {
+    requireInitialized();
     const contract = contracts.get(request.params.name) ?? Number(/^smartdd_[a-z0-9_]+_v([1-9][0-9]*)$/.exec(request.params.name)?.[1]); if (!Number.isSafeInteger(contract) || contract < 1) return { isError: true,content: [{ type: 'text',text: '此运行尚未发现该固定工具；请检查应用能力状态。' }] };
     try {
       const args = request.params.arguments ?? {}, connection = typeof args.connectionId === 'string' ? args.connectionId : null;

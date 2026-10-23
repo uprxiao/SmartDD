@@ -151,7 +151,7 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    expect(()=>adapters.resolve(installed.packageHash,'smartdd_zentao_work_list_v1',1)).toThrow('可信内置分发依据');expect(resolved).toBe(0);expect(approvals()).toEqual([]);
  });
  it('preserves the approved old package and default when same-version bytes change',async()=>{
-   const installed=await install('zentao');await builtin.packages.activate(installed.packageHash,0);const before=approvals(),changed=changedDistribution('zentao','1.0.0',files=>{files['skills/bug-analysis/SKILL.md']=Buffer.from(files['skills/bug-analysis/SKILL.md'].toString()+'\nchanged\n');});
+   const installed=await install('zentao');await builtin.packages.activate(installed.packageHash,0);const before=approvals(),changed=changedDistribution('zentao',installed.version,files=>{files['skills/bug-analysis/SKILL.md']=Buffer.from(files['skills/bug-analysis/SKILL.md'].toString()+'\nchanged\n');});
    await expect(builtin.install(changed,changed.index.apps.find(a=>a.appId==='zentao')!)).rejects.toMatchObject({code:'VERSION_CONFLICT'});expect(approvals()).toEqual(before);expect(builtin.packages.active('zentao')?.packageHash).toBe(installed.packageHash);expect(builtin.assertTrusted(installed.packageHash).state).toBe('ready');
  });
  it('withholds execution when the retained original distribution proof is corrupt',async()=>{
