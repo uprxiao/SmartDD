@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
 import { boundedJson } from '@shared/application-bridge';
 import { BuiltinPackageRegistry } from './builtin-package-registry';
-import { canonicalJson, digest } from './manifest';
+import { assertHostCompatible, canonicalJson, digest } from './manifest';
 import type { RunContext } from './run-registry';
 import { RuntimeRegistry } from './runtime-registry';
 import type { ResourceStore } from './resource-store';
@@ -41,6 +41,9 @@ export class ApplicationAdapterRegistry implements ApplicationToolHost {
 
   private load(hash: string): {application: InstalledApplicationPackage;adapter: FixedApplicationAdapter} {
     const application = this.builtin.assertTrusted(hash);
+    // Retained bytes and a cached adapter do not establish compatibility with
+    // the current host after an upgrade. Reject before resolving credentials.
+    assertHostCompatible(application.manifest);
     this.runtimes.verify(application.manifest.runtime.hash,application.manifest.runtime);
     const cached = this.cache.get(hash);
     if (cached) return {application,adapter: cached};

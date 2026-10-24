@@ -132,3 +132,35 @@ describe('application publication with a real SQLite resource ledger', () => {
     expect(registry.active('zentao')?.packageHash).toBe(old.packageHash); expect(leaseCount()).toBe(0);
   });
 });
+
+it('rolls back the whole two-app activation set when the second migration fails, then commits both on retry',async()=>{
+ const a=await bundle('2.0.0'),b=await bundle('2.0.0');b.manifest.appId='mail';b.manifest.tools[0].name='smartdd_mail_query_v1';b.manifest.tools[0].permission='mail.read';b.manifest.permissions=['mail.read'];b.manifest.connectionContracts[0].providerId='mail';
+ const checksum=digest('group migration');
+ for(const source of [a,b]){const bytes=Buffer.from('group migration');source.files['migrations/group.sql']=bytes;source.manifest.files.push({path:'migrations/group.sql',size:bytes.length,sha256:checksum,executable:false});source.manifest.migrations=[{id:'group',from:0,to:1,file:'migrations/group.sql',checksum}];}
+ const first=await registry.install(a),second=await registry.install(b);let fail=true;
+ const grouped=new PackageRegistry(store,'group-build',[
+  {appId:'zentao',id:'group',checksum,run:db=>{db.exec('CREATE TABLE group_first(value TEXT)');}},
+  {appId:'mail',id:'group',checksum,run:db=>{db.exec('CREATE TABLE group_second(value TEXT)');if(fail)throw new Error('second migration failed');}},
+ ]);
+ const journals=sqlite.prepare('SELECT * FROM capability_install_journal ORDER BY install_id').all();
+ const selection=[{hash:first.packageHash,expectedGeneration:0},{hash:second.packageHash,expectedGeneration:0}];
+ await expect(grouped.activateSet(selection)).rejects.toThrow('second migration failed');
+ expect(registry.active('zentao')).toBeNull();expect(registry.active('mail')).toBeNull();expect(sqlite.prepare('SELECT * FROM capability_schema_migrations').all()).toEqual([]);
+ expect(sqlite.prepare("SELECT name FROM sqlite_master WHERE name IN ('group_first','group_second')").all()).toEqual([]);expect(sqlite.prepare('SELECT * FROM capability_install_journal ORDER BY install_id').all()).toEqual(journals);expect(leaseCount()).toBe(0);
+ fail=false;expect(await grouped.activateSet(selection)).toEqual([{packageHash:first.packageHash,generation:1},{packageHash:second.packageHash,generation:1}]);expect(sqlite.prepare('SELECT * FROM capability_schema_migrations').all()).toHaveLength(2);expect(leaseCount()).toBe(0);
+});
+it('rejects duplicate apps in a group before changing a default',async()=>{
+ const first=await registry.install(await bundle()),second=await registry.install(await bundle('2.0.0'));
+ await expect(registry.activateSet([{hash:first.packageHash,expectedGeneration:0},{hash:second.packageHash,expectedGeneration:0}])).rejects.toThrow('重复');expect(registry.active('zentao')).toBeNull();expect(leaseCount()).toBe(0);
+});
+
+it.each(['checksum','watermark','missing'] as const)('does not bypass migration integrity for an already active package: %s',async kind=>{
+ const source=await bundle(),bytes=Buffer.from('retained migration'),checksum=digest(bytes);source.files['migrations/retained.sql']=bytes;source.manifest.files.push({path:'migrations/retained.sql',size:bytes.length,sha256:checksum,executable:false});source.manifest.migrations=[{id:'retained',from:0,to:1,file:'migrations/retained.sql',checksum}];
+ let calls=0;const checked=new PackageRegistry(store,'build',[{appId:'zentao',id:'retained',checksum,run:()=>{calls++;}}]),installed=await checked.install(source);await checked.activate(installed.packageHash,0);
+ if(kind==='missing')sqlite.exec('DELETE FROM capability_schema_migrations');else if(kind==='checksum')sqlite.exec("UPDATE capability_schema_migrations SET checksum='changed'");else sqlite.exec('UPDATE capability_schema_migrations SET to_version=2');
+ await expect(checked.activate(installed.packageHash,1)).rejects.toMatchObject({code:kind==='missing'?'RESOURCE_RECOVERY_REQUIRED':'VERSION_CONFLICT'});expect(calls).toBe(1);expect(checked.active('zentao')).toEqual({packageHash:installed.packageHash,generation:1});expect(leaseCount()).toBe(0);
+});
+it('does not activate defaults while another maintenance operation is pending',async()=>{
+ const installed=await registry.install(await bundle());sqlite.prepare("INSERT INTO capability_store_state VALUES(1,?,1,'pending','owned-maintenance')").run(store.storeId);
+ await expect(registry.activate(installed.packageHash,0)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(registry.active('zentao')).toBeNull();expect(leaseCount()).toBe(0);
+});

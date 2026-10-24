@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { EventEmitter } from 'node:events';
 import { createHash,randomUUID } from 'node:crypto';
-import { mkdirSync,mkdtempSync,readdirSync,readFileSync,writeFileSync,rmSync,renameSync,symlinkSync,truncateSync } from 'node:fs';
+import { copyFileSync,statSync,mkdirSync,mkdtempSync,readdirSync,readFileSync,writeFileSync,rmSync,renameSync,symlinkSync,truncateSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join,resolve } from 'node:path';
 import Database from 'better-sqlite3';
@@ -11,6 +11,8 @@ import { afterAll,afterEach,beforeAll,beforeEach,describe,expect,it,vi } from 'v
 import type { IpcMainInvokeEvent } from 'electron';
 import type { MailQueryData,MailReadData } from '@shared/application-mail-data';
 import type { MailDraftContent } from '@shared/mail-drafts';
+import { acquireDatabaseAccess } from '../../../db/database-access-gate';
+import { activatePreparedPackages } from '../activation-maintenance';
 import { FileService } from '../../files/file-service';
 import { NativeFileBroker } from '../../files/native-broker';
 import { FileRootsService } from '../../files/roots';
@@ -83,9 +85,78 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
   reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);
  });
  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();fox.close();files.closeOwner(fileOwner);await files.watcher.dispose();fileBroker.dispose();vi.restoreAllMocks();f.cleanup();});
+ nativeIt('supports an explicit mail window without rewriting the saved default and carries it through read,resource,reply and stable attachment import',async()=>{
+  for(const age of [1,7,30,31,100,101]){const date=new Date(clock);date.setDate(date.getDate()-age+1);add(age,date,'window-'+age,true);}
+  const before=hashes();
+  for(const days of [1,7,30,31,100]){const page=await query({queryDays:days});expect(page.range.days).toBe(days);expect(page.items.map(item=>item.reference.nativeId).sort()).toEqual([1,7,30,31,100].filter(age=>age<=days).map(String).sort());}
+  expect(app.connections.get(connectionId).config).toMatchObject({queryDays:30});expect((await query()).range.days).toBe(30);expect(await query({text:'never-a-match',queryDays:1})).toMatchObject({complete:true,matched:0,range:{days:1}});
+  const reference=(await query({queryDays:100})).items.find(item=>item.reference.nativeId==='100')!.reference;
+  expect(await call('read',{reference})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+  const opened=await call('read',{reference,queryDays:100});expect(opened.status,JSON.stringify(opened)).toBe('ok');if(opened.status!=='ok')throw new Error('explicit window read failed');const mail=opened.value as MailReadData;
+  expect(await call('resource_read',{resource:mail.text,offset:0,length:100})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+  expect(await call('resource_read',{resource:mail.text,offset:0,length:100,queryDays:100})).toMatchObject({status:'ok',value:{data:'window-100'}});
+  expect(await call('reply_create',{reference,mode:'reply',senderConnectionId:null,text:'explicit old local reply',queryDays:100})).toMatchObject({status:'ok',value:{draft:{content:{sourceMessageRef:reference,text:expect.any(Object)}}}});
+  expect(await call('attach_import',{source:{kind:'resource',resource:mail.attachments[0].resource,filename:'window.bin',contentType:'application/octet-stream'},queryDays:100})).toMatchObject({status:'ok',value:{attachment:{size:5}}});
+  expect(app.connections.get(connectionId).config).toMatchObject({queryDays:30});expect(hashes()).toEqual(before);
+ },25000);
+ nativeIt('pins an explicit mail window across cursor continuation and refuses an explicit change',async()=>{
+  for(const id of [1,2,3]){const date=new Date(clock);date.setDate(date.getDate()-60);add(id,date,'cursor window');}
+  const first=await query({queryDays:100,limit:1});expect(first.range.days).toBe(100);expect(first.nextCursor).toBeTruthy();
+  const next=await query({cursor:first.nextCursor});expect(next.range.days).toBe(100);expect(next.items[0].reference.nativeId).not.toBe(first.items[0].reference.nativeId);
+  expect(await call('query',{cursor:first.nextCursor,queryDays:31})).toMatchObject({status:'error',error:{code:'REVISION_CONFLICT'}});
+  expect((await query()).items).toEqual([]);expect(app.connections.get(connectionId).config).toMatchObject({queryDays:30});
+ });
+ nativeIt('revalidates explicit mail window receipts against their original range and denies another identity',async()=>{
+  const date=new Date(clock);date.setDate(date.getDate()-60);add(60,date,'receipt window');
+  const queryId=randomUUID(),args={queryDays:100},first=await call('query',args,cc,queryId);expect(first.status).toBe('ok');if(first.status!=='ok')throw new Error('query failed');
+  const reference=(first.value as MailQueryData).items[0].reference;
+  expect(await call('query',args,cc,queryId)).toMatchObject({status:'ok',value:first.value});
+  const readId=randomUUID(),readArgs={reference,queryDays:100},opened=await call('read',readArgs,cc,readId);expect(opened.status).toBe('ok');
+  expect(await call('read',readArgs,cc,readId)).toMatchObject({status:'ok'});
+  expect(await call('read',{reference:{...reference,identityRevision:reference.identityRevision+1},queryDays:100})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+  expect(f.sqlite.prepare('SELECT attempt_count FROM application_data_operations WHERE operation_id=?').get(first.operationId)).toEqual({attempt_count:1});
+  writeFileSync(join(sourceRoot,'Mail/Inbox/60.mail'),readFileSync(join(sourceRoot,'Mail/Inbox/60.mail'),'utf8')+' changed');
+  expect(await call('read',readArgs,cc,readId)).toMatchObject({status:'error',error:{code:'RESOURCE_STATE_CHANGED'}});
+  expect(await call('query',args,cc,queryId)).toMatchObject({status:'error',error:{code:'RESOURCE_STATE_CHANGED'}});
+ });
+ nativeIt('passes the explicit mail window to newly linked draft sources without coupling saved drafts to the window',async()=>{
+  for(const age of [60,90]){const date=new Date(clock);date.setDate(date.getDate()-age);add(age,date,'draft window '+age);}
+  const page=await query({queryDays:100}),reference=(id:string)=>page.items.find(item=>item.reference.nativeId===id)!.reference;
+  const content=(id:string):MailDraftContent=>({mode:'reply',sourceMessageRef:reference(id),senderConnectionId:null,to:['sender@example.test'],cc:[],bcc:[],subject:'Re: fixture '+id,text:'saved draft '+id,html:null,inReplyTo:'<fixture-'+id+'@example.test>',references:['<fixture-'+id+'@example.test>'],attachmentIds:[]});
+  expect(await call('draft_create',{content:content('60')})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+  const created=await call('draft_create',{content:content('60'),queryDays:100});expect(created.status).toBe('ok');if(created.status!=='ok')throw new Error('draft create failed');const id=(created.value as {draft:{id:string}}).draft.id;
+  expect(await call('draft_update',{draftId:id,expectedRevision:1,content:content('90')})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+  expect(await call('draft_update',{draftId:id,expectedRevision:1,content:content('90'),queryDays:100})).toMatchObject({status:'ok',value:{draft:{revision:2,content:{sourceMessageRef:reference('90')}}}});
+  fox.prepare('DELETE FROM mailinfo').run();
+  expect(await call('draft_update',{draftId:id,expectedRevision:2,content:{...content('90'),text:'independent saved content'}})).toMatchObject({status:'ok',value:{draft:{revision:3}}});
+  const saved=await app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.saved',operations:['mail.draft'],semantics:'read'},scope=>Promise.resolve(app.drafts.get(app.contexts.actor(scope),id)));expect(saved.content).not.toHaveProperty('queryDays');expect(saved.content.text).toBe('independent saved content');expect(app.connections.get(connectionId).config).toMatchObject({queryDays:30});
+ });
+ nativeIt('rejects invalid explicit mail window input at both fixed tools and trusted UI entrypoints',async()=>{
+  add(1);const reference=(await query()).items[0].reference,mail=await read(reference);
+  for(const queryDays of [0,-1,1.5,101,'',null,'31']){
+   for(const [operation,args]of [['query',{}],['read',{reference}],['resource_read',{resource:mail.text,offset:0,length:10}],['reply_create',{reference,mode:'reply',senderConnectionId:null,text:'invalid'}]] as const)expect(await call(operation,{...args,queryDays})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});
+   await expect(app.mailQuery(sender,'p1',{queryDays})).rejects.toMatchObject({code:'INVALID_INPUT'});
+  }
+  expect(app.connections.get(connectionId).config).toMatchObject({queryDays:30});expect(f.sqlite.prepare('SELECT count(*) n FROM mail_drafts').get()).toEqual({n:0});
+ });
  nativeIt('exposes actual scan progress and last complete refresh to UI without extending the original v1 tool result',async()=>{
   add(1);const status=await app.mailStatus(sender,'p1',{limit:1});expect(status.refresh).toMatchObject({scanned:1,total:1,finished:true,problemCount:0,lastSuccessfulRefreshAt:expect.any(String)});expect(status.query).toMatchObject({complete:true,matched:1});
   const original=await query();expect(Object.keys(original).sort()).toEqual(['checkedAt','complete','items','matched','nextCursor','problems','range']);
+ });
+ nativeIt('retains the previous complete refresh through a changed partial source and service restart without reporting it as current success',async()=>{
+  add(1);const complete=await app.mailStatus(sender,'p1',{});expect(complete.query.complete).toBe(true);const success=complete.refresh.lastSuccessfulRefreshAt;expect(success).toBeTruthy();
+  add(2);rmSync(join(sourceRoot,'Mail/Inbox/2.mail'));const partial=await app.mailStatus(sender,'p1',{refresh:true});expect(partial.query).toMatchObject({complete:false,matched:1});expect(partial.refresh).toMatchObject({finished:true,problemCount:1,lastSuccessfulRefreshAt:success});expect(partial.query.checkedAt>success!).toBe(true);
+  await app.dispose();app=setup();connectTools();const recovered=await app.mailStatus(sender,'p1',{refresh:true});expect(recovered.query.complete).toBe(false);expect(recovered.refresh.lastSuccessfulRefreshAt).toBe(success);
+  writeFileSync(join(sourceRoot,'Mail/Inbox/2.mail'),'Date: '+clock.toUTCString()+'\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: recovered\r\n\r\nRecovered original controlled source');const fixed=await app.mailStatus(sender,'p1',{refresh:true});expect(fixed.query).toMatchObject({complete:true,matched:2});expect(fixed.refresh.lastSuccessfulRefreshAt!>success!).toBe(true);
+ });
+ nativeIt('durably records a newer complete refresh of an unchanged source before a later partial revision',async()=>{
+  add(1);const first=await app.mailStatus(sender,'p1',{}),second=await app.mailStatus(sender,'p1',{refresh:true});expect(second.query.complete).toBe(true);expect(second.refresh.lastSuccessfulRefreshAt!>first.refresh.lastSuccessfulRefreshAt!).toBe(true);
+  await app.dispose();app=setup();connectTools();add(2);rmSync(join(sourceRoot,'Mail/Inbox/2.mail'));const partial=await app.mailStatus(sender,'p1',{refresh:true});expect(partial.query.complete).toBe(false);expect(partial.refresh.lastSuccessfulRefreshAt).toBe(second.refresh.lastSuccessfulRefreshAt);
+ });
+ nativeIt('merges only check times when a completed cursor and fresh query finish the same immutable checkpoint together',async()=>{
+  add(1);add(2);add(3);const first=await app.mailStatus(sender,'p1',{limit:1});expect(first.query.nextCursor).toBeTruthy();let release!:()=>void,count=0;const gate=new Promise<void>(resolve=>release=resolve),finish=MailWorkerClient.prototype.finishScan;
+  vi.spyOn(MailWorkerClient.prototype,'finishScan').mockImplementation(async function(this:MailWorkerClient,...args){const result=await finish.apply(this,args);if(++count===2)release();await gate;return result;});
+  try{const [cursor,fresh]=await Promise.all([app.mailStatus(sender,'p1',{cursor:first.query.nextCursor}),app.mailStatus(sender,'p1',{})]);expect(cursor.query).toMatchObject({complete:true,matched:3});expect(fresh.query).toMatchObject({complete:true,matched:3});expect(cursor.query.items[0].reference.nativeId).toBe('2');expect(fresh.query.items).toHaveLength(3);}finally{release();}
  });
  nativeIt('uses real CJS contracts for current-source search,read,UTF-8 chunks and exact attachment bytes without modifying the source',async()=>{
   const revision=add(1,clock,'中文正文 body-needle',true),before=hashes(),page=await query({text:'body-needle'});expect(page).toMatchObject({complete:true,matched:1,nextCursor:null});expect(page.items[0].reference.contentRevision).toBe(revision);
@@ -111,6 +182,24 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
  nativeIt('rejects changed source bytes,forged identity or expanded model scope before returning resources',async()=>{
   add(1);const ref=(await query()).items[0].reference;const original=await read(ref);writeFileSync(join(sourceRoot,'Mail/Inbox/1.mail'),readFileSync(join(sourceRoot,'Mail/Inbox/1.mail'),'utf8')+' changed');expect(await call('read',{reference:ref})).toMatchObject({status:'error',error:{code:'RESOURCE_STATE_CHANGED'}});expect(await call('read',{reference:{...ref,identityRevision:ref.identityRevision+1}})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
   for(const extra of [{projectId:'p2'},{queryDays:1000},{sourcePath:sourceRoot},{approved:true}])expect(await call('query',{...extra})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});expect(await call('resource_read',{resource:{...original.text,size:original.text.size+1},offset:0,length:10})).toMatchObject({status:'error',error:{code:'HASH_MISMATCH'}});
+ });
+ nativeIt('rejects fresh and cached old references after byte-identical source replacement at the same path and recovers only with the original identity',async()=>{
+  add(1,clock,'ORIGINAL_MAILBOX_ONLY');const queryId=randomUUID(),queryInput={},listed=await call('query',queryInput,cc,queryId);expect(listed.status).toBe('ok');if(listed.status!=='ok')throw new Error('query failed');
+  const reference=(listed.value as MailQueryData).items[0].reference,readId=randomUUID(),readInput={reference},opened=await call('read',readInput,cc,readId);expect(opened.status).toBe('ok');if(opened.status!=='ok')throw new Error('read failed');
+  const resourceInput={resource:(opened.value as MailReadData).text,offset:0,length:100},resourceId=randomUUID();expect(await call('resource_read',resourceInput,cc,resourceId)).toMatchObject({status:'ok',value:{data:'ORIGINAL_MAILBOX_ONLY\n'}});
+  const originalConnection=app.connections.get(connectionId),originalSelection=app.selections.projectSettings('p1','mail'),originalSnapshot=JSON.stringify(runs.assertActive(cc.runId).snapshot),source=join(sourceRoot,'messages.db'),retained=join(f.root,'retained-original.db'),replacement=join(f.root,'retained-replacement.db');
+  fox.close();const originalInode=statSync(source).ino,originalBytes=readFileSync(source);renameSync(source,retained);
+  try{
+   copyFileSync(retained,source);expect(statSync(source).ino).not.toBe(originalInode);expect(readFileSync(source)).toEqual(originalBytes);
+   // Matching path, Message-ID, native ID and bytes do not grant the replacement the old source identity.
+   for(const [operation,input,id]of [['query',queryInput,queryId],['read',readInput,readId],['resource_read',resourceInput,resourceId]]as const){
+    for(const requestId of [id,randomUUID()]){const rejected=await call(operation,input,cc,requestId);expect(rejected).toMatchObject({status:'error',error:{code:'IDENTITY_CHANGE_REQUIRES_SELECTION'}});expect(JSON.stringify(rejected)).not.toContain('ORIGINAL_MAILBOX_ONLY');}
+   }
+   await expect(app.testConnection(sender,{id:connectionId,name:originalConnection.name,expectedRevision:originalConnection.revision,config:originalConnection.config})).rejects.toMatchObject({code:'IDENTITY_CHANGE_REQUIRES_SELECTION'});
+   const checked=await app.testConnection(sender,{name:'Explicit replacement identity',expectedRevision:0,config:originalConnection.config}),created=await app.saveConnection(sender,'mail',checked.operationId,checked.candidateHash);expect(created.id).not.toBe(connectionId);expect(created.identity).not.toEqual(originalConnection.identity);
+   expect(app.connections.get(connectionId)).toEqual(originalConnection);expect(app.selections.projectSettings('p1','mail')).toEqual(originalSelection);expect(JSON.stringify(runs.assertActive(cc.runId).snapshot)).toBe(originalSnapshot);expect(readFileSync(retained)).toEqual(originalBytes);
+  }finally{if(statSync(retained).ino!==originalInode)throw new Error('Original source identity changed during fixture');renameSync(source,replacement);renameSync(retained,source);fox=new Database(source);}
+  expect(statSync(source).ino).toBe(originalInode);expect(readFileSync(source)).toEqual(originalBytes);expect(await call('read',readInput)).toMatchObject({status:'ok',value:{reference}});expect(await call('resource_read',resourceInput)).toMatchObject({status:'ok',value:{data:'ORIGINAL_MAILBOX_ONLY\n'}});expect(app.connections.get(connectionId)).toEqual(originalConnection);expect(JSON.stringify(runs.assertActive(cc.runId).snapshot)).toBe(originalSnapshot);
  });
  nativeIt('uses independent project cursors and resource authorization even when two projects explicitly share the same connection',async()=>{
   add(1);add(2);const first=await query({limit:1}),mail=await read(first.items[0].reference);f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','other mail fixture',1,1)");await enable('p2');const second=await start('codex',90103,'p2');
@@ -160,6 +249,31 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
   try{await Promise.resolve();expect(closed).toBe(false);expect(f.sqlite.prepare("SELECT state FROM application_data_operations WHERE caller_kind='index-job'").get()).toEqual({state:'running'});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='index-job' AND state='active'").get()).toEqual({n:1});}finally{release();}
   await closing;expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='index-job' AND state='active'").get()).toEqual({n:0});expect(f.sqlite.prepare("SELECT state FROM application_index_waiters").get()).toEqual({state:'cancelled'});
  });
+ nativeIt('blocks activation until actual mail index work settles after its UI caller cancels',async()=>{
+  // Real Worker/native reader and index lifecycle; only the scan entry is gated.
+  // Sender and native Agent identities remain fixtures; this is not packaged UI.
+  while(owned.length)await owned.pop()!.cli.exited();
+  add(1);const sourceBefore=hashes(),packages=app.builtin.packages,prior=packages.active('mail')!;
+  const requests=[{hash:prior.packageHash,expectedGeneration:prior.generation}];
+  const lease=await acquireDatabaseAccess(f.root,'maintenance');
+  let release!:()=>void,entered!:()=>void;
+  const ready=new Promise<void>(resolve=>entered=resolve),gate=new Promise<void>(resolve=>release=resolve),original=MailWorkerClient.prototype.scanBatch;
+  vi.spyOn(MailWorkerClient.prototype,'scanBatch').mockImplementationOnce(async function(this:MailWorkerClient,...args){entered();await gate;return original.apply(this,args);});
+  const abort=new AbortController(),pending=ui(scope=>app.mailReads.query(scope,{}),'p1',abort.signal);void pending.catch(()=>{});
+  try{
+   await ready;
+   await expect(activatePreparedPackages({packages,lease,buildId:'index-competition',requests})).rejects.toThrow('尚未停妥');
+   abort.abort();await expect(pending).rejects.toMatchObject({code:'CANCELED'});
+   expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='index-job' AND state='active'").get()).toEqual({n:1});
+   await expect(activatePreparedPackages({packages,lease,buildId:'index-competition',requests})).rejects.toThrow('尚未停妥');
+   expect(packages.active('mail')).toEqual(prior);
+   expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_operations WHERE kind='application-activation'").get()).toEqual({n:0});
+   release();await app.dispose();
+   expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='index-job' AND state='active'").get()).toEqual({n:0});
+   const activated=await activatePreparedPackages({packages,lease,buildId:'index-competition',requests});
+   expect(packages.active('mail')).toEqual(activated.result[0]);expect(hashes()).toEqual(sourceBefore);
+  }finally{release();await pending.catch(()=>{});lease.release();}
+ },20000);
  nativeIt('keeps a shared check alive when one project revokes its selection',async()=>{
   add(1);f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','shared revoke fixture',1,1)");await enable('p2');let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(resolve=>entered=resolve),gate=new Promise<void>(resolve=>release=resolve),original=MailWorkerClient.prototype.scanBatch;
   vi.spyOn(MailWorkerClient.prototype,'scanBatch').mockImplementationOnce(async function(this:MailWorkerClient,...args){entered();await gate;return original.apply(this,args);});

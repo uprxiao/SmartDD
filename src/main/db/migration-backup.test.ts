@@ -36,3 +36,15 @@ it('retains a failed receipt when canceled during the real SQLite backup and lea
  expect(db.prepare('SELECT * FROM business').all()).toEqual([{id:1,value:'retained live row'}]);
  await expect(createMigrationBackup(db,request)).rejects.toThrow();
 });
+
+it('records app watermarks and defaults from the backup even if live state changes immediately after the copy',async()=>{
+ db.exec("CREATE TABLE capability_schema_migrations(app_id TEXT,migration_id TEXT,checksum TEXT,from_version INTEGER,to_version INTEGER,applied_at TEXT,host_build TEXT); CREATE TABLE capability_active_packages(app_id TEXT,package_hash TEXT,activation_generation INTEGER,activated_at TEXT); INSERT INTO capability_schema_migrations VALUES('mail','one','original-checksum',0,1,'before','old-build'); INSERT INTO capability_active_packages VALUES('mail','original-package',3,'before')");
+ const original=db.backup.bind(db),spy=vi.spyOn(db,'backup').mockImplementation(async(file,options)=>{const result=await original(file,options);db.exec("UPDATE capability_active_packages SET package_hash='later-package',activation_generation=4; UPDATE capability_schema_migrations SET checksum='later-checksum'");return result;});
+ try{
+  const receipt=await createMigrationBackup(db,input());expect(receipt.applications).toEqual({migrations:[{app_id:'mail',migration_id:'one',checksum:'original-checksum',from_version:0,to_version:1,applied_at:'before',host_build:'old-build'}],defaults:[{app_id:'mail',package_hash:'original-package',activation_generation:3,activated_at:'before'}]});
+  expect(db.prepare('SELECT package_hash FROM capability_active_packages').get()).toEqual({package_hash:'later-package'});
+ }finally{spy.mockRestore();}
+});
+it('distinguishes a pre-registry backup from an empty initialized application registry',async()=>{
+ const receipt=await createMigrationBackup(db,input());expect(receipt.applications).toEqual({migrations:null,defaults:null});
+});

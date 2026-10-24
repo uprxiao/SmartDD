@@ -64,3 +64,16 @@ describe('registered hosts reuse actual project selection and revocation',()=>{
   const stamp=selection.policyStamp('p-a','extalpha');await selection.select({projectId:'p-a',appId:'extalpha',expectedRevision:1,enabled:false,connections:{extalpha:saved[0].id}});expect(()=>selection.requireEnabled('p-a','extalpha')).toThrow();expect(selection.requireEnabled('p-b','extalpha').enabled).toBe(true);expect(selection.requireEnabled('p-a','extbeta').enabled).toBe(true);await selection.select({projectId:'p-a',appId:'extalpha',expectedRevision:2,enabled:true,connections:{extalpha:saved[0].id}});expect(selection.policyStamp('p-a','extalpha').projectPolicyRevision).toBeGreaterThan(stamp.projectPolicyRevision);await selection.setGlobalEnabled('extalpha',false,1);expect(()=>selection.requireEnabled('p-a','extalpha')).toThrow();expect(()=>selection.requireEnabled('p-b','extalpha')).toThrow();expect(selection.requireEnabled('p-a','extbeta').enabled).toBe(true);
  });
 });
+
+it('persists physical schema2 independently of stable API1 and refuses a mismatched host on reopen',async()=>{
+ const config=hosts();config.providers=config.providers.map(provider=>({...provider,configSchemaVersion:2}));
+ const service=connections(config),saved=await service.save(request('extalpha'));
+ expect(saved.configSchemaVersion).toBe(2);expect(sqlite.prepare('SELECT config_schema_version FROM application_connections WHERE id=?').get(saved.id)).toEqual({config_schema_version:2});
+ expect(sqlite.prepare("SELECT config_api_major FROM application_host_providers WHERE provider_id='extalpha'").get()).toEqual({config_api_major:1});
+ expect(connections(config).get(saved.id)).toEqual(saved);expect(()=>connections().get(saved.id)).toThrow(/契约不符/);
+ const revised=await service.save({...request('extalpha'),id:saved.id,expectedRevision:saved.revision,name:'rechecked',secret:undefined});expect(revised.configSchemaVersion).toBe(2);expect(revised.identityRevision).toBe(saved.identityRevision);
+});
+it('rejects a tested candidate if the current host physical schema changes before commit',async()=>{
+ const original=connections(),tested=await original.testCandidate(request('extalpha')),config=hosts();config.providers=config.providers.map(provider=>({...provider,configSchemaVersion:2}));
+ await expect(connections(config).commitCandidate(tested.operationId,tested.candidateHash)).rejects.toMatchObject({code:'CONFIG_PLAN_STALE'});expect(original.list()).toEqual([]);
+});

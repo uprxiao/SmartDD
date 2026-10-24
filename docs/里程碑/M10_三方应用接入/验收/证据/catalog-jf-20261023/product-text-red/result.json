@@ -1,0 +1,109 @@
+{
+  "root": "/private/tmp/willyou-m10-catalog-ui-o8vdiv",
+  "startedAt": "2026-10-23T22:46:51.670Z",
+  "layer": "A packaged UI; isolated catalog response faults after original IPC authentication",
+  "checks": [
+    {
+      "name": "light loader waits for actual authenticated catalog reply, then renders two apps",
+      "at": "2026-10-23T22:46:54.350Z"
+    },
+    {
+      "name": "light successful empty catalog differs from loading/error",
+      "at": "2026-10-23T22:46:54.624Z"
+    },
+    {
+      "name": "light catalog error retry returns original two apps",
+      "at": "2026-10-23T22:46:55.006Z"
+    },
+    {
+      "name": "light matching and empty searches update only visible catalog",
+      "at": "2026-10-23T22:46:55.029Z"
+    }
+  ],
+  "inputs": [
+    {
+      "selector": "[data-testid=nav-apps]"
+    },
+    {
+      "selector": "[data-testid=nav-apps]"
+    },
+    {
+      "selector": "[data-testid=nav-apps]"
+    },
+    {
+      "selector": ".m10-empty button",
+      "needle": "重试"
+    },
+    {
+      "selector": "input[aria-label=\"搜索应用\"]"
+    },
+    {
+      "selector": "input[aria-label=\"搜索应用\"]"
+    },
+    {
+      "selector": "input[aria-label=\"搜索应用\"]"
+    },
+    {
+      "selector": ".m10-catalog-open",
+      "needle": "禅道"
+    },
+    {
+      "selector": ".m10-back"
+    },
+    {
+      "selector": ".m10-catalog-open",
+      "needle": "邮件"
+    }
+  ],
+  "faults": [
+    {
+      "mode": "hold",
+      "at": "2026-10-23T22:46:53.945Z"
+    },
+    {
+      "mode": "real",
+      "at": "2026-10-23T22:46:54.248Z"
+    },
+    {
+      "mode": "empty",
+      "at": "2026-10-23T22:46:54.351Z"
+    },
+    {
+      "mode": "error",
+      "at": "2026-10-23T22:46:54.625Z"
+    },
+    {
+      "mode": "real",
+      "at": "2026-10-23T22:46:54.898Z"
+    },
+    {
+      "mode": "real",
+      "at": "2026-10-23T22:47:07.263Z"
+    }
+  ],
+  "status": "failed",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "asar": "46bc3be02efd9ab637751a410bc2c8bb6355b0a2af02b07ba949dd11d2128d1b",
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 84049,
+    "checkedInputs": 39
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 84049,
+      "checkedInputs": 39
+    }
+  ],
+  "lastAction": {
+    "selector": ".m10-catalog-open",
+    "needle": "邮件"
+  },
+  "error": "Error: Electron test condition timed out",
+  "stage": "light-details",
+  "stack": "Error: Electron test condition timed out\n    at Object.waitFor (file:///Users/hx/hx/hxWork/SmartDD/scripts/lib/electron-harness.mjs:96:13)\n    at async file:///Users/hx/hx/hxWork/SmartDD/scripts/applications/catalog-ui.mjs:29:154",
+  "dom": "自定义\n应用\n技能\n已添加\n\n添加应用后在此显示\n\n管理\n项目选用\n调用记录\nWillYou\n全部应用\n邮件v1.0.3\n\n在项目 Agent 中查询、准备草稿与获准发送邮件\n\n添加应用\n应用包\nv1.0.3\n随 WillYou 交付\n\n连接、工具与 1 个 Skill 一起提供，在项目中选用后使用。\n\n邮件工作助手\n随应用启用\n\n搜索本地邮件、总结来往内容和待办，准备草稿及经授权的新邮件、回复或回复全部。\n\n查看工具与包内容\n版本与占用\n检查占用\n\n新会话使用默认版本；旧会话与已删除任务保留的原生历史继续引用原版本。\n\n当前分发没有待切换的应用版本。\n\nv1.0.3新会话默认\n0 个会话 · 0 个已删任务保留引用 · 0 个运行占用\n版本原件 63.3 KB · 派生资源 0 字节\n完整性已核对 · 宿主契约兼容\n\n新会话默认版本\n\n查看引用 v1.0.3\n\n空间按文件字节计算。清理保留连接、草稿、发送记录和版本身份；共享依赖另按占用保留。\n\n连接\n0 个连接\n\n添加应用后，还需要连接你的账号或本地邮件来源。\n\n项目中使用\n选择项目\n\n为当前项目显式启用应用，并分别选用来源。启用不代表已有会话已经加载，旧会话保持原固定能力。\n\n管理项目选用\n选择一个项目\n\n在上方选择项目，查看它的工作与业务数据。\n\n应用能力\nmail.read\n读取\nmail.draft\n本地准备 · 无需 SMTP\nmail.send\nSMTP 发送 · 需具体授权\n作用范围\n\n连接统一管理，项目按需选用。停用后不再用于新调用，已发出的操作保留实际结果。\n\n本地数据\n\n配置与记录保存在本机，升级后继续使用。移除应用保留业务数据与历史包。",
+  "finishedAt": "2026-10-23T22:47:07.412Z"
+}

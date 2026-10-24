@@ -4,7 +4,6 @@ import type {ApplicationUiSender} from './execution-context';
 import type {ApplicationService} from './application-service';
 import type {CapabilityRunRegistry} from './run-registry';
 import {canonicalJson} from './manifest';
-import {packageConnectionView} from './package-config-views';
 import type {ApplicationTerminalProof} from './terminal-insertion';
 /** Source identities come from the host's local data, never arbitrary renderer text. */
 export async function resolveApplicationTerminalSource(service:ApplicationService,runs:CapabilityRunRegistry|undefined,sender:ApplicationUiSender,input:ApplicationTerminalBind):Promise<ApplicationTerminalProof>{
@@ -20,7 +19,7 @@ export async function resolveApplicationTerminalSource(service:ApplicationServic
   assertSource=()=>{const row=store.sqlite.prepare('SELECT d.current_revision,r.content_hash FROM mail_drafts d JOIN mail_draft_revisions r ON r.draft_id=d.id AND r.revision=? WHERE d.id=? AND d.project_id=?').get(source.revision,source.draftId,projectId) as {current_revision:number;content_hash:string}|undefined;if(row?.current_revision!==source.revision||row.content_hash!==source.contentHash)throw new ApplicationError('REVISION_CONFLICT','草稿已变化，请重新查看后插入');};
  }else{
   const slot=source.kind==='zentao'?'zentao':'foxmail',permission=source.kind==='zentao'?'zentao.read':'mail.read';if(!pack.allowedOperations.includes(permission))throw new ApplicationError('SCOPE_DENIED','原应用未选用该读取能力');
-  assertSource=()=>{const selected=service.selections.connectionSlot(projectId,appId,slot),connection=service.connections.get(source.reference.connectionId);if(selected.connectionId!==connection.id||selected.identityRevision!==source.reference.identityRevision||connection.identityRevision!==source.reference.identityRevision||!connection.enabled||connection.authorization!=='connected')throw new ApplicationError('SCOPE_DENIED','原引用来源不是本项目当前选用的可用身份');packageConnectionView(store,pack.packageHash,connection);if(source.kind==='zentao')service.data.zentao.assertStoredReference(projectId,source.objectKind,source.reference);};assertSource();
+  assertSource=()=>{const selected=service.selections.connectionSlot(projectId,appId,slot),connection=service.connections.get(source.reference.connectionId);if(selected.connectionId!==connection.id||selected.identityRevision!==source.reference.identityRevision||connection.identityRevision!==source.reference.identityRevision||!connection.enabled||connection.authorization!=='connected')throw new ApplicationError('SCOPE_DENIED','原引用来源不是本项目当前选用的可用身份');service.connections.resolvePackageView(pack.packageHash,connection);if(source.kind==='zentao')service.data.zentao.assertStoredReference(projectId,source.objectKind,source.reference);};assertSource();
   if(source.kind==='mail')await service.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reference.prepare',operations:['mail.read'],semantics:'read'},context=>service.mailReads.source(context,source.reference));
  }
  assert();await inspect();return{text:applicationReferenceText(source),runId,assert,inspect};

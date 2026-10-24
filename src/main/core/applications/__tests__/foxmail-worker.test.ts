@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import Database from 'better-sqlite3';
@@ -81,6 +81,17 @@ describe.skipIf(process.platform !== 'darwin')('actual mail Worker, native metad
     await expect(client.query(config,{ text: '',limit: 50 },identity,signal(),now)).rejects.toMatchObject({ code: 'INCOMPLETE_RESULT' });
     rmSync(join(root,'Mail','other','1.mail')); symlinkSync(join(root,'Mail','Inbox','1.mail'),join(root,'Mail','other','linked.mail'));
     await expect(client.query(config,{ text: '',limit: 50 },identity,signal(),now)).rejects.toMatchObject({ code: 'INCOMPLETE_RESULT' });
+  });
+  it('rejects a replacement database at the same path and accepts only its newly verified identity',async()=>{
+    add(1,now,'original source body');db.close();
+    const path=join(root,'messages.db'),retained=join(root,'original-database.fixture');renameSync(path,retained);
+    db=new Database(path);db.exec(schema);add(1,now,'replacement source body');
+    const before=sourceHashes(root);
+    await expect(client.query(config,{text:'',limit:50},identity,signal(),now)).rejects.toMatchObject({code:'IDENTITY_CHANGE_REQUIRES_SELECTION'});
+    await expect(client.read(config,'1',identity,signal(),now)).rejects.toMatchObject({code:'IDENTITY_CHANGE_REQUIRES_SELECTION'});
+    const replacement=await client.verify(config,signal());expect(replacement.serviceId).not.toBe(identity.serviceId);expect(replacement.accountId).toBe(identity.accountId);
+    expect(await client.query(config,{text:'replacement source body',limit:50},replacement,signal(),now)).toMatchObject({complete:true,matched:1});
+    expect(sourceHashes(root)).toEqual(before);
   });
   it('binds scan batches to the original configuration and rejects mutations before declaring a snapshot complete',async()=>{
     add(1,now,'body-only-needle');const scan=await client.beginScan(config,identity,signal(),now),entries=await client.scanEntries(config,scan.id,0,50,signal());expect(entries).toHaveLength(1);expect(entries[0]).toMatchObject({id:'1',fingerprint:expect.stringMatching(/^[a-f0-9]{64}$/)});

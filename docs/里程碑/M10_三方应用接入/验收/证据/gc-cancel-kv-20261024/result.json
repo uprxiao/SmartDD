@@ -1,0 +1,1918 @@
+{
+  "root": "/private/tmp/willyou-m10-gc-crash-hXXJhk",
+  "startedAt": "2026-10-24T10:47:19.932Z",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "driverSha256": "56a39ddc2b643258734f81442d14f1c9a3a7c0f92302d28abc1354fb7c1c73af",
+  "asar": "7ce669c7d1d1383366f30f79af36dd14491456720c20ce0c7e06cc1d08ed9744",
+  "layer": "I: actual packaged cleanup/cancel IPC, OS exclusive rename and SIGKILL/restart; private fs/exec pause faults, synthetic unused package; no UI/CLI/model",
+  "cases": [
+    {
+      "mode": "before-rename",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/before-rename",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        35578,
+        35653,
+        35688
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "8e4e7449-2069-4693-ae21-94c441369700",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "7292ee11e7d6d61bc89b1afbc3a4bd35cc898be6b964f636a0720bac199c9334"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "458851cbd6586dea05fb807012573634386639db099f033b76eb759dc2ddc8f1",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60316901,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:21.295Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:21.294Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "282deffb-8eee-42af-84b3-bad1a00d5451",
+            "name": "T65 cancel before-rename",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838842216,
+            "updated_at": 1792838842216
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "5ae33635-db72-4f85-b7fe-dc5ad0441d79",
+        "kind": "cleanup-application",
+        "owner_store_id": "8e4e7449-2069-4693-ae21-94c441369700",
+        "state": "preparing",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60316901},\"files\":[{\"dev\":16777234,\"hash\":\"458851cbd6586dea05fb807012573634386639db099f033b76eb759dc2ddc8f1\",\"ino\":60316931,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60316903,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60316905,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60316930,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60316909,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60316911,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60316914,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60316915,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60316916,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60316917,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60316918,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60316921,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60316923,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60316925,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60316929,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"7531140c-5213-4423-a944-d1841512ae84\",\"owner\":{\"pid\":35653,\"startedAt\":\"darwin-proc-v1:1792838843:206733\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"8e4e7449-2069-4693-ae21-94c441369700\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:24.893Z",
+        "updated_at": "2026-10-24T10:47:24.893Z"
+      },
+      "preview": {
+        "operationId": "5ae33635-db72-4f85-b7fe-dc5ad0441d79",
+        "planHash": "c55fa30456e559b1d4b73b3d9576a8a251fd74c9747d42e633acbbc98115ee38",
+        "state": "preparing",
+        "canCancel": true,
+        "issueCode": null
+      },
+      "canceled": {
+        "ok": true,
+        "value": {
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "operationId": "5ae33635-db72-4f85-b7fe-dc5ad0441d79",
+          "cancelOperationId": "19260c4c-074e-491b-8de0-4411cf0e4530",
+          "state": "canceled"
+        }
+      },
+      "finalOperations": [
+        {
+          "operation_id": "5ae33635-db72-4f85-b7fe-dc5ad0441d79",
+          "kind": "cleanup-application",
+          "owner_store_id": "8e4e7449-2069-4693-ae21-94c441369700",
+          "state": "canceled",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60316901},\"files\":[{\"dev\":16777234,\"hash\":\"458851cbd6586dea05fb807012573634386639db099f033b76eb759dc2ddc8f1\",\"ino\":60316931,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60316903,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60316905,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60316930,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60316909,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60316911,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60316914,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60316915,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60316916,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60316917,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60316918,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60316921,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60316923,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60316925,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60316929,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"7531140c-5213-4423-a944-d1841512ae84\",\"owner\":{\"pid\":35653,\"startedAt\":\"darwin-proc-v1:1792838843:206733\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"8e4e7449-2069-4693-ae21-94c441369700\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:24.893Z",
+          "updated_at": "2026-10-24T10:47:24.990Z"
+        },
+        {
+          "operation_id": "19260c4c-074e-491b-8de0-4411cf0e4530",
+          "kind": "cancel-cleanup-application",
+          "owner_store_id": "8e4e7449-2069-4693-ae21-94c441369700",
+          "state": "committed",
+          "plan_json": "{\"cleanupOperationId\":\"5ae33635-db72-4f85-b7fe-dc5ad0441d79\",\"cleanupPlanHash\":\"c55fa30456e559b1d4b73b3d9576a8a251fd74c9747d42e633acbbc98115ee38\",\"instanceId\":\"7531140c-5213-4423-a944-d1841512ae84\",\"owner\":{\"pid\":35653,\"startedAt\":\"darwin-proc-v1:1792838843:206733\"},\"schema\":1,\"storeId\":\"8e4e7449-2069-4693-ae21-94c441369700\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:24.986Z",
+          "updated_at": "2026-10-24T10:47:24.990Z"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "mode": "after-rename",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/after-rename",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        35703,
+        35726,
+        35763
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "d4fbe860-0161-416c-a329-5538033f2453",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "741a8dd6e082b2d2da03eb63e0ef469d739c200f96c79c4faa8f36db85411ed7"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "69b604ed17fe1b511e465bc66530855a8d8727957d710ccccd0be8bf14f99b89",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60319541,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:28.170Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:28.169Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "f1ef4285-7a0f-4609-91a2-12f50b2070c0",
+            "name": "T65 cancel after-rename",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838849721,
+            "updated_at": 1792838849721
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "5c1b0af7-a81b-422f-8634-99bdb7390f1e",
+        "kind": "cleanup-application",
+        "owner_store_id": "d4fbe860-0161-416c-a329-5538033f2453",
+        "state": "preparing",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60319541},\"files\":[{\"dev\":16777234,\"hash\":\"69b604ed17fe1b511e465bc66530855a8d8727957d710ccccd0be8bf14f99b89\",\"ino\":60319567,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60319543,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60319544,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60319565,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60319547,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60319550,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60319551,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60319552,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60319553,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60319554,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60319555,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60319558,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60319560,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60319562,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60319564,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"332f7ab6-4f6e-45a7-bcb1-4e54f9bc10b8\",\"owner\":{\"pid\":35726,\"startedAt\":\"darwin-proc-v1:1792838850:158362\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"d4fbe860-0161-416c-a329-5538033f2453\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:31.627Z",
+        "updated_at": "2026-10-24T10:47:31.627Z"
+      },
+      "preview": {
+        "operationId": "5c1b0af7-a81b-422f-8634-99bdb7390f1e",
+        "planHash": "100e3c429111176c8460f02ae4415d2da71d14aecd267a6f4911ebd8558aaea1",
+        "state": "preparing",
+        "canCancel": true,
+        "issueCode": null
+      },
+      "canceled": {
+        "ok": true,
+        "value": {
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "operationId": "5c1b0af7-a81b-422f-8634-99bdb7390f1e",
+          "cancelOperationId": "c43b7dcf-6199-41e2-80e9-4cca49ca2a8f",
+          "state": "canceled"
+        }
+      },
+      "finalOperations": [
+        {
+          "operation_id": "5c1b0af7-a81b-422f-8634-99bdb7390f1e",
+          "kind": "cleanup-application",
+          "owner_store_id": "d4fbe860-0161-416c-a329-5538033f2453",
+          "state": "canceled",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60319541},\"files\":[{\"dev\":16777234,\"hash\":\"69b604ed17fe1b511e465bc66530855a8d8727957d710ccccd0be8bf14f99b89\",\"ino\":60319567,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60319543,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60319544,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60319565,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60319547,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60319550,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60319551,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60319552,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60319553,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60319554,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60319555,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60319558,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60319560,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60319562,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60319564,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"332f7ab6-4f6e-45a7-bcb1-4e54f9bc10b8\",\"owner\":{\"pid\":35726,\"startedAt\":\"darwin-proc-v1:1792838850:158362\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"d4fbe860-0161-416c-a329-5538033f2453\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:31.627Z",
+          "updated_at": "2026-10-24T10:47:31.757Z"
+        },
+        {
+          "operation_id": "c43b7dcf-6199-41e2-80e9-4cca49ca2a8f",
+          "kind": "cancel-cleanup-application",
+          "owner_store_id": "d4fbe860-0161-416c-a329-5538033f2453",
+          "state": "committed",
+          "plan_json": "{\"cleanupOperationId\":\"5c1b0af7-a81b-422f-8634-99bdb7390f1e\",\"cleanupPlanHash\":\"100e3c429111176c8460f02ae4415d2da71d14aecd267a6f4911ebd8558aaea1\",\"instanceId\":\"332f7ab6-4f6e-45a7-bcb1-4e54f9bc10b8\",\"owner\":{\"pid\":35726,\"startedAt\":\"darwin-proc-v1:1792838850:158362\"},\"schema\":1,\"storeId\":\"d4fbe860-0161-416c-a329-5538033f2453\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:31.737Z",
+          "updated_at": "2026-10-24T10:47:31.757Z"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "mode": "partial-delete",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/partial-delete",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Partial/deleted content or occupied path rejects cancellation without inventing ready or creating cancellation authority",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        35778,
+        35809,
+        35838
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "f679df0c-c150-4330-b3a8-eecfadf09abb",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "702c139e1bba92db35e2898ab9da594775b46bc3bb352d025d7bf84984c84f21"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "7945a58dedf2a93fb7b47801ab8ea914ab6bbf180c1fd12675d1e79ebae6cc46",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60321795,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:34.946Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:34.944Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "7a53341f-22c0-47d3-a588-a1d7dd9731c8",
+            "name": "T65 cancel partial-delete",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838856481,
+            "updated_at": 1792838856481
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "ea2dcbf1-91cb-41fd-92e5-b7062bb0e0ca",
+        "kind": "cleanup-application",
+        "owner_store_id": "f679df0c-c150-4330-b3a8-eecfadf09abb",
+        "state": "deleting",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60321795},\"files\":[{\"dev\":16777234,\"hash\":\"7945a58dedf2a93fb7b47801ab8ea914ab6bbf180c1fd12675d1e79ebae6cc46\",\"ino\":60321819,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60321797,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60321798,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60321818,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60321801,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60321803,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60321804,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60321805,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60321806,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60321807,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60321808,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60321811,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60321813,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60321815,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60321817,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"2351c573-c81a-4dca-8a6c-13c57cd4561d\",\"owner\":{\"pid\":35809,\"startedAt\":\"darwin-proc-v1:1792838856:696026\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"f679df0c-c150-4330-b3a8-eecfadf09abb\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:37.707Z",
+        "updated_at": "2026-10-24T10:47:37.723Z"
+      },
+      "preview": {
+        "operationId": "ea2dcbf1-91cb-41fd-92e5-b7062bb0e0ca",
+        "planHash": "c34dc32341953a1fe41c57021704ab470c30eabfc061f90b4b23b06f604a49d8",
+        "state": "deleting",
+        "canCancel": false,
+        "issueCode": "HASH_MISMATCH"
+      },
+      "deniedCancel": {
+        "ok": false,
+        "code": "HASH_MISMATCH",
+        "message": "原清理目录文件集合已改变"
+      },
+      "finalOperations": [
+        {
+          "operation_id": "ea2dcbf1-91cb-41fd-92e5-b7062bb0e0ca",
+          "kind": "cleanup-application",
+          "owner_store_id": "f679df0c-c150-4330-b3a8-eecfadf09abb",
+          "state": "deleting",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60321795},\"files\":[{\"dev\":16777234,\"hash\":\"7945a58dedf2a93fb7b47801ab8ea914ab6bbf180c1fd12675d1e79ebae6cc46\",\"ino\":60321819,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60321797,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60321798,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60321818,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60321801,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60321803,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60321804,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60321805,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60321806,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60321807,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60321808,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60321811,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60321813,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60321815,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60321817,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"2351c573-c81a-4dca-8a6c-13c57cd4561d\",\"owner\":{\"pid\":35809,\"startedAt\":\"darwin-proc-v1:1792838856:696026\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"f679df0c-c150-4330-b3a8-eecfadf09abb\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:37.707Z",
+          "updated_at": "2026-10-24T10:47:37.723Z"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "mode": "after-delete",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/after-delete",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Partial/deleted content or occupied path rejects cancellation without inventing ready or creating cancellation authority",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        35855,
+        35877,
+        35911
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "92af6e77-6c4e-4349-9c66-e673c64535aa",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "6dddc1242d6393dc11f286c58d1bafa3afd577c1ff936281223e5bdff37aee9b"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "9814297e452a56c7908edc97b9baa40f99f6cedb288a7a1d5d981e46c300bcc2",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60322497,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:39.987Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:39.986Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "1396e186-364c-46a2-9600-6afc1e9b2e14",
+            "name": "T65 cancel after-delete",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838860893,
+            "updated_at": 1792838860893
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "8a9da5c2-da19-43c7-8321-bdb8511e5106",
+        "kind": "cleanup-application",
+        "owner_store_id": "92af6e77-6c4e-4349-9c66-e673c64535aa",
+        "state": "deleting",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60322497},\"files\":[{\"dev\":16777234,\"hash\":\"9814297e452a56c7908edc97b9baa40f99f6cedb288a7a1d5d981e46c300bcc2\",\"ino\":60322521,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60322499,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60322500,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60322520,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60322503,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60322505,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60322506,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60322507,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60322508,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60322509,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60322510,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60322513,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60322515,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60322517,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60322519,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"74415b78-e9b6-488b-bcec-caba6ceb344b\",\"owner\":{\"pid\":35877,\"startedAt\":\"darwin-proc-v1:1792838861:99146\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"92af6e77-6c4e-4349-9c66-e673c64535aa\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:42.123Z",
+        "updated_at": "2026-10-24T10:47:42.142Z"
+      },
+      "preview": {
+        "operationId": "8a9da5c2-da19-43c7-8321-bdb8511e5106",
+        "planHash": "c4581e8dadb9bf89b9234c58a54f2168b60809b8ad3b670ba066cc3a6faefcf5",
+        "state": "deleting",
+        "canCancel": false,
+        "issueCode": "HASH_MISMATCH"
+      },
+      "deniedCancel": {
+        "ok": false,
+        "code": "HASH_MISMATCH",
+        "message": "原版本已部分或全部清理，不能直接恢复为可用"
+      },
+      "finalOperations": [
+        {
+          "operation_id": "8a9da5c2-da19-43c7-8321-bdb8511e5106",
+          "kind": "cleanup-application",
+          "owner_store_id": "92af6e77-6c4e-4349-9c66-e673c64535aa",
+          "state": "deleting",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60322497},\"files\":[{\"dev\":16777234,\"hash\":\"9814297e452a56c7908edc97b9baa40f99f6cedb288a7a1d5d981e46c300bcc2\",\"ino\":60322521,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60322499,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60322500,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60322520,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60322503,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60322505,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60322506,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60322507,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60322508,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60322509,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60322510,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60322513,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60322515,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60322517,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60322519,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"74415b78-e9b6-488b-bcec-caba6ceb344b\",\"owner\":{\"pid\":35877,\"startedAt\":\"darwin-proc-v1:1792838861:99146\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"92af6e77-6c4e-4349-9c66-e673c64535aa\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:42.123Z",
+          "updated_at": "2026-10-24T10:47:42.142Z"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "mode": "occupied",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/occupied",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Partial/deleted content or occupied path rejects cancellation without inventing ready or creating cancellation authority",
+        "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        35926,
+        35948,
+        35983
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "83abe782-602b-4964-b1a9-6816c4d76cd1",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "f5b8bf2097b171b440f778963abc34d9b744f7958a57e45ae5f4b91e384b9875"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "2e62821313eb13cac2d5d447bdc3f40d199d2e8999922aad86687aaa17b273fb",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60323215,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:44.445Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:44.444Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "96263126-ee82-45b6-b342-53d786ca8c9d",
+            "name": "T65 cancel occupied",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838865378,
+            "updated_at": 1792838865378
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "8fd509d7-c6c1-48d7-9a40-910896423fe6",
+        "kind": "cleanup-application",
+        "owner_store_id": "83abe782-602b-4964-b1a9-6816c4d76cd1",
+        "state": "preparing",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60323215},\"files\":[{\"dev\":16777234,\"hash\":\"2e62821313eb13cac2d5d447bdc3f40d199d2e8999922aad86687aaa17b273fb\",\"ino\":60323239,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60323217,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60323218,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60323238,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60323221,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60323223,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60323224,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60323225,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60323226,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60323227,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60323228,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60323231,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323233,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60323235,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323237,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"1327a13d-7545-4b3f-af8e-7760523e699f\",\"owner\":{\"pid\":35948,\"startedAt\":\"darwin-proc-v1:1792838865:600856\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"83abe782-602b-4964-b1a9-6816c4d76cd1\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:46.656Z",
+        "updated_at": "2026-10-24T10:47:46.656Z"
+      },
+      "preview": {
+        "operationId": "8fd509d7-c6c1-48d7-9a40-910896423fe6",
+        "planHash": "6bf229a3613fd5008f1fc2fb8257937768b62f2314f7295bbb438cdbf2ecfe58",
+        "state": "preparing",
+        "canCancel": false,
+        "issueCode": "OWNERSHIP_CONFLICT"
+      },
+      "deniedCancel": {
+        "ok": false,
+        "code": "OWNERSHIP_CONFLICT",
+        "message": "原路径被其他目录占用，保留双方内容"
+      },
+      "canceled": {
+        "ok": true,
+        "value": {
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "operationId": "8fd509d7-c6c1-48d7-9a40-910896423fe6",
+          "cancelOperationId": "a7fdc5ea-9a71-40f8-92d0-4d6d98b67142",
+          "state": "canceled"
+        }
+      },
+      "finalOperations": [
+        {
+          "operation_id": "8fd509d7-c6c1-48d7-9a40-910896423fe6",
+          "kind": "cleanup-application",
+          "owner_store_id": "83abe782-602b-4964-b1a9-6816c4d76cd1",
+          "state": "canceled",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60323215},\"files\":[{\"dev\":16777234,\"hash\":\"2e62821313eb13cac2d5d447bdc3f40d199d2e8999922aad86687aaa17b273fb\",\"ino\":60323239,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60323217,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60323218,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60323238,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60323221,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60323223,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60323224,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60323225,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60323226,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60323227,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60323228,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60323231,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323233,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60323235,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323237,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"1327a13d-7545-4b3f-af8e-7760523e699f\",\"owner\":{\"pid\":35948,\"startedAt\":\"darwin-proc-v1:1792838865:600856\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"83abe782-602b-4964-b1a9-6816c4d76cd1\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:46.656Z",
+          "updated_at": "2026-10-24T10:47:46.773Z"
+        },
+        {
+          "operation_id": "a7fdc5ea-9a71-40f8-92d0-4d6d98b67142",
+          "kind": "cancel-cleanup-application",
+          "owner_store_id": "83abe782-602b-4964-b1a9-6816c4d76cd1",
+          "state": "committed",
+          "plan_json": "{\"cleanupOperationId\":\"8fd509d7-c6c1-48d7-9a40-910896423fe6\",\"cleanupPlanHash\":\"6bf229a3613fd5008f1fc2fb8257937768b62f2314f7295bbb438cdbf2ecfe58\",\"instanceId\":\"1327a13d-7545-4b3f-af8e-7760523e699f\",\"owner\":{\"pid\":35948,\"startedAt\":\"darwin-proc-v1:1792838865:600856\"},\"schema\":1,\"storeId\":\"83abe782-602b-4964-b1a9-6816c4d76cd1\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:46.764Z",
+          "updated_at": "2026-10-24T10:47:46.773Z"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "mode": "target-race",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/target-race",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Actual native RENAME_EXCL preserved an empty target inserted after the Node eligibility check; cancellation intent remains pending",
+        "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        35998,
+        36021,
+        36058
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "d8a01869-ee16-41bf-b96f-b1a52b1df090",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "d5ba6c0d27da26828f37c31bd730be766e37d17d93ea108e589422123d010983"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "aa905922209b1b636ed2eb237477beab55aa972678ae7c0a416659a592665eac",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60323936,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:49.169Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:49.168Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "f4828d18-bc03-4b80-aad2-4d6ec8e6a4fd",
+            "name": "T65 cancel target-race",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838870158,
+            "updated_at": 1792838870158
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "f57b9949-935d-4508-a992-2211338f369a",
+        "kind": "cleanup-application",
+        "owner_store_id": "d8a01869-ee16-41bf-b96f-b1a52b1df090",
+        "state": "preparing",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60323936},\"files\":[{\"dev\":16777234,\"hash\":\"aa905922209b1b636ed2eb237477beab55aa972678ae7c0a416659a592665eac\",\"ino\":60323960,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60323938,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60323939,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60323959,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60323942,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60323944,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60323945,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60323946,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60323947,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60323948,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60323949,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60323952,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323954,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60323956,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323958,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"a8906231-480f-4527-abd5-d0868abaa0b9\",\"owner\":{\"pid\":36021,\"startedAt\":\"darwin-proc-v1:1792838870:479407\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"d8a01869-ee16-41bf-b96f-b1a52b1df090\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:51.465Z",
+        "updated_at": "2026-10-24T10:47:51.465Z"
+      },
+      "preview": {
+        "operationId": "f57b9949-935d-4508-a992-2211338f369a",
+        "planHash": "e9b1c1e2c92068f3b65015f99d8c444246e888270388b5d06e288e2bc84bb01d",
+        "state": "preparing",
+        "canCancel": true,
+        "issueCode": null
+      },
+      "raceReply": {
+        "ok": false,
+        "code": "OWNERSHIP_CONFLICT",
+        "message": "原路径被占用或目录身份变化，保留双方内容"
+      },
+      "targetRace": {
+        "nativeReply": "{\"schema\":1,\"restored\":false,\"error\":\"EEXIST\"}\n",
+        "occupiedInode": 60324077
+      },
+      "canceled": {
+        "ok": true,
+        "value": {
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "operationId": "f57b9949-935d-4508-a992-2211338f369a",
+          "cancelOperationId": "36ff201f-55bb-4957-b31f-ae5e47ff91bb",
+          "state": "canceled"
+        }
+      },
+      "finalOperations": [
+        {
+          "operation_id": "f57b9949-935d-4508-a992-2211338f369a",
+          "kind": "cleanup-application",
+          "owner_store_id": "d8a01869-ee16-41bf-b96f-b1a52b1df090",
+          "state": "canceled",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60323936},\"files\":[{\"dev\":16777234,\"hash\":\"aa905922209b1b636ed2eb237477beab55aa972678ae7c0a416659a592665eac\",\"ino\":60323960,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60323938,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60323939,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60323959,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60323942,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60323944,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60323945,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60323946,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60323947,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60323948,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60323949,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60323952,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323954,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60323956,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60323958,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"a8906231-480f-4527-abd5-d0868abaa0b9\",\"owner\":{\"pid\":36021,\"startedAt\":\"darwin-proc-v1:1792838870:479407\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"d8a01869-ee16-41bf-b96f-b1a52b1df090\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:51.465Z",
+          "updated_at": "2026-10-24T10:47:51.572Z"
+        },
+        {
+          "operation_id": "36ff201f-55bb-4957-b31f-ae5e47ff91bb",
+          "kind": "cancel-cleanup-application",
+          "owner_store_id": "d8a01869-ee16-41bf-b96f-b1a52b1df090",
+          "state": "committed",
+          "plan_json": "{\"cleanupOperationId\":\"f57b9949-935d-4508-a992-2211338f369a\",\"cleanupPlanHash\":\"e9b1c1e2c92068f3b65015f99d8c444246e888270388b5d06e288e2bc84bb01d\",\"instanceId\":\"a8906231-480f-4527-abd5-d0868abaa0b9\",\"owner\":{\"pid\":36021,\"startedAt\":\"darwin-proc-v1:1792838870:479407\"},\"schema\":1,\"storeId\":\"d8a01869-ee16-41bf-b96f-b1a52b1df090\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:51.529Z",
+          "updated_at": "2026-10-24T10:47:51.572Z"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "mode": "cancel-intent-crash",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/cancel-intent-crash",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Actual SIGKILL cancellation recovers through a newly recorded live kernel resumer and keeps original cleanup plan instead of deleting restored files",
+        "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        36078,
+        36103,
+        36129,
+        36153
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "f203e00b65b7eba551cd3ca5fa7a7c32503568ca4d622445d7b423ed1d4841ee"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "b4f3425fcdf7d33c58c0ca39f6da8416323570b6d34d972c88fef8364d938f29",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60324654,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:53.854Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:53.853Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "514588c5-ff23-4c73-9c54-72a2d2d08282",
+            "name": "T65 cancel cancel-intent-crash",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838874832,
+            "updated_at": 1792838874832
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "a5389471-8153-4b08-9938-a0ebad713b59",
+        "kind": "cleanup-application",
+        "owner_store_id": "7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a",
+        "state": "preparing",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60324654},\"files\":[{\"dev\":16777234,\"hash\":\"b4f3425fcdf7d33c58c0ca39f6da8416323570b6d34d972c88fef8364d938f29\",\"ino\":60324678,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60324656,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60324657,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60324677,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60324660,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60324662,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60324663,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60324664,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60324665,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60324666,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60324667,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60324670,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60324672,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60324674,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60324676,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"13fcf9b3-4e3a-47c3-a81b-1ca2057b20a4\",\"owner\":{\"pid\":36103,\"startedAt\":\"darwin-proc-v1:1792838875:153997\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:56.177Z",
+        "updated_at": "2026-10-24T10:47:56.177Z"
+      },
+      "preview": {
+        "operationId": "a5389471-8153-4b08-9938-a0ebad713b59",
+        "planHash": "960d25e0123def5d197872ae1a5213812934c4ea83c156f83f3f94fb46ba6e18",
+        "state": "preparing",
+        "canCancel": true,
+        "issueCode": null
+      },
+      "checkpoint": {
+        "point": "cancel-intent",
+        "pid": 36103
+      },
+      "beforeCrashCancel": {
+        "operation_id": "649eba80-c553-4701-885a-dad894c09602",
+        "kind": "cancel-cleanup-application",
+        "owner_store_id": "7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a",
+        "state": "preparing",
+        "plan_json": "{\"cleanupOperationId\":\"a5389471-8153-4b08-9938-a0ebad713b59\",\"cleanupPlanHash\":\"960d25e0123def5d197872ae1a5213812934c4ea83c156f83f3f94fb46ba6e18\",\"instanceId\":\"13fcf9b3-4e3a-47c3-a81b-1ca2057b20a4\",\"owner\":{\"pid\":36103,\"startedAt\":\"darwin-proc-v1:1792838875:153997\"},\"schema\":1,\"storeId\":\"7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:56.240Z",
+        "updated_at": "2026-10-24T10:47:56.240Z"
+      },
+      "crash": {
+        "pid": 36103,
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "interruptedRequest": {
+        "error": "Error: Electron test closed"
+      },
+      "recoveredCancel": {
+        "operation_id": "649eba80-c553-4701-885a-dad894c09602",
+        "kind": "cancel-cleanup-application",
+        "owner_store_id": "7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a",
+        "state": "committed",
+        "plan_json": "{\"cleanupOperationId\":\"a5389471-8153-4b08-9938-a0ebad713b59\",\"cleanupPlanHash\":\"960d25e0123def5d197872ae1a5213812934c4ea83c156f83f3f94fb46ba6e18\",\"instanceId\":\"13fcf9b3-4e3a-47c3-a81b-1ca2057b20a4\",\"owner\":{\"pid\":36103,\"startedAt\":\"darwin-proc-v1:1792838875:153997\"},\"resumers\":[{\"instanceId\":\"664b456d-cf44-48bc-9566-21e987901e20\",\"owner\":{\"pid\":36129,\"startedAt\":\"darwin-proc-v1:1792838876:298180\"}}],\"schema\":1,\"storeId\":\"7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:47:56.240Z",
+        "updated_at": "2026-10-24T10:47:56.950Z"
+      },
+      "canceled": {
+        "ok": true,
+        "value": {
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "operationId": "a5389471-8153-4b08-9938-a0ebad713b59",
+          "cancelOperationId": "649eba80-c553-4701-885a-dad894c09602",
+          "state": "canceled"
+        }
+      },
+      "finalOperations": [
+        {
+          "operation_id": "a5389471-8153-4b08-9938-a0ebad713b59",
+          "kind": "cleanup-application",
+          "owner_store_id": "7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a",
+          "state": "canceled",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60324654},\"files\":[{\"dev\":16777234,\"hash\":\"b4f3425fcdf7d33c58c0ca39f6da8416323570b6d34d972c88fef8364d938f29\",\"ino\":60324678,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60324656,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60324657,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60324677,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60324660,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60324662,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60324663,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60324664,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60324665,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60324666,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60324667,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60324670,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60324672,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60324674,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60324676,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"13fcf9b3-4e3a-47c3-a81b-1ca2057b20a4\",\"owner\":{\"pid\":36103,\"startedAt\":\"darwin-proc-v1:1792838875:153997\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:56.177Z",
+          "updated_at": "2026-10-24T10:47:56.950Z"
+        },
+        {
+          "operation_id": "649eba80-c553-4701-885a-dad894c09602",
+          "kind": "cancel-cleanup-application",
+          "owner_store_id": "7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a",
+          "state": "committed",
+          "plan_json": "{\"cleanupOperationId\":\"a5389471-8153-4b08-9938-a0ebad713b59\",\"cleanupPlanHash\":\"960d25e0123def5d197872ae1a5213812934c4ea83c156f83f3f94fb46ba6e18\",\"instanceId\":\"13fcf9b3-4e3a-47c3-a81b-1ca2057b20a4\",\"owner\":{\"pid\":36103,\"startedAt\":\"darwin-proc-v1:1792838875:153997\"},\"resumers\":[{\"instanceId\":\"664b456d-cf44-48bc-9566-21e987901e20\",\"owner\":{\"pid\":36129,\"startedAt\":\"darwin-proc-v1:1792838876:298180\"}}],\"schema\":1,\"storeId\":\"7c3584b6-1f19-4f5a-bd1b-72e1e5b4b16a\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:47:56.240Z",
+          "updated_at": "2026-10-24T10:47:56.950Z"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "mode": "cancel-restored-crash",
+      "dir": "/private/tmp/willyou-m10-gc-crash-hXXJhk/cancel-restored-crash",
+      "checks": [
+        "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+        "Actual SIGKILL cancellation recovers through a newly recorded live kernel resumer and keeps original cleanup plan instead of deleting restored files",
+        "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+        "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion"
+      ],
+      "appPids": [
+        36167,
+        36207,
+        36238,
+        36269
+      ],
+      "fixture": {
+        "layer": "Non-tested prerequisite: complete unused package installed by actual registry, not a native historical session",
+        "storeId": "d89b968a-1c56-4554-8f29-7a97081bd659",
+        "oldHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+        "currentHash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+        "oldRelativePath": "apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034"
+      },
+      "before": {
+        "usage": {
+          "appId": "zentao",
+          "version": "0.9.0",
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "resourceId": "app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "state": "ready",
+          "defaultForNewSessions": false,
+          "sessionRefCount": 0,
+          "tombstoneRefCount": 0,
+          "activeRunCount": 0,
+          "references": [],
+          "sourceBytes": 15676,
+          "projectionBytes": 0,
+          "reclaimableBytes": 15676,
+          "integrity": "valid",
+          "compatibility": "compatible",
+          "retentionReasons": [],
+          "issues": [],
+          "canCleanup": true,
+          "planHash": "b67d1f9327c690a9dcb4b8438a3d98c0b5e22c8fe8cb22f4749a77257a15cd43"
+        },
+        "files": {
+          ".willyou-package-owner.json": {
+            "sha256": "dc171e614fafda54acede6a247a12513c76e3841c2e1659a65731f5a4ce54a10",
+            "mode": 384
+          },
+          "adapter/index.cjs": {
+            "sha256": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+            "mode": 384
+          },
+          "adapter/operations.json": {
+            "sha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+            "mode": 384
+          },
+          "manifest.json": {
+            "sha256": "2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd",
+            "mode": 384
+          },
+          "schemas/connections/zentao.json": {
+            "sha256": "589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.input.json": {
+            "sha256": "3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_object_get_v1.output.json": {
+            "sha256": "02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.input.json": {
+            "sha256": "2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_resource_v1.output.json": {
+            "sha256": "c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.input.json": {
+            "sha256": "196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd",
+            "mode": 384
+          },
+          "schemas/tools/smartdd_zentao_work_list_v1.output.json": {
+            "sha256": "8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d",
+            "mode": 384
+          },
+          "skills/bug-analysis/SKILL.md": {
+            "sha256": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+            "mode": 384
+          },
+          "skills/bug-analysis/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          },
+          "skills/story-review/SKILL.md": {
+            "sha256": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+            "mode": 384
+          },
+          "skills/story-review/references/scope.md": {
+            "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+            "mode": 384
+          }
+        },
+        "originalInode": 60325611,
+        "defaults": [
+          {
+            "app_id": "mail",
+            "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:59.494Z"
+          },
+          {
+            "app_id": "zentao",
+            "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+            "activation_generation": 1,
+            "activated_at": "2026-10-24T10:47:59.493Z"
+          }
+        ],
+        "projects": [
+          {
+            "id": "57646592-6309-40c6-b627-202c7abe2acc",
+            "name": "T65 cancel cancel-restored-crash",
+            "aliases": "[]",
+            "description": "Private business canary",
+            "rules_path": null,
+            "config_version": 1,
+            "archived_at": null,
+            "created_at": 1792838880386,
+            "updated_at": 1792838880386
+          }
+        ]
+      },
+      "cleanupReply": {
+        "ok": false,
+        "code": "CAPABILITY_UNAVAILABLE",
+        "message": "本次应用操作未完成，请重新载入后核对状态"
+      },
+      "originalOperation": {
+        "operation_id": "7ce917eb-571a-4bed-ba86-0239fa83a206",
+        "kind": "cleanup-application",
+        "owner_store_id": "d89b968a-1c56-4554-8f29-7a97081bd659",
+        "state": "preparing",
+        "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60325611},\"files\":[{\"dev\":16777234,\"hash\":\"dc171e614fafda54acede6a247a12513c76e3841c2e1659a65731f5a4ce54a10\",\"ino\":60325638,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60325613,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60325614,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60325637,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60325617,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60325619,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60325620,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60325621,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60325622,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60325623,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60325624,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60325627,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60325630,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60325632,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60325634,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"c35a80ed-417c-4708-966d-ea7d78172e8f\",\"owner\":{\"pid\":36207,\"startedAt\":\"darwin-proc-v1:1792838880:803064\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"d89b968a-1c56-4554-8f29-7a97081bd659\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:48:02.239Z",
+        "updated_at": "2026-10-24T10:48:02.239Z"
+      },
+      "preview": {
+        "operationId": "7ce917eb-571a-4bed-ba86-0239fa83a206",
+        "planHash": "122f5e552475aea19aa0ee66f707e59141a2932d7a6a6ff00772e963d9de8fac",
+        "state": "preparing",
+        "canCancel": true,
+        "issueCode": null
+      },
+      "checkpoint": {
+        "point": "cancel-restored",
+        "pid": 36207,
+        "nativeReply": "{\"schema\":1,\"restored\":true}\n"
+      },
+      "beforeCrashCancel": {
+        "operation_id": "5dc7e8fe-1c68-45d3-949c-e2e309022dfe",
+        "kind": "cancel-cleanup-application",
+        "owner_store_id": "d89b968a-1c56-4554-8f29-7a97081bd659",
+        "state": "preparing",
+        "plan_json": "{\"cleanupOperationId\":\"7ce917eb-571a-4bed-ba86-0239fa83a206\",\"cleanupPlanHash\":\"122f5e552475aea19aa0ee66f707e59141a2932d7a6a6ff00772e963d9de8fac\",\"instanceId\":\"c35a80ed-417c-4708-966d-ea7d78172e8f\",\"owner\":{\"pid\":36207,\"startedAt\":\"darwin-proc-v1:1792838880:803064\"},\"schema\":1,\"storeId\":\"d89b968a-1c56-4554-8f29-7a97081bd659\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:48:02.333Z",
+        "updated_at": "2026-10-24T10:48:02.333Z"
+      },
+      "crash": {
+        "pid": 36207,
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "interruptedRequest": {
+        "error": "Error: Electron test closed"
+      },
+      "recoveredCancel": {
+        "operation_id": "5dc7e8fe-1c68-45d3-949c-e2e309022dfe",
+        "kind": "cancel-cleanup-application",
+        "owner_store_id": "d89b968a-1c56-4554-8f29-7a97081bd659",
+        "state": "committed",
+        "plan_json": "{\"cleanupOperationId\":\"7ce917eb-571a-4bed-ba86-0239fa83a206\",\"cleanupPlanHash\":\"122f5e552475aea19aa0ee66f707e59141a2932d7a6a6ff00772e963d9de8fac\",\"instanceId\":\"c35a80ed-417c-4708-966d-ea7d78172e8f\",\"owner\":{\"pid\":36207,\"startedAt\":\"darwin-proc-v1:1792838880:803064\"},\"resumers\":[{\"instanceId\":\"ad37f402-aac6-445b-a44b-bb3f475579f7\",\"owner\":{\"pid\":36238,\"startedAt\":\"darwin-proc-v1:1792838882:389556\"}}],\"schema\":1,\"storeId\":\"d89b968a-1c56-4554-8f29-7a97081bd659\"}",
+        "error_code": null,
+        "created_at": "2026-10-24T10:48:02.333Z",
+        "updated_at": "2026-10-24T10:48:03.303Z"
+      },
+      "canceled": {
+        "ok": true,
+        "value": {
+          "packageHash": "550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034",
+          "operationId": "7ce917eb-571a-4bed-ba86-0239fa83a206",
+          "cancelOperationId": "5dc7e8fe-1c68-45d3-949c-e2e309022dfe",
+          "state": "canceled"
+        }
+      },
+      "finalOperations": [
+        {
+          "operation_id": "7ce917eb-571a-4bed-ba86-0239fa83a206",
+          "kind": "cleanup-application",
+          "owner_store_id": "d89b968a-1c56-4554-8f29-7a97081bd659",
+          "state": "canceled",
+          "plan_json": "{\"directory\":{\"dev\":16777234,\"ino\":60325611},\"files\":[{\"dev\":16777234,\"hash\":\"dc171e614fafda54acede6a247a12513c76e3841c2e1659a65731f5a4ce54a10\",\"ino\":60325638,\"path\":\".willyou-package-owner.json\",\"size\":143},{\"dev\":16777234,\"hash\":\"53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d\",\"ino\":60325613,\"path\":\"adapter/index.cjs\",\"size\":717},{\"dev\":16777234,\"hash\":\"5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db\",\"ino\":60325614,\"path\":\"adapter/operations.json\",\"size\":408},{\"dev\":16777234,\"hash\":\"2db84d258cb23b0086199d51e5ddbda895a8c4ff4f5b8e6af70423e7c19000fd\",\"ino\":60325637,\"path\":\"manifest.json\",\"size\":4080},{\"dev\":16777234,\"hash\":\"589ac6c13c6918d523ee731e4b082cd9e8918ee1868d11142add0de38a9f1877\",\"ino\":60325617,\"path\":\"schemas/connections/zentao.json\",\"size\":287},{\"dev\":16777234,\"hash\":\"3905d4351577f4409043fb310ab255cba64bd0dc026b22f39c3a88d13807eaaf\",\"ino\":60325619,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.input.json\",\"size\":707},{\"dev\":16777234,\"hash\":\"02c79510158ee84975aa74d125fac25b1b1c35600ff8a50f84e296b741ad9d9c\",\"ino\":60325620,\"path\":\"schemas/tools/smartdd_zentao_object_get_v1.output.json\",\"size\":2264},{\"dev\":16777234,\"hash\":\"2164d475b1f2758a4d2cdcd24838e56362974ca0b37b4cd4b2785447bb792f48\",\"ino\":60325621,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.input.json\",\"size\":736},{\"dev\":16777234,\"hash\":\"c436bd07f8d0de6b951c67d05930683e70bab4777d2727bba9f42d17e3e07e07\",\"ino\":60325622,\"path\":\"schemas/tools/smartdd_zentao_resource_v1.output.json\",\"size\":662},{\"dev\":16777234,\"hash\":\"196cd1be62322e13a138d80d11e3da885ab61f74cc374fef0f30b29190c7b5dd\",\"ino\":60325623,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.input.json\",\"size\":509},{\"dev\":16777234,\"hash\":\"8d70ed9703ff0daa6b1b99a15d580394080b04da18165e070b968a01bf859e8d\",\"ino\":60325624,\"path\":\"schemas/tools/smartdd_zentao_work_list_v1.output.json\",\"size\":1480},{\"dev\":16777234,\"hash\":\"7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e\",\"ino\":60325627,\"path\":\"skills/bug-analysis/SKILL.md\",\"size\":1221},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60325630,\"path\":\"skills/bug-analysis/references/scope.md\",\"size\":733},{\"dev\":16777234,\"hash\":\"e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8\",\"ino\":60325632,\"path\":\"skills/story-review/SKILL.md\",\"size\":996},{\"dev\":16777234,\"hash\":\"eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371\",\"ino\":60325634,\"path\":\"skills/story-review/references/scope.md\",\"size\":733}],\"generation\":2,\"instanceId\":\"c35a80ed-417c-4708-966d-ea7d78172e8f\",\"owner\":{\"pid\":36207,\"startedAt\":\"darwin-proc-v1:1792838880:803064\"},\"packageHash\":\"550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"relativePath\":\"apps/zentao/0.9.0/550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"resourceId\":\"app:550f7374e5088ba862b982d74d0907b6ef6dca8476af0e3cbb7b4bf60782a034\",\"schema\":1,\"storeId\":\"d89b968a-1c56-4554-8f29-7a97081bd659\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:48:02.239Z",
+          "updated_at": "2026-10-24T10:48:03.303Z"
+        },
+        {
+          "operation_id": "5dc7e8fe-1c68-45d3-949c-e2e309022dfe",
+          "kind": "cancel-cleanup-application",
+          "owner_store_id": "d89b968a-1c56-4554-8f29-7a97081bd659",
+          "state": "committed",
+          "plan_json": "{\"cleanupOperationId\":\"7ce917eb-571a-4bed-ba86-0239fa83a206\",\"cleanupPlanHash\":\"122f5e552475aea19aa0ee66f707e59141a2932d7a6a6ff00772e963d9de8fac\",\"instanceId\":\"c35a80ed-417c-4708-966d-ea7d78172e8f\",\"owner\":{\"pid\":36207,\"startedAt\":\"darwin-proc-v1:1792838880:803064\"},\"resumers\":[{\"instanceId\":\"ad37f402-aac6-445b-a44b-bb3f475579f7\",\"owner\":{\"pid\":36238,\"startedAt\":\"darwin-proc-v1:1792838882:389556\"}}],\"schema\":1,\"storeId\":\"d89b968a-1c56-4554-8f29-7a97081bd659\"}",
+          "error_code": null,
+          "created_at": "2026-10-24T10:48:02.333Z",
+          "updated_at": "2026-10-24T10:48:03.303Z"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "appPids": [
+    35578,
+    35653,
+    35688,
+    35703,
+    35726,
+    35763,
+    35778,
+    35809,
+    35838,
+    35855,
+    35877,
+    35911,
+    35926,
+    35948,
+    35983,
+    35998,
+    36021,
+    36058,
+    36078,
+    36103,
+    36129,
+    36153,
+    36167,
+    36207,
+    36238,
+    36269
+  ],
+  "checks": [
+    {
+      "case": "before-rename",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:47:24.921Z",
+      "passed": true
+    },
+    {
+      "case": "before-rename",
+      "name": "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+      "at": "2026-10-24T10:47:25.041Z",
+      "passed": true
+    },
+    {
+      "case": "before-rename",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:47:26.820Z",
+      "passed": true
+    },
+    {
+      "case": "after-rename",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:47:31.658Z",
+      "passed": true
+    },
+    {
+      "case": "after-rename",
+      "name": "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+      "at": "2026-10-24T10:47:31.798Z",
+      "passed": true
+    },
+    {
+      "case": "after-rename",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:47:33.622Z",
+      "passed": true
+    },
+    {
+      "case": "partial-delete",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:47:37.732Z",
+      "passed": true
+    },
+    {
+      "case": "partial-delete",
+      "name": "Partial/deleted content or occupied path rejects cancellation without inventing ready or creating cancellation authority",
+      "at": "2026-10-24T10:47:37.777Z",
+      "passed": true
+    },
+    {
+      "case": "partial-delete",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:47:39.066Z",
+      "passed": true
+    },
+    {
+      "case": "after-delete",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:47:42.157Z",
+      "passed": true
+    },
+    {
+      "case": "after-delete",
+      "name": "Partial/deleted content or occupied path rejects cancellation without inventing ready or creating cancellation authority",
+      "at": "2026-10-24T10:47:42.209Z",
+      "passed": true
+    },
+    {
+      "case": "after-delete",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:47:43.500Z",
+      "passed": true
+    },
+    {
+      "case": "occupied",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:47:46.672Z",
+      "passed": true
+    },
+    {
+      "case": "occupied",
+      "name": "Partial/deleted content or occupied path rejects cancellation without inventing ready or creating cancellation authority",
+      "at": "2026-10-24T10:47:46.717Z",
+      "passed": true
+    },
+    {
+      "case": "occupied",
+      "name": "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+      "at": "2026-10-24T10:47:46.797Z",
+      "passed": true
+    },
+    {
+      "case": "occupied",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:47:48.214Z",
+      "passed": true
+    },
+    {
+      "case": "target-race",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:47:51.483Z",
+      "passed": true
+    },
+    {
+      "case": "target-race",
+      "name": "Actual native RENAME_EXCL preserved an empty target inserted after the Node eligibility check; cancellation intent remains pending",
+      "at": "2026-10-24T10:47:51.544Z",
+      "passed": true
+    },
+    {
+      "case": "target-race",
+      "name": "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+      "at": "2026-10-24T10:47:51.598Z",
+      "passed": true
+    },
+    {
+      "case": "target-race",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:47:52.842Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-intent-crash",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:47:56.194Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-intent-crash",
+      "name": "Actual SIGKILL cancellation recovers through a newly recorded live kernel resumer and keeps original cleanup plan instead of deleting restored files",
+      "at": "2026-10-24T10:47:57.282Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-intent-crash",
+      "name": "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+      "at": "2026-10-24T10:47:57.316Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-intent-crash",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:47:58.579Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-restored-crash",
+      "name": "Actual packaged cleanup interrupted at recorded private physical fault; original fs methods restored",
+      "at": "2026-10-24T10:48:02.273Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-restored-crash",
+      "name": "Actual SIGKILL cancellation recovers through a newly recorded live kernel resumer and keeps original cleanup plan instead of deleting restored files",
+      "at": "2026-10-24T10:48:03.675Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-restored-crash",
+      "name": "Real cancellation and repeated original request retain original inode/payload/immutable cleanup plan and return one canceled receipt",
+      "at": "2026-10-24T10:48:03.725Z",
+      "passed": true
+    },
+    {
+      "case": "cancel-restored-crash",
+      "name": "Normal App restart is idempotent, preserves original project/defaults and never reverses cancellation into deletion",
+      "at": "2026-10-24T10:48:05.460Z",
+      "passed": true
+    }
+  ],
+  "helper": {
+    "sourceSha256": "121e3a43681998e84980f6583e1f69511b12366c7a8ded71b9a0515c90b806f9",
+    "compiledSha256": "c2fb050037bb1a8da412d47165487307d1d3054832e5eab57d996b8acc67743c"
+  },
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 36269,
+    "checkedInputs": 0
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 35578,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35653,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35688,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35703,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35726,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35763,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35778,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35809,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35838,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35855,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35877,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35911,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35926,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35948,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35983,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 35998,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36021,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36058,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36078,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36103,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36129,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36153,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36167,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36207,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36238,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 36269,
+      "checkedInputs": 0
+    }
+  ],
+  "status": "passed-partial",
+  "remaining": [
+    "I layer only; real UI confirmation/focus/visual and full shared graph/cross-volume T65 remain",
+    "Synthetic complete unused package, deterministic fs faults/target race and real OS/native operations are separately recorded"
+  ],
+  "finishedAt": "2026-10-24T10:48:05.510Z"
+}

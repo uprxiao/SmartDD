@@ -56,6 +56,17 @@ describe('actual production application forms with explicit RPC fixtures',()=>{
  it('requires the explicit compatibility impact acknowledgement returned for this candidate',async()=>{
   const value=candidate();value.compatibility.impacts=[{packageHash:'a'.repeat(64),version:'0.9.0',taskId:'old-task',status:'unverified',reason:'旧版本尚未核验'}];m.testConnection.mockResolvedValueOnce(ok(value));mount(<ConnectionForm kind="zentao" onSaved={async()=>{}} onClose={()=>{}}/>);fill();fireEvent.click(screen.getByRole('button',{name:'测试连接'}));await screen.findByText('旧版本尚未核验',{exact:false});expect((screen.getByRole('button',{name:'保存连接'}) as HTMLButtonElement).disabled).toBe(true);fireEvent.click(screen.getByRole('checkbox'));fireEvent.click(screen.getByRole('button',{name:'保存连接'}));await waitFor(()=>expect(m.saveConnection).toHaveBeenCalledWith('zentao',uid(1),'b'.repeat(64),'e'.repeat(64)));
  });
+ it('keeps a successful connection save separate from list refresh failure and retries only the list',async()=>{
+  let failRefresh=false;
+  const saved=connection(91,'zentao','Saved once');
+  m.connections.mockImplementation(async(id:ApplicationId)=>failRefresh?{ok:false,code:'CONNECTION_UNAVAILABLE',message:'Fixture list refresh failed'}:ok(structuredClone(connections.filter(c=>c.appId===id))));
+  m.saveConnection.mockImplementation(async()=>{connections.push(saved);failRefresh=true;return ok(saved);});
+  navigation.openApplications('zentao');mount(<ApplicationsWorkspace/>);await screen.findByRole('button',{name:'管理禅道 A'});
+  fireEvent.click(screen.getByRole('button',{name:'添加连接'}));fill();fireEvent.click(screen.getByRole('button',{name:'测试连接'}));await screen.findByText('身份验证通过，可保存连接');fireEvent.click(screen.getByRole('button',{name:'保存连接'}));
+  await screen.findByText('Fixture list refresh failed');expect(screen.queryByRole('dialog')).toBeNull();expect(m.saveConnection).toHaveBeenCalledTimes(1);expect(connections.filter(c=>c.id===saved.id)).toEqual([saved]);
+  failRefresh=false;fireEvent.click(screen.getByRole('button',{name:'重试'}));await screen.findByRole('button',{name:'管理Saved once'});
+  expect(m.saveConnection).toHaveBeenCalledTimes(1);expect(m.testConnection).toHaveBeenCalledTimes(1);expect(m.discardConnectionTest).not.toHaveBeenCalled();expect(connections.filter(c=>c.id===saved.id)).toEqual([saved]);
+ });
  it('separately replaces one reading slot and clears the sender without changing the other slot',async()=>{
   mount(<ProjectApplications project={project}/>);const read=await screen.findByRole('radio',{name:'为隔离项目选用来源 B'});fireEvent.click(read);await waitFor(()=>expect(m.select).toHaveBeenCalledWith({projectId:project.id,appId:'mail',expectedRevision:1,enabled:true,connections:{foxmail:uid(12),smtp:uid(21)}}));await waitFor(()=>expect((screen.getByRole('radio',{name:'为隔离项目选用来源 B'}) as HTMLInputElement).checked).toBe(true));fireEvent.click(screen.getByRole('radio',{name:'SMTP 发件账号不选用'}));await waitFor(()=>expect(m.select).toHaveBeenLastCalledWith({projectId:project.id,appId:'mail',expectedRevision:2,enabled:true,connections:{foxmail:uid(12),smtp:null}}));
  });

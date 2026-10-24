@@ -1,0 +1,5 @@
+import {openElectron} from '/Users/hx/hx/hxWork/SmartDD/scripts/lib/electron-harness.mjs';
+import assert from 'node:assert/strict';
+const started=performance.now();
+await assert.rejects(openElectron({executable:'/private/tmp/willyou-m10-harness-stalled-http.cjs',userData:'/private/tmp/willyou-m10-harness-startup-only'}),/debugging target not ready/);
+const elapsedMs=performance.now()-started;assert(elapsedMs<20000);console.log(JSON.stringify({passed:true,elapsedMs,scope:'driver-only stalled HTTP fixture; no product acceptance'}));

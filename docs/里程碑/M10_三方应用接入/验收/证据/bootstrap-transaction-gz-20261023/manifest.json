@@ -1,0 +1,46 @@
+{
+  "branch": "feature/0.0.2",
+  "commit": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "productionEvidence": "../activation-package-gt-20261023/manifest.json",
+  "runs": [
+    {
+      "root": "/private/tmp/willyou-m10-bootstrap-crash-2gANDd",
+      "checkpoint": "schema-transaction",
+      "startedAt": "2026-10-23T21:12:45.188Z",
+      "checks": [
+        "All migration statements and receipt inserted inside uncommitted transaction; external reader sees no new schema",
+        "SIGKILL preserved original bootstrap operation",
+        "Unmodified packaged restart completed original operation with exact schema watermarks",
+        "Second restart retained exact receipt, journal, migrations and default generations"
+      ],
+      "layer": "packaged main-process SQL/filesystem fault injection, no business UI acceptance",
+      "asar": "73a739a8d9233173cae5ca80ae458a3819dc86b568dae2ac04e696a5fd49e36c",
+      "operationId": "69d148a7-8977-4a13-935e-5433a1ee8903",
+      "status": "passed",
+      "finishedAt": "2026-10-23T21:12:50.439Z"
+    },
+    {
+      "root": "/private/tmp/willyou-m10-bootstrap-crash-BAbwwC",
+      "checkpoint": "schema-transaction",
+      "fixture": "legacy-m0",
+      "startedAt": "2026-10-23T21:13:02.473Z",
+      "checks": [
+        "All migration statements and receipt inserted inside uncommitted transaction; external reader sees no new schema",
+        "SIGKILL preserved original bootstrap operation",
+        "Unmodified packaged restart completed original operation with exact schema watermarks",
+        "Legacy M0 settings value and timestamp preserved through interrupted migration and both restarts",
+        "Second restart retained exact receipt, journal, migrations and default generations"
+      ],
+      "layer": "packaged main-process SQL/filesystem fault injection, no business UI acceptance",
+      "asar": "73a739a8d9233173cae5ca80ae458a3819dc86b568dae2ac04e696a5fd49e36c",
+      "fixtureSqlHash": "be40f3d6257fdef5a7217b17944be56a5bdcd9f85ba54a6b05027ac901869abc",
+      "operationId": "a1f697d4-0f94-4a9c-9ac5-52d1eb14964a",
+      "status": "passed",
+      "finishedAt": "2026-10-23T21:13:07.009Z"
+    }
+  ],
+  "driverNote": "Final driver adds optional legacy fixture after empty transaction run; empty path unchanged except fixture metadata.",
+  "scripts/applications/bootstrap-crash-app.mjs": "ce35035319a9cd826356c2b2731bf6e284c2af1de88f884f05ff6ca50f4b24e4",
+  "drizzle/0000_init.sql": "be40f3d6257fdef5a7217b17944be56a5bdcd9f85ba54a6b05027ac901869abc"
+}

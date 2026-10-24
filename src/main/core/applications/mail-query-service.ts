@@ -45,7 +45,10 @@ export class MailQueryService {
   const cache=await this.cache(),values=new MailCacheValues(cache),index=new MailMessageIndex(cache,target.sourceKey,context.signal),queryHash=digest(canonicalJson({range,text,parser:1})),key='query:'+queryHash,worker=this.createWorker();
   try{
    this.contexts.require(context,'mail.read');const scan=await worker.beginScan(target.config,target.connection.identity,context.signal,target.at),saved=await values.load(target.sourceKey,key,stateSchema.parse);let expected=saved?.recordHash??null;
-   let state:MailQueryState=saved?.value.sourceRevision===scan.sourceRevision&&saved.value.queryHash===queryHash&&saved.value.total===scan.metadataCount&&!(retryFailed&&saved.value.nextOffset===saved.value.total&&saved.value.problemCount>0)?saved.value:{schema:1,id:randomUUID(),sourceRevision:scan.sourceRevision,queryHash,range,total:scan.metadataCount,nextOffset:0,items:[],blocks:[],problems:[],problemCount:0,checkedAt:scan.checkedAt,lastSuccessfulRefreshAt:null};
+   // A reused state is mutated below; capture its persisted times before the
+   // latest complete check changes them, including checks with no new batches.
+   const savedCheckedAt=saved?.value.checkedAt,savedSuccessfulAt=saved?.value.lastSuccessfulRefreshAt;
+   let state:MailQueryState=saved?.value.sourceRevision===scan.sourceRevision&&saved.value.queryHash===queryHash&&saved.value.total===scan.metadataCount&&!(retryFailed&&saved.value.nextOffset===saved.value.total&&saved.value.problemCount>0)?saved.value:{schema:1,id:randomUUID(),sourceRevision:scan.sourceRevision,queryHash,range,total:scan.metadataCount,nextOffset:0,items:[],blocks:[],problems:[],problemCount:0,checkedAt:scan.checkedAt,lastSuccessfulRefreshAt:saved?.value.queryHash===queryHash?saved.value.lastSuccessfulRefreshAt:null};
    const until=performance.now()+(this.options.workMs??15000),seen=new Set(state.items.map(item=>item.id));let batches=0;
    while(state.nextOffset<state.total&&performance.now()<until&&batches<(this.options.maxBatches??Infinity)){
     this.contexts.require(context,'mail.read');const entries=await worker.scanEntries(target.config,scan.id,state.nextOffset,this.options.batchSize??50,context.signal),reuse=await index.read(entries);
@@ -58,9 +61,29 @@ export class MailQueryService {
    }
    const checked=await worker.finishScan(target.config,scan.id,context.signal);this.contexts.require(context,'mail.read');state.checkedAt=checked.checkedAt;
    if(state.nextOffset===state.total&&state.problemCount===0)state.lastSuccessfulRefreshAt=checked.checkedAt;
-   if(batches||!saved||state.id!==saved.value.id)await values.save(target.sourceKey,key,state,expected,context.signal);
-   await cache.maintain({signal:context.signal});return{state,checkedAt:checked.checkedAt,scan,at:target.at.toISOString()};
+   if(batches||!saved||state.id!==saved.value.id||state.checkedAt!==savedCheckedAt||state.lastSuccessfulRefreshAt!==savedSuccessfulAt)await this.saveFinishedCheck(context,values,target.sourceKey,key,state,expected);
+   await cache.maintain({signal:context.signal});return{state,checkedAt:state.checkedAt,scan,at:target.at.toISOString()};
   }finally{await worker.close();}
+ }
+ private async saveFinishedCheck(context:ApplicationExecutionContext,values:MailCacheValues,sourceKey:string,key:string,state:MailQueryState,expected:string|null):Promise<void>{
+  // Fresh checks and cursor continuation can have separate producers. Only
+  // identical immutable checkpoints may reconcile their completion times;
+  // changed source/progress/results must still fail the original CAS check.
+  const body=(value:MailQueryState)=>{const {checkedAt,lastSuccessfulRefreshAt,...rest}=value;return canonicalJson(rest);};
+  for(let attempt=0;attempt<3;attempt++){
+   this.contexts.require(context,'mail.read');
+   try{await values.save(sourceKey,key,state,expected,context.signal);return;}
+   catch(error){
+    if(!(error instanceof ApplicationError)||error.code!=='REVISION_CONFLICT')throw error;
+    const latest=await values.load(sourceKey,key,stateSchema.parse);
+    if(!latest||body(latest.value)!==body(state))throw error;
+    if(Date.parse(latest.value.checkedAt)>Date.parse(state.checkedAt))state.checkedAt=latest.value.checkedAt;
+    const successful=latest.value.lastSuccessfulRefreshAt;
+    if(successful&&(!state.lastSuccessfulRefreshAt||Date.parse(successful)>Date.parse(state.lastSuccessfulRefreshAt)))state.lastSuccessfulRefreshAt=successful;
+    expected=latest.recordHash;
+   }
+  }
+  throw new ApplicationError('REVISION_CONFLICT','邮件检查时间仍被其他执行者更新，请重新检查当前来源');
  }
  async summaries(target:MailQueryTarget,result:Result,items:MailQueryState['items']):Promise<LocalMailSummary[]>{
   const cache=await this.cache(),rows:LocalMailSummary[]=[],blocks=new Map<number,LocalMailSummary[]>();let missing=false;

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export const mailQueryDaysSchema = z.number().int().min(1).max(100);
 export const mailSearchSchema = z.object({ text: z.string().max(1000).default(''), limit: z.number().int().min(1).max(200).default(50) }).strict();
 export type MailSearch = z.infer<typeof mailSearchSchema>;
 export interface MailDateRange { days: number; timeZone: string; startDate: string; endDate: string; start: string; endExclusive: string }

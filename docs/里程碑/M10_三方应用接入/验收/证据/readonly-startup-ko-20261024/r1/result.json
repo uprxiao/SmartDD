@@ -1,0 +1,67 @@
+{
+  "root": "/private/tmp/willyou-m10-readonly-startup-9kXSuW",
+  "startedAt": "2026-10-24T10:06:09.706Z",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "driverSha256": "843ab76f25c96a794ed93224c02c7de5b7f9c4b6c563d6b47b80a70b29eeaa52",
+  "asar": "8a1b0addfa84e80208aca3362284dc00e6ae201e40d108a33aae50c5a7ff73fd",
+  "layer": "I: actual packaged startup and OS permission denial; SMARTDD_PROBE suppresses error dialog only; no GUI/CLI/system approval acceptance",
+  "checks": [
+    {
+      "name": "Existing business database and U reject actual OS writes under this non-root user",
+      "at": "2026-10-24T10:06:11.822Z",
+      "passed": true
+    }
+  ],
+  "appPids": [
+    17317
+  ],
+  "faultPids": [
+    17348
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 17317,
+    "checkedInputs": 0
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 17317,
+      "checkedInputs": 0
+    }
+  ],
+  "originalProject": {
+    "id": "61d209f2-5eb4-47eb-968c-7ccbc9f9d7e9",
+    "name": "T70 原库保留 canary",
+    "aliases": [],
+    "description": "Private persisted permission canary",
+    "rulesPath": null,
+    "configVersion": 1,
+    "archivedAt": null,
+    "createdAt": 1792836371637,
+    "updatedAt": 1792836371637,
+    "dirs": [],
+    "databases": [],
+    "servers": []
+  },
+  "before": {
+    "db": "/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录/smartdd.db",
+    "ino": 60240931,
+    "dev": 16777234,
+    "sha256": "9583f7dc1478ba148b9c46318f31318a1a6ea0a1d2ffb58f10981658c6758c13"
+  },
+  "existingFailure": {
+    "userData": "/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录",
+    "label": "existing-denied",
+    "code": 1,
+    "signal": null,
+    "stderr": "attempt to write a readonly database\n",
+    "probeMode": true
+  },
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   '/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录/backups/m10/7e4383cf-e8da-4671-b99b-ff687aaf26bf/smartdd.db',\n+   '/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录/backups/m10/c0786e14-5588-4ab0-8730-6ac48e3429c3/smartdd.db',\n    '/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录/smartdd.db'\n  ]\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   '/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录/backups/m10/7e4383cf-e8da-4671-b99b-ff687aaf26bf/smartdd.db',\n+   '/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录/backups/m10/c0786e14-5588-4ab0-8730-6ac48e3429c3/smartdd.db',\n    '/private/tmp/willyou-m10-readonly-startup-9kXSuW/已有数据 只读目录/smartdd.db'\n  ]\n\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/applications/readonly-startup-app.mjs:37:165",
+  "finishedAt": "2026-10-24T10:06:12.103Z"
+}

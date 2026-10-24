@@ -1,0 +1,1923 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs --maxWorkers=2 --reporter=default --reporter=json --outputFile=/private/tmp/willyou-m10-dx-full.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/core/applications/__tests__/mail-read-data.test.ts (27 tests) 175546ms
+     ✓ exposes actual scan progress and last complete refresh to UI without extending the original v1 tool result  5232ms
+     ✓ uses real CJS contracts for current-source search,read,UTF-8 chunks and exact attachment bytes without modifying the source  6209ms
+     ✓ paginates more than200 matches without omission and reuses completed persistent checks without reparsing unchanged messages  10714ms
+     ✓ persists partial scan checkpoints and resumes after service reconstruction without inventing a complete empty query  7684ms
+     ✓ distinguishes source deletion from a missing local file and never serves old cached bodies as current mail  7440ms
+     ✓ rechecks current source existence before delivering a cached ToolService query receipt  5170ms
+     ✓ rejects changed source bytes,forged identity or expanded model scope before returning resources  6852ms
+     ✓ uses independent project cursors and resource authorization even when two projects explicitly share the same connection  7922ms
+     ✓ rebuilds resources after deliberate cache clear using the original source reference and keeps stable IDs  8264ms
+     ✓ shares an in-flight check while cancellation of one waiter leaves the other authorized project running  5291ms
+     ✓ reuses durable per-message fulltext across queries and reparses only added,changed or moved files  8281ms
+     ✓ rejects a source that changes after a batch and retries a transient incomplete check on a fresh query  6913ms
+     ✓ retains the last cancelled shared producer and its package lease until its actual work settles  3940ms
+     ✓ keeps a shared check alive when one project revokes its selection  5238ms
+     ✓ pins the full original mail revision during the separate attachment read even if attachment bytes are unchanged  5865ms
+     ✓ encodes chunks that split multibyte UTF-8 as exact base64 bytes  8561ms
+     ✓ derives reply/reply-all from real headers and the explicitly selected SMTP identity without retrieving its secret  5645ms
+     ✓ creates replies with no SMTP and preserves their independent content after source deletion and reconnection loss  6975ms
+     ✓ refuses invalid reply links,missing addresses and a sender outside the current SMTP slot  6946ms
+     ✓ copies exact MIME attachment bytes to persistent business storage once and keeps them after cache/source loss  8797ms
+     ✓ rejects cross-project,modified and oversized resource imports and does not accept model-supplied filesystem paths  7248ms
+     ✓ captures current-workspace capabilities and imports real native file bytes without granting arbitrary paths  5820ms
+     ✓ denies a workspace reference in another project and after the original file root closes  4805ms
+     ✓ refuses replacement by a symlink and capture of a real file above the attachment budget  4293ms
+     ✓ does not commit an attachment when cancellation arrives while actual source work is pending  3428ms
+     ✓ rejects a file modified between native chunks without saving a mixed attachment  3706ms
+     ✓ denies the configured date boundary even when a caller knows the exact old file hash  4790ms
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (99 tests) 122868ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  1484ms
+     ✓ publishes exact original codex selection, refs, names and task pointer in one transaction  1055ms
+     ✓ pins the retained plugin source hash and detects losing its long-term reference  1281ms
+     ✓ requires plugin source retention before first conversion and catches late archive changes before commit  1273ms
+     ✓ keeps an intact fixed snapshot readable when only retained plugin resource readiness changes  1408ms
+     ✓ reads the earlier five-field persisted migration layout without requiring a plugin archive that was never recorded  1318ms
+     ✓ retains disabled original source refs while publishing only the originally enabled standard Skill  1025ms
+     ✓ retains the original runtime when the original task did not select context MCP  1257ms
+     ✓ binds a previously null native ID in the same source/snapshot transaction and retains the original identity  1256ms
+     ✓ rolls back snapshot, refs, names, identity, source state and task pointer on final SQL failure  1138ms
+     ✓ is retryable after a committed return-path interruption without resetting the converted state  904ms
+     ✓ rejects cancel at the asynchronous precommit boundary without partial migration  628ms
+     ✓ rejects task at the asynchronous precommit boundary without partial migration  882ms
+     ✓ rejects file at the asynchronous precommit boundary without partial migration  871ms
+     ✓ rejects source-row at the asynchronous precommit boundary without partial migration  955ms
+     ✓ rejects resource-generation at the asynchronous precommit boundary without partial migration  820ms
+     ✓ rejects a changed reference basis without promoting any current application  674ms
+     ✓ rejects a changed manifest basis without promoting any current application  759ms
+     ✓ rejects a changed source-hash basis without promoting any current application  873ms
+     ✓ rejects a changed identity basis without promoting any current application  884ms
+     ✓ rejects a changed adapter basis without promoting any current application  846ms
+     ✓ rejects a changed cli basis without promoting any current application  692ms
+     ✓ rejects a changed approved basis without promoting any current application  624ms
+     ✓ rejects an oversized retained raw record even when its parsed metadata is identical  964ms
+     ✓ does not migrate while a recorded native guard is still occupied  1126ms
+     ✓ does not steal another task native identity or a previously registered original MCP name  1918ms
+     ✓ retains the converted source/snapshot and disabled references after deleting the UI task/project  906ms
+     ✓ plans the original native load after conversion and rejects an adapter different from the fixed binding  1132ms
+     ✓ rolls back retained native binding if a later snapshot version write fails  1151ms
+     ✓ does not demote or reconstruct a converted snapshot after losing the task pointer  948ms
+     ✓ preserves an occupied mirror directory and completes only the missing mirror on retry  961ms
+     ✓ rejects modified persistent original evidence even if the v2 pointer still matches  764ms
+     ✓ pins the original retained identity bytes independently of mutable registry rows  1021ms
+     ✓ pins the original retained record bytes independently of mutable registry rows  1163ms
+     ✓ requires a legacy binding only for migrated format2 and preserves ordinary v2 validation  892ms
+   ✓ converts the retained claude-code source after normal transient cleanup and plans the same original paths  1313ms
+   ✓ converts the retained codex source after normal transient cleanup and plans the same original paths  751ms
+     ✓ keeps an all-disabled claude-code history empty after transient cleanup  943ms
+     ✓ keeps an all-disabled codex history empty after transient cleanup  1155ms
+     ✓ rejects a corrupted original claude-code projection after cleanup without rewriting it  1300ms
+     ✓ rejects a corrupted original codex projection after cleanup without rewriting it  1001ms
+     ✓ does not hide a partially present claude-code run by consuming the durable manifest  1057ms
+     ✓ does not hide a partially present codex run by consuming the durable manifest  914ms
+     ✓ rejects a late same-byte original claude-code Skill inode replacement before publishing SQL  1416ms
+     ✓ rejects a late same-byte original codex Skill inode replacement before publishing SQL  1131ms
+     ✓ rejects a late claude-code source generation change after cleaned-source verification  1175ms
+     ✓ rejects a late codex source generation change after cleaned-source verification  770ms
+     ✓ preserves unknown content which arrives in original claude-code T before commit  1494ms
+     ✓ preserves unknown content which arrives in original codex T before commit  1290ms
+     ✓ rejects an undeclared dependency on a retained original runtime  1009ms
+     ✓ restores a missing original static Claude path from the exact retained source before conversion  1712ms
+     ✓ refuses a changed retained Claude archive even when its original static paths still match  1283ms
+   ✓ invalidates the claude-code file receipt when a caller changes its returned logical evidence  1204ms
+   ✓ invalidates the codex file receipt when a caller changes its returned logical evidence  976ms
+   ✓ retains an original static Claude projection through conversion, then repairs the same path on replay  1565ms
+   ✓ does not repair an original Claude projection while a recorded native run is active  1232ms
+   ✓ does not repair an original Claude projection while a recorded native run is orphaned  1294ms
+     ✓ preserves extra at the original path without registering it as a ready projection  1181ms
+     ✓ preserves empty at the original path without registering it as a ready projection  1094ms
+     ✓ preserves marker at the original path without registering it as a ready projection  1249ms
+     ✓ preserves symlink at the original path without registering it as a ready projection  1360ms
+     ✓ preserves hardlink at the original path without registering it as a ready projection  1110ms
+     ✓ preserves full-T at the original path without registering it as a ready projection  1127ms
+     ✓ keeps an unknown target resource lease intact and does not restore the missing path  1372ms
+     ✓ rechecks a late unknown native run before publishing any original files  1374ms
+     ✓ preserves a dangling user alias which appears after private materialization  1188ms
+     ✓ resumes a failed post-rename publication under the original operation and long-term reference  1318ms
+     ✓ keeps a canceled publication recoverable without recreating old context  1384ms
+     ✓ rejects a late dangling target in the generic publisher even without a caller guard  592ms
+   ✓ does not publish through a substituted parent of the original store root  580ms
+   ✓ detects loss of the original static projection dependency after migration  1401ms
+   ✓ detects loss of the original static projection reference after migration  1362ms
+   ✓ recognizes the owned original static Skill path in read-only session diagnostics  1668ms
+     ✓ restores the selected original H paths and keeps durable aliases through migration and replay  2079ms
+     ✓ registers long-term original H aliases before publication makes any missing directory visible  1266ms
+     ✓ anchors original H alias refs independently of the unchanged fixed snapshot  1614ms
+     ✓ replays original H aliases after a registered interruption with the stopped original publisher proof  1837ms
+     ✓ replays original H aliases after a materialized interruption with the stopped original publisher proof  1515ms
+     ✓ replays original H aliases after a renamed interruption with the stopped original publisher proof  1859ms
+     ✓ replays original H aliases after a catalog-published interruption with the stopped original publisher proof  2151ms
+     ✓ does not adopt a living or unknown original H publisher, or discard its permanent refs  1061ms
+     ✓ detects missing or changed original H receipt without replacing fixed S  1643ms
+     ✓ detects missing or changed original H receipt-and-refs without replacing fixed S  1881ms
+     ✓ detects missing or changed original H anchor without replacing fixed S  1531ms
+     ✓ detects missing or changed original H receipt-hash without replacing fixed S  1655ms
+     ✓ keeps the same original H identity and long-term refs when repairing after migration  1908ms
+     ✓ shares immutable original H bytes across two task bindings without moving either native identity  1863ms
+     ✓ does not create aliases while an unknown original task run still exists  820ms
+     ✓ checks the current original task again before publishing after a late unknown run  1246ms
+     ✓ requires the original H dependency during resource verification  1391ms
+     ✓ imports other existing known original H paths and explicitly disables unselected ones in the original planner  1938ms
+     ✓ does not resurrect an unselected missing original H directory during inventory  1562ms
+     ✓ keeps an unknown install resumer instead of replacing its lease after the original publisher stops  1040ms
+     ✓ repairs original H missing after ready commits but before the original intent is removed  2257ms
+     ✓ persists an empty original H binding when the original task selected no standard Skills  2213ms
+     ✓ recovers original Claude registered after proven publisher exit without changing paths, refs or S  1293ms
+     ✓ recovers original Claude materialized after proven publisher exit without changing paths, refs or S  1406ms
+     ✓ recovers original Claude renamed after proven publisher exit without changing paths, refs or S  1485ms
+   ✓ does not mark original Claude ready after an unknown task run appears at the final rename boundary  1153ms
+ ✓ src/main/core/applications/__tests__/discovery-catalog.test.ts (55 tests) 132251ms
+     ✓ publishes complete immutable binary/executable trees and records real H locations with full C dependencies  1940ms
+     ✓ retains original source bytes and original catalog when publishing the same verified set  1976ms
+     ✓ uses one canonical HOME lock/catalog through aliases and distinct identities across two real HOMEs  2628ms
+     ✓ builds a real complete native disable list from the coordinated catalog without changing the fixed snapshot  2272ms
+     ✓ blocks new consumers during pending publication and waits for actual CLI exit rather than stop intent  2990ms
+     ✓ retains an armed PID-null window and pending directory protection until the owned exit is recorded  2303ms
+     ✓ keeps a live executor protected after all child processes have exited  2103ms
+     ✓ rolls back only its reservation when the C registration transaction fails  1652ms
+     ✓ holds a reservation when C committed but its callback failed before returning  2261ms
+     ✓ cancels an unpublished waiting intent on cancel and allows exact-content retry  3624ms
+     ✓ cancels an unpublished waiting intent on timeout and allows exact-content retry  3374ms
+     ✓ does not adopt or overwrite an identical namesake belonging to another store  3201ms
+     ✓ respects a different store consumer and never removes its reservation from this database  4560ms
+     ✓ recovers exact original bytes after a controlled registered interruption  1818ms
+     ✓ recovers exact original bytes after a controlled materialized interruption  2054ms
+     ✓ recovers exact original bytes after a controlled renamed interruption  2300ms
+     ✓ recovers exact original bytes after a controlled catalog-published interruption  2521ms
+     ✓ refuses replacement recovery inputs and an active old owner without weakening the original gate  1969ms
+     ✓ retains corrupt consumers and user files and never treats them as stale by age  2516ms
+     ✓ refuses a user-owned target and corrupted source projection without touching either original  2785ms
+     ✓ checks supplied projected bytes against the original source, then safely cancels an unpublished materialization  2985ms
+     ✓ rejects a linked H ancestor and preserves the external target  1379ms
+     ✓ does not recreate a deleted initialized catalog as an empty managed set  2384ms
+     ✓ rejects a broken linked metadata file without replacing that link  2276ms
+     ✓ retains a dead-looking lock independent of age instead of implicitly stealing it  1235ms
+     ✓ recovers a stopped original publication owner using its kernel identity and exact original operation ledger  1978ms
+     ✓ keeps a recovered consumer until the original host and all children are proven stopped in its own C ledger  2474ms
+     ✓ does not silently repair a missing original H dependency ledger on verified reuse  1880ms
+     ✓ preserves the complete source dependency closure when publication is interrupted before copying  1308ms
+     ✓ registers an empty-history HOME before the consumer intent and releases only after its owner is proved stopped  1508ms
+     ✓ retains living,unknown and live-child owners, then releases exact stopped records while preserving another store  2688ms
+     ✓ keeps default run admission strict before invoking even an authentic native guard callback  3680ms
+     ✓ refuses managed-run as maintenance-wait authority and retains any committed C/H evidence  2631ms
+     ✓ refuses copied-guard as maintenance-wait authority and retains any committed C/H evidence  2378ms
+     ✓ refuses incomplete-H as maintenance-wait authority and retains any committed C/H evidence  2652ms
+     ✓ refuses new readers after the materialized checkpoint without invoking C registration  2342ms
+     ✓ refuses new readers after the renamed checkpoint without invoking C registration  2453ms
+     ✓ refuses new readers after the catalog-published checkpoint without invoking C registration  2303ms
+     ✓ refuses a self-consistent pending base that differs from the complete live catalog  2585ms
+     ✓ rechecks the exact native handle at activation and refuses an injected bridge window  2690ms
+     ✓ defers missing base-H state/generation changes until all original and ordinary readers end  3388ms
+     ✓ cancels only the waiting publication while preserving ordinary and original consumers  3562ms
+     ✓ closes waiting admission under H before allowing a racing reader to register C  2613ms
+     ✓ reports skill-bytes behind an exact registered marker as unavailable content,not a namespace collision  1917ms
+     ✓ reports extra-file behind an exact registered marker as unavailable content,not a namespace collision  2016ms
+     ✓ reports manifest-bytes behind an exact registered marker as unavailable content,not a namespace collision  2072ms
+     ✓ retains missing-marker as occupied and never promotes it to registered-content attribution  2059ms
+     ✓ retains foreign-marker as occupied and never promotes it to registered-content attribution  2242ms
+     ✓ retains linked-marker as occupied and never promotes it to registered-content attribution  2455ms
+     ✓ retains linked-directory as occupied and never promotes it to registered-content attribution  2395ms
+     ✓ does not classify damaged bytes with a missing original C dependency as attributable content  2321ms
+     ✓ keeps application content unavailability separate from same-user-name  2066ms
+     ✓ keeps application content unavailability separate from explicit-disable  2160ms
+     ✓ keeps standard content unavailability separate from same-user-name  2173ms
+     ✓ keeps standard content unavailability separate from explicit-disable  2154ms
+ ✓ src/main/core/applications/__tests__/claude-delivery-gc.test.ts (37 tests) 107759ms
+     ✓ reclaims a completed full backup on the next stopped preparation,same-hash=false,without losing original history  4262ms
+     ✓ reclaims a completed full backup on the next stopped preparation,same-hash=true,without losing original history  4056ms
+     ✓ reclaims a known complete stage left after delivered recovery while retaining the independent source  4070ms
+     ✓ keeps unknown abandoned stage bytes while reclaiming the separate proven backup and allowing the next preparation  4085ms
+     ✓ keeps a backup with changed bytes and never removes external or unrecognized content  3607ms
+     ✓ keeps a backup with changed marker and never removes external or unrecognized content  3616ms
+     ✓ keeps a backup with changed link and never removes external or unrecognized content  3455ms
+     ✓ keeps a backup with changed hardlink and never removes external or unrecognized content  3069ms
+     ✓ keeps a backup with changed empty-directory and never removes external or unrecognized content  2629ms
+     ✓ rechecks a previously held copy after exact bytes are restored instead of treating the old error as ownership authority  2616ms
+     ✓ keeps the original backup when its independent archive has missing-file  2143ms
+     ✓ keeps the original backup when its independent archive has changed-bytes  2010ms
+     ✓ keeps the original backup when its independent archive has missing-reference  1899ms
+     ✓ keeps the original backup when its independent archive has changed-dependencies  2353ms
+     ✓ requires the original install lease proof when it has missing damage  2653ms
+     ✓ requires the original install lease proof when it has ended-at damage  2573ms
+     ✓ requires the original install lease proof when it has identity damage  2906ms
+     ✓ keeps the backup through a live run and an unknown armed CLI window,then reclaims only after its explicit fixture exit  3229ms
+     ✓ keeps a registered physical alias rather than relying on zero run counts  2756ms
+     ✓ resumes the same durable cleanup after an injected gc-marked interruption without deleting original archives  2664ms
+     ✓ resumes the same durable cleanup after an injected gc-renamed interruption without deleting original archives  2725ms
+     ✓ resumes the same durable cleanup after an injected gc-file-removed interruption without deleting original archives  2877ms
+     ✓ resumes the same durable cleanup after an injected gc-removed interruption without deleting original archives  2762ms
+     ✓ does not claim another cleanup owner whose kernel identity is running  2506ms
+     ✓ does not claim another cleanup owner whose kernel identity is unknown  2515ms
+     ✓ retains a late foreign file in the trash and resumes neither deletion nor success from a changed remainder  2794ms
+     ✓ never deletes a recreated original path after a committed copy receipt  2752ms
+   ✓ recovers deletion after a captured child directory was already removed before interruption  2722ms
+   ✓ keeps its verified archive choice when an additional equivalent full source appears during pending cleanup  3181ms
+   ✓ bounds one preparation cleanup batch and continues remaining registered copies on the next preparation  4126ms
+     ✓ shows original retained and completed backup receipts without modifying journals or files  2554ms
+     ✓ exposes a retained foreign-file reason without reading or deleting the unknown content  2437ms
+     ✓ marks damaged hash evidence unverified rather than reporting successful cleanup  2627ms
+     ✓ marks damaged owner evidence unverified rather than reporting successful cleanup  2716ms
+     ✓ marks damaged state evidence unverified rather than reporting successful cleanup  2635ms
+     ✓ keeps recreated paths separate from a historical committed receipt and isolates another task  2941ms
+     ✓ bounds display independently of cleanup and explicitly marks omitted candidates  2238ms
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (103 tests | 2 failed) 554714ms
+     ✓ checks old send ownership on App startup without network replay: stopped  1859ms
+     ✓ checks old send ownership on App startup without network replay: unknown  3246ms
+     ✓ refuses to display success when a persisted execution and its send intent disagree  4772ms
+     ✓ reads unknown SMTP history with original frozen content after app removal and never replays a send  5259ms
+     ✓ rejects a corrupted frozen review instead of showing the current draft as the historical send  3640ms
+     × migrates only the provable original prepare identity and leaves frozen sends unchanged on replay 4463ms
+     ✓ uses the same frozen send engine from explicit trusted UI preparation,review and execution  5074ms
+     ✓ confirms an existing claude-code intent in UI and executes only through its original run once  5522ms
+     ✓ confirms an existing codex intent in UI and executes only through its original run once  5483ms
+     ✓ records only the trusted owned PTY input across first native binding and never turns origin evidence into a send grant  4387ms
+     ✓ matches actual native user-file records on claude-code send preparation without minting semantic permission  4750ms
+     ✓ matches actual native user-file records on codex send preparation without minting semantic permission  4812ms
+     ✓ uses a matched claude-code explicit fixed-revision instruction without a redundant UI confirmation  6366ms
+     ✓ uses a matched codex explicit fixed-revision instruction without a redundant UI confirmation  6456ms
+     ✓ authorizes an already frozen intent when the subsequent exact native user instruction arrives  5273ms
+     ✓ does not mint a native grant for default evidence  5017ms
+     ✓ does not mint a native grant for analysis evidence  5083ms
+     ✓ does not mint a native grant for stale evidence  4791ms
+     ✓ does not mint a native grant for other-run evidence  5057ms
+     ✓ invalidates a native send authorization before SMTP on cancel  4883ms
+     ✓ invalidates a native send authorization before SMTP on new-input  5118ms
+     ✓ invalidates a native send authorization before SMTP on unknown-input  4960ms
+     ✓ invalidates a native send authorization before SMTP on tampered-file  3883ms
+     ✓ retains explicit UI authorization after an earlier native source has been superseded  4335ms
+     ✓ keeps the existing draft lock when two different prepare operations race  5300ms
+     ✓ deduplicates concurrent late native authorization and execute for one existing intent  5868ms
+     ✓ returns the existing execution when a second source claim completes after SMTP has settled  5179ms
+     ✓ rechecks the latest user turn synchronously in C while all native file verification stays outside C  5817ms
+     ✓ cannot reuse the same native turn for a second send intent after canceling the first  5771ms
+     ✓ never autoauthorizes an unknown send ancestry from a simple repeated native send instruction  6943ms
+     ✓ cannot revive a persistent native source after run-exit  4195ms
+     ✓ cannot revive a persistent native source after restart  5311ms
+     ✓ cannot revive a persistent native source after expiry  5047ms
+     ✓ revokes native authority if cancellation arrives after file verification but before the send transaction  4849ms
+     ✓ does not accept modified persistent native provenance as a live authorization  4950ms
+     ✓ binds native approval to the whole frozen draft including stable attachment bytes and BCC envelope  4931ms
+     ✓ does not authorize an old native instruction after binding-roundtrip before prepare  5692ms
+     ✓ does not authorize an old native instruction after policy-roundtrip before prepare  5345ms
+     ✓ reports a superseded native grant as awaiting authorization in the shared UI and agent data view  4113ms
+     ✓ resolves the immediately preceding genuine claude-code draft reference for a later explicit send command  4971ms
+     ✓ resolves the immediately preceding genuine codex draft reference for a later explicit send command  5344ms
+     ✓ ordered authenticated earlier mail context retains the unchanged claude-code draft across an explicit no-change user turn  4804ms
+     ✓ ordered authenticated earlier mail context retains the unchanged codex draft across an explicit no-change user turn  4855ms
+     ✓ ordered authenticated earlier mail context resolves one user-bound recipient name for claude-code  5323ms
+     ✓ ordered authenticated earlier mail context resolves one user-bound recipient name for codex  4996ms
+     ✓ ordered authenticated earlier mail context rechecks the earliest name row before the one actual SMTP execution  5542ms
+     ✓ ordered authenticated earlier mail context rejects a broken or replaced full chain: missing-middle  4465ms
+     ✓ ordered authenticated earlier mail context rejects a broken or replaced full chain: reordered-rows  4781ms
+     ✓ ordered authenticated earlier mail context rejects a broken or replaced full chain: cancel-during-verify  4864ms
+     ✓ authenticated literal mail fields execute once without a reference: claude-code explicit complete envelope  5382ms
+     ✓ authenticated literal mail fields execute once without a reference: codex explicit complete envelope  5326ms
+     ✓ authenticated literal mail fields execute once without a reference: claude-code prior unique name  5331ms
+     ✓ authenticated literal mail fields execute once without a reference: codex prior unique name  4997ms
+     ✓ authenticated literal mail fields execute once without a reference: claude-code unique existing attachment  5162ms
+     ✓ authenticated literal mail fields execute once without a reference: codex unique existing attachment  5492ms
+     ✓ authenticated literal mail fields execute once without a reference: claude-code English inline and multiline content  4282ms
+     ✓ authenticated literal mail fields execute once without a reference: codex English inline and multiline content  4375ms
+     ✓ authenticated literal mail fields reject material mismatch: bcc-omitted  4650ms
+     ✓ authenticated literal mail fields reject material mismatch: changed-body  4979ms
+     ✓ authenticated literal mail fields reject material mismatch: changed-subject  4267ms
+     ✓ authenticated literal mail fields reject material mismatch: changed-from  5380ms
+     ✓ authenticated literal mail fields reject material mismatch: unmentioned-html  5301ms
+     ✓ authenticated literal mail fields reject material mismatch: extra-attachment  5525ms
+     ✓ authenticated literal mail fields recheck uniquely named attachment identity: before-prepare  5978ms
+     ✓ authenticated literal mail fields recheck uniquely named attachment identity: after-claim  6189ms
+     ✓ authenticated literal mail fields recheck uniquely named attachment identity: before-execute  6192ms
+     ✓ authenticated literal mail fields recheck uniquely named attachment identity: created-after-input  6239ms
+     ✓ authenticated literal mail fields require a matching actual host input receipt  6085ms
+     ✓ authenticated literal mail fields retain complete earlier user content for claude-code without a URI  6994ms
+     ✓ authenticated literal mail fields retain complete earlier user content for codex without a URI  7099ms
+     ✓ refuses to infer a contextual send from missing history  6062ms
+     ✓ refuses to infer a contextual send from other-run history  5861ms
+     ✓ refuses to infer a contextual send from multiple history  6347ms
+     ✓ refuses to infer a contextual send from stale history  5043ms
+     ✓ refuses to infer a contextual send from intervening history  5412ms
+     ✓ refuses to infer a contextual send from cancel-gap history  5051ms
+     ✓ refuses to infer a contextual send from history-gap history  5059ms
+     ✓ refuses to infer a contextual send from policy-change history  6071ms
+     ✓ refuses to infer a contextual send from binding-change history  5706ms
+     ✓ refuses to infer a contextual send from unobserved history  6095ms
+     ✓ rechecks the previous claude-code user row even when the latest command row is still authentic  6674ms
+     ✓ rechecks the previous codex user row even when the latest command row is still authentic  6082ms
+     ✓ checks both source objects in C and verifies both original rows outside C for contextual authorization  6948ms
+     ✓ does not grant contextual authority if cancel arrives immediately after the previous row is verified  6109ms
+     ✓ binds contextual explicit recipient requests to the original exact frozen message and envelope  7258ms
+     ✓ notifies the UI when a user cancellation invalidates native authority without emitting on every keystroke  6873ms
+     ✓ deduplicates contextual provenance and returns the existing SMTP execution when a second claim arrives late  6988ms
+     ✓ freezes without decrypting SMTP secrets and rejects fabricated model approval before network work  4954ms
+     ✓ executes one actual frozen SMTP submission for claude-code and shares the durable result  5379ms
+     ✓ executes one actual frozen SMTP submission for codex and shares the durable result  6501ms
+     ✓ binds each UI display receipt to sender,frame,project,intent and hash and consumes it once  7187ms
+     ✓ consumes a display receipt atomically under concurrent confirmations  4942ms
+     ✓ sends the exact stable attachment bytes,without adding paths or changing the frozen message  5505ms
+     ✓ does not let another Agent execute the original run intent or reuse it in a different project  5655ms
+     ✓ releases a canceled unsubmitted draft and never accepts its old confirmation  4916ms
+     ✓ rejects confirmation after origin exit and invalidates outstanding grants on host close  5167ms
+     ✓ revokes old intents immediately on SMTP policy change while retaining independently editable drafts  5318ms
+     ✓ keeps a lost SMTP receipt unknown and never automatically submits that intent again  7910ms
+     ✓ denies a disk-only or stale RAM source record as authority for actual execution  5196ms
+     ✓ retains actual producer lease and waits for settlement after cancellation returns unknown  6567ms
+     × upgrades v18 send records and retains metadata-only user-source provenance on migration replay 4714ms
+     ✓ uses the current rotated secret for the same identity without changing the reviewed bytes  6253ms
+     ✓ does not turn send-only internal access into permission to mutate another draft  4812ms
+ ✓ src/main/core/applications/__tests__/registered-extension-call.test.ts (31 tests) 87228ms
+     ✓ discovers fixed schemas and reads through both compiled fake apps in two real isolated project scopes  3909ms
+     ✓ rejects invalid extalpha schemas and a connection from another registered app before executing business code  2434ms
+     ✓ rejects invalid extbeta schemas and a connection from another registered app before executing business code  2258ms
+     ✓ uses the same extalpha permission and receipt checks without replaying a completed invocation  3238ms
+     ✓ uses the same extbeta permission and receipt checks without replaying a completed invocation  3103ms
+     ✓ leaves an uncertain extalpha write unknown and never generically replays it from its durable receipt  1622ms
+     ✓ leaves an uncertain extbeta write unknown and never generically replays it from its durable receipt  2514ms
+     ✓ keeps the default product trust boundary closed even when valid private distribution metadata exists  2072ms
+     ✓ discovers only the original selected read permissions and refuses writes for both registered apps  2405ms
+     ✓ keeps extalpha business-object ownership inside the host-issued real project scope  3780ms
+     ✓ keeps extbeta business-object ownership inside the host-issued real project scope  3549ms
+     ✓ cancels an in-flight extalpha read through the shared operation signal and records cancellation  2531ms
+     ✓ cancels an in-flight extbeta read through the shared operation signal and records cancellation  2439ms
+     ✓ bounds an in-flight extalpha read by its original route deadline without delivering late success  3448ms
+     ✓ bounds an in-flight extbeta read by its original route deadline without delivering late success  3446ms
+     ✓ does not grant extalpha authority to JSON copies of an actual UI context  1968ms
+     ✓ does not grant extbeta authority to JSON copies of an actual UI context  2078ms
+     ✓ rejects a corrupted 'unknown' target in a retained 'extalpha' receipt instead of replaying or accepting it  2352ms
+     ✓ rejects a corrupted 'cross-app' target in a retained 'extalpha' receipt instead of replaying or accepting it  2805ms
+     ✓ rejects a corrupted 'unknown' target in a retained 'extbeta' receipt instead of replaying or accepting it  2631ms
+     ✓ rejects a corrupted 'cross-app' target in a retained 'extbeta' receipt instead of replaying or accepting it  2874ms
+     ✓ rechecks original extalpha dispatcher bytes even after a successful cached adapter load  2348ms
+     ✓ rechecks original extbeta dispatcher bytes even after a successful cached adapter load  2093ms
+     ✓ rejects invalid compiled data-service registration: unknown-app  1752ms
+     ✓ rejects invalid compiled data-service registration: duplicate  2540ms
+     ✓ rejects invalid compiled data-service registration: missing-resolver  2314ms
+     ✓ rejects invalid compiled data-service registration: empty  2445ms
+     ✓ preserves the first 'cancel-first' reason when a late 'extalpha' producer settles after both signals  4295ms
+     ✓ preserves the first 'timeout-first' reason when a late 'extalpha' producer settles after both signals  4040ms
+     ✓ preserves the first 'cancel-first' reason when a late 'extbeta' producer settles after both signals  3999ms
+     ✓ preserves the first 'timeout-first' reason when a late 'extbeta' producer settles after both signals  3942ms
+ ✓ src/main/core/applications/__tests__/zentao-data.test.ts (22 tests) 88513ms
+     ✓ lists only the current assigned-self source and preserves large exact IDs and a confirmed empty Story result  3045ms
+     ✓ paginates with an opaque project/source-bound cursor and detects changed limits or duplicate pages  4027ms
+     ✓ returns a changed total as explicitly incomplete without pretending an empty complete search  3365ms
+     ✓ uses the same current data for trusted UI and Agent and keeps full body,history and field values in bounded resources  5553ms
+     ✓ reads nested Story description and acceptance criteria without incorrectly marking the body missing  3384ms
+     ✓ downloads ordinary,historical and inline files only through the fixed same-origin API and preserves binary bytes  3587ms
+     ✓ reports missing,oversized and redirected files as partial without following a supplied URL or claiming complete  2820ms
+     ✓ does not treat malformed history and file metadata as a complete object  2780ms
+     ✓ rejects forged or foreign-project source references and resource metadata before exposing data  4306ms
+     ✓ rechecks assignment for detail,old resources and cached list/detail/resource receipts  5124ms
+     ✓ does not replay cached attachment bytes once the file no longer belongs to the current assigned object  4448ms
+     ✓ keeps old explicit revisions readable while new detail and changed file bytes get new references  4657ms
+     ✓ invalidates old cursors and references on explicit connection switch without changing the original fixed package  5433ms
+     ✓ uses a rotated current secret under the same identity and never persists it in business operations or fetched payloads  4713ms
+     ✓ uses the single outer read retry budget for transient failures and never retries explicit authentication failure  3990ms
+     ✓ withholds an injected outside-assignee list and never records it as fetched project data  2809ms
+     ✓ updates current health separately from the saved test and recovers without changing policy or secret revisions  3998ms
+     ✓ does not return old body bytes as current data after the source object disappears  4118ms
+     ✓ cancels an active read on connection disconnect and withholds the late HTTP result  3096ms
+     ✓ bounds a cancelled cached-receipt permission check without restarting the Agent or replaying the original read  4005ms
+   ✓ reconstructs the business service with the same persisted source and resource revisions without relying on a prior in-memory client  4874ms
+   ✓ binds stored source content to its canonical revision and rejects a corrupt retained reference before requesting fresh data  3517ms
+ ✓ src/main/core/applications/__tests__/claude-delivery.test.ts (19 tests) 49073ms
+     ✓ delivers only original standards through an explicit independent slot and run without granting either original application  2573ms
+     ✓ rejects an old-format preparation token instead of silently upgrading an empty application handoff  2096ms
+     ✓ does not accept a rehashed schema1 slot containing an empty current view or drop its preparation lease  2063ms
+     ✓ preserves original S/refs/full archive while delivering only healthy original Skills at their actual original paths  2404ms
+     ✓ atomically transfers preparation occupancy into an independent run alias and refuses canonical changes until proven stop  3225ms
+     ✓ repairs an excluded package without widening a live delivery and restores the original full body on the next stopped-run preparation  4261ms
+     ✓ fences independent legacy publishers and canonical ancestors/descendants without dropping the original dependencies  2713ms
+     ✓ retains an unknown CLI fork window and a missing alias lease footprint rather than reaping directory occupancy  2982ms
+     ✓ freezes the same physical root for ordinary native-only fixed-history readers without granting an application  2872ms
+     ✓ can cancel a known unbound preparation while retaining an independently running native-only guard alias  2578ms
+     ✓ preserves an unknown staged tree and advances through a fresh registered sibling rather than overwriting it  2379ms
+     ✓ does not turn a late changed dependency graph into a ready canonical resource  2765ms
+     ✓ pins delivery revision and alias identity across native ID binding without changing the actual Skill paths  3006ms
+     ✓ does not reconstruct an erased slot journal while independent physical occupancy footprints still exist  2518ms
+     ✓ keeps a corrupt other-root slot from blocking an unrelated immutable resource publication  2424ms
+     ✓ keeps running publication proof instead of inventing recovery authority  2140ms
+     ✓ keeps unknown publication proof instead of inventing recovery authority  2028ms
+     ✓ keeps missing-lease publication proof instead of inventing recovery authority  1911ms
+     ✓ keeps missing-journal publication proof instead of inventing recovery authority  2133ms
+ ✓ src/main/core/applications/__tests__/legacy-agent-load.test.ts (30 tests) 45171ms
+     ✓ retains original claude-code names, paths and MCP keys without rewriting any data  1752ms
+     ✓ retains original codex names, paths and MCP keys without rewriting any data  1648ms
+     ✓ keeps old selected Codex paths enabled while disabling other original versions and current-format projections  3247ms
+     ✓ keeps original selected Codex paths enabled after their schema1 trees enter the coordinated catalog  2377ms
+     ✓ rejects a current-format own projection whose reference is no longer authoritative  1984ms
+     ✓ rejects a current-format own projection whose projection-state is no longer authoritative  1853ms
+     ✓ rejects a current-format own projection whose source-state is no longer authoritative  1492ms
+     ✓ does not replace or rename a colliding user plugin  1404ms
+     ✓ does not replace or rename a colliding user skill  1945ms
+     ✓ does not replace or rename a colliding user mcp  1546ms
+     ✓ recognizes the exact existing original plugin and Skill paths while retaining the old namespace  1859ms
+     ✓ rejects conflicting or duplicate managed flags without rewriting user settings  1554ms
+     ✓ does not add a context MCP when the current project explicitly disables it  1538ms
+     ✓ rejects a different or damaged task loading basis  1384ms
+     ✓ rejects a different or damaged native-root loading basis  1266ms
+     ✓ rejects a different or damaged native-id loading basis  1235ms
+     ✓ rejects a different or damaged source-hash loading basis  1205ms
+     ✓ rejects a different or damaged record loading basis  1209ms
+     ✓ rejects a different or damaged manifest loading basis  1067ms
+     ✓ rejects a different or damaged reference loading basis  1199ms
+     ✓ rejects a different or damaged cli loading basis  1309ms
+     ✓ rejects a different or damaged adapter loading basis  1254ms
+     ✓ rejects a different or damaged approved loading basis  1178ms
+     ✓ does not guess past a missing or changed generation  1272ms
+     ✓ does not guess past a missing or changed catalog-file  1239ms
+     ✓ does not guess past a missing or changed projection  1183ms
+     ✓ does not guess past a missing or changed owner-link  1243ms
+     ✓ requires the explicit legacy API instead of treating its adapter as a new-session adapter  1149ms
+   ✓ plans the original claude-code paths from the durable source after ended-run cleanup  1370ms
+   ✓ plans the original codex paths from the durable source after ended-run cleanup  1208ms
+ ✓ src/main/core/applications/__tests__/business-data.test.ts (32 tests) 120190ms
+     ✓ creates without either external slot and lets the other supported Agent and UI read the same business object  3560ms
+     ✓ continues across Agents with CAS and preserves revision-bound original body resources  5536ms
+     ✓ keeps immutable resource identities across a business-service restart and expires old actor capabilities  3767ms
+     ✓ copies an owned draft to a distinct object without new source access  3594ms
+     ✓ cannot fake reply provenance or silently substitute a model-supplied project or approval  3176ms
+     ✓ rejects cross-project drafts and references even when their valid IDs and hashes are known  4029ms
+     ✓ rejects changed resource metadata, oversized chunks and offsets past the original length  3646ms
+     ✓ chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text  5476ms
+     ✓ does not trust JSON copies of host scopes or callers  3566ms
+     ✓ records UI and Agent roles separately without inventing tasks for UI reads  3085ms
+     ✓ permits configuration while project use is off but cannot upgrade configuration scope to reading or sending  2559ms
+     ✓ gives an index child its own read-only identity and parent reference without a fake model task  2862ms
+     ✓ rejects an in-flight result after global disable and reenable, preserving the original operation record  3724ms
+     ✓ changes source and SMTP slots without invalidating independent local draft operations  4121ms
+     ✓ pins the exact source of an in-flight read and denies source ABA even when the original account is selected again  3827ms
+     ✓ uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit  3681ms
+     ✓ returns cached business receipts only while the original authorization generation remains valid and never duplicates writes  3637ms
+     ✓ keeps pending UI resource leases until ignored cancellation actually settles  3124ms
+     ✓ keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown  4661ms
+     ✓ waits for actual UI work on service shutdown and rejects its eventual result  3359ms
+     ✓ returns stable,lossless binary attachment chunks from the durable copy rather than a source path  4306ms
+     ✓ keeps an existing reference unchanged when the same logical revision is offered different content  3614ms
+     ✓ paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor  5618ms
+     ✓ invalidates old local operations when project enablement changes off and on even without changing any external slot  3880ms
+   ✓ does not begin a queued configuration provider after host shutdown while C acquisition was pending  2710ms
+     ✓ reports persistent mail storage and original package usage separately from the rebuildable cache  3551ms
+     ✓ leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests  3509ms
+     ✓ lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts  4095ms
+     ✓ does not create a cache for forged or destroyed UI senders  2539ms
+     ✓ preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown  2879ms
+     ✓ tests configuration and reads an owned UI draft with all Agent runs stopped and without creating tasks  3812ms
+     ✓ discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection  3775ms
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > keeps a live registered publisher,then completes the same journal/generation after actual SIGKILL
+CLAUDE_DELIVERY_PROCESS_EVIDENCE {"phase":"registered","operationId":"8d0fded8-bce3-4f35-a4b1-dd3f6b8cfb9d","generation":1,"publisher":{"pid":71140,"startedAt":"darwin-proc-v1:1792782541:757800"},"publisherStateAfterSIGKILL":"stopped","recovered":{"resourceId":"claude-delivery:d6f0ddc5-9535-4360-96ec-ff58caaa34d9:b66e728e9ded212aa38bfbc2ec7ea6b60b46416ec9e560096f25da0a61769a57","sourceId":"claude-projection-source:d6f0ddc5-9535-4360-96ec-ff58caaa34d9:b66e728e9ded212aa38bfbc2ec7ea6b60b46416ec9e560096f25da0a61769a57","hash":"b66e728e9ded212aa38bfbc2ec7ea6b60b46416ec9e560096f25da0a61769a57","generation":1,"appIds":["mail"]},"parent":{"pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"},"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > keeps a live backed-up publisher,then completes the same journal/generation after actual SIGKILL
+CLAUDE_DELIVERY_PROCESS_EVIDENCE {"phase":"backed-up","operationId":"0d4ca261-f6ce-4208-a874-3a95eb36eb1a","generation":1,"publisher":{"pid":71186,"startedAt":"darwin-proc-v1:1792782544:6610"},"publisherStateAfterSIGKILL":"stopped","recovered":{"resourceId":"claude-delivery:061dca6b-a3cf-405a-bf23-07b7205f5c53:605c1b0062f1fe1061a4c3f48453d3e91e0d5ebf23a798e5b091d86dab49857b","sourceId":"claude-projection-source:061dca6b-a3cf-405a-bf23-07b7205f5c53:605c1b0062f1fe1061a4c3f48453d3e91e0d5ebf23a798e5b091d86dab49857b","hash":"605c1b0062f1fe1061a4c3f48453d3e91e0d5ebf23a798e5b091d86dab49857b","generation":1,"appIds":["mail"]},"parent":{"pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"},"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > keeps a live delivered publisher,then completes the same journal/generation after actual SIGKILL
+CLAUDE_DELIVERY_PROCESS_EVIDENCE {"phase":"delivered","operationId":"e384cf51-a199-4a29-9d3d-d77a40fa5b09","generation":1,"publisher":{"pid":71256,"startedAt":"darwin-proc-v1:1792782550:47734"},"publisherStateAfterSIGKILL":"stopped","recovered":{"resourceId":"claude-delivery:a1ac73b8-7457-45c7-96ce-2a8b19b2d3a9:0ceeb26dbc185d0a36e373aead1837ea7b5a944bfa3fb84b07e11032cb78e994","sourceId":"claude-projection-source:a1ac73b8-7457-45c7-96ce-2a8b19b2d3a9:0ceeb26dbc185d0a36e373aead1837ea7b5a944bfa3fb84b07e11032cb78e994","hash":"0ceeb26dbc185d0a36e373aead1837ea7b5a944bfa3fb84b07e11032cb78e994","generation":1,"appIds":["mail"]},"parent":{"pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"},"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > recovers a same-hash first full handoff after actual SIGKILL at registered without losing the original S or backup
+CLAUDE_DELIVERY_PROCESS_EVIDENCE {"phase":"registered","operationId":"23060c60-5403-4938-886c-eef8f38b5827","sameHash":"2d3567eb0c20727ddfa272f60b75924f484f518894503b36b0e996bcaae11ef6","generation":1,"publisher":{"pid":71377,"startedAt":"darwin-proc-v1:1792782556:199606"},"publisherStateAfterSIGKILL":"stopped","actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > recovers a same-hash first full handoff after actual SIGKILL at backed-up without losing the original S or backup
+CLAUDE_DELIVERY_PROCESS_EVIDENCE {"phase":"backed-up","operationId":"1b3ee692-7665-48d5-8cd5-0cb717e613bd","sameHash":"26f957ddd9581af23bf715b8c227d95654b22bc98a9fd06b25ccf7f9747d8684","generation":1,"publisher":{"pid":71406,"startedAt":"darwin-proc-v1:1792782559:357121"},"publisherStateAfterSIGKILL":"stopped","actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > recovers a same-hash first full handoff after actual SIGKILL at delivered without losing the original S or backup
+CLAUDE_DELIVERY_PROCESS_EVIDENCE {"phase":"delivered","operationId":"76f64a16-b177-4bbf-a55a-ed85b98a8058","sameHash":"f82c74bccbae2f00acce126adb8b6181f9a19086fab1c251ac28c1fdc66fe445","generation":1,"publisher":{"pid":71434,"startedAt":"darwin-proc-v1:1792782565:560912"},"publisherStateAfterSIGKILL":"stopped","actualAgent":false}
+
+ ✓ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts (37 tests) 40306ms
+     ✓ restores the exact original path, full source and legacy marker without renaming the Skill  1499ms
+     ✓ adopts an unchanged original tree without writing any of its files or marker  1376ms
+     ✓ keeps the original projection disabled in a new session and preserves user Skill configuration  2085ms
+     ✓ waits for Claude consumers too and cancels before changing the original discovery set  1817ms
+     ✓ repairs a missing registered original tree at the same hash and path, retaining the catalog identity  1754ms
+     ✓ preserves an occupied original empty tree instead of overwriting it  737ms
+     ✓ preserves an occupied original extra-file tree instead of overwriting it  520ms
+     ✓ preserves an occupied original extra-empty-dir tree instead of overwriting it  1192ms
+     ✓ preserves an occupied original marker tree instead of overwriting it  884ms
+     ✓ preserves an occupied original link tree instead of overwriting it  922ms
+     ✓ preserves an occupied original hardlink tree instead of overwriting it  1283ms
+     ✓ replays the exact registered operation after its original host is proved stopped  1345ms
+     ✓ replays the exact materialized operation after its original host is proved stopped  1038ms
+     ✓ replays the exact renamed operation after its original host is proved stopped  1801ms
+     ✓ replays the exact catalog-published operation after its original host is proved stopped  1882ms
+     ✓ does not recover a living or unknown publisher and retains its exact operation and lease  1122ms
+     ✓ rechecks a late source change before making the H catalog visible  966ms
+     ✓ rechecks a late dangling-target change before making the H catalog visible  896ms
+     ✓ rechecks a late staging change before making the H catalog visible  1213ms
+     ✓ retains a missing original dependency ledger instead of manufacturing one while repairing H  1486ms
+     ✓ does not reassign another store’s registered original H path  1427ms
+     ✓ preserves a PID-null unknown lease when the registered original directory is missing  1468ms
+     ✓ rejects a supplied rename projection instead of changing the legacy selection  877ms
+     ✓ rejects a supplied truncated-hash projection instead of changing the legacy selection  585ms
+     ✓ rejects a supplied different-body projection instead of changing the legacy selection  392ms
+     ✓ rejects a supplied executable projection instead of changing the legacy selection  627ms
+     ✓ rejects a linked ancestor on read-only verification and leaves its external target untouched  807ms
+     ✓ verifies the original C source on reuse as well as on a new publication  903ms
+     ✓ refuses ready when original H bytes change at the renamed boundary  1371ms
+     ✓ refuses ready when original H bytes change at the catalog-published boundary  1161ms
+     ✓ refuses a substituted discovery root before acquiring or writing its lock  621ms
+     ✓ cancels waiting adoption without changing a preexisting original H tree or the other consumer  861ms
+     ✓ rolls back only its unregistered waiting intent when the host guard fails before C commits  641ms
+     ✓ rejects a substituted catalog-consumers child without writing through its alias  413ms
+     ✓ rejects a substituted staging child without writing through its alias  468ms
+     ✓ does not recreate a missing initialized consumer directory as an empty reader set  584ms
+   ✓ verifies native isolation only from complete H bytes without treating damaged C source bytes as application authority  1281ms
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > retains every lease handoff when a second actual recovery owner is killed immediately after its C registration
+CLAUDE_DELIVERY_PROCESS_EVIDENCE {"phase":"recovery-owner-killed-after-C-registration","operationId":"c74eb94c-512d-4a37-9483-1f3586e35313","participants":[{"leaseId":"9e2aef27-6479-42ed-8fc8-4101254cccaa","owner":{"instanceId":"a69d31fb-63a6-4e15-9626-844e85e00090","pid":71447,"startedAt":"darwin-proc-v1:1792782571:64681"}},{"leaseId":"47a0bca7-f7f9-4b05-b6b7-325b3b053831","owner":{"instanceId":"184c83c9-003a-4ca7-b4e9-5793b808d238","pid":71450,"startedAt":"darwin-proc-v1:1792782571:662734"}},{"leaseId":"826d53a6-482a-4fb1-9388-2cc90a3a7c78","owner":{"instanceId":"48b25d63-92eb-44e7-8ffc-d762446d23b6","pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"}}],"parent":{"pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"},"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > recovers the original copy cleanup after actual SIGKILL at gc-marked
+CLAUDE_COPY_GC_PROCESS_EVIDENCE {"phase":"gc-marked","operationId":"claude-copy-gc:2557a2bd-b98c-4179-acf2-0578e1fe1dfd:f260293622bd4154631f0175a74a2312b2e2f7f4aeb416131eb7c853ccd3afde","originalOwner":{"pid":71461,"startedAt":"darwin-proc-v1:1792782573:912109"},"originalOwnerState":"stopped","owners":[{"instanceId":"4c4992ae-9fd4-49f7-ae78-3819ed4ef339","pid":71461,"startedAt":"darwin-proc-v1:1792782573:912109"},{"instanceId":"21ce44c4-5141-4044-80ff-67a119978bf0","pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"}],"files":5,"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > recovers the original copy cleanup after actual SIGKILL at gc-renamed
+CLAUDE_COPY_GC_PROCESS_EVIDENCE {"phase":"gc-renamed","operationId":"claude-copy-gc:f41d29bf-e99a-45ac-b689-4fbb585ad1fe:045fb287e55ad7803fe8d5da93976e7b95cbacbb2fa08267ee8ae6a009cdcd8c","originalOwner":{"pid":71477,"startedAt":"darwin-proc-v1:1792782576:495743"},"originalOwnerState":"stopped","owners":[{"instanceId":"5a73859a-e671-4133-b9ec-7b6ab8e85780","pid":71477,"startedAt":"darwin-proc-v1:1792782576:495743"},{"instanceId":"18d6f89a-2119-4b79-94bd-9f7fe0b0a26a","pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"}],"files":5,"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > recovers the original copy cleanup after actual SIGKILL at gc-file-removed
+CLAUDE_COPY_GC_PROCESS_EVIDENCE {"phase":"gc-file-removed","operationId":"claude-copy-gc:610b54cf-383b-4af2-bf3d-a2decedd27b4:68190fd1994a0b7379fde91ecd9f5db5b8f74223a7f088f52ef0b4ef95f2327d","originalOwner":{"pid":71521,"startedAt":"darwin-proc-v1:1792782579:123226"},"originalOwnerState":"stopped","owners":[{"instanceId":"f21514bd-4f39-4fcf-98a5-6eae5bd7a4b1","pid":71521,"startedAt":"darwin-proc-v1:1792782579:123226"},{"instanceId":"0e7b66e5-a09b-44f4-839f-6b756201a25e","pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"}],"files":5,"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > recovers the original copy cleanup after actual SIGKILL at gc-removed
+CLAUDE_COPY_GC_PROCESS_EVIDENCE {"phase":"gc-removed","operationId":"claude-copy-gc:b08703a3-b48b-492b-a06c-eff311c0bec3:3c3f1e951244055285d0a8f250ace57e9227f34757c7a87864bb1d95ca06d77f","originalOwner":{"pid":71552,"startedAt":"darwin-proc-v1:1792782581:820401"},"originalOwnerState":"stopped","owners":[{"instanceId":"06bd76ee-e460-4ab7-9711-8dd7ee3b7a3b","pid":71552,"startedAt":"darwin-proc-v1:1792782581:820401"},{"instanceId":"f7a57a70-9bd6-4a07-b36e-52b202aecd85","pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"}],"files":5,"actualAgent":false}
+
+stdout | src/main/core/applications/__tests__/claude-delivery-process.test.ts > actual isolated Claude directory publisher and repeated recovery termination > retains every cleanup owner when a first recovery process is also actually killed
+CLAUDE_COPY_GC_PROCESS_EVIDENCE {"phase":"second-recovery-SIGKILL","operationId":"claude-copy-gc:d1aa623d-c980-4163-add7-f17dc4edd9cd:41ade23ffca377d9ee27f29f05c6dc132de99b86e7284b427ff43ba4bd2005f6","firstOwner":{"pid":71569,"startedAt":"darwin-proc-v1:1792782584:578519"},"firstOwnerState":"stopped","secondOwner":{"pid":71573,"startedAt":"darwin-proc-v1:1792782584:756992"},"secondOwnerState":"stopped","owners":[{"instanceId":"32b53c21-add6-4e6e-89b6-220a056cccae","pid":71569,"startedAt":"darwin-proc-v1:1792782584:578519"},{"instanceId":"9b12a226-4412-4a81-b0fb-b1247804c560","pid":71573,"startedAt":"darwin-proc-v1:1792782584:756992"},{"instanceId":"61d66a59-ac7a-43d3-9d64-a31c76679112","pid":71136,"startedAt":"darwin-proc-v1:1792782539:628173"}],"actualAgent":false}
+
+ ✓ src/main/core/applications/__tests__/claude-delivery-process.test.ts (12 tests) 45514ms
+     ✓ keeps a live registered publisher,then completes the same journal/generation after actual SIGKILL  2536ms
+     ✓ keeps a live backed-up publisher,then completes the same journal/generation after actual SIGKILL  5789ms
+     ✓ keeps a live delivered publisher,then completes the same journal/generation after actual SIGKILL  5944ms
+     ✓ recovers a same-hash first full handoff after actual SIGKILL at registered without losing the original S or backup  3178ms
+     ✓ recovers a same-hash first full handoff after actual SIGKILL at backed-up without losing the original S or backup  6087ms
+     ✓ recovers a same-hash first full handoff after actual SIGKILL at delivered without losing the original S or backup  6131ms
+     ✓ retains every lease handoff when a second actual recovery owner is killed immediately after its C registration  2045ms
+     ✓ recovers the original copy cleanup after actual SIGKILL at gc-marked  2584ms
+     ✓ recovers the original copy cleanup after actual SIGKILL at gc-renamed  2568ms
+     ✓ recovers the original copy cleanup after actual SIGKILL at gc-file-removed  2684ms
+     ✓ recovers the original copy cleanup after actual SIGKILL at gc-removed  2660ms
+     ✓ retains every cleanup owner when a first recovery process is also actually killed  2813ms
+ ✓ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (40 tests) 32458ms
+     ✓ recovers a durable captured source receipt after final SQL failure and original T removal  822ms
+     ✓ recovers Codex sources from exact old C bytes after interruption before source registration  618ms
+     ✓ refuses to synthesize a Claude archive if interruption occurred before original capture  320ms
+     ✓ refuses a retained source with changed plugin-bytes and preserves the journal  801ms
+     ✓ refuses a retained source with changed dependency and preserves the journal  741ms
+     ✓ refuses a retained source with changed integrity and preserves the journal  909ms
+     ✓ rejects corrupted durable manifest instead of inferring it from an orphan archive  846ms
+     ✓ rejects corrupted durable evidence instead of inferring it from an orphan archive  646ms
+     ✓ rejects corrupted durable partial-proof instead of inferring it from an orphan archive  720ms
+     ✓ keeps a partially present original T unchanged and reports it unknown  899ms
+     ✓ rejects an original T which reappears during cold recovery without changing its contents  1115ms
+     ✓ rolls back a second final SQL failure during cold recovery and retries the same source exactly  1272ms
+     ✓ keeps cancellation during cold source preparation retryable without publishing refs  1222ms
+     ✓ keeps a late task change instead of overwriting it with the older retained record  1160ms
+     ✓ does not invent proof for an old null-proof held row even when an orphan source exists  873ms
+     ✓ rejects a self-consistent replacement runtime in durable evidence when the original manifest pins another root  649ms
+     ✓ keeps the referenced original Skill path while removing ended-run connection files  654ms
+     ✓ reopens the source receipt using the unchanged static plugin without recreating old context  987ms
+     ✓ holds the full original tree after a failed reference commit, then finishes cleanup on retry  1135ms
+     ✓ retains original static Skill paths on service disposal as well as explicit owned release  860ms
+     ✓ preserves the original tree when plugin changes before owned cleanup  785ms
+     ✓ preserves the original tree when transient changes before owned cleanup  553ms
+     ✓ preserves the original tree when extra changes before owned cleanup  763ms
+     ✓ preserves the original tree when empty-dir changes before owned cleanup  730ms
+     ✓ preserves the original tree when marker changes before owned cleanup  831ms
+     ✓ preserves the original tree when symlink changes before owned cleanup  833ms
+     ✓ preserves the original tree when hardlink changes before owned cleanup  813ms
+     ✓ preserves the original tree when root-replaced changes before owned cleanup  724ms
+     ✓ preserves the original tree when root-alias changes before owned cleanup  586ms
+     ✓ does not recapture a changed retained original plugin tree  813ms
+     ✓ does not recapture a changed retained original extra tree  887ms
+     ✓ does not recapture a changed retained original empty-dir tree  877ms
+     ✓ does not recapture a changed retained original context tree  929ms
+     ✓ does not recapture a changed retained original link tree  911ms
+     ✓ keeps original Codex H paths and bytes while cleaning its ended ordinary T  749ms
+   ✓ refuses a corrupted archive while leaving the still-matching original static plugin untouched  880ms
+   ✓ keeps the original tree if its owned release occurs before source publication, and finalizes after the receipt commits  1088ms
+   ✓ recognizes its original cleanup handle after the host records a self-check result  899ms
+ ✓ src/main/core/applications/__tests__/native-static-roots.test.ts (13 tests) 22421ms
+     ✓ retains every hash/generation in the package lineage without App or bridge authority  2044ms
+     ✓ retains every hash/generation in the runtime lineage without App or bridge authority  1986ms
+     ✓ retains every hash/generation in the standard lineage without App or bridge authority  1777ms
+     ✓ refuses damaged actual H bytes before preparation completes even though C source state is ignored  1821ms
+     ✓ refuses changed h-generation after reservation and retains the original lease  1647ms
+     ✓ refuses changed source-hash after reservation and retains the original lease  1753ms
+     ✓ refuses changed source-generation after reservation and retains the original lease  2217ms
+     ✓ refuses changed dependency after reservation and retains the original lease  2068ms
+     ✓ keeps an unready executable root strict even if the same resource is a static H source  2070ms
+     ✓ keeps an unready executable adapter-dependency strict even if the same resource is a static H source  1783ms
+     ✓ does not apply the native-only classification to an ordinary managed application run  968ms
+     ✓ rejects caller-shaped static C roots and a C-source dependency crossing back into H  999ms
+     ✓ keeps an actual legacy H copy usable as static bytes with its original unready C source and full ownership checks  1286ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts (37 tests) 17115ms
+     ✓ rolls back a failed restriction receipt without guessing the CLI was restricted or armed  479ms
+     ✓ refuses handoff after a narrowed-run receipt is corrupted but still permits owned cancellation and cleanup  371ms
+     ✓ returns only a verified owned native view for diagnostics and never lets another registry or a reused PID adopt it  419ms
+     ✓ narrows only a prepared, fully canceled-bridge run and retains protection until the owned native exit  500ms
+     ✓ refuses narrowing an armed CLI without changing its authority or occupied resources  385ms
+     ✓ accepts the first proved native ID on a narrowed run without restoring business authority  460ms
+     ✓ joins input only to one actual active task/PTY owned by this registry  413ms
+     ✓ never adopts a reused PID when attachment requires the proved original birth identity  508ms
+     ✓ protects the complete transitive dependency closure before any source bytes are consumed  367ms
+     ✓ revokes immediately but keeps an armed launch window until its actual owned exit  434ms
+     ✓ keeps a running bridge protected after CLI exit and releases only after both exits  481ms
+     ✓ waits for actual in-flight executor completion even when all native handles have exited  434ms
+     ✓ rechecks policy after preparation and on every call without changing the fixed snapshot  561ms
+     ✓ preserves the original selection when first native ID completion updates the run pointer  518ms
+     ✓ refuses a second live run and another registry cannot impersonate an owned run  435ms
+     ✓ records an exit arriving before PID attachment without reopening the run later  468ms
+     ✓ retains an unknown PID attachment and rejects replacement of an already fixed process  558ms
+     ✓ retains leases when revoke fails and allows a later successful revoke after actual exit  542ms
+     ✓ allows the revoker to await an exit callback without an exit/revoke wait cycle  493ms
+     ✓ bounds stop waiting while preserving the pending revoke until it really completes  600ms
+     ✓ protects a ready projection added during preparation and rejects a generation race after byte verification  589ms
+     ✓ refuses deleting resources, cyclic dependencies and maintenance without partial new runs  326ms
+     ✓ recovers proven-dead unarmed preparation but never assumes an armed PID-null fork did not occur  407ms
+     ✓ does not release a recovered run while a known child is still alive or identity cannot be read  446ms
+     ✓ treats a reused PID as proof the old child stopped without signalling its new occupant  392ms
+     ✓ keeps missing child records and unprovable host identities held even with old timestamps  367ms
+     ✓ preserves stopped run and source references after project deletion, while rejecting restart  401ms
+     ✓ records real owned exit even if fixed snapshot bytes become corrupt  452ms
+     ✓ protects native dependencies until actual exit and never grants a bridge or business provenance  357ms
+     ✓ rejects altered snapshot/project/runner/adapter requests and retains protection when its restriction receipt is corrupt  384ms
+     ✓ registers source closure before launch, cannot mint a bridge or input provenance, and waits for owned exit  457ms
+     ✓ refuses cross-project, v2 or empty-source promotion and detects changed original metadata  381ms
+     ✓ recovers only when the previous guard owner and actual CLI identity are both stopped  485ms
+     ✓ cancels both armed windows and releases after a verified no-fork receipt  695ms
+     ✓ refuses to cancel an actually attached process as never forked  702ms
+     ✓ refuses an uncertain fork and leaves the existing hold intact  563ms
+ ✓ src/main/core/projects/transfer-service.test.ts (35 tests) 30619ms
+     ✓ I01/D07/S01 imports atomically with new ids, receiver encryption, no tasks or old default changes  1759ms
+     ✓ D09/D10/S02 imports only selected profiles without replacing defaults and permits missing CLI  693ms
+     ✓ D02/D03/D04 requires an explicitly picked local directory or available source and rejects conflicts/symlinks  727ms
+     ✓ D01/D05/D08 rechecks names, requires zero-source main folder, and clears unavailable rules  697ms
+     ✓ D03 rejects duplicate realpaths within the same package, then accepts distinct mappings  726ms
+     ✓ D06 preserves the second directory/default DB and all resource associations  672ms
+     ✓ S03 retains same-as-login sudo and selected secret/non-secret AI env through a full snapshot  664ms
+     ✓ F07 returns a committed receipt on identical retry, rejects changed selection and survives reopening  623ms
+     ✓ I07/F06 binds tokens to their window, disposes and expires previews  1169ms
+     ✓ I07 expires a selected encrypted file before starting a busy unlock  347ms
+     ✓ F01/F03 rolls back rows and all secrets when encryption fails mid-transaction, then retries  638ms
+     ✓ S03/F02/F03 cleans key files on failure at journal and preserves existing data  722ms
+     ✓ S03/F02/F03 cleans key files on failure at key-staged and preserves existing data  739ms
+     ✓ S03/F02/F03 cleans key files on failure at key-renamed and preserves existing data  758ms
+     ✓ S03/F02/F03 cleans key files on failure at keys and preserves existing data  754ms
+     ✓ S03/F02/F03 cleans key files on failure at rows and preserves existing data  765ms
+     ✓ S03/F02/F03 cleans key files on failure at secrets and preserves existing data  770ms
+     ✓ F04/F07 recovers an already committed import without duplicating or removing keys  737ms
+     ✓ E04 requires explicit empty-password confirmation and never skips missing credentials  640ms
+     ✓ E06 preserves existing destination and removes temporary ciphertext on write failure  1466ms
+     ✓ S02/S03 restores a real encrypted SSH key and authenticates only after an explicit connection test  1071ms
+     ✓ S04 refuses an import when safeStorage is unavailable, then succeeds after it recovers  632ms
+     ✓ E07 exports one consistent selected project snapshot and never includes task history or another project  652ms
+     ✓ F04/S05 rejects parallel operations and discards a decrypt result if its window closes  658ms
+     ✓ D06/D09 imports only one of two AI configurations, never makes the first imported profile the default  674ms
+     ✓ F05/F07 allows a second copy only with an independent name and unoccupied mapped directory  1246ms
+     ✓ D01/D03 archives free names and directory identities; duplicate long names remain bounded  674ms
+     ✓ D06/S07 preserves zero default DB, empty passwords and a key without a passphrase  725ms
+     ✓ D10 rejects unknown/duplicate profile refs and rolls back selected AI secrets before a single retry  830ms
+     ✓ D07 keeps an imported command blocked through metadata edits and clears it when explicitly configured  679ms
+     ✓ E03 exports only selected AI secrets, excludes unselected profiles, and leaves the original default unchanged  1856ms
+     ✓ F08 preserves referenced and external keys; unreadable ownership remains registered for recovery  1458ms
+     ✓ excludes real App connections,secret,draft and attachment state while importing disabled Apps beside unchanged local selections  3258ms
+ ✓ src/main/core/applications/__tests__/session-registry.test.ts (23 tests) 27328ms
+     ✓ T63 parses and preserves bad-json without selecting current defaults or exposing stored content  821ms
+     ✓ T63 parses and preserves unknown-schema without selecting current defaults or exposing stored content  845ms
+     ✓ T63 parses and preserves bad-hash without selecting current defaults or exposing stored content  787ms
+     ✓ T63 parses and preserves cross-project without selecting current defaults or exposing stored content  813ms
+     ✓ commits complete source references and MCP identities with one selection and verifies actual bytes  808ms
+     ✓ preserves old package and names after default activation and rejects a replacement snapshot  1228ms
+     ✓ rejects stale new-task selection without leaving partial reference rows  1049ms
+     ✓ rejects undeclared tools, mismatched Skill trees, extra actions and two versions of one app  750ms
+     ✓ fills a null native ID once, retaining selection, references and stable names  1279ms
+     ✓ T64 refuses a bound native identity when its original state root is missing without recreating it  916ms
+     ✓ T64 refuses a bound native identity when its original state root is file without recreating it  1131ms
+     ✓ prevents two tasks from claiming the same native history including a symlink alias  1091ms
+     ✓ does not reassign historical MCP names even after the task becomes a tombstone  1189ms
+     ✓ rebuilds a changed mirror from SQLite while preserving the mismatch and fixed DB hash  1419ms
+     ✓ never follows or overwrites a foreign mirror target  1219ms
+     ✓ repairs DB bytes only from the registered hash and preserves deletion occurring before corruption  1296ms
+     ✓ repairs DB bytes only from the registered hash and preserves deletion occurring after corruption  1433ms
+     ✓ refuses to recover from a mirror or current defaults when the expected DB hash is not recorded  1417ms
+     ✓ keeps unknown legacy empty of new apps and excludes unknown scopes from cleanup  1451ms
+     ✓ reports damaged resource bytes separately while retaining the original fixed selection and references  1706ms
+     ✓ adds only a verified projection for the same fixed session and retains it with the history  2005ms
+     ✓ does not persist arbitrary fields through unknown-legacy metadata  1296ms
+     ✓ quarantines a mismatched reference without substituting another active resource  1381ms
+ ✓ src/main/core/applications/__tests__/claude-projection-sources.test.ts (15 tests) 39802ms
+     ✓ retains exactly the old full bundle identity and actual canonical Skill paths after the build refactor  2593ms
+     ✓ prepares a new healthy view without inventing a canonical native root when the other original package was already missing  2515ms
+     ✓ rejects invalid application scopes before publishing any static view  1990ms
+     ✓ prepares a complete healthy view with original standards while preserving the full native root and all original refs  2996ms
+     ✓ archives verified original full bytes without requiring unavailable original package bodies or falsely changing their state  3169ms
+     ✓ does not manufacture an archive from a missing original root or drop its original reference  2834ms
+     ✓ preserves a changed/user-owned original root and refuses its link archive  2323ms
+     ✓ preserves a changed/user-owned original root and refuses its mode archive  2740ms
+     ✓ preserves a changed/user-owned original root and refuses its extra archive  2811ms
+     ✓ rejects another task projection even with the same selected package identities  2771ms
+     ✓ retains exact depot identities after first native ID binding without accepting static sources as native projection roots  2909ms
+     ✓ detects altered view dependencies or canonical aliases rather than trusting metadata alone  2260ms
+     ✓ reads the same immutable static view after source loss without creating a native run,lease or discovery receipt  2282ms
+     ✓ reads the original archive only as an archive and refuses missing original full reference or modified archive bytes  3062ms
+     ✓ does not allow a partial view to masquerade as a full original archive  2547ms
+ ✓ src/main/core/tasks/task-capabilities.test.ts (12 tests) 37892ms
+     ✓ reserves one authoritative identity before forking and releases transient files only after the owned exit  3271ms
+     ✓ joins concurrent resume requests and refuses a competing profile while preparation is pending  4206ms
+     ✓ cancels a preparing resume without forking or releasing the fixed session source references  3661ms
+     ✓ does not show a dead PTY as running when the owned exit wins the PID-attachment race  2719ms
+     ✓ retains an armed fork-failure window instead of claiming an unknown child never existed  2682ms
+     ✓ keeps transient resources while disposal waits for the actual native exit  3220ms
+     ✓ completes the first native ID in the authoritative registry and persists the new pointer without losing it to self-check writes  3919ms
+     ✓ stops its own native child if task persistence fails after the fork  2862ms
+     ✓ does not leave a process or create a task when shutdown arrives while PID attachment is completing  2917ms
+     ✓ does not bind two different rollouts while the first authoritative native identity is pending  2865ms
+     ✓ discovers a native session flushed before a slow PID attachment completes by using the actual fork time  3072ms
+     ✓ aborts the owned preparation and waits for its real settlement before reporting stopped  2497ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts (18 tests) 26469ms
+     ✓ lists actual fixed package schemas and routes using host project/task/package context  2056ms
+     ✓ preserves permitted reads when a fixed session deliberately excludes the write permission  3629ms
+     ✓ rejects unselected tools, mismatched contracts, spoofed scopes and invalid schema before executing  1816ms
+     ✓ deduplicates parallel and completed identical requests, rejecting changed arguments under the same ID  1840ms
+     ✓ never re-executes an invocation when its in-memory receipt is absent  1654ms
+     ✓ rechecks current binding even for cached responses and permits the same identity after recovery  1507ms
+     ✓ allows at most two retries for an explicitly safe read, with one operation ID and unchanged scope  1402ms
+     ✓ ends exhausted safe reads and never retries explicit auth failures  1698ms
+     ✓ persists unknown before invoking a write and never retries it or leaks arbitrary thrown text  960ms
+     ✓ keeps fixed version routing after a new default is activated  1033ms
+     ✓ reports a damaged package without fake empty success and restores only the same original bytes  668ms
+     ✓ does not trust corrupted saved schemas or overwrite them from a default or same-version reinstall  826ms
+     ✓ holds the activity until an executor ignoring cancellation settles and withholds its late result  876ms
+     ✓ returns a bounded timeout receipt while keeping an ignoring write executor protected until real settlement  963ms
+     ✓ rejects invalid outputs and bounds recursive structures before hashing them  1285ms
+     ✓ awaits the real receipt check and never returns its old payload after asynchronous denial  1344ms
+     ✓ keeps the owned activity until an ignoring receipt checker settles with write=false and never replays its effect  1482ms
+     ✓ keeps the owned activity until an ignoring receipt checker settles with write=true and never replays its effect  1426ms
+ ✓ src/main/core/applications/__tests__/version-maintenance.test.ts (16 tests) 11948ms
+     ✓ keeps the active default while measuring a verified unused old version without mutating audit or refs  688ms
+     ✓ counts valid sessions once, separates deleted history and retains actual active run occupancy  975ms
+     ✓ removes only the approved package, retaining runtime, permanent identity and application data  864ms
+     ✓ permits exact-hash reinstall after cleanup but rejects same-version changed content  892ms
+     ✓ rechecks a stale preview when a lease or active default changes and does not reap unknown leases  678ms
+     ✓ keeps an unused old-version plan stable across unrelated default reads and released leases  763ms
+     ✓ does not offer cleanup for shared hard-linked source files  615ms
+     ✓ keeps tombstone refs and corrupt or unknown history rather than reporting zero-reference cleanup eligibility  671ms
+     ✓ holds unmapped native histories and retained derived resources even if no package ref row exists  882ms
+     ✓ recovers a stopped-owner interruption at marked and rejects new consumption while deleting  739ms
+     ✓ recovers a stopped-owner interruption at renamed and rejects new consumption while deleting  755ms
+     ✓ recovers a stopped-owner interruption at deleting and rejects new consumption while deleting  849ms
+     ✓ recovers a stopped-owner interruption at removed and rejects new consumption while deleting  750ms
+     ✓ can finish partial deletion from the persisted inode/file receipt  632ms
+     ✓ retains corrupt package bytes without deleting user files  603ms
+     ✓ preserves an interrupted trash tree when a file is replaced with a symlink  593ms
+ ❯ src/main/core/applications/__tests__/builtin-packages.test.ts (24 tests | 1 failed) 27059ms
+     ✓ retains approved package identity while unready without turning metadata into executable trust  529ms
+     ✓ builds both immutable packages with three full Skills,17 bounded contracts and the original pinned runtime  446ms
+     × finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls 2387ms
+     ✓ keeps model-visible built-in tool identities within the64-byte portable budget without changing the fixed server name 210ms
+     ✓ compiles all original input/output contracts and rejects injected scope,authorization and out-of-budget resource inputs 242ms
+     ✓ prepares first defaults without adding applications,creating accounts or enabling projects; restarting is idempotent  2740ms
+     ✓ T64 repairs an absent original package through trusted startup without replacing an explicitly newer default  3374ms
+     ✓ T64 rejects an altered trusted-distribution copy before repairing a missing original package  838ms
+     ✓ isolates a damaged package and keeps the other package available with a precise partial state  1633ms
+     ✓ does not follow an indexed package symlink or remove its external source  329ms
+     ✓ rejects a packaged tree with missing contracts or extra files instead of accepting directory existence 279ms
+     ✓ keeps exact historical approval after the original distribution is gone,without inferring a latest package  545ms
+     ✓ rejects a valid but unapproved package before loading code or resolving a Data API 280ms
+     ✓ preserves the approved old package and default when same-version bytes change  655ms
+     ✓ withholds execution when the retained original distribution proof is corrupt  486ms
+     ✓ executes the original pure CJS adapter through fixed Data API with real session/run protection and invocation ledger  1599ms
+     ✓ routes the fixed mail write once and preserves an uncertain receipt without transport retries or duplicate execution  1532ms
+     ✓ keeps old snapshot routing after a new default and refuses replacing the context with the new package  1978ms
+     ✓ checks original bytes again for a cached module and restores only the exact approved bytes  402ms
+     ✓ refuses a package route that claims another application or reverses readonly semantics  544ms
+     ✓ refuses a host executor with incompatible write semantics for an original read  365ms
+     ✓ prevents a fixed adapter from executing its business method twice in one tool invocation  1427ms
+     ✓ does not let a verified adapter receive a different package or contract in its host operation context  1480ms
+     ✓ rechecks current policy before delivering cached invocation results and never asks the adapter to mint authorization  1869ms
+ ✓ src/main/core/applications/__tests__/discovery-crash.test.ts (5 tests) 21287ms
+     ✓ restores the original intent-recorded operation after SIGKILL, preserving bytes and references  4726ms
+     ✓ restores the original registered operation after SIGKILL, preserving bytes and references  1574ms
+     ✓ restores the original renamed operation after SIGKILL, preserving bytes and references  4600ms
+     ✓ restores the original catalog-published operation after SIGKILL, preserving bytes and references  4990ms
+     ✓ restores the original records-committed operation after SIGKILL, preserving bytes and references  4975ms
+ ✓ src/main/core/applications/__tests__/session-diagnostics.test.ts (27 tests) 35344ms
+     ✓ exposes current-task copy diagnostics through the real read service without taking lifecycle actions  1865ms
+     ✓ identifies a live native-only capacity run without restoring business authority or rewriting initial preparation  1593ms
+     ✓ keeps the original capacity restriction in history and never applies it to a resumed independent run  2661ms
+     ✓ reports a corrupted persisted restriction without minting authority or rewriting the original preparation  1031ms
+     ✓ reports fixed source verification without inventing Skill discovery,read,usage or a current terminal  738ms
+     ✓ marks unmapped native or M4 history unknown while keeping the native Agent state independent  648ms
+     ✓ does not treat existing source files as a complete owned Skill projection when its reference is missing  567ms
+     ✓ persists one immutable preparation tied to the original selection and rejects client-shaped extra fields or another selection  1253ms
+     ✓ keeps an unavailable preparation separate from the live native Agent and from verified original files  1321ms
+     ✓ reports unavailable independent recovery without changing the active Agent or granting capabilities  1104ms
+     ✓ distinguishes an authenticated bridge observation from current connectivity and from Skill reading  698ms
+     ✓ counts only calls from this owned run and original package, never recycling a historical success after resume  861ms
+     ✓ finds the owned current run even when a clock rollback leaves more than six future-dated history rows  3088ms
+     ✓ exposes corrupt preparation/bridge metadata as missing evidence, without replaying a call or making a new grant  1163ms
+     ✓ does not replace a corrupt snapshot with current defaults or terminate its Agent during inspection  922ms
+     ✓ detects modified original bytes and preserves the fixed version and native run rather than switching packages  1202ms
+     ✓ keeps a complete schema2 display record immutable and separate from authority,while old schema1 records still read  1769ms
+     ✓ rejects selectedHash that does not match the fixed selected origin  1186ms
+     ✓ rejects paths that does not match the fixed selected origin  1190ms
+     ✓ rejects duplicate that does not match the fixed selected origin  979ms
+     ✓ rechecks selected origin even when a modified display record has a recomputed hash  1242ms
+     ✓ retains schema2 original preparation after a later native-only restriction without granting tools  1341ms
+     ✓ rejects an extra capability or credential-shaped fields instead of storing caller text  1393ms
+     ✓ reports modified schema2 evidence as unverified without mutating a run or granting mail rights  1433ms
+   ✓ only exposes complete current-run Skill observations and drops them when ownership changes during IO  1327ms
+   ✓ shows native discovery independently and clears current evidence after stop  1284ms
+   ✓ retains scoped discovery metadata across stop and rejects damaged historical evidence  1484ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts (11 tests) 16998ms
+     ✓ continues the original operation after two consecutive recovery SIGKILLs before C registration  2228ms
+     ✓ preserves an unresolved no-proof instead of adopting or releasing it  1480ms
+     ✓ preserves an unresolved proof-hash instead of adopting or releasing it  1493ms
+     ✓ preserves an unresolved proof-owner instead of adopting or releasing it  1350ms
+     ✓ preserves an unresolved changed-ledger instead of adopting or releasing it  1469ms
+     ✓ preserves an unresolved missing-ledger instead of adopting or releasing it  1242ms
+     ✓ preserves an unresolved unknown-pending instead of adopting or releasing it  1325ms
+     ✓ preserves an unresolved unknown-ledger instead of adopting or releasing it  1352ms
+     ✓ preserves an unresolved foreign-install instead of adopting or releasing it  1349ms
+     ✓ rechecks the original C plan after waiting for its coordinator and preserves a concurrent change  1363ms
+     ✓ continues the same operation when a recovering owner is killed after its C ownership commit  1782ms
+ ✓ src/main/core/applications/__tests__/mail-execution.test.ts (27 tests) 18903ms
+     ✓ freezes BCC/content/attachments with no send and rejects a model approval assertion  576ms
+     ✓ returns one preparation identity on duplicate requests and releases invalid incomplete preparation  743ms
+     ✓ persists the claim and consumes the exact proof before invoking the provider exactly once  407ms
+     ✓ does not submit a second request while the first execution is still pending  573ms
+     ✓ uses a newly rotated secret for the same verified identity without changing the frozen review  652ms
+     ✓ invalidates an approved intent after config changes without submitting  571ms
+     ✓ invalidates an approved intent after binding changes without submitting  596ms
+     ✓ invalidates an approved intent after disable-enable changes without submitting  515ms
+     ✓ invalidates an approved intent after disconnect changes without submitting  669ms
+     ✓ keeps SMTP intent usable when only the independent reading slot changes or becomes unavailable  568ms
+     ✓ does not resurrect an old grant after clear-reselect returns to the same account  629ms
+     ✓ does not resurrect an old grant after global-disable-enable returns to the same account  552ms
+     ✓ does not display or use an expired grant and does not accept a modified frozen envelope  729ms
+     ✓ runs the full connection/freeze/claim/SMTP chain with receipt loss=false on loopback only  674ms
+     ✓ runs the full connection/freeze/claim/SMTP chain with receipt loss=true on loopback only  791ms
+     ✓ binds evidence to scope, revision and live provenance and prevents using one event for another intent  941ms
+     ✓ does not let another run or project execute or invalidate the original run intent  614ms
+     ✓ keeps a canceled intent canceled when a late confirmation or execution arrives  700ms
+     ✓ preserves partial recipient results and never retries a definitively failed attempt automatically  837ms
+     ✓ requires explicit verification provenance for copied unknown content and never repeats the original attempt  876ms
+     ✓ aborts an in-flight operation when its run ends and retains unknown when the provider ignores cancellation  652ms
+     ✓ bounds a provider that never finishes and keeps an interrupted claimed attempt unknown on recovery  1054ms
+     ✓ retains an interrupted accepted submission as unknown without resubmitting and rejects forged receipts  1004ms
+     ✓ expires abandoned waiting grants only after an outside-lock process proof and preserves unknown owners  743ms
+     ✓ keeps live prepared work through same-service recovery and revokes its grant on graceful close  606ms
+     ✓ cleans a stopped terminal producer lease by exact PID/start identity without rewriting an unknown result  663ms
+     ✓ rejects modified frozen bytes before claiming and closes active operations before disposal returns  965ms
+ ✓ src/main/core/applications/__tests__/agent-adapters.test.ts (17 tests) 21026ms
+     ✓ plans explicit independent Codex standards and context without allowing an app bridge or silently accepting an ordinary empty scope  1210ms
+     ✓ attributes only the exact native skill collision before publication  1050ms
+     ✓ attributes only the exact native native-tool collision before publication  980ms
+     ✓ attributes only the exact native mcp collision before publication  901ms
+     ✓ requires a callable fixed recovery entry and exact native-version evidence  1251ms
+     ✓ installs complete CJS adapters without replacing one version and retains the old adapter after a new install  1153ms
+     ✓ prepares Claude with one stable full plugin and two original MCP keys; child Node mode stays inside MCP JSON  1413ms
+     ✓ changes neither stable projection path nor content when the native ID is first completed  1569ms
+     ✓ rejects a colliding user plugin without changing its files or renaming the fixed mapping  1395ms
+     ✓ rejects a colliding user skill without changing its files or renaming the fixed mapping  1190ms
+     ✓ rejects a colliding user mcp without changing its files or renaming the fixed mapping  1266ms
+     ✓ rejects a colliding user native-tool without changing its files or renaming the fixed mapping  1412ms
+     ✓ recognizes its exact existing plugin identity while rejecting a different plugin tree under the same task  1409ms
+     ✓ rejects unsupported CLI/platform assumptions, native-root changes, secrets and replacement runtime paths  1350ms
+     ✓ builds Codex complete enable/disable rules and preserves user records including literal punctuation  1214ms
+     ✓ rejects current user override conflicts and missing/moved/tampered Codex projection identities  1178ms
+     ✓ does not silently infer a catalog or replace a pinned adapter with another installed version  1084ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts (19 tests) 17486ms
+     ✓ pins exclusion reasons without granting excluded tools and refuses even a rehashed removal or changed reason  1462ms
+     ✓ rejects inconsistent host exclusion metadata before recording authority: wrong-package  1013ms
+     ✓ rejects inconsistent host exclusion metadata before recording authority: selected  1165ms
+     ✓ rejects inconsistent host exclusion metadata before recording authority: duplicate  1178ms
+     ✓ rejects inconsistent host exclusion metadata before recording authority: incomplete  1067ms
+     ✓ refuses an application-dependent graph falsely marked independent in its receipt  1352ms
+     ✓ refuses an application-dependent graph falsely marked independent in its dependency  1135ms
+     ✓ holds only independent roots with explicit schema2 and gives zero application tools while both packages and the app bridge are unavailable  1407ms
+     ✓ refuses an erased independent receipt and a rehashed old schema1 empty grant instead of inferring full S  766ms
+     ✓ still refuses a missing independent shared dependency before recording any zero-application run  574ms
+     ✓ does not turn a valid scope receipt into a bypass of current policy or a CLI restart  817ms
+     ✓ keeps the full S and refs while the healthy fixed app calls its original tool and unavailable app cannot execute  820ms
+     ✓ allows the healthy scope even when the unrelated original app is explicitly marked unavailable  817ms
+     ✓ never widens an owned scope if its C receipt disappears  692ms
+     ✓ refuses even a rehashed wider receipt or another owner without releasing the original run  671ms
+     ✓ retains a scope receipt across the first native ID bind only with the original recorded version  855ms
+     ✓ does not arm or grant tools when a selected healthy source disappears during preparation  634ms
+     ✓ rejects a missing shared dependency before persisting any scoped run or incomplete protection  512ms
+     ✓ does not allow foreign, empty, duplicate application scopes or arbitrary extra roots  546ms
+ ✓ src/main/core/applications/__tests__/legacy-plugin-source.test.ts (18 tests) 6441ms
+     ✓ retains complete exact plugin bytes and original marker through the actual legacy preparation hook  417ms
+     ✓ preserves historical plugin metadata and root marker byte formatting rather than synthesizing a current template  375ms
+     ✓ can verify retained original bytes after old T is removed and after reopening the source service  410ms
+     ✓ keeps the original retained source/ref after UI task and project deletion  397ms
+     ✓ returns defensive copies of captured bytes and never uses mutated caller buffers  445ms
+     ✓ refuses a content archive without changing or rebuilding it  372ms
+     ✓ refuses a extra archive without changing or rebuilding it  373ms
+     ✓ refuses a symlink archive without changing or rebuilding it  396ms
+     ✓ refuses a hardlink archive without changing or rebuilding it  425ms
+     ✓ refuses a metadata archive without changing or rebuilding it  373ms
+     ✓ refuses a owner archive without changing or rebuilding it  397ms
+     ✓ refuses a dependency archive without changing or rebuilding it  394ms
+     ✓ refuses a foreign-task archive without changing or rebuilding it  393ms
+     ✓ leaves no retained plugin reference when the preparation SQL commit fails  560ms
+ ✓ src/renderer/features/files/markdown-refresh-acceptance.test.tsx (66 tests) 20685ms
+     ✓ DEV117 hides a Setext underline on blur without changing either source line  648ms
+     ✓ DEV114 loads no math worker for plain content, then renders actual inline/block KaTeX and preserves native saved source  584ms
+     ✓ DEV114 ignores an original math result delayed past switch and renders on reopening  345ms
+     ✓ DEV114 ignores an original math result delayed past close and renders on reopening  335ms
+     ✓ DEV113 reuses the actual diagram DOM outside its source and replaces it for code or boundary changes  305ms
+     ✓ DEV110 edits rich source next to CJK/emoji, undoes and preserves untouched mixed-EOL bytes on real save  493ms
+     ✓ DEV110 exposes valid metadata source, remaps changed header ranges and keeps the full body on native save  367ms
+     ✓ DEV110 preserves invalid/nonopening metadata "# Keep me\nbody" then accepts an actual repaired YAML header  367ms
+     ✓ DEV110 preserves invalid/nonopening metadata "---\ntitle: unfinished\n\n# Keep me\nbody" then accepts an actual repaired YAML header  356ms
+     ✓ DEV110 preserves invalid/nonopening metadata "Intro\n\n---\n\n# Keep me\nbody" then accepts an actual repaired YAML header  370ms
+     ✓ DEV110 preserves invalid/nonopening metadata "---\ntitle: [broken\n---\n\n# Keep me\nbody" then accepts an actual repaired YAML header  371ms
+     ✓ 'ordinary writer' / 'native watch' updates source and real rich widgets twice without writeback  1009ms
+     ✓ 'ordinary writer' / 'reactivation' updates source and real rich widgets twice without writeback  770ms
+     ✓ 'ordinary writer' / 'explicit refresh' updates source and real rich widgets twice without writeback  750ms
+     ✓ 'CLI process' / 'native watch' updates source and real rich widgets twice without writeback  1106ms
+     ✓ 'CLI process' / 'reactivation' updates source and real rich widgets twice without writeback  992ms
+     ✓ 'CLI process' / 'explicit refresh' updates source and real rich widgets twice without writeback  959ms
+     ✓ reports actual missing-file read error and recovers fresh Markdown without writes  393ms
+     ✓ only a later actual local edit plus differing disk bytes becomes an ordinary conflict  395ms
+ ✓ src/main/core/applications/__tests__/private-broker.test.ts (26 tests) 16702ms
+     ✓ waits for the exact replacement instance and ends its waiter on cancellation  447ms
+     ✓ resolves only a newly authenticated replacement and releases waiters on host close  400ms
+     ✓ expires an unconsumed ticket without a client request and releases only its reserved window  350ms
+     ✓ expires an armed ticket without fabricating a native child exit  417ms
+     ✓ cancels only its owned unconsumed ticket and leaves a later instance usable  338ms
+     ✓ coordinates a controlled replacement through a fresh broker ticket without replaying business  328ms
+     ✓ reports only authenticated bridge loss with the host-bound run and instance  389ms
+     ✓ classifies malformed JSON as an input failure without leaking it or losing the next authorized request  395ms
+     ✓ rejects invalid method,missing and mistyped fields without invoking the adapter or revoking a valid socket  345ms
+     ✓ bounds an oversized request with newline=false and keeps another authenticated socket usable  492ms
+     ✓ bounds an oversized request with newline=true and keeps another authenticated socket usable  534ms
+     ✓ allows one asynchronous peer claim and rejects concurrent use of its same ticket  370ms
+     ✓ rejects a canceled replacement after late peer attachment without revoking a sibling ticket  466ms
+     ✓ denies a recovery token when application authorization is revoked during peer validation  456ms
+     ✓ rechecks recovery policy after asynchronous authentication diagnostics before returning a token  403ms
+     ✓ does not revive a recovery credential after policy revocation and later reenablement  462ms
+     ✓ does not issue credentials when the run is revoked while a peer identity probe is awaiting completion  468ms
+     ✓ creates a short 0700 endpoint root and 0600 socket/bootstrap, consuming a ticket exactly once  531ms
+     ✓ keeps tokens bound to their authenticated socket and rejects scope fields or forged run IDs  721ms
+     ✓ rotates credentials without accepting the old token and expires unrenewed credentials  844ms
+     ✓ withholds expired delivery without misreporting a completed write as never started  1223ms
+     ✓ rejects an expired ticket and a ticket for a bridge that was never armed  1258ms
+     ✓ the actual client consumes its one-use file, renews and returns structured results without storing credentials  1465ms
+     ✓ rejects linked or over-permissioned bootstrap files without deleting other content  1286ms
+     ✓ invalidates old credentials immediately on host stop and on a different broker generation  1206ms
+     ✓ cancels only a request on the authenticated connection and does not equate request with external rollback  1107ms
+ ✓ src/main/core/applications/__tests__/discovery-early-intent.test.ts (11 tests) 10893ms
+     ✓ registers and completes the same stopped pre-C intent without substituting source versions  1568ms
+     ✓ preserves a running original pre-C owner and all intent bytes  1189ms
+     ✓ preserves a unknown original pre-C owner and all intent bytes  1273ms
+     ✓ preserves a pre-C staging inconsistency instead of inventing a fresh operation  1249ms
+     ✓ preserves a pre-C target inconsistency instead of inventing a fresh operation  1215ms
+     ✓ preserves a pre-C target-link inconsistency instead of inventing a fresh operation  1063ms
+     ✓ preserves a pre-C resource inconsistency instead of inventing a fresh operation  1006ms
+     ✓ preserves a pre-C lease inconsistency instead of inventing a fresh operation  543ms
+     ✓ preserves a pre-C operation inconsistency instead of inventing a fresh operation  648ms
+     ✓ preserves a pre-C advanced-phase inconsistency instead of inventing a fresh operation  640ms
+     ✓ preserves a pre-C source inconsistency instead of inventing a fresh operation  499ms
+ ✓ src/main/core/files/native-broker.test.ts (59 tests) 12822ms
+     ✓ persists and recovers an Office draft beyond the text budget without weakening text limits  1191ms
+     ✓ reads real Git states/attributes within a nested root without writing the index  408ms
+     ✓ returns exact real blame lines and rejects modified contents or a replaced root  553ms
+     ✓ keeps hostile filter/fsmonitor helpers from running and makes their failure explicit  726ms
+     ✓ supports worktree metadata outside the file root and reports a non-Git directory  392ms
+     ✓ persists evolving drafts independently, retains mixed bytes and restores after restart  319ms
+     ✓ shares real native directory subscriptions and observes replacements after one consumer leaves  384ms
+     ✓ enumerates unexpanded real directories with fixed exclusions and no symlink traversal  2596ms
+ ✓ src/main/core/applications/__tests__/mail-cache.test.ts (37 tests) 11587ms
+     ✓ reserves before writing and evicts actual least-recently-used files within the shared source budget  352ms
+     ✓ does not treat refresh-only writes as query usage when choosing LRU victims  316ms
+     ✓ protects actual readers while clear reclaims only unleased data and retained business files remain untouched  331ms
+     ✓ detects missing or damaged bytes and permits rebuilding the same logical content after owned cleanup  317ms
+     ✓ invalidates a coverage record when lazy record bytes are corrupted and allows rebuilding its body  334ms
+     ✓ uses a shared SQLite CAS to prevent a late checkpoint from overwriting a newer engine result  408ms
+     ✓ counts a successful use by a shared waiter independently of the refresh producer timestamp  375ms
+   ✓ enforces the exact production 500000000-byte cache ceiling including stage and SQLite files on real disk  4407ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts (20 tests) 11160ms
+     ✓ installs full runtime and package once, and activates only after explicit selection  499ms
+     ✓ T64 restores a missing original package only from its exact content without selecting the latest default or rewriting history  673ms
+     ✓ T64 resumes missing-package restoration interrupted at registered under its new durable operation identity  599ms
+     ✓ T64 resumes missing-package restoration interrupted at materialized under its new durable operation identity  579ms
+     ✓ T64 resumes missing-package restoration interrupted at renamed under its new durable operation identity  599ms
+     ✓ T64 defers a missing package while a direct resource consumer still holds a real lease  521ms
+     ✓ T64 defers a missing package while a dependent resource consumer still holds a real lease  583ms
+     ✓ T64 keeps an occupied original package path unchanged: empty-directory  320ms
+     ✓ T64 keeps an occupied original package path unchanged: user-directory  457ms
+     ✓ T64 keeps an occupied original package path unchanged: linked-directory  331ms
+     ✓ T64 retains a user directory that appears after restoration is registered and leaves recovery pending  404ms
+     ✓ rejects same-version changed content before publication, preserving the old default and files  459ms
+     ✓ does not select a new package when install succeeds or a stale activation plan is submitted  743ms
+     ✓ recovers an interruption at registered without switching defaults or replacing the old package  837ms
+     ✓ recovers an interruption at materialized without switching defaults or replacing the old package  848ms
+     ✓ recovers an interruption at renamed without switching defaults or replacing the old package  924ms
+     ✓ keeps historical resource references after deleting the task, with FK protection against accidental resource deletion  324ms
+     ✓ holds a resource lease across asynchronous work and releases it even when the operation fails  433ms
+     ✓ rolls back trusted data migration changes and keeps the old default on migration failure  759ms
+ ✓ src/main/core/applications/__tests__/claude-projection-selection.test.ts (12 tests) 14572ms
+     ✓ keeps the full original schema1 body while format2 omits only the specified standard and preserves all App assets  1647ms
+     ✓ rejects forged old-format-omission rather than treating it as a new full selection  1208ms
+     ✓ rejects forged missing-explicit-scope rather than treating it as a new full selection  1197ms
+     ✓ rejects forged extra-hidden-skill rather than treating it as a new full selection  1078ms
+     ✓ rejects forged unknown-standard rather than treating it as a new full selection  1231ms
+     ✓ rejects forged duplicate-standard rather than treating it as a new full selection  1297ms
+     ✓ rejects forged wrong-source-hash rather than treating it as a new full selection  1394ms
+     ✓ rejects forged wrong-task rather than treating it as a new full selection  1429ms
+     ✓ rejects forged wrong-full-selection rather than treating it as a new full selection  1406ms
+     ✓ rejects forged partial-app-group rather than treating it as a new full selection  1045ms
+     ✓ plans Codex standard exclusion against the actual complete catalog and refuses foreign or duplicate paths  646ms
+     ✓ refuses a Claude subset request without a run-bound physical delivery even with a real full original plugin  993ms
+ ✓ src/main/core/applications/__tests__/agent-bridge-processes.test.ts (9 tests) 9781ms
+     ✓ derives the real peer PID/start/image and coherent ancestors from the owned socket without consuming its stream  393ms
+     ✓ automatically binds a real child bridge during CLI handoff and calls the original CJS tool without a caller PID receipt  1589ms
+     ✓ rejects a genuine Electron peer outside the selected CLI ancestry and never claims or signals it  1296ms
+     ✓ rejects missing peer proof before process attachment or signalling  1059ms
+     ✓ rejects image peer proof before process attachment or signalling  1098ms
+     ✓ rejects birth peer proof before process attachment or signalling  992ms
+     ✓ joins disposal to the actual pending identity query without granting credentials after closure  1115ms
+     ✓ does not treat a socket disconnect as exit and retains leases while a proved child is still alive or its identity is unknown  1301ms
+ ✓ src/main/core/applications/__tests__/legacy-task-retention.test.ts (20 tests) 8865ms
+     ✓ persists original claude-code metadata, manifest and source refs without changing task/pointer/paths  1125ms
+     ✓ persists original codex metadata, manifest and source refs without changing task/pointer/paths  916ms
+     ✓ pins disabled original versions without creating a new selection  431ms
+     ✓ keeps an interrupted intent-recorded attempt and resumes without losing original metadata  554ms
+     ✓ keeps an interrupted sources-adopted attempt and resumes without losing original metadata  691ms
+     ✓ cancels after source preparation without committing ready refs or changing the task  538ms
+     ✓ does not overwrite a newer task record that arrives before commit  418ms
+     ✓ rechecks original bytes after an asynchronous checkpoint and leaves changes untouched  537ms
+     ✓ rolls back all new source refs if the final SQLite record update fails  782ms
+     ✓ keeps old committed source evidence immutable when the journal is corrupted  578ms
+     ✓ does not replace a conflicting existing source reference  381ms
+     ✓ retains first source identity when a previously unknown native ID is observed on the same task  506ms
+     ✓ does not reopen a record already consumed by the later migration stage  301ms
+ ✓ src/main/core/applications/__tests__/codex-application-scope.test.ts (6 tests) 5055ms
+     ✓ copies healthy complete sources and standards without reading a missing excluded package or rewriting S  810ms
+     ✓ keeps every original H identity while enabling only scoped application Skills and original standards  882ms
+     ✓ rejects empty,duplicate,foreign or Claude scopes without inferring a broader grant  924ms
+     ✓ isolates excluded native tool names but still rejects healthy or shared MCP namespace collisions  795ms
+     ✓ preserves an explicit disabled excluded Skill and still respects a conflicting healthy Skill override  833ms
+     ✓ does not conceal damaged excluded H ownership inside an apparently complete disable catalog  809ms
+ ✓ src/main/core/projects/transfer-format.test.ts (9 tests) 10114ms
+     ✓ E02 accepts eight characters, preserves whitespace/Chinese, and enforces UTF-8 length  1210ms
+     ✓ I01/S01 authenticates before exposing data and uses a fresh salt and nonce  844ms
+     ✓ I03 rejects tampered ciphertext, nonce, salt and tag  1454ms
+     ✓ I05 rejects ciphertext over the plaintext cap before any password derivation  633ms
+     ✓ I04/I06 rejects authenticated malformed payloads without exposing the values  5672ms
+ ✓ src/main/core/files/office/libreoffice-resources.test.ts (8 tests) 4632ms
+     ✓ returns every actual file identity/hash and contained link only after vendor signature verification  2420ms
+ ✓ src/main/core/applications/__tests__/session-projector.test.ts (6 tests) 7231ms
+     ✓ preserves all original M4 bytes, marker and legacy hash through repeat adoption  876ms
+     ✓ copies binary assets, executable scripts and complete standard references, rewriting only derived Skill metadata  1315ms
+     ✓ keeps the original complete projection after a different package becomes the default  1508ms
+     ✓ does not overwrite a user-owned namesake or follow a linked source file  1297ms
+     ✓ rejects changed executable modes and keeps snapshot references available for repair  1355ms
+     ✓ holds damaged or missing original legacy content instead of adopting a current replacement  878ms
+ ✓ src/main/core/applications/__tests__/agent-support.test.ts (6 tests) 8768ms
+     ✓ builds an index whose complete adapter/runtime hashes match the runtime registries  1305ms
+     ✓ initializes once from actual indexed files and exposes only prepared resources, with native discovery still unverified  2286ms
+     ✓ does not throw when the distribution index is missing, leaving existing installed versions usable  840ms
+     ✓ rejects modified code without installing its replacement or reporting discovery  1006ms
+     ✓ does not traverse a linked distribution directory or remove its external target  1151ms
+     ✓ refuses an unknown build output tree rather than deleting user files  1127ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts (8 tests) 8017ms
+     ✓ includes a selected preparation, excludes unrecorded ordinary work, and refuses a foreign-project scope  460ms
+     ✓ keeps live native-only work outside the stop set while preserving its selection and refs  654ms
+     ✓ accepts the immutable narrowing receipt after the first actual native ID is bound  1230ms
+     ✓ does not use corrupt narrowing evidence to exempt a selected run  1312ms
+     ✓ retains an unresolved older narrowing receipt if its original version is missing  1967ms
+     ✓ does not silently classify a corrupt original snapshot as unrelated  716ms
+     ✓ keeps verifiable unknown native history outside the M10 stop set but refuses corrupted scope metadata  918ms
+     ✓ gates only the selected application in the project with a pending switch  761ms
+ ✓ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (14 tests) 6909ms
+     ✓ restores registered only after the original kernel identity has stopped, keeping the exact operation and bytes  342ms
+     ✓ restores materialized only after the original kernel identity has stopped, keeping the exact operation and bytes  366ms
+     ✓ restores renamed only after the original kernel identity has stopped, keeping the exact operation and bytes  392ms
+     ✓ keeps a living registered publisher, then restores the same operation after actual SIGKILL  336ms
+     ✓ keeps a living materialized publisher, then restores the same operation after actual SIGKILL  332ms
+     ✓ keeps a living renamed publisher, then restores the same operation after actual SIGKILL  3395ms
+ ✓ src/main/core/applications/__tests__/application-impact.test.ts (7 tests) 5278ms
+     ✓ refuses a run whose C project was changed away from its actual task instead of reporting empty scope  838ms
+     ✓ lists disabled and archived references, emits only non-secret metadata, and does not change any row  793ms
+     ✓ can explain revocation even when an immutable package and the original snapshot are damaged  780ms
+     ✓ reports only loaded/preparing C runs, retains orphan identities, and excludes a verifiable native-only run  1123ms
+     ✓ refuses unknown switch scope and keeps it intact instead of showing no affected runs  686ms
+     ✓ checks exact revisions and pending switch state without selecting or mutating  618ms
+     ✓ distinguishes empty scope and missing targets and rejects caller authority or SQL fields  438ms
+ ✓ src/main/core/applications/__tests__/mail-cache-process.test.ts (7 tests) 5996ms
+     ✓ retains a live writer reservation and discards its empty stage only after kernel-proved exit  771ms
+     ✓ recovers complete written bytes exactly once without inventing complete query coverage  580ms
+     ✓ recovers complete renamed bytes exactly once without inventing complete query coverage  651ms
+     ✓ protects a real child reader during clear and releases only that exited process lease  649ms
+     ✓ keeps unknown process leases until actual identity can be checked  753ms
+     ✓ serializes simultaneous reservations from two native processes under one U budget  510ms
+     ✓ recovers an actual hot rollback journal after killing its registered writer inside a SQLite commit  1084ms
+ ✓ src/main/core/applications/__tests__/claude-delivery-copy-errno.test.ts (2 tests) 4056ms
+   ✓ retains an unknown file stage ancestor without blocking the next ordinary preparation  2796ms
+   ✓ retains an unknown link-loop stage ancestor without blocking the next ordinary preparation  1259ms
+ ✓ src/main/core/applications/__tests__/bridge-runtime.test.ts (5 tests) 7826ms
+     ✓ launches immutable CJS with Electron Node, preserves fixed annotations/schemas and records the host-derived invocation  2002ms
+     ✓ rejects raw MCP requests and closes oversized stdio frames with newline=false  1887ms
+     ✓ rejects raw MCP requests and closes oversized stdio frames with newline=true  1782ms
+     ✓ terminates a refused real broker handshake without leaving an open socket or printing its ticket  1072ms
+ ✓ src/main/core/files/save-race-recovery-acceptance.test.ts (11 tests) 4897ms
+     ✓ recovers 'prepared' / 'different candidate' without trusting historical exchanged flags  430ms
+     ✓ before-swap-path preserves current/displaced/independent local versions without a second swap  377ms
+     ✓ dual-inplace preserves current/displaced/independent local versions without a second swap  362ms
+     ✓ dual-replace preserves current/displaced/independent local versions without a second swap  345ms
+     ✓ keeps a returning old-fd writer in saved history and replays the historical receipt without undoing that writer  312ms
+ ✓ src/renderer/features/files/classification-registry-acceptance.test.ts (6 tests | 3 skipped) 4743ms
+     ✓ F05 records every one of the 345 baseline entries, literal names, compound suffixes and both case forms  4741ms
+ ✓ src/renderer/features/files/code/grammar-coverage.test.ts (1 test) 4705ms
+   ✓ loads all 228 baseline language IDs and produces actual dual-theme lexical tokens with exact source recovery  4704ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts (6 tests) 3878ms
+     ✓ checks exactly selected identities without changing SQL or the selection  697ms
+     ✓ keeps Mail ready when only the fixed ZenTao package directory is absent  631ms
+     ✓ keeps ZenTao ready when only the fixed Mail package contents are corrupted  574ms
+     ✓ reports shared runtime absence for every dependent app without dropping the fixed packages  767ms
+     ✓ does not substitute another app or version for a mismatched original identity  591ms
+     ✓ does not swallow cancellation or unexpected inspector errors as an ordinary unavailable app  617ms
+ ✓ src/renderer/features/files/office/preview.test.tsx (27 tests) 4061ms
+     ✓ inserts actual controls for the selected cells through the inspector and removes the whole closure on undo  344ms
+     ✓ applies a dynamic threshold through the inspector, retains base fill and restores the condition through undo  307ms
+ ✓ src/main/core/applications/__tests__/mail-drafts.test.ts (12 tests) 3864ms
+     ✓ enforces project identity and current application policy for bodies, mutations and attachments  306ms
+     ✓ keeps a stable attachment copy after its original source and unrelated rebuildable cache are removed  420ms
+     ✓ deduplicates identical bytes without granting another project access to an attachment ID  451ms
+     ✓ refuses corrupt attachment bytes before saving a draft or displaying them as usable  315ms
+     ✓ recovers a private blob interrupted after staged without inventing a saved draft  381ms
+     ✓ recovers a private blob interrupted after published without inventing a saved draft  333ms
+     ✓ keeps sent, sending and unknown revisions immutable and copies content to a new draft ID  514ms
+ ✓ src/main/core/applications/__tests__/package-restoration-runs.test.ts (2 tests) 3746ms
+     ✓ T64 waits for the complete preparing consumer lifetime and preserves the fixed session  1819ms
+     ✓ T64 waits for the complete bridge-survives-cli consumer lifetime and preserves the fixed session  1927ms
+ ✓ src/main/core/applications/__tests__/connection-service.test.ts (19 tests) 2859ms
+     ✓ uses CAS for concurrent rotations and only cleans the losing operation secret  330ms
+     ✓ reports incompatible fixed-package authentication and commits only the explicitly reviewed plan  371ms
+     ✓ rejects a compatibility plan if a new historical package reference appeared after testing  351ms
+ ✓ src/main/core/projects/transfer-crash.test.ts (4 tests) 3250ms
+     ✓ F03 survives SIGKILL at key-staged and recovers on a fresh process  783ms
+     ✓ F03 survives SIGKILL at key-renamed and recovers on a fresh process  800ms
+     ✓ F03 survives SIGKILL at rows and recovers on a fresh process  796ms
+     ✓ F03 survives SIGKILL at committed and recovers on a fresh process  822ms
+ ✓ src/main/core/applications/__tests__/foxmail-worker.test.ts (10 tests) 2839ms
+     ✓ uses local natural dates and rejects invalid windows without expanding scope  440ms
+     ✓ waits for actual Worker and owned native child exit before rejecting cancellation or completing close  1127ms
+ ✓ src/main/core/applications/__tests__/native-user-messages.test.ts (40 tests) 882ms
+     ✓ keeps owned-process inspection constant across a long native user log and still rechecks the claimed row  482ms
+ ✓ src/main/core/applications/__tests__/activity.test.ts (6 tests) 2910ms
+     ✓ deduplicates the Data API and bridge ledger while preserving the true source,request and attempt count  574ms
+     ✓ uses immutable time+identity keysets and binds cursors to the exact filters  435ms
+     ✓ filters host-recorded connection subjects without inferring the current project selection  508ms
+     ✓ retains deleted-project and index provenance and does not create new operations when inspecting or refreshing  498ms
+     ✓ returns only explicit metadata,never SQL,provider arguments,secret material or approvals  526ms
+     ✓ marks corrupt source metadata as a recovery error instead of silently selecting a new connection  367ms
+ ✓ src/main/core/applications/__tests__/selection-service.test.ts (11 tests) 2669ms
+     ✓ keeps independent nullable mail source and sender slots while draft use remains enabled  318ms
+     ✓ stops project runs before committing another ZenTao source  333ms
+ ✓ src/renderer/features/files/save-window-acceptance.test.ts (4 tests) 2900ms
+     ✓ before-swap records real current/displaced/draft and exact guarantee boundary  462ms
+ ✓ src/main/core/applications/__tests__/coordinator-crash.test.ts (20 tests) 2817ms
+     ✓ serializes concurrent C recovery contenders after the original owner stops  457ms
+     ✓ serializes concurrent H recovery contenders after the original owner stops  492ms
+ ✓ src/main/core/capabilities/capability-service.test.ts (26 tests) 2779ms
+     ✓ actual PTY restores this project after rc files and strips another project’s inherited variables  419ms
+ ✓ src/main/core/files/opid-retry-acceptance.test.ts (1 test) 2521ms
+     ✓ loses a committed reply, preserves an external revision across retries/restart, and rechecks each new opId  2520ms
+ ✓ src/main/core/ai/profile-tester.test.ts (9 tests) 2508ms
+     ✓ passes when the reply contains the code, with the profile env and one attempt only  381ms
+     ✓ reports what the fake saw: the profile key (not the rc one) and no retries  380ms
+     ✓ leaves no project folder behind in the Claude config, unless it holds a file  351ms
+     ✓ times out, kills the process and cleans up its directory  817ms
+ ✓ src/main/core/applications/__tests__/legacy-task-evidence.test.ts (28 tests) 1795ms
+ ✓ src/renderer/views/projects/project-transfer.test.tsx (14 tests) 2418ms
+     ✓ D04 refreshes a stale usable-directory status after commit rejection and keeps selections for retry  594ms
+ ✓ src/main/core/files/office/pptx-chart-resize.test.ts (17 tests) 2488ms
+     ✓ resizes bar through 1, 8 and 2 values, preserves source worksheets and restores exact history  320ms
+ ✓ src/main/core/applications/__tests__/host-extension-lifecycle.test.ts (19 tests) 1828ms
+     ✓ revokes only the selected project policy and keeps a second project and application usable  311ms
+ ✓ src/main/core/files/office/pptx-service.test.ts (23 tests) 2241ms
+ ✓ src/main/core/applications/__tests__/extension-contract.test.ts (7 tests) 1173ms
+     ✓ keeps repeated same content idempotent and rejects a duplicate app/version with different bytes  300ms
+ ✓ src/main/core/applications/__tests__/process-identity.test.ts (3 tests) 1471ms
+     ✓ reads actual microsecond start identity, distinguishes exit/reuse, and never treats approximate time as proof  320ms
+     ✓ keeps leases until actual CLI and bridge child exit events, retaining an in-flight executor  878ms
+ ✓ src/renderer/features/files/markdown/worker-source-acceptance.test.ts (8 tests) 1806ms
+     ✓ retains exact raw ranges and bytes for 'long-line'  1388ms
+ ✓ src/main/core/tasks/task-service.test.ts (40 tests) 1786ms
+ ✓ src/main/core/files/office/pptx-chart-roundtrip.test.ts (17 tests) 1843ms
+ ✓ src/main/core/capabilities/resource-execution.test.ts (8 tests) 1717ms
+     ✓ uses password authentication against the selected loopback server  485ms
+     ✓ uses passphrase authentication against the selected loopback server  534ms
+stdout | src/renderer/features/files/csv/model.test.ts > CSV/TSV text-preserving table decoding > indexes the maximum row budget and rejects one extra record without truncation
+{"csvRows":1000000,"sourceBytes":8000000,"indexMilliseconds":1077}
+
+ ✓ src/renderer/features/files/csv/model.test.ts (5 tests) 1173ms
+     ✓ indexes the maximum row budget and rejects one extra record without truncation  1165ms
+ ✓ src/renderer/features/files/workspace-panel-focus.test.tsx (12 tests) 1044ms
+ ✓ src/renderer/features/files/workspace-tree-acceptance.test.tsx (8 tests) 991ms
+     ✓ starts an unanchored Shift range at the actual focused middle row  315ms
+ ✓ src/main/core/ai/runner-detect.test.ts (7 tests) 1161ms
+     ✓ finds the command on the rc PATH, ignoring aliases and rc noise  460ms
+     ✓ finds the command on the rc PATH, ignoring aliases and rc noise  358ms
+ ✓ src/renderer/features/files/name-search-acceptance.test.tsx (6 tests | 4 skipped) 958ms
+   ✓ C18 binds name results to the current query before debounce and rejects an old delayed success  482ms
+   ✓ C18 binds content results to the current query before debounce and rejects an old delayed success  475ms
+ ✓ src/renderer/features/files/lsp/renderer.test.tsx (21 tests) 1018ms
+ ✓ src/renderer/features/files/terminal-context/store.test.ts (30 tests) 932ms
+ ✓ src/renderer/features/files/text-size-acceptance.test.ts (12 tests) 917ms
+ ✓ src/renderer/features/files/office/pptx-preview.test.tsx (23 tests) 749ms
+ ✓ src/main/core/applications/__tests__/native-user-inputs.test.ts (28 tests) 851ms
+     ✓ handles a large complete paste with linear byte accounting and rejects transport overflow  819ms
+ ✓ src/main/core/files/office/pptx-chart.test.ts (15 tests) 866ms
+ ✓ src/main/core/voice/native-focus.test.ts (9 tests) 672ms
+     ✓ initial-retry  371ms
+ ✓ src/main/core/capabilities/task-runtime.test.ts (6 tests) 759ms
+   ✓ persists the actual child report and cleans only the exited run, keeping the task’s version pins  348ms
+ ✓ src/main/core/applications/__tests__/foxmail-native.test.ts (4 tests) 999ms
+     ✓ reads a rollback-mode source without changing source files or creating journals  472ms
+ ✓ src/main/core/connections/ssh-tester.test.ts (9 tests) 777ms
+     ✓ a server that never sends a banner times out  304ms
+ ✓ src/renderer/features/files/notebook/model.test.ts (10 tests) 709ms
+     ✓ distinguishes whole-source whitespace from a whitespace-only first render chunk  579ms
+ ✓ src/main/core/files/office/pptx-chartex-preview.test.ts (13 tests) 696ms
+ ✓ src/renderer/features/files/markdown/task-source-acceptance.test.ts (6 tests) 642ms
+ ✓ src/renderer/features/files/text-editor.test.tsx (15 tests) 563ms
+ ✓ src/main/core/connections/db-tester.test.ts (10 tests) 625ms
+     ✓ mysql: a server that accepts but never answers times out  304ms
+     ✓ postgres: a server that accepts but never answers times out  302ms
+ ✓ src/main/core/files/office/pages.test.ts (15 tests) 635ms
+ ✓ src/main/core/files/office/document.test.ts (4 tests) 599ms
+     ✓ bounds retained history while retaining the current document and does not mutate on rejected input  540ms
+ ✓ src/main/core/files/office/checkbox.test.ts (10 tests) 589ms
+     ✓ indexes a 1024-control worksheet once and retrieves a bounded distant viewport  442ms
+ ✓ src/main/core/files/office/service.test.ts (8 tests) 551ms
+ ✓ src/main/core/files/office/pptx-chart-area.test.ts (9 tests) 486ms
+ ✓ src/renderer/features/files/content-cancel-state.test.tsx (3 tests) 431ms
+ ✓ src/renderer/features/files/csv/preview.test.tsx (4 tests) 489ms
+ ✓ src/main/core/applications/__tests__/mail-storage-usage.test.ts (10 tests) 1000ms
+ ✓ src/main/core/files/office/pptx-chartex-data.test.ts (14 tests) 513ms
+ ✓ src/renderer/features/files/office/pptx-table-object.test.tsx (6 tests) 427ms
+ ✓ src/renderer/features/files/office/pptx-buffer.test.ts (24 tests) 385ms
+ ✓ src/renderer/features/applications/workspace.test.tsx (13 tests) 379ms
+ ✓ src/renderer/features/files/media/preview.test.tsx (24 tests) 375ms
+ ✓ src/renderer/features/applications/panels.test.tsx (16 tests) 354ms
+ ✓ src/renderer/features/files/workspace-store.test.ts (30 tests) 292ms
+ ✓ src/main/db/migrations.test.ts (23 tests) 276ms
+ ✓ src/renderer/features/applications/session-applications.test.tsx (24 tests) 262ms
+ ✓ src/renderer/features/files/reading-persistence-acceptance.test.ts (4 tests | 2 skipped) 301ms
+ ✓ src/renderer/features/files/name-session-state.test.tsx (4 tests) 270ms
+ ✓ src/renderer/features/files/editor-scroll.test.ts (14 tests) 275ms
+ ✓ src/renderer/features/files/name-limit-state.test.tsx (2 tests) 286ms
+ ✓ src/renderer/features/files/terminal-context/components.test.tsx (6 tests) 291ms
+ ✓ src/main/core/files/office/parser.test.ts (3 tests) 283ms
+ ✓ src/main/core/files/office/pptx-elements.test.ts (9 tests) 287ms
+ ✓ src/renderer/features/files/office/buffer.test.ts (23 tests) 269ms
+ ✓ src/renderer/features/files/pending-input-panel.test.tsx (1 test) 290ms
+ ✓ src/main/core/projects/project-service.test.ts (20 tests) 346ms
+ ✓ src/renderer/features/files/pdf/controls-acceptance.test.tsx (10 tests) 297ms
+ ✓ src/renderer/features/files/workspace-persistence-panel.test.tsx (2 tests) 230ms
+ ✓ src/renderer/features/files/code/model.test.ts (7 tests) 241ms
+ ✓ src/main/core/files/office/pptx-table.test.ts (10 tests) 242ms
+ ✓ src/main/core/projects/transfer-files.test.ts (7 tests) 614ms
+ ✓ src/renderer/features/files/attachment-routing-panel.test.tsx (3 tests) 197ms
+ ✓ src/renderer/features/files/nested-root-breadcrumb.test.tsx (2 tests) 193ms
+ ✓ src/renderer/features/files/markdown/math-isolation.test.ts (2 tests) 172ms
+ ✓ src/main/core/files/office/pptx-edit.test.ts (10 tests) 179ms
+ ✓ src/renderer/features/files/office/pages-preview.test.tsx (7 tests) 175ms
+ ✓ src/main/core/files/office/pptx-slides.test.ts (9 tests) 178ms
+ ✓ src/renderer/features/files/content-request.test.tsx (17 tests) 171ms
+ ✓ src/main/pty-manager.test.ts (2 tests) 167ms
+ ✓ src/renderer/features/files/notebook-download-panel.test.tsx (4 tests) 165ms
+ ✓ src/renderer/features/files/mcp/apps.test.tsx (3 tests) 164ms
+ ✓ src/main/core/files/office/pptx-appearance.test.ts (6 tests) 163ms
+stdout | src/renderer/features/files/find-scope-acceptance.test.tsx
+Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+
+ ✓ src/renderer/features/files/find-scope-acceptance.test.tsx (12 tests | 6 skipped) 163ms
+ ✓ src/main/core/ai/ai-profile-service.test.ts (13 tests) 164ms
+ ✓ src/renderer/features/files/markdown/mermaid-gate.test.ts (15 tests) 174ms
+ ✓ src/main/core/tasks/task-races.test.ts (6 tests) 184ms
+ ✓ src/renderer/features/files/markdown/image-host.test.tsx (7 tests) 143ms
+ ✓ src/main/core/ai/profile-health.test.ts (11 tests) 164ms
+ ✓ src/main/core/files/office/pptx-format.test.ts (6 tests) 157ms
+ ✓ src/main/core/files/office/cell-edit.test.ts (8 tests) 147ms
+ ✓ src/renderer/features/applications/activity.test.tsx (5 tests) 141ms
+ ✓ src/main/core/files/office/pptx-delete-element.test.ts (7 tests) 137ms
+ ✓ src/renderer/features/applications/terminal-insertion.test.tsx (6 tests) 119ms
+ ✓ src/renderer/features/files/recovery-dialog.test.tsx (4 tests) 117ms
+ ✓ src/main/core/files/office/pptx-image.test.ts (5 tests) 126ms
+ ✓ src/main/launch-env.test.ts (14 tests) 115ms
+ ✓ src/renderer/features/files/mcp/bridge.test.ts (1 test) 114ms
+ ✓ src/main/core/files/office/sheet-edit.test.ts (7 tests) 114ms
+ ✓ src/main/core/files/tex/resources.test.ts (5 tests) 121ms
+ ✓ src/main/core/settings/settings-service.test.ts (9 tests) 109ms
+ ✓ src/main/core/files/office/libreoffice-engine.test.ts (12 tests) 110ms
+ ✓ src/renderer/core/tasks-store.test.ts (6 tests) 108ms
+ ✓ src/renderer/features/files/office/close-queue.test.ts (3 tests) 111ms
+ ✓ src/renderer/features/applications/versions.test.tsx (4 tests) 101ms
+ ✓ src/renderer/features/files/conflict-diff.test.ts (7 tests) 96ms
+ ❯ src/main/db/registered-host-migration.test.ts (8 tests | 3 failed) 91ms
+     × preserves every original row and original FK mode true,including RESTRICT send intent references 16ms
+     × preserves every original row and original FK mode false,including RESTRICT send intent references 11ms
+     × replays the rebuild without deleting static host metadata,new connections or original references 11ms
+     ✓ rolls back the entire rebuilt schema,all original rows and migration journal on a later SQL failure 12ms
+     ✓ rejects an orphan discovered before commit and restores the original bytes,schema,journal and FK mode 12ms
+     ✓ preserves and reports an already orphaned old database rather than silently discarding historical rows 12ms
+     ✓ refuses nesting the rebuild in an existing transaction without touching original rows or disabling its FKs 6ms
+     ✓ keeps cross-application and unregistered-provider connections and project slots rejected by SQLite 11ms
+ ✓ src/renderer/views/task-project-version.test.tsx (3 tests) 93ms
+ ✓ src/renderer/features/files/git-blame.test.tsx (6 tests) 91ms
+ ✓ src/main/core/files/office/range-edit.test.ts (6 tests) 96ms
+ ✓ src/shared/file-text.test.ts (6 tests) 91ms
+ ✓ src/main/core/applications/__tests__/resource-lock.test.ts (4 tests) 132ms
+ ✓ src/main/core/files/office/validation.test.ts (4 tests) 92ms
+ ✓ src/main/core/files/office/pptx-table-measurement.test.ts (4 tests) 93ms
+ ✓ src/main/core/applications/__tests__/smtp-tls.test.ts (4 tests) 98ms
+ ✓ src/renderer/features/files/source-view.test.tsx (2 tests) 89ms
+ ✓ src/main/core/files/office/format-edit.test.ts (6 tests) 83ms
+ ✓ src/main/core/files/office/pptx-geometry.test.ts (4 tests) 84ms
+ ✓ src/renderer/views/home-application-prompt.test.tsx (3 tests) 96ms
+ ✓ src/main/core/applications/__tests__/smtp.test.ts (8 tests) 83ms
+ ✓ src/renderer/features/files/name-filter-view.test.tsx (4 tests) 91ms
+ ✓ src/main/core/voice/voice-service.test.ts (38 tests) 78ms
+ ✓ src/main/core/files/html/parser.test.ts (1 test) 87ms
+ ✓ src/main/core/files/workspace-persistence.test.ts (4 tests) 333ms
+ ✓ src/main/core/files/html/service.test.ts (7 tests) 77ms
+ ✓ src/main/core/files/office/conditional.test.ts (3 tests) 74ms
+ ✓ src/main/core/files/office/sheet-delete.test.ts (6 tests) 78ms
+ ✓ src/renderer/features/files/markdown/reference-window.test.ts (17 tests) 72ms
+ ✓ src/renderer/features/files/html/preview.test.tsx (3 tests) 62ms
+ ✓ src/renderer/features/files/tex/preview.test.tsx (2 tests) 66ms
+ ✓ src/main/core/files/html/resources.test.ts (5 tests) 62ms
+ ✓ src/main/core/files/office/fit-edit.test.ts (3 tests) 61ms
+ ✓ src/renderer/features/files/pdf/retry-acceptance.test.tsx (3 tests) 68ms
+ ✓ src/renderer/features/files/office/pptx-image-picker.test.tsx (3 tests) 66ms
+ ✓ src/main/core/files/office/calculation.test.ts (5 tests) 65ms
+ ✓ src/main/core/files/office/styles.test.ts (3 tests) 51ms
+ ✓ src/main/core/applications/__tests__/terminal-insertion.test.ts (12 tests) 59ms
+ ✓ src/renderer/features/files/office/pptx-chart-values.test.tsx (2 tests) 52ms
+ ✓ src/renderer/features/files/pdf/wheel-acceptance.test.tsx (9 tests) 55ms
+ ✓ src/renderer/features/files/notebook/details-state.test.tsx (1 test) 60ms
+ ✓ src/renderer/features/files/large-input.test.ts (12 tests) 54ms
+ ✓ src/main/core/files/office/package.test.ts (11 tests) 55ms
+ ✓ src/main/core/ai/controller.test.ts (3 tests) 65ms
+ ✓ src/main/core/capabilities/discovery.test.ts (34 tests) 507ms
+ ✓ src/main/core/files/office/targeted-patch-acceptance.test.ts (3 tests | 2 skipped) 42ms
+ ✓ src/main/core/files/office/pptx-table-layout.test.ts (5 tests) 45ms
+ ✓ src/main/core/applications/__tests__/zentao.test.ts (9 tests) 42ms
+ ✓ src/renderer/features/files/markdown/find-highlights.test.ts (6 tests) 45ms
+ ✓ src/main/core/files/office/workbook.test.ts (6 tests) 34ms
+ ✓ src/renderer/features/files/pdf/wheel-prototype.test.tsx (1 test) 27ms
+ ✓ src/main/core/files/mcp/settings.test.ts (1 test) 23ms
+ ✓ src/renderer/features/files/notebook/content-acceptance.test.ts (2 tests | 1 skipped) 24ms
+ ✓ src/renderer/features/files/file-buffer.test.ts (41 tests) 20ms
+ ✓ src/renderer/features/files/markdown/diagrams.test.ts (7 tests) 23ms
+ ✓ src/renderer/features/files/markdown/model.test.ts (4 tests) 17ms
+ ✓ src/renderer/features/files/text-find-state.test.ts (6 tests) 15ms
+ ✓ src/main/core/files/tex/pdf-compatibility.test.ts (3 tests) 12ms
+ ✓ src/renderer/features/files/preview-resource.test.ts (13 tests) 12ms
+ ✓ src/renderer/features/files/git-capability.test.tsx (6 tests) 12ms
+ ✓ src/main/core/files/html/policy.test.ts (4 tests) 9ms
+ ✓ src/main/core/tasks/native-sessions.test.ts (5 tests) 9ms
+ ✓ src/main/core/files/office/pptx-draft.test.ts (6 tests) 8ms
+ ✓ src/renderer/features/files/watch-lifecycle-acceptance.test.ts (3 tests) 8ms
+ ✓ src/renderer/features/files/markdown/inline-plan.test.ts (7 tests) 8ms
+ ✓ src/renderer/features/files/watch-pressure-unit.test.ts (3 tests) 7ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts (14 tests) 6ms
+ ✓ src/main/core/applications/__tests__/bridge-supervisor.test.ts (9 tests) 107ms
+ ✓ src/renderer/views/task-terminal-focus.test.tsx (10 tests) 43ms
+ ✓ src/shared/markdown-math-hydration.test.ts (7 tests) 30ms
+ ✓ src/main/core/connections/classify.test.ts (30 tests) 25ms
+ ✓ src/main/core/applications/__tests__/package-files.test.ts (3 tests) 114ms
+ ✓ src/main/terminal-modes.test.ts (3 tests) 15ms
+ ✓ src/shared/markdown-dollar-math.test.ts (35 tests) 14ms
+ ✓ src/main/core/files/resource-service.test.ts (8 tests) 12ms
+ ✓ src/main/core/files/media-service.test.ts (4 tests) 12ms
+ ✓ src/main/core/applications/__tests__/native-literal-mail-intent.test.ts (26 tests) 9ms
+ ✓ src/main/launch-budget.test.ts (5 tests) 8ms
+ ✓ src/shared/markdown-math-engine.test.ts (8 tests) 8ms
+ ✓ src/renderer/core/file-panel-preference.test.ts (4 tests) 8ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts (21 tests) 8ms
+ ✓ src/shared/file-name-results.test.ts (4 tests) 8ms
+ ✓ src/main/core/applications/__tests__/native-mail-context.test.ts (46 tests) 7ms
+diagnostic_source_resolution_calls=200
+ ✓ src/main/core/applications/__tests__/native-diagnostic-cost.test.ts (1 test) 9ms
+ ✓ src/renderer/features/files/pdf/wheel.test.ts (5 tests) 6ms
+ ✓ src/renderer/features/files/markdown/frontmatter-fallback.test.ts (6 tests) 6ms
+ ✓ src/shared/file-inline-diff.test.ts (10 tests) 6ms
+ ✓ src/shared/file-languages.test.ts (1 test) 6ms
+ ✓ src/renderer/features/files/pdf/model.test.ts (6 tests) 6ms
+ ✓ src/renderer/features/files/markdown/math-selection.test.ts (4 tests) 5ms
+ ✓ src/renderer/features/files/media/model.test.ts (3 tests) 5ms
+ ✓ src/main/core/files/controller.test.ts (4 tests) 5ms
+ ✓ src/main/core/files/actions.test.ts (9 tests | 1 skipped) 5ms
+ ✓ src/main/core/files/office/formula.test.ts (2 tests) 5ms
+ ✓ src/shared/markdown-math-session.test.ts (8 tests) 5ms
+ ✓ src/renderer/features/files/media/limit.test.ts (6 tests) 5ms
+ ✓ src/main/core/applications/__tests__/native-mail-intent.test.ts (36 tests) 4ms
+ ✓ src/shared/file-terminal.test.ts (8 tests) 4ms
+ ✓ src/main/core/files/office/pptx-image-container.test.ts (3 tests) 4ms
+ ✓ src/renderer/features/files/fuzzy-ranking-acceptance.test.ts (30 tests) 4ms
+ ✓ src/renderer/features/files/name-search-session.test.ts (8 tests) 4ms
+ ✓ src/main/core/applications/__tests__/ordered-native-mail-context.test.ts (10 tests) 4ms
+ ✓ src/main/core/files/root-invalidation.test.ts (4 tests) 4ms
+ ✓ src/main/pty-access.test.ts (10 tests) 4ms
+ ✓ src/renderer/features/files/office/layout.test.ts (2 tests) 4ms
+ ✓ src/renderer/features/files/csv/client.test.ts (3 tests) 4ms
+ ✓ src/main/core/projects/transfer-controller.test.ts (6 tests) 4ms
+ ✓ src/main/core/files/close-coordinator.test.ts (4 tests) 4ms
+ ✓ src/main/terminal-ownership-acceptance.test.ts (11 tests) 4ms
+ ✓ src/main/core/files/office/xml.test.ts (6 tests) 4ms
+ ✓ src/main/core/tasks/session-health.test.ts (4 tests) 16ms
+ ✓ src/main/core/files/write-process.test.ts (3 tests) 3ms
+ ✓ src/main/core/applications/__tests__/mail-reply-content.test.ts (7 tests) 3ms
+ ✓ src/renderer/features/files/classification-f10.test.ts (41 tests | 1 skipped) 3ms
+ ✓ src/shared/file-search-input.test.ts (10 tests) 3ms
+ ✓ src/shared/markdown-math-fragments.test.ts (4 tests) 3ms
+ ✓ src/shared/project-transfer.test.ts (5 tests) 3ms
+ ✓ src/main/core/files/office/draft.test.ts (2 tests) 3ms
+ ✓ src/main/core/files/lsp/reader.test.ts (6 tests) 3ms
+ ✓ src/renderer/core/terminal-fit.test.ts (11 tests) 3ms
+ ✓ src/shared/file-classification.test.ts (4 tests) 3ms
+ ✓ src/renderer/features/files/pdf-limit.test.ts (4 tests) 3ms
+ ✓ src/renderer/core/voice-store.test.ts (4 tests) 3ms
+ ✓ src/shared/file-attachment.test.ts (4 tests) 3ms
+ ✓ src/main/core/files/mcp/controller-ui.test.ts (1 test) 3ms
+ ✓ src/renderer/features/files/candidate-ranking-boundary.test.ts (7 tests | 2 skipped) 3ms
+ ✓ src/main/core/files/write-confinement.test.ts (21 tests) 3ms
+ ✓ src/renderer/features/files/office/client.test.ts (2 tests) 2ms
+ ✓ src/main/core/ai/health-classify.test.ts (7 tests) 2ms
+ ✓ src/renderer/features/files/editor-source.test.ts (2 tests) 2ms
+ ✓ src/main/core/files/git-metadata.test.ts (3 tests) 2ms
+ ✓ src/main/core/files/root-retry-controller.test.ts (1 test) 2ms
+ ✓ src/shared/codex-session.test.ts (10 tests) 2ms
+ ✓ src/shared/ipc/rpc.test.ts (4 tests) 2ms
+ ✓ src/renderer/features/files/line-target.test.ts (19 tests) 2ms
+ ✓ src/main/core/ai/zshrc-import.test.ts (10 tests) 2ms
+ ✓ src/renderer/features/files/file-fuzzy-model.test.ts (6 tests) 2ms
+ ✓ src/main/core/files/office/sheet-references.test.ts (5 tests) 2ms
+ ✓ src/shared/voice-shortcut.test.ts (17 tests) 2ms
+ ✓ src/renderer/lib/i18n/locales.test.ts (3 tests) 2ms
+ ✓ src/main/core/applications/__tests__/codex-skill-discovery-evidence.test.ts (3 tests) 2ms
+ ✓ src/main/core/applications/__tests__/codex-skill-read-evidence.test.ts (7 tests) 2ms
+ ✓ src/renderer/features/files/format-boundary-acceptance.test.ts (2 tests | 1 skipped) 2ms
+ ✓ src/shared/file-pptx-geometry.test.ts (3 tests) 2ms
+ ✓ src/shared/file-root-location.test.ts (4 tests) 2ms
+ ✓ src/main/core/files/media-protocol.test.ts (2 tests) 2ms
+ ✓ src/shared/detected-profile.test.ts (4 tests) 2ms
+ ✓ src/preload/html-input-guard.test.ts (1 test) 2ms
+ ✓ src/renderer/core/terminal-keys.test.ts (4 tests) 1ms
+ ✓ src/main/app/window.test.ts (2 tests) 1ms
+ ✓ src/renderer/features/files/text-find.test.ts (2 tests) 2ms
+ ✓ src/renderer/features/files/search-input-history.test.ts (2 tests) 1ms
+ ✓ src/renderer/core/task-tabs.test.ts (5 tests) 1ms
+ ✓ src/main/app/identity.test.ts (4 tests) 1ms
+ ✓ src/renderer/core/auto-resume.test.ts (6 tests) 1ms
+ ✓ src/renderer/features/files/office/pptx-table-selection.test.ts (1 test) 1ms
+ ✓ src/shared/markdown-inline-plan.test.ts (8 tests) 1ms
+ ✓ src/main/core/files/watch-budget.test.ts (3 tests) 1ms
+ ✓ src/renderer/utils/relative-time.test.ts (2 tests) 1ms
+ ✓ src/shared/ai-profiles.test.ts (4 tests) 1ms
+ ✓ src/main/core/files/viewer-assets.test.ts (1 test) 1ms
+ ↓ src/main/core/capabilities/cli-smoke.test.ts (2 tests | 2 skipped)
+ ↓ src/main/core/files/archive-routing-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/main/core/files/attachment-routing-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/authority-boundary-acceptance.test.ts (5 tests | 5 skipped)
+ ↓ src/main/core/files/blame-refresh-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/case-volume-acceptance.test.ts (8 tests | 8 skipped)
+ ↓ src/main/core/files/cross-owner-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/main/core/files/directory-anchor-acceptance.test.ts (5 tests | 5 skipped)
+ ↓ src/main/core/files/docx-preview-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/engine-distribution-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/error-recovery-acceptance.test.ts (7 tests | 7 skipped)
+ ↓ src/main/core/files/git-capability-acceptance.test.ts (5 tests | 5 skipped)
+ ↓ src/main/core/files/media-format-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/main/core/files/media-limit-acceptance.test.ts (12 tests | 12 skipped)
+ ↓ src/main/core/files/media-state-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/main/core/files/ordinary-image-source-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/main/core/files/pdf-limit-acceptance.test.ts (6 tests | 6 skipped)
+ ↓ src/main/core/files/pdf-source-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/main/core/files/pptx-preview-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/resource-cycle-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/main/core/files/resource-url-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/main/core/files/routing-basic-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/security-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/main/core/files/symlink-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/main/core/files/symlink-race-acceptance.test.ts (13 tests | 13 skipped)
+ ↓ src/main/core/files/terminal-context-acceptance.test.ts (32 tests | 32 skipped)
+ ↓ src/main/core/files/watch-lifecycle-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/watch-ownership-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/main/core/files/watch-recovery-budget-acceptance.test.ts (6 tests | 6 skipped)
+ ↓ src/renderer/features/files/attachment-persistence-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/breadcrumb-acceptance.test.tsx (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/clean-refresh-acceptance.test.ts (14 tests | 14 skipped)
+ ↓ src/renderer/features/files/content-request-native-acceptance.test.tsx (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/content-search-acceptance.test.tsx (11 tests | 11 skipped)
+ ↓ src/renderer/features/files/context-menu-native-acceptance.test.tsx (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/directory-race-acceptance.test.ts (6 tests | 6 skipped)
+ ↓ src/renderer/features/files/draft-restoration-acceptance.test.ts (5 tests | 5 skipped)
+ ↓ src/renderer/features/files/draft-timing-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (22 tests | 22 skipped)
+ ↓ src/renderer/features/files/file-find-acceptance.test.tsx (4 tests | 4 skipped)
+ ↓ src/renderer/features/files/fuzzy-worker-acceptance.test.ts (6 tests | 6 skipped)
+ ↓ src/renderer/features/files/initial-load-acceptance.test.ts (5 tests | 5 skipped)
+ ↓ src/renderer/features/files/inline-diff-acceptance.test.tsx (10 tests | 10 skipped)
+ ↓ src/renderer/features/files/keep-local-input-acceptance.test.tsx (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts (10 tests | 10 skipped)
+ ↓ src/renderer/features/files/line-navigation-acceptance.test.tsx (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/mode-switch-acceptance.test.ts (9 tests | 9 skipped)
+ ↓ src/renderer/features/files/name-limit-native-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/name-session-native-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/nested-root-acceptance.test.ts (7 tests | 7 skipped)
+ ↓ src/renderer/features/files/nonlocal-source-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/renderer/features/files/path-copy-acceptance.test.tsx (4 tests | 4 skipped)
+ ↓ src/renderer/features/files/pdf-rendering-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/renderer/features/files/pdf-safety-acceptance.test.ts (6 tests | 6 skipped)
+ ↓ src/renderer/features/files/pending-input-acceptance.test.tsx (12 tests | 12 skipped)
+ ↓ src/renderer/features/files/raster-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/renderer/features/files/read-recovery-acceptance.test.ts (9 tests | 9 skipped)
+ ↓ src/renderer/features/files/readonly-text-acceptance.test.tsx (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/recovery-inspection-acceptance.test.ts (8 tests | 8 skipped)
+ ↓ src/renderer/features/files/root-recovery-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/root-scope-acceptance.test.ts (9 tests | 9 skipped)
+ ↓ src/renderer/features/files/save-conflict-acceptance.test.ts (4 tests | 4 skipped)
+ ↓ src/renderer/features/files/save-failure-native-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/search-failure-acceptance.test.tsx (5 tests | 5 skipped)
+ ↓ src/renderer/features/files/search-history-acceptance.test.tsx (26 tests | 26 skipped)
+ ↓ src/renderer/features/files/search-race-acceptance.test.tsx (6 tests | 6 skipped)
+ ↓ src/renderer/features/files/search-session-acceptance.test.tsx (22 tests | 22 skipped)
+ ↓ src/renderer/features/files/static-viewers-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/renderer/features/files/tab-lifecycle-acceptance.test.ts (5 tests | 5 skipped)
+ ↓ src/renderer/features/files/task-file-lifecycle-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/task-scope-alias-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/text-buffer-acceptance.test.ts (10 tests | 10 skipped)
+ ↓ src/renderer/features/files/text-disk-acceptance.test.ts (56 tests | 56 skipped)
+ ↓ src/renderer/features/files/text-size-native-acceptance.test.ts (21 tests | 21 skipped)
+ ↓ src/renderer/features/files/tree-cache-acceptance.test.tsx (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/tree-depth-acceptance.test.tsx (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests | 6 skipped)
+ ↓ src/renderer/features/files/tree-policy-acceptance.test.tsx (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/tree-reveal-acceptance.test.tsx (6 tests | 6 skipped)
+ ↓ src/renderer/features/files/tree-selection-acceptance.test.tsx (7 tests | 7 skipped)
+ ↓ src/renderer/features/files/tree-viewport-acceptance.test.tsx (11 tests | 11 skipped)
+ ↓ src/renderer/features/files/view-close-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/viewer-menu-native-acceptance.test.ts (3 tests | 3 skipped)
+ ↓ src/renderer/features/files/watch-pressure-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/window-boundary-acceptance.test.ts (7 tests | 7 skipped)
+ ↓ src/renderer/features/files/workspace-tabs-acceptance.test.ts (11 tests | 11 skipped)
+ ↓ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx (4 tests | 4 skipped)
+ ↓ src/main/core/files/lsp/acceptance.test.ts (14 tests | 14 skipped)
+ ↓ src/main/core/files/tex/acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/main/core/files/tex/native.test.ts (7 tests | 7 skipped)
+ ↓ src/main/core/files/office/formula-cache-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/main/core/files/office/libreoffice-native.test.ts (25 tests | 25 skipped)
+ ↓ src/main/core/files/office/libreoffice-packaged.test.ts (11 tests | 11 skipped)
+ ↓ src/main/core/files/office/native.test.ts (25 tests | 25 skipped)
+ ↓ src/main/core/files/office/parse-cancel-acceptance.test.ts (6 tests | 6 skipped)
+ ↓ src/main/core/files/office/save-replay-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/main/core/files/office/shared-string-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/csv/acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/renderer/features/files/mcp/host-acceptance.test.ts (11 tests | 11 skipped)
+ ↓ src/renderer/features/files/office/active-input-native-acceptance.test.ts (16 tests | 16 skipped)
+ ↓ src/renderer/features/files/office/close-native-acceptance.test.ts (7 tests | 7 skipped)
+ ↓ src/renderer/features/files/office/pptx-retry-native-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/office/refresh-native-acceptance.test.ts (5 tests | 5 skipped)
+ ↓ src/renderer/features/files/office/save-ack-native-acceptance.test.ts (2 tests | 2 skipped)
+ ↓ src/renderer/features/files/office/serialized-save-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/renderer/features/files/office/session-state-acceptance.test.tsx (13 tests | 13 skipped)
+ ↓ src/renderer/features/files/office/text-boundary-native-acceptance.test.ts (8 tests | 8 skipped)
+ ↓ src/renderer/features/files/office/xlsx-materialization-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/renderer/features/files/notebook/details-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/renderer/features/files/markdown/image-source-native-acceptance.test.ts (1 test | 1 skipped)
+ ↓ src/renderer/features/files/markdown/worker-native-acceptance.test.ts (15 tests | 15 skipped)
+ ✓ src/main/core/applications/__tests__/recovery-contract.test.ts (8 tests) 3ms
+ ✓ src/main/core/applications/__tests__/task-capability-launcher.test.ts (233 tests) 900208ms
+     ✓ connects the host recovery descriptor to a fresh authenticated broker instance without replacing the Agent  5800ms
+     ✓ does not issue a replacement after all original application policy is revoked  3971ms
+     ✓ registers host recovery for the original application service and releases it after the owned run stops  3477ms
+     ✓ T49 keeps one Mail Skill and shared discovery entry for two selected connections across new sessions  7069ms
+     ✓ imports known original H directories before a new native session and disables every unselected old path  3479ms
+     ✓ keeps the ordinary Agent available without application grants for an unverified foreign legacy H tree (valid marker)  2763ms
+     ✓ keeps the ordinary Agent available without application grants for an unverified foreign legacy H tree (invalid marker)  3753ms
+     ✓ preserves a user-owned legacy-like directory and its explicit native enable flag  2371ms
+     ✓ T63 refuses bad-json resume and keeps history,diagnostics and original source identities  3423ms
+     ✓ T63 refuses unknown-schema resume and keeps history,diagnostics and original source identities  2830ms
+     ✓ T63 refuses bad-hash resume and keeps history,diagnostics and original source identities  2372ms
+     ✓ T63 refuses cross-project-snapshot resume and keeps history,diagnostics and original source identities  2410ms
+     ✓ T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities  2227ms
+     ✓ T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available  2385ms
+     ✓ T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available  3238ms
+     ✓ T64 continues the original claude-code session without application authority while its fixed package is unavailable  4976ms
+     ✓ T64 continues the original codex session without application authority while its fixed package is unavailable  4434ms
+     ✓ keeps selected applications in a new claude-code snapshot when original package bytes are unavailable  2191ms
+     ✓ keeps selected applications in a new codex snapshot when original package bytes are unavailable  4009ms
+     ✓ withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  6825ms
+     ✓ withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  5056ms
+     ✓ fails an oversized original native payload before arming and never retries a fork  2631ms
+     ✓ never falls back or retries after an uncertain native fork failure  5513ms
+     ✓ registers native input provenance using the current verified claude-code launch version and owned run signal  1812ms
+     ✓ registers native input provenance using the current verified codex launch version and owned run signal  2403ms
+     ✓ joins the trusted home prompt to native claude-code user records only after owned spawn and invalidates it on stop  4625ms
+     ✓ joins the trusted home prompt to native codex user records only after owned spawn and invalidates it on stop  4542ms
+     ✓ does not assign home-user origin to an internal task creation without a trusted sender  3978ms
+     ✓ does not capture a launch argument when native spawning fails  4175ms
+     ✓ clears a captured launch origin if the new task cannot be committed to SQLite  4367ms
+     ✓ does not duplicate an accepted launch when optional origin observation fails  2188ms
+     ✓ registers all no-application Codex runs, retains fixed sources, and releases only after the owned PTY exit  2345ms
+     ✓ uses the same session selection and paths when project defaults change between runs  3139ms
+     ✓ retains user Skill flags and MCP names while adding a full managed selection  2149ms
+     ✓ gives Claude one stable complete plugin without registering a Codex consumer  2833ms
+     ✓ keeps the old launcher runtime occupied even with the project-context MCP disabled  2185ms
+     ✓ keeps a native Agent available on unverified profile configuration, with no managed argv or credentials  1756ms
+     ✓ preserves selected independent Codex profile flags through the actual TaskService host composition  2147ms
+     ✓ preserves lower-layer native Skill flags when a selected profile and CLI contain empty arrays  2268ms
+     ✓ keeps the native Agent available when effective Skill flags are over-count  1788ms
+     ✓ keeps the native Agent available when effective Skill flags are non-json  1687ms
+     ✓ diagnoses an actual Claude plugin namespace conflict without removing the user plugin or stopping the Agent  1892ms
+     ✓ keeps original Mail tool contracts callable without SMTP and rejects later policy revocation without stopping the CLI  4715ms
+     ✓ connects the complete production launcher through a real OS PTY, kernel-owned CLI and original CJS MCP child  6446ms
+     ✓ opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge  3276ms
+     ✓ continues known native history when its disable-list injection exceeds capacity without rewriting the old record  3214ms
+     ✓ continues ordinary native history with a populated shared catalog and unknown-cli, without granting application access  2899ms
+     ✓ continues ordinary native history with a populated shared catalog and unverified-config, without granting application access  2833ms
+     ✓ runs an unverified history CLI through a real OS PTY while keeping its catalog consumer and refusing every application grant  3437ms
+     ✓ preserves old M4 metadata byte-for-byte during a guarded open, self-check, native ID discovery and exit  1400ms
+     ✓ retains original claude-code M4 sources until transient cleanup and then automatically migrates the same task  2411ms
+     ✓ retains original codex M4 sources until transient cleanup and then automatically migrates the same task  2520ms
+     ✓ recovers captured claude-code sources through the actual TaskService resume hook after an interrupted receipt and original T removal  1990ms
+     ✓ recovers captured codex sources through the actual TaskService resume hook after an interrupted receipt and original T removal  2556ms
+     ✓ reports a damaged original M4 source while preserving metadata and ordinary native Agent availability  1253ms
+     ✓ keeps the first retained M4 identity while native discovery binds a missing ID before the next resume  3208ms
+     ✓ keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending  1941ms
+     ✓ keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending  3221ms
+     ✓ does not disguise malformed nonempty history as an empty capability selection  1744ms
+     ✓ does not demote a recorded v2 session when the task loses its capability pointer  2856ms
+     ✓ revokes the private broker even if an owned PTY stop fails and retains the actual child lease  4583ms
+     ✓ rejects replacing the registry after a task has begun and does not fork after an invalid pointer  2203ms
+     ✓ refuses a late claude-code history loss before fork and cancels the known unspawned run  2167ms
+     ✓ refuses a late codex history loss before fork and cancels the known unspawned run  2697ms
+     ✓ does not reopen a fresh Claude UUID after its original history appears during preparation  2055ms
+     ✓ automatically restores original claude-code paths and MCP names after transient cleanup without adopting current project Apps  2814ms
+     ✓ automatically restores original codex paths and MCP names after transient cleanup without adopting current project Apps  4148ms
+     ✓ does not inject a currently disabled original claude-code project MCP while retaining its fixed historical name  2392ms
+     ✓ does not inject a currently disabled original codex project MCP while retaining its fixed historical name  3036ms
+     ✓ keeps user disabling an original Codex Skill, then activates the unchanged S only after the conflict is removed  3934ms
+     ✓ continues original claude-code without conversion for an unsupported CLI and activates after the supported version returns  2784ms
+     ✓ continues original codex without conversion for an unsupported CLI and activates after the supported version returns  3903ms
+     ✓ keeps converted claude-code identity and ordinary Agent when the original source is damaged, then restores the same S after source repair  3195ms
+     ✓ keeps converted codex identity and ordinary Agent when the original source is damaged, then restores the same S after source repair  4339ms
+   ✓ recovers a committed original claude-code migration mirror without replacing a user directory or resetting the fixed session  2973ms
+   ✓ recovers a committed original codex migration mirror without replacing a user directory or resetting the fixed session  4626ms
+     ✓ keeps an unrelated task and another project running while stopping the loaded ZenTao task  3879ms
+     ✓ rejects related claude-code new/resume while pending but permits an original no-app session  2491ms
+     ✓ rejects related codex new/resume while pending but permits an original no-app session  4689ms
+     ✓ checks a switch that begins after arming immediately before the native fork  2570ms
+     ✓ does not stop a selected but un-injected native-only task while stopping a loaded one  3397ms
+     ✓ keeps default H checks strict and rejects copied,stale or normal-run guard omission receipts  5095ms
+     ✓ restores the same fixed session only after stopping an unknown native guard with unready C sources and user H: claude-code  5953ms
+     ✓ restores the same fixed session only after stopping an unknown native guard with unready C sources and user H: codex  5173ms
+     ✓ rejects a late guarded H change before any native fork: 'claude-code' 'owned-restored'  4674ms
+     ✓ rejects a late guarded H change before any native fork: 'claude-code' 'catalog-changed'  4565ms
+     ✓ rejects a late guarded H change before any native fork: 'claude-code' 'healthy-tree-edited'  4545ms
+     ✓ rejects a late guarded H change before any native fork: 'codex' 'owned-restored'  3806ms
+     ✓ rejects a late guarded H change before any native fork: 'codex' 'catalog-changed'  4017ms
+     ✓ rejects a late guarded H change before any native fork: 'codex' 'healthy-tree-edited'  3631ms
+     ✓ keeps genuine schema0 history ordinary across untrusted H and later supported resume: claude-code  4457ms
+     ✓ keeps genuine schema0 history ordinary across untrusted H and later supported resume: codex  4050ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'claude-code' 'new' 'user-replacement'  3463ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'claude-code' 'new' 'owned-byte-edit'  3918ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'claude-code' 'resume' 'user-replacement'  4352ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'claude-code' 'resume' 'owned-byte-edit'  4715ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'codex' 'new' 'user-replacement'  3692ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'codex' 'new' 'owned-byte-edit'  3931ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'codex' 'resume' 'user-replacement'  4084ms
+     ✓ keeps original ordinary native work with unknown CLI and actual untrusted modern H: 'codex' 'resume' 'owned-byte-edit'  3992ms
+     ✓ restores the original H identity only after stopped resume: remove-user-tree  6117ms
+     ✓ restores the original H identity only after stopped resume: restore-original-bytes  5593ms
+     ✓ keeps both original Apps and healthy standards when only an original H standard path is user-owned  4407ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: absent-proof  3769ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: selected-path  4167ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: valid-owned-path  3890ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: unknown-path  3810ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: duplicate-path  3070ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: wrong-generation  2888ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: raw-catalog-omission  4229ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: missing-consumer  4648ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: foreign-consumer  4091ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: wrong-pty  4075ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: revoked-run  4229ms
+     ✓ rejects forged or stale H omission proof with actual C and H occupancy: restored-original  3835ms
+     ✓ refuses late H ownership restoration before fork without widening or changing the original session  4097ms
+     ✓ reuses only healthy H trees under another active consumer without changing the full catalog or user occupant  5312ms
+     ✓ keeps public standards and context with zero App grant when both original H App paths are user-owned  4244ms
+     ✓ keeps unrelated managed abilities and user H bytes for actual physical occupancy: first-publication  3111ms
+     ✓ keeps unrelated managed abilities and user H bytes for actual physical occupancy: replacement-new  4658ms
+     ✓ keeps unrelated managed abilities and user H bytes for actual physical occupancy: replacement-resume  4271ms
+     ✓ reads actual original project_context with resource and secret boundaries after 'app-source' failure: 'claude-code'  3782ms
+     ✓ reads actual original project_context with resource and secret boundaries after 'db-skill-name' failure: 'claude-code'  3543ms
+     ✓ reads actual original project_context with resource and secret boundaries after 'claude-plugin' failure: 'claude-code'  2976ms
+     ✓ reads actual original project_context with resource and secret boundaries after 'app-source' failure: 'codex'  2703ms
+     ✓ reads actual original project_context with resource and secret boundaries after 'db-skill-name' failure: 'codex'  2744ms
+     ✓ keeps the live loading scope fixed and restores original capability only after stopping: 'claude-code' 'project-mcp'  2616ms
+     ✓ keeps the live loading scope fixed and restores original capability only after stopping: 'claude-code' 'standard-skill'  4672ms
+     ✓ keeps the live loading scope fixed and restores original capability only after stopping: 'codex' 'project-mcp'  5146ms
+     ✓ keeps the live loading scope fixed and restores original capability only after stopping: 'codex' 'standard-skill'  5131ms
+     ✓ keeps a live user-plugin conflict at zero Apps and restores original Skills and App bridge after stopping  4756ms
+     ✓ preserves explicit user disabling of one Codex standard Skill by file without withdrawing Apps or other standards  4596ms
+     ✓ preserves explicit user disabling of one Codex standard Skill by directory without withdrawing Apps or other standards  5120ms
+     ✓ keeps fixed Apps and standard Skills when only the actual user project MCP name conflicts: 'claude-code' 'new'  3343ms
+     ✓ keeps fixed Apps and standard Skills when only the actual user project MCP name conflicts: 'claude-code' 'resume'  3340ms
+     ✓ keeps fixed Apps and standard Skills when only the actual user project MCP name conflicts: 'codex' 'new'  4819ms
+     ✓ keeps fixed Apps and standard Skills when only the actual user project MCP name conflicts: 'codex' 'resume'  4694ms
+     ✓ keeps fixed Apps and other standard Skills when an actual user standard Skill name conflicts: 'claude-code' 'new'  3374ms
+     ✓ keeps fixed Apps and other standard Skills when an actual user standard Skill name conflicts: 'claude-code' 'resume'  3968ms
+     ✓ keeps fixed Apps and other standard Skills when an actual user standard Skill name conflicts: 'codex' 'new'  4684ms
+     ✓ keeps fixed Apps and other standard Skills when an actual user standard Skill name conflicts: 'codex' 'resume'  3500ms
+     ✓ keeps the original project MCP when an actual user Claude plugin namespace prevents managed Skills: new  2032ms
+     ✓ keeps the original project MCP when an actual user Claude plugin namespace prevents managed Skills: resume  2462ms
+     ✓ restores the same original supported Claude session after stopping a pre-slot ordinary guard: source-state  3004ms
+     ✓ restores the same original supported Claude session after stopping a pre-slot ordinary guard: missing-root  3280ms
+     ✓ does not invent a Claude canonical occupancy slot when a new ordinary task never had a managed plugin  2028ms
+     ✓ freezes the actual original Claude canonical path before its first delivery slot during ordinary resume: lease  2722ms
+     ✓ freezes the actual original Claude canonical path before its first delivery slot during ordinary resume: missing-root  2805ms
+     ✓ keeps ordinary original native continuation with unknown CLI and unready App sources: 'claude-code' 'package-state'  2929ms
+     ✓ keeps ordinary original native continuation with unknown CLI and unready App sources: 'claude-code' 'app-runtime-state'  2934ms
+     ✓ keeps ordinary original native continuation with unknown CLI and unready App sources: 'codex' 'package-state'  4308ms
+     ✓ keeps ordinary original native continuation with unknown CLI and unready App sources: 'codex' 'app-runtime-state'  4633ms
+     ✓ isolates an actual Codex user disable flag to the original App without rewriting native config: new  4337ms
+     ✓ isolates an actual Codex user disable flag to the original App without rewriting native config: resume  4408ms
+     ✓ keeps independent Skills and context when an actual user MCP shadows only the App bridge: 'claude-code' 'new'  3439ms
+     ✓ keeps independent Skills and context when an actual user MCP shadows only the App bridge: 'claude-code' 'resume'  4075ms
+     ✓ keeps independent Skills and context when an actual user MCP shadows only the App bridge: 'codex' 'new'  4856ms
+     ✓ keeps independent Skills and context when an actual user MCP shadows only the App bridge: 'codex' 'resume'  4494ms
+     ✓ restores the same original fixed App only on stopped resume after removing its user name conflict: claude-code  5083ms
+     ✓ restores the same original fixed App only on stopped resume after removing its user name conflict: codex  5100ms
+     ✓ isolates a real project user Skill name collision to ZenTao while original Mail stays usable: 'claude-code' 'new'  3099ms
+     ✓ isolates a real project user Skill name collision to ZenTao while original Mail stays usable: 'claude-code' 'resume'  2882ms
+     ✓ isolates a real project user Skill name collision to ZenTao while original Mail stays usable: 'codex' 'new'  4314ms
+     ✓ isolates a real project user Skill name collision to ZenTao while original Mail stays usable: 'codex' 'resume'  4995ms
+     ✓ keeps independent capabilities when only the application bridge runtime is unready: claude-code  2355ms
+     ✓ keeps independent capabilities when only the application bridge runtime is unready: codex  2797ms
+     ✓ does not widen an independent live run after same-hash app repair and restores all original capabilities only on stopped resume: claude-code  5149ms
+     ✓ does not widen an independent live run after same-hash app repair and restores all original capabilities only on stopped resume: codex  5325ms
+     ✓ keeps original independent Skills while respecting current project MCP disablement after app loss: claude-code  3058ms
+     ✓ keeps original independent Skills while respecting current project MCP disablement after app loss: codex  3793ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'claude-code' 'new' 'missing-bytes'  2552ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'claude-code' 'new' 'registered-unready'  2362ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'claude-code' 'resume' 'missing-bytes'  3504ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'claude-code' 'resume' 'registered-unready'  3428ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'codex' 'new' 'missing-bytes'  2573ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'codex' 'new' 'registered-unready'  2692ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'codex' 'resume' 'missing-bytes'  4453ms
+     ✓ keeps original independent Skills and project MCP when all selected apps are unavailable: 'codex' 'resume' 'registered-unready'  3995ms
+     ✓ resumes original Claude with Mail at the actual old Skill paths,then restores the original full plugin only on a later stopped-run resume  15821ms
+     ✓ reports original healthy Mail independently from missing ZenTao after actual Claude partial delivery  9358ms
+     ✓ requires the actual canonical plugin root and hash for a valid host Claude delivery plan  4508ms
+     ✓ refuses a last-fork Claude delivery proof change without forking or changing the original S  1817ms
+     ✓ resumes Codex with original Mail and H paths after ZenTao loss,without widening the live run after same-hash repair  4047ms
+     ✓ loads only original ZenTao tools when Mail bytes are missing in a new Codex run  2580ms
+     ✓ permits scoped Mail new and resume while only excluded ZenTao has a pending switch  2554ms
+     ✓ still gates the last native fork for loaded scoped ZenTao when its switch begins after arming  2008ms
+     ✓ retains scoped Mail during a real ZenTao selection switch and rechecks current Mail policy on every call  3414ms
+     ✓ keeps the native Agent without any application grant when the original shared application runtime is missing  2573ms
+     ✓ reports healthy Mail resources independently of unavailable original ZenTao in a scoped Codex run  2850ms
+     ✓ host API foundation keeps real original Mail draft data callable in a scoped claude-code run while ZenTao is unavailable  2937ms
+     ✓ host API foundation keeps real original Mail draft data callable in a scoped codex run while ZenTao is unavailable  3003ms
+     ✓ host API foundation refuses forged direct Mail scopes after a same-hash repair in a scoped claude-code run  2934ms
+     ✓ host API foundation refuses forged direct Mail scopes after a same-hash repair in a scoped codex run  3109ms
+     ✓ allows original Mail draft contracts in a healthy two-app claude-code run  2352ms
+     ✓ allows original Mail draft contracts in a healthy two-app codex run  3157ms
+     ✓ keeps healthy Mail draft calls available in a new claude-code run when only selected ZenTao bytes are missing  2691ms
+     ✓ keeps healthy Mail draft calls available in a new codex run when only selected ZenTao bytes are missing  2938ms
+     ✓ retains registered legacy H and full original C without application grants: claude-code new owned-byte-edit  4763ms
+     ✓ retains registered legacy H and full original C without application grants: claude-code new user-replacement  3973ms
+     ✓ retains registered legacy H and full original C without application grants: claude-code resume owned-byte-edit  5108ms
+     ✓ retains registered legacy H and full original C without application grants: claude-code resume user-replacement  4904ms
+     ✓ retains registered legacy H and full original C without application grants: codex new owned-byte-edit  3884ms
+     ✓ retains registered legacy H and full original C without application grants: codex new user-replacement  4233ms
+     ✓ retains registered legacy H and full original C without application grants: codex resume owned-byte-edit  4107ms
+     ✓ retains registered legacy H and full original C without application grants: codex resume user-replacement  3072ms
+     ✓ uses an actual converted Codex zero-authority guard for pure-false legacy planning and rejects all ordinary or copied bypasses  4106ms
+     ✓ rechecks registered legacy retention at the final native fork: claude-code restored-original  4691ms
+     ✓ rechecks registered legacy retention at the final native fork: claude-code catalog-changed  4576ms
+     ✓ rechecks registered legacy retention at the final native fork: claude-code other-H-changed  4915ms
+     ✓ rechecks registered legacy retention at the final native fork: codex restored-original  3198ms
+     ✓ rechecks registered legacy retention at the final native fork: codex catalog-changed  3202ms
+     ✓ rechecks registered legacy retention at the final native fork: codex other-H-changed  3133ms
+     ✓ preserves actual schema0 native history through registered legacy corruption and same-path repair: claude-code  3916ms
+     ✓ preserves actual schema0 native history through registered legacy corruption and same-path repair: codex  4159ms
+     ✓ supports known Codex ordinary continuation despite registered legacy H failure: new owned-byte-edit  3862ms
+     ✓ supports known Codex ordinary continuation despite registered legacy H failure: resume user-replacement  4384ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex new known  6548ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex resume known  6942ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex new unknown  5797ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: codex resume unknown  4477ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: claude-code new unknown  4837ms
+     ✓ keeps zero-authority ordinary native work while maintenance is waiting: claude-code resume unknown  7370ms
+     ✓ keeps a supported private-Claude plugin independent from H maintenance: new  6418ms
+     ✓ keeps a supported private-Claude plugin independent from H maintenance: resume  6453ms
+     ✓ keeps healthy Mail and original identity while classifying ZenTao new owned-content  5398ms
+     ✓ keeps healthy Mail and original identity while classifying ZenTao new missing-marker  5173ms
+     ✓ keeps healthy Mail and original identity while classifying ZenTao new foreign-marker  5459ms
+     ✓ keeps healthy Mail and original identity while classifying ZenTao resume owned-content  6914ms
+     ✓ keeps healthy Mail and original identity while classifying ZenTao resume missing-marker  8489ms
+     ✓ keeps healthy Mail and original identity while classifying ZenTao resume foreign-marker  8320ms
+     ✓ retains every original independent selection with truthful native-conflicts display and no secrets  5921ms
+     ✓ retains every original independent selection with truthful app-and-independent-conflicts display and no secrets  5605ms
+     ✓ retains every original independent selection with truthful unknown-cli display and no secrets  4587ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > preserves every original row and original FK mode true,including RESTRICT send intent references
+ FAIL  src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > preserves every original row and original FK mode false,including RESTRICT send intent references
+AssertionError: expected [ …(2) ] to deeply equal [ '0026_registered_application_hosts' ]
+
+- Expected
++ Received
+
+  [
+    "0026_registered_application_hosts",
++   "0027_capability_skill_observations",
+  ]
+
+ ❯ src/main/db/registered-host-migration.test.ts:24:86
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > replays the rebuild without deleting static host metadata,new connections or original references
+AssertionError: expected [ Array(1) ] to deeply equal [ '0026_registered_application_hosts' ]
+
+- Expected
++ Received
+
+  [
+-   "0026_registered_application_hosts",
++   "0027_capability_skill_observations",
+  ]
+
+ ❯ src/main/db/registered-host-migration.test.ts:29:58
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/builtin-packages.test.ts > complete trusted built-in mail and ZenTao packages > finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls
+Error: ENOENT: no such file or directory, open '/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-builtin-store-QmkHYb/metadata-lock-mode.txt'
+ ❯ src/main/core/applications/__tests__/builtin-packages.test.ts:89:11
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > migrates only the provable original prepare identity and leaves frozen sends unchanged on replay
+AssertionError: expected [ …(8) ] to deeply equal [ …(7) ]
+
+- Expected
++ Received
+
+@@ -4,6 +4,7 @@
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
+    "0025_legacy_h_bindings",
+    "0026_registered_application_hosts",
++   "0027_capability_skill_observations",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:115:146
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > upgrades v18 send records and retains metadata-only user-source provenance on migration replay
+AssertionError: expected [ …(9) ] to deeply equal [ …(8) ]
+
+- Expected
++ Received
+
+@@ -5,6 +5,7 @@
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
+    "0025_legacy_h_bindings",
+    "0026_registered_application_hosts",
++   "0027_capability_skill_observations",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:390:142
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  3 failed | 317 passed | 111 skipped (431)
+      Tests  6 failed | 3796 passed | 781 skipped (4583)
+   Start at  11:56:31
+   Duration  1973.54s (transform 7.67s, setup 0ms, import 49.61s, tests 3189.65s, environment 15.94s)
+
+JSON report written to /private/tmp/willyou-m10-dx-full.json
+ ELIFECYCLE  Test failed. See above for more details.

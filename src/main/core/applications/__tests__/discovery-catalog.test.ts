@@ -53,7 +53,7 @@ describe('actual H catalog publication, cross-store freezing and run reservation
         const work = catalog.publish([next], { waitMs: method === 'timeout' ? 40 : 3000, signal: abort.signal });
         // Attach the rejection assertion immediately: the timeout may elapse before
         // a polling observer sees the transient pending file on a loaded machine.
-        const rejected = expect(work).rejects.toMatchObject({ code: method === 'cancel' ? 'CANCELED' : 'RESOURCE_BUSY' });
+        const rejected = expect(work).rejects.toMatchObject({ code: method === 'cancel' ? 'CANCELED' : 'RESOURCE_BUSY', message: method === 'cancel' ? '已取消共享目录准备，本次未发布' : '共享发现目录仍被运行使用，本次未发布' });
         if (method === 'cancel') {
             await vi.waitFor(() => expect(existsSync(join(catalog.root, 'pending.json'))).toBe(true));
             abort.abort();

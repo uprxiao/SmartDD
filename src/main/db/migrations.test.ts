@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { afterEach, describe, expect, it } from 'vitest';
-import { bundledMigrations, runBundledMigrations, runMigrations, type MigrationRecord } from './migrations';
+import { bundledMigrations, planMigrations, runBundledMigrations, runMigrations, type MigrationRecord } from './migrations';
 
 const open: Database.Database[] = [];
 function memoryDb(): Database.Database {
@@ -319,7 +319,7 @@ describe('runMigrations', () => {
   it('commits the operation receipt with the schema and rolls both back when the receipt fails',()=>{
     const db=memoryDb(),batch=[m(0,'CREATE TABLE receipt (id TEXT PRIMARY KEY); CREATE TABLE business (value TEXT)')];
     expect(()=>runMigrations(db,batch,{recordCommit:()=>{db.exec("INSERT INTO receipt VALUES('operation')");throw new Error('receipt failure');}})).toThrow('receipt failure');
-    expect(tables(db)).toEqual(['__drizzle_migrations']);expect(recorded(db)).toEqual([]);
+    expect(tables(db)).toEqual([]); // Bootstrap metadata rolls back with the schema.
     expect(runMigrations(db,batch,{recordCommit:applied=>{expect(applied).toEqual(['m0']);db.exec("INSERT INTO receipt VALUES('operation')");}})).toEqual(['m0']);
     expect(db.prepare('SELECT * FROM receipt').all()).toEqual([{id:'operation'}]);expect(recorded(db)).toEqual(['h0']);
   });
@@ -328,8 +328,7 @@ describe('runMigrations', () => {
     const db = memoryDb();
     const batch = [m(0, 'CREATE TABLE a (x)'), m(1, 'CREATE TABLE b (x);\n--> statement-breakpoint\nNOT SQL')];
     expect(() => runMigrations(db, batch)).toThrow();
-    expect(tables(db)).toEqual(['__drizzle_migrations']);
-    expect(recorded(db)).toEqual([]);
+    expect(tables(db)).toEqual([]); // No migration metadata survives a failed bootstrap.
   });
 
   it('skips ADD COLUMN for a column that is already there', () => {
@@ -363,3 +362,25 @@ it('upgrades and replays Skill observation metadata without changing retained ru
   db.exec('DELETE FROM __drizzle_migrations WHERE id>=29');expect(runBundledMigrations(db)).toEqual(['0028_capability_broker_denials']);expect(db.prepare('SELECT * FROM capability_broker_denials').all()).toEqual(before);
   expect(()=>db.prepare('INSERT INTO capability_broker_denials VALUES(?,?,?,?,?,?,?)').run('bad','host','run',null,'unknown','INVALID_INPUT','2026-10-23T00:00:00Z')).toThrow();db.close();
  });
+
+it('plans an empty database without writing schema and rolls back bootstrap metadata on failure', () => {
+  const db = memoryDb(), migrations = bundledMigrations();
+  const schema = db.prepare('SELECT * FROM sqlite_master').all();
+  const version = db.pragma('schema_version', {simple:true});
+  const plan = planMigrations(db, migrations);
+  expect(plan.before).toEqual([]);
+  expect(plan.pending).toEqual(migrations);
+  expect(db.prepare('SELECT * FROM sqlite_master').all()).toEqual(schema);
+  expect(db.pragma('schema_version', {simple:true})).toBe(version);
+  expect(() => runMigrations(db, migrations, {recordCommit: () => {throw new Error('bootstrap failure');}})).toThrow('bootstrap failure');
+  expect(db.prepare('SELECT * FROM sqlite_master').all()).toEqual(schema);
+});
+
+it('rejects altered migration history during read-only planning without changing business or schema', () => {
+  const db = memoryDb(), migrations = bundledMigrations();
+  runMigrations(db, migrations.slice(0, 7));
+  db.exec("UPDATE __drizzle_migrations SET hash='changed' WHERE id=1");
+  const before = db.serialize();
+  expect(() => planMigrations(db, migrations)).toThrow('不一致');
+  expect(db.serialize()).toEqual(before);
+});

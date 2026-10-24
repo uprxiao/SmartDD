@@ -21,16 +21,26 @@ import {verifyLegacyDiscoveryEntry,assertDiscoveryPath,legacyDiscoveryEntry} fro
 import { PackageRegistry } from './package-registry';
 import { applicationSkillContentHash } from './session-registry';
 import { projectSkillName, standardNativeSkillName } from './session-projector';
+import {resourceGcPlan,type ResourceGcPlan} from './resource-gc-plan';
 const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.string().max(128).regex(/^smartdd-[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const ownerSchema = z.object({ storeId: uuid, uFingerprint: hash, instanceId: uuid, pid: z.number().int().positive(), startedAt: z.string().min(1).max(128) }).strict();
 const entrySchema = z.object({ resourceId: z.string().regex(/^h-projection:[a-f0-9]{64}$/), storeId: uuid, path: z.string().min(1).max(4096), nativeName: name, sourceHash: hash, projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict().refine(e=>e.format?e.projectionHash===e.sourceHash&&/^smartdd-[a-z][a-z0-9-]{0,63}-[a-f0-9]{16}$/.test(e.nativeName)&&e.nativeName.endsWith('-'+e.sourceHash.slice(0,16)):/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(e.nativeName)&&e.nativeName.length<=64,'共享目录格式、名称或摘要不同');
-const catalogSchema = z.object({ schema: z.literal(1), homeId: hash, generation: hash, entries: z.array(entrySchema).max(4096) }).strict();
+export const catalogSchema = z.object({ schema: z.literal(1), homeId: hash, generation: hash, entries: z.array(entrySchema).max(4096) }).strict();
 const consumerSchema = z.object({ schema: z.literal(1), consumerId: uuid, runId: uuid, ptyId: uuid, homeId: hash, generation: hash, runner: z.enum(['claude-code', 'codex']), phase: z.enum(['preparing', 'active', 'releasing']), owner: ownerSchema }).strict();
 const pendingSchema = z.object({ schema: z.literal(1), operationId: uuid, token: uuid, homeId: hash, owner: ownerSchema, baseGeneration: hash, baseEntries: z.array(entrySchema).max(4096), entries: z.array(entrySchema).min(1).max(4096), handoff: z.object({ fromOwner: ownerSchema, fromPlanHash: hash }).strict().optional(), phase: z.enum(['waiting', 'materializing', 'publishing', 'catalog-published']) }).strict();
 type Catalog = z.infer<typeof catalogSchema>;
 type Consumer = z.infer<typeof consumerSchema>;
 type Pending = z.infer<typeof pendingSchema>;
 type Entry = z.infer<typeof entrySchema>;
+const gcIntentSchema=z.object({schema:z.literal(1),homeId:hash,storeId:uuid,operationId:uuid,planHash:hash,owner:ownerSchema,resources:z.array(z.object({resourceId:z.string(),generation:z.number().int().positive(),hash}).strict()).min(1).max(16384)}).strict();
+export type DiscoveryGcIntent=z.infer<typeof gcIntentSchema>;
+export interface DiscoveryGcContext {
+ home:string;homeId:string;root:string;
+ observe():{catalog:Catalog;publicationPending:boolean;consumerIds:string[];intent:DiscoveryGcIntent|null};
+ writeIntent(intent:DiscoveryGcIntent):void;
+ clearIntent(intent:DiscoveryGcIntent):void;
+ replaceCatalog(operationId:string,original:Catalog,entries:Entry[]):void;
+}
 export interface DiscoveryProjectionSource {
     format?: 'legacy-tree-v1';
     nativeName: string;
@@ -181,15 +191,35 @@ export class DiscoveryCatalog {
             atomicJson(markerPath, { ...marker, initialized: true });
         return value;
     }
-    private pending(): Pending | null { const path = join(this.root, 'pending.json'); if (!present(path))
+    private pending():Pending|null{if(present(join(this.root,'gc-pending.json')))throw new ApplicationError('RESOURCE_BUSY','共享目录有待完成的资源清理，暂不接受新消费者');return this.publicationPending();}
+    private publicationPending(): Pending | null { const path = join(this.root, 'pending.json'); if (!present(path))
         return null; const value = jsonFile(path, pendingSchema); if (value.homeId !== this.homeId || value.baseGeneration !== this.generation(value.baseEntries))
         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享目录维护意图属于其他根或原集合不同'); return value; }
     private consumers(): Consumer[] { return readdirSync(join(this.root, 'catalog-consumers')).map(file => { if (!/^[a-f0-9-]{36}-[a-f0-9-]{36}\.json$/.test(file))
         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录有未知消费者记录'); const value = jsonFile(join(this.root, 'catalog-consumers', file), consumerSchema); if (value.homeId !== this.homeId || file !== this.consumerName(value))
         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录消费者身份不同'); return value; }); }
     private consumerName(c: Consumer): string { return c.owner.storeId + '-' + c.runId + '.json'; }
-    async hasPendingPublication():Promise<boolean>{return this.lock(()=>this.pending()!==null);}
+    async hasPendingPublication():Promise<boolean>{return this.lock(()=>present(join(this.root,'gc-pending.json'))||this.publicationPending()!==null);}
     async snapshot(): Promise<NonNullable<AgentLoadRequest['catalog']>> { return this.lock(() => { const c = this.catalog(); return structuredClone({ generation: c.generation, entries: c.entries }); }); }
+    /** A diagnostic proposal under H -> C. It grants no deletion authority and
+     * does not reap even a stopped/unknown consumer from another store. */
+    async cleanupPlan(rootResourceId:string):Promise<ResourceGcPlan>{return this.lock(()=>withResourceLock(this.store.root,()=>{
+        const catalog=this.catalog(),pending=this.pending(),consumers=this.consumers();
+        return resourceGcPlan(this.store,rootResourceId,[{homeId:this.homeId,generation:catalog.generation,entries:catalog.entries,pending:pending!==null,consumerIds:consumers.map(c=>c.owner.storeId+':'+c.consumerId)}]);
+    }));}
+    /** The callback owns H for its entire lifetime; a caller may then take C.
+     * GC intent is separate from publication and blocks every new reservation. */
+    async coordinateGc<T>(action:(context:DiscoveryGcContext)=>T|Promise<T>):Promise<T>{return this.lock(()=>{
+        const path=join(this.root,'gc-pending.json');
+        const intent=()=>{if(!present(path))return null;const value=jsonFile(path,gcIntentSchema);if(value.homeId!==this.homeId||value.owner.storeId!==value.storeId)throw new ApplicationError('OWNERSHIP_CONFLICT','清理意图属于其他发现根');return value;};
+        const same=(a:unknown,b:unknown)=>canonicalJson(a)===canonicalJson(b);
+        return action({home:this.home,homeId:this.homeId,root:this.root,
+            observe:()=>({catalog:structuredClone(this.catalog()),publicationPending:this.publicationPending()!==null,consumerIds:this.consumers().map(c=>c.owner.storeId+':'+c.consumerId),intent:intent()}),
+            writeIntent:value=>{gcIntentSchema.parse(value);if(value.storeId!==this.store.storeId||value.homeId!==this.homeId||value.owner.uFingerprint!==digest(dirname(this.store.root)))throw new ApplicationError('OWNERSHIP_CONFLICT','清理意图不是本资源库');const existing=intent();if(existing&&!same(existing,value))throw new ApplicationError('RESOURCE_BUSY','已有其他共享清理意图');if(this.publicationPending()||this.consumers().length)throw new ApplicationError('RESOURCE_BUSY','共享目录仍在发布或使用');atomicJson(path,value);},
+            clearIntent:value=>{const existing=intent();if(!existing)return;if(!same(existing,value)||value.storeId!==this.store.storeId)throw new ApplicationError('OWNERSHIP_CONFLICT','原共享清理意图已变化');unlinkSync(path);durableDirectory(this.root);},
+            replaceCatalog:(operationId,original,entries)=>{const current=intent();if(!current||current.operationId!==operationId||current.storeId!==this.store.storeId)throw new ApplicationError('OWNERSHIP_CONFLICT','没有本次清理的发现根意图');if(this.publicationPending()||this.consumers().length)throw new ApplicationError('RESOURCE_BUSY','共享目录仍在使用');const actual=this.catalog(),next=catalogSchema.parse({schema:1,homeId:this.homeId,entries,generation:this.generation(entries)});if(next.entries.some(e=>e.path!==join(this.home,'.agents/skills',e.nativeName,'SKILL.md'))||new Set(next.entries.map(e=>e.nativeName)).size!==next.entries.length||!same(original.entries.filter(e=>e.storeId!==this.store.storeId),next.entries.filter(e=>e.storeId!==this.store.storeId)))throw new ApplicationError('OWNERSHIP_CONFLICT','清理不能修改其他资源库的目录');if(same(actual,next))return;if(!same(actual,original))throw new ApplicationError('RESOURCE_STATE_CHANGED','清理的原发现清单已变化');atomicJson(join(this.root,'catalog.json'),next);}
+        });
+    });}
     /** Read-only attribution,not a publication or file-readiness receipt. */
     async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;unavailable:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
         const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),unavailable=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>(),failures=new Map<string,'OWNERSHIP_CONFLICT'|'HASH_MISMATCH'>();
@@ -512,7 +542,7 @@ export class DiscoveryCatalog {
                     break;
                 if (options.signal?.aborted || performance.now() >= deadline) {
                     await this.cancelPending(work);
-                    throw new ApplicationError(options.signal?.aborted ? 'CANCELED' : 'RESOURCE_BUSY', '共享发现目录仍被运行使用，本次未发布');
+                    throw new ApplicationError(options.signal?.aborted ? 'CANCELED' : 'RESOURCE_BUSY', options.signal?.aborted ? '已取消共享目录准备，本次未发布' : '共享发现目录仍被运行使用，本次未发布');
                 }
                 await new Promise<void>(resolve => setTimeout(resolve, Math.min(20, Math.max(1, deadline - performance.now()))));
             }

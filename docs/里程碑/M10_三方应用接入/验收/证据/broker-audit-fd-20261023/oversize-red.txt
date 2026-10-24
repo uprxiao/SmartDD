@@ -1,0 +1,60 @@
+
+> smartdd@0.0.5 test /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/private-broker.test.ts -t 'bounds an oversized request'
+
+
+ RUN  v4.1.11 /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+
+ ❯ src/main/core/applications/__tests__/private-broker.test.ts (28 tests | 2 failed | 26 skipped) 2933ms
+     × bounds an oversized request with newline=false and keeps another authenticated socket usable 1515ms
+     × bounds an oversized request with newline=true and keeps another authenticated socket usable 1416ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/private-broker.test.ts > private Unix broker credentials, one-use files and request boundaries > bounds an oversized request with newline=false and keeps another authenticated socket usable
+AssertionError: expected [] to deeply equal [ { …(3) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "error_code": "TOO_LARGE",
+-     "method": "unknown",
+-     "run_id": "5804339b-788b-4478-afdc-6bfe6fd5eff7",
+-   },
+- ]
++ []
+
+ ❯ src/main/core/applications/__tests__/private-broker.test.ts:151:124
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/private-broker.test.ts > private Unix broker credentials, one-use files and request boundaries > bounds an oversized request with newline=true and keeps another authenticated socket usable
+AssertionError: expected [] to deeply equal [ { …(3) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "error_code": "TOO_LARGE",
+-     "method": "unknown",
+-     "run_id": "8c771114-05ef-4b2a-a8fc-85b65c14586e",
+-   },
+- ]
++ []
+
+ ❯ src/main/core/applications/__tests__/private-broker.test.ts:151:124
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 26 skipped (28)
+   Start at  12:58:23
+   Duration  3.51s (transform 433ms, setup 0ms, import 504ms, tests 2.93s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

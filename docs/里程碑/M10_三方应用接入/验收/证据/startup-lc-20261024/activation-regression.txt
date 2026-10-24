@@ -1,0 +1,39 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/activation-maintenance.test.ts src/main/db/registered-host-migration.test.ts --maxWorkers=2 --reporter=verbose
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > preserves every original row and original FK mode true,including RESTRICT send intent references 15ms
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > preserves every original row and original FK mode false,including RESTRICT send intent references 11ms
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > replays the rebuild without deleting static host metadata,new connections or original references 15ms
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > rolls back the entire rebuilt schema,all original rows and migration journal on a later SQL failure 13ms
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > rejects an orphan discovered before commit and restores the original bytes,schema,journal and FK mode 13ms
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > preserves and reports an already orphaned old database rather than silently discarding historical rows 12ms
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > refuses nesting the rebuild in an existing transaction without touching original rows or disabling its FKs 7ms
+ ✓ src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > keeps cross-application and unregistered-provider connections and project slots rejected by SQLite 11ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > backs up the live file and commits activation, operation receipt and maintenance release together 348ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > retains verified backup and pending ownership when an application migration fails, with no partial default or schema 664ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > refuses an active ui resource consumer and activates only after it releases 441ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > refuses an active index-job resource consumer and activates only after it releases 437ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > retries a failed backup under the same operation using a new immutable backup identity 532ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > runs pending activation recovery under exclusive startup ownership before returning a live client 720ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > preflights without writes and refuses changed default generations or unverifiable historical references 1223ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > rejects insufficient space before creating an upgrade intent 322ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > reports invalid current connection contracts without exposing their configuration or creating upgrade intent 198ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > verifies the backup before materializing a prospective package and only then switches its default 342ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > includes runtime staging in capacity and blocks before intent or materialization 186ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > binds upgrade preflight to converter evidence and reports missing converters without disclosing configuration 608ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > uses the same trusted schema2 converter in upgrade preview and final activation recheck 334ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > refuses empty persisted connection identity before claiming upgrade compatibility 618ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > refuses wrong-provider persisted connection identity before claiming upgrade compatibility 596ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > refuses unsupported-contract persisted connection identity before claiming upgrade compatibility 595ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > refuses hash-mismatch persisted connection identity before claiming upgrade compatibility 577ms
+ ✓ src/main/core/applications/__tests__/activation-maintenance.test.ts > rejects identity drift between final preview and the activation transaction 338ms
+
+ Test Files  2 passed (2)
+      Tests  26 passed (26)
+   Start at  21:40:18
+   Duration  9.39s (transform 184ms, setup 0ms, import 313ms, tests 9.18s, environment 0ms)
+

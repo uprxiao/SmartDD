@@ -32,11 +32,15 @@ export class AgentSupportService {
         this.state.applications.push(status);
         try {
           const installed = await builtin.install(source,entry);status.filesReady = installed.state === 'ready';
-          // The first default is safe to establish locally. Existing defaults are changed only by upgrade preflight.
-          if (!packages.active(entry.appId)) await packages.activate(installed.packageHash,0);
-          status.defaultForNewSessions = packages.active(entry.appId)?.packageHash === installed.packageHash;
+          // Default activation waits until the whole indexed set is ready.
         } catch(error) { status.errorCode = error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE'; }
       }
+      if(this.state.applications.every(status=>status.filesReady&&!status.errorCode)){
+        const missing=this.state.applications.filter(status=>!packages.active(status.appId));
+        try{await packages.activateSet(missing.map(status=>({hash:status.hash,expectedGeneration:0})));}
+        catch(error){for(const status of missing)status.errorCode=error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE';}
+      }
+      for(const status of this.state.applications)status.defaultForNewSessions=packages.active(status.appId)?.packageHash===status.hash;
       const failed = this.state.applications.filter(a => a.errorCode);
       this.state.state = failed.length ? (failed.length === this.state.applications.length ? 'unavailable' : 'partial') : 'ready';
       this.state.errorCode = failed[0]?.errorCode ?? null;

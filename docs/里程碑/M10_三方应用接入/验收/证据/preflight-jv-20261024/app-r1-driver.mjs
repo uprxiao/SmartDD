@@ -1,0 +1,32 @@
+// Actual packed renderer viewing a real rejected-upgrade report. The input is
+// one completed private API-removal fixture, never a daily userData directory.
+import assert from 'node:assert/strict';
+import {mkdtemp,readFile,writeFile,realpath} from 'node:fs/promises';
+import {join,dirname,resolve} from 'node:path';
+import {createHash} from 'node:crypto';
+import {openElectron} from '../lib/electron-harness.mjs';
+import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
+const fixture=JSON.parse(await readFile(process.env.WILLYOU_UPGRADE_FIXTURE_RESULT,'utf8'));
+assert(fixture.status==='passed-partial'&&fixture.upgradeImpactDetails,'Require a completed actual-host impact fixture');
+assert((await realpath(fixture.userData)).startsWith('/private/tmp/willyou-m10-config-upgrade-')&&resolve(fixture.userData)===join(fixture.root,'userdata'));
+const executable=process.env.WILLYOU_ACCEPTANCE_APP,pin=process.env.WILLYOU_ACCEPTANCE_ASAR_SHA;assert(executable&&pin);const appRoot=resolve(dirname(executable),'../..');assert.equal(appRoot,fixture.packages.current.path);assert.equal(pin,fixture.packages.current.asar);
+const root=await mkdtemp('/private/tmp/willyou-m10-upgrade-impact-ui-'),sha=b=>createHash('sha256').update(b).digest('hex');
+assert.equal(sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),pin);
+const result={root,startedAt:new Date().toISOString(),app:appRoot,asarSha256:pin,fixtureRoot:fixture.root,userData:fixture.userData,layer:'A fault scenario: actual UI and real read-only upgrade report; compiled API-removal/config2 host; private prior native fixture as prerequisite, no API2 business or normal-stock-host claim',driverSha256:sha(await readFile(new URL(import.meta.url))),checks:[],status:'running'};let app,stage='open';
+const check=name=>result.checks.push({name,passed:true,at:new Date().toISOString()});
+async function click(selector,text){const p=await app.evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.getBoundingClientRect().width&&${text?`e.textContent.includes(${JSON.stringify(text)})`:'true'});if(!e)throw Error('Control missing');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
+async function business(){const tasks=await app.invoke('tasks.list',{includeArchived:true}),drafts=await app.invoke('applications.drafts',fixture.projectId,{limit:50}),catalog=await app.invoke('applications.catalog');assert(drafts.ok&&catalog.ok);return{tasks:tasks.map(t=>({id:t.id,nativeSessionId:t.nativeSessionId})),drafts:drafts.value.items.map(d=>({id:d.id,revision:d.revision})),defaults:catalog.value.map(a=>({appId:a.appId,hash:a.defaultPackageHash}))};}
+try{
+ app=await openElectron({executable,userData:fixture.userData,env:{HOME:fixture.home,CODEX_HOME:fixture.state,HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost'}});installAppFocusGuard(app,result);result.pid=app.processId;await app.evaluate("document.title='A · M10 · compiled API removal · upgrade impact';true");const before=await business();result.before=before;
+ stage='navigate';await click('[data-testid="nav-apps"]');await app.waitFor('document.querySelectorAll(".m10-catalog-open").length===2');await click('.m10-catalog-open','邮件');await app.waitFor('document.querySelector(".m10-upgrade-report")?.textContent.includes("邮件 v1.0.1")',15000);
+ check('Actual navigation opens the persisted rejected-upgrade report');
+ for(const theme of ['ylight','ydark']){
+  stage=theme;await app.invoke('appSettings.update','theme',theme);await app.waitFor(`document.documentElement.classList.contains(${JSON.stringify(theme)})`);
+  const text=await app.evaluate('document.querySelector(".m10-upgrade-report").innerText');for(const expected of ['升级暂未执行','邮件 v1.0.1 · 原版本',fixture.oldTask.title,'当前程序不支持原版本的Host／Data API契约','读取邮件、正文及附件','处理本地草稿','发送邮件','邮件 v1.0.4 · 升级目标'])assert(text.includes(expected),expected);assert(!text.includes('升级预检已通过，等待维护时切换'));assert(!text.includes(fixture.mailPrerequisite.source));
+  const geometry=await app.evaluate("[...document.querySelectorAll('.m10-upgrade-report .m10-version-reference')].map(e=>({right:e.getBoundingClientRect().right,width:innerWidth,scroll:e.scrollWidth,client:e.clientWidth,direction:getComputedStyle(e).flexDirection}))");assert(geometry.length>0&&geometry.every(e=>e.right<=e.width+1&&e.scroll<=e.client+1&&e.direction==='column'));(result.geometry??={})[theme]=geometry;
+  await app.screenshot(join(root,theme+'-impact.png'));check(theme+' actual report shows original names/version, scoped actions/cause and distinct target without horizontal overflow');
+  await click('.m10-versions button','检查占用');await app.waitFor('!document.querySelector(".m10-versions button").disabled&&document.querySelector(".m10-upgrade-report")?.textContent.includes("升级暂未执行")');assert.deepEqual(await business(),before);check(theme+' real refresh is read-only and does not activate, modify drafts or create tasks');
+ }
+ assert.deepEqual(app.rendererErrors,[]);result.status='passed';
+}catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.error=String(error);result.stack=error.stack;result.stage=stage;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{result.dom=await app.evaluate('document.body.innerText');await app.screenshot(join(root,'failure.png'));}catch{}}
+finally{if(app){result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.log'),app.logs());await app.close();}result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');await writeFile('/private/tmp/willyou-m10-upgrade-impact-ui-latest.txt',join(root,'result.json')+'\n');console.log(JSON.stringify({status:result.status,checks:result.checks.length,result:join(root,'result.json'),error:result.error}));}

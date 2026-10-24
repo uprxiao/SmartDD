@@ -1,0 +1,762 @@
+[
+  {
+    "type": "namespace",
+    "name": "mcp__wy_0123b42655fa9453f26674df",
+    "description": "Tools in the mcp__wy_0123b42655fa9453f26674df namespace.",
+    "tools": [
+      {
+        "type": "function",
+        "name": "smartdd_mail_attach_import_v1",
+        "description": "把已授权的邮件资源或工作区文件复制为草稿的稳定业务附件，不传任意路径。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "把已授权的邮件资源或工作区文件复制为草稿的稳定业务附件，不传任意路径。",
+          "properties": {
+            "source": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "filename": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "resource"
+                      ]
+                    },
+                    "resource": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "mediaType": {
+                          "type": "string"
+                        },
+                        "revision": {
+                          "type": "string"
+                        },
+                        "size": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "revision",
+                        "mediaType",
+                        "size"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "resource",
+                    "filename",
+                    "contentType"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "expectedHash": {
+                      "type": "string"
+                    },
+                    "filename": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "workspace-file"
+                      ]
+                    },
+                    "referenceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "referenceId",
+                    "expectedHash",
+                    "filename",
+                    "contentType"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_draft_copy_v1",
+        "description": "把指定草稿修订复制为新 ID，原已发送或结果未知的内容保持可追溯。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "把指定草稿修订复制为新 ID，原已发送或结果未知的内容保持可追溯。",
+          "properties": {
+            "draftId": {
+              "type": "string"
+            },
+            "expectedRevision": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "draftId",
+            "expectedRevision"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_draft_create_v1",
+        "description": "保存独立的本地草稿；可以没有收件人或发件账号，不自动发送。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "保存独立的本地草稿；可以没有收件人或发件账号，不自动发送。",
+          "properties": {
+            "content": {
+              "type": "object",
+              "properties": {
+                "attachmentIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "bcc": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "cc": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "html": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "inReplyTo": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "new",
+                    "reply",
+                    "reply-all"
+                  ]
+                },
+                "references": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "senderConnectionId": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "sourceMessageRef": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "connectionId": {
+                          "type": "string"
+                        },
+                        "contentRevision": {
+                          "type": "string"
+                        },
+                        "identityRevision": {
+                          "type": "integer"
+                        },
+                        "nativeId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "connectionId",
+                        "identityRevision",
+                        "nativeId",
+                        "contentRevision"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "to": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "mode",
+                "sourceMessageRef",
+                "senderConnectionId",
+                "to",
+                "cc",
+                "bcc",
+                "subject",
+                "inReplyTo",
+                "references",
+                "attachmentIds",
+                "text",
+                "html"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_draft_get_v1",
+        "description": "读取当前项目草稿的指定或当前修订，正文使用稳定资源引用。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "读取当前项目草稿的指定或当前修订，正文使用稳定资源引用。",
+          "properties": {
+            "draftId": {
+              "type": "string"
+            },
+            "revision": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "draftId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_draft_list_v1",
+        "description": "分页查看当前项目的本地草稿与发送状态，不依赖 Foxmail 或 SMTP 已配置。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "分页查看当前项目的本地草稿与发送状态，不依赖 Foxmail 或 SMTP 已配置。",
+          "properties": {
+            "cursor": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "limit": {
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_draft_update_v1",
+        "description": "按明确修订更新草稿；并发冲突不能覆盖其他 Agent 或页面的修改。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "按明确修订更新草稿；并发冲突不能覆盖其他 Agent 或页面的修改。",
+          "properties": {
+            "content": {
+              "type": "object",
+              "properties": {
+                "attachmentIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "bcc": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "cc": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "html": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "inReplyTo": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "new",
+                    "reply",
+                    "reply-all"
+                  ]
+                },
+                "references": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "senderConnectionId": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "sourceMessageRef": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "connectionId": {
+                          "type": "string"
+                        },
+                        "contentRevision": {
+                          "type": "string"
+                        },
+                        "identityRevision": {
+                          "type": "integer"
+                        },
+                        "nativeId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "connectionId",
+                        "identityRevision",
+                        "nativeId",
+                        "contentRevision"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "to": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "mode",
+                "sourceMessageRef",
+                "senderConnectionId",
+                "to",
+                "cc",
+                "bcc",
+                "subject",
+                "inReplyTo",
+                "references",
+                "attachmentIds",
+                "text",
+                "html"
+              ],
+              "additionalProperties": false
+            },
+            "draftId": {
+              "type": "string"
+            },
+            "expectedRevision": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "draftId",
+            "expectedRevision",
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_query_v1",
+        "description": "在项目明确选定的 Foxmail 来源和配置天数内查询；使用时检查变化，不唤起收信。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "在项目明确选定的 Foxmail 来源和配置天数内查询；使用时检查变化，不唤起收信。",
+          "properties": {
+            "connectionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cursor": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "limit": {
+              "type": "integer"
+            },
+            "refresh": {
+              "type": "boolean"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_read_v1",
+        "description": "读取带原来源身份的邮件元信息、正文和普通附件引用；明确缺失或不完整部分。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "读取带原来源身份的邮件元信息、正文和普通附件引用；明确缺失或不完整部分。",
+          "properties": {
+            "reference": {
+              "type": "object",
+              "properties": {
+                "connectionId": {
+                  "type": "string"
+                },
+                "contentRevision": {
+                  "type": "string"
+                },
+                "identityRevision": {
+                  "type": "integer"
+                },
+                "nativeId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "connectionId",
+                "identityRevision",
+                "nativeId",
+                "contentRevision"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "reference"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_reply_create_v1",
+        "description": "依据原邮件创建回复或回复全部草稿，按当前 SMTP 身份计算收件人并保留来源。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "依据原邮件创建回复或回复全部草稿，按当前 SMTP 身份计算收件人并保留来源。",
+          "properties": {
+            "html": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "reply",
+                "reply-all"
+              ]
+            },
+            "reference": {
+              "type": "object",
+              "properties": {
+                "connectionId": {
+                  "type": "string"
+                },
+                "contentRevision": {
+                  "type": "string"
+                },
+                "identityRevision": {
+                  "type": "integer"
+                },
+                "nativeId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "connectionId",
+                "identityRevision",
+                "nativeId",
+                "contentRevision"
+              ],
+              "additionalProperties": false
+            },
+            "senderConnectionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reference",
+            "mode",
+            "senderConnectionId",
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_resource_read_v1",
+        "description": "分块读取当前项目有权访问的邮件、草稿、审阅或附件资源；不能读取任意磁盘路径。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "分块读取当前项目有权访问的邮件、草稿、审阅或附件资源；不能读取任意磁盘路径。",
+          "properties": {
+            "length": {
+              "type": "integer"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "resource": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "mediaType": {
+                  "type": "string"
+                },
+                "revision": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "mediaType",
+                "size"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "resource",
+            "offset",
+            "length"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_send_cancel_v1",
+        "description": "取消尚未提交的意图或记录停止等待请求；已提交邮件不能被撤回。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "取消尚未提交的意图或记录停止等待请求；已提交邮件不能被撤回。",
+          "properties": {
+            "intentId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "intentId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_send_execute_v1",
+        "description": "执行已由宿主核验具体用户授权的冻结意图；同一意图只提交一次，unknown 不自动重发。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "执行已由宿主核验具体用户授权的冻结意图；同一意图只提交一次，unknown 不自动重发。",
+          "properties": {
+            "expectedReviewHash": {
+              "type": "string"
+            },
+            "intentId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "intentId",
+            "expectedReviewHash"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_send_get_v1",
+        "description": "读取当前项目发送意图及已有实际结果，不重放发送。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "读取当前项目发送意图及已有实际结果，不重放发送。",
+          "properties": {
+            "intentId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "intentId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "type": "function",
+        "name": "smartdd_mail_send_prepare_v1",
+        "description": "冻结指定草稿修订、发件身份、收件人、正文及附件，生成审阅意图；本操作不提交 SMTP。",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "description": "冻结指定草稿修订、发件身份、收件人、正文及附件，生成审阅意图；本操作不提交 SMTP。",
+          "properties": {
+            "draftId": {
+              "type": "string"
+            },
+            "expectedContentHash": {
+              "type": "string"
+            },
+            "expectedRevision": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "draftId",
+            "expectedRevision",
+            "expectedContentHash"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ]
+  }
+]

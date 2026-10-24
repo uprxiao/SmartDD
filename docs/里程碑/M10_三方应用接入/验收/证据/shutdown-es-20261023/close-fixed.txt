@@ -1,0 +1,30 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts -t 'waits for an already-started|revokes the private broker even' --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (234 tests | 1 failed | 232 skipped) 4073ms
+     × revokes the private broker even if an owned PTY stop fails and retains the actual child lease 2027ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > revokes the private broker even if an owned PTY stop fails and retains the actual child lease
+AssertionError: expected 'stopped' to be 'stopping' // Object.is equality
+
+Expected: "stopping"
+Received: "stopped"
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:525:93
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 232 skipped (234)
+   Start at  12:35:21
+   Duration  4.90s (transform 557ms, setup 0ms, import 766ms, tests 4.07s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

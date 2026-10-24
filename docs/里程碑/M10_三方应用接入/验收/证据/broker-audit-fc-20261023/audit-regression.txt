@@ -1,0 +1,48 @@
+
+> smartdd@0.0.5 test /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/private-broker.test.ts src/main/db/migrations.test.ts src/main/db/registered-host-migration.test.ts --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+
+ ❯ src/main/db/migrations.test.ts (24 tests | 1 failed) 280ms
+     × creates the schema on an empty database and records the hash 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > creates the schema on an empty database and records the hash
+AssertionError: expected [ '__drizzle_migrations', …(74) ] to deeply equal [ '__drizzle_migrations', …(73) ]
+
+- Expected
++ Received
+
+@@ -25,10 +25,11 @@
+    "application_zentao_operation_resources",
+    "application_zentao_revisions",
+    "capability_active_packages",
+    "capability_agent_adapters",
+    "capability_bridge_observations",
++   "capability_broker_denials",
+    "capability_builtin_package_sources",
+    "capability_discovery_roots",
+    "capability_install_journal",
+    "capability_lease_resources",
+    "capability_legacy_h_bindings",
+
+ ❯ src/main/db/migrations.test.ts:124:24
+    122|     const db = memoryDb();
+    123|     expect(runBundledMigrations(db)).toEqual(ALL);
+    124|     expect(tables(db)).toEqual([
+       |                        ^
+    125|       '__drizzle_migrations',
+    126|       'ai_profiles',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 59 passed (60)
+   Start at  12:56:46
+   Duration  43.48s (transform 385ms, setup 0ms, import 487ms, tests 43.46s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

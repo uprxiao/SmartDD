@@ -11,10 +11,11 @@ import { runBundledMigrations } from '../../../db/migrations';
 import { SecretsStore } from '../../../secrets';
 import { ApplicationConnectionService, type ConnectionVerifier } from '../connection-service';
 import { PackageRegistry } from '../package-registry';
-import { canonicalJson } from '../manifest';
+import { canonicalJson,digest } from '../manifest';
 import { ResourceStore } from '../resource-store';
 import { RuntimeRegistry } from '../runtime-registry';
 import { fixtureBundle } from './fixtures';
+import {builtinConfigViews} from '../config-view-registry';
 let root: string, sqlite: Database.Database, secrets: SecretsStore, store: ResourceStore, service: ApplicationConnectionService;
 let available: boolean, verify: ReturnType<typeof vi.fn<ConnectionVerifier['verify']>>;
 const config = (): ConnectionConfig => ({ kind: 'zentao', baseUrl: 'https://zentao.example.test/biz/', username: 'tester', authMode: 'token' });
@@ -33,6 +34,8 @@ afterEach(() => { vi.restoreAllMocks(); sqlite.close(); rmSync(root, { recursive
 async function activateTokenPackage() {
   const runtime = await new RuntimeRegistry(store).install({ id: 'applications', protocolMajor: 1, bridgeEntry: 'bridge.cjs', files: { 'bridge.cjs': Buffer.from('module.exports = {};') } });
   const source = fixtureBundle(); source.manifest.runtime.hash = runtime.contentHash;
+  source.files['schemas/connection.json']=Buffer.from(JSON.stringify({type:'object',properties:{kind:{const:'zentao'},baseUrl:{type:'string'},username:{type:'string'},authMode:{enum:['token']}},required:['kind','baseUrl','username','authMode'],additionalProperties:false}));
+  Object.assign(source.manifest.files.find(f=>f.path==='schemas/connection.json')!,{size:source.files['schemas/connection.json'].length,sha256:digest(source.files['schemas/connection.json'])});
   const registry = new PackageRegistry(store, 'fixture'); const installed = await registry.install(source); await registry.activate(installed.packageHash, 0); return installed;
 }
 
@@ -57,6 +60,20 @@ describe('current connection revisions, tested candidates and encrypted secret c
     expect(verify).not.toHaveBeenCalled(); expect(service.list()).toHaveLength(0); expect(secretCount()).toBe(0);
     expect(sqlite.prepare('SELECT * FROM application_secret_changes').all()).toHaveLength(0);
   });
+  it.each(['{invalid-json', JSON.stringify({kind:'zentao',authMode:'unknown'})])('preserves unreadable saved configuration and refuses credential access: %s', async bytes => {
+    const connection=await service.save(input());
+    const original=sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(connection.id);
+    sqlite.prepare('UPDATE application_connections SET config_json=? WHERE id=?').run(bytes,connection.id);
+    const damaged=sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(connection.id);
+    const secretRead=vi.spyOn(secrets,'get');
+    expect(()=>service.get(connection.id)).toThrow(expect.objectContaining({code:'CONFIG_INCOMPATIBLE'}));
+    expect(()=>service.authentication(connection.id,authVersion(connection))).toThrow(expect.objectContaining({code:'CONFIG_INCOMPATIBLE'}));
+    expect(secretRead).not.toHaveBeenCalled();
+    expect(sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(connection.id)).toEqual(damaged);
+    sqlite.prepare('UPDATE application_connections SET config_json=? WHERE id=?').run((original as {config_json:string}).config_json,connection.id);
+    expect(service.get(connection.id)).toEqual(connection);
+    expect(service.authentication(connection.id,authVersion(connection)).secret).toBe('fixture-secret-first');
+  });
   it('keeps the old credential and configuration when a rotation fails, and sanitizes provider error text', async () => {
     const old = await service.save(input()); verify.mockRejectedValueOnce(new ApplicationError('AUTH_FAILED', 'server echoed fixture-secret-invalid'));
     const failed = service.save(input({ id: old.id, expectedRevision: old.revision, secret: 'fixture-secret-invalid' }));
@@ -75,8 +92,19 @@ describe('current connection revisions, tested candidates and encrypted secret c
     expect(service.authentication(next.id, authVersion(next)).secret).toBe('rotation-a');
     expect(() => service.authentication(next.id, authVersion(old))).toThrow(/修订/);
   });
-  it('requires a new connection for a verified account identity change', async () => {
-    const old = await service.save(input()); verify.mockImplementationOnce(async c => ({ ...identity(c), accountId: 'different-account' }));
+  it('rejects a tested plan after a concurrent same-identity config edit without overwriting the winning configuration', async () => {
+    const saved = await service.save(input());
+    const candidate = await service.testCandidate(input({ id: saved.id, expectedRevision: saved.revision, secret: 'losing-staged-secret' }));
+    const changedConfig = { ...config(), baseUrl: 'https://zentao.example.test/compatible-deployment-route/' };
+    const winner = await service.save(input({ id: saved.id, expectedRevision: saved.revision, config: changedConfig, secret: undefined }));
+    expect(winner.configRevision).toBe(saved.configRevision + 1); expect(winner.identityRevision).toBe(saved.identityRevision); expect(winner.secretRevision).toBe(saved.secretRevision);
+    await expect(service.commitCandidate(candidate.operationId, candidate.candidateHash)).rejects.toMatchObject({ code: 'REVISION_CONFLICT' });
+    expect(service.get(saved.id)).toEqual(winner); expect(winner.config).toEqual(changedConfig); expect(secretCount()).toBe(1);
+    expect(service.authentication(saved.id, authVersion(winner)).secret).toBe('fixture-secret-first');
+    expect(sqlite.prepare('SELECT state FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId)).toEqual({ state: 'failed' });
+  });
+  it.each(['accountId','serviceId'] as const)('requires a new connection for a verified %s identity change', async field => {
+    const old = await service.save(input()); verify.mockImplementationOnce(async c => ({ ...identity(c), [field]: 'different-identity' }));
     await expect(service.save(input({ id: old.id, expectedRevision: old.revision, secret: 'different-account-secret' }))).rejects.toMatchObject({ code: 'IDENTITY_CHANGE_REQUIRES_SELECTION' });
     expect(service.get(old.id)).toEqual(old); expect(secretCount()).toBe(1);
   });
@@ -174,4 +202,29 @@ describe('host-parent connection verification cancellation',()=>{
   const parent=new AbortController(),testing=service.testCandidate(input(),parent.signal),rejected=expect(testing).rejects.toMatchObject({code:'CANCELED'});await ready;parent.abort();await rejected;release();await Promise.resolve();
   expect(service.list()).toEqual([]);expect(secretCount()).toBe(0);expect(sqlite.prepare("SELECT state,error_code FROM application_secret_changes").get()).toEqual({state:'failed',error_code:'CANCELED'});
  });
+});
+
+
+describe('configuration conversion evidence at candidate commit',()=>{
+ it('rejects a candidate when converter implementation changes after verification',async()=>{
+  await activateTokenPackage();const saved=await service.save(input());
+  const tested=await service.testCandidate(input({id:saved.id,expectedRevision:saved.revision,secret:'replacement-secret'}));
+  const original=builtinConfigViews.resolve.bind(builtinConfigViews);
+  vi.spyOn(builtinConfigViews,'resolve').mockImplementation((...args)=>({...original(...args),converterHash:'f'.repeat(64)}));
+  await expect(service.commitCandidate(tested.operationId,tested.candidateHash)).rejects.toMatchObject({code:'CONFIG_PLAN_STALE'});
+  expect(service.get(saved.id)).toEqual(saved);expect(service.authentication(saved.id,authVersion(saved)).secret).toBe('fixture-secret-first');
+ });
+ it('reports a missing converter for the active package without staging a false compatible claim',async()=>{
+  const pkg=await activateTokenPackage();
+  vi.spyOn(builtinConfigViews,'resolve').mockImplementation(()=>{throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','missing fixture converter');});
+  const plan=service.planConfigChange(undefined,0,config());
+  expect(plan.impacts).toEqual([expect.objectContaining({packageHash:pkg.packageHash,status:'unverified'})]);
+  expect(service.list()).toEqual([]);expect(secretCount()).toBe(0);
+ });
+});
+
+it('refuses a converter output that violates the retained package input schema',async()=>{
+ const pkg=await activateTokenPackage(),original=builtinConfigViews.resolve.bind(builtinConfigViews);
+ vi.spyOn(builtinConfigViews,'resolve').mockImplementation((...args)=>({...original(...args),view:{...config(),authMode:'password'}}));
+ const plan=service.planConfigChange(undefined,0,config());expect(plan.impacts).toEqual([expect.objectContaining({packageHash:pkg.packageHash,status:'incompatible'})]);expect(service.list()).toEqual([]);expect(secretCount()).toBe(0);
 });

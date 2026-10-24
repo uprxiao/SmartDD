@@ -27,6 +27,7 @@ export const saveConnectionSchema = z.object({
 export type SaveApplicationConnection = z.infer<typeof saveConnectionSchema>;
 export interface ApplicationConnection {
   id: string; appId: ApplicationId; providerId: ApplicationProvider; name: string; config: ConnectionConfig;
+  configSchemaVersion?:number;
   revision: number; configRevision: number; identityRevision: number; secretRevision: number; policyRevision: number;
   identity: VerifiedConnectionIdentity; enabled: boolean; authorization: 'connected' | 'disconnected';
   health: 'unverified' | 'healthy' | 'unavailable'; healthCode: string | null; healthMessage: string | null;

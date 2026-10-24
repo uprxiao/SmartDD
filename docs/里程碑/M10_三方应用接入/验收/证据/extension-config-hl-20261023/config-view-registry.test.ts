@@ -1,0 +1,29 @@
+import {describe,it,expect} from 'vitest';
+import {z} from 'zod';
+import {connectionConfigSchema} from '@shared/application-connections';
+import {ConfigViewRegistry,builtinConfigViews,type ConfigViewConverter} from '../config-view-registry';
+const key={providerId:'zentao',sourceSchemaVersion:2,targetApiMajor:1,identityContractMajor:1};
+const source={kind:'zentao',endpoint:'https://example.test/biz/',account:'alice',authentication:'token'};
+const definition:ConfigViewConverter={...key,implementationVersion:'fixture-2-to-1',targetSchema:connectionConfigSchema,outputAuthentication:view=>view.kind==='foxmail'?'local-readonly':view.authMode,sourceSchema:z.object({kind:z.literal('zentao'),endpoint:z.url(),account:z.string(),authentication:z.enum(['token','password','oauth'])}).strict(),authModes:['token','password'],authentication:value=>(value as typeof source).authentication,convert:value=>{const v=value as typeof source;return{kind:'zentao',baseUrl:v.endpoint,username:v.account,authMode:v.authentication};}};
+describe('host-owned configuration conversion',()=>{
+ it('projects explicit schema2 into api1 without changing source or losing authentication',()=>{const registry=new ConfigViewRegistry([definition]),before=structuredClone(source),result=registry.resolve(key,source,['token']);expect(source).toEqual(before);expect(result.view).toEqual({kind:'zentao',baseUrl:source.endpoint,username:'alice',authMode:'token'});expect(result.viewMajor).toBe(1);expect(result.converterHash).toMatch(/^[a-f0-9]{64}$/);expect(result.viewDigest).toMatch(/^[a-f0-9]{64}$/);expect(Object.isFrozen(result.view)).toBe(true);});
+ it('refuses absent source/target/identity conversions rather than claiming compatibility',()=>{for(const delta of [{sourceSchemaVersion:3},{targetApiMajor:2},{identityContractMajor:2}])expect(()=>new ConfigViewRegistry([definition]).resolve({...key,...delta},source,['token'])).toThrow(/没有已验证/);});
+ it('refuses unknown fields and authentication that cannot be expressed by the old contract',()=>{const registry=new ConfigViewRegistry([definition]);for(const input of [{...source,secret:'must-not-be-discarded'},{...source,authentication:'oauth'},{...source,authentication:'unknown'}])expect(()=>registry.resolve(key,input,['token'])).toThrow(/不能等价/);expect(()=>registry.resolve(key,source,['password'])).toThrow(/不能等价/);});
+ it('rejects downgrade, exception and credential-bearing conversion outputs with controlled errors',()=>{for(const convert of [()=>({kind:'zentao',baseUrl:source.endpoint,username:'alice',authMode:'password'}),()=>({kind:'zentao',baseUrl:source.endpoint,username:'alice',authMode:'token',secret:'canary'}),()=>{throw Error('secret-canary');}])expect(()=>new ConfigViewRegistry([{...definition,convert}]).resolve(key,source,['token','password'])).toThrow('当前配置不能等价转换为原包配置');});
+ it('rejects duplicate keys and changes evidence hash when implementation changes',()=>{expect(()=>new ConfigViewRegistry([definition,definition])).toThrow(/重复/);const one=new ConfigViewRegistry([definition]).resolve(key,source,['token']),two=new ConfigViewRegistry([{...definition,implementationVersion:'fixture-2-to-1-fixed'}]).resolve(key,source,['token']);expect(one.converterHash).not.toBe(two.converterHash);expect(one.viewDigest).toBe(two.viewDigest);});
+ it('retains built-in api1 fields and rejects extra security settings',()=>{const request={...key,sourceSchemaVersion:1},config={kind:'zentao',baseUrl:source.endpoint,username:'alice',authMode:'token'};expect(builtinConfigViews.resolve(request,config,['token']).view).toEqual(config);expect(()=>builtinConfigViews.resolve(request,{...config,tlsVerification:false},['token'])).toThrow(/不能等价/);});
+});
+
+it('supports an explicitly registered extension target schema without assuming built-in fields',()=>{
+ type View={kind:'extalpha';endpoint:string;authentication:{type:'token'}};
+ const registry=new ConfigViewRegistry<View>([{providerId:'extalpha',sourceSchemaVersion:2,targetApiMajor:3,identityContractMajor:1,implementationVersion:'ext-v1',sourceSchema:z.object({kind:z.literal('extalpha'),url:z.url(),auth:z.literal('token')}).strict(),targetSchema:z.object({kind:z.literal('extalpha'),endpoint:z.url(),authentication:z.object({type:z.literal('token')}).strict()}).strict(),authModes:['token'],authentication:v=>(v as {auth:string}).auth,outputAuthentication:v=>v.authentication.type,convert:v=>{const value=v as {url:string};return{kind:'extalpha',endpoint:value.url,authentication:{type:'token'}};}}]);
+ const key={providerId:'extalpha',sourceSchemaVersion:2,targetApiMajor:3,identityContractMajor:1};
+ expect(registry.resolve(key,{kind:'extalpha',url:'https://example.test/',auth:'token'},['token']).view).toEqual({kind:'extalpha',endpoint:'https://example.test/',authentication:{type:'token'}});
+ expect(()=>registry.resolve(key,{kind:'extalpha',url:'https://example.test/',auth:'token',extraSecret:'canary'},['token'])).toThrow(/不能等价/);
+});
+it('refuses schemas that silently strip undeclared input or output fields',()=>{
+ const inputRegistry=new ConfigViewRegistry([{...definition,sourceSchema:z.object({kind:z.literal('zentao'),endpoint:z.string(),account:z.string(),authentication:z.string()})}]);
+ expect(()=>inputRegistry.resolve(key,{...source,secret:'canary'},['token'])).toThrow(/不能等价/);
+ const outputRegistry=new ConfigViewRegistry([{...definition,targetSchema:z.object({kind:z.literal('zentao'),baseUrl:z.string(),username:z.string(),authMode:z.literal('token')}),convert:()=>({kind:'zentao',baseUrl:source.endpoint,username:'alice',authMode:'token',secret:'canary'})}]);
+ expect(()=>outputRegistry.resolve(key,source,['token'])).toThrow(/不能等价/);
+});

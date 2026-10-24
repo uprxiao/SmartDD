@@ -55,6 +55,8 @@ class TasksStore {
     });
   }
 
+  cancelCreate(token: string): Promise<boolean> { return rpc.tasks.cancelCreate(token); }
+
   /** Throws so the caller shows the error where the user acted. */
   async create(req: CreateTaskRequest): Promise<TaskView> {
     const res = await rpc.tasks.create({ ...terminalSize(), ...req });

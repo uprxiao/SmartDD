@@ -3,8 +3,11 @@ import {cleanup,fireEvent,render,screen,waitFor,within} from '@testing-library/r
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import type {ApplicationActivityDetail,ApplicationActivityItem} from '@shared/application-activity';
+import type {ApplicationConnection} from '@shared/application-connections';
+import type {MailDraftDataView} from '@shared/application-data';
 import {ActivityWorkspace} from './activity';
-const m=vi.hoisted(()=>({activity:vi.fn(),activityDetail:vi.fn(),connections:vi.fn(),projects:vi.fn(),executeSend:vi.fn(),authorizeSend:vi.fn()}));
+const m=vi.hoisted(()=>({activity:vi.fn(),activityDetail:vi.fn(),connections:vi.fn(),projects:vi.fn(),executeSend:vi.fn(),authorizeSend:vi.fn(),draft:vi.fn(),resource:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn()}));
+vi.mock('./terminal-insertion',()=>({ApplicationTerminalButton:()=>null}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m,projects:{list:m.projects}},events:{on:()=>()=>{}}}));
 const uid=(n:number)=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),at='2026-10-20T12:00:00.000Z';
 const item=(over:Partial<ApplicationActivityItem>={}):ApplicationActivityItem=>({id:uid(1),kind:'operation',appId:'mail',projectId:'p1',projectName:'项目一',taskId:null,taskTitle:null,runId:null,jobId:null,parentOperationId:null,callerKind:'ui',action:'ui.mail.send.execute',semantics:'write',state:'succeeded',attemptCount:1,errorCode:null,effectState:null,requestId:null,startedAt:at,endedAt:at,connections:[{id:uid(11),name:'私有发件账号'}],subjects:[],send:null,...over});
@@ -30,4 +33,25 @@ describe('persistent activity UI',()=>{
  it('shows a frozen-history error without substituting another draft or current send configuration',async()=>{
   m.activityDetail.mockResolvedValue({ok:false,code:'RESOURCE_RECOVERY_REQUIRED',message:'原冻结记录已损坏'});mount();fireEvent.click(await screen.findByRole('button',{name:/邮件发送.*SMTP 发送/}));await screen.findByText('原冻结记录已损坏');expect(screen.queryByText('原发送正文')).toBeNull();expect(m.executeSend).not.toHaveBeenCalled();
  });
+ it('keeps global manual and local-index identities distinct without fabricating a task/run',async()=>{
+  const global=item({id:uid(30),projectId:null,projectName:null,action:'connection.test',state:'failed',errorCode:'AUTH_REQUIRED'}),index=item({id:uid(31),callerKind:'index-job',action:'mail.refresh',jobId:uid(32)});
+  m.activity.mockResolvedValue(ok({items:[global,index],nextCursor:null,checkedAt:at}));m.activityDetail.mockImplementation(async(_kind:string,id:string)=>ok({item:id===global.id?global:index,send:null}));mount();
+  fireEvent.click(await screen.findByRole('button',{name:/测试连接.*全局配置/}));const globalDialog=screen.getByRole('dialog');expect(await within(globalDialog).findByText(/项目：全局配置/)).toBeTruthy();fireEvent.click(within(globalDialog).getByText('追溯标识'));expect(within(globalDialog).getByText(/运行：无/)).toBeTruthy();expect(within(globalDialog).queryByText(/原任务/)).toBeNull();fireEvent.click(within(globalDialog).getByRole('button',{name:'关闭'}));
+  fireEvent.click(screen.getByRole('button',{name:/本地邮件增量检查.*使用触发索引/}));await screen.findByText('使用触发索引',{exact:true});const indexDialog=screen.getByRole('dialog');fireEvent.click(within(indexDialog).getByText('追溯标识'));expect(within(indexDialog).getByText(new RegExp('索引：'+uid(32)))).toBeTruthy();expect(within(indexDialog).queryByText(/原任务/)).toBeNull();expect(m.executeSend).not.toHaveBeenCalled();
+ });
+ it('opens only the original application connection and returns without testing or saving',async()=>{
+  const original:ApplicationConnection={id:uid(12),appId:'zentao',providerId:'zentao',name:'原禅道连接',config:{kind:'zentao',baseUrl:'https://original.example.test/',username:'original-user',authMode:'token'},revision:2,configRevision:1,identityRevision:1,secretRevision:1,policyRevision:1,identity:{providerId:'zentao',serviceId:'original-service',accountId:'original-user',contractMajor:1},enabled:true,authorization:'connected',health:'unavailable',healthCode:'AUTH_REQUIRED',healthMessage:null,testedAt:at,hasSecret:true,cleanupPending:false,createdAt:at,updatedAt:at};
+  const failure=item({appId:'zentao',projectId:null,projectName:null,action:'connection.test',state:'failed',connections:[{id:original.id,name:original.name}]});
+  m.activity.mockResolvedValue(ok({items:[failure],nextCursor:null,checkedAt:at}));m.activityDetail.mockResolvedValue(ok({item:failure,send:null}));m.connections.mockImplementation(async(appId:string)=>ok(appId==='zentao'?[original]:[{...original,appId:'mail',name:'Foreign same ID'}]));mount();fireEvent.click(await screen.findByRole('button',{name:/测试连接.*全局配置/}));fireEvent.click(await screen.findByRole('button',{name:'检查原连接：原禅道连接'}));
+  expect((await screen.findByLabelText('连接名称') as HTMLInputElement).value).toBe('原禅道连接');expect((screen.getByLabelText('禅道服务地址') as HTMLInputElement).value).toBe(original.config.kind==='zentao'?original.config.baseUrl:'');fireEvent.click(screen.getByRole('button',{name:'取消'}));await screen.findByText('调用与结果详情');expect(m.testConnection).not.toHaveBeenCalled();expect(m.saveConnection).not.toHaveBeenCalled();
+ });
+ it('refuses a different draft or revision returned for a frozen send recovery and preserves unknown',async()=>{
+  m.draft.mockResolvedValue(ok({draft:{id:uid(3),revision:3}}));mount();fireEvent.click(await screen.findByRole('button',{name:/邮件发送.*SMTP 发送/}));fireEvent.click(await screen.findByRole('button',{name:'查看原项目草稿'}));await screen.findByText('返回草稿与原记录身份或修订不符，未打开其他草稿。');expect(m.draft).toHaveBeenCalledWith('p1',uid(3),2);fireEvent.click(screen.getByRole('button',{name:'返回原记录'}));await screen.findByText('Message-ID：<private-unknown@example.test>');expect(m.executeSend).not.toHaveBeenCalled();expect(m.authorizeSend).not.toHaveBeenCalled();
+ });
+ it('reuses the saved draft viewer with the original project and frozen revision without authorizing a resend',async()=>{
+  const resource={id:uid(71),revision:'a'.repeat(64),mediaType:'text/plain',size:8};
+  const draft:MailDraftDataView={id:uid(3),revision:2,state:'unknown',contentHash:'b'.repeat(64),content:{mode:'new',sourceMessageRef:null,senderConnectionId:uid(11),to:['to@example.test'],cc:[],bcc:[],subject:'原修订2',text:resource,html:null,inReplyTo:null,references:[],attachmentIds:[]},attachments:[],activeIntentId:null,lastExecutionId:uid(4),sourceTaskId:null,copiedFromDraftId:null,createdAt:at,updatedAt:at};
+  m.draft.mockResolvedValue(ok({draft}));m.resource.mockResolvedValue(ok({resourceId:resource.id,revision:resource.revision,offset:0,length:8,encoding:'utf8',data:'原草稿正文',nextOffset:null,eof:true}));mount();fireEvent.click(await screen.findByRole('button',{name:/邮件发送.*SMTP 发送/}));fireEvent.click(await screen.findByRole('button',{name:'查看原项目草稿'}));await screen.findByText('原草稿正文');expect(screen.getByText(/项目 p1 · 修订 r2/)).toBeTruthy();expect(m.draft.mock.calls.every(c=>c[0]==='p1'&&c[1]===uid(3)&&c[2]===2)).toBe(true);expect(screen.queryByRole('button',{name:/发送此|审阅发送/})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'关闭'}));await screen.findByText('Message-ID：<private-unknown@example.test>');expect(m.authorizeSend).not.toHaveBeenCalled();expect(m.executeSend).not.toHaveBeenCalled();
+ });
+
 });

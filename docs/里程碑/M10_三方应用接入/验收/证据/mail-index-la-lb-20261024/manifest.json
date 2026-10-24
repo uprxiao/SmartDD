@@ -1,0 +1,604 @@
+{
+  "schema": "m10-mail-index-la-lb-v1",
+  "at": "2026-10-24T13:14:34.449922+00:00",
+  "requirements": "R1.6 + 12.21; R05-02/03, T16 steps2/4/5/7/9 and affected T17/T65; original72 unchanged",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "environment": {
+    "system": "26.6.1",
+    "build": "25G76",
+    "arch": "arm64",
+    "version": "0.0.5",
+    "electron": "42.11.14"
+  },
+  "packages": {
+    "LA": {
+      "app": "/private/tmp/willyou-m10-la-package-20261024/mac-arm64/WillYou.app",
+      "asar": "dc703ba7e767412dd26f7d3dd4f60a7ebb5c6ea25e91c6f1eb530e43aa23d21a",
+      "identity": "974902fea7e19d28e08f51611bcc3f197611407d21eff3e642c8a3c59c83a38c",
+      "foxmail": "5653a39892942354174f96583b3678c7c8285ff0d5343bcfe97364f0e0f18e17"
+    },
+    "LB": {
+      "app": "/private/tmp/willyou-m10-lb-package-20261024/mac-arm64/WillYou.app",
+      "asar": "1e566a779df590d0eb2386a72629d9f38f2d4ff1f1d19578fde92a76a2599390",
+      "identity": "974902fea7e19d28e08f51611bcc3f197611407d21eff3e642c8a3c59c83a38c",
+      "foxmail": "5653a39892942354174f96583b3678c7c8285ff0d5343bcfe97364f0e0f18e17"
+    },
+    "nativeSmokeEach": "SQLite/PTY/voiceBridge/fileBroker/officeRenderer/fileWatcher all6 passed; preview adhoc/no notarization; no release"
+  },
+  "software": {
+    "producerCachePanelsUnique": 91,
+    "basis": "37 cache passed before final CAS helper; 38 producer integration +16 panels passed after final producer implementation, before LB startup hook",
+    "readRecoveryAndAffectedUnique": 64,
+    "files": 3,
+    "readRecoveryCases": 9,
+    "finalNineRetestIncluded": true,
+    "uniqueAcrossBatches": 155,
+    "notClaimingSingleFullRunOrFullM10": true,
+    "types": "final node/web passed; prior fixture UUID type error preserved"
+  },
+  "actual": {
+    "old-ky": {
+      "original": "/private/tmp/willyou-m10-mail-index-app-DRteou/result.json",
+      "status": "failed",
+      "checks": 3,
+      "driverSha256": "032824e0c58b25ce7352d2a85e30a7f4b05f58e1e381245842daf6764d20eb8f"
+    },
+    "la-index": {
+      "original": "/private/tmp/willyou-m10-mail-index-app-bWvnQb/result.json",
+      "status": "passed-partial",
+      "checks": 16,
+      "driverSha256": "da04ec3924f43206120035144dfaf92de2ce9ee4c8d79f3516cd27bf6b0ec4cc"
+    },
+    "lease-driver-failure": {
+      "original": "/private/tmp/willyou-m10-mail-index-app-WUxLUk/result.json",
+      "status": "failed",
+      "checks": 1,
+      "driverSha256": "70dbc981eabe841aec2c01b422bc052122dacf6250f4a38b13929efd92adb489"
+    },
+    "la-lease-red": {
+      "original": "/private/tmp/willyou-m10-mail-index-app-CwUTNc/result.json",
+      "status": "failed",
+      "checks": 1,
+      "driverSha256": "507146017d267a33251bff40a844a07628520fde3a3c7c8eab2acf218a2099c4"
+    },
+    "lb-index": {
+      "original": "/private/tmp/willyou-m10-mail-index-app-NXlNku/result.json",
+      "status": "passed-partial",
+      "checks": 16,
+      "driverSha256": "507146017d267a33251bff40a844a07628520fde3a3c7c8eab2acf218a2099c4"
+    },
+    "lb-native": {
+      "original": "/private/tmp/willyou-m10-graph-app-native-2EkNka/result.json",
+      "status": "passed-partial",
+      "checks": 13,
+      "driverSha256": null
+    }
+  },
+  "latest": {
+    "LBIndexCases": 4,
+    "LBIndexChecks": 16,
+    "LBNativeCodexChecks": 13,
+    "totalChecks": 29,
+    "model": "native batch uses synthetic loopback Responses fixture, actual Codex0.162.1/PTY/MCP; index batch no CLI/model",
+    "uiInputs": 0,
+    "leaseState": "all four LB private roots have zero nonreleased capability resource leases",
+    "processes": "188 recorded PIDs absent at final check; no system-wide process claim"
+  },
+  "failureClassification": {
+    "oldKy": "product: refresh time lost after changed partial source",
+    "producerUnit": "two product reds; retention-only fix leaves latest-time persistence red",
+    "concurrentRed": "new timestamp persistence exposed same-checkpoint CAS race; exact checkpoint-only merge now tested",
+    "LAIndex": "16 checks passed but extended audit found2 lingering original read leases; not a complete crash-lifetime pass",
+    "leaseDriverFailure": "wrong fixture query included12 old-PID leases rather than the2 interrupted reads; corrected by capturing exact original lease IDs, source preserved",
+    "LAReadRecovery": "verified product red: original2 read leases remain active after actual SIGKILL/restart",
+    "recoveryOrder": "initial implementation failed deterministic parent-first order; atomic validate-all-before-update fixes it"
+  },
+  "provenance": {
+    "baseArchive": {
+      "path": "/private/tmp/willyou-m10-la-code-20261024.tar.gz",
+      "bytes": 17493017,
+      "sha256": "c3b150128c6762a0d71f855b39b82324f93dbe1d6898ea44ce16f23ab6989b86"
+    },
+    "LBRestore": "base archive + source overrides listed in lb-source-baseline.json; each override also saved in source/",
+    "noProductionDeltaAfterLBFreeze": true,
+    "oldDriverRevisionsHashChecked": true
+  },
+  "formal": {
+    "passed": 26,
+    "total": 72,
+    "percent": 36.11,
+    "T16": "partial; actual P06/UI/real Foxmail/client/Agent/cancellation remaining",
+    "T17": "partial",
+    "T65": "partial"
+  },
+  "next": "Verify managed DB upgrade/migration quiescence ordering before ApplicationService.recover; ordinary restart evidence does not prove that earlier entry. Then continue remaining independently executable business cases; human/Claude items stay deferred.",
+  "files": [
+    {
+      "path": "logs/red.log",
+      "sha256": "937188adb4818cdc0955f5f176983e0a554558c6880cf10c9247a94fbbccba6e",
+      "bytes": 2293
+    },
+    {
+      "path": "logs/retention-only.log",
+      "sha256": "5ce8975d79e25e2d63196b468745e72faf3e09502d584c785e68f7661cb0da14",
+      "bytes": 1421
+    },
+    {
+      "path": "logs/green.log",
+      "sha256": "a2e5f40081e54b4f28cf4def38feae73bfd2fdaadabfddee6d93a36c0eb5a545",
+      "bytes": 467
+    },
+    {
+      "path": "logs/concurrent-red.log",
+      "sha256": "cdf81d1cba8b6a6ee5bcc7f3d64920be780c1686d8ecde1b1984266d9351bb7c",
+      "bytes": 1986
+    },
+    {
+      "path": "logs/final-green.log",
+      "sha256": "df9202da2bce0a9385db43efcd35a16448eae51dc69677537e3de6d393a5b108",
+      "bytes": 491
+    },
+    {
+      "path": "logs/regression.log",
+      "sha256": "fe7018e68e4d0c86e989caa5c282b2f3c846923f14f941ea1eee5bc6b663f997",
+      "bytes": 18635
+    },
+    {
+      "path": "logs/final-regression.log",
+      "sha256": "ed213d526af392d9aa90fa9568ce1091f3f801649935a1e7823e4e933b29ab22",
+      "bytes": 14142
+    },
+    {
+      "path": "logs/types-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    {
+      "path": "logs/package.log",
+      "sha256": "8a4cc59c6b2bb0116f15157b6b433b977c841b72107215b0e73056d2944211bd",
+      "bytes": 20851
+    },
+    {
+      "path": "logs/old-app-red.log",
+      "sha256": "a8baef8c31e2e55122870fd75466d89400e53737980f329286ee9e445ba970cb",
+      "bytes": 643
+    },
+    {
+      "path": "logs/read-recovery-first.log",
+      "sha256": "89a70f28cacdb74a551ad366dc9c1ef38e4e3e07c6d5983c1f5a687a852c84f1",
+      "bytes": 2342
+    },
+    {
+      "path": "logs/read-recovery-order-red.log",
+      "sha256": "314c23c31fd24f22b2ae25658c3d628210e00f1390954e681c2865ce3faa998a",
+      "bytes": 1369
+    },
+    {
+      "path": "logs/read-recovery-regression.log",
+      "sha256": "7fe35f2eb869b05567e294604a4ab6f151635b1aefc7bab6b71468c2393cb5ce",
+      "bytes": 16447
+    },
+    {
+      "path": "logs/read-recovery-final.log",
+      "sha256": "2a6e32056fbc3d6b1466d060b5191e40bcecb4bc86228089268bffb271f55826",
+      "bytes": 2569
+    },
+    {
+      "path": "logs/read-recovery-types-final.log",
+      "sha256": "434fe1eeb986dd44f35671229f36d57e427fb37fc26574d6013ebcc59ceb85b9",
+      "bytes": 365
+    },
+    {
+      "path": "logs/read-recovery-types-latest.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    {
+      "path": "logs/lb-package.log",
+      "sha256": "03c3dfde0ec687a73e9eec82a7e45319e782701120647cbef46005d3cbd3f56a",
+      "bytes": 20851
+    },
+    {
+      "path": "logs/app-batch.log",
+      "sha256": "82934c46c2791976d2212fd21b6d1e522e54e986b22d025e62943955689f599c",
+      "bytes": 2418
+    },
+    {
+      "path": "logs/interrupted-lease-app-red.log",
+      "sha256": "815dfd7357c2b1b6422b96b1d7ee7e5cdf4fb937f252be0d8d35ece8fbbb3099",
+      "bytes": 338
+    },
+    {
+      "path": "logs/interrupted-lease-app-red-verified.log",
+      "sha256": "5d73524d4513bb0f0204b3f85c9f09a1e8e453cef8c7b054101f9df3d06bd58f",
+      "bytes": 359
+    },
+    {
+      "path": "logs/lb-app-batch.log",
+      "sha256": "05e10e4fa7379ef87be57fc6fd681ad80c78efd1f7c248f2e0245cfd970c09bd",
+      "bytes": 2435
+    },
+    {
+      "path": "logs/lb-native-codex.log",
+      "sha256": "a6c1b4aa5647602acca5b34e24a5a700770991f341b26debb150b4f131d8be80",
+      "bytes": 2798
+    },
+    {
+      "path": "source-baseline.json",
+      "sha256": "b534caa8d1296ef022534de2072da3c2f4b190a72d2427d8eb3100aba408c38c",
+      "bytes": 260777
+    },
+    {
+      "path": "lb-source-baseline.json",
+      "sha256": "ae3cbad6dec2b9e399391f5a95f81f41191ff5b1bc12a17f29d54294ca8c224d",
+      "bytes": 261598
+    },
+    {
+      "path": "package-baseline.json",
+      "sha256": "0dadd0bcebaa0c71fb08a0a5d60b0619404eee6fee4fd7acf776fc57132f3010",
+      "bytes": 323
+    },
+    {
+      "path": "lb-package-baseline.json",
+      "sha256": "6c87f019a9a87f655a5e1fa74b9898f1a8a43270d97c2f014115431320274fc1",
+      "bytes": 323
+    },
+    {
+      "path": "process-and-lease-verification.json",
+      "sha256": "725fbb6b15de363cfb1735b579d3a6ea213e49b0c35ea5b4e1137602a9435df2",
+      "bytes": 1839
+    },
+    {
+      "path": "final-process-and-lease-verification.json",
+      "sha256": "1516783c20e8f5acd095f4459601b5dd9dfb031b03b72737163b74368dbee9ba",
+      "bytes": 3495
+    },
+    {
+      "path": "historical-source/driver-old-red.mjs",
+      "sha256": "032824e0c58b25ce7352d2a85e30a7f4b05f58e1e381245842daf6764d20eb8f",
+      "bytes": 19515
+    },
+    {
+      "path": "historical-source/driver-la-16-green.mjs",
+      "sha256": "da04ec3924f43206120035144dfaf92de2ce9ee4c8d79f3516cd27bf6b0ec4cc",
+      "bytes": 21242
+    },
+    {
+      "path": "historical-source/driver-lease-red-before-filter.mjs",
+      "sha256": "70dbc981eabe841aec2c01b422bc052122dacf6250f4a38b13929efd92adb489",
+      "bytes": 21928
+    },
+    {
+      "path": "historical-source/read-recovery-before-batch.ts",
+      "sha256": "f235f50eecdb6e3362dab3772d7538d83b8d5ba8522b210b61b1f6776e947d6d",
+      "bytes": 5479
+    },
+    {
+      "path": "historical-source/producer-before-fix/mail-query-service.ts",
+      "sha256": "669b2d905199d42caaf343b4e6a5e0798353c0cab5aacf45b877b76cbe129e15",
+      "bytes": 10069
+    },
+    {
+      "path": "historical-source/producer-before-fix/mail-read-data.test.ts",
+      "sha256": "9ef320b5072ecd74c67b288ced932e9986ed0cae3b875fb0b83e5faee7e5ca39",
+      "bytes": 59151
+    },
+    {
+      "path": "source/src/main/core/applications/mail-query-service.ts",
+      "sha256": "7c73f7923f2ee75d8e4ab5a2ac796ee67a6b5c5b24c13c189220d43d2b5b850f",
+      "bytes": 11934
+    },
+    {
+      "path": "source/src/main/core/applications/application-service.ts",
+      "sha256": "69cbe80a652a367264281587ea43cf363aa53900c180f8e76127e41bdb39cd66",
+      "bytes": 29520
+    },
+    {
+      "path": "source/src/main/core/applications/read-context-recovery.ts",
+      "sha256": "0427b8dcf5d8d1bee45bf980019f30e39cdfe6697658a71756e743d2a644bee5",
+      "bytes": 5922
+    },
+    {
+      "path": "source/src/main/core/applications/__tests__/mail-read-data.test.ts",
+      "sha256": "4ff9f47ce24af1ebff64a19a5678c2574672a407faf44393c24d9022ef767418",
+      "bytes": 60141
+    },
+    {
+      "path": "source/src/main/core/applications/__tests__/read-context-recovery.test.ts",
+      "sha256": "1fe1ae1e52ea89028d5742ff99e5aea6ef5fc21e558ef608b1332ac97879083a",
+      "bytes": 6650
+    },
+    {
+      "path": "source/scripts/applications/mail-index-app.mjs",
+      "sha256": "507146017d267a33251bff40a844a07628520fde3a3c7c8eab2acf218a2099c4",
+      "bytes": 22265
+    },
+    {
+      "path": "source/scripts/applications/native-codex-service.mjs",
+      "sha256": "35f9ffedd16ce22c6a642909f3a535f8702dbad81ca8a948003012b72d8a3c82",
+      "bytes": 102386
+    },
+    {
+      "path": "source/scripts/applications/fixtures/native-gc-race.mjs",
+      "sha256": "c99e613dda9bf26b20d1ff29d0c4211ea6555789ab2b5d54f4997f7b4d81f8a7",
+      "bytes": 9704
+    },
+    {
+      "path": "actual/old-ky/result.json",
+      "sha256": "8efdd8f16dadbe65264730d29fa8db08a9a62cf4d9c606452385a53c809c468d",
+      "bytes": 4774
+    },
+    {
+      "path": "actual/old-ky/incremental/failure.log",
+      "sha256": "b97872e1b8b43aa167420eb94de0d3274111a1db839fe27c7ed6eb14a230520f",
+      "bytes": 406
+    },
+    {
+      "path": "actual/old-ky/incremental/complete-before-restart.log",
+      "sha256": "c30b959bcc71f75abd2dbdd9a9b3f603afa7e4a033fa9c4c482154697cb92c5d",
+      "bytes": 1054
+    },
+    {
+      "path": "actual/old-ky/incremental/userdata/Session Storage/000003.log",
+      "sha256": "bd25adf5d7bb8fa202eb194c0a1258f3f27d745f1cc562472baeb908ffc57f63",
+      "bytes": 68
+    },
+    {
+      "path": "actual/old-ky/incremental/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "d671f6af6a5bec35f0a6232f8eb5f997ca3b91a37865b013ef0cc8712b5dc5dc",
+      "bytes": 220
+    },
+    {
+      "path": "actual/la-index/result.json",
+      "sha256": "cf23202cfc9a03a204448d07668414c8363dba2c72bd9131bfaf9e3a471fa6f2",
+      "bytes": 203829
+    },
+    {
+      "path": "actual/la-index/checkpoint/before-crash.log",
+      "sha256": "d7e9b2d0ca08cc9f142aa2597debe5b10dd3803c3e26620f7465e7d6a35b03ea",
+      "bytes": 2855
+    },
+    {
+      "path": "actual/la-index/checkpoint/after-recovery.log",
+      "sha256": "b2d7e12ce05d300cc0ec45fe5971d4fb0262dd36d4960d23ec1796da3ff818df",
+      "bytes": 587
+    },
+    {
+      "path": "actual/la-index/checkpoint/final.log",
+      "sha256": "c974f2992c15261ba582c94f4a385cc4fa8ee71064558d538492ac0454e69572",
+      "bytes": 911
+    },
+    {
+      "path": "actual/la-index/checkpoint/userdata/Session Storage/000003.log",
+      "sha256": "bd25adf5d7bb8fa202eb194c0a1258f3f27d745f1cc562472baeb908ffc57f63",
+      "bytes": 68
+    },
+    {
+      "path": "actual/la-index/checkpoint/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "9fdbf86d1006c0c3b9b06fa4ae6cabf45fcd84fa247b118680c5de5dff8674c4",
+      "bytes": 220
+    },
+    {
+      "path": "actual/la-index/shared-revoke/final.log",
+      "sha256": "852086b24c90c7397575b441d54643b28f477e5e50ba4c9752c2368eb92aec77",
+      "bytes": 1883
+    },
+    {
+      "path": "actual/la-index/shared-revoke/userdata/Session Storage/000003.log",
+      "sha256": "ffd700cf04be6fe8d51e2ffb8a2e37bc3fa95a6679a4102fa35e8494c2350eae",
+      "bytes": 49
+    },
+    {
+      "path": "actual/la-index/shared-revoke/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "4605116cde8984f72110fd8ef7d34db87e50f38b865726cd81db833ac2e3dc31",
+      "bytes": 171
+    },
+    {
+      "path": "actual/la-index/incremental/partial-before-restart.log",
+      "sha256": "e9f9470981202f2d77aa4943d7e406e380c9b90e61327868afc16905615b2d07",
+      "bytes": 425
+    },
+    {
+      "path": "actual/la-index/incremental/complete-before-restart.log",
+      "sha256": "04921406298700e0cca21aa756623718ed2138f5675b65dc67c5dfeecfbe95e1",
+      "bytes": 1073
+    },
+    {
+      "path": "actual/la-index/incremental/final.log",
+      "sha256": "0ddeb99ddb2d54b747c7e72c543b36232dc84cf42e260337ceacc2eec049fa18",
+      "bytes": 2045
+    },
+    {
+      "path": "actual/la-index/incremental/userdata/Session Storage/000003.log",
+      "sha256": "4d7a760b35105bcacd2adef01d3f8080d1cebcf017b27603c32bf4fda6321b47",
+      "bytes": 87
+    },
+    {
+      "path": "actual/la-index/incremental/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "b5f180cf4ce5a69755d9d54d44d005a9bd06b6d23ec28520377f83a295e5b131",
+      "bytes": 269
+    },
+    {
+      "path": "actual/la-index/source-faults/final.log",
+      "sha256": "813b621909361a36f0670ff8e57fbc70acb20f2ac24dff89383f20406e42da56",
+      "bytes": 587
+    },
+    {
+      "path": "actual/la-index/source-faults/userdata/Session Storage/000003.log",
+      "sha256": "ffd700cf04be6fe8d51e2ffb8a2e37bc3fa95a6679a4102fa35e8494c2350eae",
+      "bytes": 49
+    },
+    {
+      "path": "actual/la-index/source-faults/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "30af4596119c87dddec8878759d4a282bc8305cfb81938baf4497e412bacac8d",
+      "bytes": 171
+    },
+    {
+      "path": "actual/lease-driver-failure/result.json",
+      "sha256": "eb25845300f9f2eb87e5d0fda2c955dde248e0e5c72e859fac39b475180bd387",
+      "bytes": 106611
+    },
+    {
+      "path": "actual/lease-driver-failure/checkpoint/failure.log",
+      "sha256": "3bb880eb7c05b26c2eb0a4e53b68c852fe2d7d4b31f4bfcd5dc3e41655ae9300",
+      "bytes": 425
+    },
+    {
+      "path": "actual/lease-driver-failure/checkpoint/before-crash.log",
+      "sha256": "d9b822765608cf8d99970a9aa8a5950830a11b35f3577f8a3bb0a56f8fcf2d88",
+      "bytes": 2855
+    },
+    {
+      "path": "actual/lease-driver-failure/checkpoint/userdata/Session Storage/000003.log",
+      "sha256": "ffd700cf04be6fe8d51e2ffb8a2e37bc3fa95a6679a4102fa35e8494c2350eae",
+      "bytes": 49
+    },
+    {
+      "path": "actual/lease-driver-failure/checkpoint/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "0ae21b2a9092ac78a3c29bfcbdd1f17844fbc6cbf197351a350eddc5a29fa17e",
+      "bytes": 171
+    },
+    {
+      "path": "actual/la-lease-red/result.json",
+      "sha256": "8778d78e0e81b3c40b000a4c98203306565c82fe22a471204651a072246faff8",
+      "bytes": 102126
+    },
+    {
+      "path": "actual/la-lease-red/checkpoint/failure.log",
+      "sha256": "d58f5a197de032970e82b9d1b8b0c27b7228451122edd839837e62fe83105049",
+      "bytes": 425
+    },
+    {
+      "path": "actual/la-lease-red/checkpoint/before-crash.log",
+      "sha256": "be26cfde753ec99d6150fd41654a6a17ecd6e4c6409425f140c90a95b8d94be1",
+      "bytes": 2855
+    },
+    {
+      "path": "actual/la-lease-red/checkpoint/userdata/Session Storage/000003.log",
+      "sha256": "ffd700cf04be6fe8d51e2ffb8a2e37bc3fa95a6679a4102fa35e8494c2350eae",
+      "bytes": 49
+    },
+    {
+      "path": "actual/la-lease-red/checkpoint/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "9c0a9f96f49dc23978af17ef4f91f2d30b29cf7b7796b8f764ef68bc8d29320d",
+      "bytes": 171
+    },
+    {
+      "path": "actual/lb-index/result.json",
+      "sha256": "c1f11dca4497f249ca4b7d5e44fa87e7a5e4efdfea5c5e6619e9e09896f49e51",
+      "bytes": 206388
+    },
+    {
+      "path": "actual/lb-index/checkpoint/before-crash.log",
+      "sha256": "db6244f230f2e723b603a447df81c78e5f8d9f79f3f5b140a900921fe2122a04",
+      "bytes": 2855
+    },
+    {
+      "path": "actual/lb-index/checkpoint/after-recovery.log",
+      "sha256": "4e518bba314ced8147c8a036360d985a6ad13d3711c916daca4e95e1d452bbfb",
+      "bytes": 587
+    },
+    {
+      "path": "actual/lb-index/checkpoint/final.log",
+      "sha256": "69ebdc48f583089afc5a6a5521137e5d58673da8ef5851f1058371092a7dfc07",
+      "bytes": 911
+    },
+    {
+      "path": "actual/lb-index/checkpoint/userdata/Session Storage/000003.log",
+      "sha256": "bd25adf5d7bb8fa202eb194c0a1258f3f27d745f1cc562472baeb908ffc57f63",
+      "bytes": 68
+    },
+    {
+      "path": "actual/lb-index/checkpoint/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "997516c06ab3a5b0d5261fdc8ed1c7d97de8915c8aa96622083e7c37b2a7929a",
+      "bytes": 220
+    },
+    {
+      "path": "actual/lb-index/shared-revoke/final.log",
+      "sha256": "b07abd09886de1bac2081fd069af78d2eaceb78c837ad51283258591cb6943b3",
+      "bytes": 1883
+    },
+    {
+      "path": "actual/lb-index/shared-revoke/userdata/Session Storage/000003.log",
+      "sha256": "ffd700cf04be6fe8d51e2ffb8a2e37bc3fa95a6679a4102fa35e8494c2350eae",
+      "bytes": 49
+    },
+    {
+      "path": "actual/lb-index/shared-revoke/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "54e1e0e806583900342089be59ef675dbef49ac09ad618e1a6221a90a3358274",
+      "bytes": 171
+    },
+    {
+      "path": "actual/lb-index/incremental/partial-before-restart.log",
+      "sha256": "94a8fabc7fbfc92dd54817805ec5293e4ea943dd11ddb91d587ed5ad635807c9",
+      "bytes": 425
+    },
+    {
+      "path": "actual/lb-index/incremental/complete-before-restart.log",
+      "sha256": "7ffe16029b434467a99ab992ba1c43694b1d7a153dfd836d2a23c5788ef8166b",
+      "bytes": 1073
+    },
+    {
+      "path": "actual/lb-index/incremental/final.log",
+      "sha256": "f3389210f632c192ec633a8017131588d3d2d87d44afdef08916eea81437ff14",
+      "bytes": 2045
+    },
+    {
+      "path": "actual/lb-index/incremental/userdata/Session Storage/000003.log",
+      "sha256": "4d7a760b35105bcacd2adef01d3f8080d1cebcf017b27603c32bf4fda6321b47",
+      "bytes": 87
+    },
+    {
+      "path": "actual/lb-index/incremental/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "383f0d8e12ef400166813be0969764c49b06a06d33fc3aa1ca04ea38f53bdff7",
+      "bytes": 269
+    },
+    {
+      "path": "actual/lb-index/source-faults/final.log",
+      "sha256": "5e5cafa7dd59ee09f79960843bcb2b73eb57a459eeee76d52b75a58675353e2f",
+      "bytes": 587
+    },
+    {
+      "path": "actual/lb-index/source-faults/userdata/Session Storage/000003.log",
+      "sha256": "ffd700cf04be6fe8d51e2ffb8a2e37bc3fa95a6679a4102fa35e8494c2350eae",
+      "bytes": 49
+    },
+    {
+      "path": "actual/lb-index/source-faults/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "fd22fe288ab66e2f37dcae0889240052391ff20ae4f5200b220c18b63f6bc07c",
+      "bytes": 171
+    },
+    {
+      "path": "actual/lb-native/result.json",
+      "sha256": "ab734b76869fc4435300238fa336ad34aebdbcdecb31197f1b642f8fb491d0ea",
+      "bytes": 114172
+    },
+    {
+      "path": "actual/lb-native/graph-bootstrap.log",
+      "sha256": "05d5c983ffbb54f3e2b8eb5329b3c4193291a7d884248e537b70b99a3db688a4",
+      "bytes": 244
+    },
+    {
+      "path": "actual/lb-native/userdata/Session Storage/000003.log",
+      "sha256": "bd25adf5d7bb8fa202eb194c0a1258f3f27d745f1cc562472baeb908ffc57f63",
+      "bytes": 68
+    },
+    {
+      "path": "actual/lb-native/userdata/Local Storage/leveldb/000003.log",
+      "sha256": "18b4e48814ec028ec3315b89f043848db6009c972cdceeebda248c5d283b1e23",
+      "bytes": 220
+    },
+    {
+      "path": "actual/lb-native/electron.txt",
+      "sha256": "9675920d65d1a4588e1e3895742b25eead00ffa8ac6228e7dad4fed873ed3027",
+      "bytes": 2488
+    },
+    {
+      "path": "batch-verification.json",
+      "sha256": "b0a0f10dc2f0e7452846f71829987a99b113021947b0353bb0b5a0beab7c6796",
+      "bytes": 682
+    }
+  ]
+}

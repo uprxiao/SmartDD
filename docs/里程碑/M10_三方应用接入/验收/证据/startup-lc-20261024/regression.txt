@@ -1,0 +1,41 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/db/managed-client.test.ts src/main/core/applications/__tests__/read-context-recovery.test.ts src/main/db/migration-coordinator.test.ts --maxWorkers=2 --reporter=verbose
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/db/managed-client.test.ts > holds shared ownership for the live client and releases it on close, then reopens retained data 426ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > allows an empty pre-M10 database to migrate without inventing read records 384ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > recovers known UI reads before the optional shared-waiter table existed 605ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'activation'; original owner 'stopped' 1261ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'activation'; original owner 'running' 486ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'activation'; original owner 'unknown' 517ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > holds unsupported ownership columns and foreign C ownership without changing records 1534ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > rolls back the entire read group when an owned lease update fails, then retries from the original proof 574ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > cancels interrupted UI/index records in parent-first order without losing either original lease proof 493ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'migration-and-activation'; original owner 'stopped' 1502ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > cancels interrupted UI/index records in index-first order without losing either original lease proof 364ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'migration-and-activation'; original owner 'running' 624ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'migration-and-activation'; original owner 'unknown' 616ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > retains an original running kernel owner without changing its read outcome 1107ms
+ ✓ src/main/db/managed-client.test.ts > does not treat a completed file mirror as authority when its DB receipt is missing 312ms
+ ✓ src/main/db/migration-coordinator.test.ts > bootstraps the empty database through verified backup and atomic operation, then reopens idempotently 79ms
+ ✓ src/main/db/migration-coordinator.test.ts > recovers a committed operation after mirror failure without restoring or rerunning business migrations 83ms
+ ✓ src/main/db/migration-coordinator.test.ts > keeps the precommit journal and refuses a changed verified backup on retry 74ms
+ ✓ src/main/db/migration-coordinator.test.ts > preserves another maintenance operation rather than clearing it during a normal restart 134ms
+ ✓ src/main/db/migration-coordinator.test.ts > persists maintenance before backing up an existing schema and resumes the same operation after a failed precommit check 139ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > retains an original unknown kernel owner without changing its read outcome 1005ms
+ ✓ src/main/db/migration-coordinator.test.ts > refuses a resumed backup when application migration watermarks changed after it was captured 138ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > uses the original kernel birth identity when the numeric PID has been reused 558ms
+ ✓ src/main/db/migration-coordinator.test.ts > rejects a real SQLite writer appearing after backup and preserves its committed business data on recovery 621ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > does not reinterpret ISO/PID-only identities, missing operations or mismatched resource bindings as stopped read owners 926ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > preserves write/Agent/installer reservations and never converts a write unknown into a successful or cancelled receipt 906ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > releases an already completed read lease without rewriting its actual successful result 323ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > samples process state outside SQLite transactions and refuses a row changed before the final transaction 314ms
+
+ Test Files  3 passed (3)
+      Tests  28 passed (28)
+   Start at  21:25:47
+   Duration  9.42s (transform 327ms, setup 0ms, import 584ms, tests 16.11s, environment 0ms)
+

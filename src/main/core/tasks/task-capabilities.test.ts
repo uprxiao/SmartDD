@@ -15,7 +15,7 @@ import { DiscoveryCatalog } from '../applications/discovery-catalog';
 import { agentFixture } from '../applications/__tests__/agent-fixture';
 import { FixtureProcessReader } from '../applications/__tests__/run-fixture';
 import { TaskService, type PtyHost } from './task-service';
-import type { TaskCapabilityLaunch, TaskCapabilityLauncher } from './capability-lifecycle';
+import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
 let f:Awaited<ReturnType<typeof agentFixture>>,svc:TaskService,capabilities:CapabilityService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,runs:CapabilityRunRegistry,catalog:DiscoveryCatalog,ptys:ControlledPtys;
 let projectId:string,profileId:string,clock:number,gate:(()=>Promise<void>)|undefined,afterAttach:(()=>Promise<void>)|undefined,bindGate:(()=>Promise<void>)|undefined,calls:number;
 const pending=new Set<Promise<unknown>>();
@@ -58,7 +58,24 @@ const consumers=()=>readdirSync(join(catalog.root,'catalog-consumers'));
 describe('actual TaskService with fixed session/catalog/run registries and a controlled PTY',()=>{
  it('reserves one authoritative identity before forking and releases transient files only after the owned exit',async()=>{const result=await create(),runtime=result.task.runtimeSnapshot!;expect(trace).toEqual(['arm','fork','attach']);expect(result.ptyId).toBe(ptys.launches[0].id);expect(runs.get(runtime.runId).state).toBe('active');expect(consumers()).toHaveLength(1);expect(ptys.launches[0].args.join('\n')).toContain('skills.config=');expect(existsSync(runtime.manifestPath)).toBe(true);ptys.exit(result.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(existsSync(runtime.manifestPath)).toBe(false);expect((await f.sessions.references(result.task.id)).length).toBeGreaterThan(2);});
  it('joins concurrent resume requests and refuses a competing profile while preparation is pending',async()=>{const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));let release!:()=>void;gate=()=>new Promise<void>(r=>{release=r;});const a=svc.open({taskId:first.task.id}),b=svc.open({taskId:first.task.id});expect(a).toBe(b);await vi.waitFor(()=>expect(release).toBeTypeOf('function'));expect(svc.runningInProject(projectId)).toBe(1);await expect(svc.open({taskId:first.task.id,aiProfileId:'different-profile'})).rejects.toThrow('正在准备');release();const second=await a;expect(calls).toBe(2);expect(ptys.launches).toHaveLength(2);expect(second.task.runtimeSnapshot?.sessionCapabilities).toEqual(first.task.runtimeSnapshot?.sessionCapabilities);});
+ it('cancels only its pending new-task token without forking or deleting another live task',async()=>{
+  const first=await create();let release!:()=>void;gate=()=>new Promise<void>(r=>{release=r;});
+  const token='11111111-1111-4111-8111-111111111111';const owner={sender:{id:41}} as TaskInputSender,other={sender:{id:42}} as TaskInputSender;
+  const opening=svc.create({projectId,dirId:null,aiProfileId:profileId,firstMessage:'cancel pending',launchToken:token},owner);
+  const rejected=expect(opening).rejects.toThrow('取消');
+  await vi.waitFor(()=>expect(release).toBeTypeOf('function'));
+  expect(svc.cancelCreate('unknown',owner)).toBe(false);expect(svc.cancelCreate(token,other)).toBe(false);expect(svc.cancelCreate(token,owner)).toBe(true);release();await rejected;
+  expect(ptys.launches).toHaveLength(1);expect(svc.get(first.task.id).ptyId).toBe(first.ptyId);expect(svc.list()).toHaveLength(1);expect(svc.cancelCreate(token)).toBe(false);
+  await vi.waitFor(()=>expect(runs.get(runIds[1]).state).toBe('stopped'));
+ });
  it('cancels a preparing resume without forking or releasing the fixed session source references',async()=>{const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));let release!:()=>void;gate=()=>new Promise<void>(r=>{release=r;});const opening=svc.open({taskId:first.task.id});await vi.waitFor(()=>expect(release).toBeTypeOf('function'));svc.kill(first.task.id);release();await expect(opening).rejects.toThrow('取消');expect(ptys.launches).toHaveLength(1);await vi.waitFor(()=>expect(consumers()).toEqual([]));expect((await f.sessions.get(first.task.id)).retention).toBe('active');expect(runs.get(runIds[1]).state).toBe('stopped');});
+ it('cancels a new-task token during native PID attachment and keeps settled tokens inert',async()=>{
+  let release!:()=>void;afterAttach=()=>new Promise<void>(r=>{release=r;});const token='22222222-2222-4222-8222-222222222222';
+  const opening=svc.create({projectId,dirId:null,aiProfileId:profileId,firstMessage:'attachment cancel',launchToken:token});const rejected=expect(opening).rejects.toThrow('取消');
+  await vi.waitFor(()=>expect(release).toBeTypeOf('function'));expect(ptys.live.size).toBe(1);expect(svc.cancelCreate(token)).toBe(true);release();await rejected;
+  expect(ptys.live.size).toBe(0);expect(svc.list()).toEqual([]);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+  afterAttach=undefined;const next=await svc.create({projectId,dirId:null,aiProfileId:profileId,firstMessage:'completed',launchToken:token});expect(svc.cancelCreate(token)).toBe(false);expect(svc.get(next.task.id).ptyId).toBe(next.ptyId);
+ });
  it('does not show a dead PTY as running when the owned exit wins the PID-attachment race',async()=>{ptys.immediateExit=true;const result=await create();expect(result.task.ptyId).toBeNull();expect(svc.activePty(result.task.id)).toBeNull();expect(svc.runningCount()).toBe(0);await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(runs.get(runIds[0]).state).toBe('stopped');});
  it('retains an armed fork-failure window instead of claiming an unknown child never existed',async()=>{ptys.fail=true;await expect(create()).rejects.toThrow('controlled native fork');expect(svc.list()).toEqual([]);expect(consumers()).toHaveLength(1);expect(runs.get(runIds[0]).state).toBe('stopping');});
  it('keeps transient resources while disposal waits for the actual native exit',async()=>{const first=await create(),path=first.task.runtimeSnapshot!.manifestPath;svc.dispose();expect(existsSync(path)).toBe(true);expect(consumers()).toHaveLength(1);ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(existsSync(path)).toBe(false);});

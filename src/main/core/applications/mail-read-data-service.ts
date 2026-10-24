@@ -3,29 +3,30 @@ import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import { applicationResourceReadSchema,applicationResourceRefSchema,type ApplicationResourceRef,type ApplicationResourceChunk } from '@shared/application-data';
 import { mailSourceRefSchema,type MailSourceRef,type MailQueryData,type MailReadData } from '@shared/application-mail-data';
-import type { LocalMailContent,LocalMailSummary } from '@shared/application-mail';
+import {mailQueryDaysSchema,type LocalMailContent,type LocalMailSummary} from '@shared/application-mail';
 import type { ApplicationDataHost,ApplicationDataBinding } from './application-adapter-registry';
 import type { HostToolOperation } from './tool-service';
 import type { RunContext } from './run-registry';
 import type { ApplicationSelectionService } from './selection-service';
 import { ApplicationExecutionContexts,type ApplicationExecutionContext } from './execution-context';
 import { ApplicationDataResources } from './data-resources';
-import { PackageConfigViews } from './package-config-views';
+import {connectionConfigSchema} from '@shared/application-connections';
 import { MailCache } from './mail-cache';
 import { MailQueryService,type MailQueryTarget } from './mail-query-service';
 import { MailWorkerClient } from './providers/mail-worker-client';
 import { canonicalJson,digest } from './manifest';
 import { withResourceLock } from './resource-lock';
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
-const querySchema=z.object({connectionId:z.uuid().nullable().optional(),text:z.string().max(1000).optional(),cursor:z.string().max(8192).nullable().optional(),limit:z.number().int().min(1).max(200).optional(),refresh:z.boolean().default(false)}).strict();
-const readSchema=z.object({reference:mailSourceRefSchema}).strict();
-const cursorSchema=z.object({schema:z.literal(1),scope:hash,text:z.string().max(1000),limit:z.number().int().min(1).max(200),stateId:z.uuid(),sourceRevision:hash,offset:z.number().int().nonnegative(),expiresAt:z.number()}).strict();
+const querySchema=z.object({queryDays:mailQueryDaysSchema.optional(),connectionId:z.uuid().nullable().optional(),text:z.string().max(1000).optional(),cursor:z.string().max(8192).nullable().optional(),limit:z.number().int().min(1).max(200).optional(),refresh:z.boolean().default(false)}).strict();
+const readSchema=z.object({reference:mailSourceRefSchema,queryDays:mailQueryDaysSchema.optional()}).strict();
+const resourceReadSchema=applicationResourceReadSchema.extend({queryDays:mailQueryDaysSchema.optional()});
+const cursorSchema=z.object({schema:z.literal(1),queryDays:mailQueryDaysSchema.optional(),scope:hash,text:z.string().max(1000),limit:z.number().int().min(1).max(200),stateId:z.uuid(),sourceRevision:hash,offset:z.number().int().nonnegative(),expiresAt:z.number()}).strict();
 const locatorSchema=z.object({schema:z.literal(1),reference:mailSourceRefSchema,part:z.string().max(100),resource:z.object({id:z.uuid(),revision:hash,mediaType:z.string().max(200),size:z.number().int().nonnegative()}).strict()}).strict();
 function resourceId(key:string):string{const bytes=createHash('sha1').update('WillYou:mail-resource:v1\0').update(key).digest().subarray(0,16);bytes[6]=(bytes[6]&15)|80;bytes[8]=(bytes[8]&63)|128;const hex=bytes.toString('hex');return`${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;}
 export class MailReadDataService implements ApplicationDataHost {
- readonly queries:MailQueryService;private readonly views:PackageConfigViews;private readonly workers=new Set<MailWorkerClient>();private closed=false;
+ readonly queries:MailQueryService;private readonly workers=new Set<MailWorkerClient>();private closed=false;
  constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly selections:ApplicationSelectionService,private readonly cache:()=>Promise<MailCache>,private readonly options:{worker:string;native:string;now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}}){
-  this.views=new PackageConfigViews(contexts);this.queries=new MailQueryService(contexts,cache,()=>this.worker(false),{...options.query,now:options.now});
+  this.queries=new MailQueryService(contexts,cache,()=>this.worker(false),{...options.query,now:options.now});
  }
  private now(){return this.options.now?.()??new Date();}
  private worker(track=true):MailWorkerClient{if(this.closed)throw new ApplicationError('CANCELED','邮件读取服务已停止');const worker=new MailWorkerClient(this.options.worker,this.options.native);if(track)this.workers.add(worker);return worker;}
@@ -37,8 +38,13 @@ export class MailReadDataService implements ApplicationDataHost {
  }
  private async target(context:ApplicationExecutionContext,expectedId:string|null=null):Promise<MailQueryTarget>{
   this.contexts.require(context,'mail.read');if(context.scopeKind!=='project'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','邮件业务需要真实项目');
-  const {connection}=await this.contexts.connection(context,'foxmail',expectedId),config=this.views.get(context,connection);if(config.kind!=='foxmail')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前来源不是Foxmail');
+  const {connection,configView}=await this.contexts.connection(context,'foxmail',expectedId),config=connectionConfigSchema.parse(configView.view);if(config.kind!=='foxmail')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前来源不是Foxmail');
   return{context,connection,config,at:this.now(),sourceKey:digest(canonicalJson({connection:connection.id,identityRevision:connection.identityRevision,identity:connection.identity,parser:1}))};
+ }
+ private window(target:MailQueryTarget,queryDays?:number):MailQueryTarget{
+  if(queryDays===undefined)return target;
+  const checked=mailQueryDaysSchema.safeParse(queryDays);if(!checked.success)throw new ApplicationError('INVALID_INPUT','单次邮件查询天数必须为1至100的整数');
+  return {...target,config:{...target.config,queryDays:checked.data}};
  }
  private scope(target:MailQueryTarget){return digest(canonicalJson({project:target.context.projectId,source:target.sourceKey,policy:this.selections.policyStamp(target.context.projectId!,'mail'),connection:{id:target.connection.id,identity:target.connection.identityRevision,config:target.connection.configRevision,policy:target.connection.policyRevision},slot:this.selections.connectionSlot(target.context.projectId!,'mail','foxmail').revision}));}
  private async audit(context:ApplicationExecutionContext,target:MailQueryTarget,kind:'query'|'read'|'resource',revision:string,provenance:unknown):Promise<void>{
@@ -52,7 +58,7 @@ export class MailReadDataService implements ApplicationDataHost {
   if(reference.connectionId!==target.connection.id||reference.identityRevision!==target.connection.identityRevision)throw new ApplicationError('SCOPE_DENIED','原邮件来源身份不是当前项目选用身份');
   const worker=this.worker();try{const value=await worker.read(target.config,reference.nativeId,target.connection.identity,target.context.signal,target.at);if(value.sourceRevision!==reference.contentRevision)throw new ApplicationError('RESOURCE_STATE_CHANGED','原邮件内容已变化，请从当前查询重新读取');this.contexts.require(target.context,'mail.read');return value;}finally{await this.closeWorker(worker);}
  }
- async source(context:ApplicationExecutionContext,reference:MailSourceRef):Promise<LocalMailContent>{const parsed=mailSourceRefSchema.safeParse(reference);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','原邮件来源引用无效');return this.nativeRead(await this.target(context,reference.connectionId),parsed.data);}
+ async source(context:ApplicationExecutionContext,reference:MailSourceRef,queryDays?:number):Promise<LocalMailContent>{const parsed=mailSourceRefSchema.safeParse(reference);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','原邮件来源引用无效');return this.nativeRead(this.window(await this.target(context,reference.connectionId),queryDays),parsed.data);}
  private summary(value:LocalMailSummary):void{if(value.subject.length>8192||value.from.length>2000||value.to.length>8192||(value.messageId?.length??0)>2000)throw new ApplicationError('TOO_LARGE','邮件头超过原工具契约，未静默截断');}
  private async register(target:MailQueryTarget,reference:MailSourceRef,part:string,mediaType:string,bytes:Uint8Array):Promise<ApplicationResourceRef>{
   this.contexts.require(target.context,'mail.read');const cache=await this.cache(),hash=digest(bytes),id=resourceId(canonicalJson({project:target.context.projectId,source:target.sourceKey,reference,part,hash,mediaType})),resource={id,revision:hash,mediaType,size:bytes.byteLength};
@@ -60,20 +66,21 @@ export class MailReadDataService implements ApplicationDataHost {
  }
  async query(context:ApplicationExecutionContext,input:unknown):Promise<MailQueryData>{return(await this.queryStatus(context,input)).query;}
  async queryStatus(context:ApplicationExecutionContext,input:unknown){
-  const parsed=querySchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件查询参数无效');const args=parsed.data,target=await this.target(context,args.connectionId??null),cache=await this.cache(),scope=this.scope(target);let cursor:z.infer<typeof cursorSchema>|null=null;
-  if(args.cursor){if(!z.uuid().safeParse(args.cursor).success)throw new ApplicationError('INVALID_INPUT','邮件游标无效');cursor=await cache.withRecord(target.sourceKey,'cursor:'+args.cursor,async value=>cursorSchema.parse(value));if(!cursor||cursor.scope!==scope||cursor.expiresAt<=this.now().getTime()||args.text!==undefined&&args.text!==cursor.text||args.limit!==undefined&&args.limit!==cursor.limit)throw new ApplicationError('REVISION_CONFLICT','邮件游标的项目、来源、条件或期限已变化，请重新查询');}
+  const parsed=querySchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件查询参数无效');const args=parsed.data,base=await this.target(context,args.connectionId??null),cache=await this.cache(),scope=this.scope(base);let cursor:z.infer<typeof cursorSchema>|null=null;
+  if(args.cursor){if(!z.uuid().safeParse(args.cursor).success)throw new ApplicationError('INVALID_INPUT','邮件游标无效');cursor=await cache.withRecord(base.sourceKey,'cursor:'+args.cursor,async value=>cursorSchema.parse(value));if(!cursor||cursor.scope!==scope||cursor.expiresAt<=this.now().getTime()||args.text!==undefined&&args.text!==cursor.text||args.limit!==undefined&&args.limit!==cursor.limit||args.queryDays!==undefined&&args.queryDays!==(cursor.queryDays??base.config.queryDays))throw new ApplicationError('REVISION_CONFLICT','邮件游标的项目、来源、条件或期限已变化，请重新查询');}
+  const queryDays=args.queryDays??cursor?.queryDays,target=this.window(base,queryDays);
   const text=args.text??cursor?.text??'',limit=args.limit??cursor?.limit??50,result=await this.queries.run(target,text,!cursor||args.refresh),state=result.state;
   if(cursor&&(cursor.stateId!==state.id||cursor.sourceRevision!==state.sourceRevision))throw new ApplicationError('RESOURCE_STATE_CHANGED','原邮件检查点已失效，请从当前来源重新查询');
   const done=state.nextOffset===state.total,ordered=done?[...state.items].sort((a,b)=>b.date.localeCompare(a.date)||b.id.padStart(20,'0').localeCompare(a.id.padStart(20,'0'))):[],offset=cursor?.offset??0;
   if(offset>ordered.length)throw new ApplicationError('INVALID_INPUT','邮件游标越过原结果');const selected=ordered.slice(offset,offset+limit),values=await this.queries.summaries(target,result,selected);let nextCursor:string|null=null;
-  if(!done||offset+values.length<ordered.length){nextCursor=randomUUID();await cache.putRecord(target.sourceKey,'cursor:'+nextCursor,{schema:1,scope,text,limit,stateId:state.id,sourceRevision:state.sourceRevision,offset:done?offset+values.length:0,expiresAt:this.now().getTime()+600000},[]);}
+  if(!done||offset+values.length<ordered.length){nextCursor=randomUUID();await cache.putRecord(target.sourceKey,'cursor:'+nextCursor,{schema:1,...(queryDays===undefined?{}:{queryDays}),scope,text,limit,stateId:state.id,sourceRevision:state.sourceRevision,offset:done?offset+values.length:0,expiresAt:this.now().getTime()+600000},[]);}
   const problems=state.problems.map(p=>({code:p.code,objectId:p.id}));if(!done||state.problemCount>state.problems.length)problems.push({code:'INCOMPLETE_RESULT',objectId:null});
-  await this.audit(context,target,'query',state.sourceRevision,{range:state.range});this.contexts.require(context,'mail.read');
+  await this.audit(context,target,'query',state.sourceRevision,{range:state.range,...(queryDays===undefined?{}:{queryDays})});this.contexts.require(context,'mail.read');
   const query:MailQueryData={items:values.map(({subject,from,to,date,messageId,hasAttachments,id,sourceRevision})=>({subject,from,to,date,messageId,hasAttachments,reference:{connectionId:target.connection.id,identityRevision:target.connection.identityRevision,nativeId:id,contentRevision:sourceRevision}})),nextCursor,complete:done&&state.problemCount===0,matched:state.items.length,range:state.range,checkedAt:result.checkedAt,problems};
   return{query,refresh:{scanned:state.nextOffset,total:state.total,finished:done,problemCount:state.problemCount,lastSuccessfulRefreshAt:state.lastSuccessfulRefreshAt}};
  }
  async read(context:ApplicationExecutionContext,input:unknown):Promise<MailReadData>{
-  const parsed=readSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件来源引用无效');const reference=parsed.data.reference,target=await this.target(context,reference.connectionId),value=await this.nativeRead(target,reference);this.summary(value);
+  const parsed=readSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件来源引用无效');const reference=parsed.data.reference,target=this.window(await this.target(context,reference.connectionId),parsed.data.queryDays),value=await this.nativeRead(target,reference);this.summary(value);
   const missing=[...value.missing],text=await this.register(target,reference,'text','text/plain;charset=utf-8',Buffer.from(value.text)),html=value.html===null?null:await this.register(target,reference,'html','text/html;charset=utf-8',Buffer.from(value.html)),attachments:MailReadData['attachments']=[];
   if(value.attachments.length>100)missing.push('attachments-count-budget');
   for(const attachment of value.attachments.slice(0,100)){
@@ -82,35 +89,35 @@ export class MailReadDataService implements ApplicationDataHost {
    await(await this.cache()).putRecord(target.sourceKey,'resource:'+context.projectId+':'+resource.id,{schema:1,reference,part:'attachment:'+attachment.id,resource},[]);attachments.push({...attachment,resource});
   }
   if(value.replyTo.length>100||value.replyTo.some(s=>s.length>2000)||value.references.length>100||value.references.some(s=>s.length>2000)||(value.inReplyTo?.length??0)>2000)throw new ApplicationError('TOO_LARGE','邮件回复头超过原契约，未截断来源');
-  await this.audit(context,target,'read',reference.contentRevision,{reference});this.contexts.require(context,'mail.read');
+  await this.audit(context,target,'read',reference.contentRevision,{reference,...(parsed.data.queryDays===undefined?{}:{queryDays:parsed.data.queryDays})});this.contexts.require(context,'mail.read');
   return{reference,subject:value.subject,from:value.from,to:value.to,date:value.date,messageId:value.messageId,replyTo:value.replyTo,inReplyTo:value.inReplyTo,references:value.references,text,html,attachments:attachments.map(({filename,contentType,size,contentHash,contentId,resource})=>({filename,contentType,size,contentHash,contentId,resource})),complete:value.complete&&!missing.length,missing};
  }
- async resourceBytes(context:ApplicationExecutionContext,input:ApplicationResourceRef,limit=25*1024*1024):Promise<Buffer>{
+ async resourceBytes(context:ApplicationExecutionContext,input:ApplicationResourceRef,limit=25*1024*1024,queryDays?:number):Promise<Buffer>{
   const parsed=applicationResourceRefSchema.safeParse(input);if(!parsed.success||parsed.data.size>limit||limit>40*1024*1024)throw new ApplicationError('TOO_LARGE','邮件资源无效或超过附件复制预算');const resource=parsed.data;
   if(this.contexts.store.sqlite.prepare('SELECT 1 FROM application_data_resources WHERE resource_id=? AND project_id=? AND app_id=?').get(resource.id,context.projectId,'mail'))return this.resources.bytes(context,resource,limit);
-  const target=await this.target(context),cache=await this.cache(),locator=await cache.withRecord(target.sourceKey,'resource:'+context.projectId+':'+resource.id,async value=>locatorSchema.parse(value));
+  const target=this.window(await this.target(context),queryDays),cache=await this.cache(),locator=await cache.withRecord(target.sourceKey,'resource:'+context.projectId+':'+resource.id,async value=>locatorSchema.parse(value));
   if(!locator)throw new ApplicationError('SOURCE_UNAVAILABLE','邮件缓存引用已回收，请重新读取原邮件以重建资源');if(canonicalJson(locator.resource)!==canonicalJson(resource))throw new ApplicationError('HASH_MISMATCH','资源引用不能替换原内容或类型');
   const value=await this.nativeRead(target,locator.reference);let bytes:Buffer;
   if(locator.part==='text')bytes=Buffer.from(value.text);else if(locator.part==='html'&&value.html!==null)bytes=Buffer.from(value.html);else if(locator.part.startsWith('attachment:')){
    const id=locator.part.slice(11),attachment=value.attachments.find(item=>item.id===id);if(!attachment||attachment.contentHash!==resource.revision)throw new ApplicationError('RESOURCE_STATE_CHANGED','原附件已不在当前邮件中');
    const worker=this.worker();try{bytes=Buffer.from(await worker.attachment(target.config,locator.reference.nativeId,id,attachment.contentHash,target.connection.identity,context.signal,target.at,locator.reference.contentRevision));}finally{await this.closeWorker(worker);}
   }else throw new ApplicationError('SOURCE_UNAVAILABLE','原邮件资源部分已缺失');
-  if(bytes.length!==locator.resource.size||digest(bytes)!==locator.resource.revision)throw new ApplicationError('HASH_MISMATCH','原邮件资源内容与引用不同');await cache.put(target.sourceKey,bytes,{signal:context.signal,used:true});await this.audit(context,target,'resource',locator.reference.contentRevision,{reference:locator.reference,part:locator.part});this.contexts.require(context,'mail.read');
+  if(bytes.length!==locator.resource.size||digest(bytes)!==locator.resource.revision)throw new ApplicationError('HASH_MISMATCH','原邮件资源内容与引用不同');await cache.put(target.sourceKey,bytes,{signal:context.signal,used:true});await this.audit(context,target,'resource',locator.reference.contentRevision,{reference:locator.reference,part:locator.part,...(queryDays===undefined?{}:{queryDays})});this.contexts.require(context,'mail.read');
   return bytes;
  }
  async resource(context:ApplicationExecutionContext,input:unknown):Promise<ApplicationResourceChunk>{
-  const parsed=applicationResourceReadSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件资源引用或范围无效');const args=parsed.data;
-  if(args.offset>args.resource.size)throw new ApplicationError('INVALID_INPUT','邮件资源位置超过原长度');const bytes=await this.resourceBytes(context,args.resource,40*1024*1024);
+  const parsed=resourceReadSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','邮件资源引用或范围无效');const args=parsed.data;
+  if(args.offset>args.resource.size)throw new ApplicationError('INVALID_INPUT','邮件资源位置超过原长度');const bytes=await this.resourceBytes(context,args.resource,40*1024*1024,args.queryDays);
   const chunk=bytes.subarray(args.offset,Math.min(bytes.length,args.offset+args.length));let encoding:'utf8'|'base64'='base64',data=chunk.toString('base64');if(args.resource.mediaType.startsWith('text/')||args.resource.mediaType==='application/json')try{data=new TextDecoder('utf-8',{fatal:true}).decode(chunk);encoding='utf8';}catch{}
   const next=args.offset+chunk.length,eof=next===bytes.length;return{resourceId:args.resource.id,revision:args.resource.revision,offset:args.offset,length:chunk.length,encoding,data,nextOffset:eof?null:next,eof};
  }
  private async receipt(context:ApplicationExecutionContext,id:string,method:string):Promise<void>{
   const row=this.contexts.store.sqlite.prepare('SELECT * FROM application_mail_operation_sources WHERE operation_id=?').get(id) as {source_key:string;source_revision:string;operation_kind:string;provenance_json:string}|undefined;
   if(!row){const original=this.contexts.store.sqlite.prepare('SELECT targets_json FROM application_data_operations WHERE operation_id=?').get(id) as {targets_json:string}|undefined;if(method==='mail.resource.read'&&original?.targets_json==='[]')return;throw new ApplicationError('SOURCE_UNAVAILABLE','原邮件操作缺少当前来源检查，未返回旧回执');}
-  const target=await this.target(context);if(target.sourceKey!==row.source_key)throw new ApplicationError('SCOPE_DENIED','原邮件回执不属于当前来源');const provenance=JSON.parse(row.provenance_json);
+  const target=await this.target(context);if(target.sourceKey!==row.source_key)throw new ApplicationError('SCOPE_DENIED','原邮件回执不属于当前来源');const provenance=JSON.parse(row.provenance_json);if(provenance.queryDays!==undefined&&!mailQueryDaysSchema.safeParse(provenance.queryDays).success)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原邮件单次日期范围记录损坏');const original=this.window(target,provenance.queryDays);
   if(row.operation_kind==='query'){
-   const worker=this.worker();try{const scan=await worker.beginScan(target.config,target.connection.identity,context.signal,target.at);if(scan.sourceRevision!==row.source_revision||canonicalJson(scan.range)!==canonicalJson(provenance.range))throw new ApplicationError('RESOURCE_STATE_CHANGED','原查询回执的来源或日期范围已变化');await worker.finishScan(target.config,scan.id,context.signal);}finally{await this.closeWorker(worker);}
-  }else await this.nativeRead(target,mailSourceRefSchema.parse(provenance.reference));
+   const worker=this.worker();try{const scan=await worker.beginScan(original.config,original.connection.identity,context.signal,original.at);if(scan.sourceRevision!==row.source_revision||canonicalJson(scan.range)!==canonicalJson(provenance.range))throw new ApplicationError('RESOURCE_STATE_CHANGED','原查询回执的来源或日期范围已变化');await worker.finishScan(original.config,scan.id,context.signal);}finally{await this.closeWorker(worker);}
+  }else await this.nativeRead(original,mailSourceRefSchema.parse(provenance.reference));
  }
  execute(context:ApplicationExecutionContext,method:'mail.query',input:unknown):Promise<MailQueryData>;
  execute(context:ApplicationExecutionContext,method:'mail.read',input:unknown):Promise<MailReadData>;

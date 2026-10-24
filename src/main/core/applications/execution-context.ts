@@ -1,3 +1,4 @@
+import {CredentialHandles,type CredentialHandle} from './credential-handles';
 import {assertRunApplication} from './application-run-scope';
 import { randomUUID } from 'node:crypto';
 import type { IpcMainInvokeEvent } from 'electron';
@@ -37,6 +38,7 @@ const managementActions=new Set(['application.configure','application.cache.stat
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
 export class ApplicationExecutionContexts<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
   private readonly records=new WeakMap<object,ContextRecord<C,A>>();
+  private readonly credentials=new CredentialHandles<ReturnType<ApplicationConnectionService<C,A>['authentication']>>();
   private readonly sharedIndexes=new WeakSet<object>();
   private readonly active=new Set<ContextRecord<C,A>>();
   private readonly actors=new WeakMap<MailActor,ApplicationExecutionContext<A>>();
@@ -103,13 +105,41 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const selected=this.selections.connectionSlot(context.projectId,context.appId,target.slot),current=this.connections.get(target.id);
     if(selected.connectionId!==target.id||selected.identityRevision!==target.identityRevision||selected.revision!==target.bindingRevision||current.identityRevision!==target.identityRevision||current.configRevision!==target.configRevision||current.policyRevision!==target.policyRevision||!target.identityOnly&&(!current.enabled||current.authorization!=='connected'))throw new ApplicationError('REVISION_CONFLICT','本次来源身份、配置或选用已变化，结果未交付');
   }
-  async connection(context:ApplicationExecutionContext<A>,slot:C['kind'],expectedId:string|null=null):Promise<{connection:HostedConnection<C,A>;secret:string|null}>{
+  /** Only resolve a view for a source already pinned by this operation. No credential access. */
+  configView(context:ApplicationExecutionContext<A>,connection:HostedConnection<C,A>){
+    const record=this.record(context),target=record.targets.get(connection.providerId);
+    if(context.appId!==connection.appId||!target||target.id!==connection.id)throw new ApplicationError('SCOPE_DENIED','配置视图不属于本次已固定来源');
+    this.checkTarget(context,target);
+    return this.connections.resolvePackageView(context.packageHash,connection);
+  }
+  /** Resolves compatibility now; authentication is deferred to the trusted executor. */
+  async resolveForPackage(context:ApplicationExecutionContext<A>,slot:C['kind'],expectedId:string|null=null){
     const provider=this.registry.provider(slot);this.require(context,context.semantics==='write'?provider.permissions.write:provider.permissions.read);
-    if(this.sharedIndexes.has(context))throw new ApplicationError('SCOPE_DENIED','共享索引仅使用由当前有效触发方固定的只读来源，不直接解析项目连接或秘密');
+    if(this.sharedIndexes.has(context))throw new ApplicationError('SCOPE_DENIED','共享索引不能直接解析项目连接或秘密');
     if(!context.projectId||context.scopeKind==='connection-management')throw new ApplicationError('SCOPE_DENIED','连接管理不能用来读取项目数据');
     const connection=await this.pinConnection(context,slot,expectedId,false);
-    const authenticated=this.connections.authentication(connection.id,connection);
-    return {connection,secret:authenticated.secret};
+    return this.resolvePinned(context,connection);
+  }
+  resolvePinned(context:ApplicationExecutionContext<A>,connection:HostedConnection<C,A>){
+    const provider=this.registry.provider(connection.providerId);
+    this.require(context,context.semantics==='write'?provider.permissions.write:provider.permissions.read);
+    const configView=this.configView(context,connection);
+    const {id,identityRevision,configRevision,policyRevision}=connection;
+    const credentialHandle=this.credentials.issue(context,()=>{
+      this.assertActive(context);
+      const current=this.connections.get(id);
+      // Target revalidation checks identity/config/policy/binding. Same-identity
+      // secret rotation is allowed and must use the latest secret revision.
+      if(current.identityRevision!==identityRevision||current.configRevision!==configRevision||current.policyRevision!==policyRevision)throw new ApplicationError('REVISION_CONFLICT','认证前连接已变化');
+      return this.connections.authentication(current.id,current);
+    });
+    return {connection,configView,credentialHandle};
+  }
+  authenticate(context:ApplicationExecutionContext<A>,handle:CredentialHandle){return this.credentials.consume(context,handle);}
+  async connection(context:ApplicationExecutionContext<A>,slot:C['kind'],expectedId:string|null=null){
+    const resolved=await this.resolveForPackage(context,slot,expectedId);
+    const authenticated=this.authenticate(context,resolved.credentialHandle);
+    return {connection:resolved.connection,configView:resolved.configView,secret:authenticated.secret};
   }
   private async pinConnection(context:ApplicationExecutionContext<A>,slot:C['kind'],expectedId:string|null,identityOnly:boolean):Promise<HostedConnection<C,A>>{
     if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','连接使用需要有效项目');

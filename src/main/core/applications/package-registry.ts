@@ -8,6 +8,8 @@ import { withResourceLock } from './resource-lock';
 import type { PublishResource, ResourceStore } from './resource-store';
 import { RuntimeRegistry } from './runtime-registry';
 
+/** Trusted startup coordinator only; never exposed as RPC input. */
+export interface ActivationMaintenance { operationId?:string;assert():void;assertCompatibility?():void;recordCommit(result:readonly {packageHash:string;generation:number}[]):void }
 export interface ApplicationDataMigration { appId: string; id: string; checksum: string; run: (sqlite: Database.Database) => void }
 /** Application selection and installation share one resource coordinator and SQLite transaction. */
 export class PackageRegistry {
@@ -78,21 +80,43 @@ export class PackageRegistry {
     return this.get(bundle.packageHash);
   }
   async activate(hash: string, expectedGeneration: number): Promise<{ packageHash: string; generation: number }> {
-    const selected = this.get(hash); assertHostCompatible(selected.manifest);
-    return this.store.use(selected.resourceId, 'ui', randomUUID(), async directory => {
-      verifyPackageTree(directory, selected, this.store.storeId);
-      this.runtimes.verify(selected.manifest.runtime.hash, selected.manifest.runtime);
-      return withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+    return (await this.activateSet([{hash,expectedGeneration}]))[0];
+  }
+  /** Hold all package leases, verify every tree, then commit the complete set.
+   * Migration failure rolls back every default, generation and install receipt. */
+  async activateSet(requests: readonly {hash:string;expectedGeneration:number}[],maintenance?:ActivationMaintenance): Promise<{packageHash:string;generation:number}[]> {
+    const state=this.store.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
+    if(maintenance)maintenance.assert();
+    else if(state&&(state.store_id!==this.store.storeId||state.maintenance_state!=='ready'))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','资源库维护尚未完成，不能激活默认版本');
+    const selected=requests.map(request=>({...request,package:this.get(request.hash)}));
+    if(new Set(selected.map(item=>item.package.appId)).size!==selected.length)throw new ApplicationError('INVALID_INPUT','同一激活集合不能重复包含应用');
+    for(const item of selected)assertHostCompatible(item.package.manifest);
+    const hold=async(index:number):Promise<{packageHash:string;generation:number}[]>=>{
+      if(index===selected.length)return withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{maintenance?.assertCompatibility?.();const result=selected.map(item=>this.commitActivation(item.package,item.expectedGeneration,maintenance));maintenance?.recordCommit(result);return result;}).immediate());
+      const item=selected[index];
+      return this.store.use(item.package.resourceId,maintenance?.operationId?'application-activation':'ui',maintenance?.operationId??randomUUID(),async directory=>{
+        verifyPackageTree(directory,item.package,this.store.storeId);
+        this.runtimes.verify(item.package.manifest.runtime.hash,item.package.manifest.runtime);
+        return hold(index+1);
+      });
+    };
+    return hold(0);
+  }
+  private commitActivation(selected:InstalledApplicationPackage,expectedGeneration:number,maintenance?:ActivationMaintenance):{packageHash:string;generation:number}{
+    const state=this.store.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
+    if(maintenance)maintenance.assert();
+    else if(state&&(state.store_id!==this.store.storeId||state.maintenance_state!=='ready'))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','资源库维护状态已变化');
+    const hash=selected.packageHash;
         if (this.get(hash).state !== 'ready') throw new ApplicationError('RESOURCE_STATE_CHANGED', '目标应用版本尚未就绪');
         const old = this.active(selected.appId), generation = old?.generation ?? 0;
         if (generation !== expectedGeneration) throw new ApplicationError('RESOURCE_STATE_CHANGED', '应用默认版本已变化，请重新查看升级计划');
-        if (old?.packageHash === hash) return old;
         for (const migration of selected.manifest.migrations) {
-          const applied = this.store.sqlite.prepare('SELECT checksum FROM capability_schema_migrations WHERE app_id=? AND migration_id=?').get(selected.appId, migration.id) as { checksum: string } | undefined;
+          const applied = this.store.sqlite.prepare('SELECT checksum,from_version,to_version FROM capability_schema_migrations WHERE app_id=? AND migration_id=?').get(selected.appId, migration.id) as { checksum: string;from_version:number;to_version:number } | undefined;
           if (applied) {
-            if (applied.checksum !== migration.checksum) throw new ApplicationError('VERSION_CONFLICT', '已执行的应用迁移checksum发生变化');
+            if (applied.checksum !== migration.checksum||applied.from_version!==migration.from||applied.to_version!==migration.to) throw new ApplicationError('VERSION_CONFLICT', '已执行的应用迁移checksum发生变化');
             continue;
           }
+          if(old?.packageHash===hash)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','当前默认应用缺失迁移记录，不能重复执行');
           const implementation = this.migrations.find(m => m.appId === selected.appId && m.id === migration.id && m.checksum === migration.checksum);
           if (!implementation) throw new ApplicationError('HOST_INCOMPATIBLE', '当前程序缺少此版本的数据迁移实现');
           // Only trusted host handlers receive SQLite; adapter/Skill/tool inputs never receive SQL access.
@@ -100,11 +124,10 @@ export class PackageRegistry {
           if (result instanceof Promise) throw new ApplicationError('HOST_INCOMPATIBLE', '应用数据迁移必须在短写事务内完成');
           this.store.sqlite.prepare(`INSERT INTO capability_schema_migrations(app_id,migration_id,checksum,from_version,to_version,applied_at,host_build) VALUES(?,?,?,?,?,?,?)`).run(selected.appId, migration.id, migration.checksum, migration.from, migration.to, new Date().toISOString(), this.hostBuild);
         }
+        if(old?.packageHash===hash)return old;
         const next = generation + 1;
         this.store.sqlite.prepare(`INSERT INTO capability_active_packages(app_id,package_hash,activation_generation,activated_at) VALUES(?,?,?,?) ON CONFLICT(app_id) DO UPDATE SET package_hash=excluded.package_hash,activation_generation=excluded.activation_generation,activated_at=excluded.activated_at`).run(selected.appId, hash, next, new Date().toISOString());
         this.store.sqlite.prepare("UPDATE capability_install_journal SET state='activated',to_generation=?,updated_at=? WHERE install_id=?").run(next, new Date().toISOString(), this.store.get(selected.resourceId).operationId);
         return { packageHash: hash, generation: next };
-      }).immediate());
-    });
   }
 }

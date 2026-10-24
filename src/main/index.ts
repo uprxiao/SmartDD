@@ -31,6 +31,8 @@ import { SettingsStore } from './core/settings/settings-service';
 import { TaskService } from './core/tasks/task-service';
 import { openDbClient, type DbClient } from './db/client';
 import { runBundledMigrations } from './db/migrations';
+import { openManagedDatabase } from './db/managed-client';
+import { recoverBuiltinActivation,activateBuiltinDistribution,builtinActivationRequired } from './core/applications/activation-startup';
 import { runProbes } from './probes';
 import { PtyManager } from './pty-manager';
 import { PtyAccess, registerPtyInput } from './pty-access';
@@ -102,7 +104,7 @@ async function main(): Promise<void> {
   const dbFile = join(app.getPath('userData'), 'smartdd.db');
   let client: DbClient;
   try {
-    client = openDatabase(dbFile);
+    client = process.platform === 'darwin' ? await openManagedDatabase(dbFile,{processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity')),activationRequired:store=>{try{return builtinActivationRequired(store,app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'));}catch{console.warn('[applications] Distribution upgrade preflight unavailable');return false;}},activate:(store,lease)=>activateBuiltinDistribution(store,lease,app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles')),recoverActivation:(store,lease,id)=>recoverBuiltinActivation(store,lease,id,app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'))}) : openDatabase(dbFile);
   } catch (e) {
     const message = rpcErrorMessage(e);
     if (isProbeMode) process.stderr.write(`${message}\n`);
@@ -178,7 +180,7 @@ async function main(): Promise<void> {
   let managedTasks:ManagedTaskCapabilities|undefined;
   try {
     if(agentSupport){
-      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
+      applications=new ApplicationService(agentSupport.store,{distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
       await applications.recover();
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),stopPty:id=>ptys.kill(id)});

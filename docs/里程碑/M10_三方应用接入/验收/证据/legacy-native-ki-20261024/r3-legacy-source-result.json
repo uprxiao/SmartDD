@@ -1,0 +1,40 @@
+{
+  "phase": "retained-and-cleaned",
+  "pid": 9769,
+  "identity": {
+    "taskId": "bacb07a9-33f4-4678-81e1-e23968e0b610",
+    "projectId": "22f9cba7-4838-4625-bb01-a4fe90572adf",
+    "runner": "codex",
+    "stateRoot": "/private/tmp/willyou-m10-legacy-history-ZoTrPO/codex",
+    "cwd": "/private/tmp/willyou-m10-legacy-history-ZoTrPO/project",
+    "sessionId": "01a16d2f-c445-7b92-b244-a1737289a39d",
+    "home": "/private/tmp/willyou-m10-legacy-history-ZoTrPO/home"
+  },
+  "retained": {
+    "state": "prepared",
+    "sourceSnapshotHash": "6974a72ddfae99dbf0bed59e685224b5ae82db2d7947b7263d60197baddbeb7c",
+    "code": null
+  },
+  "raw": "{\n  \"runId\": \"2168fdd5-8227-44c6-99ed-b67b8819fe81\",\n  \"projectId\": \"22f9cba7-4838-4625-bb01-a4fe90572adf\",\n  \"configVersion\": 2,\n  \"configHash\": \"f47e26caa758cfc8790c8852996d7b0fa2b1ec60aec60fbe77baa2779f1fd02b\",\n  \"manifestPath\": \"/private/tmp/willyou-m10-legacy-history-ZoTrPO/userdata/capabilities/runs/22f9cba7-4838-4625-bb01-a4fe90572adf/bacb07a9-33f4-4678-81e1-e23968e0b610/2168fdd5-8227-44c6-99ed-b67b8819fe81/manifest.json\",\n  \"auditPath\": \"/private/tmp/willyou-m10-legacy-history-ZoTrPO/userdata/capabilities/resource-audit/22f9cba7-4838-4625-bb01-a4fe90572adf/bacb07a9-33f4-4678-81e1-e23968e0b610.jsonl\",\n  \"skills\": [\n    {\n      \"skillId\": \"project-db-diagnostics\",\n      \"name\": \"smartdd-project-db-diagnostics\",\n      \"versionId\": \"project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91\",\n      \"version\": \"1.0.0\",\n      \"hash\": \"e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91\",\n      \"path\": \"/private/tmp/willyou-m10-legacy-history-ZoTrPO/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac/SKILL.md\",\n      \"enabled\": true,\n      \"loaded\": \"unverified\"\n    },\n    {\n      \"skillId\": \"remote-password-ssh\",\n      \"name\": \"smartdd-remote-password-ssh\",\n      \"versionId\": \"remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294\",\n      \"version\": \"1.0.0\",\n      \"hash\": \"77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294\",\n      \"path\": \"/private/tmp/willyou-m10-legacy-history-ZoTrPO/home/.agents/skills/smartdd-remote-password-ssh-77df74e9de1a0cc7/SKILL.md\",\n      \"enabled\": true,\n      \"loaded\": \"unverified\"\n    }\n  ],\n  \"mcp\": [],\n  \"selfCheck\": {\n    \"status\": \"pending\",\n    \"issues\": [],\n    \"at\": null\n  }\n}",
+  "oldSkills": [
+    {
+      "id": "project-db-diagnostics",
+      "name": "smartdd-project-db-diagnostics",
+      "path": "/private/tmp/willyou-m10-legacy-history-ZoTrPO/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac/SKILL.md",
+      "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+      "bodySha256": "10683d1ebe3489568bdf83874168f3876eda758eb1e16a97229b7cf10a63d307",
+      "body": "---\nname: smartdd-project-db-diagnostics\ndescription: 根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。\nmetadata:\n  version: 1.0.0\n---\n\n# 项目数据库诊断\n\n复用现有 project-db-diagnostics 查询器。`scripts/db_query.py` 相对于本 SKILL.md 所在目录；用该脚本的绝对路径调用，不以代码工作目录猜测脚本位置。\n\n1. 当前会话的 `PROJECT_DB_CONFIG` 指向 WillYou 生成的配置。先运行 `python3 <skill目录>/scripts/db_query.py --list`，确认项目、环境、库名和目标。\n2. 用 `--db <准确 key>` 或 `--target <明确别名/环境/主机片段>` 选择目标。多个匹配必须澄清，不以列表顺序猜测。生产环境必须有明确授权；未指定环境时先核对目标。\n3. 执行 `python3 <skill目录>/scripts/db_query.py --db <key> --show-selected --sql 'SELECT …' --format json`。从小范围只读查询开始，限制行数，必要时使用全限定表名。Desktop 的 schema 会设置到 PostgreSQL search_path。\n4. 报告选中的项目、资源、环境和查询结论。连接失败时报告类别，不输出密码、令牌、配置全文或环境变量值。\n\n密码只通过配置中的 `passwordEnv` 引用会话环境。不得寻找其他项目的凭据，不得创建本地 `.env` 或把配置写入代码目录。缺少配置/密码时回到 Desktop 修正并重新启动任务，不猜测连接。\n\n默认只允许查询。`readonly` 资源还会开启数据库只读事务，不能用 `--allow-write` 绕过。写操作须用户明确授权且目标为 readwrite；复杂写入沿用用户已安装的 operate-databases 的计划/审批流程。\n\n依赖：Python 3；MySQL 需要 pymysql，PostgreSQL 协议需要 psycopg2。Desktop 启动自检会提示缺失项。不得因兼容协议相同而宣称所有厂商的认证扩展都已验证。\n"
+    },
+    {
+      "id": "remote-password-ssh",
+      "name": "smartdd-remote-password-ssh",
+      "path": "/private/tmp/willyou-m10-legacy-history-ZoTrPO/home/.agents/skills/smartdd-remote-password-ssh-77df74e9de1a0cc7/SKILL.md",
+      "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+      "bodySha256": "24cfe724d556f12649c13ca11b2fb76dd3e14fe30fdd41b5d43f41d0baa835e7",
+      "body": "---\nname: smartdd-remote-password-ssh\ndescription: 使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。\nmetadata:\n  version: 1.0.0\n---\n\n# 项目服务器排查\n\n复用现有 remote-password-ssh 的目标匹配、sudo 和危险命令检查。`scripts/remote_ssh.py` 相对于本 SKILL.md 所在目录；用其绝对路径调用。\n\n1. `REMOTE_SERVERS_CONFIG` 指向当前项目配置。先运行 `python3 <skill目录>/scripts/remote_ssh.py --list` 核对目标，再以 `--target <准确别名/IP>` 选择。多个匹配必须请用户明确，不默认选第一台。\n2. 用 `--find` 只查看匹配结果。只读排查示例：`python3 <skill目录>/scripts/remote_ssh.py --target <别名> --no-root --command 'hostname; id'`。\n3. `--module app --show-log-path` 查看 Desktop 中登记的日志路径；需要同时指定 `--target` 以免多台服务器歧义。`--module app --tail 100` 读取配置的日志文件。\n4. `defaultRoot` 沿用项目配置；`--no-root` 取消本次提权，`--as-root` 请求 sudo。没有 sudo 凭据的配置不能自动提权。\n5. 原有危险命令拦截保留。仅在用户明确确认具体目标、命令及风险后，才能使用 `--allow-dangerous`。不得自动批准、绕开检查或扩大执行范围。\n\n密码、私钥口令、sudo 密码读取 `passwordEnv` / `passphraseEnv` / `sudoPasswordEnv`，旧配置的明文字段仍兼容。WillYou 不生成明文密码文件。不可把凭据写入 argv、日志、代码目录或回答，不寻找其他项目的资源配置。缺少注入时回 Desktop 修正并重新启动任务。\n\n依赖 Python 3 和系统 ssh。首次主机密钥采用 ssh 的 accept-new；已登记主机密钥发生变化时交由 ssh 拒绝。只读排查优先，生产操作必须明确授权。\n"
+    }
+  ],
+  "removedPath": "/private/tmp/willyou-m10-legacy-history-ZoTrPO/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac/SKILL.md",
+  "cipherCalls": 0,
+  "manifestAbsent": true
+}

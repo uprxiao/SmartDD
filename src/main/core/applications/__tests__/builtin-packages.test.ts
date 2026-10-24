@@ -1,4 +1,5 @@
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
+import { promisify } from 'node:util';
 import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
@@ -59,6 +60,18 @@ function changedDistribution(appId:string,version:string,change?:(files:Record<s
   index.build.resourceSetHash=digest(canonicalJson({adapters:index.adapters,runtimes:index.runtimes,apps:index.apps}));const {indexHash:_,...content}=index;index.indexHash=digest(canonicalJson(content));writeFileSync(join(target,'index.json'),canonicalJson(index)+'\n');
   return new CapabilityBundleSource(target);
 }
+function previousMailDistribution():CapabilityBundleSource{
+  const definition=JSON.parse(execFileSync(process.execPath,['--input-type=module','-e',"import {mailV103Definition} from './resources/applications/definitions.mjs';process.stdout.write(JSON.stringify(mailV103Definition));"],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:10000}));
+  // This digest was captured before adding the optional single-operation window.
+  expect(digest(canonicalJson(definition))).toBe('f26a74a4474adaf957e9945cbe5073ddc3b30e2e1602daeb7b6e9f562d56b8af');
+  return changedDistribution('mail','1.0.3',files=>{
+    for(const tool of definition.tools){
+      files[`schemas/tools/${tool.name}.input.json`]=Buffer.from(canonicalJson({...tool.input,description:tool.description})+'\n');
+      files[`schemas/tools/${tool.name}.output.json`]=Buffer.from(canonicalJson(tool.output)+'\n');
+    }
+    for(const path of Object.keys(files))if(path.startsWith('skills/'))files[path]=readFileSync(join('resources/applications/mail/1.0.3',path));
+  });
+}
 async function realRun(appId='zentao',distribution=source){
   const selected=distribution.application(distribution.index.apps.find(a=>a.appId===appId)!),reader=new FixtureProcessReader(),f=await runFixture(reader,{application:true,runtime:readFileSync(runtimeEntry),applicationBundle:{manifest:selected.manifest,files:{...selected.files}}});
   cleanups.push(()=>f.cleanup());const owned=await f.create();cleanups.push(()=>owned.cli.exited());await owned.prepare();await owned.cli.arm();reader.identities.set(202601,'darwin-proc-v1:2026:1');await owned.cli.attach(202601);
@@ -70,6 +83,19 @@ function dataHost(execute:HostToolOperation['execute'],authorize:HostToolOperati
 }
 
 describe('complete trusted built-in mail and ZenTao packages',()=>{
+ it('keeps the frozen mail 1.0.3 window contract executable beside the new default',async()=>{
+   expect(entry('mail').version).toBe('1.0.4');expect(source.index.apps).toHaveLength(2);
+   const previous=previousMailDistribution(),{f,owned,selected}=await realRun('mail',previous);expect(selected.manifest.version).toBe('1.0.3');
+   const result={items:[],nextCursor:null,complete:true,matched:0,range:{days:30,timeZone:'UTC',startDate:'2026-09-21',endDate:'2026-10-20',start:'2026-09-21T00:00:00Z',endExclusive:'2026-10-21T00:00:00Z'},checkedAt:'2026-10-20T12:00:00Z',problems:[]};
+   let count=0;const tools=new ApplicationToolService(f.store,f.runs,new ApplicationAdapterRegistry(f.store,dataHost(async()=>{count++;return result;})));
+   const call=(args:Record<string,unknown>)=>tools.call(owned.runId,randomUUID(),{operation:'smartdd_mail_query_v1',contractMajor:1,connectionId:null,arguments:args});
+   expect(await call({})).toMatchObject({status:'ok',value:result});
+   expect(await call({queryDays:100})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});expect(count).toBe(1);
+   await new BuiltinPackageRegistry(f.store).install(source,entry('mail'));
+   expect(await call({})).toMatchObject({status:'ok',value:result});expect(f.runs.assertActive(owned.runId).snapshot.packages.find(pack=>pack.appId==='mail')?.version).toBe('1.0.3');
+   const current=bundle('mail'),tool=current.manifest.tools.find(tool=>tool.name==='smartdd_mail_query_v1')!,validator=new AjvJsonSchemaValidator().getValidator(JSON.parse(current.files[tool.inputSchemaPath].toString('utf8')) as JsonSchemaType);
+   expect(validator({queryDays:100}).valid).toBe(true);for(const queryDays of [0,101,1.5,'100'])expect(validator({queryDays}).valid).toBe(false);
+ },15000);
  it('retains approved package identity while unready without turning metadata into executable trust',async()=>{
   const installed=await install('mail'),before=approvals();sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(installed.resourceId);expect(builtin.retainedMetadata(installed.packageHash)).toMatchObject({appId:'mail',packageHash:installed.packageHash});expect(()=>builtin.trustedMetadata(installed.packageHash)).toThrow('未就绪');expect(()=>builtin.assertTrusted(installed.packageHash)).toThrow('未就绪');expect(approvals()).toEqual(before);sqlite.prepare("UPDATE capability_builtin_package_sources SET source_index_json='{}' WHERE package_hash=?").run(installed.packageHash);expect(()=>builtin.retainedMetadata(installed.packageHash)).toThrow('分发依据损坏');
  });
@@ -81,11 +107,11 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    const again=join(build,'second-bundles');execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',again,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});expect(new CapabilityBundleSource(again).index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);
  });
 
- it('finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls',()=>{
+ it('finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls',async()=>{
    const bin=join(root,'private-metadata-bin'),observation=join(root,'metadata-lock-mode.txt');mkdirSync(bin);
    const script=['#!/bin/sh','printf "%s" "$GIT_OPTIONAL_LOCKS" > "$WY_METADATA_LOCK_OBSERVATION"','exec /bin/sleep 20',''].join('\n');
    writeFileSync(join(bin,'git'),script,{mode:0o700});const target=join(root,'bounded-metadata-bundles');
-   execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',target,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',PATH:bin+delimiter+process.env.PATH,WY_METADATA_LOCK_OBSERVATION:observation},timeout:10000,stdio:'pipe'});
+   await promisify(execFile)(process.execPath,['scripts/applications/build-bundles.mjs',target,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',PATH:bin+delimiter+process.env.PATH,WY_METADATA_LOCK_OBSERVATION:observation},timeout:10000});
    expect(readFileSync(observation,'utf8')).toBe('0');const prepared=new CapabilityBundleSource(target);expect(prepared.index.build.commit).toBeNull();expect(prepared.index.build.dirty).toBe(true);expect(prepared.index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);expect(verifyBundles(target,source.index.build.appVersion).apps).toHaveLength(2);
  });
 
@@ -129,10 +155,15 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    expect(sqlite.prepare("SELECT count(*) AS n FROM capability_resource_operations WHERE kind='restore-application-package'").get()).toEqual({n:0});
    expect((await install('zentao')).packageHash).toBe(old.packageHash);expect(builtin.assertTrusted(old.packageHash)).toEqual(old);
  });
- it('isolates a damaged package and keeps the other package available with a precise partial state',async()=>{
+ it('retains verified package files but defers the fresh default set until the damaged package is repaired',async()=>{
    const copy=join(root,'damaged-distribution');cpSync(output,copy,{recursive:true});writeFileSync(join(copy,entry('mail').path,'skills/work-assistant/SKILL.md'),'changed');
    const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),capabilities=new CapabilityService({db,projects:new ProjectService(db,secrets),secrets,userData:root});cleanups.push(()=>capabilities.dispose());
-   const service=new AgentSupportService(store,capabilities,copy);await service.initialize();expect(service.status()).toMatchObject({state:'partial',errorCode:'HASH_MISMATCH'});expect(service.status().applications.find(a=>a.appId==='zentao')).toMatchObject({filesReady:true,defaultForNewSessions:true,errorCode:null});expect(service.status().applications.find(a=>a.appId==='mail')).toMatchObject({filesReady:false,errorCode:'HASH_MISMATCH'});
+   const service=new AgentSupportService(store,capabilities,copy);await service.initialize();expect(service.status()).toMatchObject({state:'partial',errorCode:'HASH_MISMATCH'});expect(service.status().applications.find(a=>a.appId==='zentao')).toMatchObject({filesReady:true,defaultForNewSessions:false,errorCode:null});expect(service.status().applications.find(a=>a.appId==='mail')).toMatchObject({filesReady:false,errorCode:'HASH_MISMATCH'});
+   expect(sqlite.prepare('SELECT * FROM capability_active_packages').all()).toEqual([]);
+   // The installation/activation design distinguishes verified bytes from the atomically activated set.
+   writeFileSync(join(copy,entry('mail').path,'skills/work-assistant/SKILL.md'),bundle('mail').files['skills/work-assistant/SKILL.md']);
+   const repaired=new AgentSupportService(store,capabilities,copy);await repaired.initialize();expect(repaired.status().state).toBe('ready');expect(repaired.status().applications.every(a=>a.filesReady&&a.defaultForNewSessions)).toBe(true);
+   expect(sqlite.prepare('SELECT app_id FROM capability_active_packages ORDER BY app_id').all()).toEqual([{app_id:'mail'},{app_id:'zentao'}]);
  });
  it('does not follow an indexed package symlink or remove its external source',()=>{
    const copy=join(root,'linked-distribution');cpSync(output,copy,{recursive:true});const target=join(copy,entry('mail').path),outside=join(root,'external-package');renameSync(target,outside);symlinkSync(outside,target);const linked=new CapabilityBundleSource(copy);expect(()=>linked.application(linked.index.apps.find(a=>a.appId==='mail')!)).toThrow('文件树无效');expect(existsSync(join(outside,'manifest.json'))).toBe(true);
@@ -190,6 +221,21 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    const changed=changedDistribution('zentao','2.0.0',files=>{files['adapter/index.cjs']=Buffer.from(`const d=require('./operations.json');module.exports={api:1,dataApi:1,appId:d.appId,version:d.version,operations:d.operations,async execute(name,args,data){await data.v1.invoke(d.operations[name].method,args);return data.v1.invoke(d.operations[name].method,args);}};`);});
    const {f,owned}=await realRun('zentao',changed);let count=0;const adapters=new ApplicationAdapterRegistry(f.store,dataHost(async()=>{count++;return emptyWork();})),tools=new ApplicationToolService(f.store,f.runs,adapters);
    const result=await tools.call(owned.runId,randomUUID(),{operation:'smartdd_zentao_work_list_v1',contractMajor:1,connectionId:null,arguments:{kind:'bug'}});expect(result).toMatchObject({status:'error',error:{code:'SCOPE_DENIED',effectState:'read-only'}});expect(count).toBe(1);
+ });
+ it.each(['host.sql.execute','host.connections.config','host.secrets.read'])('rejects an adapter request for undeclared host method %s before dispatch',async method=>{
+   // A private indexed fixture exercises the dispatcher, not third-party sandboxing.
+   const changed=changedDistribution('zentao','2.0.0',files=>{files['adapter/index.cjs']=Buffer.from(`const d=require('./operations.json');module.exports={api:1,dataApi:1,appId:d.appId,version:d.version,operations:d.operations,execute(name,args,data){return data.v1.invoke(${JSON.stringify(method)},{sql:'SELECT * FROM app_secrets',connectionId:'not-authorized'});}};`);});
+   const {f,owned}=await realRun('zentao',changed);let calls=0;
+   const snapshot=structuredClone(f.runs.assertActive(owned.runId).snapshot),before=f.sqlite.prepare('SELECT * FROM app_secrets').all();
+   const adapters=new ApplicationAdapterRegistry(f.store,dataHost(async()=>{calls++;return emptyWork();})),tools=new ApplicationToolService(f.store,f.runs,adapters);
+   expect(await tools.call(owned.runId,randomUUID(),{operation:'smartdd_zentao_work_list_v1',contractMajor:1,connectionId:null,arguments:{kind:'bug'}})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED',effectState:'read-only'}});
+   expect(calls).toBe(0);expect(f.sqlite.prepare('SELECT * FROM app_secrets').all()).toEqual(before);expect(f.runs.assertActive(owned.runId).snapshot).toEqual(snapshot);
+ });
+ it('rejects a fixed adapter importing a direct SQLite driver before resolving any host method',async()=>{
+   const changed=changedDistribution('zentao','2.0.0',files=>{files['adapter/index.cjs']=Buffer.from("const sqlite=require('better-sqlite3');module.exports={};");});
+   const installed=await builtin.install(changed,changed.index.apps.find(a=>a.appId==='zentao')!);let calls=0;
+   const adapters=new ApplicationAdapterRegistry(store,{resolve:()=>{calls++;throw new Error('must not resolve');}});
+   expect(()=>adapters.resolve(installed.packageHash,'smartdd_zentao_work_list_v1',1)).toThrow(expect.objectContaining({code:'HOST_INCOMPATIBLE'}));expect(calls).toBe(0);
  });
  it('does not let a verified adapter receive a different package or contract in its host operation context',async()=>{
    const {f,owned,selected}=await realRun();let count=0;const adapters=new ApplicationAdapterRegistry(f.store,dataHost(async()=>{count++;return emptyWork();})),handler=adapters.resolve(selected.packageHash,'smartdd_zentao_work_list_v1',1);

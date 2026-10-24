@@ -11,6 +11,19 @@ export interface MigrationBackupInput {
   signal?:AbortSignal;
   timeoutMs?:number;
 }
+export interface ApplicationMigrationState {
+  migrations: {app_id:string;migration_id:string;checksum:string;from_version:number;to_version:number;applied_at:string;host_build:string}[] | null;
+  defaults: {app_id:string;package_hash:string;activation_generation:number;activated_at:string}[] | null;
+}
+/** Read from the opened backup, never infer a backup's state from the live DB. */
+export function readApplicationMigrationState(connection:Database.Database):ApplicationMigrationState {
+  const has=(table:string)=>!!connection.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table);
+  return {
+    migrations:has('capability_schema_migrations')?connection.prepare('SELECT app_id,migration_id,checksum,from_version,to_version,applied_at,host_build FROM capability_schema_migrations ORDER BY app_id,migration_id').all() as NonNullable<ApplicationMigrationState['migrations']>:null,
+    defaults:has('capability_active_packages')?connection.prepare('SELECT app_id,package_hash,activation_generation,activated_at FROM capability_active_packages ORDER BY app_id').all() as NonNullable<ApplicationMigrationState['defaults']>:null,
+  };
+}
+
 export interface MigrationBackupReceipt {
   schema:1;
   operationId:string;
@@ -20,6 +33,7 @@ export interface MigrationBackupReceipt {
   sha256:string;
   bytes:number;
   createdAt:string;
+  applications:ApplicationMigrationState;
   sqliteSchemaVersion:number;
   sqliteUserVersion:number;
   migrations:{id:number;hash:string;created_at:number|null}[];
@@ -45,17 +59,18 @@ export async function createMigrationBackup(connection:Database.Database,input:M
     await connection.backup(file,{progress:()=>{check();return 128;}});
     await chmod(file,0o600);check();
     const backup=new Database(file,{readonly:true,fileMustExist:true});
-    let sqliteSchemaVersion:number,sqliteUserVersion:number,migrations:MigrationBackupReceipt['migrations'];
+    let sqliteSchemaVersion:number,sqliteUserVersion:number,migrations:MigrationBackupReceipt['migrations'],applications:ApplicationMigrationState;
     try{
       const integrity=backup.pragma('integrity_check') as {integrity_check:string}[];
       if(integrity.length!==1||integrity[0].integrity_check!=='ok')throw new Error('备份完整性校验失败');
       sqliteSchemaVersion=Number(backup.pragma('schema_version',{simple:true}));sqliteUserVersion=Number(backup.pragma('user_version',{simple:true}));
+      applications=readApplicationMigrationState(backup);
       const hasJournal=backup.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='__drizzle_migrations'").get();
       migrations=hasJournal?backup.prepare('SELECT id,hash,created_at FROM __drizzle_migrations ORDER BY id').all() as MigrationBackupReceipt['migrations']:[];
     }finally{backup.close();}
     check();await sync(file);const hash=createHash('sha256');let bytes=0;
     for await(const chunk of createReadStream(file)){check();hash.update(chunk);bytes+=chunk.length;}
-    const receipt:MigrationBackupReceipt={...identity,schema:1,state:'verified',file:'smartdd.db',sha256:hash.digest('hex'),bytes,sqliteSchemaVersion,sqliteUserVersion,migrations};
+    const receipt:MigrationBackupReceipt={...identity,schema:1,state:'verified',file:'smartdd.db',sha256:hash.digest('hex'),bytes,sqliteSchemaVersion,sqliteUserVersion,migrations,applications};
     check();await record(receipt);return receipt;
   }catch(error){
     // Retain the private partial file for operation-bound recovery/diagnosis.

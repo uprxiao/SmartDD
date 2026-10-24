@@ -1,3 +1,4 @@
+import type {DatabaseAccessLease} from '../../db/database-access-gate';
 import {assertClaudePublication} from './claude-delivery-state';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
@@ -119,6 +120,26 @@ export class ResourceStore {
     }).immediate());
     try { return await action(directory); }
     finally { await withResourceLock(this.root, () => this.endLease(leaseId)); }
+  }
+  /** Only exact activation-owned leases with a stopped kernel identity can end. */
+  async recoverActivationLeases(operationId:string,maintenance:DatabaseAccessLease):Promise<void>{
+    const assertMaintenance=()=>{maintenance.assertHeld();if(maintenance.mode!=='maintenance'||maintenance.root!==realpathSync(dirname(this.root))||maintenance.root!==realpathSync(dirname(this.sqlite.name)))throw new ApplicationError('RESOURCE_BUSY','恢复激活占用需要本库独占维护权');};
+    assertMaintenance();
+    await withResourceLock(this.root,()=>this.sqlite.transaction(()=>{
+      assertMaintenance();
+      const rows=this.sqlite.prepare("SELECT lease_id,resource_id,pid,process_started_at FROM capability_resource_leases WHERE owner_kind='application-activation' AND owner_id=? AND state<>'released'").all(operationId) as {lease_id:string;resource_id:string;pid:number;process_started_at:string}[];
+      if(!rows.length)return;
+      const operation=this.sqlite.prepare("SELECT state,plan_json FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=? AND kind='application-activation'").get(operationId,this.storeId) as {state:string;plan_json:string}|undefined;
+      if(!operation||!['verified','committed'].includes(operation.state))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','激活占用缺少原操作依据');
+      const plan=JSON.parse(operation.plan_json);
+      if(plan.operationId!==operationId||plan.storeId!==this.storeId||!Array.isArray(plan.requests)||!plan.requests.every((r:{hash?:unknown})=>typeof r.hash==='string'&&/^[a-f0-9]{64}$/.test(r.hash)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','激活占用计划不能核验');
+      const ids=new Set(plan.requests.map((r:{hash:string})=>'app:'+r.hash));
+      for(const row of rows){
+        if(!ids.has(row.resource_id)||this.get(row.resource_id).kind!=='application-package')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','激活占用资源与计划不符');
+        if(!Number.isSafeInteger(row.pid)||row.pid<1||typeof row.process_started_at!=='string'||!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(row.process_started_at)||!this.options.processes||this.options.processes.state({pid:row.pid,startedAt:row.process_started_at})!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原激活进程仍存活或身份未知，保留占用');
+      }
+      for(const row of rows)this.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=? AND owner_kind='application-activation' AND owner_id=?").run(new Date().toISOString(),row.lease_id,operationId);
+    }).immediate());
   }
   /** Absence is repairable; an occupied or linked path is never an empty target. */
   private missingTarget(spec: PublishResource): boolean {

@@ -32,6 +32,14 @@ describe('application manifest identity and complete-file contract', () => {
     a.manifest.files.push({ ...a.manifest.files[0] }); expect(() => parseManifest(a.manifest)).toThrow(/重复/);
     const b = fixtureBundle(); b.manifest.files.push({ ...b.manifest.files[0], path: 'skills/query/skill.md' }); expect(() => parseManifest(b.manifest)).toThrow(/大小写/);
   });
+  it('rejects a missing or empty connection-contract declaration before assigning executable package identity', () => {
+    const source = fixtureBundle(); const { connectionContracts: _omitted, ...missing } = source.manifest;
+    for (const manifest of [missing, { ...source.manifest, connectionContracts: [] }]) {
+      expect(() => parseManifest(manifest)).toThrow(expect.objectContaining({ code: 'INVALID_PACKAGE' }));
+      expect(() => manifestHash(manifest)).toThrow(expect.objectContaining({ code: 'INVALID_PACKAGE' }));
+    }
+    expect(validateBundle(source).manifest.connectionContracts).toEqual(source.manifest.connectionContracts);
+  });
   it('rejects file-directory conflicts and a missing declared executable entry', () => {
     const a = fixtureBundle(); a.manifest.files.push({ ...a.manifest.files[0], path: 'skills' }); expect(() => parseManifest(a.manifest)).toThrow(/目录路径冲突/);
     const b = fixtureBundle(); b.manifest.adapter.entry = 'adapter/missing.cjs'; expect(() => parseManifest(b.manifest)).toThrow(/完整文件清单/);

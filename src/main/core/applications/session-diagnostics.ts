@@ -19,7 +19,6 @@ import type {ApplicationSelectionService} from './selection-service';
 import {PackageRegistry} from './package-registry';
 import {RuntimeRegistry} from './runtime-registry';
 import {verifyPackageTree} from './package-files';
-import {packageConnectionView} from './package-config-views';
 import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import {readLaunchRestriction} from './launch-restriction';
@@ -150,7 +149,8 @@ export class ApplicationSessionDiagnostics {
  }
  async inspect(taskId:string,expectedRunId?:string):Promise<ApplicationSessionDiagnostic>{
   const before=await this.inspectBase(taskId),runId=before.currentRun?.id;
-  if(!runId||(expectedRunId!==undefined&&runId!==expectedRunId)||!this.deps.skillReads)return before;
+  // Native-only history has lifecycle authority but no fixed package/Skill selection.
+  if(before.selection!=='fixed'||!runId||(expectedRunId!==undefined&&runId!==expectedRunId)||!this.deps.skillReads)return before;
   const observed=new Map<string,SkillReadObservation[]>(),discovered=new Map<string,SkillReadObservation[]>();
   for(const app of before.applications){
    if(app.resourceState!=='verified'||!app.skills.length)continue;
@@ -162,7 +162,7 @@ export class ApplicationSessionDiagnostics {
   }
   // Native IO is outside the resource coordinator; reacquire it for a fresh view.
   const fresh=await this.inspectBase(taskId);
-  if(fresh.currentRun?.id!==runId||fresh.snapshotHash!==before.snapshotHash)return fresh;
+  if(fresh.selection!=='fixed'||fresh.currentRun?.id!==runId||fresh.snapshotHash!==before.snapshotHash)return fresh;
   for(const app of fresh.applications){
    const original=before.applications.find(a=>a.appId===app.appId);
    if(app.resourceState!=='verified'||original?.packageHash!==app.packageHash||JSON.stringify(original.skills)!==JSON.stringify(app.skills))continue;
@@ -223,7 +223,7 @@ export class ApplicationSessionDiagnostics {
     const original=fixed?.bindings.find(b=>b.bindingId.endsWith(':'+slot));let originalName:string|null=null;if(original)try{originalName=this.connections.get(original.connectionId).name;}catch{/* preserve original id even if metadata is missing */}
     let connectionId:string|null=null,selectionState:'same'|'changed'|'missing'|'unverified'='unverified';try{if(task.project_id){const selected=this.selections.connectionSlot(task.project_id,appId,slot);connectionId=selected.connectionId;selectionState=connectionId?(original?.connectionId===connectionId&&original.identityRevision===selected.identityRevision?'same':'changed'):'missing';}}catch{/* disabled or corrupt slot does not grant */}
     let label:string|null=null,health='unverified',testedAt:string|null=null,compatibility:'compatible'|'incompatible'|'unverified'='unverified',issueCode:string|null=null;
-    if(connectionId)try{const c=this.connections.get(connectionId);label=c.name;health=!c.enabled?'disabled':c.authorization!=='connected'?'disconnected':c.health;testedAt=c.testedAt;if(fixed){packageConnectionView(this.store,fixed.packageHash,c);compatibility='compatible';}}catch(e){issueCode=code(e);if(issueCode==='CONFIG_INCOMPATIBLE')compatibility='incompatible';}
+    if(connectionId)try{const c=this.connections.get(connectionId);label=c.name;health=!c.enabled?'disabled':c.authorization!=='connected'?'disconnected':c.health;testedAt=c.testedAt;if(fixed){this.connections.resolvePackageView(fixed.packageHash,c);compatibility='compatible';}}catch(e){issueCode=code(e);if(issueCode==='CONFIG_INCOMPATIBLE')compatibility='incompatible';}
     connections.push({slot,id:connectionId,name:label,originalId:original?.connectionId??null,originalName,health,testedAt,selection:selectionState,compatibility,issueCode});
    }
    const usage=currentRun&&fixed?db.prepare('SELECT COUNT(*) AS total,SUM(CASE WHEN state=\'succeeded\' THEN 1 ELSE 0 END) AS successes,MAX(started_at) AS latest FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=?').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {total:number;successes:number|null;latest:string|null}:null;

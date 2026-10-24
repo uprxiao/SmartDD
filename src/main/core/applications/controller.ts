@@ -1,6 +1,6 @@
 import type {ApplicationImpactQuery} from '@shared/application-impact';
 import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
-import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
+import type {ApplicationVersionCleanup,ApplicationCleanupCancel} from '@shared/application-maintenance';
 import type {ApplicationActivityQuery} from '@shared/application-activity';
 import type { IpcMainInvokeEvent } from 'electron';
 import { ZodError } from 'zod';
@@ -30,6 +30,7 @@ export function createApplicationController(service:ApplicationService|undefined
     session:(event,taskId:string)=>run(event,current=>current.diagnoseSession(event,taskId)),
     versions:(event,appId:ApplicationId)=>run(event,current=>current.listVersions(event,appId)),
     cleanupVersion:(event,input:ApplicationVersionCleanup)=>run(event,current=>current.cleanupVersion(event,input)),
+    cancelCleanup:(event,input:ApplicationCleanupCancel)=>run(event,current=>current.cancelCleanup(event,input)),
     activity:(event,input?:ApplicationActivityQuery)=>run(event,current=>current.listActivity(event,input)),
     activityDetail:(event,kind:'operation'|'send',id:string)=>run(event,current=>current.activityDetail(event,kind,id)),
     catalog:(event)=>run(event,current=>current.catalog(event)),

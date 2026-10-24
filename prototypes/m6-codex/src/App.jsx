@@ -1,3 +1,4 @@
+import {previewTerminalCurrent} from './application-reference-preview.mjs';
 import { createPathPreviewDelivery } from './file-path-delivery.mjs';
 import { FILE_DRAG_TYPE, resolveFileDrag, buildFilePathInsertion } from './file-drag-model.mjs';
 import { buildInsertion } from './file-reference-model.mjs';
@@ -13,7 +14,7 @@ import { ProjectTransfer } from './ProjectTransfer';
 import { FileWorkspace } from './FileWorkspace';
 import { IntegrationWorkspace } from './IntegrationWorkspace';
 import { useIntegrationPreview, ProjectApplications, SessionApplications } from './IntegrationPackageUI';
-import { APP_DEFINITIONS, integrationSnapshot, projectPackages, snapshotCurrent, sessionApplicationState } from './integration-model.mjs';
+import { APP_DEFINITIONS, integrationSnapshot, projectPackages, packageVersion, snapshotCurrent, sessionApplicationState } from './integration-model.mjs';
 import { ProfileEditor, ImportProfilesDialog } from './ProfileEditor';
 import { CapabilitiesPanel } from './CapabilitiesPanel';
 import { ConfirmDialog } from './PreviewUI';
@@ -99,6 +100,9 @@ export function TerminalPreview({ task, profile, project, dark, fontSize, fontFa
     write('\x1b[1m❯\x1b[0m ');
     }
     let input = session.input;
+    // Read-only P-layer observation; it cannot inject input or mutate a session.
+    const observePreview = event => { if (event.detail?.taskId === task.id) window.dispatchEvent(new CustomEvent('m10:terminal-preview-state', {detail:{requestId:event.detail.requestId,taskId:task.id,ptyId,input,output:session.output}})); };
+    window.addEventListener('m10:terminal-preview-observe',observePreview);
     voiceTarget.current = {
       available: () => !!container.current?.isConnected && running.current,
       focus: () => t.focus(),
@@ -161,10 +165,10 @@ export function TerminalPreview({ task, profile, project, dark, fontSize, fontFa
         else if (ch >= ' ') { input += ch; write(ch); }
       }
     });
-    return () => { window.removeEventListener('m9:terminal-insert', onInsert); window.removeEventListener('m9:terminal-config', onConfig); disposed = true; window.removeEventListener('m9:file-context-invalidated', onFileContext); pathSession.dispose(); if (delivery.current === pathSession) delivery.current = null; dropHandler.current = null; session.input = input; clearTimeout(timer); observer.disconnect(); onData.dispose(); t.dispose(); voiceTarget.current = null; terminal.current = null; fitRef.current = null; };
+    return () => { window.removeEventListener('m10:terminal-preview-observe',observePreview); window.removeEventListener('m9:terminal-insert', onInsert); window.removeEventListener('m9:terminal-config', onConfig); disposed = true; window.removeEventListener('m9:file-context-invalidated', onFileContext); pathSession.dispose(); if (delivery.current === pathSession) delivery.current = null; dropHandler.current = null; session.input = input; clearTimeout(timer); observer.disconnect(); onData.dispose(); t.dispose(); voiceTarget.current = null; terminal.current = null; fitRef.current = null; };
   }, [task.id, task.ptyId]);
   useEffect(() => {
-    if (integrationReference?.taskId !== task.id) return;
+    if (integrationReference?.taskId !== task.id || integrationReference.ptyId && integrationReference.ptyId !== (task.ptyId ?? task.id)) return;
     const ok = voiceTarget.current?.insertReference?.(integrationReference.text, integrationReference.requestId) || false;
     onIntegrationReferenceHandled?.(ok);
   }, [integrationReference?.requestId]);
@@ -176,6 +180,7 @@ export function TerminalPreview({ task, profile, project, dark, fontSize, fontFa
 }
 
 export function App() {
+  const [preparationPreview,setPreparationPreview]=useState(() => new URLSearchParams(location.search).get("m10Preparation") === "waiting");
   const [route, setRoute] = useState(location.hash.slice(1) || (new URLSearchParams(location.search).get('preview') === 'm10' ? 'apps' : new URLSearchParams(location.search).get('preview') === 'm9' ? 'task/build' : 'home'));
   const voice = useVoicePreview(route), terminalVoiceTarget = useRef(null);
   const integration = useIntegrationPreview();
@@ -228,7 +233,8 @@ export function App() {
     const target = eligible.find(t => t.id === lastIntegrationTask.current) || (eligible.length === 1 ? eligible[0] : null);
     if (!target) {
       if (eligible.length) return notify('请先打开目标终端，再从应用中使用示例。');
-      setProjectId(selectedProject); setPrompt(text); nav('home');
+      if (prompt.trim() && projectId !== selectedProject) return notify('当前新任务输入属于其他项目，请先保存或清空后重试。');
+      setProjectId(selectedProject); setPrompt(current => current ? current + (/\s$/.test(current) ? '' : ' ') + text : text); nav('home');
       return notify('已填入新任务输入，请选择配置后手动开始。');
     }
     setFileWorkspace(false); nav('task/' + target.id);
@@ -316,11 +322,11 @@ export function App() {
     {route === 'scheduled' && <aside className="sidebar scheduled-sidebar"><h2>定时任务</h2><button className="nav-row" disabled title="后续开放"><Plus size={16} />新建任务</button><p>即将执行</p><span className="scheduled-empty">暂未开放</span></aside>}
     {!collapsed && <div className="sidebar-resizer" role="separator" aria-label="调整侧栏宽度" aria-orientation="vertical" tabIndex={0} aria-valuenow={sidebarWidth} aria-valuemin={240} aria-valuemax={420} onPointerDown={resize} onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setSidebarWidth(w => Math.max(240, Math.min(420, w + (e.key === 'ArrowRight' ? 10 : -10)))); } }} />}
     <main ref={fileArea} className="workspace">
-      {isApps && <IntegrationWorkspace selectedProjectId={integrationProjectId} onSelectProject={setIntegrationProjectId} integration={integration} onUsePrompt={useApplicationPrompt} onNewProjectTask={newApplicationTask} route={route} nav={nav} projects={projects} tasks={tasks} onStopTasks={stopApplicationTasks} dark={dark} onTheme={() => setTheme(dark ? 'light' : 'dark')} onInsertReference={(text, selectedProject) => { const eligible = tasks.filter(t => t.project === selectedProject && t.status === 'running' && !t.archived); const target = eligible.find(t => t.id === lastIntegrationTask.current) || (eligible.length === 1 ? eligible[0] : null); if (!target) return notify(eligible.length ? '请先进入目标终端，再返回应用插入引用。' : '请先恢复当前项目的示例终端。'); setFileWorkspace(false); setIntegrationReference({ taskId: target.id, text, requestId: Date.now() }); nav('task/' + target.id); }} />}
+      {isApps && <IntegrationWorkspace currentTerminalTaskId={lastIntegrationTask.current} selectedProjectId={integrationProjectId} onSelectProject={setIntegrationProjectId} integration={integration} onUsePrompt={useApplicationPrompt} onNewProjectTask={newApplicationTask} route={route} nav={nav} projects={projects} tasks={tasks} onStopTasks={stopApplicationTasks} onSimulateConnectionReference={connection=>{const pid=Object.keys(integration.data.bindings).find(key=>integration.data.bindings[key].includes(connection.id))||integrationProjectId;setTasks(current=>[...current,{...(current.find(item=>item.project===pid)||current[0]),id:id(),title:'预检新增历史引用 · 合成示例',firstMessage:'仅用于连接预检引用变化，不运行Agent。',project:pid,status:'stopped',archived:true,time:'刚刚',integrationSnapshot:{projectId:pid,evidence:'prepared-demo',packages:[{id:connection.app,version:packageVersion(integration.data,connection.app),connections:[{id:connection.id,revision:connection.revision}],skills:[],tools:[]}]}}]);}} dark={dark} onTheme={() => setTheme(dark ? 'light' : 'dark')} onInsertReference={(text, selectedProject, target) => { if (!previewTerminalCurrent(target, tasks, selectedProject, lastIntegrationTask.current)) { notify('原目标任务或终端已变化，请重新查看对象后再插入。'); return false; } setFileWorkspace(false); setIntegrationReference({ taskId: target.taskId, ptyId: target.ptyId, text, requestId: id() }); nav('task/' + target.taskId); return true; }} />}
       {!task && <header className="topbar"><div className="breadcrumbs">{isSettings ? <><span>设置</span><ChevronRight size={12} /><span>{SETTINGS.find(s => s[0] === section)?.[2] || 'AI 配置'}</span></> : isProject ? <><Folder size={15} /><span>{activeProject.name}</span></> : <span className="quiet">工作台</span>}</div>
         <div className="topbar-actions"><button className="preview-badge" onClick={() => setModal({ type: 'preview' })}>界面预览</button><IconButton icon={dark ? Sun : Moon} label={dark ? '切换浅色主题' : '切换深色主题'} onClick={() => setTheme(dark ? 'light' : 'dark')} /></div>
       </header>}
-      {route === 'home' && <ReferenceHome dir={dir} onDir={setDirId} onLaunchSettings={() => setModal({ type: 'launch-settings' })} launchError={launchError}  project={project} projects={projects.filter(p => !p.archived)} profile={profile} profiles={profiles} prompt={prompt} setPrompt={setPrompt} inputRef={homeInput} onProject={setProjectId} onProfile={setProfileId} onSubmit={createTask} onSettings={() => nav('settings/ai')} onAddProject={() => setModal({ type: 'project' })} voiceBusy={voice.busy} onVoice={() => voice.trigger(textareaTarget(homeInput.current, setPrompt))} />}
+      {route === 'home' && <ReferenceHome preparing={preparationPreview} onCancelPreparation={() => { const url = new URL(location.href); url.searchParams.delete('m10Preparation'); history.replaceState(null, '', url); setPreparationPreview(false); notify('已取消准备，输入已保留'); }} dir={dir} onDir={setDirId} onLaunchSettings={() => setModal({ type: 'launch-settings' })} launchError={launchError}  project={project} projects={projects.filter(p => !p.archived)} profile={profile} profiles={profiles} prompt={prompt} setPrompt={setPrompt} inputRef={homeInput} onProject={setProjectId} onProfile={setProfileId} onSubmit={createTask} onSettings={() => nav('settings/ai')} onAddProject={() => setModal({ type: 'project' })} voiceBusy={voice.busy} onVoice={() => voice.trigger(textareaTarget(homeInput.current, setPrompt))} />}
       {route === 'scheduled' && <section className="scheduled-placeholder" aria-label="定时任务规划"><span className="scheduled-clock" aria-hidden="true">🕗</span><h1>安排任务</h1><p>定时执行项目任务，让重复的工作按计划完成。</p><span className="scheduled-planned">功能规划中</span><p className="scheduled-note">已列入后续需求，本轮保留入口。暂不创建或执行定时任务。</p><button className="text-button" onClick={() => nav('home')}>返回工作台<ArrowRight size={14} /></button></section>}
       {task && <section className="task-page">
         <TerminalPreview key={task.id + task.profile} task={task} profile={profiles.find(p => p.id === task.profile)} project={{ ...taskProject, path: task.cwd || taskProject.path }} dark={dark} fontSize={fontSize} fontFamily={fontFamily} voiceTarget={terminalVoiceTarget} integrationData={integration.data} integrationReference={integrationReference} onIntegrationReferenceHandled={ok => { setIntegrationReference(null); notify(ok ? '已插入终端输入，未发送。' : '终端不可用，引用未插入。'); }} />

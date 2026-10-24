@@ -93,3 +93,16 @@ export const definitions = [
     ],
   },
 ];
+
+// Keep the released input/output declarations intact for existing sessions.
+// The default distribution contains one version per application.
+export const mailV103Definition = definitions.find(definition => definition.appId === 'mail');
+const mailV104Definition = structuredClone(mailV103Definition);
+mailV104Definition.version = '1.0.4';
+const windowMethods = new Set(['mail.query', 'mail.read', 'mail.resource.read', 'mail.reply.create', 'mail.draft.create', 'mail.draft.update', 'mail.attachment.import']);
+for (const declaration of mailV104Definition.tools) {
+  if (!windowMethods.has(declaration.operation.method)) continue;
+  declaration.input.properties.queryDays = integer(1, 100);
+  declaration.description += ' 可选 queryDays 为用户明确要求的本次 1–100 天范围；省略沿用连接默认，读取原来源的后续调用须传同一范围，不修改默认值或自动扩大。';
+}
+definitions[definitions.indexOf(mailV103Definition)] = mailV104Definition;

@@ -102,7 +102,9 @@ describe('original ZenTao tools to actual provider and host-scoped business reso
   const found=await app.zentaoWork(sender,'p1',{kind:'bug'}) as ZentaoWorkData;const object=await detail(found.items[0].reference);expect(object).toMatchObject({complete:true,missing:[],id});expect(object.fields).not.toHaveProperty('steps');
   expect(JSON.parse((await whole(object.body!)).toString()).steps).toBe(large);expect(JSON.parse((await whole(object.history!)).toString())[0].comment).toBe('完整历史');expect(JSON.parse((await whole(object.fields.largeField as ApplicationResourceRef)).toString()).full).toHaveLength(20000);
   const ui=await app.zentaoObject(sender,'p1',{kind:'bug',reference:found.items[0].reference}) as ZentaoDetailData;expect(ui.reference).toEqual(object.reference);expect(ui.body).toEqual(object.body);
- });
+ // Multiple real provider/resource requests for a 720KB UTF-8 body share this
+ // integration-test budget. Individual production request deadlines are unchanged.
+ },20000);
  it('reads nested Story description and acceptance criteria without incorrectly marking the body missing',async()=>{
   objects.set('story:8',{fields:{id:'8',title:'研发需求',status:'active',assignedTo:{account:'tester'},spec:{spec:'<p>需求原文</p>',verify:'验收标准'},files:[]},actions:[]});
   const found=await list('story'),object=await detail(found.items[0].reference,'story');expect(object.complete).toBe(true);expect(JSON.parse((await whole(object.body!)).toString())).toEqual({spec:{spec:'<p>需求原文</p>',verify:'验收标准'}});

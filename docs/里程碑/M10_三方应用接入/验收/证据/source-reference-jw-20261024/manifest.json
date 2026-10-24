@@ -1,0 +1,140 @@
+{
+  "schema": "willyou-m10-t59-jw-v1",
+  "date": "2026-10-24",
+  "timezone": "Asia/Singapore",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "sourceArchive": {
+    "path": "/private/tmp/willyou-m10-jv-source-20261024.tar.gz",
+    "sha256": "2184d587690efe436b4f71d2715ed31652796271a4323623db46ee220f8ed0cf",
+    "files": 1826
+  },
+  "sourceOverlay": [
+    "scripts/applications/native-config-upgrade-ui.mjs",
+    "src/main/core/applications/__tests__/builtin-packages.test.ts",
+    "src/main/core/applications/__tests__/connection-service.test.ts",
+    "src/main/core/applications/__tests__/mail-read-data.test.ts",
+    "src/main/core/applications/__tests__/manifest.test.ts",
+    "src/main/core/applications/__tests__/registered-extension-call.test.ts",
+    "scripts/applications/upgrade-impact-ui.mjs"
+  ],
+  "productionChangesSinceJV": [],
+  "software": {
+    "uniquePassed": 194,
+    "files": [
+      {
+        "file": "mail-read-data.test.ts",
+        "passed": 35,
+        "evidence": "willyou-m10-jw-mail-full.log"
+      },
+      {
+        "file": "connection-service.test.ts",
+        "passed": 26,
+        "evidence": "willyou-m10-jw-config-full.log"
+      },
+      {
+        "file": "registered-extension-call.test.ts",
+        "passed": 41,
+        "evidence": "willyou-m10-jw-extension-final.log"
+      },
+      {
+        "file": "manifest.test.ts",
+        "passed": 22,
+        "evidence": "willyou-m10-jw-contract-activation.log"
+      },
+      {
+        "file": "activation-maintenance.test.ts",
+        "passed": 18,
+        "evidence": "willyou-m10-jw-contract-activation.log"
+      },
+      {
+        "file": "zentao-data.test.ts",
+        "passed": 23,
+        "evidence": "willyou-m10-jw-related.log"
+      },
+      {
+        "file": "builtin-packages.test.ts",
+        "passed": 29,
+        "evidence": "../metadata-jx-20261024/willyou-m10-jx-builtin-final.log"
+      }
+    ],
+    "typecheck": "../metadata-jx-20261024/willyou-m10-jx-types-final.log",
+    "mixedRunBoundary": "Initial related run had metadata fixture failure,76/77 passed; ZenTao23 and prior connection25 were green. Connection now26/26 and builtin now29/29 separately verified; original failures retained."
+  },
+  "nativePositive": {
+    "checks": 43,
+    "actualCalls": 31,
+    "layer": "I: two actual packaged hosts, TaskService and trusted PTY; real Codex0.162.1, synthetic provider/mailbox; no UI acceptance",
+    "privateHostAsar": "e9df1e78f07076e1f12e0b3374a4483f030b13c8c7266772d8e04a023fc6bd8c",
+    "nativeChecks": 6,
+    "noApprovalBypass": true,
+    "noSMTP": true,
+    "cleanup": "All recorded own App PIDs absent",
+    "verifiedExitedPids": [
+      87506,
+      87609
+    ]
+  },
+  "referencedEvidence": {
+    "config-jt-20261023": {
+      "manifestSha256": "ff063edba516bbb47b33518a4bccfa03d2a57f392c07b375685f40e8ee8f5ee9"
+    },
+    "preflight-jv-20261024": {
+      "manifestSha256": "c751fb18da73db3a45ebbb164413af1c6bde57b0273497eb9834c35a90b3ac2e"
+    },
+    "activation-race-package-ij-20261023": {
+      "manifestSha256": "4fea9ed4cfdc5f9770961b4310c7b16a7faec4a4e6b5ebc9a81a0fb04859911c"
+    }
+  },
+  "T59": "All original eight steps mapped in JW report; composite layered result, not43 formal cases",
+  "formalAfterAudit": {
+    "passed": 24,
+    "total": 72,
+    "remaining": 48,
+    "percentage": 33.33
+  },
+  "files": {
+    "after/builtin-packages.test.ts": "041a57e5e4a0bac2823ace2bf6a1d25f14494975d9a12cc24e5a7fc9838ff512",
+    "after/connection-service.test.ts": "e50d36344e853a95f36b633d8124d5fc65ab41bf53cd24fc3a5bb78b7fd34980",
+    "after/mail-read-data.test.ts": "be91a544defb5ed50b6db96896a21d6b442aa5612da7dce089a4dec5db92b628",
+    "after/manifest.test.ts": "82ff373f1cd1a19a1732df70d6a3f1c79740123d06122de3bb5ee77132d2fd01",
+    "after/registered-extension-call.test.ts": "d19d5930c8d2a8ac14f0846cdd321be7f6d863cf69b7ccd95bbfbe4bc5346867",
+    "baseline-comparison.json": "e58fd93aa120ee9c9e699df281212cbc0153ba682954e33842fe423f4ebad18e",
+    "before/connection-service.test.ts": "01bcc39a15c03b6153e50af640a08c418592b28af8165c628ae774a038b76262",
+    "before/mail-read-data.test.ts": "ed2870682dd6ef0ff9d920d005da5263e8ad500c1d354711fa004895c36974f1",
+    "before/manifest.test.ts": "357cc2f862408d14ad1f0aa38950ae07731df856069a3c241e253d3043a217de",
+    "before/registered-extension-call.test.ts": "475345cfb7bdfcb7ebd51dee2737714a14c4742a281b04808488a4f3e012a1e0",
+    "current-positive/electron.txt": "f711270daae3fecf04ff0e7f43c8b0cf598583c5ae87d9715fd73a6a143f0803",
+    "current-positive/native-tool-definitions.json": "e39e7e8b603566a7024322c20041804d89312b29f627740cd412d039c3f9efae",
+    "current-positive/new-default-query.png": "89a750002de368467868f182b0cedb4bd76651c484f46af40f866d79850f9c34",
+    "current-positive/old-host-electron.txt": "6807ea7ff066e8bfbf6492bb5cbaf25f6aa410dc79b59af4b8c130e8f64cbf40",
+    "current-positive/old-session-current-host.png": "904aae97c270a156ff896a8cd42087a16d0421879e441b74be0bb0f988e8d880",
+    "current-positive/result.json": "a5ab3502ecccbe79675f8db8febd0bf9b04d25076a5010e03fa6d98ceede15a1",
+    "current-positive/resumed-terminal.txt": "aebf24c3ca51376acfab58e60c80c954afcb7df086bfdaff5e4eec2d321268cd",
+    "current-positive/terminal-current.txt": "d5eafd122aaece588e92425bf73872212eeff0603f380fc65b6482f92efa6b7c",
+    "current-positive-host-manifest.json": "942cdbe2ab6599d1ebb49fd89ff037160a3cbd43d9dc85ac3f80b041d870941a",
+    "native-config-driver.before.mjs": "6a0a0ba8dba2eaa0ef85ad3ef4489d7957ec5e7b8634ef71e4e2effa93ac59ee",
+    "native-config-driver.final.mjs": "3fd9f1ff8971ed44125bf20a40ca8feee6697f96283ca5ff35544900c07facdf",
+    "physical-fixture-r1.test.ts": "d606de6d0f0ff7873b3ab8f86568bef81d981a691c5c0502924c31e5b7c9f11e",
+    "physical-fixture-r2.test.ts": "be0cf938cf93c587594d8b92bce1dd47b1111ae2b3d056fd54628d27c688695b",
+    "willyou-m10-jw-builtin-final.log": "d38e5a00298e9eb1ca27e830589fa6e95b4a62d8dc03fb6406e52d6315169425",
+    "willyou-m10-jw-config-full.log": "48f5d9653421917782403edca940326068590b18a02a0e4287e1e06c14495cb8",
+    "willyou-m10-jw-contract-activation.log": "2f9b6096551eb6bb6837fe177e00bcee373fe54bdcb656677ab3703c8df627d3",
+    "willyou-m10-jw-current-positive-host.log": "6aa986d9e98e569d504d21a8009efbf9ec70f2fe18bfa4ecd1d26a479f5c4796",
+    "willyou-m10-jw-extension-final.log": "79c4fc22568d477fd177017759af0749952fa2597009e0d852a8a3b6a42f2b6c",
+    "willyou-m10-jw-extension-full.log": "239faeda9e31616b6f84855b90e2561e0c16595dd7d64ef8cf5344e4e3251452",
+    "willyou-m10-jw-mail-full.log": "a3c277ac800440a2488544dab1cadc8eeea017a487e3e3929bbe17319a3c50bb",
+    "willyou-m10-jw-metadata-r2.log": "a97b40c62177befba89c73339c872e40430e86edad581ea269a63686ebb9fe22",
+    "willyou-m10-jw-physical-data-r2.log": "96d8deacd08d0420fe6d0c6b7a7427d211e716c955d9f4e4d5a31aee1e3f34b6",
+    "willyou-m10-jw-physical-data.log": "43470f64fe125c62206941f50e5dd512313d2eebfff355affc7282abc622f697",
+    "willyou-m10-jw-positive-current.log": "1d4a2e1faed762fc0a1823741a66bf14ae2a35e277ce4538adf95908ad3d1371",
+    "willyou-m10-jw-positive-native.log": "96572e052da16ca4746a35e68beb4ad23bbf960ad662db95c067c626d4137c8b",
+    "willyou-m10-jw-related.log": "7b9431fb758f2be1ad5eeb5db7292654d28b2896600abe56cbd524179c6aa5d6",
+    "willyou-m10-jw-source-reference.log": "692be55363ebedb9a91145c8204df5670d7168056c80f87181b3bc5dd3f86491",
+    "willyou-m10-jw-types-delivery.log": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "willyou-m10-jw-types-final.log": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "willyou-m10-jw-types-r2.log": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "willyou-m10-jw-types.log": "498a1bc5c694dc120d99a232b5d00eb6a3a77b1b2c157b82157296e0faa0e647"
+  }
+}

@@ -1,3 +1,4 @@
+import {ApplicationError} from '@shared/applications';
 import type {NativeUserMessages} from '../native-user-messages';
 import type {SkillReadTarget,SkillReadObservation} from '../codex-skill-read-evidence';
 import {ClaudeDeliveryCoordinator} from '../claude-delivery';
@@ -6,7 +7,7 @@ import {SessionCapabilityProjector} from '../session-projector';
 import {randomUUID} from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
-import {afterEach,beforeEach,describe,expect,it} from 'vitest';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {ApplicationSessionDiagnostics} from '../session-diagnostics';
 import type {SessionPreparationEvidence} from '@shared/application-session-diagnostics';
 import type {ApplicationConnectionService} from '../connection-service';
@@ -27,6 +28,18 @@ beforeEach(async()=>{f=await runFixture(new FixtureProcessReader(),{application:
 });
 afterEach(async()=>{f.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,snapshot_hash=? WHERE task_id=?').run(JSON.stringify(f.snapshot),f.session.pointer.snapshotHash,f.snapshot.taskId);for(const child of bridges)await child.exited().catch(()=>{});for(const run of handles){await run.cli.exited().catch(()=>{});await run.stop().catch(()=>{});}await f.runs.dispose();f.cleanup();});
 describe('run-scoped read-only session diagnostics',()=>{
+ it('reports compatibility from the connection service fixed-package resolver without exposing its view',async()=>{
+  const fixed=f.snapshot.packages[0],connection={id:'fixture-current',name:'Current source',enabled:true,authorization:'connected',health:'healthy',testedAt:null};
+  const resolve=vi.fn(()=>({view:{privateSetting:'must-not-be-diagnostic-output'}}));
+  const reader=new ApplicationSessionDiagnostics(f.store,{get:()=>connection,resolvePackageView:resolve} as unknown as ApplicationConnectionService,{requireEnabled:()=>({enabled:true}),connectionSlot:()=>({connectionId:connection.id,identityRevision:1,revision:1})} as unknown as ApplicationSelectionService,{runs:()=>f.runs});
+  const first=await reader.inspect(f.snapshot.taskId);
+  expect(resolve).toHaveBeenCalledWith(fixed.packageHash,connection);
+  expect(first.applications.find(a=>a.appId===fixed.appId)?.connections.every(c=>c.compatibility==='compatible')).toBe(true);
+  expect(JSON.stringify(first)).not.toContain('must-not-be-diagnostic-output');
+  resolve.mockImplementation(()=>{throw new ApplicationError('CONFIG_INCOMPATIBLE','controlled rejection');});
+  const second=await reader.inspect(f.snapshot.taskId);
+  expect(second.applications.find(a=>a.appId===fixed.appId)?.connections.every(c=>c.compatibility==='incompatible')).toBe(true);
+ });
  it('exposes current-task copy diagnostics through the real read service without taking lifecycle actions',async()=>{
   const c=new ClaudeDeliveryCoordinator(f.store,f.sessions,new SessionCapabilityProjector(f.store,f.sessions),f.reader,f.runs.instanceId),token=await c.prepare(f.snapshot.taskId,f.snapshot.packages.map(p=>p.appId));await c.cancel(token);
   const before=f.sqlite.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all(),value=await diagnostics.inspect(f.snapshot.taskId);
@@ -49,6 +62,19 @@ describe('run-scoped read-only session diagnostics',()=>{
  });
  it('reports fixed source verification without inventing Skill discovery,read,usage or a current terminal',async()=>{const before=f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_data_operations').get(),value=await diagnostics.inspect(f.snapshot.taskId);expect(value).toMatchObject({selection:'fixed',currentRun:null,canNewSession:true});expect(value.applications[0]).toMatchObject({fixedVersion:'1.0.0',defaultVersion:'1.0.0',resourceState:'verified',evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:0}});expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_data_operations').get()).toEqual(before);expect(JSON.stringify(value)).not.toContain('do-not-copy-user-message');expect(JSON.stringify(value)).not.toContain('never-copy-raw-config');});
  it('marks unmapped native or M4 history unknown while keeping the native Agent state independent',async()=>{const taskId=randomUUID();f.sqlite.prepare("INSERT INTO tasks(id,project_id,cwd,runner,title,native_session_id,created_at,updated_at) VALUES(?,'p1',?,'codex','unmapped history','private-native',1,1)").run(taskId,f.root);activePty='owned-unmanaged-pty';const value=await diagnostics.inspect(taskId);expect(value).toMatchObject({selection:'unknown-history',agentState:'running',currentRun:null,applications:[]});expect(value.snapshotHash).toBeNull();});
+ it('keeps a currently owned unknown-history native guard diagnosable without promoting it to a fixed session',async()=>{
+  const taskId=randomUUID();f.sqlite.prepare("INSERT INTO tasks(id,project_id,cwd,runner,title,native_session_id,runtime_snapshot,created_at,updated_at) VALUES(?,'p1',?,'codex','unknown owned history','private-native',NULL,1,1)").run(taskId,f.root);
+  await f.sessions.holdUnknown({taskId,projectId:'p1',runner:'codex',stateRoot:f.home,cwd:f.snapshot.native.cwd,sessionId:'private-native',reason:'history-unknown'});
+  const before=f.sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {snapshot_hash:string};
+  const run=await f.runs.reserveNativeGuard({taskId,projectId:'p1',runner:'codex',snapshotHash:before.snapshot_hash,resourceIds:[f.adapter.resourceId],verify:async()=>{}});handles.push(run);
+  await run.prepare();await run.cli.arm();(f.reader as FixtureProcessReader).identities.set(19001,'darwin-proc-v1:100:19001');await run.cli.attach(19001);activePty=run.ptyId;
+  const observe=vi.fn(async()=>[] as SkillReadObservation[]);skillObserver=observe;discoveryObserver=observe;
+  const value=await diagnostics.inspect(taskId);expect(value).toMatchObject({selection:'unknown-history',agentState:'running',snapshotHash:before.snapshot_hash,currentRun:{id:run.runId,current:true,state:'active',preparation:null}});
+  expect(value.applications.every(app=>app.fixedVersion===null&&app.skills.length===0)).toBe(true);expect(observe).not.toHaveBeenCalled();
+  expect(f.sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(taskId)).toEqual(before);expect(f.sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(taskId)).toEqual({runtime_snapshot:null});expect(f.sqlite.prepare('SELECT count(*) n FROM capability_skill_observations WHERE run_id=?').get(run.runId)).toEqual({n:0});
+  expect(()=>f.runs.assertActive(run.runId)).toThrow('不签发');expect(f.runs.inputContext(taskId,run.ptyId)).toBeNull();await expect(run.reserveBridge()).rejects.toMatchObject({code:'SCOPE_DENIED'});
+ });
+
  it('does not treat existing source files as a complete owned Skill projection when its reference is missing',async()=>{f.sqlite.prepare("DELETE FROM capability_session_refs WHERE task_id=? AND ref_kind='session-projection'").run(f.snapshot.taskId);const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.applications[0]).toMatchObject({resourceState:'unavailable',issueCode:'RESOURCE_RECOVERY_REQUIRED',evidence:{skillRead:'unverified'}});});
  it('persists one immutable preparation tied to the original selection and rejects client-shaped extra fields or another selection',async()=>{const run=await start(),evidence=prepared(run);await diagnostics.prepared(evidence);await diagnostics.prepared(evidence);expect((await diagnostics.inspect(f.snapshot.taskId)).currentRun?.preparation).toEqual(evidence);await expect(diagnostics.prepared({...evidence,cliVersion:'changed'})).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});await expect(diagnostics.prepared({...evidence,selectionHash:'a'.repeat(64)})).rejects.toMatchObject({code:'SCOPE_DENIED'});await expect(diagnostics.prepared({...evidence,token:'not-accepted'} as never)).rejects.toThrow();expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM capability_run_preparations').get()).toEqual({n:1});});
  it('keeps an unavailable preparation separate from the live native Agent and from verified original files',async()=>{const run=await start();await diagnostics.prepared({...prepared(run),state:'unavailable',issueCode:'AGENT_ADAPTER_UNSUPPORTED'});const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun).toMatchObject({state:'active',preparation:{state:'unavailable',issueCode:'AGENT_ADAPTER_UNSUPPORTED'}});expect(value.applications[0]).toMatchObject({resourceState:'verified',issueCode:'AGENT_ADAPTER_UNSUPPORTED'});expect(f.runs.get(run.runId).state).toBe('active');});

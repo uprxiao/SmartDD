@@ -1,3 +1,4 @@
+import {projectDemoActivity} from './activity-prototype-model.mjs';
 // M10 isolated prototype. Only public synthetic configuration is persisted.
 export const M10_STORAGE = 'willyou-m10-prototype-v2';
 export const APP_DEFINITIONS = [
@@ -29,18 +30,22 @@ export function projectIntegrationState(value) {
   const projectIds = [...new Set([...Object.keys(value?.bindings || {}), ...Object.keys(value?.projectApps || {})])];
   const projectApps = Object.fromEntries(projectIds.map(projectId => [projectId, Object.fromEntries(APP_DEFINITIONS.map(app => [app.id, typeof value?.projectApps?.[projectId]?.[app.id] === 'boolean' ? value.projectApps[projectId][app.id] : connections.some(c => c.app === app.id && (Array.isArray(value?.bindings?.[projectId]) ? value.bindings[projectId] : []).includes(c.id))]))]));
   return { version: 2, packages, projectApps, mailQueryDays: validMailDays(value?.mailQueryDays) ? Number(value.mailQueryDays) : 30, drafts: projectDrafts(value?.drafts), installedVersions: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, [...new Set(['1.0.0', packages[a.id], ...(value?.installedVersions?.[a.id] || []).filter(v => ['1.0.0','1.1.0'].includes(v))])]])), dataSchema: value?.dataSchema === 2 ? 2 : 1, installed: [...new Set((value?.installed || []).filter(id => known.has(id)))], connections,
+    connectionCompatibility:Object.fromEntries(Object.entries(value?.connectionCompatibility||{}).filter(([id])=>ids.has(id)).map(([id,report])=>[id,{revision:Number.isSafeInteger(report?.revision)&&report.revision>0?report.revision:0,versions:(Array.isArray(report?.versions)?report.versions:[]).filter(row=>['1.0.0','1.1.0'].includes(row?.version)&&['compatible','incompatible','unverified'].includes(row?.status)).slice(0,200).map(({version,status})=>({version,status}))}])),
     bindings: Object.fromEntries(Object.entries(value?.bindings || {}).filter(([k]) => typeof k === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k, v]) => [k, [...new Set((Array.isArray(v) ? v : []).filter(id => ids.has(id)))]])),
     mailSlotRevisions: Object.fromEntries(Object.entries(value?.mailSlotRevisions || {}).filter(([k]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k,v]) => [k,Object.fromEntries(['local','smtp'].map(slot => [slot,Number.isSafeInteger(v?.[slot]) && v[slot] >= 0 ? v[slot] : Number.isSafeInteger(value?.mailBindingRevisions?.[k]) ? value.mailBindingRevisions[k] : 0]))])),
     mailBindingRevisions: Object.fromEntries(Object.entries(value?.mailBindingRevisions || {}).filter(([k, v]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k) && Number.isSafeInteger(v) && v >= 0)),
     // Activity contains only fixed synthetic fixture identifiers and labels.
-    activity: (Array.isArray(value?.activity) ? value.activity : []).slice(0, 40).map(a => ({ id: String(a.id), app: known.has(a.app) ? a.app : 'mail', operation: String(a.operation || ''), status: ['success', 'failed', 'unknown', 'handoff', 'draft', 'sending'].includes(a.status) ? a.status : 'unknown', project: typeof a.project === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(a.project) ? a.project : 'ais', connectionId: String(a.connectionId || ''), at: String(a.at || ''), actor: String(a.actor || ''), draftId: String(a.draftId || ''), revision: Number(a.revision) || null })),
+    activity: (Array.isArray(value?.activity) ? value.activity : []).slice(0, 40).map(projectDemoActivity),
   };
 }
 export function validateConnection(draft, secret = '') {
   if (!['zentao', 'local', 'smtp'].includes(draft.kind)) return '不支持的连接类型。';
   if (!draft.name?.trim()) return '请输入连接名称。';
   if (draft.name.length > 120) return '连接名称最多120个字符。';
-  if (draft.kind === 'local') return draft.path?.startsWith('/') && !/[\x00-\x1f]/.test(draft.path) ? '' : '请选择完整的本地来源路径。';
+  if (draft.kind === 'local') {
+    if (!draft.path?.startsWith('/') || /[\x00-\x1f]/.test(draft.path)) return '请选择完整的本地来源路径。';
+    return typeof draft.account === 'string' && draft.account.trim() && draft.account.length <= 512 && !/[\x00-\x1f]/.test(draft.account) ? '' : '请明确填写这个本地来源的邮箱账号。';
+  }
   if (draft.kind === 'zentao') {
     if (draft.auth !== undefined && !['password', 'token'].includes(draft.auth)) return '不支持的禅道认证方式。';
     try { const u = new URL(draft.url); if (!['http:', 'https:'].includes(u.protocol) || u.username || u.password || u.hash || u.search) return '请填写不含凭据、查询参数或片段的 HTTP(S) 服务地址。'; }
@@ -94,6 +99,11 @@ export function integrationSnapshot(state, projectId) { return { projectId, evid
 export function snapshotCurrent(snapshot, state, projectId) {
   return !!snapshot && snapshot.projectId === projectId && Array.isArray(snapshot.packages);
 }
+export function connectionVersionCompatibility(state,connection,version){
+ const report=state.connectionCompatibility?.[connection.id];if(!report)return 'compatible';
+ if(report.revision!==connection.revision||!Array.isArray(report.versions))return 'unverified';const rows=report.versions.filter(row=>row.version===version);
+ return rows.some(row=>row.status==='incompatible')?'incompatible':!rows.length||rows.some(row=>row.status==='unverified')?'unverified':'compatible';
+}
 export function sessionApplicationState(snapshot, state, projectId, appId) {
   const fixed = snapshot?.projectId === projectId && snapshot.packages?.find(p => p.id === appId);
   if (!fixed) return { usable: false, label: snapshot ? '本会话未选用；需新建会话' : '历史能力未知；不自动补入' };
@@ -102,9 +112,12 @@ export function sessionApplicationState(snapshot, state, projectId, appId) {
   const versions = state.installedVersions?.[appId] || ['1.0.0', packageVersion(state, appId)];
   if (!versions.includes(fixed.version)) return { usable: false, label: '固定版本缺失；修复原版本后可继续' };
   const selected = selectedConnections(state, projectId, appId);
-  const ready = selected.filter(connectionReady);
-  if (appId === 'mail') return { usable: true, label: ready.some(c => c.kind === 'smtp') ? '草稿可用；读取与SMTP按连接检查' : '草稿可用；尚无可用SMTP', connections: selected };
-  return { usable: ready.length === 1, label: ready.length === 1 ? '当前生效连接可用' : selected.length ? '连接不可用；Agent继续工作' : '未选定唯一连接；Agent继续工作', connections: selected };
+  const issues=selected.map(connection=>({connectionId:connection.id,status:connectionVersionCompatibility(state,connection,fixed.version)})).filter(row=>row.status!=='compatible');
+  const compatibilityError=issues.length?(issues.some(row=>row.status==='incompatible')?'CONFIG_INCOMPATIBLE':'CONFIG_UNVERIFIED'):null;
+  const compatibilityLabel=compatibilityError==='CONFIG_INCOMPATIBLE'?'当前连接与固定版本不兼容':'当前连接与固定版本兼容性待核验';
+  const ready = selected.filter(connectionReady).filter(connection=>connectionVersionCompatibility(state,connection,fixed.version)==='compatible');
+  if (appId === 'mail') return { usable: true, label: compatibilityError?'草稿可用；'+compatibilityLabel+'，读取／SMTP分别核对':ready.some(c => c.kind === 'smtp') ? '草稿可用；读取与SMTP按连接检查' : '草稿可用；尚无可用SMTP', connections: selected,compatibilityError };
+  return { usable: ready.length === 1, label: compatibilityError?compatibilityLabel+'；Agent继续工作':ready.length === 1 ? '当前生效连接可用' : selected.length ? '连接不可用；Agent继续工作' : '未选定唯一连接；Agent继续工作', connections: selected,compatibilityError };
 }
 const CAPABILITY_FAULTS = {
   missing: { code: 'PACKAGE_MISSING', title: '固定应用包缺失', reason: '本会话引用的版本文件不可用。仅恢复同一版本、同一内容标识的可信副本。', action: '修复原版本' },
@@ -121,6 +134,7 @@ export function sessionCapabilityDiagnostic(snapshot, state, projectId, appId, f
   const actualFault = fixed && !versions.includes(fixed.version) ? 'missing' : fault;
   if (!fixed || !state.installed.includes(appId) || !projectAppEnabled(state, projectId, appId)) return { ...current, code: 'CURRENT_ACCESS_UNAVAILABLE', title: current.label, reason: '当前应用授权条件不满足；不会通过修复或重连绕过。', fault: 'none', fixedVersion: fixed?.version };
   const detail = CAPABILITY_FAULTS[actualFault];
+  if(actualFault==='none'&&current.compatibilityError)return{...current,code:current.compatibilityError,title:current.label,reason:'当前连接配置预检不支持该固定版本；核对并修复配置后恢复原会话，不切换旧版本。仅合成状态。',fault:'none',fixedVersion:fixed.version};
   return detail ? { ...detail, usable: false, fault: actualFault, fixedVersion: fixed.version } : { ...current, code: 'READY_DEMO', title: current.label, reason: '仅表示合成准备条件；不代表真实 Agent 已发现或调用。', fault: 'none', fixedVersion: fixed.version };
 }
 export function recoverSessionCapability(snapshot, state, projectId, appId, fault, succeeds = true, evidence = {}) {
@@ -129,6 +143,8 @@ export function recoverSessionCapability(snapshot, state, projectId, appId, faul
   if (diagnostic.fault === 'nameConflict' && (!succeeds || evidence.userResolvedConflict !== true)) return { ok: false, state, fault: 'nameConflict', message: '冲突仍存在，应用整体保持不注入；请自行处理明确的冲突项后再检查，未修改任何用户配置。' };
   if (!diagnostic.action || !succeeds) return { ok: false, state, fault: diagnostic.fault, message: diagnostic.fault === 'missing' || diagnostic.fault === 'corrupt' ? '未取得同内容标识的可信副本；保留原版本引用，能力仍不可用。' : '条件仍不满足，相关应用保持不可用；Agent继续工作。' };
   const next = ['missing', 'corrupt'].includes(diagnostic.fault) ? { ...state, installedVersions: { ...state.installedVersions, [appId]: [...new Set([...(state.installedVersions?.[appId] || []), diagnostic.fixedVersion])] } } : state;
+  const remaining=sessionApplicationState(snapshot,next,projectId,appId);
+  if(remaining.compatibilityError)return{ok:true,state:next,fault:'none',partial:true,message:'已模拟恢复本次故障，但当前连接配置仍'+(remaining.compatibilityError==='CONFIG_INCOMPATIBLE'?'不兼容':'待核验')+'；已恢复部分保留，需在连接表单重新测试。原固定版本及历史保留，未重发操作。'};
   return { ok: true, state: next, fault: 'none', message: '模拟恢复完成，仍使用 v' + diagnostic.fixedVersion + '；下次新调用可用，未重发任何操作。' };
 }
 export function toggleProjectApplication(state, projectId, appId, enabled) {
@@ -181,15 +197,15 @@ export function mailQueryWindow(days, now = new Date()) {
 export const DEMO_MAIL_DRAFT = { to: 'team@example.invalid', subject: 'M10 接入方案评审', body: '大家好，\n\n应用连接和项目选用方案已整理，请查看账号配置、本地邮件读取与结果恢复流程。\n\n谢谢。', attachment: false };
 function projectDrafts(drafts) {
   // Persist only a fixture identity and lifecycle metadata; never user-entered mail text.
-  return (Array.isArray(drafts) ? drafts : []).filter(d => d.fixture === 'm10-review').map(d => ({ id: String(d.id), project: String(d.project), fixture: 'm10-review', revision: Number(d.revision) || 1, senderId: typeof d.senderId === 'string' ? d.senderId : '', mailBindingRevision: Number.isSafeInteger(d.mailBindingRevision) ? d.mailBindingRevision : -1,mailSendSlotRevision: Number.isSafeInteger(d.mailSendSlotRevision) ? d.mailSendSlotRevision : -1, status: ['draft','sending','success','failed','unknown'].includes(d.status) ? d.status : 'draft', at: String(d.at || '') }));
+  return (Array.isArray(drafts) ? drafts : []).filter(d => ['m10-review','m10-review-long'].includes(d.fixture)).map(d => ({ id: String(d.id), project: String(d.project), fixture: d.fixture, revision: Number(d.revision) || 1, senderId: typeof d.senderId === 'string' ? d.senderId : '', mailBindingRevision: Number.isSafeInteger(d.mailBindingRevision) ? d.mailBindingRevision : -1,mailSendSlotRevision: Number.isSafeInteger(d.mailSendSlotRevision) ? d.mailSendSlotRevision : -1, status: ['draft','sending','success','failed','unknown'].includes(d.status) ? d.status : 'draft', at: String(d.at || '') }));
 }
-export function saveDemoDraft(state, project, existingId, expectedRevision, { adoptCurrentSender = false } = {}) {
+export function saveDemoDraft(state, project, existingId, expectedRevision, { adoptCurrentSender = false, longContent = false } = {}) {
   const old = state.drafts?.find(d => d.id === existingId);
   if (existingId && !old) return { ok: false, state, reason: '草稿已不存在，请重新打开草稿列表。' };
   if (old && old.project !== project) return { ok: false, state, reason: '不能覆盖其他项目的草稿。' };
   if (old && old.revision !== expectedRevision) return { ok: false, state, reason: '草稿已由其他会话修改，请重新打开。' };
   if (old && ['sending','success','unknown'].includes(old.status)) return { ok: false, state, reason: '发送中、已发送或结果未知的记录不能覆盖；先核实结果。' };
-  const draft = { id: old?.id || 'draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), project, fixture: 'm10-review', revision: (old?.revision || 0) + 1, senderId: selectedConnections(state, project, 'mail').find(c => c.kind === 'smtp')?.id || '', mailBindingRevision: state.mailBindingRevisions?.[project] || 0,mailSendSlotRevision: mailSlotRevision(state,project,'smtp'), status: 'draft', at: new Date().toLocaleString('zh-CN') };
+  const draft = { id: old?.id || 'draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), project, fixture: old?.fixture || (longContent ? 'm10-review-long' : 'm10-review'), revision: (old?.revision || 0) + 1, senderId: selectedConnections(state, project, 'mail').find(c => c.kind === 'smtp')?.id || '', mailBindingRevision: state.mailBindingRevisions?.[project] || 0,mailSendSlotRevision: mailSlotRevision(state,project,'smtp'), status: 'draft', at: new Date().toLocaleString('zh-CN') };
   if (old && !adoptCurrentSender) { draft.senderId = old.senderId; draft.mailBindingRevision = old.mailBindingRevision; draft.mailSendSlotRevision = old.mailSendSlotRevision; }
   return { ok: true, state: { ...state, drafts: [draft, ...(state.drafts || []).filter(d => d.id !== draft.id)] }, draft };
 }
@@ -212,7 +228,8 @@ export function verifyDemoSendAccepted(state, recordId) {
 }
 export function connectionIdentityChanged(old, draft) {
   if (!old) return false;
-  if (old.kind === 'local') return old.path !== draft.path;
+  if (old.app !== draft.app || old.kind !== draft.kind) return true;
+  if (old.kind === 'local') return old.path !== draft.path || (old.account || '') !== (draft.account || '');
   return old.account !== draft.account || (old.kind === 'zentao' ? old.url !== draft.url : old.host !== draft.host);
 }
 export function saveConnection(state, draft, hasCredential) {
@@ -243,4 +260,23 @@ export function demoApplicationImpact(state,query,projects=[]){
  const appId=target?.app||query.appId||'zentao',connections=state.connections.filter(c=>query.kind==='disconnect'?c.id===query.connectionId:c.app===appId);
  const ids=[...new Set([...Object.keys(state.bindings),...Object.keys(state.projectApps||{})])].filter(id=>query.kind!=='disconnect'||state.bindings[id]?.includes(query.connectionId));
  return{kind:query.kind,appId,connections:connections.map(c=>({id:c.id,name:c.name,providerId:c.kind==='local'?'foxmail':c.kind,enabled:c.enabled,authorization:c.validation==='disconnected'?'disconnected':'connected'})),projects:ids.map(id=>({id,name:projects.find(p=>p.id===id)?.name||id,archived:!!projects.find(p=>p.id===id)?.archived,enabled:projectAppEnabled(state,id,appId),connections:(state.bindings[id]||[]).filter(x=>connections.some(c=>c.id===x)).map(x=>({id:x,slot:connections.find(c=>c.id===x).kind}))})),runs:[]};
+}
+
+// Fixed public fixtures only: persisted drafts contain identity/revision metadata,
+// never user mail text. Preview remains stable across route/theme/scene changes.
+export function demoMailDraftPreview(draft) {
+  const long = draft?.fixture === 'm10-review-long', revision = draft?.revision || 1;
+  return {to:DEMO_MAIL_DRAFT.to,
+    subject:DEMO_MAIL_DRAFT.subject + (long ? ' · 跨团队接口与历史资料联合评审'.repeat(10) : '') + (revision > 1 ? ' · 合成修订 r'+revision : ''),
+    body:DEMO_MAIL_DRAFT.body + (long ? ('\n合成评审内容：请核对接口边界、账号身份及异常恢复，不代表真实用户邮件。').repeat(24) : '') + (revision > 1 ? '\n合成内容修订 r'+revision+'：由示例Agent更新；非用户邮件。' : ''),
+    attachmentSummary:long ? '合成附件摘要：接口说明与历史资料.pdf · 仅占位，未读取真实文件' : '无附件 · 实际发件前核对明确指定文件'};
+}
+export function approveDemoDraft(state, project, draft, expectedRevision) {
+  if (!draft || draft.project !== project || draft.revision !== expectedRevision) return {ok:false,reason:'草稿修订已变化，请重新打开审阅。'};
+  const eligible=demoDraftSendEligibility(state,project,draft);if(!eligible.ok)return eligible;
+  return {ok:true,approval:{project,draftId:draft.id,revision:draft.revision,senderId:draft.senderId,slotRevision:draft.mailSendSlotRevision}};
+}
+export function checkDemoDraftApproval(state, project, draft, approval) {
+  if (!draft || !approval || approval.project !== project || draft.project !== project || approval.draftId !== draft.id || approval.revision !== draft.revision || approval.senderId !== draft.senderId || approval.slotRevision !== draft.mailSendSlotRevision) return {ok:false,reason:'原草稿内容或发件身份已变化，请重新审阅并确认。'};
+  return demoDraftSendEligibility(state,project,draft);
 }

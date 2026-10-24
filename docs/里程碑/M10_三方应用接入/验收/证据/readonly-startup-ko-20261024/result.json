@@ -1,0 +1,160 @@
+{
+  "root": "/private/tmp/willyou-m10-readonly-startup-EAqiQB",
+  "startedAt": "2026-10-24T10:07:24.376Z",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "driverSha256": "9395305e1ab39c18a5ce1b34f5fd0902878da274f3b99b6e097527e5e2ef2e9b",
+  "asar": "8a1b0addfa84e80208aca3362284dc00e6ae201e40d108a33aae50c5a7ff73fd",
+  "layer": "I: actual packaged startup and OS permission denial; SMARTDD_PROBE suppresses error dialog only; no GUI/CLI/system approval acceptance",
+  "checks": [
+    {
+      "name": "Existing business database and U reject actual OS writes under this non-root user",
+      "at": "2026-10-24T10:07:26.474Z",
+      "passed": true
+    },
+    {
+      "name": "Actual packaged startup exits with permission error; original DB bytes/inode retained and no fallback business DB created",
+      "at": "2026-10-24T10:07:26.759Z",
+      "passed": true
+    },
+    {
+      "name": "After original OS permissions restore, same packaged host opens original project and writes another project in the same DB inode",
+      "at": "2026-10-24T10:07:27.925Z",
+      "passed": true
+    },
+    {
+      "name": "Fresh read-only U fails explicitly before creating DB/resources and does not switch to another business database",
+      "at": "2026-10-24T10:07:31.205Z",
+      "passed": true
+    },
+    {
+      "name": "Fresh U retry after permission restoration initializes exactly its requested business DB and creates a real project",
+      "at": "2026-10-24T10:07:33.314Z",
+      "passed": true
+    },
+    {
+      "name": "Original App ASAR unchanged; zero UI input, no copied credentials or daily data",
+      "at": "2026-10-24T10:07:33.354Z",
+      "passed": true
+    }
+  ],
+  "appPids": [
+    17451,
+    17485,
+    17500
+  ],
+  "faultPids": [
+    17482,
+    17496
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 17500,
+    "checkedInputs": 0
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 17451,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 17485,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 17500,
+      "checkedInputs": 0
+    }
+  ],
+  "originalProject": {
+    "id": "03da1963-f72c-46f4-a9b0-80cedc258596",
+    "name": "T70 原库保留 canary",
+    "aliases": [],
+    "description": "Private persisted permission canary",
+    "rulesPath": null,
+    "configVersion": 1,
+    "archivedAt": null,
+    "createdAt": 1792836446291,
+    "updatedAt": 1792836446291,
+    "dirs": [],
+    "databases": [],
+    "servers": []
+  },
+  "before": {
+    "db": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/smartdd.db",
+    "ino": 60241356,
+    "dev": 16777234,
+    "sha256": "ffcf54181ac49fc3c790b214617e074ba57976297ecb40ac56585d2f83436e6c"
+  },
+  "originalInventory": {
+    "business": [
+      "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/smartdd.db"
+    ],
+    "backups": [
+      {
+        "file": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/backups/m10/88db976a-d16d-4c95-a286-b2f4b1d6ec26/smartdd.db",
+        "sha256": "7363789a1c0f5e299db49d39e3515238289437ff0227a62313ce435e8e99e7a5",
+        "operationId": "88db976a-d16d-4c95-a286-b2f4b1d6ec26"
+      },
+      {
+        "file": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/backups/m10/f1d04dd3-5bd3-4c7a-8744-bbcd79c5118b/smartdd.db",
+        "sha256": "1ac554a3b93e1f40a1deb22d68fe34d089d8bd24ef14f378fdd9b56e4fe1d539",
+        "operationId": "f1d04dd3-5bd3-4c7a-8744-bbcd79c5118b"
+      }
+    ]
+  },
+  "existingFailure": {
+    "userData": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录",
+    "label": "existing-denied",
+    "code": 1,
+    "signal": null,
+    "stderr": "attempt to write a readonly database\n",
+    "probeMode": true
+  },
+  "freshFailure": {
+    "userData": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读",
+    "label": "fresh-denied",
+    "code": 1,
+    "signal": null,
+    "stderr": "[17496:1024/180728.163540:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/wasm\n[17496:1024/180728.163540:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/js\n[17496:1024/180728.163598:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/wasm\n[17496:1024/180728.163599:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/js\n[17496:1024/180728.163602:ERROR:net/disk_cache/simple/simple_backend_impl.cc:749] Simple Cache Backend: wrong file structure on disk: 1 path: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/wasm\n[17496:1024/180728.163605:ERROR:net/disk_cache/simple/simple_backend_impl.cc:749] Simple Cache Backend: wrong file structure on disk: 1 path: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/js\n[17496:1024/180728.163651:ERROR:net/disk_cache/disk_cache.cc:284] Unable to create cache\n[17496:1024/180728.163655:ERROR:net/disk_cache/disk_cache.cc:284] Unable to create cache\nEACCES: permission denied, open '/private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/.database-access.sqlite'\n[17498:1024/180728.179556:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Shared Dictionary/cache\n[17498:1024/180728.179787:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Shared Dictionary/cache\n[17498:1024/180728.179792:ERROR:net/disk_cache/simple/simple_backend_impl.cc:749] Simple Cache Backend: wrong file structure on disk: 1 path: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Shared Dictionary/cache\n",
+    "probeMode": true
+  },
+  "finalInventory": {
+    "business": [
+      "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/smartdd.db",
+      "/private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/smartdd.db"
+    ],
+    "backups": [
+      {
+        "file": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/backups/m10/892ccb4d-9acb-4d4c-b635-e48358b2db40/smartdd.db",
+        "sha256": "ffdb250212e4c5e4a8296883d883a7179a925ba4a9320fae609f0c4db6f4f3e0",
+        "operationId": "892ccb4d-9acb-4d4c-b635-e48358b2db40"
+      },
+      {
+        "file": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/backups/m10/bfff8d54-4769-4cc6-9ac6-92ef8ded552f/smartdd.db",
+        "sha256": "1ac554a3b93e1f40a1deb22d68fe34d089d8bd24ef14f378fdd9b56e4fe1d539",
+        "operationId": "bfff8d54-4769-4cc6-9ac6-92ef8ded552f"
+      },
+      {
+        "file": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/backups/m10/88db976a-d16d-4c95-a286-b2f4b1d6ec26/smartdd.db",
+        "sha256": "7363789a1c0f5e299db49d39e3515238289437ff0227a62313ce435e8e99e7a5",
+        "operationId": "88db976a-d16d-4c95-a286-b2f4b1d6ec26"
+      },
+      {
+        "file": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/backups/m10/f1d04dd3-5bd3-4c7a-8744-bbcd79c5118b/smartdd.db",
+        "sha256": "1ac554a3b93e1f40a1deb22d68fe34d089d8bd24ef14f378fdd9b56e4fe1d539",
+        "operationId": "f1d04dd3-5bd3-4c7a-8744-bbcd79c5118b"
+      }
+    ]
+  },
+  "status": "passed-partial",
+  "remaining": [
+    "T70 actual CLI/Claude/system UI/install/uninstall and full original case remain separate",
+    "Permission error is real OS enforcement; probe mode skips native error dialog only, not a normal GUI startup pass"
+  ],
+  "finishedAt": "2026-10-24T10:07:33.354Z"
+}

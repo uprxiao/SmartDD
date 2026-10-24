@@ -1,3 +1,5 @@
+import {builtinConfigViews} from '../config-view-registry';
+import {ApplicationError} from '@shared/applications';
 import { execFileSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -34,7 +36,7 @@ let sender:IpcMainInvokeEvent,access:PtyAccess,runs:CapabilityRunRegistry,tools:
 let cc:OwnedCapabilityRun,codex:OwnedCapabilityRun;
 const owned:OwnedCapabilityRun[]=[];
 const content=(text='隔离草稿第一版'):MailDraftContent=>({mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['fixture@example.test'],cc:[],bcc:[],subject:'隔离草稿',text,html:null,inReplyTo:null,references:[],attachmentIds:[]});
-const setupService=()=>new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(f.root,'not-launched-worker.js'),foxmailNative:join(f.root,'not-launched-native'),processes:reader});
+const setupService=(distributionRoot?:string)=>new ApplicationService(f.store,{distributionRoot,secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(f.root,'not-launched-worker.js'),foxmailNative:join(f.root,'not-launched-native'),processes:reader});
 const ui=<T>(work:(scope:ApplicationExecutionContext)=>Promise<T>,operations=['mail.draft'],projectId='p1',signal?:AbortSignal)=>Promise.resolve().then(()=>app.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.test',operations,semantics:'read',signal},work));
 const call=(run:OwnedCapabilityRun,operation:string,args:Record<string,unknown>,id=randomUUID())=>tools.call(run.runId,id,{operation:'smartdd_mail_'+operation+'_v1',contractMajor:1,connectionId:null,arguments:args});
 async function draft(run=cc,text?:string){const response=await call(run,'draft_create',{content:content(text)});expect(response.status,JSON.stringify(response)).toBe('ok');if(response.status!=='ok')throw new Error('draft call failed');return(response.value as {draft:MailDraftDataView}).draft;}
@@ -149,6 +151,47 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
   const first=await fox(),second=await fox('fixture-other');await selectConnections({foxmail:first.id,smtp:null});
   await expect(ui(async scope=>{expect((await app.contexts.connection(scope,'foxmail')).connection.id).toBe(first.id);await selectConnections({foxmail:second.id,smtp:null});await selectConnections({foxmail:first.id,smtp:null});app.contexts.require(scope,'mail.read');},['mail.read'])).rejects.toMatchObject({code:'CANCELED'});
   const row=f.sqlite.prepare("SELECT targets_json FROM application_data_operations WHERE action='ui.mail.test'").get() as {targets_json:string};expect(JSON.parse(row.targets_json)).toEqual([expect.objectContaining({slot:'foxmail',id:first.id,identityRevision:1,configRevision:1})]);
+ });
+ it('binds credential handles to the originally pinned connection despite mutation of returned metadata',async()=>{
+  const connections=privateConnections(),first=await connections.save({name:'first',expectedRevision:0,config:smtpConfig(),secret:'handle-first'}),second=await connections.save({name:'second',expectedRevision:0,config:smtpConfig(),secret:'handle-second'});
+  await selectConnections({foxmail:null,smtp:first.id});
+  await ui(async scope=>{
+   const resolved=await app.contexts.resolveForPackage(scope,'smtp');
+   resolved.connection.id=second.id;
+   expect(app.contexts.authenticate(scope,resolved.credentialHandle).secret).toBe('handle-first');
+  },['mail.send']);
+ });
+ it('defers credential access, rejects copied handles, uses a rotated secret and denies an ended operation',async()=>{
+  const connections=privateConnections(),first=await connections.save({name:'fixture SMTP',expectedRevision:0,config:smtpConfig(),secret:'handle-old'});
+  await selectConnections({foxmail:null,smtp:first.id});
+  let afterEnd:()=>unknown=()=>{};
+  await ui(async scope=>{
+   const readSecret=vi.spyOn(secrets,'get');readSecret.mockClear();
+   const resolved=await app.contexts.resolveForPackage(scope,'smtp');expect(readSecret).not.toHaveBeenCalled();
+   expect(()=>app.contexts.authenticate(scope,{...resolved.credentialHandle})).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
+   await connections.save({id:first.id,name:first.name,expectedRevision:first.revision,config:smtpConfig(),secret:'handle-new'});
+   expect(app.contexts.authenticate(scope,resolved.credentialHandle).secret).toBe('handle-new');
+   expect(()=>app.contexts.authenticate(scope,resolved.credentialHandle)).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
+   const remaining=await app.contexts.resolveForPackage(scope,'smtp');afterEnd=()=>app.contexts.authenticate(scope,remaining.credentialHandle);
+  },['mail.send']);
+  expect(afterEnd).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
+ });
+ it('requires an operation-pinned source for configuration views even when its project has selected the connection',async()=>{
+  const first=await privateConnections().save({name:'fixture SMTP',expectedRevision:0,config:smtpConfig(),secret:'view-pin-secret'});
+  await selectConnections({foxmail:null,smtp:first.id});
+  await ui(async scope=>{
+   expect(()=>app.contexts.configView(scope,first)).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
+   const pinned=await app.contexts.draftSender(scope,first.id);
+   expect(app.contexts.configView(scope,pinned!).view).toEqual(smtpConfig());
+  });
+ });
+ it('rejects incompatible fixed-package configuration before reading the selected credential',async()=>{
+  const first=await privateConnections().save({name:'fixture SMTP',expectedRevision:0,config:smtpConfig(),secret:'view-order-secret'});
+  await selectConnections({foxmail:null,smtp:first.id});
+  const readSecret=vi.spyOn(secrets,'get');readSecret.mockClear();
+  vi.spyOn(builtinConfigViews,'resolve').mockImplementation(()=>{throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','没有已验证的配置转换器');});
+  await expect(ui(scope=>app.contexts.connection(scope,'smtp'),['mail.send'])).rejects.toMatchObject({code:'CONFIG_COMPATIBILITY_UNVERIFIED'});
+  expect(readSecret).not.toHaveBeenCalled();
  });
  it('uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit',async()=>{
   const connections=privateConnections(),first=await connections.save({name:'fixture SMTP',expectedRevision:0,config:smtpConfig(),secret:'canary-only-old'});await selectConnections({foxmail:null,smtp:first.id});
@@ -275,4 +318,34 @@ describe('trusted connection form candidate lifecycle',()=>{
   await app.discardConnectionTest(sender,'mail',candidate.operationId);expect(secrets.has(row.ref)).toBe(false);expect(app.connections.list()).toEqual([]);expect(f.sqlite.prepare('SELECT state,error_code FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId)).toEqual({state:'failed',error_code:'CANCELED'});
   const saved=await app.testConnection(sender,{...input,name:'Saved SMTP form'});await app.saveConnection(sender,'mail',saved.operationId,saved.candidateHash);await app.discardConnectionTest(sender,'mail',saved.operationId);expect(app.connections.get(saved.connectionId)).toMatchObject({authorization:'connected',hasSecret:true});
  });
+});
+
+
+describe('trusted upgrade diagnostics through application service',()=>{
+ it('rejects a subframe before inspecting versions or distribution',async()=>{
+  const service=setupService(join(build,'bundles')),inspect=vi.spyOn(service.versions,'list');
+  try{await expect(service.listVersions({...sender,senderFrame:{}} as IpcMainInvokeEvent,'mail')).rejects.toThrow('TERMINAL_SENDER_DENIED');expect(inspect).not.toHaveBeenCalled();}finally{await service.dispose();}
+ });
+ it('returns an unavailable report without leaking filesystem exceptions or discarding existing inventory',async()=>{
+  const service=setupService(join(f.root,'private-path-canary','missing'));
+  try{const result=await service.listVersions(sender,'mail');expect(result.items.some(item=>item.defaultForNewSessions)).toBe(true);expect(result.upgrade).toEqual({state:'unavailable',targets:[],preflight:null});expect(JSON.stringify(result)).not.toContain('private-path-canary');}finally{await service.dispose();}
+ });
+ it('reports affected connection identity without exposing configuration or changing business state',async()=>{
+  const connection=await fox();f.sqlite.prepare('UPDATE application_connections SET config_json=? WHERE id=?').run('{"kind":"foxmail","privateCanary":"secret-must-not-leak"}',connection.id);
+  const service=setupService(join(build,'bundles')),before=f.sqlite.serialize();
+  try{const result=await service.listVersions(sender,'mail');expect(result.upgrade?.state).toBe('checked');expect(result.upgrade?.preflight?.issues).toEqual(expect.arrayContaining([expect.objectContaining({code:'CONNECTION_CONTRACT_UNVERIFIED',connectionId:connection.id})]));expect(JSON.stringify(result)).not.toContain('secret-must-not-leak');expect(f.sqlite.serialize()).toEqual(before);}finally{await service.dispose();}
+ });
+});
+
+it('keeps application catalog and unrelated connection management available with one corrupt config',async()=>{
+ // Deliberate persisted-state fault, matching packaged injection; not a connection-save test.
+ const connection={id:randomUUID()};
+ f.sqlite.prepare("INSERT INTO application_connections(id,app_id,provider_id,name,config_json,revision,config_revision,identity_revision,verified_identity_json,identity_hash,secret_revision,policy_revision,enabled,auth_state,health,created_at,updated_at) VALUES(?,'zentao','zentao','Synthetic corrupt config','{}',1,1,1,'{}','unknown',0,1,1,'disconnected','healthy','now','now')").run(connection.id);
+ f.sqlite.prepare('UPDATE application_connections SET config_json=? WHERE id=?').run('{broken',connection.id);
+ const before=f.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(connection.id);
+ expect(app.catalog(sender).find(row=>row.appId==='zentao')?.connectionCount).toBe(1);
+ expect(await app.listConnections(sender,'mail')).toEqual([]);
+ // This fixture installs only mail; packaged IPC separately covers ZenTao's trusted management path.
+ expect(()=>app.connections.list('zentao')).toThrow(expect.objectContaining({code:'CONFIG_INCOMPATIBLE'}));
+ expect(f.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(connection.id)).toEqual(before);
 });

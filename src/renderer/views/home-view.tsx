@@ -1,7 +1,7 @@
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, ShieldCheck, Wrench, Zap } from 'lucide-react';
+import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, ShieldCheck, Square, Wrench, Zap } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +37,8 @@ export const HomeView = observer(function HomeView() {
   const [profileId, setProfileId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [launching, setLaunching] = useState(false);
+  const [canceling, setCanceling] = useState(false);
+  const launchToken = useRef<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { data: project } = useProject(projectId);
 
@@ -90,16 +92,24 @@ export const HomeView = observer(function HomeView() {
   const launch = async () => {
     if (!ready || !projectId || !profile || !dir) return;
     setError('');
+    const token=crypto.randomUUID();launchToken.current=token;
     setLaunching(true);
     try {
-      await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message });
+      await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token });
       draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
       setMessage('');
     } catch (e) {
       setError(rpcErrorMessage(e));
     } finally {
-      setLaunching(false);
+      launchToken.current=null;setCanceling(false);setLaunching(false);
     }
+  };
+
+  const cancelPreparation = async () => {
+    const token=launchToken.current;if(!token||canceling)return;
+    setCanceling(true);
+    try { await tasksStore.cancelCreate(token); }
+    catch(e) { setError(rpcErrorMessage(e));setCanceling(false); }
   };
 
   const suggestions = [
@@ -143,7 +153,7 @@ export const HomeView = observer(function HomeView() {
           <button type="button" className="composer-permission" onClick={() => setLaunchSettings(true)}><ShieldCheck size={15} />{t('m6.projectContext')}</button>
           <div className="reference-home-picker composer-profile">{profilePicker}</div>
           <VoiceButton compact disabled={launching} onClick={() => void voiceStore.trigger(textareaVoiceTarget(inputRef.current), 'home')} />
-          <button type="submit" data-testid="home-launch" className="reference-send" disabled={!ready} aria-label={t('home.launchHint')} title={t('home.launchHint')}>{launching ? <Loader2 size={19} className="animate-spin" /> : <ArrowUp size={19} />}</button>
+          <button type={launching ? "button" : "submit"} data-testid="home-launch" className="reference-send" disabled={launching ? canceling : !ready} onClick={launching ? () => void cancelPreparation() : undefined} aria-label={t(launching ? "home.cancelPreparation" : "home.launchHint")} title={t(launching ? "home.cancelPreparation" : "home.launchHint")}>{canceling ? <Loader2 size={19} className="animate-spin" /> : launching ? <Square size={17} fill="currentColor" /> : <ArrowUp size={19} />}</button>
         </div>
       </form>
     </div>

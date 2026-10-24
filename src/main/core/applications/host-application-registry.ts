@@ -14,7 +14,7 @@ export type HostedCandidate<C extends HostedConfiguration>=Omit<VerifiedConnecti
 export type HostedSelectionInput<C extends HostedConfiguration,A extends string>=Omit<ProjectApplicationSelectionInput,'appId'|'connections'>&{appId:A;connections:Partial<Record<C['kind'],string|null>>};
 export type HostedSelection<C extends HostedConfiguration,A extends string>=Omit<ProjectApplicationSelection,'appId'|'connections'|'slotRevisions'>&{appId:A;connections:Partial<Record<C['kind'],string|null>>;slotRevisions:Partial<Record<C['kind'],number>>};
 export interface HostProvider<C extends HostedConfiguration,A extends string>{
- id:C['kind'];appId:A;configApiMajor:1;configSchema:z.ZodType<C>;
+ id:C['kind'];appId:A;configApiMajor:1;configSchemaVersion?:number;configSchema:z.ZodType<C>;
  authentication:{kind:'secret';modes:readonly string[]}|{kind:'none';mode:string};
  permissions:{read:string;write:string};
  validateCandidate?:(config:C,previous:C|null,secretSupplied:boolean)=>void;
@@ -43,7 +43,7 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
    this.applications.set(application.id,Object.freeze({...application,slots:Object.freeze([...application.slots])}));
   }
   for(const provider of definitions.providers){
-   if(!exactKeys(provider,['id','appId','configApiMajor','configSchema','authentication','permissions','validateCandidate'])||!id.safeParse(provider.id).success||this.providers.has(provider.id)||!this.applications.has(provider.appId)||provider.configApiMajor!==1||!provider.configSchema||typeof provider.configSchema.safeParse!=='function'||!exactKeys(provider.permissions,['read','write'])||![provider.permissions.read,provider.permissions.write].every(p=>typeof p==='string'&&p.startsWith(provider.appId+'.')&&/^[a-z][a-z0-9.-]{0,127}$/.test(p)))throw invalid();
+   if(!exactKeys(provider,['id','appId','configApiMajor','configSchemaVersion','configSchema','authentication','permissions','validateCandidate'])||!id.safeParse(provider.id).success||this.providers.has(provider.id)||!this.applications.has(provider.appId)||provider.configApiMajor!==1||!Number.isSafeInteger(provider.configSchemaVersion??1)||(provider.configSchemaVersion??1)<1||!provider.configSchema||typeof provider.configSchema.safeParse!=='function'||!exactKeys(provider.permissions,['read','write'])||![provider.permissions.read,provider.permissions.write].every(p=>typeof p==='string'&&p.startsWith(provider.appId+'.')&&/^[a-z][a-z0-9.-]{0,127}$/.test(p)))throw invalid();
    const auth=provider.authentication;
    if(!auth||auth.kind!=='none'&&auth.kind!=='secret'||auth.kind==='secret'&&(!exactKeys(auth,['kind','modes'])||!Array.isArray(auth.modes)||!auth.modes.length||new Set(auth.modes).size!==auth.modes.length||auth.modes.some((v:unknown)=>!id.safeParse(v).success))||auth.kind==='none'&&(!exactKeys(auth,['kind','mode'])||!id.safeParse(auth.mode).success))throw invalid();
    if(provider.validateCandidate!==undefined&&typeof provider.validateCandidate!=='function')throw invalid();

@@ -1,3 +1,7 @@
+import {PackageRegistry} from '../package-registry';
+import {ConfigViewRegistry} from '../config-view-registry';
+import * as manifestPolicy from '../manifest';
+import {planApplicationActivation} from '../activation-preflight';
 import {randomUUID} from 'node:crypto';
 import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -31,8 +35,9 @@ import {FixtureProcessReader,runFixture} from './run-fixture';
 // providers and a complete private distribution. No native Agent or network.
 const ids=['extalpha','extbeta'] as const;
 type Id=typeof ids[number];
-type Config={kind:Id;endpoint:string;username:string;authMode:'token'};
-const hosts:HostApplicationDefinitions<Config,Id>={api:1,applications:ids.map(id=>({id,slots:[id],stopBeforeSwitch:false})),providers:ids.map(id=>({id,appId:id,configApiMajor:1,configSchema:z.object({kind:z.literal(id),endpoint:z.url(),username:z.string().min(1),authMode:z.literal('token')}).strict(),authentication:{kind:'secret',modes:['token']},permissions:{read:id+'.read',write:id+'.write'}}))};
+type LegacyConfig={kind:Id;endpoint:string;username:string;authMode:'token'};
+type Config={kind:Id;serviceUrl:string;username:string;authMode:'token'};
+const hosts:HostApplicationDefinitions<Config,Id>={api:1,applications:ids.map(id=>({id,slots:[id],stopBeforeSwitch:false})),providers:ids.map(id=>({id,appId:id,configApiMajor:1,configSchemaVersion:2,configSchema:z.object({kind:z.literal(id),serviceUrl:z.url(),username:z.string().min(1),authMode:z.literal('token')}).strict(),authentication:{kind:'secret',modes:['token']},permissions:{read:id+'.read',write:id+'.write'}}))};
 const runtimeBytes=Buffer.from('module.exports = {};\n');
 const runtime=validateRuntime({id:'applications',protocolMajor:1,bridgeEntry:'mcp-bridge.cjs',files:{'mcp-bridge.cjs':runtimeBytes}});
 function fakePackage(id:Id){
@@ -55,6 +60,7 @@ function distribution(root:string,bundles:ReturnType<typeof fakePackage>[]){
 }
 let f:Awaited<ReturnType<typeof runFixture>>,connections:ApplicationConnectionService<Config,Id>,selections:ApplicationSelectionService<Config,Id>,contexts:ApplicationExecutionContexts<Config,Id>|undefined,tools:ApplicationToolService,builtin:BuiltinPackageRegistry;
 const running:OwnedCapabilityRun[]=[];let installed:InstalledApplicationPackage[],pids:number,executions:number;
+let physicalBusiness:((id:Id,projectId:string,semantics:'read'|'write',value:string)=>string)|undefined;
 let selected:Record<Id,string>,reader:FixtureProcessReader,onWait:()=>void,releaseLate:(()=>void)|undefined;
 const sender={} as IpcMainInvokeEvent;
 async function start(projectId:string,permissions?:readonly string[]){
@@ -64,18 +70,108 @@ async function start(projectId:string,permissions?:readonly string[]){
 }
 const call=(run:OwnedCapabilityRun,id:Id,value='normal',requestId=randomUUID(),connectionId:string|null=null,write=false,signal?:AbortSignal)=>tools.call(run.runId,requestId,{operation:'smartdd_'+id+'_'+(write?'write':'query')+'_v1',contractMajor:1,connectionId,arguments:{value}},signal);
 beforeEach(async()=>{
- contexts=undefined;releaseLate=undefined;reader=new FixtureProcessReader();const bundles=ids.map(fakePackage);f=await runFixture(reader,{application:true,runtime:runtimeBytes,applicationBundle:bundles[0]});f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','second isolated extension project',1,1)");
- const secrets=new SecretsStore(drizzle(f.sqlite,{schema}),{isAvailable:()=>true,encrypt:value=>Buffer.from(value),decrypt:value=>value.toString()});connections=new ApplicationConnectionService<Config,Id>(f.store,secrets,{verify:async(config:Config):Promise<HostedIdentity<Config>>=>({providerId:config.kind,serviceId:'isolated-'+config.kind,accountId:config.username,contractMajor:1})},1000,hosts);
+ contexts=undefined;physicalBusiness=undefined;releaseLate=undefined;reader=new FixtureProcessReader();const bundles=ids.map(fakePackage);f=await runFixture(reader,{application:true,runtime:runtimeBytes,applicationBundle:bundles[0]});f.sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p2','second isolated extension project',1,1)");
+ const secrets=new SecretsStore(drizzle(f.sqlite,{schema}),{isAvailable:()=>true,encrypt:value=>Buffer.from(value),decrypt:value=>value.toString()});connections=new ApplicationConnectionService<Config,Id>(f.store,secrets,{verify:async(config:Config):Promise<HostedIdentity<Config>>=>({providerId:config.kind,serviceId:'isolated-'+config.kind,accountId:config.username,contractMajor:1})},1000,hosts,new ConfigViewRegistry<LegacyConfig>(hosts.providers.map(provider=>({providerId:provider.id,sourceSchemaVersion:2,targetApiMajor:1,identityContractMajor:1,implementationVersion:'fixture-1',sourceSchema:provider.configSchema,targetSchema:z.object({kind:z.literal(provider.id),endpoint:z.url(),username:z.string().min(1),authMode:z.literal('token')}).strict(),authModes:['token'],authentication:()=>'token',outputAuthentication:()=>'token',convert:(value:unknown)=>{const current=value as Config;return{kind:current.kind,endpoint:current.serviceUrl,username:current.username,authMode:current.authMode};}}))));
  builtin=new BuiltinPackageRegistry(f.store,connections.registry);const source=distribution(join(f.root,'private-distribution'),bundles);installed=[];for(const entry of source.index.apps){const pack=await builtin.install(source,entry);installed.push(pack);if(!builtin.packages.active(pack.appId))await builtin.packages.activate(pack.packageHash,0);}
  selections=new ApplicationSelectionService(f.store,connections,{requireProject:projectId=>{if(!f.sqlite.prepare('SELECT id FROM projects WHERE id=?').get(projectId))throw new ApplicationError('SCOPE_DENIED','unknown project');},stopProjectRuns:async()=>true,runningInProject:()=>0});selected={extalpha:'',extbeta:''};
- for(const id of ids){const saved=await connections.save({name:id,expectedRevision:0,config:{kind:id,endpoint:'https://'+id+'.example.test/',username:'isolated-'+id,authMode:'token'},secret:'private-'+id});selected[id]=saved.id;await selections.setAdded(id,true,0);for(const projectId of ['p1','p2'])await selections.select({projectId,appId:id,expectedRevision:0,enabled:true,connections:{[id]:saved.id}});}
+ for(const id of ids){const saved=await connections.save({name:id,expectedRevision:0,config:{kind:id,serviceUrl:'https://'+id+'.example.test/',username:'isolated-'+id,authMode:'token'},secret:'private-'+id});selected[id]=saved.id;await selections.setAdded(id,true,0);for(const projectId of ['p1','p2'])await selections.select({projectId,appId:id,expectedRevision:0,enabled:true,connections:{[id]:saved.id}});}
  contexts=new ApplicationExecutionContexts(f.store,selections,connections,{requireSender:value=>{if(value!==sender)throw new ApplicationError('SCOPE_DENIED','untrusted UI');},assertRun:id=>f.runs.assertActive(id)});pids=310000;executions=0;onWait=()=>{};
- const data:ApplicationDataHost=new ApplicationBusinessDataService({registry:connections.registry,hosts:ids.map(id=>({appId:id,data:{resolve(version,method,binding){if(version!==1||binding.appId!==id||![id+'.query',id+'.write'].includes(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','unknown compiled fake route');const semantics=method.endsWith('.write')?'write':'read';return{semantics,retry:'never',timeoutMs:1000,authorize:(claim,expected)=>{selections.requireEnabled(claim.run.projectId,id);const slot=selections.connectionSlot(claim.run.projectId,id,id);if(expected!==null&&expected!==slot.connectionId)throw new ApplicationError('SCOPE_DENIED','connection is not selected');},authorizeReceipt:(claim,operationId)=>contexts!.assertAgentReceipt(claim,binding,operationId),execute:(claim,input,operation)=>contexts!.withAgent(claim,binding,operation,semantics,async scope=>{const active=await contexts!.connection(scope,id,operation.connectionId);contexts!.require(scope,binding.permission);if(typeof input.objectId==='string'&&input.objectId!==id+':'+scope.projectId)throw new ApplicationError('SCOPE_DENIED','isolated object belongs to another app/project');executions++;if(input.value==='hold'){onWait();await new Promise<void>(resolve=>{releaseLate=resolve;});if(scope.signal.aborted)throw new ApplicationError('CANCELED','isolated late producer canceled');}if(input.value==='wait'){onWait();await new Promise<never>((_,reject)=>{const cancel=()=>reject(new ApplicationError('CANCELED','isolated producer canceled'));scope.signal.addEventListener('abort',cancel,{once:true});if(scope.signal.aborted)cancel();});}if(input.value==='unknown')throw new ApplicationError('CONNECTION_UNAVAILABLE','isolated unknown external result');return{value:id+':'+String(input.value),appId:id,projectId:scope.projectId,taskId:scope.taskId,operationId:scope.operationId,connectionId:active.connection.id};})};}}}))});
+ const data:ApplicationDataHost=new ApplicationBusinessDataService({registry:connections.registry,hosts:ids.map(id=>({appId:id,data:{resolve(version,method,binding){if(version!==1||binding.appId!==id||![id+'.query',id+'.write'].includes(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','unknown compiled fake route');const semantics=method.endsWith('.write')?'write':'read';return{semantics,retry:'never',timeoutMs:1000,authorize:(claim,expected)=>{selections.requireEnabled(claim.run.projectId,id);const slot=selections.connectionSlot(claim.run.projectId,id,id);if(expected!==null&&expected!==slot.connectionId)throw new ApplicationError('SCOPE_DENIED','connection is not selected');},authorizeReceipt:(claim,operationId)=>contexts!.assertAgentReceipt(claim,binding,operationId),execute:(claim,input,operation)=>contexts!.withAgent(claim,binding,operation,semantics,async scope=>{const active=await contexts!.connection(scope,id,operation.connectionId);expect(active.configView.view).toEqual({kind:id,endpoint:active.connection.config.serviceUrl,username:active.connection.config.username,authMode:'token'});expect(active.configView.viewMajor).toBe(1);expect(active.connection.configSchemaVersion).toBe(2);contexts!.require(scope,binding.permission);if(typeof input.objectId==='string'&&input.objectId!==id+':'+scope.projectId)throw new ApplicationError('SCOPE_DENIED','isolated object belongs to another app/project');executions++;if(input.value==='hold'){onWait();await new Promise<void>(resolve=>{releaseLate=resolve;});if(scope.signal.aborted)throw new ApplicationError('CANCELED','isolated late producer canceled');}if(input.value==='wait'){onWait();await new Promise<never>((_,reject)=>{const cancel=()=>reject(new ApplicationError('CANCELED','isolated producer canceled'));scope.signal.addEventListener('abort',cancel,{once:true});if(scope.signal.aborted)cancel();});}if(input.value==='unknown')throw new ApplicationError('CONNECTION_UNAVAILABLE','isolated unknown external result');return{value:physicalBusiness?physicalBusiness(id,scope.projectId!,semantics,String(input.value)):id+':'+String(input.value),appId:id,projectId:scope.projectId,taskId:scope.taskId,operationId:scope.operationId,connectionId:active.connection.id};})};}}}))});
  tools=new ApplicationToolService(f.store,f.runs,new ApplicationAdapterRegistry(f.store,data,connections.registry),{retryDelays:[0,0]});
 });
 afterEach(async()=>{releaseLate?.();await contexts?.dispose();while(running.length)await running.pop()!.cli.exited();f?.cleanup();vi.restoreAllMocks();});
 
 describe('registered fake apps use the production discovery,adapter,context and receipt chain',()=>{
+ it('uses persisted schema 2 through fixed API 1 adapters without rewriting current configuration',async()=>{
+  const run=await start('p1');
+  for(const id of ids){
+   const before=f.sqlite.prepare('SELECT config_json,config_schema_version,config_revision FROM application_connections WHERE id=?').get(selected[id]);
+   expect(before).toMatchObject({config_schema_version:2,config_revision:1});
+   expect(JSON.parse((before as {config_json:string}).config_json)).toEqual({kind:id,serviceUrl:'https://'+id+'.example.test/',username:'isolated-'+id,authMode:'token'});
+   expect(await call(run,id)).toMatchObject({status:'ok',value:{appId:id,connectionId:selected[id]}});
+   expect(f.sqlite.prepare('SELECT config_json,config_schema_version,config_revision FROM application_connections WHERE id=?').get(selected[id])).toEqual(before);
+  }
+ });
+ it('keeps old Data API1 tools reading and writing after a trusted migration renames and restructures physical business storage',async()=>{
+  f.sqlite.exec('CREATE TABLE fixture_business_v1(app_id TEXT,project_id TEXT,body TEXT,PRIMARY KEY(app_id,project_id))');
+  f.sqlite.prepare('INSERT INTO fixture_business_v1 VALUES(?,?,?)').run('extalpha','p1','升级前业务正文');
+  physicalBusiness=(id,projectId,semantics,value)=>{
+   if(semantics==='write')f.sqlite.prepare('UPDATE fixture_business_v1 SET body=? WHERE app_id=? AND project_id=?').run(value,id,projectId);
+   return(f.sqlite.prepare('SELECT body FROM fixture_business_v1 WHERE app_id=? AND project_id=?').get(id,projectId)as{body:string}).body;
+  };
+  const run=await start('p1'),original=f.runs.assertActive(run.runId),snapshot=structuredClone(original.snapshot),pack=installed.find(item=>item.appId==='extalpha')!;
+  const originalAdapter=readFileSync(join(f.store.root,pack.relativePath,'adapter/index.cjs')),originalContract=builtin.packages.toolContractSources(pack.packageHash,'smartdd_extalpha_query_v1');
+  expect(await call(run,'extalpha')).toMatchObject({status:'ok',value:{value:'升级前业务正文'}});
+  expect(await call(run,'extalpha','旧会话写入',randomUUID(),null,true)).toMatchObject({status:'ok',value:{value:'旧会话写入'}});
+  await run.cli.exited();
+  const next=fakePackage('extalpha');next.manifest.version='2.0.0';next.manifest.tools=next.manifest.tools.map(tool=>({...tool,name:tool.name.replace(/_v1$/,'_v2'),contractMajor:2}));
+  const routes=JSON.parse(next.files['adapter/operations.json'].toString('utf8'));routes.version='2.0.0';routes.operations=Object.fromEntries(Object.entries(routes.operations).map(([name,route])=>[name.replace(/_v1$/,'_v2'),route]));next.files['adapter/operations.json']=Buffer.from(canonicalJson(routes)+'\n');
+  const migrationBytes=Buffer.from('fixture business v1 body TEXT -> v2 document_json TEXT; trusted compiled host only');next.files['migrations/fields2.sql']=migrationBytes;
+  next.manifest.migrations=[{id:'fields2',from:0,to:1,file:'migrations/fields2.sql',checksum:digest(migrationBytes)}];next.manifest.files=Object.entries(next.files).map(([path,bytes])=>({path,size:bytes.length,sha256:digest(bytes),executable:false}));
+  const source=distribution(join(f.root,'physical-upgrade-distribution'),[next]),target=await builtin.install(source,source.index.apps[0]);let migrations=0;
+  const registry=new PackageRegistry(f.store,'compiled-physical-upgrade-fixture',[{appId:'extalpha',id:'fields2',checksum:digest(migrationBytes),run:db=>{
+   migrations++;db.exec('CREATE TABLE fixture_business_v2(application TEXT,project TEXT,document_json TEXT,PRIMARY KEY(application,project))');
+   for(const row of db.prepare('SELECT app_id,project_id,body FROM fixture_business_v1').all()as{app_id:string;project_id:string;body:string}[])db.prepare('INSERT INTO fixture_business_v2 VALUES(?,?,?)').run(row.app_id,row.project_id,canonicalJson({schema:2,content:{text:row.body},encoding:'utf8'}));
+   db.exec('DROP TABLE fixture_business_v1');
+  }}]);
+  await registry.activate(target.packageHash,registry.active('extalpha')!.generation);
+  expect(migrations).toBe(1);expect(f.sqlite.prepare("SELECT name FROM sqlite_master WHERE name='fixture_business_v1'").get()).toBeUndefined();
+  expect(f.sqlite.prepare('SELECT document_json FROM fixture_business_v2').get()).toEqual({document_json:canonicalJson({schema:2,content:{text:'旧会话写入'},encoding:'utf8'})});
+  // Current compiled Data API1 maps current storage to the unchanged old contract.
+  // No SQLite handle, path, renamed column or storage schema is passed to the adapter.
+  physicalBusiness=(id,projectId,semantics,value)=>{
+   const row=f.sqlite.prepare('SELECT document_json FROM fixture_business_v2 WHERE application=? AND project=?').get(id,projectId)as{document_json:string},document=JSON.parse(row.document_json);
+   if(semantics==='write'){document.content.text=value;f.sqlite.prepare('UPDATE fixture_business_v2 SET document_json=? WHERE application=? AND project=?').run(canonicalJson(document),id,projectId);}
+   return document.content.text;
+  };
+  const resumed=await f.runs.reserve({taskId:snapshot.taskId,snapshotHash:original.run.snapshotHash,bindings:[]});running.push(resumed);await resumed.prepare();await resumed.cli.arm();const pid=++pids;reader.identities.set(pid,'darwin-proc-v1:extension:'+pid);await resumed.cli.attach(pid);
+  expect(await call(resumed,'extalpha')).toMatchObject({status:'ok',value:{value:'旧会话写入',taskId:snapshot.taskId}});
+  expect(await call(resumed,'extalpha','升级后仍由旧工具写入',randomUUID(),null,true)).toMatchObject({status:'ok',value:{value:'升级后仍由旧工具写入'}});
+  expect(f.sqlite.prepare('SELECT document_json FROM fixture_business_v2').get()).toEqual({document_json:canonicalJson({schema:2,content:{text:'升级后仍由旧工具写入'},encoding:'utf8'})});
+  expect(f.runs.assertActive(resumed.runId).snapshot).toEqual(snapshot);expect(readFileSync(join(f.store.root,pack.relativePath,'adapter/index.cjs'))).toEqual(originalAdapter);expect(builtin.packages.toolContractSources(pack.packageHash,'smartdd_extalpha_query_v1')).toEqual(originalContract);
+  await registry.activate(target.packageHash,registry.active('extalpha')!.generation);expect(migrations).toBe(1);
+  installed=installed.map(item=>item.appId==='extalpha'?target:item);const current=await start('p1');expect(f.runs.assertActive(current.runId).snapshot.packages.find(item=>item.appId==='extalpha')).toMatchObject({version:'2.0.0',packageHash:target.packageHash,dataApi:1});
+  expect(await tools.call(current.runId,randomUUID(),{operation:'smartdd_extalpha_query_v2',contractMajor:2,connectionId:null,arguments:{value:'normal'}})).toMatchObject({status:'ok',value:{value:'升级后仍由旧工具写入'}});
+  expect(await call(current,'extalpha')).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(await tools.call(resumed.runId,randomUUID(),{operation:'smartdd_extalpha_query_v2',contractMajor:2,connectionId:null,arguments:{value:'normal'}})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(f.runs.assertActive(resumed.runId).snapshot).toEqual(snapshot);
+ },15000);
+ it.each([false,true])('rejects removed host Data API before authentication for a retained adapter (cached=%s) and restores the same run',async cached=>{
+  const run=await start('p1'),snapshot=structuredClone(f.runs.assertActive(run.runId).snapshot),pack=installed.find(item=>item.appId==='extalpha')!,adapter=readFileSync(join(f.store.root,pack.relativePath,'adapter/index.cjs'));
+  if(cached)expect(await call(run,'extalpha')).toMatchObject({status:'ok'});
+  const before=executions,authenticate=vi.spyOn(connections,'authentication'),original=manifestPolicy.assertHostCompatible;
+  // Models the compiled policy of a newer host opening unchanged old data.
+  // Store/package/adapter/context/credential and tool paths remain real; this is
+  // not proof of a real API2 host or native CLI, which require packaged evidence.
+  const policy=vi.spyOn(manifestPolicy,'assertHostCompatible').mockImplementation(manifest=>{if(manifest.appId==='extalpha')throw new ApplicationError('HOST_INCOMPATIBLE','Host no longer supports this retained Data API');original(manifest);});
+  const preflight=planApplicationActivation(builtin.packages,[],[],0,{parseConfig:input=>connections.registry.parseConfig(input),parseIdentity:(input,provider)=>connections.registry.parseIdentity(input,provider),views:{resolve:request=>{const pack=installed.find(item=>item.appId===request.providerId)!;return connections.resolvePackageView(pack.packageHash,connections.get(selected[connections.registry.provider(request.providerId).id]));}}});
+  expect(preflight.issues).toContainEqual({code:'RETAINED_PACKAGE_INCOMPATIBLE',causeCode:'HOST_INCOMPATIBLE',packageHash:pack.packageHash,taskId:snapshot.taskId});
+  expect(preflight.issues.some(issue=>issue.packageHash===installed.find(item=>item.appId==='extbeta')!.packageHash)).toBe(false);
+  for(const write of [false,true])expect(await call(run,'extalpha','must-not-execute',randomUUID(),null,write)).toMatchObject({status:'error',error:{code:'HOST_INCOMPATIBLE'}});
+  expect(executions).toBe(before);expect(authenticate).not.toHaveBeenCalled();
+  expect(await call(run,'extbeta')).toMatchObject({status:'ok'});
+  policy.mockRestore();expect(await call(run,'extalpha','same-run-restored')).toMatchObject({status:'ok'});
+  expect(f.runs.assertActive(run.runId).snapshot).toEqual(snapshot);expect(readFileSync(join(f.store.root,pack.relativePath,'adapter/index.cjs'))).toEqual(adapter);
+ });
+ it.each(['unknown-schema','missing-converter','unknown-authentication','missing-account','extra-security-field','old-auth-incompatible'] as const)('rejects %s before authentication and resumes the same fixed run after repair',async fault=>{
+  const run=await start('p1'),snapshot=structuredClone(f.runs.assertActive(run.runId).snapshot),discovery=await tools.list(run.runId);
+  const pack=installed.find(p=>p.appId==='extalpha')!,adapter=readFileSync(join(f.store.root,pack.relativePath,'adapter/index.cjs'));
+  const originalConfig=(f.sqlite.prepare('SELECT config_json FROM application_connections WHERE id=?').get(selected.extalpha) as {config_json:string}).config_json;
+  const authenticate=vi.spyOn(connections,'authentication');
+  expect(await call(run,'extalpha')).toMatchObject({status:'ok'});authenticate.mockClear();
+  // Explicit persisted-state fault injection; no claim this is a supported save.
+  const resolveView=ConfigViewRegistry.prototype.resolve,empty=new ConfigViewRegistry([]);
+  const converter=vi.spyOn(ConfigViewRegistry.prototype,'resolve').mockImplementation(function(this:ConfigViewRegistry<{kind:string}>,request,source,allowed){return resolveView.call(fault==='missing-converter'&&request.providerId==='extalpha'?empty:this,request,source,fault==='old-auth-incompatible'&&request.providerId==='extalpha'?['password']:allowed);});
+  if(['unknown-authentication','missing-account','extra-security-field'].includes(fault)){const config=JSON.parse(originalConfig);if(fault==='unknown-authentication')config.authMode='oauth-new';if(fault==='missing-account')delete config.username;if(fault==='extra-security-field')config.tlsVerification=false;f.sqlite.prepare('UPDATE application_connections SET config_json=? WHERE id=?').run(canonicalJson(config),selected.extalpha);}
+  if(fault==='unknown-schema')f.sqlite.prepare('UPDATE application_connections SET config_schema_version=99 WHERE id=?').run(selected.extalpha);
+  for(const write of [false,true])expect(await call(run,'extalpha','blocked',randomUUID(),null,write)).toMatchObject({status:'error',error:{code:fault==='missing-converter'?'CONFIG_COMPATIBILITY_UNVERIFIED':'CONFIG_INCOMPATIBLE'}});
+  expect(authenticate).not.toHaveBeenCalled();expect(executions).toBe(1);
+  expect(await call(run,'extbeta')).toMatchObject({status:'ok',value:{appId:'extbeta'}});
+  converter.mockRestore();f.sqlite.prepare('UPDATE application_connections SET config_schema_version=2,config_json=? WHERE id=?').run(originalConfig,selected.extalpha);
+  for(const write of [false,true])expect(await call(run,'extalpha','recovered',randomUUID(),null,write)).toMatchObject({status:'ok',value:{appId:'extalpha',connectionId:selected.extalpha}});
+  expect(f.runs.assertActive(run.runId).snapshot).toEqual(snapshot);
+  expect((await tools.list(run.runId)).tools).toEqual(discovery.tools);
+  expect(readFileSync(join(f.store.root,pack.relativePath,'adapter/index.cjs'))).toEqual(adapter);
+  expect(f.sqlite.prepare('SELECT config_schema_version,config_revision,identity_revision FROM application_connections WHERE id=?').get(selected.extalpha)).toEqual({config_schema_version:2,config_revision:1,identity_revision:1});
+ });
  it('discovers fixed schemas and reads through both compiled fake apps in two real isolated project scopes',async()=>{
   const a=await start('p1'),b=await start('p2');expect((await tools.list(a.runId)).tools.map(t=>t.name).sort()).toEqual(installed.flatMap(p=>p.manifest.tools.map(t=>t.name)).sort());for(const run of [a,b])for(const id of ids)expect(await call(run,id)).toMatchObject({status:'ok',value:{appId:id,projectId:run===a?'p1':'p2',connectionId:selected[id],value:id+':normal'}});expect(executions).toBe(4);
   const calls=f.sqlite.prepare('SELECT project_id,app_id,state,attempt_count FROM application_invocations ORDER BY project_id,app_id').all();expect(calls).toHaveLength(4);expect(calls.every(row=>(row as {state:string}).state==='succeeded')).toBe(true);const operations=f.sqlite.prepare('SELECT caller_kind,run_id,package_hash,targets_json,state FROM application_data_operations').all() as {caller_kind:string;run_id:string;package_hash:string;targets_json:string;state:string}[];expect(operations).toHaveLength(4);for(const row of operations){expect(row.caller_kind).toBe('agent-run');expect(row.state).toBe('succeeded');expect(JSON.parse(row.targets_json)).toHaveLength(1);}expect(JSON.stringify(calls)+JSON.stringify(operations)).not.toContain('private-ext');

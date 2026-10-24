@@ -31,13 +31,7 @@ export function bundledMigrations(): MigrationRecord[] {
 
 type AppliedMigration = { hash: string; created_at: number | null };
 function appliedRecords(connection: BetterSqlite3.Database): AppliedMigration[] {
-  connection.exec(`
-    CREATE TABLE IF NOT EXISTS __drizzle_migrations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      hash TEXT NOT NULL,
-      created_at NUMERIC
-    )
-  `);
+  if (!connection.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='__drizzle_migrations'").get()) return [];
   return connection.prepare('SELECT hash, created_at FROM __drizzle_migrations ORDER BY id').all() as AppliedMigration[];
 }
 
@@ -60,11 +54,8 @@ export function guardedRebuildAlreadyApplied(connection: BetterSqlite3.Database,
   return !keys.some(key => key.source === guard[2]);
 }
 
-/**
- * Applies every migration past the recorded count, all inside one transaction: either the
- * whole batch lands or the database is left exactly as it was. Returns the applied tags.
- */
-export function runMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[], options: { recordCommit?: (applied: readonly string[]) => void } = {}): string[] {
+/** Read-only preflight: do not create even the migration table before backup. */
+export function planMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[]) {
   const recorded = appliedRecords(connection), done = recorded.length;
   if (done > migrations.length) {
     // A newer SmartDD already migrated this database; running older code on it is unsafe.
@@ -76,7 +67,15 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
       throw new Error(`迁移记录与当前程序不一致（${expected.tag}），已保留原数据库，请核查原版本`);
     }
   }
-  const pending = migrations.slice(done);
+  return { recorded, before: migrations.slice(0, done), pending: migrations.slice(done) };
+}
+
+/**
+ * Applies every migration past the recorded count, all inside one transaction: either the
+ * whole batch lands or the database is left exactly as it was. Returns the applied tags.
+ */
+export function runMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[], options: { recordCommit?: (applied: readonly string[]) => void } = {}): string[] {
+  const { recorded, pending } = planMigrations(connection, migrations);
   const rebuilding=pending.some(m=>/^-- @smartdd-foreign-key-rebuild$/m.test(m.sql));
   if(rebuilding&&connection.inTransaction)throw new Error('宿主连接表重建需要在独立迁移事务中执行');
   const foreignKeys=connection.pragma('foreign_keys',{simple:true});
@@ -85,6 +84,11 @@ export function runMigrations(connection: BetterSqlite3.Database, migrations: Mi
     // Recheck under the transaction before applying the previously planned suffix.
     const current = appliedRecords(connection);
     if (JSON.stringify(current) !== JSON.stringify(recorded)) throw new Error('迁移记录在预检后变化，已保留原数据库，请重新预检');
+    connection.exec(`CREATE TABLE IF NOT EXISTS __drizzle_migrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hash TEXT NOT NULL,
+      created_at NUMERIC
+    )`);
     const record = connection.prepare('INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)');
     for (const m of pending) {
       for (const stmt of m.sql.split('--> statement-breakpoint')) {

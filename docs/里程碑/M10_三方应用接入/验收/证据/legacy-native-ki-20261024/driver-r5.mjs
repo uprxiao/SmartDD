@@ -1,0 +1,102 @@
+// T61 service/actual-CLI fixture: production M4 source generation and retention,
+// actual native initial execution and normal owner cleanup, then packaged API2 resume.
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {execFile,execFileSync,spawn} from 'node:child_process';
+import {readFileSync,existsSync} from 'node:fs';
+import {once} from 'node:events';
+import {promisify} from 'node:util';
+import {mkdtemp,mkdir,readFile,writeFile,readdir} from 'node:fs/promises';
+import {join,dirname,resolve} from 'node:path';
+import {createHash,randomUUID} from 'node:crypto';
+import {openElectron,pause} from '../lib/electron-harness.mjs';
+import {installAppFocusGuard} from '../lib/app-focus-guard.mjs';
+
+const executable=process.env.WILLYOU_ACCEPTANCE_APP,expectedAsar=process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,cli=process.env.WILLYOU_CODEX_CLI;
+assert(executable?.startsWith('/private/tmp/willyou-m10-')&&cli&&expectedAsar);
+const helperPath=process.env.WILLYOU_LEGACY_SOURCE_HELPER,helperPin=process.env.WILLYOU_LEGACY_SOURCE_SHA;assert(helperPath?.startsWith('/private/tmp/willyou-m10-legacy-source-helper-')&&helperPin);
+const root=await mkdtemp('/private/tmp/willyou-m10-legacy-history-'),home=join(root,'home'),state=join(root,'codex'),cwd=join(root,'project'),userData=join(root,'userdata');
+for(const dir of [home,state,join(cwd,'.git')])await mkdir(dir,{recursive:true});
+const hash=b=>createHash('sha256').update(b).digest('hex'),appRoot=resolve(dirname(executable),'../..'),marker='M10_LEGACY_'+root.split('-').at(-1);
+const result={root,startedAt:new Date().toISOString(),branch:execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim(),head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty:!!execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),driverSha256:hash(await readFile(new URL(import.meta.url))),app:appRoot,asar:hash(await readFile(join(appRoot,'Contents/Resources/app.asar'))),layer:'I: production M4 producer/retention fixture with actual native initial CLI; unmodified packaged TaskService/API2 migration/interactive Codex resume; no UI or Claude pass',checks:[],requests:[],appPids:[],status:'running'};
+assert.equal(result.asar,expectedAsar);result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim()};assert.equal(result.cli.version,'codex-cli 0.162.1');
+const checked=name=>result.checks.push({name,at:new Date().toISOString(),passed:true});
+let sourceHelper,legacySource,sourcePlan,sourceLog='',sourceError='';let app,task,freshTask,project,profile,stage='native-history-fixture';
+const sockets=new Set();
+const server=createServer((req,res)=>{let data='';req.on('data',b=>{data+=b;if(data.length>4*1024*1024)req.destroy();});req.on('end',()=>{try{
+ const body=JSON.parse(data),raw=JSON.stringify(body),health=raw.match(/SMARTDD-OK-[0-9a-f]{8}/)?.[0];
+ const kind=raw.includes(marker+'_REPEAT')?'repeated':raw.includes(marker+'_FRESH')?'fresh':raw.includes(marker+'_RESUME')?'resumed':raw.includes(marker+'_INITIAL')?'initial':health?'health':'unexpected';
+ assert.notEqual(kind,'unexpected');const text=health??marker+'_'+kind.toUpperCase()+'_DONE';
+ result.requests.push({kind,at:new Date().toISOString(),sha256:hash(raw),bytes:Buffer.byteLength(raw),toolNames:(body.tools??[]).map(t=>t.name??t.type),managedSkillNames:[...new Set(raw.match(/smartdd-a-(?:mail|zentao)-[A-Za-z0-9_-]+/g)??[])]});
+ res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
+ if(['resumed','repeated'].includes(kind)&&(body.tools??[]).some(tool=>tool.name==='exec_command')){
+  result.legacyReads??={};let read=result.legacyReads[kind];
+  if(!read){
+   const original=legacySource.oldSkills[0];assert(existsSync(original.path),'Original Skill path must be repaired before native read');assert.equal(hash(readFileSync(original.path)),original.bodySha256);
+   const call={type:'function_call',id:'fc_legacy_'+kind,call_id:'call_legacy_'+kind,name:'exec_command',arguments:JSON.stringify({cmd:'/bin/cat '+"'"+original.path.replaceAll("'","'\\''")+"'",max_output_tokens:10000,yield_time_ms:1000}),status:'completed'};
+   read={call,path:original.path,bodySha256:original.bodySha256};result.legacyReads[kind]=read;
+   const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+   send('response.created',{response:{id:'resp_'+call.id,object:'response',status:'in_progress',output:[]}});send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:call.arguments});send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:call.arguments});send('response.output_item.done',{output_index:0,item:call});send('response.completed',{response:{id:'resp_'+call.id,object:'response',status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+  }
+  if(!read.output){const output=(body.input??[]).find(value=>value.type==='function_call_output'&&value.call_id===read.call.call_id);assert(output);const text=typeof output.output==='string'?output.output:JSON.stringify(output.output);const match=text.match(/^Chunk ID: [a-zA-Z0-9]+\nWall time: [0-9.]+ seconds\nProcess exited with code 0\n(?:Final output:\n|Original token count: [0-9]+\nOutput:\n)([\s\S]*)$/);assert(match,'Require actual successful native file read');assert.equal(match[1],legacySource.oldSkills[0].body);read.output=output;}
+ }
+ const id='msg_'+result.requests.length,message={id,type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text,annotations:[]}]};
+ const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+ send('response.created',{response:{id:'resp_'+id,object:'response',status:'in_progress',output:[]}});
+ send('response.output_item.added',{output_index:0,item:{...message,status:'in_progress',content:[]}});
+ send('response.content_part.added',{item_id:id,output_index:0,content_index:0,part:{type:'output_text',text:'',annotations:[]}});
+ send('response.output_text.delta',{item_id:id,output_index:0,content_index:0,delta:text});send('response.output_text.done',{item_id:id,output_index:0,content_index:0,text});
+ send('response.content_part.done',{item_id:id,output_index:0,content_index:0,part:message.content[0]});send('response.output_item.done',{output_index:0,item:message});
+ send('response.completed',{response:{id:'resp_'+id,object:'response',status:'completed',model:body.model,output:[message],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();
+ }catch(error){result.providerFailure=String(error);res.destroy(error);}});});
+server.on('connection',socket=>{sockets.add(socket);socket.on('error',()=>{});socket.on('close',()=>sockets.delete(socket));});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const port=server.address().port;
+const config='model="m10-unknown-model"\nmodel_provider="m10_fixture"\nnotify=[]\n[model_providers.m10_fixture]\nname="Synthetic local fixture"\nbase_url="http://127.0.0.1:'+port+'/v1"\nwire_api="responses"\nrequires_openai_auth=false\n[analytics]\nenabled=false\n[feedback]\nenabled=false\n[projects.'+JSON.stringify(cwd)+']\ntrust_level="trusted"\n';
+await writeFile(join(state,'config.toml'),config);const profileText='model="m10-unknown-model"\n';await writeFile(join(state,'m10-unknown.config.toml'),profileText);
+const privateEnv={HOME:home,ZDOTDIR:home,CODEX_HOME:state,SHELL:'/bin/zsh',HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',ALL_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost'};
+for(const key of Object.keys(process.env))if(!['PATH','TMPDIR','LANG','LC_ALL'].includes(key))delete process.env[key];Object.assign(process.env,privateEnv);
+const flags=['--profile','m10-unknown','--disable','hooks','--disable','apps','--disable','remote_plugin','--disable','multi_agent','--disable','shell_snapshot','-c','web_search="disabled"','--sandbox','read-only','--ask-for-approval','never'];
+async function poll(fn,ms=30000){const end=Date.now()+ms;do{if(result.providerFailure)throw Error(result.providerFailure);const v=await fn();if(v)return v;await pause(100);}while(Date.now()<end);throw Error('Bounded wait: '+stage);}
+const sql=q=>JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),q],{encoding:'utf8'})||'[]');
+async function start(){app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);result.appPids.push(app.processId);await app.evaluate("document.title='A · M10 · known M4 native recovery service fixture';true");}
+async function stop(label){await writeFile(join(root,label+'.log'),app.logs());await app.mainEvaluate("(()=>{setTimeout(()=>process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron').app.quit(),30);return true})()");const exit=await app.waitForExit();assert.equal(exit.code,0);await app.close();app=undefined;}
+async function nativeSubmit(taskId,ptyId,text,done){
+ await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId,ptyId,data:text})});true`);
+ await poll(async()=>(await app.output(ptyId)).includes(text.split(':')[0]),10000);await pause(350); // Actual native paste timer.
+ await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId,ptyId,data:'\r'})});true`);
+ await poll(async()=>{const value=await app.output(ptyId);await writeFile(join(root,'resume-terminal.txt'),value);return value.includes(done);},60000);
+}
+
+try{
+ stage='app-prerequisites';await start();project=await app.invoke('projects.create',{name:'M10 已知 M4 原生迁移',aliases:[],description:'Private legacy source fixture, actual native history',rulesPath:null},[{label:'private',path:cwd}]);result.projectId=project.id;
+ const catalog=await app.invoke('applications.catalog');assert(catalog.ok);assert((await app.invoke('applications.setAdded','mail',true,catalog.value.find(a=>a.appId==='mail').revision)).ok);assert((await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}})).ok);
+ profile=await app.invoke('aiProfiles.create',{name:'Private Codex for legacy M4',runner:'codex',executable:cli,env:Object.entries(privateEnv).map(([name,value])=>({name,value,secret:false})),args:flags,color:null,isDefault:true});const health=await poll(async()=>{const p=await app.invoke('aiProfiles.get',profile.id);return !p.checking&&p.check?p.check:null;});assert.equal(health.status,'ok');await stop('prerequisite-host');
+ stage='produce-legacy-source';assert.equal(hash(await readFile(helperPath)),helperPin);const taskId=randomUUID(),input={root,userData,home,state,cwd,projectId:project.id,profileId:profile.id,taskId,cli,flags,processHelper:join(appRoot,'Contents/Resources/native/willyou-process-identity'),prompt:marker+'_INITIAL: Reply only. Do not use tools, access project resources or change files.'};result.taskId=taskId;
+ const inputPath=join(root,'source-input.json');await writeFile(inputPath,JSON.stringify(input,null,2)+'\n');sourceHelper=spawn(executable,[helperPath,inputPath],{cwd,env:{...process.env,...privateEnv,ELECTRON_RUN_AS_NODE:'1',NODE_PATH:resolve('node_modules')},stdio:['pipe','pipe','pipe']});result.sourceHelper={path:helperPath,sha256:helperPin,pid:sourceHelper.pid};
+ const helperExit=once(sourceHelper,'exit');sourceHelper.stdout.on('data',bytes=>sourceLog+=bytes);sourceHelper.stderr.on('data',bytes=>sourceError+=bytes);
+ sourcePlan=await poll(()=>{if(sourceHelper.exitCode!==null)throw Error('Source helper failed: '+sourceError);for(const line of sourceLog.split('\n'))try{const value=JSON.parse(line);if(value.phase==='prepared')return value;}catch{}return null;},15000);result.sourcePlan=sourcePlan;
+ stage='actual-original-cli';const execution=promisify(execFile)(sourcePlan.launch.command,sourcePlan.launch.args,{cwd,env:{...process.env,...privateEnv,...sourcePlan.env},timeout:45000,maxBuffer:4*1024*1024});execution.child.stdin.end();const native=await execution;await writeFile(join(root,'initial-native.jsonl'),native.stdout);await writeFile(join(root,'initial-native.stderr'),native.stderr);
+ const events=native.stdout.trim().split('\n').map(line=>JSON.parse(line)),started=events.find(e=>e.type==='thread.started');assert(started?.thread_id);const nativeId=started.thread_id;assert(native.stdout.includes(marker+'_INITIAL_DONE'));result.originalNativeId=nativeId;
+ const histories=(await readdir(state,{recursive:true})).filter(path=>path.endsWith('.jsonl')&&path.includes(nativeId));assert.equal(histories.length,1);const history=join(state,histories[0]),historyBefore=await readFile(history);result.nativeHistory={path:history,sha256:hash(historyBefore),bytes:historyBefore.length};
+ stage='retain-and-normal-cleanup';sourceHelper.stdin.end(JSON.stringify({nativeId})+'\n');const exit=await helperExit;assert.equal(exit[0],0,sourceError);await writeFile(join(root,'source-helper.log'),sourceLog);await writeFile(join(root,'source-helper.stderr'),sourceError);sourceHelper=undefined;legacySource=JSON.parse(await readFile(join(root,'legacy-source-result.json'),'utf8'));result.legacySource=legacySource;assert(legacySource.manifestAbsent);assert.equal(legacySource.cipherCalls,0);assert(!existsSync(legacySource.removedPath));
+ await start();assert.equal(sql("SELECT runtime_snapshot FROM tasks WHERE id='"+taskId+"'")[0].runtime_snapshot,legacySource.raw);checked('Production M4 producer launched actual native Codex, retained exact old source/selection/hash, then normal owner cleanup and explicit missing-owned-Skill fixture completed');
+ stage='actual-migration-and-resume';const beforeView=sql('SELECT * FROM tasks'),view=await app.invoke('applications.session',taskId);assert(view.ok);assert.equal(view.value.selection,'unknown-history');assert.deepEqual(sql('SELECT * FROM tasks'),beforeView);
+ const opened=await app.invoke('tasks.open',{taskId,cols:100,rows:30});task=opened.task;assert.equal(task.nativeSessionId,nativeId);assert(task.ptyId);await poll(async()=>(await app.output(task.ptyId)).includes(marker+'_INITIAL'),30000);
+ await nativeSubmit(taskId,task.ptyId,marker+'_RESUME: Read the original private standard Skill file only, then reply. Do not access resources, invoke application tools or change files.',marker+'_RESUMED_DONE');
+ const diagnostic=await app.invoke('applications.session',taskId);assert(diagnostic.ok,JSON.stringify(diagnostic));assert.equal(diagnostic.value.selection,'fixed');assert(diagnostic.value.applications.every(a=>a.fixedVersion===null));
+ const row=sql("SELECT schema_version,snapshot_json,snapshot_hash FROM capability_session_snapshots WHERE task_id='"+taskId+"'")[0],fixed=JSON.parse(row.snapshot_json);assert.equal(row.schema_version,2);assert.equal(fixed.provenance,'migrated-known-legacy');assert.deepEqual(fixed.packages,[]);assert.equal(fixed.adapterBinding.version,'1.1.0');assert.equal(fixed.native.sessionId,nativeId);
+ assert.deepEqual(fixed.standardSkills.map(s=>s.projectionPath).sort(),legacySource.oldSkills.map(s=>s.path).sort());for(const old of legacySource.oldSkills)assert.equal(hash(await readFile(old.path)),old.bodySha256);
+ const taskRaw=sql("SELECT runtime_snapshot FROM tasks WHERE id='"+taskId+"'")[0].runtime_snapshot,{sessionCapabilities,...oldRuntime}=JSON.parse(taskRaw);assert.deepEqual(oldRuntime,JSON.parse(legacySource.raw));assert.equal(sessionCapabilities.snapshotHash,row.snapshot_hash);
+ const retained=sql("SELECT source_record_json,state FROM capability_legacy_migration_preparations WHERE task_id='"+taskId+"'")[0];assert.equal(retained.source_record_json,legacySource.raw);assert.equal(retained.state,'migrated');assert(result.legacyReads.resumed.output);result.migrated={diagnostic:diagnostic.value,snapshot:fixed,hash:row.snapshot_hash,taskRaw,retained};checked('Unmodified App automatically migrated exact M4 selection to API2, repaired original Skill path, resumed same native ID and completed actual full-byte Skill read without adding Mail');
+ await app.invoke('tasks.kill',taskId);await poll(()=>sql("SELECT count(*) n FROM capability_runs WHERE task_id='"+taskId+"' AND state<>'stopped'")[0].n===0);
+ stage='new-current-session';const created=await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:profile.id,firstMessage:marker+'_FRESH: Reply only, no tools or external changes.',cols:100,rows:30});freshTask=created.task;result.freshTaskId=freshTask.id;await poll(async()=>{freshTask=await app.invoke('tasks.get',freshTask.id);return freshTask.ptyId&&freshTask.nativeSessionId&&(await app.output(freshTask.ptyId)).includes(marker+'_FRESH_DONE');},60000);assert.notEqual(freshTask.nativeSessionId,nativeId);
+ const fresh=await app.invoke('applications.session',freshTask.id);assert(fresh.ok);assert.equal(fresh.value.applications.find(a=>a.appId==='mail').fixedVersion,'1.0.4');result.fresh={task:freshTask,diagnostic:fresh.value};checked('New current task uses independent native ID and Mail1.0.4 while migrated old task has no applications');await app.invoke('tasks.kill',freshTask.id);
+ stage='repeat-original-resume';const refsBefore=sql("SELECT * FROM capability_session_refs WHERE task_id='"+taskId+"' ORDER BY rowid");const again=await app.invoke('tasks.open',{taskId,cols:100,rows:30});task=again.task;assert.equal(task.nativeSessionId,nativeId);await nativeSubmit(taskId,task.ptyId,marker+'_REPEAT: Read the same original private Skill once and reply, no other actions.',marker+'_REPEATED_DONE');
+ assert(result.legacyReads.repeated.output);assert.equal(sql("SELECT snapshot_hash FROM capability_session_snapshots WHERE task_id='"+taskId+"'")[0].snapshot_hash,result.migrated.hash);assert.deepEqual(sql("SELECT * FROM capability_session_refs WHERE task_id='"+taskId+"' ORDER BY rowid"),refsBefore);assert.equal(sql("SELECT source_record_json FROM capability_legacy_migration_preparations WHERE task_id='"+taskId+"'")[0].source_record_json,legacySource.raw);checked('Second actual native resume reuses the same migrated snapshot, refs, source bytes and Skill path, with no repeated selection or M10 injection');
+ const historyAfter=await readFile(history);assert(historyAfter.subarray(0,historyBefore.length).equals(historyBefore));result.nativeHistory.afterSha256=hash(historyAfter);assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);result.profileAfter=await readFile(join(state,'m10-unknown.config.toml'),'utf8');assert(result.profileAfter.startsWith(profileText));assert.equal(sql('SELECT count(*) n FROM app_secrets')[0].n,0);assert.equal(sql('SELECT count(*) n FROM mail_drafts')[0].n,0);assert.deepEqual(app.rendererErrors,[]);checked('Original native log prefix, base config, source identity and zero secrets/business writes retained');result.status='passed-partial';result.remaining=['Codex branch only; Claude original plugin path and real native resume still require the other machine','Legacy producer/retention is a compiled source fixture using production code and owned cleanup, not an old released App','No UI, real model, external resource or SMTP pass'];
+}catch(error){result.status='failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=1;}
+finally{
+ if(sourceHelper){sourceHelper.stdin.end();sourceHelper.kill('SIGTERM');await writeFile(join(root,'source-helper.log'),sourceLog);await writeFile(join(root,'source-helper.stderr'),sourceError);}
+ if(app){for(const id of [task?.id,freshTask?.id].filter(Boolean))try{await app.invoke('tasks.kill',id);}catch{}await writeFile(join(root,'final-host.log'),app.logs());if(task?.ptyId)try{await writeFile(join(root,'final-terminal.txt'),await app.output(task.ptyId));}catch{}result.rendererErrors=app.rendererErrors;await app.close();result.ownAppCleanupComplete=true;}
+ for(const socket of sockets)socket.destroy();await new Promise(r=>server.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,stage,checks:result.checks.length,error:result.error,result:join(root,'result.json')}));
+}

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import { boundedJson } from '@shared/application-bridge';
-import type { ApplicationConnection } from '@shared/application-connections';
+import { connectionConfigSchema,type ApplicationConnection } from '@shared/application-connections';
 import { zentaoSourceRefSchema, type ZentaoSourceRef, type ZentaoWorkData, type ZentaoDetailData } from '@shared/application-zentao';
 import type { ApplicationResourceRef,ApplicationResourceChunk } from '@shared/application-data';
 import type { ApplicationDataHost,ApplicationDataBinding } from './application-adapter-registry';
@@ -11,7 +11,6 @@ import type { RunContext } from './run-registry';
 import type { ApplicationSelectionService } from './selection-service';
 import { ApplicationExecutionContexts,type ApplicationExecutionContext } from './execution-context';
 import { ApplicationDataResources,type ApplicationResourceBacking } from './data-resources';
-import { PackageConfigViews } from './package-config-views';
 import { canonicalJson,digest } from './manifest';
 import { withResourceLock } from './resource-lock';
 import { ZentaoClient,zentaoId,zentaoDetailRevision,type ZentaoKind,type ZentaoDetail } from './providers/zentao';
@@ -66,9 +65,7 @@ export function zentaoFiles(detail:ZentaoDetail,base:string):{files:FileCandidat
 }
 /** Current assigned-self reads share the same services for UI and actual fixed Agent tools. */
 export class ZentaoDataService implements ApplicationDataHost {
-  private readonly configViews:PackageConfigViews;
   constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly selections:ApplicationSelectionService){
-    this.configViews=new PackageConfigViews(contexts);
     resources.registerProvider({kind:'zentao-object-v1',appId:'zentao',contractMajor:1,permission:'zentao.read',read:(context,backing)=>this.resource(context,backing)});
   }
   private get store(){return this.contexts.store;}
@@ -81,7 +78,7 @@ export class ZentaoDataService implements ApplicationDataHost {
     return{semantics:'read',retry:'safe-read',authorize,authorizeReceipt:(run,id,_connection,signal)=>this.contexts.withReadReceipt(run,binding,id,scope=>this.receipt(scope,id),signal),execute:(run,args,operation)=>this.contexts.withAgent(run,binding,operation,'read',scope=>this.execute(scope,method,args))};
   }
   private async using<T>(context:ApplicationExecutionContext,expectedId:string|null,work:(client:ZentaoClient,connection:ApplicationConnection)=>Promise<T>):Promise<T>{
-    const {connection,secret}=await this.contexts.connection(context,'zentao',expectedId),view=this.configViews.get(context,connection);
+    const {connection,secret,configView}=await this.contexts.connection(context,'zentao',expectedId),view=connectionConfigSchema.parse(configView.view);
     if(view.kind!=='zentao')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前来源不是禅道连接');
     const client=new ZentaoClient(view,secret,connection.identity);
     try{const result=await work(client,connection);this.contexts.require(context,'zentao.read');await this.contexts.connectionHealth(context,connection,null);return result;}

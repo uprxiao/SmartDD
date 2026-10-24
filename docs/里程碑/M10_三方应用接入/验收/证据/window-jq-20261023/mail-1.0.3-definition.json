@@ -1,0 +1,4283 @@
+{
+  "schema": "smartdd-app-package-v1",
+  "version": "1.0.3",
+  "hostApi": {
+    "min": 1,
+    "max": 1
+  },
+  "dataApi": 1,
+  "runtime": {
+    "id": "applications",
+    "hash": "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+    "protocolMajor": 1
+  },
+  "adapter": {
+    "entry": "adapter/index.cjs",
+    "format": "cjs"
+  },
+  "migrations": [],
+  "appId": "mail",
+  "displayName": "邮件",
+  "description": "只读查询本机 Foxmail 邮件，跨 Agent 接续本地草稿，按明确授权通过项目当前 SMTP 发送。",
+  "connectionContracts": [
+    {
+      "providerId": "foxmail",
+      "configApiMajor": 1,
+      "identityContractMajor": 1,
+      "inputSchemaPath": "schemas/connections/foxmail.json",
+      "authModes": [
+        "local-readonly"
+      ]
+    },
+    {
+      "providerId": "smtp",
+      "configApiMajor": 1,
+      "identityContractMajor": 1,
+      "inputSchemaPath": "schemas/connections/smtp.json",
+      "authModes": [
+        "password"
+      ]
+    }
+  ],
+  "connectionSchemas": {
+    "foxmail": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "foxmail"
+        },
+        "sourcePath": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "account": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "queryDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "kind",
+        "sourcePath",
+        "account"
+      ],
+      "additionalProperties": false
+    },
+    "smtp": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "smtp"
+        },
+        "host": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "username": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "fromAddress": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "authMode": {
+          "const": "password"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "plain",
+            "starttls",
+            "implicit-tls"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "host",
+        "port",
+        "username",
+        "fromAddress",
+        "authMode",
+        "mode"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "permissions": [
+    "mail.read",
+    "mail.draft",
+    "mail.send"
+  ],
+  "skills": [
+    {
+      "id": "work-assistant",
+      "path": "skills/work-assistant",
+      "entry": "skills/work-assistant/SKILL.md",
+      "description": "搜索本地邮件、总结来往内容和待办，准备草稿及经授权的新邮件、回复或回复全部。"
+    }
+  ],
+  "tools": [
+    {
+      "name": "smartdd_mail_query_v1",
+      "description": "在项目明确选定的 Foxmail 来源和配置天数内查询；使用时检查变化，不唤起收信。",
+      "contractMajor": 1,
+      "permission": "mail.read",
+      "input": {
+        "type": "object",
+        "properties": {
+          "connectionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8192
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "refresh": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "string",
+                  "maxLength": 8192
+                },
+                "from": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "to": {
+                  "type": "string",
+                  "maxLength": 8192
+                },
+                "date": {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                "messageId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "hasAttachments": {
+                  "type": "boolean"
+                },
+                "reference": {
+                  "type": "object",
+                  "properties": {
+                    "connectionId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "identityRevision": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "nativeId": {
+                      "type": "string",
+                      "maxLength": 256
+                    },
+                    "contentRevision": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "connectionId",
+                    "identityRevision",
+                    "nativeId",
+                    "contentRevision"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "subject",
+                "from",
+                "to",
+                "date",
+                "messageId",
+                "hasAttachments",
+                "reference"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 200
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8192
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "matched": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "range": {
+            "type": "object",
+            "properties": {
+              "days": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "timeZone": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "startDate": {
+                "type": "string",
+                "maxLength": 16
+              },
+              "endDate": {
+                "type": "string",
+                "maxLength": 16
+              },
+              "start": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "endExclusive": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "days",
+              "timeZone",
+              "startDate",
+              "endDate",
+              "start",
+              "endExclusive"
+            ],
+            "additionalProperties": false
+          },
+          "checkedAt": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                "objectId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 256
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "objectId"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "complete",
+          "matched",
+          "range",
+          "checkedAt",
+          "problems"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "operation": {
+        "method": "mail.query",
+        "semantics": "read",
+        "retry": "safe-read",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_read_v1",
+      "description": "读取带原来源身份的邮件元信息、正文和普通附件引用；明确缺失或不完整部分。",
+      "contractMajor": 1,
+      "permission": "mail.read",
+      "input": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "object",
+            "properties": {
+              "connectionId": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "identityRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "nativeId": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "contentRevision": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "connectionId",
+              "identityRevision",
+              "nativeId",
+              "contentRevision"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "reference"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "object",
+            "properties": {
+              "connectionId": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "identityRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "nativeId": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "contentRevision": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "connectionId",
+              "identityRevision",
+              "nativeId",
+              "contentRevision"
+            ],
+            "additionalProperties": false
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 8192
+          },
+          "from": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "to": {
+            "type": "string",
+            "maxLength": 8192
+          },
+          "date": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "messageId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replyTo": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "maxItems": 100
+          },
+          "inReplyTo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "maxItems": 100
+          },
+          "text": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "revision": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "mediaType": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "mediaType",
+              "size"
+            ],
+            "additionalProperties": false
+          },
+          "html": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  "revision": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "mediaType": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "size": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "id",
+                  "revision",
+                  "mediaType",
+                  "size"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                "contentType": {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "size": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "contentHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "contentId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "resource": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "revision": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "mediaType": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "revision",
+                    "mediaType",
+                    "size"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "filename",
+                "contentType",
+                "size",
+                "contentHash",
+                "contentId",
+                "resource"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 100
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "reference",
+          "subject",
+          "from",
+          "to",
+          "date",
+          "messageId",
+          "replyTo",
+          "inReplyTo",
+          "references",
+          "text",
+          "html",
+          "attachments",
+          "complete",
+          "missing"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "operation": {
+        "method": "mail.read",
+        "semantics": "read",
+        "retry": "safe-read",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_resource_read_v1",
+      "description": "分块读取当前项目有权访问的邮件、草稿、审阅或附件资源；不能读取任意磁盘路径。",
+      "contractMajor": 1,
+      "permission": "mail.read",
+      "input": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "revision": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "mediaType": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "mediaType",
+              "size"
+            ],
+            "additionalProperties": false
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 262144
+          }
+        },
+        "required": [
+          "resource",
+          "offset",
+          "length"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 262144
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "utf8",
+              "base64"
+            ]
+          },
+          "data": {
+            "type": "string",
+            "maxLength": 349528
+          },
+          "nextOffset": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "eof": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "resourceId",
+          "revision",
+          "offset",
+          "length",
+          "encoding",
+          "data",
+          "nextOffset",
+          "eof"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.resource.read",
+        "semantics": "read",
+        "retry": "safe-read",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_draft_list_v1",
+      "description": "分页查看当前项目的本地草稿与发送状态，不依赖 Foxmail 或 SMTP 已配置。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8192
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "sending",
+                    "sent",
+                    "failed",
+                    "unknown"
+                  ]
+                },
+                "subject": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "attachmentCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "createdAt": {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "maxLength": 80
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "state",
+                "subject",
+                "attachmentCount",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 200
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8192
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.draft.list",
+        "semantics": "read",
+        "retry": "safe-read",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_draft_get_v1",
+      "description": "读取当前项目草稿的指定或当前修订，正文使用稳定资源引用。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "draftId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "draftId"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "sending",
+                  "sent",
+                  "failed",
+                  "unknown"
+                ]
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "content": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "reply",
+                      "reply-all"
+                    ]
+                  },
+                  "sourceMessageRef": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "identityRevision": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "nativeId": {
+                            "type": "string",
+                            "maxLength": 256
+                          },
+                          "contentRevision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "identityRevision",
+                          "nativeId",
+                          "contentRevision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "senderConnectionId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "to": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "bcc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "inReplyTo": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "maxItems": 100
+                  },
+                  "attachmentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "maxItems": 100
+                  },
+                  "text": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "html": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "revision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "revision",
+                          "mediaType",
+                          "size"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "sourceMessageRef",
+                  "senderConnectionId",
+                  "to",
+                  "cc",
+                  "bcc",
+                  "subject",
+                  "inReplyTo",
+                  "references",
+                  "attachmentIds",
+                  "text",
+                  "html"
+                ],
+                "additionalProperties": false
+              },
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "contentType": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "contentHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "filename",
+                    "contentType",
+                    "size",
+                    "contentHash"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 100
+              },
+              "activeIntentId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastExecutionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sourceTaskId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "copiedFromDraftId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "state",
+              "contentHash",
+              "content",
+              "attachments",
+              "activeIntentId",
+              "lastExecutionId",
+              "sourceTaskId",
+              "copiedFromDraftId",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "draft"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.draft.get",
+        "semantics": "read",
+        "retry": "safe-read",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_draft_create_v1",
+      "description": "保存独立的本地草稿；可以没有收件人或发件账号，不自动发送。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "reply",
+                  "reply-all"
+                ]
+              },
+              "sourceMessageRef": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "connectionId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "identityRevision": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "nativeId": {
+                        "type": "string",
+                        "maxLength": 256
+                      },
+                      "contentRevision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "connectionId",
+                      "identityRevision",
+                      "nativeId",
+                      "contentRevision"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "senderConnectionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "to": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "maxItems": 100
+              },
+              "cc": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "maxItems": 100
+              },
+              "bcc": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "maxItems": 100
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "inReplyTo": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "references": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "maxItems": 100
+              },
+              "attachmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                },
+                "maxItems": 100
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 131072
+              },
+              "html": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 131072
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "mode",
+              "sourceMessageRef",
+              "senderConnectionId",
+              "to",
+              "cc",
+              "bcc",
+              "subject",
+              "inReplyTo",
+              "references",
+              "attachmentIds",
+              "text",
+              "html"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "sending",
+                  "sent",
+                  "failed",
+                  "unknown"
+                ]
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "content": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "reply",
+                      "reply-all"
+                    ]
+                  },
+                  "sourceMessageRef": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "identityRevision": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "nativeId": {
+                            "type": "string",
+                            "maxLength": 256
+                          },
+                          "contentRevision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "identityRevision",
+                          "nativeId",
+                          "contentRevision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "senderConnectionId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "to": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "bcc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "inReplyTo": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "maxItems": 100
+                  },
+                  "attachmentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "maxItems": 100
+                  },
+                  "text": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "html": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "revision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "revision",
+                          "mediaType",
+                          "size"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "sourceMessageRef",
+                  "senderConnectionId",
+                  "to",
+                  "cc",
+                  "bcc",
+                  "subject",
+                  "inReplyTo",
+                  "references",
+                  "attachmentIds",
+                  "text",
+                  "html"
+                ],
+                "additionalProperties": false
+              },
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "contentType": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "contentHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "filename",
+                    "contentType",
+                    "size",
+                    "contentHash"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 100
+              },
+              "activeIntentId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastExecutionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sourceTaskId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "copiedFromDraftId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "state",
+              "contentHash",
+              "content",
+              "attachments",
+              "activeIntentId",
+              "lastExecutionId",
+              "sourceTaskId",
+              "copiedFromDraftId",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "draft"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.draft.create",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_draft_update_v1",
+      "description": "按明确修订更新草稿；并发冲突不能覆盖其他 Agent 或页面的修改。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "draftId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "content": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "reply",
+                  "reply-all"
+                ]
+              },
+              "sourceMessageRef": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "connectionId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "identityRevision": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "nativeId": {
+                        "type": "string",
+                        "maxLength": 256
+                      },
+                      "contentRevision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "connectionId",
+                      "identityRevision",
+                      "nativeId",
+                      "contentRevision"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "senderConnectionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "to": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "maxItems": 100
+              },
+              "cc": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "maxItems": 100
+              },
+              "bcc": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "maxItems": 100
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "inReplyTo": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "references": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "maxItems": 100
+              },
+              "attachmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                },
+                "maxItems": 100
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 131072
+              },
+              "html": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 131072
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "mode",
+              "sourceMessageRef",
+              "senderConnectionId",
+              "to",
+              "cc",
+              "bcc",
+              "subject",
+              "inReplyTo",
+              "references",
+              "attachmentIds",
+              "text",
+              "html"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "draftId",
+          "expectedRevision",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "sending",
+                  "sent",
+                  "failed",
+                  "unknown"
+                ]
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "content": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "reply",
+                      "reply-all"
+                    ]
+                  },
+                  "sourceMessageRef": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "identityRevision": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "nativeId": {
+                            "type": "string",
+                            "maxLength": 256
+                          },
+                          "contentRevision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "identityRevision",
+                          "nativeId",
+                          "contentRevision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "senderConnectionId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "to": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "bcc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "inReplyTo": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "maxItems": 100
+                  },
+                  "attachmentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "maxItems": 100
+                  },
+                  "text": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "html": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "revision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "revision",
+                          "mediaType",
+                          "size"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "sourceMessageRef",
+                  "senderConnectionId",
+                  "to",
+                  "cc",
+                  "bcc",
+                  "subject",
+                  "inReplyTo",
+                  "references",
+                  "attachmentIds",
+                  "text",
+                  "html"
+                ],
+                "additionalProperties": false
+              },
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "contentType": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "contentHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "filename",
+                    "contentType",
+                    "size",
+                    "contentHash"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 100
+              },
+              "activeIntentId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastExecutionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sourceTaskId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "copiedFromDraftId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "state",
+              "contentHash",
+              "content",
+              "attachments",
+              "activeIntentId",
+              "lastExecutionId",
+              "sourceTaskId",
+              "copiedFromDraftId",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "draft"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.draft.update",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_draft_copy_v1",
+      "description": "把指定草稿修订复制为新 ID，原已发送或结果未知的内容保持可追溯。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "draftId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "draftId",
+          "expectedRevision"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "sending",
+                  "sent",
+                  "failed",
+                  "unknown"
+                ]
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "content": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "reply",
+                      "reply-all"
+                    ]
+                  },
+                  "sourceMessageRef": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "identityRevision": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "nativeId": {
+                            "type": "string",
+                            "maxLength": 256
+                          },
+                          "contentRevision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "identityRevision",
+                          "nativeId",
+                          "contentRevision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "senderConnectionId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "to": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "bcc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "inReplyTo": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "maxItems": 100
+                  },
+                  "attachmentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "maxItems": 100
+                  },
+                  "text": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "html": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "revision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "revision",
+                          "mediaType",
+                          "size"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "sourceMessageRef",
+                  "senderConnectionId",
+                  "to",
+                  "cc",
+                  "bcc",
+                  "subject",
+                  "inReplyTo",
+                  "references",
+                  "attachmentIds",
+                  "text",
+                  "html"
+                ],
+                "additionalProperties": false
+              },
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "contentType": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "contentHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "filename",
+                    "contentType",
+                    "size",
+                    "contentHash"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 100
+              },
+              "activeIntentId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastExecutionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sourceTaskId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "copiedFromDraftId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "state",
+              "contentHash",
+              "content",
+              "attachments",
+              "activeIntentId",
+              "lastExecutionId",
+              "sourceTaskId",
+              "copiedFromDraftId",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "draft"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.draft.copy",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_reply_create_v1",
+      "description": "依据原邮件创建回复或回复全部草稿，按当前 SMTP 身份计算收件人并保留来源。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "object",
+            "properties": {
+              "connectionId": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "identityRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "nativeId": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "contentRevision": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "connectionId",
+              "identityRevision",
+              "nativeId",
+              "contentRevision"
+            ],
+            "additionalProperties": false
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "reply",
+              "reply-all"
+            ]
+          },
+          "senderConnectionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 131072
+          },
+          "html": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 131072
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "reference",
+          "mode",
+          "senderConnectionId",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "sending",
+                  "sent",
+                  "failed",
+                  "unknown"
+                ]
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "content": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "reply",
+                      "reply-all"
+                    ]
+                  },
+                  "sourceMessageRef": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "identityRevision": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "nativeId": {
+                            "type": "string",
+                            "maxLength": 256
+                          },
+                          "contentRevision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "identityRevision",
+                          "nativeId",
+                          "contentRevision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "senderConnectionId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "to": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "bcc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "maxItems": 100
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "inReplyTo": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "maxItems": 100
+                  },
+                  "attachmentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "maxItems": 100
+                  },
+                  "text": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "html": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                          },
+                          "revision": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "revision",
+                          "mediaType",
+                          "size"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "sourceMessageRef",
+                  "senderConnectionId",
+                  "to",
+                  "cc",
+                  "bcc",
+                  "subject",
+                  "inReplyTo",
+                  "references",
+                  "attachmentIds",
+                  "text",
+                  "html"
+                ],
+                "additionalProperties": false
+              },
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "contentType": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "contentHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "filename",
+                    "contentType",
+                    "size",
+                    "contentHash"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 100
+              },
+              "activeIntentId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastExecutionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sourceTaskId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "copiedFromDraftId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "state",
+              "contentHash",
+              "content",
+              "attachments",
+              "activeIntentId",
+              "lastExecutionId",
+              "sourceTaskId",
+              "copiedFromDraftId",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "draft"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "operation": {
+        "method": "mail.reply.create",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_attach_import_v1",
+      "description": "把已授权的邮件资源或工作区文件复制为草稿的稳定业务附件，不传任意路径。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "resource"
+                  },
+                  "resource": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "filename": {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  "contentType": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "kind",
+                  "resource",
+                  "filename",
+                  "contentType"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "workspace-file"
+                  },
+                  "referenceId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  "expectedHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "filename": {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  "contentType": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "kind",
+                  "referenceId",
+                  "expectedHash",
+                  "filename",
+                  "contentType"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "attachment": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "filename": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "contentType": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "id",
+              "filename",
+              "contentType",
+              "size",
+              "contentHash"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "attachment"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "operation": {
+        "method": "mail.attachment.import",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_send_prepare_v1",
+      "description": "冻结指定草稿修订、发件身份、收件人、正文及附件，生成审阅意图；本操作不提交 SMTP。",
+      "contractMajor": 1,
+      "permission": "mail.send",
+      "input": {
+        "type": "object",
+        "properties": {
+          "draftId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expectedContentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "draftId",
+          "expectedRevision",
+          "expectedContentHash"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftId": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "preparing",
+                  "awaiting-authorization",
+                  "authorized",
+                  "executing",
+                  "server-accepted",
+                  "failed",
+                  "unknown",
+                  "canceled",
+                  "stale"
+                ]
+              },
+              "reviewHash": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "review": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "authorized": {
+                "type": "boolean"
+              },
+              "executionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "result": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "server-accepted",
+                          "failed",
+                          "unknown"
+                        ]
+                      },
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "accepted": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "rejected": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "errorCode": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "smtpCode": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 100,
+                            "maximum": 599
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "messageId": {
+                        "type": "string",
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "complete",
+                      "accepted",
+                      "rejected",
+                      "errorCode",
+                      "smtpCode",
+                      "messageId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "draftId",
+              "draftRevision",
+              "state",
+              "reviewHash",
+              "review",
+              "authorized",
+              "executionId",
+              "result",
+              "errorCode",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "intent"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.send.prepare",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 60000
+      }
+    },
+    {
+      "name": "smartdd_mail_send_execute_v1",
+      "description": "执行已由宿主核验具体用户授权的冻结意图；同一意图只提交一次，unknown 不自动重发。",
+      "contractMajor": 1,
+      "permission": "mail.send",
+      "input": {
+        "type": "object",
+        "properties": {
+          "intentId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          },
+          "expectedReviewHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "intentId",
+          "expectedReviewHash"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftId": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "preparing",
+                  "awaiting-authorization",
+                  "authorized",
+                  "executing",
+                  "server-accepted",
+                  "failed",
+                  "unknown",
+                  "canceled",
+                  "stale"
+                ]
+              },
+              "reviewHash": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "review": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "authorized": {
+                "type": "boolean"
+              },
+              "executionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "result": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "server-accepted",
+                          "failed",
+                          "unknown"
+                        ]
+                      },
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "accepted": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "rejected": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "errorCode": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "smtpCode": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 100,
+                            "maximum": 599
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "messageId": {
+                        "type": "string",
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "complete",
+                      "accepted",
+                      "rejected",
+                      "errorCode",
+                      "smtpCode",
+                      "messageId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "draftId",
+              "draftRevision",
+              "state",
+              "reviewHash",
+              "review",
+              "authorized",
+              "executionId",
+              "result",
+              "errorCode",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "intent"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "operation": {
+        "method": "mail.send.execute",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 60000
+      }
+    },
+    {
+      "name": "smartdd_mail_send_get_v1",
+      "description": "读取当前项目发送意图及已有实际结果，不重放发送。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "intentId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          }
+        },
+        "required": [
+          "intentId"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftId": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "preparing",
+                  "awaiting-authorization",
+                  "authorized",
+                  "executing",
+                  "server-accepted",
+                  "failed",
+                  "unknown",
+                  "canceled",
+                  "stale"
+                ]
+              },
+              "reviewHash": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "review": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "authorized": {
+                "type": "boolean"
+              },
+              "executionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "result": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "server-accepted",
+                          "failed",
+                          "unknown"
+                        ]
+                      },
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "accepted": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "rejected": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "errorCode": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "smtpCode": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 100,
+                            "maximum": 599
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "messageId": {
+                        "type": "string",
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "complete",
+                      "accepted",
+                      "rejected",
+                      "errorCode",
+                      "smtpCode",
+                      "messageId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "draftId",
+              "draftRevision",
+              "state",
+              "reviewHash",
+              "review",
+              "authorized",
+              "executionId",
+              "result",
+              "errorCode",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "intent"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.send.get",
+        "semantics": "read",
+        "retry": "safe-read",
+        "timeoutMs": 30000
+      }
+    },
+    {
+      "name": "smartdd_mail_send_cancel_v1",
+      "description": "取消尚未提交的意图或记录停止等待请求；已提交邮件不能被撤回。",
+      "contractMajor": 1,
+      "permission": "mail.draft",
+      "input": {
+        "type": "object",
+        "properties": {
+          "intentId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+          }
+        },
+        "required": [
+          "intentId"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftId": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+              },
+              "draftRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "preparing",
+                  "awaiting-authorization",
+                  "authorized",
+                  "executing",
+                  "server-accepted",
+                  "failed",
+                  "unknown",
+                  "canceled",
+                  "stale"
+                ]
+              },
+              "reviewHash": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "review": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "revision",
+                      "mediaType",
+                      "size"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "authorized": {
+                "type": "boolean"
+              },
+              "executionId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "result": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "server-accepted",
+                          "failed",
+                          "unknown"
+                        ]
+                      },
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "accepted": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "rejected": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "maxItems": 100
+                      },
+                      "errorCode": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "smtpCode": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 100,
+                            "maximum": 599
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "messageId": {
+                        "type": "string",
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "complete",
+                      "accepted",
+                      "rejected",
+                      "errorCode",
+                      "smtpCode",
+                      "messageId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "updatedAt": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "id",
+              "draftId",
+              "draftRevision",
+              "state",
+              "reviewHash",
+              "review",
+              "authorized",
+              "executionId",
+              "result",
+              "errorCode",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "intent"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "operation": {
+        "method": "mail.send.cancel",
+        "semantics": "write",
+        "retry": "never",
+        "timeoutMs": 30000
+      }
+    }
+  ]
+}

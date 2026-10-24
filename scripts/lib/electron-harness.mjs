@@ -26,10 +26,11 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
   let ws;
   try {
     let page;
-    for (let i = 0; i < 150; i++) {
-      try { page = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((p) => p.type === 'page'); } catch { /* starting */ }
+    const startupDeadline = Date.now() + 15_000;
+    while (Date.now() < startupDeadline) {
+      if (child.exitCode !== null || child.signalCode !== null) throw new Error('Electron exited before opening its test window');
+      try { page = (await (await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(Math.max(1, Math.min(1000, startupDeadline - Date.now()))) })).json()).find((p) => p.type === 'page'); } catch { /* starting; each request is bounded too */ }
       if (page) break;
-      if (child.exitCode !== null) throw new Error('Electron exited before opening its test window');
       await pause(100);
     }
     assert(page, 'Electron debugging target not ready');
@@ -156,5 +157,5 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
         }
       },
     };
-  } catch (error) { ws?.close(); child.kill('SIGKILL'); throw error; }
+  } catch (error) { ws?.close(); child.kill('SIGKILL'); if(error&&typeof error==='object')error.electronStartupLogs=logs; throw error; }
 }

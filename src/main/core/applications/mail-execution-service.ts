@@ -25,6 +25,7 @@ interface IntentRow {
 interface GrantRow { id: string;intent_id: string;source: VerifiedMailUserAction['source'];evidence_id: string;evidence_hash: string;review_hash: string;evidence_json: string;state: string;expires_at: string }
 export interface MailSendPolicy extends MailPolicy {
   requireSend(actor: MailSendActor): void;
+  authenticate(actor:MailSendActor,connection:ApplicationConnection):{config:ConnectionConfig;secret:string|null};
   verifyUserAction(actor: MailSendActor,evidenceRef: string,intent: MailSendIntent): VerifiedMailUserAction;
   allowUiAuthorization?(actor:MailSendActor,intent:MailSendIntent):boolean;
   ownerState(owner: { instanceId: string;pid: number;startedAt: string }): 'running' | 'stopped' | 'unknown';
@@ -202,7 +203,7 @@ export class MailExecutionService {
           if (!grant || grant.state !== 'active' || grant.review_hash !== row.review_hash || Date.parse(grant.expires_at) <= Date.now()) throw new ApplicationError('AUTHORIZATION_REQUIRED','用户授权已失效，请重新核对同一具体动作');
           const action = this.evidence(actor,row,grant.evidence_id);
           if (action.source !== grant.source || digest(canonicalJson(action)) !== grant.evidence_hash) throw new ApplicationError('AUTHORIZATION_REQUIRED','授权证据已被撤销或变化');
-          const c = current.connection, authentication = this.connections.authentication(c.id,{ identityRevision: c.identityRevision,configRevision: c.configRevision,secretRevision: c.secretRevision,policyRevision: c.policyRevision });
+          const c = current.connection, authentication = this.policy.authenticate(actor,c);
           if (!authentication.secret || authentication.config.kind !== 'smtp') throw new ApplicationError('AUTH_REQUIRED','当前发件凭据不可用');
           credentials = { config: authentication.config,secret: authentication.secret };
           const executionId = randomUUID(), now = new Date().toISOString();

@@ -40,6 +40,12 @@ CDP 是 Chromium 的调试协议。用脚本启动本次打包后的 Electron Ap
 
 ## 干净环境的软件测试准备
 
+真实原生CLI验收可复用[`native-mail-window-ui.mjs`](../scripts/applications/native-mail-window-ui.mjs)：从打包App输入框启动实际Codex，再经实际MCP执行有界只读调用；本机Responses夹具只决定确定的调用顺序，不能据此宣称真实模型自主选择。该批固定Codex0.162.1，实际工具成功结果可能是字符串，错误结果可能是`input_text`块数组；先按真实结构取文本，再解析业务JSON，并保留原响应。原生CLI审批拒绝属于独立前置，不能改工具annotations、审批策略或改走RPC完成被拒绝动作；登记后继续其余只读场景。[M10实际结果与边界](里程碑/M10_三方应用接入/验收/JR_真实Codex邮件日期范围与审批边界_20261023.md)。
+
+两版原生会话可复用[`native-config-upgrade-ui.mjs`](../scripts/applications/native-config-upgrade-ui.mjs)。真实UI恢复应点击侧栏／恢复按钮并等待xterm挂载；直接`tasks.open`得到的后台PTY不会自动成为当前页面终端。向真实Codex输入后先核对已回显，再等待其短粘贴输入计时器（本批0.162.1使用350ms）后明确Enter，随后等实际模型请求／工具输出；该等待只处理原生粘贴时间语义，不能代替业务完成条件。原生profile自己的NUX计数按实际新会话与resume行为分别记录，不猜次数；只读SQL先核对真实表结构。编译的格式演进／故障宿主单列包hash和注入边界，标准包正常结果独立保留。[M10两版结果及驱动红测](里程碑/M10_三方应用接入/验收/JT_两版配置转换与原会话故障恢复_20261023.md)。
+
+测试“应用不可加载但普通Agent继续”时，使用满足普通恢复规则的合法AI配置；不要把被项目能力规则禁止的CLI Skill覆盖参数混成产品恢复缺陷。界面失焦后保留未完成的A结果，独立集成批可用生产TaskService及带taskId／ptyId的可信PTY输入，明确标I，不称键盘／恢复按钮通过，不改变原生审批／沙箱／凭据。两版驱动的`WILLYOU_T59_SERVICE_RESUME=1`仅用于明确的旧API移除I场景。[JU真实分层结果](里程碑/M10_三方应用接入/技研/JU_固定适配器运行时宿主兼容检查_20261023.md)。
+
 新机器／CI先执行`pnpm install --frozen-lockfile`、`pnpm test:prepare`，再跑相关`pnpm test`。准备命令生成本机原生文件Broker、内核进程探针、MCP运行时和不可变资源索引；只解决软件测试前置，不是打包App／GUI验收。应在批次启动前执行，不在其他批次读取out时重建。显式App原生集成与仓库原生构建分别记录来源和hash；可见窗口、系统焦点／权限和真实业务仍按对应层级补验。[M10冷启动修复与边界](里程碑/M10_三方应用接入/技研/CI冷启动测试资源与原生回归_20261023.md)。
 
 ## 复用入口
@@ -55,6 +61,14 @@ CDP 是 Chromium 的调试协议。用脚本启动本次打包后的 Electron Ap
 | [`scripts/lib/name-session-observer.mjs`](../scripts/lib/name-session-observer.mjs)、[`scripts/files/name-session-ui.mjs`](../scripts/files/name-session-ui.mjs) | 分批搜索与迟到完成：只暂存原始浏览器 Worker MessageEvent 的消费者投递，保留输入／结果 JSON，按原生实际枚举前缀核对中间快照及独立最终全集；覆盖完成后迟到更新与跨根旧会话，并核对零回包取消实例的监听和终止清理 |
 | [`scripts/lib/office-save-observer.mjs`](../scripts/lib/office-save-observer.mjs)、[`scripts/files/pptx-retry-ui.mjs`](../scripts/files/pptx-retry-ui.mjs) | Office写入失败、继续编辑和关闭保护：原鉴权/回执不变，仅临时将自有父目录改0555制造真实native写入拒绝；finally及异常清理均恢复目录模式，结合原始恢复草稿和独立ZIP/XML活动关系核对 |
 | [`scripts/lib/office-ack-observer.mjs`](../scripts/lib/office-ack-observer.mjs)、[`scripts/files/office-save-ack-ui.mjs`](../scripts/files/office-save-ack-ui.mjs) | 未失焦保存和旧成功回执：被动记录真实按键处理／焦点，native真正保存后仅延迟原回执，再输入新版；轻量JSON轮询，最终保留原始V8字节及hash、磁盘与格式独立核对 |
+
+已知旧能力的原生恢复可参考[M10 KI／KJ](里程碑/M10_三方应用接入/验收/KI_KJ_M4原生恢复与原生根保护_20261024.md)：生产旧格式来源生成／留存与正常拥有者清理独立成夹具，后续恢复用未修改的打包App及真实CLI；原生历史根故障按精确身份保留／恢复。该入口是I／原生层，不替代真实界面输入；辅助标题／健康请求须与原生工具请求分开，当前临时run字段与永久来源分别核对。
+
+原包／启动故障可复用[来源与占用驱动](../scripts/applications/native-package-fault.mjs)及[OS只读启动驱动](../scripts/applications/readonly-startup-app.mjs)。前者区分自有安装目录的合成用户占用、本次已配置来源移走、私有App副本payload完整性损坏；不扫描或删除其他App来制造“无副本”，恢复精确字节／权限后再用原native ID实际调用。后者使用真实非root OS权限拒绝，负向SMARTDD_PROBE只抑制原生错误框；不能据此声称GUI弹窗验收。数据库盘点须逐项验证迁移备份receipt及SHA256，不能把它当第二业务库，也不能跳过未知路径。
+
+多项目同cwd检查见[KP前置边界](里程碑/M10_三方应用接入/验收/KP_同cwd历史数据的真实原生项目隔离_20261024.md)。正常产品入口拒绝重复登记目录时，保留该结果；明确的历史重复路径夹具只检验持久化异常下的宿主授权，不得改算正常界面创建通过。请求记录带实际项目／目录／run／native ID和MCP namespace，不仅比较cwd。
+
+清理中断可复用[真实App GC驱动](../scripts/applications/gc-crash-app.mjs)与[严格前置夹具](../scripts/applications/fixtures/gc-precondition.ts)。私有main包装只匹配本次完整源／trash路径，在实际rename前后、单个已知文件删除后、原rm完成后写入checkpoint再暂停，外部SIGKILL本次owner；重启必须使用无包装原App及真实内核进程身份核验。保留同一operationId／plan与原IPC错误，不能用新清理操作掩盖旧中断。部分删除注入须明确作用点，不称为原生rm内部断点。停止／普通删除后的原生墓碑、文件hash与业务修订另按[KQ实证](里程碑/M10_三方应用接入/验收/KQ_KS_T65历史保留与清理中断恢复_20261024.md)核对；这些I层结果仍不代替UI确认或全部GC图／取消验收。
 
 `openElectron({executable, userData, env?, cwd?, inspectMain?})` 的 `executable` 是应用可执行文件，macOS 为 `WillYou.app/Contents/MacOS/WillYou`。正式 A 必须提供已打包可执行文件；省略时底座启动开发 Electron，只能按开发检查记账。底座当前含 WillYou 导航就绪判断和 PTY 观察初始化，是本项目内的公共底座，不是任意 Electron 产品通用库。
 
@@ -92,6 +106,8 @@ CDP 是 Chromium 的调试协议。用脚本启动本次打包后的 Electron Ap
 - 修饰键按目标平台选择。macOS 的多选点击使用 Meta；Ctrl+点击可触发上下文菜单，不能把这个系统行为当成普通多选点击失败。组件层的通用 Ctrl 分支通过不能证明 Windows、Linux 或全局系统快捷键通过。
 - 操作前置失败先检查目标、遮挡、虚拟窗口、焦点、数据、租约和旧请求，而不是连续重复整轮。测试夹具不成立时不得归为产品通过或擅自改产品以适配夹具。
 - 同机多个测试窗口共享系统焦点时，UI 输入串行；单元／原生集成等独立工作可并行。输入前核对本次目标，必要时对本次 CDP page 执行 `Page.bringToFront` 并记录真实事件／业务效果。M9 曾在并发窗口回归中未达到滚动预期，串行并前置本次窗口后通过；这不证明首轮原因已完全确证，失败仍保留。
+- 大批软件回归另存逐项进度日志；原生编译、Worker及持久化事务密集组按本机负载限制并发，不能仅增加进程数。超时先检查原运行是否仍推进，退出后保留首轮，只对失败／受影响项用原断言和原期限复验。例如M10 KZ首轮1,987/1,996通过，9失败在`--maxWorkers=2 --reporter=verbose`下全部通过；不是首轮全绿，也不由软件结果增加正式App用例通过数。[实测与边界](里程碑/M10_三方应用接入/验收/KZ_GC与任务消费竞争批量验收_20261024.md#扩展回归与有界复验)。
+- 真实SIGKILL后的接续同时核对输出、持久检查点、原操作／等待关系及资源占用终态，不能只看到新查询成功就判断恢复完整。按崩溃前捕获的精确lease ID检查，区分已完成的历史lease；读取消费者原内核身份明确退出才可恢复，未知身份、write、run及安装保留各自协议。父子读取记录先整组重核再修改，避免自己的更新破坏原证据。普通启动通过不证明迁移／激活前门闩的恢复顺序已验。[M10 LA／LB原失败、实际崩溃及复验](里程碑/M10_三方应用接入/验收/LA_LB_邮件索引时间与崩溃占用恢复_20261024.md)。
 - 原型 P 和打包 App A 在测试窗口标题或独立夹具标识中明确区分。只挂载文件区等局部组件时注明未参与的区域；测试徽标属于夹具，不写入正式产品页面。不要把隐藏原 App 后的白区或示例数据，展示为完整产品的验收结果。
 
 ## 最小可运行示例

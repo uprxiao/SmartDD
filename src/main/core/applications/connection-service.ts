@@ -1,4 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import {builtinConfigViews,ConfigViewRegistry} from './config-view-registry';
+import {validateConfigViewSchema} from './config-view-schema';
+import {PackageRegistry} from './package-registry';
+import {BuiltinPackageRegistry} from './builtin-package-registry';
 import type { SecretsStore } from '../../secrets';
 import { ApplicationError } from '@shared/applications';
 import type {ApplicationConnection,ConnectionChangePlan,ConnectionCompatibilityImpact,ConnectionConfig,ApplicationId} from '@shared/application-connections';
@@ -35,7 +39,7 @@ const safeVerificationError = (error: unknown): ApplicationError => {
 export class ApplicationConnectionService<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
   readonly registry:HostApplicationRegistry<C,A>;
   private readonly tests = new Map<string, AbortController>();
-  constructor(readonly store:ResourceStore,private readonly secrets:SecretsStore,private readonly verifier:ConnectionVerifier<C>,private readonly timeoutMs=10000,definitions?:HostApplicationDefinitions<C,A>){
+  constructor(readonly store:ResourceStore,private readonly secrets:SecretsStore,private readonly verifier:ConnectionVerifier<C>,private readonly timeoutMs=10000,definitions?:HostApplicationDefinitions<C,A>,private readonly configViews:Pick<ConfigViewRegistry<{kind:string}>,'resolve'>=builtinConfigViews){
     // The omitted-definition constructor retains the exact built-in product
     // boundary. Explicit generic callers still pass through those runtime parsers.
     this.registry=new HostApplicationRegistry(definitions??builtinHostApplications as unknown as HostApplicationDefinitions<C,A>);this.registry.register(store.sqlite);
@@ -45,20 +49,45 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
     if (!row) throw new ApplicationError('NOT_FOUND', '连接不存在'); return row;
   }
   private decodeRow(r:ConnectionRow<C,A>){
-    const config=this.registry.parseConfig(JSON.parse(r.config_json)),provider=this.registry.provider(config.kind),identity=this.registry.parseIdentity(JSON.parse(r.verified_identity_json),config.kind);
-    if(r.provider_id!==config.kind||r.app_id!==provider.appId||r.config_schema_version!==provider.configApiMajor)throw new ApplicationError('CONFIG_INCOMPATIBLE','已保存连接与当前宿主契约不符，保留原数据');
+    // Saved bytes are a compatibility boundary, not a new form submission.
+    // Do not expose parser details or attempt authentication with partial data.
+    let config:C;
+    try { config=this.registry.parseConfig(JSON.parse(r.config_json)); }
+    catch(error) {
+      if(error instanceof SyntaxError||(error instanceof ApplicationError&&error.code==='INVALID_INPUT'))throw new ApplicationError('CONFIG_INCOMPATIBLE','已保存连接与当前宿主契约不符，保留原数据');
+      throw error;
+    }
+    const provider=this.registry.provider(config.kind),identity=this.registry.parseIdentity(JSON.parse(r.verified_identity_json),config.kind);
+    if(r.provider_id!==config.kind||r.app_id!==provider.appId||r.config_schema_version!==(provider.configSchemaVersion??1))throw new ApplicationError('CONFIG_INCOMPATIBLE','已保存连接与当前宿主契约不符，保留原数据');
     return{config,provider,identity};
   }
   get(id:string):HostedConnection<C,A>{
     const r=this.row(id),{config,provider,identity}=this.decodeRow(r);
-    return {id:r.id,appId:provider.appId,providerId:provider.id,name:r.name,config,
+    return {id:r.id,appId:provider.appId,providerId:provider.id,name:r.name,config,configSchemaVersion:r.config_schema_version,
       revision: r.revision, configRevision: r.config_revision, identityRevision: r.identity_revision, secretRevision: r.secret_revision, policyRevision: r.policy_revision,
       identity, enabled: r.enabled === 1, authorization: r.auth_state,
       health: r.health, healthCode: r.health_code, healthMessage: r.health_message, testedAt: r.tested_at,
       hasSecret: !!r.secret_ref && this.secrets.has(r.secret_ref), cleanupPending: r.cleanup_pending === 1, createdAt: r.created_at, updatedAt: r.updated_at };
   }
-  list():HostedConnection<C,A>[] {
-    return (this.store.sqlite.prepare('SELECT id FROM application_connections ORDER BY created_at,id').all() as { id: string }[]).map(r => this.get(r.id));
+  /** Trusted host-only view resolution. Call after scope/pin authorization and before credential access. */
+  resolvePackageView(packageHash:string,connection:HostedConnection<C,A>){
+    const current=this.get(connection.id);
+    if(current.revision!==connection.revision||current.appId!==connection.appId||current.providerId!==connection.providerId)throw new ApplicationError('REVISION_CONFLICT','连接已变化，请重新核验本次操作');
+    const pack=new BuiltinPackageRegistry(this.store,this.registry).assertTrusted(packageHash);
+    const contract=pack.manifest.connectionContracts.find(c=>c.providerId===current.providerId);
+    if(pack.appId!==current.appId||!contract)throw new ApplicationError('SCOPE_DENIED','原包没有此连接的配置契约');
+    const resolved=this.configViews.resolve({providerId:current.providerId,sourceSchemaVersion:current.configSchemaVersion??1,targetApiMajor:contract.configApiMajor,identityContractMajor:contract.identityContractMajor},current.config,contract.authModes);
+    const schemaHash=validateConfigViewSchema(this.store,pack,current.providerId,resolved.view);
+    return {...resolved,schemaHash,configRevision:current.configRevision,identityRevision:current.identityRevision};
+  }
+  count(appId:A):number {
+    this.registry.application(appId);
+    return (this.store.sqlite.prepare('SELECT count(*) AS n FROM application_connections WHERE app_id=?').get(appId) as {n:number}).n;
+  }
+  list(appId?:A):HostedConnection<C,A>[] {
+    if(appId!==undefined)this.registry.application(appId);
+    const rows=appId===undefined?this.store.sqlite.prepare('SELECT id FROM application_connections ORDER BY created_at,id').all():this.store.sqlite.prepare('SELECT id FROM application_connections WHERE app_id=? ORDER BY created_at,id').all(appId);
+    return (rows as {id:string}[]).map(r=>this.get(r.id));
   }
   private candidate(id: string): CandidateRow {
     const row = this.store.sqlite.prepare('SELECT * FROM application_secret_changes WHERE operation_id=?').get(id) as CandidateRow | undefined;
@@ -87,18 +116,20 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
         if (related) records.push(ref);
       }
     }
-    const impacts: ConnectionCompatibilityImpact[] = [];
+    const impacts: ConnectionCompatibilityImpact[] = [],conversions:{packageHash:string;taskId:string|null;converterHash:string;viewDigest:string;schemaHash:string}[]=[];
     for (const record of records) {
       let status: 'incompatible' | 'unverified' | null = null, reason = '';
       try {
         const manifest = parseManifest(JSON.parse(record.manifest)), contract = manifest.connectionContracts.find(c => c.providerId === config.kind);
-        const authMode=this.registry.authMode(config);
-        if (!contract || contract.configApiMajor !== 1 || contract.identityContractMajor !== 1) { status = 'unverified'; reason = '缺少已支持的连接配置转换契约'; }
-        else if (!contract.authModes.includes(authMode)) { status = 'incompatible'; reason = '此版本不支持候选认证方式'; }
-      } catch { status = 'unverified'; reason = '历史包契约无法核验'; }
+        if(!contract)throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','缺少连接配置契约');
+        const view=this.configViews.resolve({providerId:config.kind,sourceSchemaVersion:this.registry.provider(config.kind).configSchemaVersion??1,targetApiMajor:contract.configApiMajor,identityContractMajor:contract.identityContractMajor},config,contract.authModes);
+        const schemaHash=validateConfigViewSchema(this.store,new PackageRegistry(this.store,'config-preflight').get(record.hash),config.kind,view.view);
+        conversions.push({packageHash:record.hash,taskId:record.taskId,converterHash:view.converterHash,viewDigest:view.viewDigest,schemaHash});
+      } catch(error) { status=error instanceof ApplicationError&&error.code==='CONFIG_INCOMPATIBLE'?'incompatible':'unverified';reason=status==='incompatible'?'此版本不能等价使用候选配置':'历史包契约或配置转换器无法核验'; }
+
       if (status) impacts.push({ packageHash: record.hash, version: record.version, taskId: record.taskId, status, reason });
     }
-    const plan = { connectionId: id ?? null, expectedRevision, configHash: digest(canonicalJson(config)), referenceHash: digest(canonicalJson(records.map(r => ({ taskId: r.taskId, hash: r.hash, snapshotHash: r.snapshotHash ?? null })))), impacts };
+    const plan = { sourceSchemaVersion:this.registry.provider(config.kind).configSchemaVersion??1,conversions,connectionId: id ?? null, expectedRevision, configHash: digest(canonicalJson(config)), referenceHash: digest(canonicalJson(records.map(r => ({ taskId: r.taskId, hash: r.hash, snapshotHash: r.snapshotHash ?? null })))), impacts };
     return { ...plan, planHash: digest(canonicalJson(plan)) };
   }
   private async verify(config:C, secret: string | null, controller: AbortController, activity?:VerificationActivity<C>): Promise<HostedIdentity<C>> {
@@ -171,11 +202,11 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
         const identity = this.registry.parseIdentity(JSON.parse(change.verified_identity_json!),value.config.kind);
         if (old && digest(canonicalJson(identity)) !== old.identity_hash) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '连接身份已变化，请显式选择新连接');
         const now = new Date().toISOString(), changedSecret = change.new_secret_ref !== change.old_secret_ref;
-        const args = { id: value.id, appId: this.registry.providerApplication(value.config.kind), provider: value.config.kind, name: value.name, config: canonicalJson(value.config), revision: (old?.revision ?? 0) + 1,
-          configRevision: old ? old.config_revision + (old.config_json !== canonicalJson(value.config) ? 1 : 0) : 1, identityRevision: old?.identity_revision ?? 1, identity: canonicalJson(identity), identityHash: digest(canonicalJson(identity)), secretRef: change.new_secret_ref,
+        const args = { configSchemaVersion:this.registry.provider(value.config.kind).configSchemaVersion??1,id: value.id, appId: this.registry.providerApplication(value.config.kind), provider: value.config.kind, name: value.name, config: canonicalJson(value.config), revision: (old?.revision ?? 0) + 1,
+          configRevision: old ? old.config_revision + (old.config_json !== canonicalJson(value.config)||old.config_schema_version!==(this.registry.provider(value.config.kind).configSchemaVersion??1) ? 1 : 0) : 1, identityRevision: old?.identity_revision ?? 1, identity: canonicalJson(identity), identityHash: digest(canonicalJson(identity)), secretRef: change.new_secret_ref,
           secretRevision: (old?.secret_revision ?? 0) + (changedSecret ? 1 : 0), policyRevision: (old?.policy_revision ?? 0) + (!old || old.auth_state === 'disconnected' ? 1 : 0), enabled: old?.enabled ?? 1, createdAt: old?.created_at ?? now, now };
-        if (old) this.store.sqlite.prepare(`UPDATE application_connections SET name=@name,config_json=@config,revision=@revision,config_revision=@configRevision,verified_identity_json=@identity,identity_hash=@identityHash,secret_ref=@secretRef,secret_revision=@secretRevision,policy_revision=@policyRevision,auth_state='connected',health='healthy',health_code='OK',health_message='连接已核验',tested_at=@now,updated_at=@now WHERE id=@id`).run(args);
-        else this.store.sqlite.prepare(`INSERT INTO application_connections(id,app_id,provider_id,name,config_json,revision,config_revision,identity_revision,verified_identity_json,identity_hash,secret_ref,secret_revision,policy_revision,enabled,auth_state,health,health_code,health_message,tested_at,created_at,updated_at) VALUES(@id,@appId,@provider,@name,@config,@revision,@configRevision,@identityRevision,@identity,@identityHash,@secretRef,@secretRevision,@policyRevision,@enabled,'connected','healthy','OK','连接已核验',@now,@createdAt,@now)`).run(args);
+        if (old) this.store.sqlite.prepare(`UPDATE application_connections SET name=@name,config_json=@config,config_schema_version=@configSchemaVersion,revision=@revision,config_revision=@configRevision,verified_identity_json=@identity,identity_hash=@identityHash,secret_ref=@secretRef,secret_revision=@secretRevision,policy_revision=@policyRevision,auth_state='connected',health='healthy',health_code='OK',health_message='连接已核验',tested_at=@now,updated_at=@now WHERE id=@id`).run(args);
+        else this.store.sqlite.prepare(`INSERT INTO application_connections(id,app_id,provider_id,name,config_json,config_schema_version,revision,config_revision,identity_revision,verified_identity_json,identity_hash,secret_ref,secret_revision,policy_revision,enabled,auth_state,health,health_code,health_message,tested_at,created_at,updated_at) VALUES(@id,@appId,@provider,@name,@config,@configSchemaVersion,@revision,@configRevision,@identityRevision,@identity,@identityHash,@secretRef,@secretRevision,@policyRevision,@enabled,'connected','healthy','OK','连接已核验',@now,@createdAt,@now)`).run(args);
         this.store.sqlite.prepare("UPDATE application_secret_changes SET state='committed',updated_at=? WHERE operation_id=?").run(now, operationId);
         committed = change;
       }).immediate());

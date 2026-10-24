@@ -1,5 +1,5 @@
 import {randomUUID,createHash} from 'node:crypto';
-import {constants,openSync,closeSync,fsyncSync,lstatSync,readFileSync,writeFileSync,renameSync,realpathSync} from 'node:fs';
+import {constants,openSync,closeSync,fsyncSync,lstatSync,readFileSync,writeFileSync,renameSync,realpathSync,readdirSync} from 'node:fs';
 import {dirname,join} from 'node:path';
 import {z} from 'zod';
 import type Database from 'better-sqlite3';
@@ -20,10 +20,15 @@ const sync=(path:string)=>{const fd=openSync(path,constants.O_RDONLY|constants.O
  * commit. All updates require this U's exclusive cooperative maintenance lease. */
 export class MigrationJournals {
  constructor(private store:ResourceStore,private lease:DatabaseAccessLease){}
- private guard(){this.lease.assertHeld();if(this.lease.mode!=='maintenance'||this.lease.root!==realpathSync(dirname(this.store.root)))throw new Error('迁移日志必须持有本数据库维护权');}
+ private guardRead(){this.lease.assertHeld();if(this.lease.root!==realpathSync(dirname(this.store.root)))throw new Error('迁移日志必须持有本数据库占用');}
+ private guard(){this.guardRead();if(this.lease.mode!=='maintenance')throw new Error('迁移日志必须持有本数据库维护权');}
  private path(id:string){if(!z.uuid().safeParse(id).success)throw new Error('迁移操作编号无效');return join(ensureStoreDirectory(this.store.root,'operations'),id+'.json');}
+ list():MigrationJournal[]{
+  this.guardRead();
+  return readdirSync(ensureStoreDirectory(this.store.root,'operations')).filter(name=>name.endsWith('.json')).map(name=>this.read(name.slice(0,-5)));
+ }
  read(id:string):MigrationJournal{
-  this.guard();const file=this.path(id),stat=lstatSync(file);if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>2*1024*1024)throw new Error('迁移日志文件身份无效');
+  this.guardRead();const file=this.path(id),stat=lstatSync(file);if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>2*1024*1024)throw new Error('迁移日志文件身份无效');
   const value=recordSchema.parse(JSON.parse(readFileSync(file,'utf8')));
   if(value.operationId!==id||value.storeId!==this.store.storeId||value.planHash!==hash(plan(value))||JSON.stringify(value.target.slice(0,value.before.length))!==JSON.stringify(value.before)||(value.state!=='prepared'&&!value.backup))throw new Error('迁移日志计划不一致');return value;
  }

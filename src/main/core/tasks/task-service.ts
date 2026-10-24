@@ -108,6 +108,7 @@ export class TaskService {
   private readonly pendingArchiveStops = new Set<(error: Error) => void>();
   private readonly runtimes = new Map<string, { taskId: string; runtime: PreparedRuntime; timer: NodeJS.Timeout; startedAt: number }>();
   private readonly now: () => number;
+  private readonly creations = new Map<string,{taskId:string;senderId:number|null}>();
   private readonly launching = new Map<string,{projectId:string;abort:AbortController}>();
   private readonly opening = new Map<string,{profileId:string|null;promise:Promise<OpenResult>}>();
   private readonly managed = new Map<string,{taskId:string;launch:TaskCapabilityLaunch;exited:boolean;exitCode?:number}>();
@@ -155,6 +156,21 @@ export class TaskService {
 
   /** New task from the home page (PRD F05 steps 1–3). Nothing is recorded if the CLI cannot start. */
   async create(req: CreateTaskRequest, sender?: TaskInputSender): Promise<OpenResult> {
+    const token=req.launchToken;
+    if(token!==undefined&&(!/^[a-f0-9-]{36}$/i.test(token)||this.creations.has(token)))throw new Error('启动请求标识无效或已在使用');
+    const id=randomUUID();
+    if(token)this.creations.set(token,{taskId:id,senderId:sender?.sender.id??null});
+    try{return await this.createOnce(req,sender,id);}finally{if(token)this.creations.delete(token);}
+  }
+
+  /** Only the initiating renderer may cancel its pending creation; settled tokens are inert. */
+  cancelCreate(token:string,sender?:TaskInputSender):boolean {
+    const pending=this.creations.get(token);
+    if(!pending||pending.senderId!==(sender?.sender.id??null))return false;
+    this.kill(pending.taskId);return true;
+  }
+
+  private async createOnce(req: CreateTaskRequest, sender: TaskInputSender|undefined,id:string): Promise<OpenResult> {
     if (this.closed) throw new Error('应用正在退出，不能启动任务');
     const project = this.d.projects.getProject(req.projectId);
     if (project.archivedAt != null) throw new Error(`项目「${project.name}」已归档，不能新建任务`);
@@ -163,7 +179,6 @@ export class TaskService {
     if (!dir.status.available) throw new Error(`代码目录不可用：${dir.path}`);
     const profile = this.d.profiles.resolve(req.aiProfileId);
 
-    const id = randomUUID();
     const ts = this.now();
     const firstMessage = req.firstMessage.trim();
     // Claude takes our id, so the task id doubles as its session id.
