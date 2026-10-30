@@ -11,20 +11,25 @@ import {join,dirname,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
+import {mixedAppConflictProbe} from './fixtures/mixed-app-conflict.mjs';
 
 const root=await mkdtemp('/private/tmp/willyou-m10-native-conflict-');
-const home=join(root,'home'),state=join(root,'codex'),cwd=join(root,'project'),userData=join(root,'userdata');
+const profileConflictCheck=process.env.WILLYOU_PROFILE_CONFLICT_CHECK==='1';
+const complexPaths=process.env.WILLYOU_CONFLICT_COMPLEX_PATHS==='1';
+const mixedAppConflictCheck=process.env.WILLYOU_MIXED_APPS_CONFLICT==='1';assert(!mixedAppConflictCheck||profileConflictCheck,'Mixed Apps follow the completed exact profile scaffold');
+const home=join(root,complexPaths?"home 中文 'quoted":'home'),state=join(root,complexPaths?'codex 中文 "quoted':'codex'),cwd=join(root,complexPaths?'project 中文 "and\'quoted':'project'),userData=join(root,'userdata');
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,cli=process.env.WILLYOU_CODEX_CLI;
 assert(executable&&cli,'Set WILLYOU_ACCEPTANCE_APP and WILLYOU_CODEX_CLI to this private package and isolated Codex executable');
 const appRoot=resolve(dirname(executable),'../..');
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const marker='M10_UI_NATIVE_TASK_'+root.split('-').at(-1);
+const mixedProbe=mixedAppConflictCheck?mixedAppConflictProbe(marker):null;
 const result={schema:'m10-packaged-native-ui-v1',startedAt:new Date().toISOString(),root,userData,home,state,cwd,
  branch:execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim(),sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),sourceDirty:!!execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
  layer:'Packaged service IPC/PTY and actual Codex; exact Skill and MCP collision/resume; synthetic model; no UI',
  isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
- marker,requests:[],checks:[],status:'running'};
+ marker,profileConflictCheck,complexPaths,requests:[],checks:[],status:'running'};
 assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
 assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
 result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
@@ -46,11 +51,12 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
  let body;try{body=JSON.parse(Buffer.concat(chunks).toString())}catch{res.writeHead(400);res.end('{}');return;}
  if(body.tools?.some(x=>(x.name??'').startsWith('mcp__wy_')))writeFile(join(root,'native-tool-definitions.json'),JSON.stringify(body.tools.filter(x=>(x.name??'').startsWith('mcp__wy_')),null,2)+'\n').catch(()=>{});
  const raw=JSON.stringify(body),taskRequest=raw.includes(marker),healthCode=raw.match(/SMARTDD-OK-[0-9a-f]{8}/)?.[0];
- const text=taskRequest?marker+'_DONE':healthCode??'M10_PRIVATE_FIXTURE_OK';
+ const text=taskRequest?marker+(raw.includes(marker+'_PROFILE_DISABLED')?'_PROFILE_DISABLED_DONE':'_DONE'):healthCode??'M10_PRIVATE_FIXTURE_OK';
  const item={at:new Date().toISOString(),kind:taskRequest?'ui-task':healthCode?'profile-health':'unclassified',model:body.model,
   requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m10-owned-config'),
-  toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
+  toolNames:(body.tools??[]).map(x=>x.name??x.type),appFunctions:(body.tools??[]).flatMap(x=>x.name?.startsWith('mcp__wy_')?(x.tools??[x]).map(t=>({namespace:x.name,name:t.name})):[]),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
+ if(mixedProbe?.respond(body,res))return;
  if(taskRequest&&raw.includes(marker+'_MCP_COLLISION')&&!result.issuedCollisionTool){
   const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='fixed_marker'));
   assert(ns,'Actual native request is missing the local draft MCP function');
@@ -105,11 +111,22 @@ const privateEnv={HOME:home,ZDOTDIR:home,CODEX_HOME:state,HTTP_PROXY:'http://127
 for(const name of Object.keys(process.env))if(!['PATH','TMPDIR','LANG','LC_ALL','WILLYOU_ACCEPTANCE_APP','WILLYOU_CODEX_CLI','WILLYOU_ACCEPTANCE_ASAR_SHA'].includes(name))delete process.env[name];
 Object.assign(process.env,privateEnv);
 async function poll(fn,timeout=30000){const end=Date.now()+timeout;let value;do{value=await fn();if(value)return value;await new Promise(r=>setTimeout(r,150));}while(Date.now()<end);throw Error('Bounded state wait timed out: '+stage);}
+async function stopTask(){await app.invoke('tasks.kill',task.id);await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&!d.value.currentRun&&d.value.recentRuns.every(r=>['stopped','failed'].includes(r.state));},30000);}
+async function sendNative(text){task=await app.invoke('tasks.get',task.id);assert(task.ptyId);await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:text})});true`);await poll(async()=>(await app.output(task.ptyId)).includes(text.split(':')[0]),10000);await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'\r'})});true`);}
+async function listAfterResolution(label,snapshot,nativeId){
+ delete result.issuedResumeTool;result.nativeResumeOutputs=[];
+ await sendNative(marker+'_RESUME_READ_'+((result.resumeCallCount??0)+1)+': List local drafts once. Do not create, change or send anything.');
+ await poll(()=>result.nativeResumeOutputs?.length===1,30000);
+ const d=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.applications.find(a=>a.appId==='mail')?.evidence.successfulToolRequests===1?d.value:null;},15000);
+ assert.equal(d.snapshotHash,snapshot);assert.equal((await app.invoke('tasks.get',task.id)).nativeSessionId,nativeId);
+ const drafts=await app.invoke('applications.drafts',project.id,{limit:50});assert(drafts.ok);assert.deepEqual(drafts.value.items,[]);
+ (result.resolutionCalls??=[]).push({label,diagnostic:d,output:result.nativeResumeOutputs[0]});return d;
+}
 async function click(selector,text){result.lastAction={selector,text};const p=await app.evaluate(`(()=>{const e=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height&&${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`});if(!e)throw Error('Control missing: '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
 async function key(key,code,num,modifiers=0,commands){for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:num,modifiers,...(type==='keyDown'&&commands?{commands}:{})});}
 try{
  await progress();app=await openElectron({executable,userData,cwd,env:privateEnv});installAppFocusGuard(app,result);result.pid=app.processId;
- await app.evaluate(`document.title='A · M10 · isolated Codex native CLI';true`);
+ await app.evaluate(`document.title='A · M10 T55 · isolated conflict ${root.split('-').at(-1)}';true`);
  stage='prerequisites';await progress();
  project=await app.invoke('projects.create',{name:'M10 原生 CLI 隔离项目',aliases:[],description:'Private native Task prerequisite',rulesPath:null},[{label:'fixture',path:cwd}]);result.projectId=project.id;
  const catalog=await app.invoke('applications.catalog');assert(catalog.ok);const mail=catalog.value.find(x=>x.appId==='mail');assert((await app.invoke('applications.setAdded','mail',true,mail.revision)).ok);
@@ -181,9 +198,33 @@ try{
  result.mcpResolved=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.currentRun?.bridge.connected?d.value:null;},45000);
  assert.equal(result.mcpResolved.snapshotHash,snapshot);assert.equal((await app.invoke('tasks.get',task.id)).nativeSessionId,original.nativeSessionId);
  checked('After test-owner removal of synthetic MCP collision, original same-ID application bridge resumes; user configuration retained separately');
+ stage='mcp-resolution-tool';await progress();result.mcpResolutionCall=await listAfterResolution('after exact MCP conflict',snapshot,original.nativeSessionId);
+ checked('After exact MCP collision removal, original actual Codex performs a fresh successful Mail draft_list with same native ID/S and no business writes');
+ if(profileConflictCheck){
+  await stopTask();const selectedPath=result.mcpResolved.applications.find(a=>a.appId==='mail').skills[0].projectionPath;
+  const disabledProfile='model="m10-ui-profile-model"\nskills.config=[{path='+JSON.stringify(skill)+',enabled=false},{path='+JSON.stringify(selectedPath)+',enabled=false}]\n'+nativeNoticeState;
+  const before=result.requests.length;await writeFile(join(state,'m10-native.config.toml'),disabledProfile);
+  stage='profile-app-disabled';await progress();await app.invoke('tasks.open',{taskId:task.id,cols:100,rows:30});
+  const disabled=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.currentRun&&d.value.applications.some(a=>a.issueCode==='AGENT_CAPABILITY_NAME_CONFLICT')?d.value:null;});
+  assert.equal(disabled.snapshotHash,snapshot);assert.equal((await app.invoke('tasks.get',task.id)).nativeSessionId,original.nativeSessionId);
+  await sendNative(marker+'_PROFILE_DISABLED: Reply normally without tools, files or external actions.');
+  await poll(async()=>result.requests.slice(before).some(r=>r.kind==='ui-task')&&(await app.output(task.ptyId)).includes(marker+'_PROFILE_DISABLED_DONE'),15000);assert(result.requests.slice(before).every(r=>r.appFunctions.length===0));
+  const preparation=disabled.currentRun.preparation;assert.equal(preparation.schema,2);assert(preparation.capabilities.filter(c=>c.kind!=='application').every(c=>c.state==='prepared'));
+  assert.equal(await readFile(join(state,'m10-native.config.toml'),'utf8'),disabledProfile);assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);assert.equal(await readFile(join(preserved,'SKILL.md'),'utf8'),conflictBytes);
+  result.profileDisabled={selectedPath,profileSha256:sha(disabledProfile),diagnostic:disabled,requests:result.requests.slice(before)};
+  checked('Exact profile disable survives later CLI empty skills.config: App is excluded, ordinary native response and independent M4 continue, user bytes unchanged');
+  await stopTask();await writeFile(join(root,'preserved-disabled-profile.toml'),disabledProfile);await writeFile(join(state,'m10-native.config.toml'),profileText+nativeNoticeState);
+  stage='profile-resolution';await progress();await app.invoke('tasks.open',{taskId:task.id,cols:100,rows:30});
+  await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.currentRun?.bridge.connected;},45000);
+  result.profileResolutionCall=await listAfterResolution('after exact profile disable',snapshot,original.nativeSessionId);
+  assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);assert.equal(await readFile(join(state,'m10-native.config.toml'),'utf8'),profileText+nativeNoticeState);
+  checked('Explicit fixture profile repair resumes same actual native ID/S and successfully calls Mail without changing user Skill/base config');
+ }
  assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);
  const profileAfter=await readFile(join(state,'m10-native.config.toml'),'utf8');assert(profileAfter.startsWith(profileText));
  result.profileMutation={beforeSha256:sha(profileText),afterSha256:sha(profileAfter),businessPrefixPreserved:true,actor:'private actual Codex TUI'};
+ await stopTask();result.finalSession=await app.invoke('applications.session',task.id);assert(result.finalSession.ok);assert(result.finalSession.value.recentRuns.every(r=>r.state==='stopped'));
+ if(mixedProbe){stage='mixed-app-conflict';await progress();await mixedProbe.run({app,result,root,home,index,appRoot,project,profile,originalTask:task,poll,checked});}
  assert.deepEqual(app.rendererErrors,[]);result.status='passed-partial';
 }catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{result.dom=await app.evaluate('document.body.innerText');if(task?.ptyId)await writeFile(join(root,'terminal-failure.txt'),await app.output(task.ptyId));await app.screenshot(join(root,'failure.png'));}catch{}}
 finally{

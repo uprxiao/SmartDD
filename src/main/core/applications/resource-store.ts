@@ -125,21 +125,37 @@ export class ResourceStore {
   async recoverActivationLeases(operationId:string,maintenance:DatabaseAccessLease):Promise<void>{
     const assertMaintenance=()=>{maintenance.assertHeld();if(maintenance.mode!=='maintenance'||maintenance.root!==realpathSync(dirname(this.root))||maintenance.root!==realpathSync(dirname(this.sqlite.name)))throw new ApplicationError('RESOURCE_BUSY','恢复激活占用需要本库独占维护权');};
     assertMaintenance();
-    await withResourceLock(this.root,()=>this.sqlite.transaction(()=>{
+    type ActivationLease={lease_id:string;resource_id:string;pid:number;process_started_at:string;state:string};
+    const readLeases=()=>this.sqlite.prepare("SELECT lease_id,resource_id,pid,process_started_at,state FROM capability_resource_leases WHERE owner_kind='application-activation' AND owner_id=? AND state<>'released' ORDER BY lease_id").all(operationId) as ActivationLease[];
+    const readOperation=()=>this.sqlite.prepare("SELECT state,plan_json FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=? AND kind='application-activation'").get(operationId,this.storeId) as {state:string;plan_json:string}|undefined;
+    await withResourceLock(this.root,()=>{
       assertMaintenance();
-      const rows=this.sqlite.prepare("SELECT lease_id,resource_id,pid,process_started_at FROM capability_resource_leases WHERE owner_kind='application-activation' AND owner_id=? AND state<>'released'").all(operationId) as {lease_id:string;resource_id:string;pid:number;process_started_at:string}[];
+      if(this.sqlite.inTransaction)throw new ApplicationError('RESOURCE_BUSY','激活占用恢复须在业务事务结束后重试');
+      const expectedLeases=readLeases(),expectedOperation=readOperation(),stoppedOwners=new Map<string,boolean>();
+      // Keep C and exclusive maintenance ownership across the native reads,
+      // but enter the business transaction only after they finish. Exact
+      // stopped identities cannot revive; mutable records are compared below.
+      for(const row of expectedLeases){
+        if(!Number.isSafeInteger(row.pid)||row.pid<1||typeof row.process_started_at!=='string'||!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(row.process_started_at)||!this.options.processes)continue;
+        const identity={pid:row.pid,startedAt:row.process_started_at},key=canonicalJson(identity);
+        if(!stoppedOwners.has(key))stoppedOwners.set(key,this.options.processes.state(identity)==='stopped');
+      }
+      return this.sqlite.transaction(()=>{
+      assertMaintenance();
+      const rows=readLeases(),operation=readOperation();
+      if(canonicalJson(rows)!==canonicalJson(expectedLeases)||canonicalJson(operation??null)!==canonicalJson(expectedOperation??null))throw new ApplicationError('RESOURCE_STATE_CHANGED','身份核验期间原激活计划或占用已变化，保留原记录');
       if(!rows.length)return;
-      const operation=this.sqlite.prepare("SELECT state,plan_json FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=? AND kind='application-activation'").get(operationId,this.storeId) as {state:string;plan_json:string}|undefined;
       if(!operation||!['verified','committed'].includes(operation.state))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','激活占用缺少原操作依据');
       const plan=JSON.parse(operation.plan_json);
       if(plan.operationId!==operationId||plan.storeId!==this.storeId||!Array.isArray(plan.requests)||!plan.requests.every((r:{hash?:unknown})=>typeof r.hash==='string'&&/^[a-f0-9]{64}$/.test(r.hash)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','激活占用计划不能核验');
       const ids=new Set(plan.requests.map((r:{hash:string})=>'app:'+r.hash));
       for(const row of rows){
         if(!ids.has(row.resource_id)||this.get(row.resource_id).kind!=='application-package')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','激活占用资源与计划不符');
-        if(!Number.isSafeInteger(row.pid)||row.pid<1||typeof row.process_started_at!=='string'||!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(row.process_started_at)||!this.options.processes||this.options.processes.state({pid:row.pid,startedAt:row.process_started_at})!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原激活进程仍存活或身份未知，保留占用');
+        if(stoppedOwners.get(canonicalJson({pid:row.pid,startedAt:row.process_started_at}))!==true)throw new ApplicationError('RESOURCE_BUSY','原激活进程仍存活或身份未知，保留占用');
       }
       for(const row of rows)this.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=? AND owner_kind='application-activation' AND owner_id=?").run(new Date().toISOString(),row.lease_id,operationId);
-    }).immediate());
+      }).immediate();
+    });
   }
   /** Absence is repairable; an occupied or linked path is never an empty target. */
   private missingTarget(spec: PublishResource): boolean {
@@ -291,23 +307,45 @@ export class ResourceStore {
     this.checkSpec(spec);
     if (!/^[a-f0-9-]{36}$/.test(operationId)) throw new ApplicationError('INVALID_PACKAGE', '恢复操作标识无效');
     let leaseId = '', alreadyReady = false;
-    await withResourceLock(this.root, () => this.sqlite.transaction(() => {
+    type Operation={kind:string;state:string;plan:string};
+    type Install={lease_id:string;resource_id:string;host_instance_id:string;pid:number|null;process_started_at:string|null;state:string};
+    const validIdentity=(v:ProcessIdentity|null|undefined):v is ProcessIdentity=>!!v&&Number.isSafeInteger(v.pid)&&v.pid>0&&typeof v.startedAt==='string'&&/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(v.startedAt);
+    const readOperation=()=>this.sqlite.prepare('SELECT kind,state,plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId,this.storeId) as Operation|undefined;
+    const readInstalls=()=>this.sqlite.prepare("SELECT lease_id,resource_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE owner_id=? AND owner_kind='install' ORDER BY lease_id").all(operationId) as Install[];
+    await withResourceLock(this.root, () => {
+      if(this.sqlite.inTransaction)throw new ApplicationError('RESOURCE_BUSY','资源恢复须在业务事务结束后重试');
+      const expectedOperation=readOperation(),expectedInstalls=readInstalls(),stoppedOwners=new Map<string,boolean>();
+      const observe=(identity:ProcessIdentity|null|undefined)=>{
+        if(!validIdentity(identity)||!this.options.processes)return;
+        const key=canonicalJson(identity);
+        if(!stoppedOwners.has(key))stoppedOwners.set(key,this.options.processes.state(identity)==='stopped');
+      };
+      // Keep C ownership, but never hold a business write transaction across
+      // native process queries. Exact stopped identities cannot revive. All
+      // mutable operation/lease fields are compared again inside the transaction.
+      if(expectedOperation&&!['failed','committed'].includes(expectedOperation.state)){
+        let host:ProcessIdentity|null|undefined;
+        try{const plan=JSON.parse(expectedOperation.plan);if(plan?.host?.pid===plan?.pid)host=plan.host;}catch{/* The transactional validator reports the original malformed plan. */}
+        observe(host);
+      }
+      for(const lease of expectedInstalls)if(lease.state!=='released')observe({pid:lease.pid!,startedAt:lease.process_started_at!});
+      return this.sqlite.transaction(() => {
       const slotOld=this.get(spec.resourceId);assertClaudePublication(this,spec.relativePath,spec.contentHash,slotOld.state==='ready'&&slotOld.integrity==='valid');
       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || this.activeOperations.has(operationId)) throw new ApplicationError('RESOURCE_BUSY', '原发布操作仍在执行或归属不同');
-      const operation = this.sqlite.prepare('SELECT kind,state,plan_json AS plan FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId, this.storeId) as {kind:string;state:string;plan:string}|undefined;
+      const operation = readOperation();
+      if(canonicalJson(operation??null)!==canonicalJson(expectedOperation??null))throw new ApplicationError('RESOURCE_STATE_CHANGED','身份核验期间原发布操作已变化，保留原记录');
       if(operation&&!['install-'+spec.kind,'restore-'+spec.kind].includes(operation.kind))throw new ApplicationError('RESOURCE_STATE_CHANGED','原发布操作类型不同');
       if (!operation) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '缺少原发布日志');
       let plan:{pid:number;instanceId:string;resourceId:string;hash:string;relativePath:string;dependencies:string[];host?:ProcessIdentity|null;leaseId?:string};
       try{plan=JSON.parse(operation.plan);if(!plan||!Number.isSafeInteger(plan.pid)||plan.pid<1||typeof plan.instanceId!=='string'||!Array.isArray(plan.dependencies))throw Error();}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布身份记录不完整');}
       if (plan.resourceId !== spec.resourceId || plan.hash !== spec.contentHash || plan.relativePath !== spec.relativePath || canonicalJson(plan.dependencies) !== canonicalJson([...spec.dependencies].sort())) throw new ApplicationError('RESOURCE_STATE_CHANGED', '恢复输入与原发布不一致');
-      const validIdentity=(v:ProcessIdentity|null|undefined):v is ProcessIdentity=>!!v&&Number.isSafeInteger(v.pid)&&v.pid>0&&typeof v.startedAt==='string'&&/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(v.startedAt);
       if(operation.state!=='failed'&&operation.state!=='committed'){
         if(!validIdentity(plan.host)||plan.host.pid!==plan.pid||!this.options.processes)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布者缺少可核验的内核启动身份');
-        if(this.options.processes.state(plan.host)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原发布者仍存活或身份未知，保留原占用');
+        if(stoppedOwners.get(canonicalJson(plan.host))!==true)throw new ApplicationError('RESOURCE_BUSY','原发布者仍存活或身份未知，保留原占用');
       }
-      type Install={lease_id:string;resource_id:string;host_instance_id:string;pid:number|null;process_started_at:string|null;state:string};
-      const installs=this.sqlite.prepare("SELECT lease_id,resource_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE owner_id=? AND owner_kind='install' ORDER BY lease_id").all(operationId) as Install[];
+      const installs=readInstalls();
+      if(canonicalJson(installs)!==canonicalJson(expectedInstalls))throw new ApplicationError('RESOURCE_STATE_CHANGED','身份核验期间原发布占用已变化，保留原记录');
       if(!installs.length)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布占用凭据缺失');
       if(plan.leaseId){const original=installs.find(l=>l.lease_id===plan.leaseId);if(!original)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布占用凭据缺失');if(original.resource_id!==spec.resourceId||original.host_instance_id!==plan.instanceId||original.pid!==plan.pid||plan.host&&original.process_started_at!==plan.host.startedAt)throw new ApplicationError('RESOURCE_BUSY','原发布占用已有不同恢复者，保留原记录');}
       const ended:string[]=[];
@@ -315,7 +353,7 @@ export class ResourceStore {
         if(lease.resource_id!==spec.resourceId||!['active','released','recovery-required'].includes(lease.state))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原发布占用的资源或状态不同');
         if(lease.state==='released')continue;
         const identity={pid:lease.pid!,startedAt:lease.process_started_at!};
-        if(!validIdentity(identity)||!this.options.processes||this.options.processes.state(identity)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原发布或恢复者仍存活或身份未知，保留占用');
+        if(!validIdentity(identity)||!this.options.processes||stoppedOwners.get(canonicalJson(identity))!==true)throw new ApplicationError('RESOURCE_BUSY','原发布或恢复者仍存活或身份未知，保留占用');
         ended.push(lease.lease_id);
       }
       const held=this.sqlite.prepare("SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND NOT(l.owner_kind='install' AND l.owner_id=?) AND (l.resource_id=? OR EXISTS(SELECT 1 FROM capability_lease_resources r WHERE r.lease_id=l.lease_id AND r.resource_id=?)) LIMIT 1").get(operationId,spec.resourceId,spec.resourceId);
@@ -327,7 +365,8 @@ export class ResourceStore {
       alreadyReady = row.state === 'ready' && operation.state === 'committed';
       leaseId = this.lease(spec.resourceId, operationId);
       if (!alreadyReady) this.phase(operationId, 'recovering');
-    }).immediate(), { signal });
+      }).immediate();
+    }, { signal });
     if (alreadyReady) {
       try { spec.verify(join(this.root, spec.relativePath)); return this.get(spec.resourceId); }
       finally { await withResourceLock(this.root, () => this.endLease(leaseId)); }

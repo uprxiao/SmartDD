@@ -76,9 +76,14 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
     const pack=new BuiltinPackageRegistry(this.store,this.registry).assertTrusted(packageHash);
     const contract=pack.manifest.connectionContracts.find(c=>c.providerId===current.providerId);
     if(pack.appId!==current.appId||!contract)throw new ApplicationError('SCOPE_DENIED','原包没有此连接的配置契约');
-    const resolved=this.configViews.resolve({providerId:current.providerId,sourceSchemaVersion:current.configSchemaVersion??1,targetApiMajor:contract.configApiMajor,identityContractMajor:contract.identityContractMajor},current.config,contract.authModes);
+    // A context may restore defaults captured before a same-source preference
+    // edit. It cannot override any other field, identity or schema revision.
+    const config=this.registry.parseConfig(connection.config),keys=this.registry.provider(current.providerId).readDefaultKeys??[];
+    const withoutDefaults=(value:C)=>Object.fromEntries(Object.entries(value).filter(([key])=>!keys.includes(key)));
+    if(connection.identityRevision!==current.identityRevision||connection.policyRevision!==current.policyRevision||connection.configSchemaVersion!==current.configSchemaVersion||canonicalJson(connection.identity)!==canonicalJson(current.identity)||canonicalJson(withoutDefaults(config))!==canonicalJson(withoutDefaults(current.config))||!keys.length&&canonicalJson(config)!==canonicalJson(current.config))throw new ApplicationError('REVISION_CONFLICT','连接身份、契约或来源配置已变化');
+    const resolved=this.configViews.resolve({providerId:current.providerId,sourceSchemaVersion:current.configSchemaVersion??1,targetApiMajor:contract.configApiMajor,identityContractMajor:contract.identityContractMajor},config,contract.authModes);
     const schemaHash=validateConfigViewSchema(this.store,pack,current.providerId,resolved.view);
-    return {...resolved,schemaHash,configRevision:current.configRevision,identityRevision:current.identityRevision};
+    return {...resolved,schemaHash,configRevision:connection.configRevision,identityRevision:current.identityRevision};
   }
   count(appId:A):number {
     this.registry.application(appId);

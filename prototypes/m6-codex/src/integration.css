@@ -4,6 +4,10 @@
 .apps-mode .window-navigation .m7-preview-entry{display:none}
 .m10-shell{display:flex;flex:1;min-height:0;min-width:0;font-size:13px;line-height:1.5;background:var(--bg)}
 .m10-shell button,.m10-dialog button{touch-action:manipulation}
+/* Native App button defaults; later component rules keep their own overrides. */
+.m10-shell :where(button),.m10-dialog :where(button){cursor:default}
+.m10-shell :where(button):disabled,.m10-dialog :where(button):disabled{cursor:not-allowed}
+.m10-shell :where(button):focus-visible,.m10-dialog :where(button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .m10-sidebar{width:240px;flex:0 0 240px;background:#fafafa;border-right:1px solid var(--border);padding:13px 8px 12px;display:flex;flex-direction:column;overflow:auto}
 :root[data-theme=dark] .m10-sidebar{background:#202020}
 .m10-sidebar-title{display:flex;align-items:center;justify-content:space-between;padding:0 8px;margin-bottom:13px}
@@ -52,7 +56,7 @@
 .m10-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:32px}.m10-detail-primary{min-width:0}.m10-section{margin:0 0 30px}.m10-section-heading{display:flex;align-items:center;gap:9px;margin-bottom:15px;min-height:27px}.m10-section-heading h2{font-size:15px;font-weight:500;margin:0}.m10-section-heading>span:not(.m10-appmark){font-size:11px;color:var(--muted);margin-left:auto}.m10-section-heading .m10-project-picker{margin-left:auto}.m10-section-heading .m10-appmark{width:25px;height:25px;flex-basis:25px;border:0}.m10-section-heading .m10-appmark svg{width:22px;height:22px}.m10-section-heading .m10-text-action{margin-left:auto;color:var(--secondary)}
 .m10-connection{display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid var(--border)}.m10-connection-icon{display:grid;place-items:center;width:31px;height:31px;background:var(--surface);border-radius:8px;color:var(--secondary);flex-shrink:0}.m10-connection-copy{flex:1;min-width:0}.m10-connection strong{display:block;font-size:13px;line-height:20px;font-weight:500;overflow-wrap:anywhere}.m10-connection small{display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--muted);font-size:11px;margin:3px 0 5px}.m10-state{font-size:10px;line-height:18px;color:var(--muted);white-space:nowrap}.m10-state.ready,.m10-state.success{color:#21845f}.m10-state.failed{color:#bb5a43}.m10-state.unknown{color:#aa7a23}:root[data-theme=dark] .m10-state.ready,:root[data-theme=dark] .m10-state.success{color:#82bb9e}
 .m10-switch{width:29px;height:18px;flex-shrink:0;padding:2px;border-radius:18px;background:#c9c9c9;display:flex;align-items:center}.m10-switch>span{width:14px;height:14px;background:white;border-radius:50%;box-shadow:0 1px 3px #0002}.m10-switch.on{background:#242424}.m10-switch.on>span{transform:translateX(11px)}:root[data-theme=dark] .m10-switch.on{background:#e1e1e1}:root[data-theme=dark] .m10-switch.on>span{background:#222}
-.m10-unconnected{padding:22px 15px;border:1px dashed var(--border-strong);border-radius:12px;text-align:center;color:var(--secondary)}.m10-unconnected p{font-size:12px}.m10-sender-row{display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid var(--border)}.m10-sender-row>div{flex:1}.m10-sender-row strong{display:block;font-size:12px;font-weight:500}.m10-sender-row small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.m10-sender-row>svg{color:var(--muted)}
+.m10-unconnected{padding:22px 15px;border:1px dashed var(--border-strong);border-radius:12px;text-align:center;color:var(--secondary)}.m10-unconnected p{font-size:12px}.m10-unconnected>svg{display:block;margin:0 auto}.m10-sender-row{display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid var(--border)}.m10-sender-row>div{flex:1}.m10-sender-row strong{display:block;font-size:12px;font-weight:500}.m10-sender-row small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.m10-sender-row>svg{color:var(--muted)}
 .m10-detail-meta{padding-top:5px;border-left:1px solid var(--border);padding-left:23px}.m10-detail-meta h3{font-size:12px;font-weight:500;margin:0 0 15px}.m10-detail-meta h3:not(:first-child){margin-top:28px}.m10-detail-meta>div{display:flex;gap:7px;font-size:11px;margin-bottom:12px}.m10-detail-meta>div>svg{color:var(--muted);flex-shrink:0;margin-top:2px}.m10-detail-meta small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.m10-detail-meta p{font-size:11px;line-height:19px;color:var(--secondary);margin:0 0 11px}
 .m10-project-picker{display:flex;gap:5px;align-items:center;color:var(--secondary);font-size:12px}.m10-project-picker select{border:0;background:transparent;font-size:12px;max-width:130px;padding:4px}
 .m10-object-list>button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:14px 5px;border-top:1px solid var(--border);border-radius:5px}.m10-object-list>button:hover,.m10-object-list>button.active{background:var(--surface)}.m10-priority{font-size:10px;line-height:20px;min-width:24px;text-align:center;border-radius:5px;color:#ad653a;background:#fbf0e7}.m10-priority.p2{color:#737f93;background:#eef1f6}:root[data-theme=dark] .m10-priority{background:#3a2e24;color:#d4a67d}:root[data-theme=dark] .m10-priority.p2{background:#29313d;color:#a2b1cb}.m10-object-title{flex:1;min-width:0}.m10-object-title small{font-size:10px;color:var(--muted);display:block;margin-bottom:4px}.m10-object-title strong{font-size:12px;font-weight:430;line-height:19px;display:block;overflow-wrap:anywhere}.m10-pill{font-size:10px;padding:2px 7px;border-radius:6px;color:var(--secondary);border:1px solid var(--border);white-space:nowrap}.m10-object-list>button>svg{color:var(--muted);flex-shrink:0}.m10-data-time{font-size:10px;color:var(--muted);margin:12px 3px}
@@ -73,11 +77,11 @@
 .m10-package-version{font-size:11px;font-weight:400;color:var(--muted);margin-left:9px;white-space:nowrap}
 .m10-catalog-open strong .m10-package-version{display:inline}.m10-catalog-open small:last-child{font-size:11px;color:var(--muted)}
 .m10-upgrade-control{font-size:10px;color:var(--secondary);padding:4px 8px;border:1px solid var(--border);border-radius:6px;white-space:nowrap}.m10-upgrade-control:hover{background:var(--hover)}
-.m10-package-section{margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:22px}.m10-package-heading{display:flex;gap:8px;align-items:center}.m10-package-heading>svg{color:var(--secondary)}.m10-package-heading h2{font-size:15px;font-weight:500;margin:0}.m10-package-heading small{font-size:10px;color:var(--muted);margin-left:auto}.m10-package-description{font-size:12px;color:var(--secondary);line-height:21px;margin:12px 0 4px}
+.m10-package-section{margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:22px}.m10-package-heading{display:flex;gap:8px;align-items:center}.m10-package-heading>svg{color:var(--secondary)}.m10-package-heading h2{font-size:15px;line-height:21px;font-weight:500;margin:0}.m10-package-heading small{font-size:10px;color:var(--muted);margin-left:auto}.m10-package-description{font-size:12px;color:var(--secondary);line-height:21px;margin:12px 0 4px}
 .m10-bundled-skills article{display:flex;align-items:flex-start;gap:10px;padding:14px 0}.m10-bundled-skills article>svg{color:var(--secondary);flex-shrink:0;margin-top:3px}.m10-bundled-skills article>div{min-width:0;flex:1}.m10-bundled-skills strong{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px;font-weight:500}.m10-inline-label{font-size:10px;font-weight:400;color:var(--muted)}.m10-bundled-skills p{font-size:11px;line-height:19px;color:var(--secondary);margin:5px 0 9px}
 .m10-example{display:flex;align-items:center;gap:8px;text-align:left;font-size:11px;line-height:19px;color:var(--secondary);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;width:100%}.m10-example>span{flex:1;min-width:0;overflow-wrap:anywhere}.m10-example>svg{flex-shrink:0}.m10-example:hover:not(:disabled){background:var(--hover);color:var(--text)}.m10-example:disabled{opacity:.5;cursor:not-allowed}
-.m10-package-disclosure{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--secondary);margin-top:7px}.m10-package-disclosure svg.expanded{transform:rotate(90deg)}.m10-package-contents{margin-top:14px;padding:13px 14px;border:1px solid var(--border);border-radius:9px}.m10-package-contents p{font-size:11px;line-height:20px;color:var(--muted);margin:0 0 8px}.m10-package-contents p:last-child{margin:12px 0 0}.m10-package-contents>div{display:flex;gap:8px;align-items:center;font-size:11px;padding:7px 0}.m10-package-contents small{color:var(--muted);margin-left:auto;font-size:10px}.m10-package-contents svg{color:var(--secondary);flex-shrink:0}
-.m10-project-apps{color:var(--text);font-size:13px}.m10-project-apps-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:28px 0 23px}.m10-project-apps-intro h2{font-size:15px;font-weight:500;margin:0 0 7px}.m10-project-apps-intro p{font-size:12px;line-height:20px;color:var(--secondary);margin:0}.m10-project-apps-intro .m10-button{flex-shrink:0}.m10-project-application{border:1px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden}.m10-project-application>header{display:flex;align-items:center;gap:12px;padding:19px 20px}.m10-project-application>header>div{min-width:0;flex:1}.m10-project-application strong{font-size:14px;font-weight:500}.m10-project-application>header p{font-size:11px;line-height:19px;color:var(--secondary);margin:5px 0 0}.m10-project-application .m10-state{font-size:11px}.m10-project-application-body{padding:0 20px 17px}.m10-project-connections{border-top:1px solid var(--border);padding:3px 0}.m10-project-connections label{display:flex;align-items:center;gap:11px;padding:12px 0}.m10-project-connections input{accent-color:var(--primary);width:15px;height:15px;flex-shrink:0}.m10-project-connections label>span{min-width:0}.m10-project-connections strong{font-size:12px;display:block;overflow-wrap:anywhere}.m10-project-connections small{font-size:11px;color:var(--muted);display:block;margin-top:4px;line-height:19px}.m10-project-skills{display:flex;align-items:center;gap:8px;color:var(--secondary);font-size:11px;line-height:19px;padding:9px 0}.m10-project-skills>svg{flex-shrink:0}.m10-project-skills small{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}.m10-project-application footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}.m10-project-application footer>button:first-child{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--secondary)}
+.m10-package-disclosure{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--secondary);margin-top:7px}.m10-package-disclosure svg.expanded{transform:rotate(90deg)}.m10-package-contents{margin-top:14px;padding:13px 14px;border:1px solid var(--border);border-radius:9px}.m10-package-contents p{font-size:11px;line-height:20px;color:var(--muted);margin:0 0 8px}.m10-package-contents p:last-child{margin:12px 0 0}.m10-package-contents>div{display:flex;gap:8px;align-items:center;font-size:11px;padding:7px 0}.m10-package-contents small{color:var(--muted);margin-left:auto;font-size:10px}.m10-package-contents svg{color:var(--secondary);flex-shrink:0}.m10-package-contents>div span{overflow-wrap:anywhere;min-width:0}
+.m10-project-apps{color:var(--text);font-size:13px}.m10-project-apps-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:28px 0 23px}.m10-project-apps-intro h2{font-size:15px;font-weight:500;margin:0 0 7px}.m10-project-apps-intro p{font-size:12px;line-height:20px;color:var(--secondary);margin:0}.m10-project-apps-intro .m10-button{flex-shrink:0}.m10-project-application{border:1px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden}.m10-project-application>header{display:flex;align-items:center;gap:12px;padding:19px 20px}.m10-project-application>header>div{min-width:0;flex:1}.m10-project-application strong{font-size:14px;font-weight:500}.m10-project-application>header p{font-size:11px;line-height:19px;color:var(--secondary);margin:5px 0 0}.m10-project-application .m10-state{font-size:11px}.m10-project-application-body{padding:0 20px 17px}.m10-project-connections{border-top:1px solid var(--border);padding:3px 0}.m10-project-connections label{display:flex;align-items:center;gap:11px;padding:12px 0}.m10-project-connections input{accent-color:var(--primary);width:15px;height:15px;flex-shrink:0}.m10-project-connections label>span{min-width:0}.m10-project-connections strong{font-size:12px;display:block;overflow-wrap:anywhere}.m10-project-connections small{font-size:11px;color:var(--muted);display:block;margin-top:4px;line-height:19px}.m10-project-skills{display:flex;align-items:center;gap:8px;color:var(--secondary);font-size:11px;line-height:19px;padding:9px 0}.m10-project-skills>svg{flex-shrink:0}.m10-project-skills small{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}.m10-project-application-body>footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px}.m10-project-application-body>footer>button:first-child{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--secondary)}
 .m10-project-session-note{display:flex;align-items:flex-start;gap:11px;margin:26px 0 19px;padding:18px;background:var(--surface);border-radius:11px}.m10-project-session-note>svg{color:var(--secondary);flex-shrink:0;margin-top:2px}.m10-project-session-note>div{flex:1;min-width:0}.m10-project-session-note strong{font-size:12px;font-weight:500}.m10-project-session-note p{font-size:11px;line-height:20px;margin:5px 0;color:var(--secondary)}.m10-project-session-note span{font-size:10px;color:var(--muted)}.m10-local-data{display:flex;gap:7px;align-items:flex-start;color:var(--muted);font-size:11px;line-height:19px}.m10-local-data svg{flex-shrink:0;margin-top:2px}
 .m10-session-trigger{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--secondary);padding:6px 9px;border-radius:7px;white-space:nowrap}.m10-session-trigger:hover{background:var(--hover)}.m10-session-trigger>span:nth-of-type(2){font-size:10px;color:var(--muted)}.m10-session-trigger i{width:5px;height:5px;border-radius:50%;background:#bc9558}.m10-session-app{border-top:1px solid var(--border);padding:17px 0}.m10-session-app header{display:flex;gap:11px;align-items:center}.m10-session-app header>div{flex:1;min-width:0}.m10-session-app strong{font-size:13px;font-weight:500}.m10-session-app small{display:block;font-size:10px;line-height:18px;color:var(--muted);margin-top:4px}.m10-session-app p{font-size:11px;line-height:20px;color:var(--secondary);margin:12px 0}.m10-session-app .m10-example+.m10-example{margin-top:7px}.m10-session-footer{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding-top:17px;margin-top:12px;border-top:1px solid var(--border)}
 .m10-bundled-summary{padding:0 0 22px;margin-bottom:22px;border-bottom:1px solid var(--border)}.m10-bundled-summary .group-heading{margin-top:0}.m10-bundled-summary>div:not(.group-heading){display:flex;gap:14px;align-items:center;padding:11px 0;font-size:12px}.m10-bundled-summary strong{font-weight:500;flex-shrink:0}.m10-bundled-summary>div>span{color:var(--secondary);line-height:20px}.m10-bundled-summary small{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}
@@ -115,7 +119,7 @@
 
 /* P08 uses the same row/detail structure as the packaged activity view. */
 .m10-activity-row{display:flex;align-items:center;gap:14px;width:100%;padding:20px 0;border:0;border-top:1px solid var(--border);background:none;color:var(--text);text-align:left;cursor:pointer}
-.m10-activity-row:hover{background:var(--hover)}.m10-activity-copy{flex:1;min-width:0}.m10-inline-label{display:inline!important;margin-left:10px}
+.m10-activity-row:hover{background:var(--hover)}.m10-activity-copy{flex:1;min-width:0}.m10-activity-copy .m10-inline-label{display:inline!important;margin-left:10px}.m10-activity-copy>small{overflow-wrap:anywhere}
 .m10-activity-detail .m10-note{overflow-wrap:anywhere;white-space:pre-wrap}.m10-activity-detail .m10-message-id{overflow-wrap:anywhere}
 .m10-connection-preflight {display:block;overflow-wrap:anywhere;}
 .m10-connection-preflight ul {margin:8px 0;padding-left:20px;}
@@ -128,3 +132,85 @@
 .m10-preview-connection-fields {border:0;margin:0;padding:0;min-width:0;}
 
 .m10-upgrade-report .m10-version-reference{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin:8px 0;padding:8px 0}.m10-upgrade-report .m10-version-reference>span{color:var(--muted);font-size:12px;line-height:1.6}
+
+/* Recovery contains stacked fields and explanations, not the icon/text note row. */
+:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview){display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview)>strong,:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview)>p,:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview)>small{min-width:0;width:100%;overflow-wrap:anywhere}
+:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview) .m10-field{display:grid;gap:6px;min-width:0;margin:0}
+:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview) select{width:100%;min-width:0;max-width:100%}
+:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview) button{justify-self:start;margin-left:0;text-decoration:none;max-width:100%;white-space:normal}
+:is(.m10-cleanup-recovery,.m10-cleanup-execution,.m10-publication-preview)>small{font-size:11px;line-height:20px;color:var(--muted)}
+
+/* Product-form spacing; synthetic controls remain explicitly labelled. */
+.m10-dialog form{min-height:0;overflow:auto}.m10-dialog .m10-form-intro{margin:0 0 18px}.m10-form-fields:disabled{opacity:.7}.m10-dialog input,.m10-dialog select{min-width:0}.m10-dialog fieldset .m10-input-action button{flex-shrink:0}
+
+/* Same display anatomy as the packaged Skill insertion widget;synthetic callback only. */
+.m10-terminal-insertion{display:flex;flex-direction:column;align-items:flex-start;gap:8px;max-width:100%}.m10-terminal-insertion>p{margin:0;overflow-wrap:anywhere}.m10-terminal-insertion>small{font-size:11px;line-height:1.5}.m10-session-app>.m10-terminal-insertion{margin-top:14px}
+
+/* Mail attachment content is vertical; the compact ZenTao chip stays unchanged. */
+.m10-mail-attachment{display:block;min-width:0;overflow-wrap:anywhere}.m10-mail-attachment>span{display:block;margin:0;color:var(--text);font-size:11px;text-align:left}.m10-mail-attachment .m10-attachment-preview{margin-top:8px;min-width:0}
+
+.m10-save-controls{margin:8px 0;min-width:0}.m10-save-review{margin:10px 0;padding:10px 12px;border:1px solid var(--border);border-radius:8px;overflow-wrap:anywhere}.m10-save-review .m10-button+.m10-button{margin-left:8px}.m10-save-history{margin-top:16px}
+
+/* P04 public source values and switch summaries can contain long unbroken segments. */
+.m10-project-connections small { overflow-wrap: anywhere; }
+.m10-project-apps .m10-dialog .m10-modal-copy { overflow-wrap: anywhere; }
+
+/* Mail text previews use the same prose typography in draft and source dialogs. */
+.m10-mail-attachment .m10-attachment-preview .m10-resource-view pre{font:inherit;font-size:12px;line-height:22px;color:var(--text);margin:22px 0}
+
+/* Keep P09 keyboard outlines inside the native scrolling dialog. */
+.parity-dialog:has(.m10-session-apps,.m10-session-applications){scroll-padding-bottom:8px}
+
+/* P09 fixed provenance is synthetic; its disclosure follows the confirmed controls. */
+.m10-session-sources>summary{cursor:pointer;color:var(--secondary);font-size:12px;line-height:19.5px}
+.m10-session-sources>summary:focus-visible{outline:2px solid #718bb5;outline-offset:3px}
+.m10-session-apps .m10-session-app>.m10-button{margin:10px 8px 0 0}
+
+/* P09 example preparation is explicit; other terminal entry layouts keep their defaults. */
+.m10-session-example .m10-example>.m10-example-action{flex:none;margin:0;font-size:10px;white-space:nowrap}
+
+.m10-session-app>.m10-session-example{margin-top:14px}
+
+/* Native Tab scrolling must leave space for the activity row's focus outline. */
+.m10-content:has(>.m10-activity-filters){scroll-padding-block:8px}
+.m10-activity-filters{flex-wrap:wrap}
+
+/* P07 saved-draft Tab focus must not end at the scroll clipping edge. */
+.m10-content:has(.m10-drafts){scroll-padding-block:8px}
+
+/* P07 target rows share the real App wrapping contract;labels retain nowrap. */
+.m10-review>span{overflow-wrap:anywhere}
+
+/* Original synthetic send IDs share the real result-card wrapping contract. */
+.m10-draft-send-result .m10-message-id{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* Preserve the existing 5px keyboard outline when native focus scrolls a result footer into view. */
+.m10-dialog:has(.m10-draft-send-result){scroll-padding-block:8px}
+
+/* A send result is a sequence of full-width facts, not an icon-and-text note row. */
+.m10-draft-send-result{display:block;overflow-wrap:anywhere}
+.m10-draft-send-result>p{margin-top:6px}
+
+/* Native focus restoration to a P08 recovery action must include its 5px outline. */
+.m10-activity-dialog{scroll-padding-block:8px}
+
+/* SA: native Tab scrolling retains the complete P04 focus ring. */
+.m10-content:has(>.m10-project-apps){scroll-padding-block:8px}
+.m10-content:has(.m10-versions){scroll-padding-block:8px}
+.m10-project-apps button:not(:disabled),.m10-project-apps input[type=radio]:not(:disabled),.m10-project-connections label:has(input:not(:disabled)),.m10-content:has(>.m10-page-head .m10-project-picker)>.m10-empty button:not(:disabled){cursor:pointer}
+
+/* SA: P04 native controls use the same visible keyboard treatment. */
+.m10-project-picker select{border-radius:8px;cursor:pointer}
+.m10-project-picker select:focus-visible,.m10-project-connections input[type=radio]:focus-visible,.m10-content:has(>.m10-page-head .m10-project-picker)>.m10-empty button:focus-visible{outline:2px solid #718bb5;outline-offset:3px}
+
+/* P02 occupancy mirrors the product; upgrade sandbox retains its own layout. */
+.m10-versions .m10-version-row{display:flex;gap:16px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border)}.m10-versions .m10-version-summary{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}.m10-versions .m10-version-summary strong{font-size:13px}.m10-versions .m10-version-summary>span,.m10-versions .m10-version-summary>small{color:var(--muted);font-size:12px;line-height:1.6}.m10-versions .m10-version-summary p{margin:2px 0;overflow-wrap:anywhere}.m10-versions .m10-version-actions{display:flex;flex-direction:column;gap:8px}.m10-version-preview-dialog .m10-version-reference{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}.m10-version-preview-dialog .m10-version-reference>span{color:var(--muted);font-size:12px}.m10-versions .m10-version-summary>span{margin-left:0}.m10-versions .m10-version-summary .m10-inline-label{margin-left:8px}@media(max-width:1100px){.m10-versions .m10-version-row{flex-direction:column}.m10-versions .m10-version-actions{flex-direction:row;flex-wrap:wrap}}
+.m10-version-read-preview{font-size:11px;color:var(--muted);margin:10px 0}.m10-version-read-preview[open]{display:flex;flex-direction:column;gap:8px}.m10-version-read-preview label{display:flex;gap:8px;align-items:center}
+
+/* Catalog control paint follows the real App; other M routes keep their baselines. */
+.m10-catalog-content button{cursor:default}
+.m10-catalog-content button:disabled{cursor:not-allowed}
+.m10-catalog-content button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.m10-dialog:has(>.m10-impact){scroll-padding-block:8px}

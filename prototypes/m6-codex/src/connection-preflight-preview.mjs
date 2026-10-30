@@ -2,7 +2,7 @@
 // authorization, credential hashes or proofs of actual adapter compatibility.
 import {connectionIdentityChanged,packageVersion,saveConnection,validateConnection,projectIntegrationState} from './integration-model.mjs';
 
-const fields=['id','app','kind','name','url','path','account','auth','host','port','transport','tls','credentialPresent'];
+const fields=['id','app','kind','name','url','path','account','auth','host','port','transport','tls','credentialPresent','queryDays','fromAddress'];
 const publicDraft=draft=>Object.fromEntries(fields.filter(key=>draft[key]!==undefined).map(key=>[key,draft[key]]));
 const stable=value=>JSON.stringify(value,(_key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.fromEntries(Object.keys(item).sort().map(key=>[key,item[key]])):item);
 

@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
-import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {ZentaoPanel} from './zentao-panel';
-import {MailPanel} from './mail-panel';
+import {MailPanel,DraftDetail} from './mail-panel';
 import {ResourceView,formatZentaoResource} from './resource-view';
 import type {CatalogItem} from './api';
-const m=vi.hoisted(()=>({projectSettings:vi.fn(),connections:vi.fn(),zentaoWork:vi.fn(),zentaoObject:vi.fn(),zentaoResource:vi.fn(),mailStatus:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),drafts:vi.fn(),draft:vi.fn(),resource:vi.fn(),prepareSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),executeSend:vi.fn(),send:vi.fn(),cancelSend:vi.fn()}));
+const m=vi.hoisted(()=>({projectSettings:vi.fn(),connections:vi.fn(),cancelUiRead:vi.fn().mockResolvedValue({ok:true,value:{canceled:true}}),zentaoWork:vi.fn(),zentaoObject:vi.fn(),zentaoResource:vi.fn(),mailStatus:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),drafts:vi.fn(),draft:vi.fn(),resource:vi.fn(),prepareSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),executeSend:vi.fn(),send:vi.fn(),cancelSend:vi.fn()}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m},events:{on:()=>()=>{}}}));
 const ok=<T,>(value:T)=>({ok:true as const,value}),id='00000000-0000-4000-8000-000000000001',hash='a'.repeat(64),now='2026-10-20T00:00:00Z';
 const app=(appId:'mail'|'zentao'):CatalogItem=>({appId,added:true,enabled:true,revision:1,displayName:appId,description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1});
@@ -27,6 +27,11 @@ beforeEach(()=>{
 });
 afterEach(()=>{cleanup();client?.clear();Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');Reflect.deleteProperty(HTMLDialogElement.prototype,'close');vi.restoreAllMocks();});
 describe('real application business panels with scoped RPC fixtures',()=>{
+ it('keeps clear reachable after index failure and discloses retained fault bytes instead of implying everything was freed',async()=>{
+  m.mailCacheStatus.mockResolvedValueOnce({ok:false,code:'RESOURCE_RECOVERY_REQUIRED',message:'缓存索引暂不可用'}).mockResolvedValue(ok({limit:500000000,recoveryRetainedBytes:4000,actual:{total:9000,index:1000,objects:0,auxiliary:8000,staging:0},activeLeases:0,unrecognized:[],overBudget:false,storage:{business:{files:{bytes:2000,complete:true},sharedDatabase:{bytes:3000,complete:true},drafts:2,sends:0},versions:{items:[]}}}));
+  mount(<MailPanel projectId="p-own" app={app('mail')}/>);await screen.findByText('缓存索引暂不可用');fireEvent.click(screen.getByText('本地占用与缓存'));fireEvent.click(screen.getByRole('button',{name:'清理可重建缓存'}));fireEvent.click(screen.getByRole('button',{name:/^清理缓存$/}));
+  await screen.findByText(/为恢复核对保留的故障原件：4,000 字节/);expect(screen.getByText(/已计入缓存预算；不会自动删除这些原件/)).toBeTruthy();expect(screen.getByText(/对象 0 MB/)).toBeTruthy();expect(screen.getByText(/2 个草稿/)).toBeTruthy();expect(m.clearMailCache).toHaveBeenCalledTimes(1);
+ });
  it('keeps partial business and version inventory distinct from a successful cache measurement',async()=>{
   m.mailCacheStatus.mockResolvedValue(ok({limit:500000000,actual:{total:12000000,index:100,objects:11999900,auxiliary:0,staging:0},activeLeases:0,unrecognized:[],overBudget:false,storage:{business:{files:{bytes:null,complete:false},sharedDatabase:{bytes:null,complete:false},drafts:2,sends:3},versions:null}}));
   mount(<MailPanel projectId="p-own" app={app('mail')}/>);fireEvent.click(await screen.findByText('本地占用与缓存'));await screen.findByText(/邮件业务文件：统计未完成/);expect(screen.getByText(/共享业务数据库：统计未完成/)).toBeTruthy();expect(screen.getByText('应用版本占用统计未完成')).toBeTruthy();expect(screen.getByText(/可重建缓存：12 MB \/ 500 MB/)).toBeTruthy();
@@ -36,11 +41,34 @@ describe('real application business panels with scoped RPC fixtures',()=>{
   mount(<MailPanel projectId="p-own" app={app('mail')}/>);fireEvent.click(await screen.findByText('本地占用与缓存'));
   await screen.findByText(/邮件业务文件：34 MB/);expect(screen.getByText(/共享业务数据库：56 MB/)).toBeTruthy();expect(screen.getByText(/2 个草稿.*3 条发送记录/)).toBeTruthy();expect(screen.getByText(/v1.0.0.*原件 78 MB.*派生 9 MB/)).toBeTruthy();expect(screen.getByText(/共享数据库.*不单独归属于邮件/)).toBeTruthy();
  });
+ it('measures cache again when opening and reopening after background storage changes',async()=>{
+  const status=(total:number)=>ok({limit:500000000,actual:{total,index:0,objects:total,auxiliary:0,staging:0},activeLeases:0,unrecognized:[],overBudget:false,storage:{business:{files:{bytes:0,complete:true},sharedDatabase:{bytes:0,complete:true},drafts:0,sends:0},versions:{items:[]}}});
+  m.mailCacheStatus.mockReset().mockResolvedValueOnce(status(1000000)).mockResolvedValueOnce(status(2000000)).mockResolvedValue(status(3000000));
+  mount(<MailPanel projectId="p-own" app={app('mail')}/>);await screen.findByText(/可重建缓存：1 MB/);
+  const details=screen.getByText('本地占用与缓存').closest('details')!;
+  fireEvent.click(details.querySelector('summary')!);await screen.findByText(/可重建缓存：2 MB/);
+  fireEvent.click(details.querySelector('summary')!);fireEvent.click(details.querySelector('summary')!);
+  await screen.findByText(/可重建缓存：3 MB/);expect(m.clearMailCache).not.toHaveBeenCalled();
+ });
+ it('hides a superseded cache snapshot when the opening measurement fails and retries on reopening',async()=>{
+  const original=ok({limit:500000000,actual:{total:100,index:20,objects:30,auxiliary:50,staging:0},activeLeases:0,unrecognized:[],overBudget:false,storage:{business:{files:{bytes:0,complete:true},sharedDatabase:{bytes:0,complete:true},drafts:0,sends:0},versions:{items:[]}}});m.mailCacheStatus.mockReset().mockResolvedValueOnce(original).mockResolvedValueOnce({ok:false,code:'RESOURCE_BUSY',message:'本次统计被占用'}).mockResolvedValue(original);
+  mount(<MailPanel projectId="p-own" app={app('mail')}/>);await screen.findByText(/可重建缓存：0 MB/);
+  const details=screen.getByText('本地占用与缓存').closest('details')!;fireEvent.click(details.querySelector('summary')!);
+  await screen.findByText('本次统计被占用');expect(screen.queryByText(/可重建缓存：0 MB/)).toBeNull();
+  expect(screen.getByRole('button',{name:'清理可重建缓存'})).toBeTruthy();fireEvent.click(details.querySelector('summary')!);fireEvent.click(details.querySelector('summary')!);
+  await screen.findByText(/可重建缓存：0 MB/);expect(screen.queryByText('本次统计被占用')).toBeNull();
+ });
  it('renders actual ZenTao structured bodies and history as inert readable text',()=>{
   expect(formatZentaoResource(JSON.stringify({steps:'<p>第一步</p><script>bad()</script><p>第二步</p>'}),'zentao-body')).toBe('重现步骤与说明\n第一步\n第二步');expect(formatZentaoResource(JSON.stringify([{date:'today',actor:'tester',action:'opened',comment:'<p>已登记</p>'}]),'zentao-history')).toBe('today · tester · opened\n已登记');
  });
+ it('OZ closes a pending original detail and reopens with a fresh independent request',async()=>{
+  let finish!:(value:unknown)=>void;m.zentaoObject.mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));mount(<ZentaoPanel projectId="p-own" app={app('zentao')}/>);fireEvent.click(await screen.findByRole('button',{name:/Private Bug/}));await screen.findByText('正在核对原对象');const old=m.zentaoObject.mock.calls[0][2];fireEvent.click(screen.getByRole('button',{name:'关闭'}));await waitFor(()=>expect(m.cancelUiRead).toHaveBeenCalledWith(old));expect(screen.queryByRole('dialog')).toBeNull();await act(async()=>finish(ok({kind:'bug',id:'12',reference:source,fields:{title:'Late old detail'},body:null,history:null,attachments:[],complete:true,missing:[]})));expect(screen.queryByText('Late old detail')).toBeNull();fireEvent.click(screen.getByRole('button',{name:/Private Bug/}));await screen.findByText('Actual detail');expect(m.zentaoObject.mock.calls.at(-1)?.[2]).not.toBe(old);
+ });
+ it('OZ closes a detail while its original resource is pending and cancels only that resource request',async()=>{
+  let finish!:(value:unknown)=>void;m.zentaoResource.mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));mount(<ZentaoPanel projectId="p-own" app={app('zentao')}/>);fireEvent.click(await screen.findByRole('button',{name:/Private Bug/}));await screen.findByText('正在读取原内容…');const old=m.zentaoResource.mock.calls[0][2];fireEvent.click(screen.getByRole('button',{name:'关闭'}));await waitFor(()=>expect(m.cancelUiRead).toHaveBeenCalledWith(old));expect(m.cancelUiRead).toHaveBeenCalledTimes(1);await act(async()=>finish(ok({resourceId:id,revision:hash,offset:0,length:4,encoding:'utf8',data:'Late',nextOffset:null,eof:true})));expect(screen.queryByRole('dialog')).toBeNull();expect(screen.queryByText('Late')).toBeNull();
+ });
  it('reads only the selected project and keeps list summaries separate from actual detail resources',async()=>{
-  mount(<ZentaoPanel projectId="p-own" app={app('zentao')}/>);fireEvent.click(await screen.findByRole('button',{name:/Private Bug/}));await screen.findByText('Actual detail');await screen.findByText('正文');expect(m.zentaoWork).toHaveBeenCalledWith('p-own',{kind:'bug',cursor:null,limit:50});expect(m.zentaoObject).toHaveBeenCalledWith('p-own',{kind:'bug',reference:source});expect(m.zentaoResource).toHaveBeenCalledWith('p-own',{resource,offset:0,length:65536});
+  mount(<ZentaoPanel projectId="p-own" app={app('zentao')}/>);fireEvent.click(await screen.findByRole('button',{name:/Private Bug/}));await screen.findByText('Actual detail');await screen.findByText('正文');expect(m.zentaoWork).toHaveBeenCalledWith('p-own',{kind:'bug',cursor:null,limit:50},expect.any(String));expect(m.zentaoObject).toHaveBeenCalledWith('p-own',{kind:'bug',reference:source},expect.any(String));expect(m.zentaoResource).toHaveBeenCalledWith('p-own',{resource,offset:0,length:65536},expect.any(String));
  });
  it('reports a detail failure without substituting the list body',async()=>{
   m.zentaoObject.mockResolvedValue(ok(null));m.zentaoObject.mockResolvedValue({ok:false,code:'SCOPE_DENIED',message:'原对象已不属于本人'});mount(<ZentaoPanel projectId="p-own" app={app('zentao')}/>);fireEvent.click(await screen.findByRole('button',{name:/Private Bug/}));await screen.findByText('原对象已不属于本人');expect(m.zentaoResource).not.toHaveBeenCalled();
@@ -49,7 +77,7 @@ describe('real application business panels with scoped RPC fixtures',()=>{
   m.projectSettings.mockResolvedValue(ok({enabled:false,revision:1,connections:{zentao:id}}));mount(<ZentaoPanel projectId="p-own" app={app('zentao')}/>);await screen.findByText('当前项目尚未选用可用的禅道连接');expect(m.zentaoWork).not.toHaveBeenCalled();
  });
  it('shows incomplete scanning distinctly from zero matches and resumes the same cursor',async()=>{
-  m.mailStatus.mockResolvedValueOnce(ok({query:{items:[],matched:0,nextCursor:'own-cursor',complete:false,range:{days:30,startDate:'2026-09-21',endDate:'2026-10-20',timeZone:'Asia/Shanghai'},checkedAt:now,problems:[]},refresh:{scanned:50,total:100,finished:false,problemCount:0,lastSuccessfulRefreshAt:null}}));mount(<MailPanel projectId="p-own" app={app('mail')}/>);await screen.findByText('正在分批读取，仍有未检查数据');expect(screen.queryByText(/查询成功，范围内没有匹配邮件/)).toBeNull();fireEvent.click(screen.getByRole('button',{name:'继续检查剩余数据'}));await screen.findByText(/查询成功，范围内没有匹配邮件/);expect(m.mailStatus).toHaveBeenLastCalledWith('p-own',{limit:1,cursor:'own-cursor'});
+  m.mailStatus.mockResolvedValueOnce(ok({query:{items:[],matched:0,nextCursor:'own-cursor',complete:false,range:{days:30,startDate:'2026-09-21',endDate:'2026-10-20',timeZone:'Asia/Shanghai'},checkedAt:now,problems:[]},refresh:{scanned:50,total:100,finished:false,problemCount:0,lastSuccessfulRefreshAt:null}}));mount(<MailPanel projectId="p-own" app={app('mail')}/>);await screen.findByText('正在分批读取，仍有未检查数据');expect(screen.queryByText(/查询成功，范围内没有匹配邮件/)).toBeNull();fireEvent.click(screen.getByRole('button',{name:'继续检查剩余数据'}));await screen.findByText(/查询成功，范围内没有匹配邮件/);expect(m.mailStatus).toHaveBeenLastCalledWith('p-own',{limit:1,cursor:'own-cursor'},expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/));
  });
  it('requires the cache confirmation and leaves a busy cleanup error visible',async()=>{
   m.clearMailCache.mockResolvedValue({ok:false,code:'RESOURCE_BUSY',message:'缓存仍被原进程占用'});mount(<MailPanel projectId="p-own" app={app('mail')}/>);await screen.findByText('暂无草稿。可让项目 Agent 准备内容。');fireEvent.click(screen.getByText('本地占用与缓存'));fireEvent.click(screen.getByRole('button',{name:'清理可重建缓存'}));expect(m.clearMailCache).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'清理缓存'}));await screen.findByText('缓存仍被原进程占用');expect(m.clearMailCache).toHaveBeenCalledTimes(1);
@@ -98,6 +126,24 @@ describe('real application business panels with scoped RPC fixtures',()=>{
   mount(<MailPanel projectId="p-own" app={app('mail')}/>);fireEvent.click(await screen.findByRole('button',{name:/Private draft/}));fireEvent.click(await screen.findByRole('button',{name:'审阅发送内容'}));await screen.findByText('from@example.test');fireEvent.click(screen.getByRole('button',{name:'关闭'}));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(m.cancelSend).toHaveBeenCalledWith('p-own',id);expect(m.authorizeSend).not.toHaveBeenCalled();expect(m.executeSend).not.toHaveBeenCalled();
  });
  it('decodes split UTF-8 resource bytes without executing source markup',async()=>{
-  const read=vi.fn().mockResolvedValueOnce({encoding:'base64',data:btoa(String.fromCharCode(0xe4)),length:1,nextOffset:1,eof:false}).mockResolvedValueOnce({encoding:'base64',data:btoa(String.fromCharCode(0xb8,0xad)),length:2,nextOffset:null,eof:true});mount(<ResourceView resource={{...resource,size:3}} scope="p-own" read={read}/>);fireEvent.click(await screen.findByRole('button',{name:'继续读取内容'}));await screen.findByText('中');expect(read).toHaveBeenNthCalledWith(2,1);
+  const read=vi.fn().mockResolvedValueOnce({encoding:'base64',data:btoa(String.fromCharCode(0xe4)),length:1,nextOffset:1,eof:false}).mockResolvedValueOnce({encoding:'base64',data:btoa(String.fromCharCode(0xb8,0xad)),length:2,nextOffset:null,eof:true});mount(<ResourceView resource={{...resource,size:3}} scope="p-own" read={read}/>);fireEvent.click(await screen.findByRole('button',{name:'继续读取内容'}));await screen.findByText('中');expect(read).toHaveBeenNthCalledWith(2,1,expect.any(AbortSignal));
+ });
+});
+
+// T15: viewing existing HTML never needs SMTP or a send review.
+describe('saved HTML body safe preview',()=>{
+ it('loads the pinned HTML only after opening its preview and never mounts source markup',async()=>{
+  const html={...resource,id:'00000000-0000-4000-8000-000000000002',mediaType:'text/html;charset=utf-8'};
+  m.draft.mockResolvedValue(ok({draft:{...draft,content:{...content,html}}}));
+  m.resource.mockImplementation(async(_p:string,input:{resource:{id:string}})=>ok({resourceId:input.resource.id,revision:hash,offset:0,length:7,encoding:'utf8',data:input.resource.id===html.id?'<p>HTML 独立正文</p><script>window.previewAttack=1</script><img src="https://preview.invalid/pixel">':'纯文本正文',nextOffset:null,eof:true}));
+  const {container}=mount(<DraftDetail projectId="p-own" id={id} revision={2} onClose={()=>{}}/>);
+  await screen.findByText('纯文本正文');expect(m.resource.mock.calls.some(c=>c[1].resource.id===html.id)).toBe(false);
+  fireEvent.click(screen.getByText('HTML 正文 · 安全文本预览'));
+  await screen.findByText('HTML 独立正文');expect(container.querySelectorAll('script,img,iframe,object,embed,a,style').length).toBe(0);
+  expect(m.resource.mock.calls.find(c=>c[1].resource.id===html.id)?.slice(0,2)).toEqual(['p-own',{resource:html,offset:0,length:65536}]);
+  for(const name of ['prepareSend','reviewSend','authorizeSend','executeSend'] as const)expect(m[name]).not.toHaveBeenCalled();
+ });
+ it('omits the HTML preview when the saved revision has no HTML',async()=>{
+  mount(<DraftDetail projectId="p-own" id={id} revision={2} onClose={()=>{}}/>);await screen.findByText('正文');expect(screen.queryByText('HTML 正文 · 安全文本预览')).toBeNull();
  });
 });

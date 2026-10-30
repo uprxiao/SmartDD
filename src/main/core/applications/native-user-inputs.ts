@@ -14,6 +14,18 @@ interface Captured {receipt:HostUserInputReceipt;text:string;signal:AbortSignal;
 interface Editor {runId:string;selectionHash:string;text:string;bytes:number;escape:string;paste:boolean;known:boolean;launchCaptured:boolean;inputSequence:number;lastCr:boolean;signal:AbortSignal;detach:()=>void}
 const beginPaste='\x1b[200~',endPaste='\x1b[201~',normalize=(text:string)=>text.replace(/\r\n?/g,'\n');
 const selection=(context:RunContext)=>digest(canonicalJson({...context.snapshot,native:{...context.snapshot.native,sessionId:null}}));
+/** These fixed terminal reports carry no editable text. Keep unknown editing
+ * sequences unprovable; a later receipt still needs the exact native user row. */
+function terminalSequence(value:string,paste:boolean):'pending'|'paste'|'report'|'unknown'{
+ const expected=paste?endPaste:beginPaste;
+ if(expected.startsWith(value))return value===expected?'paste':'pending';
+ if(paste)return 'unknown';
+ if(/^\x1b\[(?:[IO]|\d{1,6};\d{1,6}R|[?>]?\d{1,6}(?:;\d{1,6}){0,7}c|<\d{1,3};\d{1,6};\d{1,6}[Mm])$/.test(value))return 'report';
+ if(/^\x1b\]1[012];rgb:[0-9a-f]{1,4}\/[0-9a-f]{1,4}\/[0-9a-f]{1,4}(?:\x07|\x1b\\)$/i.test(value))return 'report';
+ if(value.length<=64&&/^\x1b\[[0-9?;<>]*$/.test(value))return 'pending';
+ if(value.length<=128&&/^\x1b\][0-9a-f;rgb:/]*(?:\x1b)?$/i.test(value))return 'pending';
+ return 'unknown';
+}
 /** RAM-only provenance of bytes actually accepted by the trusted PTY transport.
  * It grants no send permission. A caller must separately match an actual native user message
  * and resolve its concrete action/target/content before minting any authorization.
@@ -37,7 +49,7 @@ export class NativeUserInputs {
   if(!editor){if(this.editors.size>=128)return;const remove=()=>this.clear(target.ptyId);editor={runId:context.run.runId,selectionHash:stamp,text:'',bytes:0,escape:'',paste:false,known:true,launchCaptured:false,inputSequence:0,lastCr:false,signal:context.signal,detach:()=>context.signal.removeEventListener('abort',remove)};this.editors.set(target.ptyId,editor);context.signal.addEventListener('abort',remove,{once:true});}
   const completed:{text:string;sequence:number}[]=[];let next=0;
   for(const character of data){
-   if(editor.escape){editor.escape+=character;const expected=editor.paste?endPaste:beginPaste;if(expected.startsWith(editor.escape)){if(editor.escape===expected){editor.paste=!editor.paste;editor.escape='';editor.lastCr=false;}continue;}
+   if(editor.escape){editor.escape+=character;const sequence=terminalSequence(editor.escape,editor.paste);if(sequence==='pending')continue;if(sequence==='paste'){editor.paste=!editor.paste;editor.escape='';editor.lastCr=false;continue;}if(sequence==='report'){editor.escape='';continue;}
     // Unknown cursor/history/terminal protocol means we cannot reconstruct the accepted line.
     editor.escape='';editor.known=false;continue;
    }

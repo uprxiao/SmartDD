@@ -1,3 +1,4 @@
+import {BRIDGE_LIMITS} from '@shared/application-bridge';
 import {nativeApplicationConflicts} from '../native-application-conflicts';
 import { mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -9,6 +10,23 @@ import { agentFixture } from './agent-fixture';
 let f: Awaited<ReturnType<typeof agentFixture>>;
 beforeEach(async () => { f = await agentFixture(); }); afterEach(() => f.cleanup());
 describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixed adapter packages and actual complete Skill projection plans', () => {
+  it('keeps the original fixed Codex application response complete within its host budget without altering snapshot or global tool policy',async()=>{
+    const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),original=await f.sessions.get(snapshot.taskId),adapter=f.adapters.verify(snapshot.adapterBinding.hash),entry=join(f.store.root,adapter.resource.relativePath,'index.cjs'),bytes=readFileSync(entry),inventory=structuredClone(input.inventory),userConfig=structuredClone(input.userSkillConfig);
+    const plan=f.adapters.plan(snapshot.adapterBinding.hash,input),flags=parseToml(plan.args.filter((_,i)=>i>0&&plan.args[i-1]==='-c').join('\n')) as {mcp_servers:Record<string,{command:string;tools?:Record<string,{output_token_limit:number;approval_mode?:string}>}>;tool_output_token_limit?:number};
+    const bridge=input.mcp.find(m=>m.kind==='applications')!;expect(flags.mcp_servers[bridge.serverName].command).toBe(bridge.command);
+    const expected=Object.fromEntries(snapshot.packages.flatMap(pack=>Object.keys(pack.toolContractMajors)).map(name=>[name,{output_token_limit:BRIDGE_LIMITS.responseBytes}]));
+    expect(flags.mcp_servers[bridge.serverName].tools).toEqual(expected);expect(flags.tool_output_token_limit).toBeUndefined();
+    for(const m of input.mcp.filter(m=>m.kind!=='applications'))expect(flags.mcp_servers[m.serverName].tools).toBeUndefined();
+    expect(input.inventory).toEqual(inventory);expect(input.userSkillConfig).toEqual(userConfig);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(original.snapshot);expect(readFileSync(entry)).toEqual(bytes);expect(f.adapters.verify(snapshot.adapterBinding.hash).hash).toBe(adapter.hash);
+  });
+  it('keeps Codex output overrides absent when applications are unavailable and leaves Claude loading unchanged',async()=>{
+    for(const runner of ['codex','claude-code'] as const){
+      const snapshot=f.plan(runner);await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot);
+      const request=runner==='codex'?{...input,independentCapabilities:true as const,applicationScope:[],mcp:input.mcp.filter(m=>m.kind==='legacy-project-context')}:input;
+      const plan=f.adapters.plan(snapshot.adapterBinding.hash,request);expect(plan.args.join('\n')).not.toContain('output_token_limit');
+      expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(snapshot);
+    }
+  });
  it('plans explicit independent Codex standards and context without allowing an app bridge or silently accepting an ordinary empty scope',async()=>{
   const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),legacy=input.mcp.filter(m=>m.kind==='legacy-project-context'),safe={...input,independentCapabilities:true as const,applicationScope:[],mcp:legacy};expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,applicationScope:[]})).toThrow();expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,applicationScope:[],independentCapabilities:true})).toThrow();const plan=f.adapters.plan(snapshot.adapterBinding.hash,safe),flags=(parseToml(plan.args.find(a=>a.startsWith('skills.config='))!).skills as {config:{path:string;enabled:boolean}[]}).config;for(const p of snapshot.packages)for(const s of p.skills)expect(flags).toContainEqual({path:s.projectionPath,enabled:false});for(const s of snapshot.standardSkills)expect(flags).toContainEqual({path:s.projectionPath,enabled:true});expect(plan.args.join('\n')).not.toContain('mcp_servers.'+snapshot.mcp.find(m=>m.kind==='applications')!.serverName);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(snapshot);
  });
@@ -54,7 +72,7 @@ describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixe
     const snapshot = f.plan(); await f.sessions.create(snapshot,f.home); const input = await f.request(snapshot); input.inventory.push({ kind: 'plugin',name: 'smartdd-session',path: input.pluginRoot!,ownerStoreId: f.store.storeId,contentHash: input.pluginHash }); expect(f.adapters.plan(snapshot.adapterBinding.hash,input).agentId).toBe('claude-code');
     writeFileSync(join(input.pluginRoot!,'skills',snapshot.packages[0].skills[0].nativeName,'references/version.txt'),'changed'); expect(() => f.adapters.plan(snapshot.adapterBinding.hash,input)).toThrow('内容');
   });
-  it('rejects unsupported CLI/platform assumptions, native-root changes, secrets and replacement runtime paths', async () => {
+  it('rejects unsupported CLI assumptions, native-root changes, secrets and replacement runtime paths', async () => {
     const snapshot = f.plan(); await f.sessions.create(snapshot,f.home); const input = await f.request(snapshot);
     expect(() => f.adapters.plan(snapshot.adapterBinding.hash,{ ...input,cliVersion: '99.0.0' })).toThrow('尚未验证'); expect(() => f.adapters.plan(snapshot.adapterBinding.hash,{ ...input,native: { ...input.native,cwd: f.root } })).toThrow('原生身份');
     expect(() => f.adapters.plan(snapshot.adapterBinding.hash,{ ...input,approved: true } as never)).toThrow('未允许'); const wrong = structuredClone(input); wrong.mcp[0].env.API_KEY = 'not-a-real-secret'; expect(() => f.adapters.plan(snapshot.adapterBinding.hash,wrong)).toThrow('业务桥'); wrong.mcp[0].env = { ELECTRON_RUN_AS_NODE: '1' }; wrong.mcp[0].args[0] = '/some/new/runtime.cjs'; expect(() => f.adapters.plan(snapshot.adapterBinding.hash,wrong)).toThrow('业务桥');
@@ -73,4 +91,17 @@ describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixe
   it('does not silently infer a catalog or replace a pinned adapter with another installed version', async () => {
     const snapshot = f.plan('codex'); await f.sessions.create(snapshot,f.home); const input = await f.request(snapshot); expect(() => f.adapters.plan(snapshot.adapterBinding.hash,{ ...input,catalog: null })).toThrow('清单尚未核验'); expect(() => f.adapters.plan(f.installedAdapters[0].hash,input)).toThrow('原快照不一致');
   });
+  const negativePlatforms: {runner:'claude-code'|'codex';platform:NodeJS.Platform;arch:string}[] = ['claude-code','codex'].flatMap(runner => ([['win32','x64'],['linux','x64'],['darwin','x64']] as const).map(([platform,arch]) => ({runner:runner as 'claude-code'|'codex',platform,arch})));
+  it.each(negativePlatforms)('PW rejects the explicit U platform substitute $runner/$platform-$arch without changing the original projection or plan',async({runner,platform,arch})=>{
+    const snapshot=f.plan(runner);await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),before=structuredClone(input),good=f.adapters.plan(snapshot.adapterBinding.hash,input),home=f.snapshotTree(f.home),plugin=input.pluginRoot?f.snapshotTree(input.pluginRoot):null,stored=await f.sessions.get(snapshot.taskId);
+    const actualPlatform=Object.getOwnPropertyDescriptor(process,'platform'),actualArch=Object.getOwnPropertyDescriptor(process,'arch');if(!actualPlatform||!actualArch)throw Error('Original process tuple descriptor required');
+    try{Object.defineProperty(process,'platform',{...actualPlatform,value:platform});Object.defineProperty(process,'arch',{...actualArch,value:arch});expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,input)).toThrow('尚未验证');expect(f.adapters.recovery(snapshot.adapterBinding.hash,input.cliVersion)).toEqual({capability:'unverified'});}
+    finally{Object.defineProperty(process,'platform',actualPlatform);Object.defineProperty(process,'arch',actualArch);}
+    expect(input).toEqual(before);expect(f.snapshotTree(f.home)).toEqual(home);if(input.pluginRoot)expect(f.snapshotTree(input.pluginRoot)).toEqual(plugin);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(stored.snapshot);expect(f.adapters.plan(snapshot.adapterBinding.hash,input)).toEqual(good);
+  });
+  it.each([['claude-code',''],['claude-code','99.0.0'],['codex',''],['codex','99.0.0']] as const)('PW rejects an absent or future %s CLI version %j without selecting a fallback version',async(runner,cliVersion)=>{
+    const snapshot=f.plan(runner);await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),before=structuredClone(input),original=await f.sessions.get(snapshot.taskId),home=f.snapshotTree(f.home);
+    expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,cliVersion})).toThrow('尚未验证');expect(f.adapters.recovery(snapshot.adapterBinding.hash,cliVersion)).toEqual({capability:'unverified'});expect(input).toEqual(before);expect(f.snapshotTree(f.home)).toEqual(home);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(original.snapshot);expect(f.adapters.plan(snapshot.adapterBinding.hash,input).agentId).toBe(runner);
+  });
+
 });

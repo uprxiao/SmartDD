@@ -13,6 +13,7 @@ import type {ResourceStore} from './resource-store';
 import type {ProcessIdentityReader} from './process-identity';
 import type {DirectoryRestorer} from './restore-owned-directory';
 import {CapabilitySessionRegistry} from './session-registry';
+import type {CleanupWaitControl} from './maintenance-waits';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),uuid=z.uuid();
 const owner=z.object({pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/)}).strict();
 const resource=z.object({resourceId:z.string(),kind:z.string(),contentHash:hash,ownerStoreId:uuid,relativePath:z.string().refine(isPackagePath),pathScope:z.enum(['C','H']),scopeIdentity:z.string(),state:z.literal('ready'),generation:z.number().int().positive(),integrity:z.literal('valid'),operationId:z.string().nullable()}).strict();
@@ -31,10 +32,10 @@ function durable(path:string){const fd=openSync(path,constants.O_RDONLY|constant
  * become deleting in one transaction before the first directory can move. */
 export class ResourceGraphMaintenance {
  constructor(private readonly store:ResourceStore,private readonly processes:ProcessIdentityReader,private readonly move:DirectoryRestorer,private readonly checkpoint?:(phase:GraphCleanupCheckpoint,resourceId?:string)=>void){}
- private async coordinate<T>(input:string|Plan,work:(contexts:DiscoveryGcContext[])=>T):Promise<T>{
-  const homes=typeof input==='string'?await withResourceLock(this.store.root,()=>{const proposal=resourceGcPlan(this.store,input),ids=[...new Set(proposal.resources.filter(r=>r.pathScope==='H').map(r=>r.scopeIdentity))];return ids.map(id=>{const known=this.store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(id) as {home:string}|undefined;if(!known||digest(known.home)!==id)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','清理的原共享发现根缺失');return known.home;});}):input.catalogs.map(c=>c.home);
+ private async coordinate<T>(input:string|Plan,work:(contexts:DiscoveryGcContext[])=>T,waiting?:CleanupWaitControl):Promise<T>{
+  const homes=typeof input==='string'?await withResourceLock(this.store.root,()=>{const proposal=resourceGcPlan(this.store,input),ids=[...new Set(proposal.resources.filter(r=>r.pathScope==='H').map(r=>r.scopeIdentity))];return ids.map(id=>{const known=this.store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(id) as {home:string}|undefined;if(!known||digest(known.home)!==id)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','清理的原共享发现根缺失');return known.home;});},waiting?.lockOptions()):input.catalogs.map(c=>c.home);
   const services=[...new Set(homes)].sort(compareCodePoints).map(home=>{if(realpathSync(home)!==home||!gcPresent(join(home,'.agents/smartdd-runtime/.willyou-catalog-root.json')))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','清理不能重建缺失的原发现根');return new DiscoveryCatalog(this.store,home,this.processes);});
-  const contexts:DiscoveryGcContext[]=[];const take=async(at:number):Promise<T>=>at===services.length?await withResourceLock(this.store.root,()=>work(contexts)):await services[at].coordinateGc(async context=>{contexts.push(context);try{return await take(at+1);}finally{contexts.pop();}});return take(0);
+  const contexts:DiscoveryGcContext[]=[];const take=async(at:number):Promise<T>=>{const options=waiting?.lockOptions();return at===services.length?await withResourceLock(this.store.root,()=>{waiting?.onExecuting();return work(contexts);},options):await services[at].coordinateGc(async context=>{contexts.push(context);try{return await take(at+1);}finally{contexts.pop();}},options?.signal,options?.timeoutMs);};return take(0);
  }
  private observations(contexts:DiscoveryGcContext[],operationId?:string):ResourceGcCatalog[]{return contexts.map(c=>{const o=c.observe();return{homeId:c.homeId,generation:o.catalog.generation,entries:o.catalog.entries,consumerIds:o.consumerIds,pending:o.publicationPending||!!o.intent&&o.intent.operationId!==operationId};});}
  plan(rootResourceId:string):Promise<ResourceGcPlan>{return this.coordinate(rootResourceId,contexts=>resourceGcPlan(this.store,rootResourceId,this.observations(contexts)));}
@@ -46,7 +47,7 @@ export class ResourceGraphMaintenance {
  private intent(plan:Plan,homeId:string):DiscoveryGcIntent{return{schema:1,homeId,storeId:this.store.storeId,operationId:plan.operationId,planHash:digest(canonicalJson(plan)),owner:{storeId:this.store.storeId,uFingerprint:digest(dirname(this.store.root)),instanceId:plan.instanceId,...plan.owner},resources:plan.nodes.map(n=>({resourceId:n.resource.resourceId,generation:n.resource.generation,hash:n.resource.contentHash}))};}
  private clear(plan:Plan,contexts:DiscoveryGcContext[],onlyMatching=false){for(const context of contexts){if(onlyMatching&&context.observe().intent?.operationId!==plan.operationId)continue;context.clearIntent(this.intent(plan,context.homeId));}}
  private assertContexts(plan:Plan,contexts:DiscoveryGcContext[]){if(contexts.length!==plan.catalogs.length)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','清理发现根集合与原操作不同');for(const c of contexts){const o=c.observe();if(o.publicationPending||o.consumerIds.length)throw new ApplicationError('RESOURCE_BUSY','共享目录仍有发布或消费者，保留清理现场');if(!same(o.intent,this.intent(plan,c.homeId)))throw new ApplicationError('OWNERSHIP_CONFLICT','原共享清理意图已变化');}}
- async cleanup(rootResourceId:string,expectedPlanHash:string):Promise<GraphCleanupResult>{return this.coordinate(rootResourceId,contexts=>{
+ async cleanup(rootResourceId:string,expectedPlanHash:string,waiting?:CleanupWaitControl):Promise<GraphCleanupResult>{return this.coordinate(rootResourceId,contexts=>{
   const proposal=resourceGcPlan(this.store,rootResourceId,this.observations(contexts));if(proposal.planHash!==expectedPlanHash)throw new ApplicationError('RESOURCE_STATE_CHANGED','资源图或占用已变化，请重新检查清理计划');if(!proposal.canCollect)throw new ApplicationError('RESOURCE_BUSY','资源图仍有保留依据');
   const operationId=randomUUID(),nodes=proposal.deleteOrder.map(id=>{const r=proposal.resources.find(r=>r.resourceId===id)!;return{childId:randomUUID(),resource:r,tree:captureGcTree(this.store,r),trashRelative:(r.pathScope==='H'?'.agents/smartdd-runtime/':'')+'trash/'+operationId+'/'+digest(id)};});
   const physical=nodes.map(n=>join(n.tree.anchor,n.resource.relativePath));if(physical.some((path,i)=>physical.some((other,j)=>i!==j&&(path===other||path.startsWith(other+'/')))))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','清理图含重叠物理目录，须先核对专用交付协调器');
@@ -61,7 +62,7 @@ export class ResourceGraphMaintenance {
    }).immediate();
   }catch(error){if(!this.state(operationId))for(const c of written)c.clearIntent(this.intent(plan,c.homeId));throw error;}
   this.checkpoint?.('marked');return this.finish(plan,touched);
- });}
+ },waiting);}
  private load(operationId:string):Plan{uuid.parse(operationId);const row=this.state(operationId);if(!row||row.kind!=='cleanup-graph')throw new ApplicationError('NOT_FOUND','原资源图清理操作不存在');const plan=planSchema.parse(JSON.parse(row.plan_json));if(plan.operationId!==operationId||plan.storeId!==this.store.storeId||new Set(plan.nodes.map(n=>n.resource.resourceId)).size!==plan.nodes.length||new Set(plan.nodes.map(n=>n.childId)).size!==plan.nodes.length||!plan.nodes.some(n=>n.resource.resourceId===plan.rootResourceId)||plan.nodes.some(n=>n.resource.ownerStoreId!==this.store.storeId))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原清理计划身份不同');return plan;}
  private child(plan:Plan,n:Node){const row=this.state(n.childId);if(!row||row.kind!=='cleanup-graph-node'||!same(JSON.parse(row.plan_json),{parent:plan.operationId,planHash:digest(canonicalJson(plan)),resourceId:n.resource.resourceId}))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原清理条目进度或身份缺失');return row.state;}
  private assertRows(plan:Plan){

@@ -168,9 +168,9 @@ export class DiscoveryCatalog {
     }
     private readonly checkpoint?: (phase: DiscoveryCheckpoint) => void;
     private readonly intentCheckpoint?:()=>void;
-    private lock<T>(action: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
+    private lock<T>(action: () => T | Promise<T>, signal?: AbortSignal, timeoutMs?:number): Promise<T> {
         const verify=()=>{assertDiscoveryPath(this.home,this.root);const stat=lstatSync(this.root);if(stat.dev!==this.rootIdentity.dev||stat.ino!==this.rootIdentity.ino)throw new ApplicationError('OWNERSHIP_CONFLICT','共享目录已被替换，保留原目录');for(const[child,id]of Object.entries(this.childIdentities)){const path=join(this.root,child);assertDiscoveryPath(this.home,path);const st=lstatSync(path);if(!st.isDirectory()||st.dev!==id.dev||st.ino!==id.ino)throw new ApplicationError('OWNERSHIP_CONFLICT','共享目录的读者或暂存记录已被替换，保留原记录');}};
-        return Promise.resolve().then(()=>{verify();return withDiscoveryLock(this.root,this.host,()=>{verify();return action();},{signal,processes:this.processes});});
+        return Promise.resolve().then(()=>{verify();return withDiscoveryLock(this.root,this.host,()=>{verify();return action();},{signal,timeoutMs,processes:this.processes});});
     }
     private generation(entries: Entry[]): string { return digest(canonicalJson({ homeId: this.homeId, entries })); }
     private catalog(): Catalog {
@@ -209,7 +209,7 @@ export class DiscoveryCatalog {
     }));}
     /** The callback owns H for its entire lifetime; a caller may then take C.
      * GC intent is separate from publication and blocks every new reservation. */
-    async coordinateGc<T>(action:(context:DiscoveryGcContext)=>T|Promise<T>):Promise<T>{return this.lock(()=>{
+    async coordinateGc<T>(action:(context:DiscoveryGcContext)=>T|Promise<T>,signal?:AbortSignal,timeoutMs?:number):Promise<T>{return this.lock(()=>{
         const path=join(this.root,'gc-pending.json');
         const intent=()=>{if(!present(path))return null;const value=jsonFile(path,gcIntentSchema);if(value.homeId!==this.homeId||value.owner.storeId!==value.storeId)throw new ApplicationError('OWNERSHIP_CONFLICT','清理意图属于其他发现根');return value;};
         const same=(a:unknown,b:unknown)=>canonicalJson(a)===canonicalJson(b);
@@ -219,7 +219,7 @@ export class DiscoveryCatalog {
             clearIntent:value=>{const existing=intent();if(!existing)return;if(!same(existing,value)||value.storeId!==this.store.storeId)throw new ApplicationError('OWNERSHIP_CONFLICT','原共享清理意图已变化');unlinkSync(path);durableDirectory(this.root);},
             replaceCatalog:(operationId,original,entries)=>{const current=intent();if(!current||current.operationId!==operationId||current.storeId!==this.store.storeId)throw new ApplicationError('OWNERSHIP_CONFLICT','没有本次清理的发现根意图');if(this.publicationPending()||this.consumers().length)throw new ApplicationError('RESOURCE_BUSY','共享目录仍在使用');const actual=this.catalog(),next=catalogSchema.parse({schema:1,homeId:this.homeId,entries,generation:this.generation(entries)});if(next.entries.some(e=>e.path!==join(this.home,'.agents/skills',e.nativeName,'SKILL.md'))||new Set(next.entries.map(e=>e.nativeName)).size!==next.entries.length||!same(original.entries.filter(e=>e.storeId!==this.store.storeId),next.entries.filter(e=>e.storeId!==this.store.storeId)))throw new ApplicationError('OWNERSHIP_CONFLICT','清理不能修改其他资源库的目录');if(same(actual,next))return;if(!same(actual,original))throw new ApplicationError('RESOURCE_STATE_CHANGED','清理的原发现清单已变化');atomicJson(join(this.root,'catalog.json'),next);}
         });
-    });}
+    },signal,timeoutMs);}
     /** Read-only attribution,not a publication or file-readiness receipt. */
     async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;unavailable:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
         const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),unavailable=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>(),failures=new Map<string,'OWNERSHIP_CONFLICT'|'HASH_MISMATCH'>();
@@ -341,8 +341,8 @@ export class DiscoveryCatalog {
         if(plan.bundle)writeOwnedBundle(path,plan.bundle,this.store.storeId);
         else writeOwnedTree(path,Object.fromEntries(Object.entries(plan.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')])),join(this.root,'staging-conflicts'));
     }
-    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions,assertBasis?:()=>void): Promise<void> {
-        await withResourceLock(this.store.root, () => {options.assertPublish?.(pending.operationId);return this.store.sqlite.transaction(() => {
+    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions,assertBasis?:()=>void,assertOwners?:()=>void): Promise<void> {
+        await withResourceLock(this.store.root, () => {options.assertPublish?.(pending.operationId);assertOwners?.();return this.store.sqlite.transaction(() => {
             assertBasis?.();
             const oldHome = this.store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(this.homeId) as {
                 home: string;
@@ -426,6 +426,42 @@ export class DiscoveryCatalog {
         this.store.sqlite.prepare('UPDATE capability_resources SET state=?,integrity=? WHERE resource_id=? AND operation_id=?').run(state, state === 'ready' ? 'valid' : state === 'removed' ? 'invalid' : 'unknown', entry.resourceId, pending.operationId); this.store.sqlite.prepare('UPDATE capability_resource_operations SET state=?,updated_at=? WHERE operation_id=? AND owner_store_id=?').run(operationState, timestamp(), pending.operationId, this.store.storeId); this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_id=? AND owner_kind='install'").run(timestamp(), pending.operationId); }).immediate();}); }
     async publish(sources: readonly DiscoveryProjectionSource[], options: DiscoveryPublicationOptions = {}): Promise<NonNullable<AgentLoadRequest['catalog']>> { return this.publication(this.plans(sources), options); }
     async recover(operationId: string, sources: readonly DiscoveryProjectionSource[], options: DiscoveryPublicationOptions = {}): Promise<NonNullable<AgentLoadRequest['catalog']>> { uuid.parse(operationId); return this.publication(this.plans(sources), options, operationId); }
+    /** Repair only the recorded publication, independently of today's project
+     * selection. Immutable owned C sources must reproduce every original H
+     * entry exactly; no source bytes or identity are adopted from partial H. */
+    async recoverRecordedPublication(options:DiscoveryPublicationOptions={}):Promise<NonNullable<AgentLoadRequest['catalog']>|null>{
+        const prior=await this.lock(()=>this.pending(),options.signal);if(!prior)return null;
+        if(prior.owner.storeId!==this.store.storeId||prior.owner.uFingerprint!==this.owner.uFingerprint)throw new ApplicationError('RESOURCE_BUSY','共享目录有其他数据根待核查发布，保留原操作');
+        if(this.processes.state({pid:prior.owner.pid,startedAt:prior.owner.startedAt})!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原目录发布者仍存活或身份未知，保留原操作');
+        const ids=this.store.sqlite.prepare("SELECT resource_id FROM capability_resources WHERE owner_store_id=? AND path_scope='C' AND kind IN ('standard-skill','application-package') AND state='ready' AND integrity='valid' ORDER BY resource_id LIMIT 4097").all(this.store.storeId) as {resource_id:string}[];
+        if(ids.length>4096)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享来源核对超过预算，保留原发布');
+        const sources:DiscoveryProjectionSource[]=[];
+        for(const entry of prior.entries){
+            const candidates:DiscoveryProjectionSource[]=[];
+            for(const id of ids){
+                const resource=this.store.get(id.resource_id);let files:Record<string,Buffer>={},executables=new Set<string>();
+                if(resource.kind==='standard-skill'){
+                    const skillId=resource.resourceId.slice('standard-skill:'.length).split(':')[0],expected=entry.format?legacyDiscoveryEntry(this.store.storeId,this.home,skillId,resource.contentHash).nativeName:standardNativeSkillName(skillId,resource.contentHash);
+                    if(entry.nativeName!==expected||entry.sourceHash!==resource.contentHash)continue;
+                    files=Object.fromEntries(Object.entries(new LegacyCapabilityResourceAdopter(this.store).verify(resource)).map(([p,t])=>[p,Buffer.from(t)]));
+                }else{
+                    if(entry.format||!entry.nativeName.endsWith('-'+resource.contentHash.slice(0,12)))continue;
+                    const pkg=new PackageRegistry(this.store,'discovery-recovery-reader').get(resource.contentHash),skill=pkg.manifest.skills.find(s=>applicationNativeSkillName(pkg.appId,s.id,pkg.packageHash)===entry.nativeName);
+                    if(!skill||applicationSkillContentHash(pkg.manifest,skill.path)!==entry.sourceHash)continue;
+                    verifyPackageTree(this.store.directory(resource),pkg,this.store.storeId);const prefix=skill.path+'/';
+                    for(const f of pkg.manifest.files.filter(f=>f.path.startsWith(prefix))){const name=f.path.slice(prefix.length);files[name]=readFileSync(join(this.store.directory(resource),f.path));if(f.executable)executables.add(name);}
+                }
+                if(!files['SKILL.md'])throw new ApplicationError('INVALID_PACKAGE','原共享Skill入口缺失');
+                if(!entry.format)files['SKILL.md']=projectSkillName(files['SKILL.md'],entry.nativeName);
+                const source:DiscoveryProjectionSource={...(entry.format?{format:entry.format}:{}),nativeName:entry.nativeName,sourceHash:entry.sourceHash,sourceResourceId:resource.resourceId,files,executables},plan=this.plans([source])[0];
+                if(canonicalJson(plan.entry)===canonicalJson(entry)){this.verifySource(plan);candidates.push(source);}
+            }
+            if(candidates.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发布缺少唯一完整C来源，保留原操作');sources.push(candidates[0]);
+        }
+        // Existing takeover checks the original kernel owner, C ledger, leases,
+        // full plan and unchanged H basis again under the normal lock order.
+        return this.recover(prior.operationId,sources,options);
+    }
     /** Reuse only the exact original intent. Recovery still verifies the original
      * owner against the kernel and its matching C operation before takeover. */
     async publishOrRecover(sources:readonly DiscoveryProjectionSource[],options:DiscoveryPublicationOptions={}):Promise<NonNullable<AgentLoadRequest['catalog']>>{
@@ -457,7 +493,7 @@ export class DiscoveryCatalog {
         try {
             await this.lock(async () => {
                 const current = this.catalog(), prior = this.pending();
-                let assertBasis:(()=>void)|undefined;
+                let assertBasis:(()=>void)|undefined,assertOwners:(()=>void)|undefined;
                 if (recoverId) {
                     if (!prior || prior.operationId !== recoverId || prior.owner.storeId !== this.store.storeId || prior.owner.uFingerprint !== this.owner.uFingerprint || canonicalJson(prior.entries) !== canonicalJson(plans.map(p => p.entry)))
                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '缺少相同归属及内容的原维护记录');
@@ -480,14 +516,17 @@ export class DiscoveryCatalog {
                     stopped(prior.owner);
                     if(ledger&&original){
                         const committed=original;
+                        // H and C remain held across this exact-identity check.
+                        // A stopped kernel identity cannot revive; recheck the
+                        // mutable C ledger inside the transaction below.
+                        assertOwners=()=>{stopped(prior.owner);stopped(committed.owner);};
                         assertBasis=()=>{
                             const currentLedger=query();
                             if(!currentLedger||currentLedger.plan!==ledger.plan||currentLedger.state!==ledger.state)throw new ApplicationError('RESOURCE_STATE_CHANGED','原H交接的C操作账已变化，保留原记录');
-                            stopped(prior.owner);stopped(committed.owner);
                             this.assertPublisherLeases(committed,true);this.assertNoOtherHolds(prior);
                         };
                     }else assertBasis=()=>this.assertEarlyIntent(prior,this.catalog(),plans);
-                    assertBasis();this.assertNoOtherHolds(prior);
+                    assertOwners?.();assertBasis();this.assertNoOtherHolds(prior);
                     pending = { ...prior, token: randomUUID(), owner: this.owner, ...(original?{handoff:{fromOwner:original.owner,fromPlanHash:digest(canonicalJson(original))}}:{}) };
                     atomicJson(join(this.root, 'pending.json'), pending);
                 }
@@ -507,7 +546,7 @@ export class DiscoveryCatalog {
                     atomicJson(join(this.root, 'pending.json'), pending);
                     this.intentCheckpoint?.();
                 }
-                await this.register(plans, pending!,options,assertBasis);
+                await this.register(plans, pending!,options,assertBasis,assertOwners);
             }, options.signal);
             if (reuse) {
                 const snapshot = await this.snapshot();

@@ -13,6 +13,7 @@ import { ResourceStore } from '../resource-store';
 import { MailCache } from '../mail-cache';
 import { MacProcessIdentityReader,type ProcessIdentityReader } from '../process-identity';
 import { digest } from '../manifest';
+import {acquireMailCacheAccess} from '../mail-cache-access';
 let build:string,native:string,vfs:string,root:string,sqlite:Database.Database,store:ResourceStore,reader:MacProcessIdentityReader,cache:MailCache;
 const children=new Set<ChildProcess>(),engines:MailCache[]=[];
 const limits={maxBytes:2*1024*1024,indexBytes:256*1024};
@@ -39,6 +40,12 @@ afterAll(()=>rmSync(build,{recursive:true,force:true}));
 beforeEach(async()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-cache-process-u-')));mkdirSync(join(root,'home'));mkdirSync(join(root,'tmp'));sqlite=new Database(join(root,'state.sqlite'));runBundledMigrations(sqlite);store=new ResourceStore(sqlite,root);cache=await MailCache.open(store,reader,limits);engines.push(cache);});
 afterEach(async()=>{await Promise.all([...children].map(async child=>{const done=once(child,'exit');child.kill('SIGKILL');await done;}));while(engines.length)await engines.pop()!.dispose();sqlite.close();rmSync(root,{recursive:true,force:true});});
 describe.skipIf(process.platform!=='darwin')('real owned-process mail-cache contention and interruption recovery',()=>{
+ it('keeps the independent cache gate for a real live child and releases it only when that native host exits',async()=>{
+  const child=await start(),file=join(root,'cache/.database-access.sqlite'),inode=statSync(file).ino,identity=reader.read(child.child.pid!)!;expect(reader.state(identity)).toBe('running');await cache.dispose();
+  await expect(acquireMailCacheAccess(store,'maintenance',{timeoutMs:30})).rejects.toMatchObject({code:'RESOURCE_BUSY'});await child.kill();expect(reader.state(identity)).toBe('stopped');
+  const exclusive=await acquireMailCacheAccess(store,'maintenance');try{exclusive.assertHeld();expect(statSync(file).ino).toBe(inode);await expect(acquireMailCacheAccess(store,'shared',{timeoutMs:30})).rejects.toMatchObject({code:'RESOURCE_BUSY'});}finally{exclusive.release();}
+  const reopened=await MailCache.open(store,reader,limits);engines.push(reopened);expect((await reopened.usage()).activeLeases).toBe(0);
+ });
  it('retains a live writer reservation and discards its empty stage only after kernel-proved exit',async()=>{
   const child=await start('reserved'),writing=child.request('put',{source:'interrupted',size:700000}),phase=await child.wait(m=>m.kind==='phase'&&m.phase==='reserved');expect((phase.usage as {pendingWriteBytes:number}).pendingWriteBytes).toBe(700000);
   await cache.recover();expect((await cache.usage()).pendingWriteBytes).toBe(700000);await expect(cache.put(digest('competing'),Buffer.alloc(700000))).rejects.toMatchObject({code:'RESOURCE_BUSY'});

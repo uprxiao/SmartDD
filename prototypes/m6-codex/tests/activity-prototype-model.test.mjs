@@ -25,7 +25,7 @@ test('combined filters keep connection, project and global records separate with
 test('recovery is bound to the original application and project, including colliding foreign draft IDs',()=>{
   const state=activityDemoState(projectIntegrationState(initialIntegrationState()));
   const record=state.activity.find(r=>r.id==='activity-draft');
-  assert.deepEqual(demoActivityRecovery(record,state),{kind:'draft',app:'mail',project:'smartdd',draftId:'activity-draft-b'});
+  assert.deepEqual(demoActivityRecovery(record,state),{kind:'draft',app:'mail',project:'smartdd',draftId:'activity-draft-b',revision:1,activityId:'activity-draft'});
   assert.deepEqual(demoActivityRecovery(state.activity[0],state),{kind:'connection',app:'zentao',connectionId:'zt-demo'});
   assert.equal(demoActivityRecovery({...record,app:'zentao',connectionId:'smtp-review'},state),null);
   assert.notEqual(demoActivityRecovery({...record,project:'ais'},state)?.kind,'draft');

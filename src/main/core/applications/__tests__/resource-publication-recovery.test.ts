@@ -9,7 +9,7 @@ import {resolve} from 'node:path';
 import {MacProcessIdentityReader} from '../process-identity';
 import {randomUUID} from 'node:crypto';
 import Database from 'better-sqlite3';
-import {afterAll,afterEach,beforeAll,beforeEach,describe,expect,it} from 'vitest';
+import {afterAll,afterEach,beforeAll,beforeEach,describe,expect,it,vi} from 'vitest';
 import {runBundledMigrations} from '../../../db/migrations';
 import {ResourceStore,type PublishResource} from '../resource-store';
 import {FixtureProcessReader} from './run-fixture';
@@ -77,4 +77,17 @@ describe.skipIf(process.platform!=='darwin')('actual private C publisher termina
   await expect(store.recover(spec(),record.operationId!)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(leases(record.operationId!)).toEqual(before);const done=once(child,'exit');child.kill('SIGKILL');await done;children.delete(child);expect(processes.state(original)).toBe('stopped');
   expect(await store.recover(spec(),record.operationId!)).toMatchObject({state:'ready',operationId:record.operationId,relativePath:'original-static'});expect(readFileSync(join(store.root,'original-static/entry'),'utf8')).toBe('original immutable C resource');expect(leases(record.operationId!).every((x:any)=>x.state==='released')).toBe(true);
  },10000);
+});
+
+it('QR checks C publisher and install owners before the business transaction',async()=>{
+ const x=await interrupted();reader.identities.set(process.pid,'darwin-proc-v1:999:2');const state=reader.state.bind(reader),observed:boolean[]=[];
+ const watch=vi.spyOn(reader,'state').mockImplementation(identity=>{observed.push(sqlite.inTransaction);expect(sqlite.inTransaction).toBe(false);return state(identity);});
+ try{const recovered=await new ResourceStore(sqlite,root,undefined,{processes:reader}).recover(x.input,x.operation);expect(recovered.state).toBe('ready');expect(observed.length).toBeGreaterThan(0);}
+ finally{watch.mockRestore();}
+});
+it('QR rejects an install owner changed during the external identity query without publishing',async()=>{
+ const x=await interrupted();reader.identities.set(process.pid,'darwin-proc-v1:999:2');const before=x.store.get(x.input.resourceId),state=reader.state.bind(reader);let changed=false;
+ const watch=vi.spyOn(reader,'state').mockImplementation(identity=>{if(!changed){changed=true;sqlite.prepare("UPDATE capability_resource_leases SET host_instance_id='concurrent-owner',state='recovery-required' WHERE owner_id=? AND owner_kind='install'").run(x.operation);}return state(identity);});
+ try{await expect(new ResourceStore(sqlite,root,undefined,{processes:reader}).recover(x.input,x.operation)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(changed).toBe(true);expect(x.store.get(x.input.resourceId)).toEqual(before);expect(leases(x.operation).every((l:any)=>l.host_instance_id==='concurrent-owner'&&l.state==='recovery-required')).toBe(true);}
+ finally{watch.mockRestore();}
 });

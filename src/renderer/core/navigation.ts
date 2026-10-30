@@ -22,6 +22,8 @@ class NavigationStore {
   currentTaskId: string | null = null;
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
+  /** Unsubmitted composer text, kept in memory across views and scoped to its project. */
+  homeInputDrafts = new Map<string | null, string>();
   settingsSection: SettingsSectionId = 'general';
   /** ⌘K task search. */
   searchOpen = false;
@@ -49,6 +51,8 @@ class NavigationStore {
 
   prepareApplicationTask(projectId:string,prompt:string):void{this.newTask(projectId);this.homePreset={...this.homePreset!,applicationPrompt:prompt};}
   consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
+  homeInput(projectId:string|null):string{return this.homeInputDrafts.get(projectId)??'';}
+  setHomeInput(projectId:string|null,value:string):void{if(value)this.homeInputDrafts.set(projectId,value);else this.homeInputDrafts.delete(projectId);}
 
   openTask(id: string): void {
     this.currentTaskId = id;
@@ -98,6 +102,7 @@ class NavigationStore {
 
   /** After a delete: leave the view instead of showing a project that no longer exists. */
   closeProject(id: string): void {
+    this.homeInputDrafts.delete(id);
     if (this.homePreset?.projectId === id) this.homePreset = null;
     if (this.currentProjectId !== id) return;
     this.currentProjectId = null;

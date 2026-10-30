@@ -24,7 +24,7 @@ const identity = (c: ConnectionConfig): VerifiedConnectionIdentity => ({ provide
 const authVersion = (c: { identityRevision: number; configRevision: number; secretRevision: number; policyRevision: number }) => ({ identityRevision: c.identityRevision, configRevision: c.configRevision, secretRevision: c.secretRevision, policyRevision: c.policyRevision });
 const secretCount = () => (sqlite.prepare('SELECT count(*) AS n FROM app_secrets').get() as { n: number }).n;
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'willyou-m10-connections-')); sqlite = new Database(':memory:'); sqlite.pragma('foreign_keys=ON'); runBundledMigrations(sqlite);
+  root = mkdtempSync(join(tmpdir(), 'willyou-m10-connections-')); sqlite = new Database(join(root,'connections.sqlite')); sqlite.pragma('foreign_keys=ON'); runBundledMigrations(sqlite);
   const db = drizzle(sqlite, { schema }); available = true;
   // Fake cipher exercises the storage boundary; this does not claim native safeStorage acceptance.
   secrets = new SecretsStore(db, { isAvailable: () => available, encrypt: s => Buffer.from([...s].reverse().join('')), decrypt: b => [...b.toString()].reverse().join('') });
@@ -40,6 +40,9 @@ async function activateTokenPackage() {
 }
 
 describe('current connection revisions, tested candidates and encrypted secret changes', () => {
+  it.each(['smtp.example.test?account=fixture','smtp.example.test#fragment'])('RC rejects URL delimiters in an SMTP host before staging a secret: %s',async host=>{
+    const secretWrite=vi.spyOn(secrets,'set');const config:ConnectionConfig={kind:'smtp',host,port:465,username:'fixture@example.test',fromAddress:'fixture@example.test',authMode:'password',mode:'implicit-tls'};await expect(service.testCandidate(input({config}))).rejects.toMatchObject({code:'INVALID_INPUT'});expect(secretWrite).not.toHaveBeenCalled();expect(verify).not.toHaveBeenCalled();expect(secretCount()).toBe(0);expect(sqlite.prepare('SELECT * FROM application_secret_changes').all()).toHaveLength(0);
+  });
   it('keeps a tested candidate separate from saved state and exposes no credential references or values', async () => {
     const candidate = await service.testCandidate(input());
     expect(service.list()).toEqual([]); expect(secretCount()).toBe(1);
@@ -81,6 +84,41 @@ describe('current connection revisions, tested candidates and encrypted secret c
     const current = service.get(old.id); expect(current).toEqual(old); expect(secretCount()).toBe(1);
     expect(service.authentication(old.id, authVersion(current)).secret).toBe('fixture-secret-first');
   });
+  it('preserves the old reference when staging a new secret fails before provider verification',async()=>{
+    const old=await service.save(input()),rows=sqlite.prepare('SELECT * FROM application_connections').all(),journal=sqlite.prepare('SELECT * FROM application_secret_changes').all();verify.mockClear();
+    vi.spyOn(secrets,'set').mockImplementationOnce(()=>{throw new Error('controlled secret-store write failure');});
+    await expect(service.save(input({id:old.id,expectedRevision:old.revision,secret:'rotation-staging-failure'}))).rejects.toThrow('controlled secret-store write failure');
+    expect(verify).not.toHaveBeenCalled();expect(sqlite.prepare('SELECT * FROM application_connections').all()).toEqual(rows);expect(sqlite.prepare('SELECT * FROM application_secret_changes').all()).toEqual(journal);expect(secretCount()).toBe(1);
+    expect(service.authentication(old.id,authVersion(old)).secret).toBe('fixture-secret-first');
+  });
+  it('discards only the staged rotation when verification identifies a different account',async()=>{
+    const old=await service.save(input()),row=sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(old.id);
+    verify.mockImplementationOnce(async c=>({...identity(c),accountId:'different-fixture-account'}));
+    await expect(service.save(input({id:old.id,expectedRevision:old.revision,secret:'wrong-identity-rotation'}))).rejects.toMatchObject({code:'IDENTITY_CHANGE_REQUIRES_SELECTION'});
+    expect(sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(old.id)).toEqual(row);expect(secretCount()).toBe(1);expect(service.authentication(old.id,authVersion(old)).secret).toBe('fixture-secret-first');
+    expect(sqlite.prepare("SELECT state,error_code FROM application_secret_changes WHERE expected_revision=?").get(old.revision)).toEqual({state:'failed',error_code:'IDENTITY_CHANGE_REQUIRES_SELECTION'});
+  });
+  it('rolls back a failed connection commit and removes only its validated candidate secret',async()=>{
+    const old=await service.save(input()),candidate=await service.testCandidate(input({id:old.id,expectedRevision:old.revision,secret:'rotation-transaction-failure'})),row=sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(old.id);
+    expect(secretCount()).toBe(2);sqlite.exec("CREATE TEMP TRIGGER fail_rotation_commit BEFORE UPDATE ON application_connections BEGIN SELECT RAISE(ABORT,'controlled rotation commit failure'); END");
+    try{await expect(service.commitCandidate(candidate.operationId,candidate.candidateHash)).rejects.toThrow('controlled rotation commit failure');}finally{sqlite.exec('DROP TRIGGER fail_rotation_commit');}
+    expect(sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(old.id)).toEqual(row);expect(secretCount()).toBe(1);expect(service.authentication(old.id,authVersion(old)).secret).toBe('fixture-secret-first');
+    expect(sqlite.prepare('SELECT state,error_code FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId)).toEqual({state:'failed',error_code:'CONNECTION_UNAVAILABLE'});
+  });
+  it('recovers obsolete-secret cleanup from disk after a newer rotation without reverting or deleting the current credential',async()=>{
+    const old=await service.save(input()),candidate=await service.testCandidate(input({id:old.id,expectedRevision:old.revision,secret:'rotation-second'}));
+    const deletion=vi.spyOn(secrets,'delete').mockImplementationOnce(()=>{throw new Error('controlled old-secret cleanup failure');});
+    const second=await service.commitCandidate(candidate.operationId,candidate.candidateHash);deletion.mockRestore();
+    expect(second).toMatchObject({identityRevision:old.identityRevision,configRevision:old.configRevision,secretRevision:2,cleanupPending:true});expect(service.authentication(old.id,authVersion(second)).secret).toBe('rotation-second');expect(secretCount()).toBe(2);
+    const latest=await service.save(input({id:old.id,expectedRevision:second.revision,secret:'rotation-third'}));expect(latest.cleanupPending).toBe(true);expect(latest.secretRevision).toBe(3);expect(secretCount()).toBe(2);
+    await service.discardCandidate(candidate.operationId);expect(service.authentication(old.id,authVersion(latest)).secret).toBe('rotation-third');
+    const row=sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(old.id),pending=sqlite.prepare("SELECT state FROM application_secret_changes WHERE operation_id=?").get(candidate.operationId);expect(pending).toEqual({state:'cleanup-pending'});
+    sqlite.close();sqlite=new Database(join(root,'connections.sqlite'));sqlite.pragma('foreign_keys=ON');
+    secrets=new SecretsStore(drizzle(sqlite,{schema}),{isAvailable:()=>true,encrypt:s=>Buffer.from([...s].reverse().join('')),decrypt:b=>[...b.toString()].reverse().join('')});store=new ResourceStore(sqlite,root);service=new ApplicationConnectionService(store,secrets,{verify});
+    expect(sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(old.id)).toEqual(row);expect(sqlite.prepare('SELECT state FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId)).toEqual(pending);
+    await service.recoverSecretChanges();expect(service.get(old.id)).toEqual({...latest,cleanupPending:false});expect(service.authentication(old.id,authVersion(latest)).secret).toBe('rotation-third');expect(secretCount()).toBe(1);
+    expect(()=>service.authentication(old.id,authVersion(second))).toThrow(/修订/);expect(sqlite.prepare('SELECT state FROM application_secret_changes WHERE operation_id=?').get(candidate.operationId)).toEqual({state:'cleaned'});expect(sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+  });
   it('uses CAS for concurrent rotations and only cleans the losing operation secret', async () => {
     const old = await service.save(input());
     const a = await service.testCandidate(input({ id: old.id, expectedRevision: old.revision, secret: 'rotation-a' }));
@@ -119,6 +157,12 @@ describe('current connection revisions, tested candidates and encrypted secret c
     const smtp: ConnectionConfig = { kind: 'smtp', host: 'smtp.example.test', port: 587, username: 'tester@example.test', fromAddress: 'tester@example.test', authMode: 'password', mode: 'starttls' };
     const saved = await service.save(input({ config: smtp })); expect(saved.config).toEqual(smtp); expect(saved.providerId).toBe('smtp');
     await expect(service.save(input({ config: { ...smtp, port: 0 } }))).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+  });
+  it('PA retains a legacy shared credential until the last authorized connection is disconnected,including recovery',async()=>{
+    const c=await service.save(input({name:'shared C'})),d=await service.save(input({name:'shared D',secret:'fixture-secret-second'}));const key=(sqlite.prepare('SELECT secret_ref FROM application_connections WHERE id=?').get(c.id) as {secret_ref:string}).secret_ref,oldD=(sqlite.prepare('SELECT secret_ref FROM application_connections WHERE id=?').get(d.id) as {secret_ref:string}).secret_ref;sqlite.prepare('UPDATE application_connections SET secret_ref=? WHERE id=?').run(key,d.id);secrets.delete(oldD);const beforeD=service.get(d.id),deletion=vi.spyOn(secrets,'delete');const disconnected=await service.disconnect(c.id,c.revision);expect(disconnected).toMatchObject({authorization:'disconnected',hasSecret:false,cleanupPending:false});expect(deletion).not.toHaveBeenCalled();expect(secretCount()).toBe(1);expect(service.get(d.id)).toEqual(beforeD);expect(service.authentication(d.id,authVersion(beforeD)).secret).toBe('fixture-secret-first');expect(()=>service.authentication(c.id,authVersion(disconnected))).toThrow(/授权/);service=new ApplicationConnectionService(store,secrets,{verify});await service.recoverSecretChanges();expect(service.get(d.id)).toEqual(beforeD);expect(secretCount()).toBe(1);const closedD=await service.disconnect(d.id,beforeD.revision);expect(closedD).toMatchObject({authorization:'disconnected',hasSecret:false,cleanupPending:false});expect(deletion).toHaveBeenCalledExactlyOnceWith(key);expect(secretCount()).toBe(0);expect(service.get(c.id)).toEqual(disconnected);await service.recoverSecretChanges();expect(deletion).toHaveBeenCalledTimes(1);
+  });
+  it('PA keeps both shared-reference connections revoked when deleting the final reference fails,then recovers once',async()=>{
+    const c=await service.save(input({name:'shared C'})),d=await service.save(input({name:'shared D',secret:'fixture-secret-second'}));const key=(sqlite.prepare('SELECT secret_ref FROM application_connections WHERE id=?').get(c.id) as {secret_ref:string}).secret_ref,oldD=(sqlite.prepare('SELECT secret_ref FROM application_connections WHERE id=?').get(d.id) as {secret_ref:string}).secret_ref;sqlite.prepare('UPDATE application_connections SET secret_ref=? WHERE id=?').run(key,d.id);secrets.delete(oldD);await service.disconnect(c.id,c.revision);const deletion=vi.spyOn(secrets,'delete').mockImplementationOnce(()=>{throw Error('controlled last-reference deletion failure');});const closed=await service.disconnect(d.id,d.revision);expect(closed).toMatchObject({authorization:'disconnected',hasSecret:false,cleanupPending:true});expect(secretCount()).toBe(1);for(const id of[c.id,d.id])expect(()=>service.authentication(id,authVersion(service.get(id)))).toThrow(/授权/);deletion.mockRestore();service=new ApplicationConnectionService(store,secrets,{verify});await service.recoverSecretChanges();expect(secretCount()).toBe(0);for(const id of[c.id,d.id])expect(service.get(id)).toMatchObject({authorization:'disconnected',cleanupPending:false});
   });
   it('revokes before secret cleanup, then recovers cleanup without restoring authorization', async () => {
     const saved = await service.save(input()); const deletion = vi.spyOn(secrets, 'delete').mockImplementationOnce(() => { throw new Error('fixture deletion unavailable'); });

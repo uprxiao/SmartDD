@@ -104,3 +104,11 @@ describe.skipIf(process.platform!=='darwin')('H recovery interrupted between int
   expect(ledger(first.operationId).state).toBe('committed');expect(existsSync(pendingFile())).toBe(false);expect(f.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_id=? AND state<>'released'").get(first.operationId)).toBeUndefined();
  },16000);
 });
+
+// Native identity is an external process query, even though this API is synchronous.
+it('QR checks original publisher identities outside the C business transaction while preserving recovery',async()=>{
+ await f.sessions.create(f.plan('codex'),f.home);const first=await original(),observed:boolean[]=[],state=processes.state.bind(processes);
+ const watch=vi.spyOn(processes,'state').mockImplementation(identity=>{observed.push(f.sqlite.inTransaction);expect(f.sqlite.inTransaction).toBe(false);return state(identity);});
+ try{const recovered=await catalog.recover(first.operationId,sources);catalog.verify(recovered);expect(observed.length).toBeGreaterThan(0);expect(existsSync(pendingFile())).toBe(false);}
+ finally{watch.mockRestore();}
+});

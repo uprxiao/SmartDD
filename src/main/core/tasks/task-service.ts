@@ -110,7 +110,7 @@ export class TaskService {
   private readonly now: () => number;
   private readonly creations = new Map<string,{taskId:string;senderId:number|null}>();
   private readonly launching = new Map<string,{projectId:string;abort:AbortController}>();
-  private readonly opening = new Map<string,{profileId:string|null;promise:Promise<OpenResult>}>();
+  private readonly opening = new Map<string,{profileId:string|null;projectId:string|null;abort:AbortController;promise:Promise<OpenResult>}>();
   private readonly managed = new Map<string,{taskId:string;launch:TaskCapabilityLaunch;exited:boolean;exitCode?:number}>();
   private closed = false;
   private readonly nativeClaims = new Map<string,string>();
@@ -224,15 +224,17 @@ export class TaskService {
     if(this.closed)return Promise.reject(new Error('应用正在退出，不能恢复任务'));
     const current=this.opening.get(req.taskId);
     if(current){if(req.aiProfileId&&req.aiProfileId!==current.profileId)return Promise.reject(new Error('任务正在准备启动，完成后才能换 AI 配置'));return current.promise;}
-    const profileId=req.aiProfileId??this.d.db.select({id:tasks.aiProfileId}).from(tasks).where(eq(tasks.id,req.taskId)).get()?.id??null;
-    const promise=this.openOnce(req).finally(()=>{if(this.opening.get(req.taskId)?.promise===promise)this.opening.delete(req.taskId);});
-    this.opening.set(req.taskId,{profileId,promise});return promise;
+    const row=this.d.db.select({profileId:tasks.aiProfileId,projectId:tasks.projectId}).from(tasks).where(eq(tasks.id,req.taskId)).get();
+    const profileId=req.aiProfileId??row?.profileId??null,abort=new AbortController();
+    const promise=this.openOnce(req,abort.signal).finally(()=>{if(this.opening.get(req.taskId)?.promise===promise)this.opening.delete(req.taskId);});
+    this.opening.set(req.taskId,{profileId,projectId:row?.projectId??null,abort,promise});return promise;
   }
 
-  private async openOnce(req: OpenTaskRequest): Promise<OpenResult> {
+  private async openOnce(req: OpenTaskRequest, signal:AbortSignal): Promise<OpenResult> {
     if(this.closed)throw new Error('应用正在退出，不能恢复任务');
     await this.bindingNative.get(req.taskId)?.catch(()=>undefined);
     if(this.closed)throw new Error('应用正在退出，不能恢复任务');
+    if(signal.aborted)throw new Error('任务启动已取消');
     const row = this.require(req.taskId);
     if (this.archiving.has(row.id)) throw new Error('任务正在结束并归档，请稍后再试');
     if (row.archivedAt !== null) throw new Error('任务已归档，请先取消归档再启动');
@@ -295,7 +297,7 @@ export class TaskService {
   setArchived(id: string, archived: boolean): TaskView {
     const row = this.require(id);
     if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
-    if (archived && (this.running.has(id)||this.launching.has(id))) throw new Error('任务正在运行，请先结束再归档');
+    if (archived && (this.running.has(id)||this.launching.has(id)||this.opening.has(id))) throw new Error('任务正在运行，请先结束再归档');
     if ((row.archivedAt !== null) === archived) return this.get(id);
     this.d.db
       .update(tasks)
@@ -351,6 +353,7 @@ export class TaskService {
   }
 
   kill(id: string): void {
+    this.opening.get(id)?.abort.abort();
     this.launching.get(id)?.abort.abort();
     const ptyId = this.running.get(id);
     if (!ptyId) return;
@@ -370,7 +373,7 @@ export class TaskService {
   }
 
   runningCount(): number {
-    return new Set([...this.running.keys(),...this.launching.keys()]).size;
+    return new Set([...this.running.keys(),...this.launching.keys(),...this.opening.keys()]).size;
   }
 
   /** Main-process ownership check for input; no database work on each keypress.
@@ -387,6 +390,7 @@ export class TaskService {
     const stored=new Set(this.d.db.select({id:tasks.id}).from(tasks).where(eq(tasks.projectId,projectId)).all().map(r=>r.id));
     const ids=new Set([...this.running.keys()].filter(id=>stored.has(id)));
     for(const[id,launch]of this.launching)if(launch.projectId===projectId)ids.add(id);
+    for(const[id,opening]of this.opening)if(opening.projectId===projectId)ids.add(id);
     for(const id of this.d.managedCapabilities?.activeTaskIds?.(projectId)??[])ids.add(id);
     return ids;
   }
@@ -395,7 +399,7 @@ export class TaskService {
   }
 
   dispose(): void {
-    this.closed=true;for(const launch of this.launching.values())launch.abort.abort();
+    this.closed=true;for(const opening of this.opening.values())opening.abort.abort();for(const launch of this.launching.values())launch.abort.abort();
     for(const run of this.managed.values())if(!run.exited)void run.launch.stop('host-shutdown').catch(()=>undefined);
     for (const cancel of this.pendingArchiveStops) cancel(new Error('应用正在退出，归档未完成'));
     for (const [ptyId,run] of this.runtimes) {
@@ -454,6 +458,7 @@ export class TaskService {
     let launch: TaskCapabilityLaunch | undefined;
     let runtime: PreparedRuntime | undefined;
     let nativePtyId: string | undefined;
+    let forkAttempted = false;
     let launchedAt = 0;
     try {
       if (context && this.d.managedCapabilities) {
@@ -497,7 +502,6 @@ export class TaskService {
         if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
       }
       let ptyId: string;
-      let forkAttempted = false;
       try {
         // Recheck after asynchronous preparation/arming and immediately before the
         // native fork. A late loss must follow the known no-fork failure path.
@@ -522,8 +526,7 @@ export class TaskService {
         if (context && profile.runner === 'claude' && (mode === 'new' || mode === 'reopen')) this.freshNativeTasks.add(context.taskId);
       } catch (error) {
         if (launch) {
-          if (!forkAttempted && launch.cancelBeforeFork) await launch.cancelBeforeFork();
-          else await launch.spawnFailed();
+          if (forkAttempted) await launch.spawnFailed();
         }
         else runtime?.release();
         throw error;
@@ -540,6 +543,15 @@ export class TaskService {
       }
       return { ptyId, injectedNames: plan.injectedNames, stateRoot: stateRootFor(profile.runner, env, base), runtime, launchedAt };
     } catch (error) {
+      // Arming may itself await or fail. Only this closure knows whether the OS
+      // fork was attempted; settle its unused windows before ordinary revocation.
+      if (launch && !forkAttempted && launch.cancelBeforeFork) {
+        try {
+          await launch.cancelBeforeFork();
+          this.managed.delete(launch.ptyId);
+          if (this.closed && ![...this.managed.values()].some(run => !run.exited)) this.d.ptys.off('exit', this.onPtyExit);
+        } catch { /* An unconfirmed cancellation keeps its process records and leases. */ }
+      }
       // Request revocation before signalling the owned PTY, then await it; a revoker may itself await exit.
       let stopping: Promise<void> | undefined;
       if (launch) {

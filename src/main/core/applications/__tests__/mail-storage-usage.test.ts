@@ -10,6 +10,7 @@ import {mailBusinessUsage,measureStorageTree} from '../mail-storage-usage';
 let root:string,db:Database.Database,store:ResourceStore,blobs:MailBlobStore;
 beforeEach(()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-storage-')));db=new Database(join(root,'state.sqlite'));runBundledMigrations(db);store=new ResourceStore(db,root);blobs=new MailBlobStore(store,join(root,'app-data/mail'),{requireDrafts:()=>{}});});
 afterEach(()=>{db?.close();rmSync(root,{recursive:true,force:true});});
+it('does not claim complete business usage while external copy materials remain',async()=>{const usage=await mailBusinessUsage(store,blobs.root,true);expect(usage.files).toEqual({bytes:null,complete:false});expect(usage.sharedDatabase.complete).toBe(true);expect((await mailBusinessUsage(store,blobs.root)).files.complete).toBe(true);});
 describe('mail storage read-only file-length inventory',()=>{
  it('measures owned business files and the shared database without assigning shared SQLite pages to mail',async()=>{
   const usage=await mailBusinessUsage(store,blobs.root),marker=join(blobs.root,'.willyou-mail-owner.json');expect(usage.files).toEqual({bytes:lstatSync(marker).size,complete:true});expect(usage.sharedDatabase).toEqual({bytes:lstatSync(db.name).size,complete:true});expect(usage.drafts).toBe(0);expect(usage.sends).toBe(0);

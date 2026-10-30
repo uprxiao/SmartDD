@@ -77,6 +77,21 @@ describe.skipIf(process.platform!=='darwin'||process.arch!=='arm64')('API2 legac
  it('does not add a context MCP when the current project explicitly disables it',async()=>{
   const value=await previous('claude-code');capabilities.setEnabled(projectId,MCP_CAPABILITY,false);const plan=adapters.planLegacy(value.adapter.hash,value.input);expect(plan.args).toHaveLength(2);expect(plan.files).toEqual({});
  });
+ it.each(['claude-code','codex'] as const)('M10-UG-01 honors legacy imported context settings for %s without rewriting retained history',async runner=>{
+  const value=await previous(runner);
+  sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,0)').run(randomUUID(),projectId,MCP_CAPABILITY);
+  const before=hashes();
+  const disabled=adapters.planLegacy(value.adapter.hash,value.input);
+  expect(disabled.args.join('\n')).not.toContain('mcp_servers.');expect(disabled.files).toEqual({});expect(hashes()).toEqual(before);
+  // A later explicit canonical setting overrides the old imported row, including raw SQLite 0/1 values.
+  sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,1)').run(`${projectId}:${MCP_CAPABILITY}`,projectId,MCP_CAPABILITY);
+  const enabledBefore=hashes();
+  const enabled=adapters.planLegacy(value.adapter.hash,value.input);
+  if(runner==='codex')expect(enabled.args.join('\n')).toContain('mcp_servers.');
+  else expect(Object.keys(JSON.parse(enabled.files['mcp.json']).mcpServers)).toEqual([value.runtime.snapshot.mcp[0].name]);
+  expect(hashes()).toEqual(enabledBefore);expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(value.input.taskId)).toEqual({runtime_snapshot:value.raw});
+  expect(sqlite.prepare('SELECT COUNT(*) AS n FROM project_capabilities WHERE project_id=?').get(projectId)).toEqual({n:2});
+ });
  it.each(['task','native-root','native-id','source-hash','record','manifest','reference','cli','adapter','approved'] as const)('rejects a different or damaged %s loading basis',async kind=>{
   const value=await previous();let hash=value.adapter.hash;
   if(kind==='task')value.input.taskId=randomUUID();if(kind==='native-root')value.input.native.stateRoot=join(home,'other-root');if(kind==='native-id')value.input.native.sessionId=randomUUID();if(kind==='source-hash')value.input.sourceSnapshotHash='a'.repeat(64);if(kind==='record')sqlite.prepare("UPDATE tasks SET runtime_snapshot='{}' WHERE id=?").run(value.input.taskId);if(kind==='manifest')sqlite.prepare("UPDATE capability_legacy_migration_preparations SET manifest_json='{}' WHERE task_id=?").run(value.input.taskId);if(kind==='reference')sqlite.prepare("DELETE FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-runtime'").run(value.input.taskId);if(kind==='cli')value.input.cliVersion='99.0.0';if(kind==='adapter')hash=installed.find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.0.0')!.hash;if(kind==='approved')Object.assign(value.input,{approved:true});expect(()=>adapters.planLegacy(hash,value.input)).toThrow();

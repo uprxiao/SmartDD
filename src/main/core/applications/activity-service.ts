@@ -1,3 +1,4 @@
+import {mailAttachmentSourceSchema} from '@shared/application-attachments';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import {applicationActivityQuerySchema,type ApplicationActivityDetail,type ApplicationActivityItem,type ApplicationActivityPage,type ApplicationActivityQuery} from '@shared/application-activity';
@@ -63,7 +64,11 @@ export class ApplicationActivityService {
   z.enum(['operation','send']).parse(kind);id.parse(value);
   const row=this.store.sqlite.prepare(`WITH ledger AS (${ledger}) SELECT * FROM ledger WHERE key=?`).get(kind+':'+value) as Row|undefined;
   if(!row)throw new ApplicationError('NOT_FOUND','本机没有这条调用记录');const item=this.item(row);
-  if(kind!=='send')return{item,send:null};
+  if(kind!=='send'){
+   const provenance=item.appId==='mail'&&item.projectId&&item.state==='succeeded'?this.store.sqlite.prepare("SELECT provenance_json FROM application_mail_operation_sources WHERE operation_id=? AND operation_kind IN ('read','resource')").get(item.id) as {provenance_json:string}|undefined:undefined;
+   if(provenance){const raw=stored(provenance.provenance_json,z.object({reference:z.unknown(),queryDays:z.unknown().optional()}).passthrough()),source=mailAttachmentSourceSchema.safeParse({reference:raw.reference,...(raw.queryDays===undefined?{}:{queryDays:raw.queryDays})});if(!source.success)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原邮件附件来源记录损坏，未替换为当前邮件');return{item,send:null,mailAttachmentSource:source.data};}
+   return{item,send:null};
+  }
   const data=this.store.sqlite.prepare('SELECT review_json,review_hash,draft_id,draft_revision,message_id FROM mail_send_intents WHERE id=?').get(value) as {review_json:string|null;review_hash:string|null;draft_id:string;draft_revision:number;message_id:string};
   const execution=item.send?.executionId?this.store.sqlite.prepare('SELECT result_json FROM mail_send_executions WHERE id=? AND intent_id=?').get(item.send.executionId,value) as {result_json:string|null}|undefined:undefined;
   let review:Record<string,unknown>|null=null;

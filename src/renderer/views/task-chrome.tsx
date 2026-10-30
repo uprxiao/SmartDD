@@ -73,7 +73,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
       <span className="task-window-divider" />
       <button type="button" className="icon-button" title={t('nav.newTask')} aria-label={t('nav.newTask')} onClick={() => navigation.newTask(task.projectId ?? undefined)}><SquarePlus size={17} /></button>
     </div>
-  </header>{sessionApps&&<SessionApplicationsPanel key={task.id} taskId={task.id} runIdentity={(task.ptyId??'stopped')+':'+(task.runtimeSnapshot?.runId??'unrecorded')} onClose={()=>setSessionApps(false)}/>}</>;
+  </header>{sessionApps&&<SessionApplicationsPanel key={task.id} taskId={task.id} projectName={task.projectName} runIdentity={(task.ptyId??'stopped')+':'+(task.runtimeSnapshot?.runId??'unrecorded')} onClose={()=>setSessionApps(false)}/>}</>;
 });
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {

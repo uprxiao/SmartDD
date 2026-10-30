@@ -1,3 +1,4 @@
+import {finishCapabilityRun,recoverCapabilityRuns} from './run-recovery';
 import {createNativeGuardDiscoveryProof,type NativeGuardDiscoverySelection,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
 import {captureNativeStaticRoots,nativeStaticSourceIds,verifyNativeStaticRoots,type NativeStaticRoot} from './native-static-roots';
 import {assertClaudeReservation,bindClaudeDelivery,assertClaudeRunDelivery,protectClaudeNativeGuard,type ClaudeDeliveryToken,type ClaudeRunDelivery} from './claude-delivery-state';
@@ -17,12 +18,12 @@ const bindingSchema = z.object({ appId: z.string().regex(/^[a-z][a-z0-9-]{0,19}$
 const bindingsSchema = z.array(bindingSchema).max(64).refine(items => new Set(items.map(i => i.appId + ':' + i.slot)).size === items.length);
 const reserveSchema = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),snapshotHash: z.string().regex(/^[a-f0-9]{64}$/),bindings: bindingsSchema }).strict();
 export type RunBindingRevision = z.infer<typeof bindingSchema>;
-interface RunRow {
+export interface RunRow {
   run_id: string;task_id: string;project_id: string;runner: string;state: CapabilityRunRecord['state'];snapshot_hash: string;
   owner_instance_id: string | null;owner_pid: number | null;owner_started_at: string | null;pid: number | null;process_started_at: string | null;pty_id: string;
   bindings_json: string;started_at: string;ended_at: string | null;error_code: string | null;revocation_state: 'open' | 'revoking' | 'revoked';
 }
-interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
+export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { staticRoots?:readonly NativeStaticRoot[];kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
 interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;discovery?:NativeGuardDiscoverySelection;verify:(discovery?:NativeGuardDiscoveryProof)=>Promise<void>}
 interface OwnedRun { delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
@@ -275,7 +276,9 @@ export class CapabilityRunRegistry {
   private async cancelBeforeFork(runId: string): Promise<CapabilityRunRecord> {
     await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
       const { row, owned } = this.owner(runId);
-      if (row.state !== 'prepared' || owned.abort.signal.aborted || row.pid !== null) throw new ApplicationError('RESOURCE_STATE_CHANGED', '不能将已启动或状态不明的运行改为未启动');
+      // Stop/host shutdown may revoke while the launch closure is still awaiting
+      // arming. Its explicit no-fork receipt remains valid for these owned windows.
+      if (!['prepared','stopping','stopped'].includes(row.state) || row.pid !== null) throw new ApplicationError('RESOURCE_STATE_CHANGED', '不能将已启动或状态不明的运行改为未启动');
       const children = this.store.sqlite.prepare('SELECT * FROM capability_run_processes WHERE run_id=?').all(runId) as ProcessRow[];
       if (!children.length || children.some(child => !owned.processes.has(child.process_id) || child.pid !== null || !['reserved','armed','canceled'].includes(child.state))) throw new ApplicationError('RESOURCE_STATE_CHANGED', '子进程已经启动或身份未知，保留占用');
       this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE run_id=? AND state IN ('reserved','armed')").run(now(), runId);
@@ -395,14 +398,7 @@ export class CapabilityRunRegistry {
     try { return await action(context); }
     finally { await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => { this.store.sqlite.prepare("UPDATE capability_run_activities SET state='finished',ended_at=? WHERE activity_id=? AND state='active'").run(now(),id); this.finish(runId); }).immediate()); }
   }
-  private finish(runId: string): void {
-    const row = this.row(runId); if (TERMINAL.has(row.state) || row.revocation_state !== 'revoked') return;
-    if (!this.store.sqlite.prepare("SELECT 1 FROM capability_run_processes WHERE run_id=? AND kind='cli'").get(runId)) return;
-    if (this.store.sqlite.prepare("SELECT 1 FROM capability_run_processes WHERE run_id=? AND state NOT IN ('exited','canceled')").get(runId) || this.store.sqlite.prepare("SELECT 1 FROM capability_run_activities WHERE run_id=? AND state='active'").get(runId)) return;
-    const timestamp = now();
-    this.store.sqlite.prepare("UPDATE capability_runs SET state='stopped',ended_at=? WHERE run_id=?").run(timestamp,runId);
-    this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_kind='run' AND owner_id=? AND state<>'released'").run(timestamp,runId);
-  }
+  private finish(runId: string): void { finishCapabilityRun(this.store,runId); }
   async stop(runId: string,reason = 'user-stop'): Promise<CapabilityRunRecord> {
     const owned = this.owned.get(runId); if (!owned) throw new ApplicationError('SCOPE_DENIED','不能停止另一宿主的运行');
     owned.abort.abort();
@@ -425,26 +421,7 @@ export class CapabilityRunRegistry {
   }
   ownerState(owner: { instanceId: string;pid: number;startedAt: string }): ProcessState { return this.deps.processes.state({ pid: owner.pid,startedAt: owner.startedAt }); }
   async recover(): Promise<{ runId: string;state: 'running' | 'unknown' | 'stopped' | 'orphaned' }[]> {
-    const rows = this.store.sqlite.prepare("SELECT * FROM capability_runs WHERE state NOT IN ('stopped','failed')").all() as RunRow[], result: { runId: string;state: 'running' | 'unknown' | 'stopped' | 'orphaned' }[] = [];
-    for (const row of rows) {
-      if (this.owned.has(row.run_id)) { result.push({ runId: row.run_id,state: 'running' }); continue; }
-      const owner = row.owner_pid && row.owner_started_at ? this.deps.processes.state({ pid: row.owner_pid,startedAt: row.owner_started_at }) : 'unknown';
-      if (owner !== 'stopped') { result.push({ runId: row.run_id,state: owner }); continue; }
-      const processes = this.store.sqlite.prepare('SELECT * FROM capability_run_processes WHERE run_id=? ORDER BY process_id').all(row.run_id) as ProcessRow[];
-      const observations = processes.map(p => ({ p,state: PROCESS_DONE.has(p.state) || p.state === 'reserved' ? 'stopped' : p.pid && p.process_started_at ? this.deps.processes.state({ pid: p.pid,startedAt: p.process_started_at }) : 'unknown' }));
-      const state = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
-        const fresh = this.row(row.run_id), currentProcesses = this.store.sqlite.prepare('SELECT * FROM capability_run_processes WHERE run_id=? ORDER BY process_id').all(row.run_id);
-        if (canonicalJson(fresh) !== canonicalJson(row) || canonicalJson(currentProcesses) !== canonicalJson(processes)) return 'unknown' as const;
-        const timestamp = now();
-        for (const { p,state } of observations) if (state === 'stopped' && !PROCESS_DONE.has(p.state)) this.store.sqlite.prepare('UPDATE capability_run_processes SET state=?,ended_at=? WHERE process_id=?').run(p.state === 'reserved' ? 'canceled' : 'exited',timestamp,p.process_id);
-        this.store.sqlite.prepare("UPDATE capability_run_activities SET state='owner-stopped',ended_at=? WHERE run_id=? AND state='active'").run(timestamp,row.run_id);
-        this.store.sqlite.prepare("UPDATE capability_runs SET state='orphaned',revocation_state='revoked',error_code='HOST_INTERRUPTED' WHERE run_id=?").run(row.run_id);
-        this.finish(row.run_id);
-        if (this.row(row.run_id).state === 'stopped') return 'stopped' as const;
-        this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='recovery-required' WHERE owner_kind='run' AND owner_id=? AND state<>'released'").run(row.run_id); return 'orphaned' as const;
-      }).immediate()); result.push({ runId: row.run_id,state });
-    }
-    return result;
+    return recoverCapabilityRuns(this.store,this.deps.processes,id=>this.owned.has(id));
   }
   async dispose(): Promise<void> { this.closed = true; const results = await Promise.allSettled([...this.owned.keys()].filter(id => !TERMINAL.has(this.row(id).state)).map(id => this.stop(id,'host-shutdown'))); if (results.some(r => r.status === 'rejected')) throw new ApplicationError('RUN_STOP_FAILED','部分运行撤销尚未完成，保留占用'); }
 }

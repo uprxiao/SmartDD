@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, ne, sql } from 'drizzle-orm';
 import type { CapabilityPreview, RuntimeSkill, RuntimeSnapshot, SkillVersion, StandardSkill } from '@shared/capabilities';
 import { DB_VENDORS } from '@shared/projects';
 import type { Runner } from '@shared/types';
@@ -13,6 +13,7 @@ import type { SecretsStore } from '../../secrets';
 import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service';
 import type { ProjectService } from '../projects/project-service';
 import { secretKeys } from '../projects/secret-keys';
+import { projectCapabilityEnabled, projectCapabilitySettingId } from '../projects/project-capability-setting';
 import { stateRootFor } from '../tasks/native-sessions';
 import { BUNDLED_SKILLS, runtimeFiles, sha256, treeHash, type BundledSkill } from './assets';
 import { discoverCapabilities } from './discovery';
@@ -101,14 +102,16 @@ export class CapabilityService {
   }
 
   enabled(projectId: string, capabilityId: string): boolean {
-    return this.d.db.select().from(projectCapabilities).where(eq(projectCapabilities.id, `${projectId}:${capabilityId}`)).get()?.enabled ?? true;
+    const rows = this.d.db.select().from(projectCapabilities).where(and(eq(projectCapabilities.projectId, projectId), eq(projectCapabilities.capabilityId, capabilityId))).all();
+    return projectCapabilityEnabled(rows, projectId, capabilityId);
   }
 
   setEnabled(projectId: string, capabilityId: string, enabled: boolean): void {
     this.d.projects.getProject(projectId);
     if (typeof enabled !== 'boolean' || (!this.bundles.some((s) => s.id === capabilityId) && capabilityId !== MCP_CAPABILITY)) throw new Error('能力设置无效');
     this.d.db.transaction(() => {
-      const id = `${projectId}:${capabilityId}`;
+      const id = projectCapabilitySettingId(projectId, capabilityId);
+      this.d.db.delete(projectCapabilities).where(and(eq(projectCapabilities.projectId, projectId), eq(projectCapabilities.capabilityId, capabilityId), ne(projectCapabilities.id, id))).run();
       this.d.db.insert(projectCapabilities).values({ id, projectId, capabilityId, enabled }).onConflictDoUpdate({ target: projectCapabilities.id, set: { enabled } }).run();
       this.d.db.update(projects).set({ configVersion: sql`${projects.configVersion} + 1`, updatedAt: Date.now() }).where(eq(projects.id, projectId)).run();
     });

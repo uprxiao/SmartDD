@@ -1,3 +1,4 @@
+import {recoverCapabilityRuns} from '../core/applications/run-recovery';
 import {mkdirSync,realpathSync,lstatSync} from 'node:fs';
 import {dirname,join,basename} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -9,7 +10,10 @@ import {bundledMigrations,planMigrations} from './migrations';
 import {MigrationJournals} from './migration-journal';
 import type {ProcessIdentityReader} from '../core/applications/process-identity';
 import {ResourceStore} from '../core/applications/resource-store';
+import {DiscoveryCatalog} from '../core/applications/discovery-catalog';
+import {canonicalFuturePath} from '../core/applications/session-registry';
 import {recoverApplicationReads} from '../core/applications/read-context-recovery';
+import {recoverApplicationCacheClears,recoverApplicationCacheStatus} from '../core/applications/cache-context-recovery';
 
 /** macOS startup before services exist. Business DB closes before releasing
  * maintenance; after taking shared ownership it reopens and revalidates schema.
@@ -47,15 +51,31 @@ export async function openManagedDatabase(path:string,options:{processes?:Proces
   const store=new ResourceStore(client.sqlite,root,undefined,{processes:options.processes});
   // Services have not started yet. Recover proved dead C read consumers before
   // either an old activation retry or new schema/default activation can run.
-  if(options.processes){const reads=await recoverApplicationReads(store,options.processes);if(reads.pending.length)throw new Error('受管读取或在途操作尚未停妥，保留原数据库与占用');}
+  if(options.processes){const cache=await recoverApplicationCacheClears(store,options.processes),status=await recoverApplicationCacheStatus(store,options.processes),reads=await recoverApplicationReads(store,options.processes);if(cache.pending.length||status.pending.length||reads.pending.length)throw new Error('受管读取或在途操作尚未停妥，保留原数据库与占用');}
   if(client.sqlite.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='capability_store_state'").get()){
    const pending=client.sqlite.prepare("SELECT s.store_id,s.maintenance_operation_id AS id,o.kind FROM capability_store_state s LEFT JOIN capability_resource_operations o ON o.operation_id=s.maintenance_operation_id AND o.owner_store_id=s.store_id WHERE s.singleton=1 AND s.maintenance_state<>'ready'").get() as {store_id:string;id:string;kind:string|null}|undefined;
    if(pending?.kind==='application-activation'){
     if(pending.store_id!==store.storeId||planMigrations(client.sqlite,migrations).pending.length||!options.recoverActivation)throw new Error('应用升级待恢复，需原兼容构建完成维护后再启动');
+    if(options.processes)await recoverCapabilityRuns(store,options.processes);
     await options.recoverActivation(store,maintenance,pending.id);
    }
   }
   await coordinateMigrations({store,lease:maintenance,buildId,migrations,assertNoForeignHolders:()=>assertNoForeignDatabaseHolders(file)});
+  // Run recovery normally happens after service creation. Proved dead old
+  // consumers must settle before startup activation's strict idle preflight.
+  if(options.processes)await recoverCapabilityRuns(store,options.processes);
+  // The current schema is now known, but activation's idle preflight must not
+  // run before abandoned H publishers have a chance to finish. This is the
+  // host-lifetime DB gate, not a resource lock/transaction: recovery still takes
+  // the usual short H -> C locks and verifies original kernel/source identities.
+  if(options.processes){
+   const roots=client.sqlite.prepare('SELECT home_id AS id,canonical_home AS home FROM capability_discovery_roots').all() as {id:string;home:string}[];
+   for(const recorded of roots)try{
+    if(recorded.home!==canonicalFuturePath(recorded.home)||createHash('sha256').update(recorded.home).digest('hex')!==recorded.id)throw new Error('原发现根身份不同');
+    const catalog=new DiscoveryCatalog(store,recorded.home,options.processes);await catalog.recoverConsumers();await catalog.recoverRecordedPublication();
+   }catch{console.warn('[applications] Recorded discovery publication remains unresolved:',recorded.id);}
+  }
+
   const abandoned=client.sqlite.prepare("SELECT DISTINCT owner_id FROM capability_resource_leases WHERE owner_kind='application-activation' AND state<>'released'").all() as {owner_id:string}[];
   for(const row of abandoned)await store.recoverActivationLeases(row.owner_id,maintenance);
   if(options.activationRequired?.(store)){if(!options.activate)throw new Error('缺少应用升级执行入口');await options.activate(store,maintenance);}

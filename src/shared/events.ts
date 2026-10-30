@@ -1,3 +1,4 @@
+import type {ApplicationCleanupProgress} from './application-maintenance';
 import type { ViewerUiEvent } from './file-viewer';
 import { defineEvent } from './ipc/events';
 import type { ProfileCheckSource } from './ai-profiles';
@@ -5,13 +6,16 @@ import type { VoiceError } from './voice';
 import type { FileCloseRequest, FileSearchProgress, FileWatchUpdate } from './files';
 import type { HtmlPreviewState } from './file-html';
 import type { WorkspaceUpdate } from './file-workspace';
+import type {ApplicationId} from './application-connections';
 
 // main → renderer
 export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:data');
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
 export const tasksChangedEvent = defineEvent<void>('tasks:changed');
-export const applicationsChangedEvent = defineEvent<void>('applications:changed');
+export interface ApplicationHealthChange {kind:'health';appId:ApplicationId;connectionId:string}
+export const applicationCleanupProgressEvent = defineEvent<ApplicationCleanupProgress>('applications:cleanup-progress');
+export const applicationsChangedEvent = defineEvent<ApplicationHealthChange|undefined>('applications:changed');
 export const fileWatchEvent = defineEvent<FileWatchUpdate>('files:watch');
 export const fileSearchEvent = defineEvent<FileSearchProgress>('files:search');
 export const fileCloseEvent = defineEvent<FileCloseRequest>('files:close-request');

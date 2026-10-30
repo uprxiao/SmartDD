@@ -14,6 +14,7 @@ import type { AgentLoadRequest,LegacyAgentLoadRequest,AgentLoadPlan } from '@sha
 import { applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import type { RuntimeSkill, RuntimeSnapshot } from '@shared/capabilities';
 import { CapabilityService, MCP_CAPABILITY, type PreparedRuntime } from '../capabilities/capability-service';
+import { projectCapabilityEnabled, type ProjectCapabilitySetting } from '../projects/project-capability-setting';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher } from '../tasks/capability-lifecycle';
 import type { AgentSupportService } from './agent-support-service';
 import type { ApplicationService } from './application-service';
@@ -39,6 +40,7 @@ import {LegacyPluginSources,legacyPluginOrigin} from './legacy-plugin-source';
 import {assertLegacySessionSource,retainedLegacySource} from './legacy-session-source';
 import {BuiltinPackageRegistry} from './builtin-package-registry';
 import {RuntimeRegistry} from './runtime-registry';
+import {EmbeddedNodeRuntime} from './embedded-node-runtime';
 interface ActiveLaunch {run:OwnedCapabilityRun;hold?:DiscoveryReservation;runtime?:PreparedRuntime;releasing?:Promise<void>}
 export interface TaskCapabilityLauncherOptions {
   helper: string;
@@ -46,6 +48,7 @@ export interface TaskCapabilityLauncherOptions {
   processes?:ProcessIdentityReader;
   peers?:UnixPeerIdentityReader;
   inspectNative?:(input:TaskLaunchInput)=>Promise<NativeLaunchContext>;
+  probeApplicationRuntime?:(signal:AbortSignal)=>Promise<boolean>;
   pollMs?:number;
 }
 /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
@@ -66,6 +69,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly pending=new Set<Promise<TaskCapabilityLaunch>>();
   private readonly stopping=new Map<string,Promise<void>>();
   private readonly processes:ProcessIdentityReader;
+  private readonly embeddedNode=new EmbeddedNodeRuntime();
   private readonly timer:ReturnType<typeof setInterval>;
   readonly recoveryWarnings:{homeId:string;code:string}[]=[];
   readonly legacyPreparationWarnings=new Map<string,string>();
@@ -107,7 +111,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const result=new ManagedTaskCapabilities(support,capabilities,applications,options);
     try{await result.runs.recover();
       const roots=support.store.sqlite.prepare('SELECT home_id AS id,canonical_home AS home FROM capability_discovery_roots').all() as {id:string;home:string}[];
-      for(const root of roots){try{if(root.home!==canonicalFuturePath(root.home)||digest(root.home)!==root.id)throw new ApplicationError('OWNERSHIP_CONFLICT','原发现根身份不同');await result.catalog(root.home).recoverConsumers();}catch(error){result.recoveryWarnings.push({homeId:root.id,code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}}
+      for(const root of roots){try{if(root.home!==canonicalFuturePath(root.home)||digest(root.home)!==root.id)throw new ApplicationError('OWNERSHIP_CONFLICT','原发现根身份不同');const catalog=result.catalog(root.home);await catalog.recoverConsumers();await catalog.recoverRecordedPublication();}catch(error){result.recoveryWarnings.push({homeId:root.id,code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}}
       await result.broker.start();applications.attachRuns(result.runs);return result;}catch(error){await result.dispose();throw error;}
   }
   private catalog(home:string):DiscoveryCatalog{const key=canonicalFuturePath(home);let value=this.catalogs.get(key);if(!value){value=new DiscoveryCatalog(this.support.store,key,this.processes,{instanceId:this.runs.instanceId});this.catalogs.set(key,value);}return value;}
@@ -123,12 +127,13 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     assertNoPendingApplicationSwitch(this.support.store,planned?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>planned.appIds.includes(p.appId))}:snapshot);
     const store=this.support.store,apps=this.selectedApps(snapshot.projectId);
     if(canonicalJson(apps)!==canonicalJson(snapshot.packages.map(p=>({appId:p.appId,packageHash:p.packageHash}))))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目应用或默认版本已变化');
-    const actual=store.sqlite.prepare('SELECT v.skill_id AS skillId,v.id AS versionId,v.hash FROM skill_versions v LEFT JOIN project_capabilities p ON p.id=? || v.skill_id WHERE v.active=1 AND COALESCE(p.enabled,1)=1 ORDER BY v.skill_id').all(snapshot.projectId+':');
+    const settings=store.sqlite.prepare('SELECT id,project_id AS projectId,capability_id AS capabilityId,enabled FROM project_capabilities WHERE project_id=?').all(snapshot.projectId) as ProjectCapabilitySetting[];
+    const actual=(store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;versionId:string;hash:string}[]).filter(row=>projectCapabilityEnabled(settings,snapshot.projectId,row.skillId));
     const expected=snapshot.standardSkills.map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash})).sort((a,b)=>a.skillId.localeCompare(b.skillId));
     if(canonicalJson(actual)!==canonicalJson(expected))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间标准Skill选择已变化');
     const bindings=this.bindings(snapshot.projectId,snapshot.packages.map(p=>p.appId));
     for(const app of snapshot.packages){const current=bindings.filter(b=>b.appId===app.appId&&b.connectionId).map(b=>({bindingId:`${snapshot.projectId}:${app.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!}));if(canonicalJson(current)!==canonicalJson(app.bindings))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目连接选择已变化');}
-    const context=this.capabilities.enabled(snapshot.projectId,MCP_CAPABILITY);
+    const context=projectCapabilityEnabled(settings,snapshot.projectId,MCP_CAPABILITY);
     if(context!==snapshot.mcp.some(m=>m.kind==='legacy-project-context'))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目上下文选择已变化');
   }
   private selectedApps(projectId:string):{appId:string;packageHash:string}[]{
@@ -151,7 +156,14 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
     try{native=await(this.options.inspectNative??inspectNativeLaunch)(input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
+    let runtimeCheck:Promise<boolean>|undefined,applicationRuntimeIssue:'HOST_INCOMPATIBLE'|undefined;
+    const applicationRuntimeReady=async(snapshot:CapabilitySessionSnapshotV2)=>{
+      if(!native||snapshot.legacyBinding||!snapshot.packages.length)return true;
+      runtimeCheck??=(this.options.probeApplicationRuntime?.(input.signal)??this.embeddedNode.check(input.signal));
+      const ready=await runtimeCheck;if(!ready)applicationRuntimeIssue='HOST_INCOMPATIBLE';return ready;
+    };
     const catalog=this.catalog(input.home);let current:StoredCapabilitySession|undefined;
+    if(input.profile.runner==='codex')try{await catalog.recoverRecordedPublication({signal:input.signal,requestedOnly:true});}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code;}
     if(input.profile.runner==='codex')try{await new LegacyDiscoveryInventory(this.support.store,catalog).prepare(input.signal);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&(error.code==='CANCELED'||error.code==='RESOURCE_BUSY'&&!await catalog.hasPendingPublication()))throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code==='OWNERSHIP_CONFLICT'?'AGENT_CAPABILITY_NAME_CONFLICT':error.code;}
     if(input.previous?.sessionCapabilities){
       const pointer=input.previous.sessionCapabilities;if(pointer.taskId!==input.taskId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针不属于当前会话');current=await this.sessions.get(input.taskId);
@@ -190,7 +202,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);
       }else{
       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
-      const plannedPhysical=planned.runner==='codex'?await catalog.inspectPhysical(planned):undefined,plannedFacets=native?nativeCapabilityConflicts(planned,native,plannedPhysical):undefined,plannedExcludedStandards=new Set([...(plannedFacets?.standardSkills??[]),...(plannedFacets?.unavailableStandardSkills??[])]),plannedStandards=plannedExcludedStandards.size?planned.standardSkills.filter(s=>!plannedExcludedStandards.has(s.projectionPath)).map(s=>s.projectionPath):undefined,plannedConflicts=plannedFacets?.applications??new Set<string>(),plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready'&&!plannedConflicts.has(p.appId)&&!plannedFacets?.unavailableApplications.has(p.appId)).map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;
+      const plannedRuntimeReady=await applicationRuntimeReady(planned);
+      const plannedPhysical=planned.runner==='codex'?await catalog.inspectPhysical(planned):undefined,plannedFacets=native?nativeCapabilityConflicts(planned,native,plannedPhysical):undefined,plannedExcludedStandards=new Set([...(plannedFacets?.standardSkills??[]),...(plannedFacets?.unavailableStandardSkills??[])]),plannedStandards=plannedExcludedStandards.size?planned.standardSkills.filter(s=>!plannedExcludedStandards.has(s.projectionPath)).map(s=>s.projectionPath):undefined,plannedConflicts=plannedFacets?.applications??new Set<string>(),plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>plannedRuntimeReady&&p.state==='ready'&&!plannedConflicts.has(p.appId)&&!plannedFacets?.unavailableApplications.has(p.appId)).map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;
       assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);
       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
@@ -217,10 +230,11 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
     if(snapshot.runner==='codex'&&!unavailable&&await catalog.hasPendingPublication())unavailable='RESOURCE_BUSY';
     if(unavailable||!native)return this.prepareUnavailableSession(input,current,native,unavailable??'AGENT_ADAPTER_UNSUPPORTED',catalog);
-    const physical=snapshot.runner==='codex'&&!snapshot.legacyBinding?await catalog.inspectPhysical(snapshot):undefined,facets=native&&!snapshot.legacyBinding?nativeCapabilityConflicts(snapshot,native,physical):undefined,excludedStandards=new Set([...(facets?.standardSkills??[]),...(facets?.unavailableStandardSkills??[])]),standardSkillScope=excludedStandards.size?snapshot.standardSkills.filter(s=>!excludedStandards.has(s.projectionPath)).map(s=>s.projectionPath):undefined,standardSkills=snapshot.standardSkills.filter(s=>standardSkillScope===undefined||standardSkillScope.includes(s.projectionPath)),conflicts=facets?.applications??new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready'&&!conflicts.has(p.appId)&&!facets?.unavailableApplications.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||standardSkillScope!==undefined||snapshot.runner==='codex'&&!!physical?.excludedPaths.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
+    const runtimeReady=await applicationRuntimeReady(snapshot);
+    const physical=snapshot.runner==='codex'&&!snapshot.legacyBinding?await catalog.inspectPhysical(snapshot):undefined,facets=native&&!snapshot.legacyBinding?nativeCapabilityConflicts(snapshot,native,physical):undefined,excludedStandards=new Set([...(facets?.standardSkills??[]),...(facets?.unavailableStandardSkills??[])]),standardSkillScope=excludedStandards.size?snapshot.standardSkills.filter(s=>!excludedStandards.has(s.projectionPath)).map(s=>s.projectionPath):undefined,standardSkills=snapshot.standardSkills.filter(s=>standardSkillScope===undefined||standardSkillScope.includes(s.projectionPath)),conflicts=facets?.applications??new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>runtimeReady&&p.state==='ready'&&!conflicts.has(p.appId)&&!facets?.unavailableApplications.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||standardSkillScope!==undefined||snapshot.runner==='codex'&&!!physical?.excludedPaths.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
     if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
     if(snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId)&&(unavailable||!native))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
-    const excludedApplications=snapshot.packages.filter(p=>!ready.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash,code:conflicts.has(p.appId)?'AGENT_CAPABILITY_NAME_CONFLICT' as const:'CAPABILITY_UNAVAILABLE' as const}));
+    const excludedApplications=snapshot.packages.filter(p=>!ready.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash,code:applicationRuntimeIssue??(conflicts.has(p.appId)?'AGENT_CAPABILITY_NAME_CONFLICT' as const:'CAPABILITY_UNAVAILABLE' as const)}));
     const independent=applicationScope?.length===0;
     const gateSnapshot=applicationScope?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>applicationScope.includes(p.appId))}:snapshot;
     assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);const projectionIds:string[]=[];
@@ -259,13 +273,14 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       }
       let runtime=unavailable?this.unavailableRuntime(input,current,run.runId,unavailable):this.capabilities.prepare({projectId:input.projectId,taskId:input.taskId,runner:input.profile.runner,cwd:input.cwd,home:input.home,profileArgs:input.profile.args,previous:input.previous,managed:{runId:run.runId,runtimeHash:legacy[0].refHash,mcpName,skills,projections}});entry.runtime=runtime;runtime.snapshot.sessionCapabilities=current.pointer;
       if(!unavailable&&facets&&(facets.applications.size||facets.standardSkills.size||facets.projectMcp))runtime.snapshot.selfCheck={status:'failed',issues:[...new Set([...runtime.snapshot.selfCheck.issues,'AGENT_CAPABILITY_NAME_CONFLICT'])],at:Date.now()};
+      if(applicationRuntimeIssue)runtime.snapshot.selfCheck={status:'failed',issues:[...new Set([...runtime.snapshot.selfCheck.issues,applicationRuntimeIssue])],at:Date.now()};
       await run.prepare();if(unavailable)await this.runs.restrictToNative(run.runId,{reason:'managed_capabilities_unavailable',issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED'});const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
       let plan:AgentLoadPlan|undefined;
       if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(mcp){this.registerBridgeRecovery(run,mcp.serverName,snapshot.adapterBinding.hash,request.cliVersion);}}
       else if(legacyRequest)plan=legacyPlan();
       if(plan){args=plan.args;const root=dirname(runtime.snapshot.manifestPath);for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});configPaths.push(join(root,name));}}
 
-      try{await this.applications.sessionDiagnostics.prepared({schema:2,capabilities:nativeCapabilityPreparation(snapshot,{applications:request&&!unavailable?(applicationScope??snapshot.packages.map(p=>p.appId)):[],standardPaths:runtime.snapshot.skills.filter(s=>s.enabled).map(s=>s.path),mcpNames:runtime.snapshot.mcp.map(m=>m.name),facets,issue:unavailable,projectMcpEnabled:this.capabilities.enabled(input.projectId,MCP_CAPABILITY)}),runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:unavailable?'unavailable':'prepared',issueCode:unavailable??null,manifestPath:runtime.snapshot.manifestPath,configPaths,preparedAt:new Date().toISOString()});}catch{/* Missing display evidence never grants capability or blocks ordinary Agent launch. */}
+      try{await this.applications.sessionDiagnostics.prepared({schema:2,capabilities:nativeCapabilityPreparation(snapshot,{applications:request&&!unavailable?(applicationScope??snapshot.packages.map(p=>p.appId)):[],standardPaths:runtime.snapshot.skills.filter(s=>s.enabled).map(s=>s.path),mcpNames:runtime.snapshot.mcp.map(m=>m.name),facets,issue:unavailable,applicationIssue:applicationRuntimeIssue,projectMcpEnabled:this.capabilities.enabled(input.projectId,MCP_CAPABILITY)}),runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:unavailable?'unavailable':'prepared',issueCode:unavailable??null,manifestPath:runtime.snapshot.manifestPath,configPaths,preparedAt:new Date().toISOString()});}catch{/* Missing display evidence never grants capability or blocks ordinary Agent launch. */}
       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
       if(!unavailable&&native)try{this.applications.nativeMessages.register(run.runId,native.version,run.signal);}catch{/* Missing origin evidence grants nothing and must not stop the ordinary Agent. */}
       let effectiveApplications=!unavailable;

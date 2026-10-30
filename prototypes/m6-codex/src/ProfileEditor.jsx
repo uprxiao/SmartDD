@@ -7,7 +7,7 @@ const COLORS = ['#f08b55', '#6e9ef5', '#8dbb8e', '#c59be8', '#e4bd67', '#7ac7ce'
 export function ProfileEditor({ profile, onClose, onSave, onDelete }) {
   const [runner, setRunner] = useState(profile?.runner || 'codex');
   const [name, setName] = useState(profile?.name || 'Codex'), [source, setSource] = useState(profile?.source || '本机配置');
-  const [color, setColor] = useState(profile?.color || COLORS[0]);
+  const [color, setColor] = useState(profile ? profile.color : COLORS[0]);
   const [env, setEnv] = useState(profile?.env || []), [checked, setChecked] = useState(false);
   const patch = (id, values) => setEnv(old => old.map(r => r.id === id ? { ...r, ...values } : r));
   return <Dialog title={profile ? '编辑 AI 配置' : '新建 AI 配置'} subtitle="复用本机工具；高级参数和环境变量继续保留。" onClose={onClose} className="parity-dialog"><form onSubmit={e => {

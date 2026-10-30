@@ -1,3 +1,5 @@
+import{checkEarlyResumeStop}from'./fixtures/early-resume-stop-native.mjs';
+const earlyResumeStopCheck=process.env.WILLYOU_EARLY_RESUME_STOP_CHECK==='1';
 // Service-layer checks use production IPC. Optional diagnostic UI checks are recorded separately.
 // Reuses the archived M10 T actual-CLI UI driver (original SHA256 af541844bf67142b4394cdaf5dbfddf79e2921a8cbebbc4f6cca9a301b444bef).
 // Real App/PTY/Codex/MCP and private SQLite; Responses model is a loopback synthetic fixture.
@@ -11,10 +13,42 @@ import {execFileSync} from 'node:child_process';
 import {mkdtemp,mkdir,readFile,writeFile,readdir,lstat,rm} from 'node:fs/promises';
 import {join,dirname,resolve} from 'node:path';
 import {createHash,randomUUID} from 'node:crypto';
-import {openElectron} from '../lib/electron-harness.mjs';
+import {cacheAgentsProbe,checkCacheAgents} from './fixtures/cache-agents-native.mjs';
+import {checkNativeExitUi} from './fixtures/native-exit-ui.mjs';
+import {checkNativeUserOrigin} from './fixtures/native-user-origin.mjs';
+import {focusNewInstalledWindow} from './fixtures/dmg-install-ui.mjs';
+import {checkDraftLifecycle} from './fixtures/draft-lifecycle-native.mjs';
+import {checkTransferUi} from './fixtures/transfer-ui.mjs';
+import {checkDiagnosticClipboardUi} from './fixtures/diagnostic-clipboard-ui.mjs';
+import {prepareCacheSpaceVolume,finishCacheSpaceVolume} from './fixtures/cache-space-native.mjs';
+import {checkConnectionLifecycle} from './fixtures/connection-lifecycle.mjs';
+import {checkZenTaoSwitch} from './fixtures/zentao-switch-native.mjs';
+import {checkProjectLifecycle} from './fixtures/project-lifecycle-native.mjs';
+import {checkSavedQueryDays} from './fixtures/saved-query-days-native.mjs';
+import {checkAccountIsolation} from './fixtures/account-isolation-native.mjs';
+import {checkInflightDefault} from './fixtures/inflight-default-native.mjs';
+import {checkConcurrentDefault} from './fixtures/concurrent-default-native.mjs';
+import {checkMissingMailDate} from './fixtures/missing-mail-date-native.mjs';
+import {checkMailMime} from './fixtures/mail-mime-native.mjs';
+import {checkIncompleteMime} from './fixtures/mail-incomplete-native.mjs';
+import {checkOrphanDiscovery} from './fixtures/discovery-orphan-native.mjs';
+import {checkPublicationCrash} from './fixtures/discovery-publication-native.mjs';
+import {checkPublicationGuard} from './fixtures/discovery-publication-guard-native.mjs';
+import {checkHistoryReferences} from './fixtures/history-reference-native.mjs';
+import {fourHistoryProbe,checkFourNativeHistories,restoreHistoryCapture} from './fixtures/four-history-native.mjs';
+import {concurrentVersionsProbe,checkConcurrentVersions} from './fixtures/concurrent-versions-native.mjs';
+import {captureBudgetService} from './fixtures/budget-main-capture.mjs';
+import {checkRetryAfterNative} from './fixtures/retry-after-native.mjs';
+import {openElectron as openHarnessElectron} from '../lib/electron-harness.mjs';
 import {installBrokerObserver,collectAndRestoreBrokerObserver,replayOldCredential} from './fixtures/broker-replay-observer.mjs';
+import {bootstrapReplayFixture} from './fixtures/bootstrap-replay.mjs';
+import {checkUnavailableNodeMode} from './fixtures/node-mode-unavailable.mjs';
+import {projectResourceProbe} from './fixtures/project-resource-regression.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 import {prepareNativeGcRace,verifyNativeGcRace} from './fixtures/native-gc-race.mjs';
+import {availabilityProbe,checkProjectAvailability} from './fixtures/project-availability.mjs';
+import {legacyRegressionProbe,prepareLegacyRegression,checkLegacyRegression} from './fixtures/legacy-regression.mjs';
+import {maintenanceWaitProbe,prepareMaintenanceWaitUi,checkMaintenanceWaitUi} from './fixtures/maintenance-wait-ui.mjs';
 
 const restartExecutable=process.env.WILLYOU_RESTART_APP;
 const restartAsar=process.env.WILLYOU_RESTART_ASAR_SHA;
@@ -25,6 +59,7 @@ const freezeCheck=process.env.WILLYOU_FREEZE_CHECK==='1'||cancelFreezeCheck;
 const userMcpCheck=process.env.WILLYOU_USER_MCP_CHECK==='1';
 const expectBrokerAudit=process.env.WILLYOU_EXPECT_BROKER_AUDIT==='1';
 const hostReplayCheck=process.env.WILLYOU_HOST_REPLAY_CHECK==='1';
+const bootstrapReplayCheck=process.env.WILLYOU_BOOTSTRAP_REPLAY_CHECK==='1';
 const externalSkillCheck=process.env.WILLYOU_EXTERNAL_SKILL_CHECK==='1';
 const naturalExitHistory=process.env.WILLYOU_NATURAL_EXIT_HISTORY==='1';
 const shutdownHistory=process.env.WILLYOU_SHUTDOWN_HISTORY==='1';
@@ -32,6 +67,9 @@ const restoreSelection=process.env.WILLYOU_RESTORE_SELECTION==='1';
 const revokeCheck=process.env.WILLYOU_REVOKE_CHECK==='1';
 const longNativeTail=process.env.WILLYOU_LONG_NATIVE_TAIL==='1';
 const skillPhase=process.env.WILLYOU_SKILL_PHASE??'';
+const nodeModeUnavailableCheck=process.env.WILLYOU_EXPECT_NODE_MODE_UNAVAILABLE==='1';
+const nodeModeRestoreExecutable=process.env.WILLYOU_NODE_MODE_RESTORE_APP,nodeModeRestoreAsar=process.env.WILLYOU_NODE_MODE_RESTORE_ASAR_SHA;
+assert(!nodeModeRestoreExecutable||nodeModeUnavailableCheck&&nodeModeRestoreAsar,'Node-mode repair needs the explicit negative fixture and a pinned standard App');
 assert(['','discovery','read','tool'].includes(skillPhase),'Unknown Skill phase');
 const deferredSkillHistory=process.env.WILLYOU_DEFER_SKILL_DIAGNOSTICS==='1';
 const complexPaths=process.env.WILLYOU_COMPLEX_PATHS==='1';
@@ -51,15 +89,100 @@ const sharedProjectCheck=process.env.WILLYOU_SHARED_PROJECT_CHECK==='1';
 const sameCwdProjects=process.env.WILLYOU_SAME_CWD_PROJECTS==='1';
 const persistedSameCwdFixture=process.env.WILLYOU_SAME_CWD_PERSISTED_FIXTURE==='1';assert(!persistedSameCwdFixture||sameCwdProjects,'Persisted same-cwd fixture requires explicit same-cwd mode');assert(!sameCwdProjects||sharedProjectCheck,'Same cwd requires shared-project mode');
 const unselectedProject=process.env.WILLYOU_UNSELECTED_PROJECT==='1';
+const scopeUiCheck=process.env.WILLYOU_SCOPE_UI_CHECK==='1';
+const projectAvailabilityCheck=process.env.WILLYOU_PROJECT_AVAILABILITY_CHECK==='1';
+const cacheDiskFullCheck=process.env.WILLYOU_CACHE_DISK_FULL_CHECK==='1';
+const cacheSourceFaultsCheck=process.env.WILLYOU_CACHE_SOURCE_FAULTS_CHECK==='1';
+const cacheMutationCheck=process.env.WILLYOU_CACHE_MUTATION_CHECK==='1';
+const cacheRangesCheck=process.env.WILLYOU_CACHE_RANGES_CHECK==='1';
+const cacheWaitersCheck=process.env.WILLYOU_CACHE_WAITERS_CHECK==='1';
+const retryDiagnosticsUiCheck=process.env.WILLYOU_RETRY_DIAGNOSTICS_UI==='1';
+const diagnosticClipboardUiCheck=process.env.WILLYOU_DIAGNOSTIC_CLIPBOARD_UI_CHECK==='1';
+const transferFormatOnly=process.env.WILLYOU_TRANSFER_FORMAT_UI_ONLY==='1';
+const transferUiCheck=process.env.WILLYOU_TRANSFER_UI_CHECK==='1'||transferFormatOnly;
+const nativeUserOriginCheck=process.env.WILLYOU_NATIVE_USER_ORIGIN_CHECK==='1';
+const nativeExitUiCheck=process.env.WILLYOU_NATIVE_EXIT_UI_CHECK==='1',homeNativeCheck=nativeUserOriginCheck||nativeExitUiCheck;
+assert(!nativeExitUiCheck||!Object.entries(process.env).some(([k,v])=>k.startsWith('WILLYOU_')&&v==='1'&&k!=='WILLYOU_NATIVE_EXIT_UI_CHECK'),'Native exit UI check has its own ordinary baseline only');
+assert(!nativeUserOriginCheck||!Object.entries(process.env).some(([k,v])=>k.startsWith('WILLYOU_')&&v==='1'&&k!=='WILLYOU_NATIVE_USER_ORIGIN_CHECK'),'Native origin check has its own ordinary baseline only');
+const draftLifecycleCheck=process.env.WILLYOU_DRAFT_LIFECYCLE_CHECK==='1';
+const cacheQuotaCheck=process.env.WILLYOU_CACHE_QUOTA_CHECK==='1';
+const cacheAgentsCheck=process.env.WILLYOU_CACHE_AGENTS_CHECK==='1'||cacheWaitersCheck||cacheRangesCheck||cacheMutationCheck||cacheSourceFaultsCheck||cacheDiskFullCheck||cacheQuotaCheck;
+assert(!cacheQuotaCheck||!cacheWaitersCheck&&!cacheRangesCheck&&!cacheMutationCheck&&!cacheSourceFaultsCheck&&!cacheDiskFullCheck,'Quota pressure uses one own two-Agent baseline without other fault modes');
+assert(!cacheDiskFullCheck||!cacheSourceFaultsCheck&&!cacheMutationCheck&&!cacheRangesCheck&&!cacheWaitersCheck&&!complexPaths,'Disk full uses one original-source baseline and private cache volume only');
+assert(!cacheSourceFaultsCheck||!cacheMutationCheck&&!cacheRangesCheck&&!cacheWaitersCheck,'Source faults use original unchanged source and ordinary two-task baseline only');
+const zenSwitchWireCheck=process.env.WILLYOU_ZENTAO_SWITCH_WIRE_CHECK==='1';
+const zenSwitchGatesCheck=process.env.WILLYOU_ZENTAO_SWITCH_GATES_CHECK==='1'||zenSwitchWireCheck;
+const zenSwitchCheck=process.env.WILLYOU_ZENTAO_SWITCH_CHECK==='1'||zenSwitchGatesCheck;
+const projectLifecycleCheck=process.env.WILLYOU_PROJECT_LIFECYCLE_CHECK==='1';
+const savedQueryDaysCheck=process.env.WILLYOU_SAVED_QUERY_DAYS_CHECK==='1';
+const accountIsolationCheck=process.env.WILLYOU_ACCOUNT_ISOLATION_CHECK==='1';
+const inflightDefaultCheck=process.env.WILLYOU_INFLIGHT_DEFAULT_CHECK==='1';
+const concurrentDefaultCheck=process.env.WILLYOU_CONCURRENT_DEFAULT_CHECK==='1';
+const missingMailDateCheck=process.env.WILLYOU_MISSING_MAIL_DATE_CHECK==='1';
+const mailMimeCheck=process.env.WILLYOU_MAIL_MIME_CHECK==='1';
+const mailIncompleteCheck=process.env.WILLYOU_MAIL_INCOMPLETE_CHECK==='1';
+const connectionLifecycleCheck=process.env.WILLYOU_CONNECTION_LIFECYCLE_CHECK==='1';
+const discoveryOrphanCheck=process.env.WILLYOU_DISCOVERY_ORPHAN_CHECK==='1';
+const discoveryOrphanKind=process.env.WILLYOU_DISCOVERY_ORPHAN_KIND??'live-child';assert(['live-child','identity-unavailable'].includes(discoveryOrphanKind));
+const discoveryCrashPhase=process.env.WILLYOU_DISCOVERY_CRASH_PHASE??'';assert(['','intent-recorded','registered','renamed','catalog-published','records-committed'].includes(discoveryCrashPhase));
+const retryAfterCheck=process.env.WILLYOU_RETRY_AFTER_CHECK==='1';
+const historyReferenceCheck=process.env.WILLYOU_HISTORY_REFERENCE_CHECK==='1';
+const fourHistoryCheck=process.env.WILLYOU_FOUR_HISTORY_CHECK==='1'||historyReferenceCheck;
+const concurrentTrace=process.env.WILLYOU_CONCURRENT_TRACE==='1';
+const concurrentProjectCheck=process.env.WILLYOU_CONCURRENT_PROJECT_B_CHECK==='1',concurrentVersionsCheck=process.env.WILLYOU_CONCURRENT_VERSIONS_CHECK==='1'||concurrentProjectCheck,historyCaptureCheck=earlyResumeStopCheck||fourHistoryCheck||concurrentVersionsCheck||zenSwitchGatesCheck||nativeUserOriginCheck;
+assert(!earlyResumeStopCheck||![fourHistoryCheck,concurrentVersionsCheck,zenSwitchGatesCheck,nativeUserOriginCheck,restartCheck,revokeCheck,freezeCheck,retryAfterCheck].some(Boolean),'SK uses ordinary own baseline and its first-await gate only');
+const publisherGuardCheck=process.env.WILLYOU_DISCOVERY_PUBLISHER_GUARD==='1';assert(!publisherGuardCheck||discoveryCrashPhase==='registered','Publisher guard uses only the exact registered publication checkpoint');
+const projectResourceCheck=process.env.WILLYOU_PROJECT_RESOURCE_CHECK==='1';
+const projectContextOnly=process.env.WILLYOU_PROJECT_CONTEXT_ONLY==='1';assert(!projectContextOnly||projectResourceCheck,'Context-only control records the original resource scenario SSH gap separately');
+// Explicit user approval is required after MA's native sandbox audit denial.
+// This switch is default-off and never changes an existing/daily profile.
+const projectResourcePermissionsApproved=process.env.WILLYOU_PROJECT_RESOURCE_PERMISSIONS_APPROVED==='1';
+assert(!projectResourcePermissionsApproved||projectResourceCheck&&!projectContextOnly,'Approved permissions are scoped to the private full project-resource regression');
+const legacyRegressionCheck=process.env.WILLYOU_LEGACY_REGRESSION_CHECK==='1';
+const maintenanceCancelUi=process.env.WILLYOU_MAINTENANCE_CANCEL_UI==='1';
+const maintenanceDark=process.env.WILLYOU_MAINTENANCE_DARK==='1';
 const scopeRestartCheck=process.env.WILLYOU_SCOPE_RESTART_CHECK==='1';assert(!scopeRestartCheck||(sharedProjectCheck&&!selectedSecondProject&&!unselectedProject&&!restartCheck&&!restartExecutable),'Scope restart isolates A-selected/B-unselected in one standard package');
 const graphGcCheck=process.env.WILLYOU_GRAPH_GC_CHECK==='1',graphFixture=process.env.WILLYOU_GRAPH_GC_FIXTURE,graphFixtureSha=process.env.WILLYOU_GRAPH_GC_FIXTURE_SHA;
+assert(!cacheAgentsCheck||!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!projectResourceCheck,'Cache Agents uses ordinary baseline, two own tasks and one exact package');
+assert(!connectionLifecycleCheck||!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable,'Connection lifecycle uses one ordinary baseline and independent service/CLI phases');
+assert(!discoveryOrphanCheck||!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!dualStoreCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!deferredSkillHistory&&!projectResourceCheck&&!complexPaths&&!hostReplayCheck&&!nodeModeUnavailableCheck&&!diagnosticUi&&!unselectedProject&&!naturalExitHistory&&!shutdownHistory&&!externalSkillCheck&&!bootstrapReplayCheck&&!longNativeTail,'Orphan check uses one ordinary baseline with own captured process tree and no other fault mode');
+assert(!discoveryCrashPhase||!discoveryOrphanCheck&&!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!dualStoreCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!deferredSkillHistory&&!projectResourceCheck&&!complexPaths&&!hostReplayCheck&&!nodeModeUnavailableCheck&&!diagnosticUi&&!unselectedProject&&!naturalExitHistory&&!shutdownHistory&&!externalSkillCheck&&!bootstrapReplayCheck&&!longNativeTail,'H publication crash uses one baseline and one exact private filesystem checkpoint');
+assert(!retryAfterCheck||!discoveryCrashPhase&&!discoveryOrphanCheck&&!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!dualStoreCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!deferredSkillHistory&&!projectResourceCheck&&!complexPaths&&!hostReplayCheck&&!nodeModeUnavailableCheck&&!diagnosticUi&&!unselectedProject&&!naturalExitHistory&&!shutdownHistory&&!externalSkillCheck&&!bootstrapReplayCheck&&!longNativeTail,'Retry-After uses one exact private read-only host preflight with original production budget');
 assert(!graphGcCheck||graphFixture&&graphFixtureSha&&!scopeRestartCheck&&!restartCheck&&!restartExecutable&&!freezeCheck&&!sharedProjectCheck&&!diagnosticUi&&!deferredSkillHistory&&!skillPhase,'Graph competition uses one ordinary real Codex task and an explicitly pinned offline fixture');
+assert(!scopeUiCheck||(scopeRestartCheck&&!sameCwdProjects),'T48 UI scope uses distinct projects, normal selection and restart');
+assert(!projectAvailabilityCheck||scopeUiCheck,'T31 availability needs the real UI project-scope scaffold');
+assert(!legacyRegressionCheck||(scopeUiCheck&&!projectAvailabilityCheck),'T23 regression uses the real UI scaffold with its own controlled model turn');
+assert(!maintenanceCancelUi||!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!skillPhase&&!restartExecutable&&!diagnosticUi&&!deferredSkillHistory,'T71 cancellation uses one current package, actual composer, original Codex and independent unused fixture');
+assert(!fourHistoryCheck||![cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'Four histories uses one ordinary baseline and own sample versions only');
+assert(!concurrentVersionsCheck||![fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'Concurrent versions uses one ordinary baseline, two own native tasks and trusted sample only');
+assert(!projectLifecycleCheck||![concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T03 projectlifecycle usesordinarybaseline andthreeownsamepackage native tasks only');
+assert(!zenSwitchCheck||![savedQueryDaysCheck,accountIsolationCheck,inflightDefaultCheck,concurrentDefaultCheck,missingMailDateCheck,mailMimeCheck,mailIncompleteCheck,draftLifecycleCheck,transferUiCheck,diagnosticClipboardUiCheck,retryDiagnosticsUiCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'PQ T57 only standalone original baseline;no other modes');
+assert(!savedQueryDaysCheck||![projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 savedranges usesordinarybaseline andoneownsamepackage native task only');
+assert(!accountIsolationCheck||![savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 accountisolation usesordinarybaseline andtwoownsamepackage native tasks only');
+assert(!inflightDefaultCheck||![accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 inflightdefault usesordinarybaseline andtwoownsamepackage native tasks only');
+assert(!concurrentDefaultCheck||![inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 concurrentdefault usesordinarybaseline andtwoownsamepackage native tasks only');
+assert(!missingMailDateCheck||![concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 missingmaildate usesordinarybaseline oneownnative task andsource only');
+assert(!mailMimeCheck||![missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T15 MIME usesordinarybaseline oneownnative task andsyntheticsource only');
+assert(!mailIncompleteCheck||![mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T15 incompleteMIME usesordinarybaseline oneownnative task andsyntheticsource only');
+assert(!draftLifecycleCheck||![mailIncompleteCheck,mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T18 noSMTP draft lifecycle uses one ordinary own baseline only');
+assert(!transferUiCheck||![draftLifecycleCheck,mailIncompleteCheck,mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T21 transfer UI uses one ordinary own baseline only');
+assert(!diagnosticClipboardUiCheck||![transferUiCheck,draftLifecycleCheck,mailIncompleteCheck,mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T71 diagnostic clipboard UI uses one ordinary own baseline only');
 let scopeConnections=[];
-const root=await mkdtemp(graphGcCheck?'/private/tmp/willyou-m10-graph-app-native-':'/private/tmp/willyou-m10-native-service-');
+assert(!retryDiagnosticsUiCheck||retryAfterCheck,'PD diagnostics UI requires original retry-after batch');
+const root=await mkdtemp(maintenanceCancelUi?'/private/tmp/willyou-m10-maintenance-ui-':graphGcCheck?'/private/tmp/willyou-m10-graph-app-native-':'/private/tmp/willyou-m10-native-service-');
+async function openElectron(options){
+ const inspected=retryAfterCheck||historyCaptureCheck?{...options,startupMainHook:info=>captureBudgetService({...info,mainFile:resolve(dirname(options.executable),'../Resources/app.asar/out/main/index.js'),target:historyCaptureCheck?'history':'budget',checkpoint:join(root,historyCaptureCheck?'history-startup-capture-'+info.processId+'.json':'budget-startup-capture.json')})}:options;
+ const instance=await openHarnessElectron(inspected);
+ await instance.evaluate('document.title='+JSON.stringify('A · M10 · isolated service '+root.split('-').at(-1)+' · '+options.userData.split('/').at(-1))+';true');
+ return instance;
+}
 const longSegment='长路径 验收 '+ 'x'.repeat(64);
 const home=join(root,complexPaths?'home 中文 空格':'home'),state=join(root,complexPaths?'codex 中文 空格':'codex'),cwd=join(root,complexPaths?'project 中文 空格':'project'),userData=complexPaths?join(root,'userdata 中文 空格',longSegment,longSegment,longSegment):join(root,'userdata');
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,cli=process.env.WILLYOU_CODEX_CLI;
 assert(!hostReplayCheck||restartCheck&&!bridgeFaultCheck,'Host replay requires ordinary restart mode');
+assert(!bootstrapReplayCheck||hostReplayCheck&&!restartExecutable&&!connectionLifecycleCheck&&!graphGcCheck&&!freezeCheck&&!sharedProjectCheck&&!skillPhase&&!diagnosticUi,'Bootstrap replay isolates one current package and ordinary real Codex restart');
+assert(!nodeModeUnavailableCheck||skillPhase==='discovery'&&!restartCheck&&!hostReplayCheck&&!graphGcCheck&&!sharedProjectCheck&&!connectionLifecycleCheck&&!freezeCheck&&!deferredSkillHistory,'Disabled Node mode uses one selected task with ordinary discovery-only response');
+assert(!projectResourceCheck||!restartCheck&&!hostReplayCheck&&!bootstrapReplayCheck&&!nodeModeUnavailableCheck&&!graphGcCheck&&!sharedProjectCheck&&!connectionLifecycleCheck&&!skillPhase&&!scopeUiCheck&&!unselectedProject,'Project resource regression uses one ordinary Mail Task and explicit same-host resume');
 assert(!selectedSecondProject||sharedProjectCheck,'Selected second project requires shared-project mode');
 assert(!crossProjectTool||sharedProjectCheck&&selectedSecondProject,'Cross-project tool requires two selected project mode');
 assert(!forgeScope||crossProjectTool,'Scope forgery requires cross-project tool mode');
@@ -75,9 +198,9 @@ const result={schema:'m10-packaged-native-service-v1',startedAt:new Date().toISO
  branch:execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim(),sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),sourceDirty:!!execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),
  packageBuild:bundleIndex.build,bundleIndexSha256:sha(bundleIndexBytes),
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
- layer:'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
- isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
- naturalExitHistory,shutdownHistory,restoreSelection,revokeCheck,longNativeTail,skillPhase,deferredSkillHistory,complexPaths,diagnosticUi,expectSkillHistory,expectSkillDiscovery,expectSkillRead,expectRecoveryUnsupported,bridgeFaultSignal,bridgeFaultCheck,restartCheck,packageRepairCheck,sharedProjectCheck,sameCwdProjects,persistedSameCwdFixture,selectedSecondProject,crossProjectTool,forgeScope,unselectedProject,scopeRestartCheck,marker,requests:[],checks:[],status:'running'};
+ layer:nativeExitUiCheck?'A actual Home/terminal natural exit/navigation/explicit resume;I original Task/Run/DB observations;synthetic provider,no credential or send':nativeUserOriginCheck?'A actual Home creation and terminal keyboard;I original captured host input/native record verification;synthetic provider,no SMTP/credential/authorization/send':cancelFreezeUi?'A actual Home input/launch/cancel;I source-free projects/profile baseline and explicit post-stop retry;actual Codex and synthetic model;no secrets/SMTP/reply/import/clipboard':scopeUiCheck?'A: actual project creation, application selection and composer launch for two projects; actual Codex/MCP, service/disk path assertions and normal host restart; synthetic provider, no external business services':'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
+ isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:nativeExitUiCheck?'project/profile/application selection and peer B creation via RPC prerequisites;tested A Home creation/exit/resume/navigation and explicit B stop via actual UI':nativeUserOriginCheck?'project/profile/application selection via RPC are prerequisites;A Home Task/terminal inputs use real UI;B Task creation is an I source control':scopeUiCheck?'AI profile and two synthetic local sources via RPC are prerequisites; projects, application add/selection and both task launches use actual UI':'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
+ naturalExitHistory,shutdownHistory,restoreSelection,revokeCheck,longNativeTail,skillPhase,deferredSkillHistory,complexPaths,diagnosticUi,expectSkillHistory,expectSkillDiscovery,expectSkillRead,expectRecoveryUnsupported,bridgeFaultSignal,bridgeFaultCheck,restartCheck,packageRepairCheck,sharedProjectCheck,sameCwdProjects,persistedSameCwdFixture,selectedSecondProject,crossProjectTool,forgeScope,unselectedProject,scopeRestartCheck,scopeUiCheck,projectAvailabilityCheck,marker,requests:[],checks:[],status:'running'};
 assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
 assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
 result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
@@ -87,24 +210,74 @@ const skill=join(home,'.agents/skills/m10-owned-config/SKILL.md');
 const userMcpManifest=join(root,'user MCP 中文 marker.json');
 if(userMcpCheck)await writeFile(userMcpManifest,JSON.stringify({version:'1.0.0',marker:'user-owned-preserve',skillSha256:'synthetic'}));
 await writeFile(skill,'---\nname: m10-owned-config\ndescription: Private configuration preservation marker.\n---\nNo action is required.\n');
+const projectResources=projectResourceCheck?await projectResourceProbe({root,home,marker,contextOnly:projectContextOnly}):null;
+if(projectResources)result.projectResources=projectResources.record;
 let stage='setup',app,task,project,profile,secondTask;
+result.transferUiCheck=transferUiCheck;result.diagnosticClipboardUiCheck=diagnosticClipboardUiCheck;
+const nativeExitUiProbe=nativeExitUiCheck?cacheAgentsProbe(marker):null;
+const nativeUserOriginProbe=nativeUserOriginCheck?cacheAgentsProbe(marker):null;result.nativeUserOriginCheck=nativeUserOriginCheck;result.nativeExitUiCheck=nativeExitUiCheck;
+const draftLifecycleProbe=draftLifecycleCheck?cacheAgentsProbe(marker):null;result.draftLifecycleCheck=draftLifecycleCheck;
+const cacheAgents=cacheAgentsCheck?cacheAgentsProbe(marker):null;
+const historyProbe=fourHistoryCheck?fourHistoryProbe(marker):null;
+const zenSwitchProbe=zenSwitchCheck?concurrentVersionsProbe(marker):null;
+const projectLifecycleProbe=projectLifecycleCheck?concurrentVersionsProbe(marker):null;
+const savedQueryDaysProbe=savedQueryDaysCheck?concurrentVersionsProbe(marker):null;
+const accountIsolationProbe=accountIsolationCheck?concurrentVersionsProbe(marker):null;
+const inflightDefaultProbe=inflightDefaultCheck?concurrentVersionsProbe(marker):null;
+const concurrentDefaultProbe=concurrentDefaultCheck?cacheAgentsProbe(marker):null;
+const missingMailDateProbe=missingMailDateCheck?cacheAgentsProbe(marker):null;
+const mailMimeProbe=mailMimeCheck?cacheAgentsProbe(marker):null;
+const mailIncompleteProbe=mailIncompleteCheck?cacheAgentsProbe(marker):null;
+const concurrentProbe=(concurrentVersionsCheck||earlyResumeStopCheck)?concurrentVersionsProbe(marker):null;
+result.fourHistoryCheck=fourHistoryCheck;result.historyReferenceCheck=historyReferenceCheck;result.concurrentVersionsCheck=concurrentVersionsCheck;result.concurrentProjectCheck=concurrentProjectCheck;result.projectLifecycleCheck=projectLifecycleCheck;result.savedQueryDaysCheck=savedQueryDaysCheck;result.accountIsolationCheck=accountIsolationCheck;result.inflightDefaultCheck=inflightDefaultCheck;result.concurrentDefaultCheck=concurrentDefaultCheck;result.missingMailDateCheck=missingMailDateCheck;result.mailMimeCheck=mailMimeCheck;result.mailIncompleteCheck=mailIncompleteCheck;
+const availability=projectAvailabilityCheck||connectionLifecycleCheck||retryAfterCheck?availabilityProbe(marker):null;
+const legacy=legacyRegressionCheck?legacyRegressionProbe(marker):null;
+const maintenanceProbe=maintenanceCancelUi?maintenanceWaitProbe(marker):null;
+result.legacyRegressionCheck=legacyRegressionCheck;
+result.maintenanceCancelUi=maintenanceCancelUi;
+if(retryDiagnosticsUiCheck)result.layer='A actual P09 outcome display;actual Codex/MCP service calls and I exact-run read-only loopback preflight;synthetic model;no authentication/send/clipboard';
+if(maintenanceCancelUi){result.layer='A: actual composer, original Codex/MCP, version confirmation, keyboard wait cancellation and continued terminal input; controlled own C gate fault';result.isolation.setup='Project/profile/application selection and unused package/runtime are explicit prerequisites; tested task launch, cancellation and normal cleanup use actual UI';result.maintenanceTheme=maintenanceDark?'ydark':'ylight';}
 const sockets=new Set();
 const progress=async()=>{const value={at:new Date().toISOString(),stage,root,pid:app?.processId,taskId:task?.id,requests:result.requests.length};await writeFile(join(root,'progress.json'),JSON.stringify(value,null,2)+'\n');console.log(JSON.stringify(value));};
 const checked=(name,details={})=>{result.checks.push({name,at:new Date().toISOString(),passed:true,...details});};
+const bootstrapReplay=bootstrapReplayCheck?bootstrapReplayFixture({root,userData,home,executable,bundleRoot:join(appRoot,'Contents/Resources/capability-bundles'),runtime:bundleIndex.runtimes[0],checked,result,poll}):null;
 const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{bytes+=b.length;if(bytes>4*1024*1024)req.destroy();else chunks.push(b);});req.on('end',()=>{void(async()=>{
  if(!req.url?.endsWith('/responses')){res.writeHead(404);res.end('{}');return;}
  let body;try{body=JSON.parse(Buffer.concat(chunks).toString())}catch{res.writeHead(400);res.end('{}');return;}
  if(body.tools?.some(x=>(x.name??'').startsWith('mcp__wy_')))writeFile(join(root,'native-tool-definitions.json'),JSON.stringify(body.tools.filter(x=>(x.name??'').startsWith('mcp__wy_')),null,2)+'\n').catch(()=>{});
  const raw=JSON.stringify(body),taskRequest=raw.includes(marker),healthCode=raw.match(/SMARTDD-OK-[0-9a-f]{8}/)?.[0];
  const secondProjectRequest=raw.includes(marker+'_PROJECT_B');
- const isResume=(restartCheck||revokeCheck)&&raw.includes(marker+'_RESUME_READ');
+ const isResume=(restartCheck||revokeCheck||result.nodeModeRestoring)&&raw.includes(marker+'_RESUME_READ');
  let text=isResume?marker+(result.restoringSelection?'_RESTORED_DONE':'_RESUMED_DONE'):secondProjectRequest?marker+'_PROJECT_B_DONE':taskRequest?marker+'_DONE':healthCode??'M10_PRIVATE_FIXTURE_OK';
  const item={at:new Date().toISOString(),kind:secondProjectRequest?'project-b-task':taskRequest?'ui-task':healthCode?'profile-health':'unclassified',model:body.model,
   requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m10-owned-config'),
   managedSkillNames:[...new Set(raw.match(/smartdd-a-(?:mail|zentao)-[A-Za-z0-9_-]+/g)??[])],
   userMcpVisible:(body.tools??[]).some(x=>x.name?.includes('m10_user_marker')||x.tools?.some(t=>t.name==='fixed_marker')),resumed:isResume,
   toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
+ if(nodeModeUnavailableCheck){
+  item.appFunctions=(body.tools??[]).flatMap(x=>x.name?.startsWith('mcp__wy_')?(x.tools??[x]).map(t=>({namespace:x.name,name:t.name})):[]);
+  item.independentFunctions=(body.tools??[]).flatMap(x=>x.name?.startsWith('mcp__smartdd_project_')?(x.tools??[x]).map(t=>({namespace:x.name,name:t.name})):[]);
+ }
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
+ if(projectResources?.respond(body,res))return;
+ if(nativeExitUiProbe?.respond(body,res))return;
+ if(nativeUserOriginProbe?.respond(body,res))return;
+ if(draftLifecycleProbe?.respond(body,res))return;
+ if(cacheAgents?.respond(body,res))return;
+ if(historyProbe?.respond(body,res))return;
+ if(zenSwitchProbe?.respond(body,res))return;
+ if(projectLifecycleProbe?.respond(body,res))return;
+ if(savedQueryDaysProbe?.respond(body,res))return;
+ if(accountIsolationProbe?.respond(body,res))return;
+ if(inflightDefaultProbe?.respond(body,res))return;
+ if(concurrentDefaultProbe?.respond(body,res))return;
+ if(missingMailDateProbe?.respond(body,res))return;
+ if(mailMimeProbe?.respond(body,res))return;
+ if(mailIncompleteProbe?.respond(body,res))return;
+ if(concurrentProbe?.respond(body,res))return;
+ if(availability?.respond(body,res))return;
+ if(legacy?.respond(body,res))return;
+ if(maintenanceProbe?.respond(body,res)){item.response=maintenanceProbe.lastResponse;return;}
  if(userMcpCheck&&taskRequest&&!secondProjectRequest){
   const phase=isResume?'resumed':'initial';result.userMcpCalls??={};
   if(!result.userMcpCalls[phase]){
@@ -192,6 +365,7 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
  }
  if(taskRequest&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;result.nativeResumeOutputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id===result.issuedResumeTool?.call_id);}
+ if(nodeModeUnavailableCheck&&result.nodeModeRestoring&&result.issuedResumeTool)result.nativeResumeOutputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id===result.issuedResumeTool.call_id);
  if(longNativeTail&&taskRequest&&!isResume&&!secondProjectRequest){
   assert(!skillPhase&&!deferredSkillHistory&&!restartCheck,'Long native tail uses the selected draft task');
   await poll(async()=>{try{const n=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); print(json.dumps(c.execute(\"SELECT count(*) FROM capability_skill_observations WHERE kind='read'\").fetchone()[0])); c.close()",join(userData,'smartdd.db')],{encoding:'utf8'}));return n>0;}catch{return false;}},15000);
@@ -216,7 +390,7 @@ if(userMcpCheck)config+='[mcp_servers.m10_user_marker]\ncommand='+JSON.stringify
 const nativeNoticeState="\n[tui]\nscreen_reader_detection_done = true\n\n[tui.model_availability_nux]\n\"gpt-6.1-sol\" = 1\n";
 const profileText='model="m10-ui-profile-model"\nskills.config=[{path='+JSON.stringify(skill)+',enabled=false}]\n';
 await writeFile(join(state,'config.toml'),config);await writeFile(join(state,'m10-native.config.toml'),profileText);
-const privateEnv={HOME:home,ZDOTDIR:home,CODEX_HOME:state,HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',ALL_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost',SHELL:'/bin/zsh'};
+const privateEnv={HOME:home,ZDOTDIR:home,CODEX_HOME:state,HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',ALL_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost',SHELL:'/bin/zsh',...projectResources?.env};
 // This script is itself an isolated driver process. Do not rely on its caller
 // having removed ambient provider credentials or other user configuration.
 for(const name of Object.keys(process.env))if(!['PATH','TMPDIR','LANG','LC_ALL','WILLYOU_ACCEPTANCE_APP','WILLYOU_CODEX_CLI','WILLYOU_ACCEPTANCE_ASAR_SHA'].includes(name))delete process.env[name];
@@ -246,12 +420,25 @@ async function assertPackageRepaired(){
 }
 async function click(selector,text){result.lastAction={selector,text};const p=await app.evaluate(`(()=>{const e=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height&&${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`});if(!e)throw Error('Control missing: '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
 async function key(key,code,num,modifiers=0,commands){for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:num,modifiers,...(type==='keyDown'&&commands?{commands}:{})});}
+async function fillScopeField(selector,text){await click(selector);await key('a','KeyA',65,4,['selectAll']);await app.cdp('Input.insertText',{text});await app.waitFor(`document.querySelector(${JSON.stringify(selector)})?.value===${JSON.stringify(text)}`);}
+async function createScopeProject(name,path){
+ await click('[data-testid=sidebar-new-project]');await app.waitFor('!!document.querySelector("[role=menu]")');await click('[role=menuitem]','新建项目');await app.waitFor('!!document.querySelector("#project-name")');await fillScopeField('#project-name',name);await fillScopeField('#project-dir',path);
+ const label=await app.evaluate(`Array.from(document.querySelectorAll('[role=dialog] button')).map(e=>e.textContent.trim()).find(t=>t==='创建'||t==='创建项目')`);assert(label,'Missing actual create button');await click('[role=dialog] button',label);await app.waitFor('!document.querySelector("#project-name")');
+ const value=await poll(async()=>{const rows=await app.invoke('projects.list',{includeArchived:false});return rows.find(p=>p.name===name);});assert(value);checked('T48 actual UI created '+name+' with explicit private directory');return value;
+}
+async function launchScopeTask(name,text){
+ await click('[data-testid=nav-home]');await app.waitFor('!!document.querySelector("[data-testid=home-input]")');await click('[data-testid=home-project]');await app.waitFor('!!document.querySelector("[role=option]")');await click('[role=option]',name);await app.waitFor('document.querySelector("[data-testid=home-project]")?.textContent.includes('+JSON.stringify(name)+')');await fillScopeField('[data-testid=home-input]',text);await app.waitFor('!document.querySelector("[data-testid=home-launch]").disabled');await click('[data-testid=home-launch]');
+ return poll(async()=>{const rows=await app.invoke('tasks.list',{includeArchived:true});const t=rows.find(t=>t.firstMessage===text);return t?{task:t}:null;},25000);
+}
 try{
- await progress();app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:shutdownHistory||hostReplayCheck||scopeRestartCheck||graphGcCheck});installAppFocusGuard(app,result);result.pid=app.processId;
+ if(cacheDiskFullCheck)await prepareCacheSpaceVolume({root,userData,result});
+ await progress();app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:zenSwitchCheck||cancelFreezeUi||diagnosticClipboardUiCheck||transferUiCheck||draftLifecycleCheck||concurrentDefaultCheck||inflightDefaultCheck||accountIsolationCheck||savedQueryDaysCheck||projectLifecycleCheck||cacheAgentsCheck||shutdownHistory||hostReplayCheck||scopeRestartCheck||graphGcCheck||nodeModeUnavailableCheck||!!discoveryCrashPhase||retryAfterCheck||historyCaptureCheck||nativeExitUiCheck});if(!homeNativeCheck)installAppFocusGuard(app,result);result.pid=app.processId;if(cancelFreezeUi)await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Own cancel UI App only');const map=E.ipcMain._invokeHandlers,g={calls:[],records:[],originals:[],cipher:[]};for(const name of ['encryptString','decryptString']){g.cipher.push([name,E.safeStorage[name]]);E.safeStorage[name]=()=>{g.calls.push('safeStorage.'+name);throw Error('Cancel UI does not use credentials');};}for(const name of ['applications.replyDraft','applications.importAttachment','applications.captureAttachment','applications.prepareSend','applications.reviewSend','applications.authorizeSend','applications.executeSend','app.openExternal']){const fn=map.get(name);if(!fn)continue;g.originals.push([name,fn]);map.set(name,()=>{g.calls.push(name);throw Error('Cancel UI forbidden side effect');});}for(const name of ['tasks.create','tasks.cancelCreate']){const fn=map.get(name);g.originals.push([name,fn]);map.set(name,async function(event,...args){const row={name,args,at:Date.now(),sender:event.sender.id};g.records.push(row);try{const value=await fn.call(this,event,...args);row.value=value;return value;}catch(e){row.errorCode=e.code??null;row.error=String(e);throw e;}finally{row.finishedAt=Date.now();}});}g.restore=()=>{for(const[n,f]of g.originals)map.set(n,f);for(const[n,f]of g.cipher)E.safeStorage[n]=f;};globalThis.__ouCancel=g;return true})()`);
  await app.evaluate(`document.title='A · M10 · isolated Codex native CLI';true`);
  stage='prerequisites';await progress();
- project=await app.invoke('projects.create',{name:'M10 原生 CLI 隔离项目',aliases:[],description:'Private native Task prerequisite',rulesPath:null},[{label:'fixture',path:cwd}]);result.projectId=project.id;
- const catalog=await app.invoke('applications.catalog');assert(catalog.ok);const mail=catalog.value.find(x=>x.appId==='mail');assert((await app.invoke('applications.setAdded','mail',true,mail.revision)).ok);
+ project=scopeUiCheck?await createScopeProject('M10 原生 CLI 隔离项目',cwd):await app.invoke('projects.create',{name:'M10 原生 CLI 隔离项目',aliases:[],description:'Private native Task prerequisite',rulesPath:null},[{label:'fixture',path:cwd}]);result.projectId=project.id;
+ if(projectResources)await projectResources.prepare(app,project);
+ if(legacyRegressionCheck){stage='legacy-before-applications';await progress();await prepareLegacyRegression({app,result,root,cwd,project,click,checked});}
+ const catalog=await app.invoke('applications.catalog');assert(catalog.ok);const mail=catalog.value.find(x=>x.appId==='mail');if(scopeUiCheck){await click('[data-testid=nav-apps]');await app.waitFor(`!!document.querySelector('[aria-label="添加邮件"]')`);await click('[aria-label="添加邮件"]');await poll(async()=>{const c=await app.invoke('applications.catalog');return c.ok&&c.value.find(x=>x.appId==='mail').added;});checked('T48 added the bundled Mail application through actual catalog UI');}else assert((await app.invoke('applications.setAdded','mail',true,mail.revision)).ok);
  if(scopeRestartCheck){
   for(const suffix of ['one','two']){
    const source=join(root,'synthetic-scope-mail-'+suffix);await mkdir(join(source,'Mail/Inbox'),{recursive:true});await writeFile(join(source,'Mail/Inbox/1.mail'),'From: sender@example.test\r\nTo: receiver@example.test\r\nSubject: SCOPE '+suffix+'\r\nMessage-ID: <scope-'+suffix+'@example.test>\r\nContent-Type: text/plain\r\n\r\nSCOPE PRIVATE '+suffix);
@@ -260,24 +447,42 @@ try{
   }
   assert.notEqual(scopeConnections[0].id,scopeConnections[1].id);result.scopeConnections=scopeConnections;
  }
- if(!unselectedProject)assert((await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:scopeConnections[0]?.id??null,smtp:null}})).ok);
+ if(scopeUiCheck){
+  await click('.m10-sidebar button','项目选用');const toggle='[aria-label="为M10 原生 CLI 隔离项目启用邮件"]';await app.waitFor(`!!document.querySelector(${JSON.stringify(toggle)})&&!document.querySelector(${JSON.stringify(toggle)}).disabled`);await click(toggle);await app.waitFor(`document.querySelector(${JSON.stringify(toggle)})?.getAttribute('aria-checked')==='true'`);
+  const option='input[aria-label="为M10 原生 CLI 隔离项目选用Scope private one"]';await app.waitFor(`!!document.querySelector(${JSON.stringify(option)})&&!document.querySelector(${JSON.stringify(option)}).disabled`);await click(option);await app.waitFor(`document.querySelector(${JSON.stringify(option)}).checked`);await poll(async()=>{const r=await app.invoke('applications.projectSettings',project.id,'mail');return r.ok&&r.value.connections.foxmail===scopeConnections[0].id;});await app.screenshot(join(root,'t48-selected-project-a.png'));checked('T48 actual project UI enables Mail and explicitly selects the first of two saved local sources only for A');
+ }else if(!unselectedProject)assert((await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:scopeConnections[0]?.id??null,smtp:null}})).ok);
  const args=['--profile','m10-native','--disable','hooks','--disable','apps','--disable','remote_plugin','--disable','multi_agent','--disable','shell_snapshot','-c','web_search="disabled"','-c','skills.config=[]','--sandbox','read-only','--ask-for-approval','never'];
+ if(projectResourcePermissionsApproved){
+  const audit=join(userData,'capabilities/resource-audit');
+  assert(root.startsWith('/private/tmp/willyou-m10-native-service-')&&userData===join(root,'userdata')&&cwd.startsWith(root+'/'));
+  await mkdir(audit,{recursive:true,mode:0o700});
+  args[args.indexOf('--sandbox')+1]='workspace-write';
+  args.push('--add-dir',audit,'-c','sandbox_mode="workspace-write"','-c','approval_policy="never"','-c','sandbox_workspace_write.writable_roots='+JSON.stringify([audit]),'-c','sandbox_workspace_write.network_access=true');
+  result.projectResourcePermissionBoundary={explicitUserApprovalRequired:true,flag:'WILLYOU_PROJECT_RESOURCE_PERMISSIONS_APPROVED=1',profile:'this fresh private profile only',cwd,audit,mode:'workspace-write',networkAccess:true,networkBoundary:'Native network switch is not a loopback allowlist. The deterministic provider and SSH fixture use only 127.0.0.1; SSH endpoint accepts only the exact self-authored cat command.',approvalPolicy:'never',dailyProfileChanged:false,args:[...args]};
+ }
  profile=await app.invoke('aiProfiles.create',{name:'M10 私有 Codex 0.162.1',runner:'codex',executable:cli,env:Object.entries(privateEnv).map(([name,value])=>({name,value,secret:false})),args,color:null,isDefault:true});result.profileId=profile.id;
  stage='profile-health';await progress();const health=await poll(async()=>{const p=await app.invoke('aiProfiles.get',profile.id);return !p.checking&&p.check?p:null;},45000);result.profileHealth=health.check;assert.equal(health.check.status,'ok');
  checked('Automatic AI-profile health check is separately classified and completed against private provider');
+ if(maintenanceCancelUi){stage='maintenance-ui-prerequisite';await progress();app=await prepareMaintenanceWaitUi({app,result,root,userData,home,project,executable,privateEnv,checked,reopen:async()=>{const next=await openElectron({executable,userData,cwd,env:privateEnv});installAppFocusGuard(next,result);return next;}});}
  if(graphGcCheck){stage='graph-offline-prerequisite';await progress();app=await prepareNativeGcRace({app,result,root,userData,home,executable,privateEnv,compiledFixture:graphFixture,compiledSha:graphFixtureSha,native:join(appRoot,'Contents/Resources/native/willyou-process-identity'),projectId:project.id,checked,reopen:async()=>{const next=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(next,result);return next;}});}
  if(hostReplayCheck){await installBrokerObserver(app);result.brokerObserver={kind:'passive Socket.write observation only on this private broker endpoint; no bytes or policy changed',installed:true};}
- stage='service-task-launch';await progress();
+ if(bootstrapReplay)await bootstrapReplay.install(app);
+ if(nodeModeUnavailableCheck)await installBrokerObserver(app);
+ if(scopeUiCheck){const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=nav-home]')`,15000,{navigation:true});await app.evaluate("document.title='A · M10 · T48 project scopes';true");}
+ stage='service-task-launch';await progress();if(homeNativeCheck){const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=home-input]')`,15000,{navigation:true});await app.evaluate('document.title='+JSON.stringify(nativeExitUiCheck?'A · RF 原生退出同步 · 隔离':'A · RE 原生输入来源 · 隔离')+';true');assert(!result.focusGuard);await focusNewInstalledWindow(app,userData,result);installAppFocusGuard(app,result);}
  await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true`);
  const prompt=skillPhase?marker+': '+(skillPhase==='discovery'?'Reply with the completion marker without reading files or using tools.':skillPhase==='read'?'Read the selected private Mail Skill once, then reply with the completion marker. Do not invoke application tools or create drafts.':'Create one local draft with no recipients or SMTP, without reading Skill files. No external services or sending.') :unselectedProject?marker+': Reply with the completion marker only. Do not invoke tools, read files, create drafts or send mail.':marker+': Create one LOCAL DRAFT only, subject '+marker+'_LOCAL_DRAFT, body '+marker+'_LOCAL_BODY. No recipients, attachments, SMTP or sending. No external services.';
  const before=await app.invoke('tasks.list',{includeArchived:true});assert.equal(before.length,0);
- const opened=await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:profile.id,firstMessage:prompt,cols:100,rows:30});task=opened.task;result.taskId=task.id;
- checked('Production TaskService IPC created exactly one native Task;not composer/UI coverage',{taskId:task.id});
+ const opened=scopeUiCheck||maintenanceCancelUi||homeNativeCheck?await launchScopeTask(project.name,prompt):await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:profile.id,firstMessage:prompt,cols:100,rows:30});task=opened.task;result.taskId=task.id;
+ checked(nativeExitUiCheck?'RF actual Home composer created the original native Task':nativeUserOriginCheck?'T07 actual Home composer and launch created the original actual Codex Task':maintenanceCancelUi?'T71 actual Home composer and launch button created the original actual Codex Task':scopeUiCheck?'T48 actual project A composer and launch button created exactly one native Task':'Production TaskService IPC created exactly one native Task;not composer/UI coverage',{taskId:task.id});
  stage='native-task-response';await progress();
  await poll(async()=>{const current=await app.invoke('tasks.get',task.id);task=current;const out=current.ptyId?await app.output(current.ptyId):'';await writeFile(join(root,'terminal-current.txt'),out);await writeFile(join(root,'task-current.json'),JSON.stringify(current,null,2)+'\n');const done=result.requests.some(r=>r.kind==='ui-task')&&out.includes(marker+'_DONE');if(longNativeTail&&result.longTailResponse){const logs=readdirSync(state,{recursive:true}).filter(p=>typeof p==='string'&&p.endsWith('.jsonl')&&p.includes('rollout-'));return logs.some(p=>{const bytes=readFileSync(join(state,p));if(bytes.length<=4*1024*1024||bytes.length>32*1024*1024||bytes.at(-1)!==10)return false;const last=bytes.lastIndexOf(10,bytes.length-2);try{const record=JSON.parse(bytes.subarray(last+1,bytes.length-1).toString('utf8'));return record.type==='event_msg'&&record.payload?.type==='task_complete';}catch{return false;}});}return done;},45000);
  const requests=result.requests.filter(r=>r.kind==='ui-task');assert(requests.length>0);assert(requests.every(r=>r.model==='m10-ui-profile-model'&&!r.userSkillMarkerPresent));
  checked('Real Task CLI used native profile model and preserved profile-disabled user Skill under later CLI empty array',{requestCount:requests.length});
- if(skillPhase){
+ if(nodeModeUnavailableCheck){
+  stage='node-mode-unavailable-scope';await progress();
+  await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);
+ }else if(skillPhase){
   assert(!unselectedProject&&!restartCheck&&!sharedProjectCheck&&!diagnosticUi&&!deferredSkillHistory,'Phase isolation uses one selected Task');
   stage='skill-phase-'+skillPhase;await progress();
   await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);
@@ -417,7 +622,8 @@ try{
    const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&!!document.querySelector('[data-testid=home-input]')`,20000,{navigation:true});
    await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});true`);
    await app.waitFor(`document.querySelector('[data-testid=home-project]')?.textContent.includes('M10 冻结新增禅道')&&!document.querySelector('[data-testid=home-launch]').disabled`,10000);
-   await click('[data-testid=home-input]');await app.cdp('Input.insertText',{text:request.firstMessage});await click('[data-testid=home-launch]');
+   result.cancelUiInitialFocus=await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)}||E.BrowserWindow.getAllWindows().length!==1)throw Error('Own single cancel UI window required');const w=E.BrowserWindow.getAllWindows()[0];w.show();E.app.focus({steal:false});w.focus();w.webContents.focus();return{pid:process.pid,focused:w.isFocused(),initialOnly:true}})()`);await app.waitFor('document.hasFocus()&&document.visibilityState==="visible"',5000);await app.evaluate("document.title='A · M10 OU · 隔离 首页取消准备';true");
+   await click('[data-testid=home-input]');await app.cdp('Input.insertText',{text:request.firstMessage});await app.waitFor('document.querySelector("[data-testid=home-input]").value==='+JSON.stringify(request.firstMessage));await click('[data-testid=home-launch]');
   }else outcome=app.invoke('tasks.create',request).then(value=>({value,error:null}),error=>({value:null,error:String(error)}));
   const pending=await poll(async()=>{try{return JSON.parse(await readFile(pendingPath,'utf8'));}catch{return null;}},10000);assert.equal(pending.phase,'waiting');
   assert.deepEqual(await readFile(catalogPath),beforeBytes);assert.deepEqual(beforeTree(),originalTree);
@@ -438,21 +644,23 @@ try{
   result.freeze={beforeGeneration:beforeCatalog.generation,pending,rejected,originalTree,originalTask:beforeTask};
   checked(cancelFreezeCheck?'Actual pending publication is explicitly canceled by its launch token, preserving original Codex and shared bytes and releasing own intent':'Actual running Codex freezes shared projection bytes; new ZenTao publication times out with explicit busy result, preserves original task and cancels own intent');
   await app.invoke('tasks.kill',task.id);await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&!d.value.currentRun&&d.value.recentRuns.every(r=>['stopped','failed'].includes(r.state));},30000);
-  const next=await app.invoke('tasks.create',request);secondTask=next.task;
+  let next;
+  if(cancelFreezeUi){await app.waitFor('!!document.querySelector("[data-testid=home-launch]")&&!document.querySelector("[data-testid=home-launch]").disabled');assert.equal(await app.evaluate('document.querySelector("[data-testid=home-input]").value'),request.firstMessage);await click('[data-testid=home-launch]');next=await poll(async()=>{const rows=await app.invoke('tasks.list');const t=rows.find(t=>t.projectId===other.id&&t.firstMessage===request.firstMessage);return t?{task:t}:null;},30000);}else next=await app.invoke('tasks.create',request);secondTask=next.task;
   await poll(async()=>{secondTask=await app.invoke('tasks.get',secondTask.id);return secondTask.ptyId&&(await app.output(secondTask.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
   const afterCatalog=JSON.parse(await readFile(catalogPath,'utf8'));assert.notEqual(afterCatalog.generation,beforeCatalog.generation);assert(afterCatalog.entries.length>beforeCatalog.entries.length);
   for(const [path,hash] of Object.entries(originalTree))assert.equal(sha(await readFile(path)),hash);
   const bSession=await app.invoke('applications.session',secondTask.id);assert(bSession.ok);assert(bSession.value.currentRun.bridge.connected);result.freeze.newSession=bSession.value;assert(bSession.value.applications.some(a=>a.appId==='zentao'&&a.resourceState==='verified'&&a.issueCode===null));
   result.freeze.afterCatalog=afterCatalog;result.freeze.newSession=bSession.value;
+  if(cancelFreezeUi){const history=await app.mainEvaluate('globalThis.__ouCancel.records');const attempts=history.filter(r=>r.name==='tasks.create'&&r.args[0].projectId===other.id);assert.equal(attempts.length,2);assert.notEqual(attempts[0].args[0].launchToken,attempts[1].args[0].launchToken);assert.equal(attempts[0].errorCode,'CANCELED');assert(attempts[1].value?.task?.id===secondTask.id);assert.equal((await app.invoke('tasks.list')).filter(t=>t.projectId===other.id).length,1);result.cancelUi.retry={method:'Actual Home launch click after explicit stopA',newToken:attempts[1].args[0].launchToken,taskId:secondTask.id,oneNewTask:true};}
   checked('After original Codex stops, new task publishes added projection, retains old bytes and starts real Codex with ZenTao bridge');
  }
  if(sharedProjectCheck){
   stage='same-instance-project-b';await progress();if(sameCwdProjects&&selectedSecondProject){result.profileBeforeSecondNative=await readFile(join(state,'m10-native.config.toml'),'utf8');assert.equal(result.profileBeforeSecondNative,profileText+nativeNoticeState);}
   const cwdB=sameCwdProjects?cwd:join(root,'project-b');await mkdir(join(cwdB,'.git'),{recursive:true});const standardBefore=sameCwdProjects?result.nativeBoundTask.runtimeSnapshot.skills.map(item=>({id:item.skillId,path:item.path,hash:item.hash,bytesSha256:sha(readFileSync(item.path))})):null;
-  const other=await app.invoke('projects.create',{name:selectedSecondProject?'M10 已选邮件项目 B':'M10 未选邮件项目 B',aliases:[],description:'Same App shared-H negative project',rulesPath:null},persistedSameCwdFixture?[]:[{label:'fixture-b',path:cwdB}]);
+  const other=scopeUiCheck?await createScopeProject('M10 未选邮件项目 B',cwdB):await app.invoke('projects.create',{name:selectedSecondProject?'M10 已选邮件项目 B':'M10 未选邮件项目 B',aliases:[],description:'Same App shared-H negative project',rulesPath:null},persistedSameCwdFixture?[]:[{label:'fixture-b',path:cwdB}]);
   if(persistedSameCwdFixture){const dirId=randomUUID();execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,time; c=sqlite3.connect(sys.argv[1]); ts=int(time.time()*1000); c.execute('INSERT INTO project_dirs(id,project_id,label,path,is_default,created_at,updated_at) VALUES(?,?,?,?,1,?,?)',(sys.argv[2],sys.argv[3],'Synthetic historical duplicate cwd',sys.argv[4],ts,ts)); c.commit(); c.close()",join(userData,'smartdd.db'),dirId,other.id,cwdB]);result.sameCwdFixture={kind:'Explicit synthetic historical persisted duplicate path; normal projects.create rejects duplicate; no UI creation claim',projectId:other.id,dirId,cwd:cwdB};}
   if(selectedSecondProject)assert((await app.invoke('applications.select',{projectId:other.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}})).ok);
-  const next=await app.invoke('tasks.create',{projectId:other.id,dirId:null,aiProfileId:profile.id,firstMessage:marker+'_PROJECT_B: '+(crossProjectTool?'Read the supplied isolated cross-project draft ID once to verify denial. Do not create or modify anything.':'Reply with the completion marker only. No tools, no files, no drafts, no mail.'),cols:100,rows:30});secondTask=next.task;
+  const bPrompt=marker+'_PROJECT_B: '+(crossProjectTool?'Read the supplied isolated cross-project draft ID once to verify denial. Do not create or modify anything.':'Reply with the completion marker only. No tools, no files, no drafts, no mail.');const next=scopeUiCheck?await launchScopeTask(other.name,bPrompt):await app.invoke('tasks.create',{projectId:other.id,dirId:null,aiProfileId:profile.id,firstMessage:bPrompt,cols:100,rows:30});secondTask=next.task;
   await poll(async()=>{const t=await app.invoke('tasks.get',secondTask.id);secondTask=t;return t.ptyId&&(await app.output(t.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
   if(crossProjectTool){const output=JSON.stringify(result.crossProjectToolOutput);assert((forgeScope?/INVALID_INPUT/:/NOT_FOUND/).test(output),'Native tool must reject the supplied cross-project request with the expected error');assert(!output.includes(marker+'_LOCAL_BODY'));checked(forgeScope?'B actual native MCP rejects forged project/task arguments without returning A body':'B actual native MCP draft read rejects A draft identity without returning A body');}
   const bRequests=result.requests.filter(r=>r.kind==='project-b-task');assert(bRequests.length>0);
@@ -516,6 +724,7 @@ try{
  if(restartCheck){
   assert(!unselectedProject&&!sharedProjectCheck,'Restart mode uses one selected production Task');
   stage='service-stop-before-host-restart';await progress();
+  if(bootstrapReplay){result.bootstrapBaselineBeforeBinding=result.nativeBoundSession.snapshotHash;result.nativeBoundSession=await bootstrapReplay.stable(app,task);await bootstrapReplay.phase(app,task,'original');}
   const original=result.nativeBoundSession,nativeId=result.nativeBoundTask.nativeSessionId,oldPid=app.processId;
   let oldCredential;
   if(hostReplayCheck){const captured=await collectAndRestoreBrokerObserver(app);assert(captured?.restored&&captured.tokens.length>0,'Original bridge handshake must be observed');oldCredential=captured.tokens.at(-1);result.brokerObserver.originalRestored=true;result.oldCredential={sha256:sha(oldCredential.token),endpoint:oldCredential.endpoint,issuedAt:oldCredential.at};}
@@ -540,6 +749,7 @@ try{
   app=await openElectron({executable:restartExecutable??executable,userData,cwd,env:privateEnv,inspectMain:hostReplayCheck});installAppFocusGuard(app,result);
   if(restartExecutable){const current=await app.invoke('applications.catalog');assert(current.ok);result.upgradePackages.currentCatalog=current.value;}
   if(hostReplayCheck)await installBrokerObserver(app);
+  if(bootstrapReplay)await bootstrapReplay.install(app);
   assert.notEqual(app.processId,oldPid);result.reopenedPid=app.processId;if(packageRepairCheck)await assertPackageRepaired();
   const recovered=await app.invoke('tasks.get',task.id);assert.equal(recovered.nativeSessionId,nativeId);assert(!recovered.ptyId);
   await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true`);
@@ -556,6 +766,7 @@ try{
    result.hostCredentialReplay={oldSha256:sha(oldCredential.token),freshSha256:sha(fresh.token),oldEndpoint:oldCredential.endpoint,newEndpoint:fresh.endpoint,response,oldRunId:original.currentRun.id,newRunId:resumed.currentRun.id};oldCredential=undefined;
    checked('Actual host restart issues a different bridge credential and rejects the captured old credential on its new endpoint');
   }
+  if(bootstrapReplay)await bootstrapReplay.phase(app,task,'resumed');
 
   checked('Actual App host restart and TaskService resume preserve native identity, snapshot and draft; new run establishes real MCP bridge');
   if(bridgeFaultCheck){
@@ -650,6 +861,16 @@ try{
   checked('Actual Codex launch and same-ID resume call the enabled user MCP and return its original marker/hash while preserving user Skill, manifest and base config bytes');
  }
  checked('Base config bytes and original profile business fields retained; native TUI notice-only mutation recorded separately');
+ if(projectAvailabilityCheck){stage='project-availability-ui';await progress();const other=await app.invoke('projects.get',result.sharedProjects.projectB);await checkProjectAvailability({app,result,root,marker,probe:availability,project,other,task,connections:scopeConnections,click,key,poll,checked});}
+ if(legacyRegressionCheck){stage='legacy-affected-regression-ui';await progress();await checkLegacyRegression({app,result,root,cwd,project,task,secondTask,probe:legacy,marker,click,key,poll,checked});}
+ if(maintenanceCancelUi){stage='maintenance-wait-ui';await progress();await checkMaintenanceWaitUi({app,result,root,userData,executable,privateEnv,task,probe:maintenanceProbe,marker,click,key,poll,checked,dark:maintenanceDark});}
+ if(diagnosticClipboardUiCheck){stage='diagnostic-clipboard-ui';await progress();await checkDiagnosticClipboardUi({app,result,root,userData,task,poll,checked});}
+ if(transferUiCheck){stage='transfer-ui';await progress();await checkTransferUi({app,result,root,userData,project,profile,task,poll,checked,formatOnly:transferFormatOnly});}
+ if(nativeExitUiCheck){stage='native-exit-ui';await progress();await checkNativeExitUi({app,result,root,userData,task,project,profile,marker,probe:nativeExitUiProbe,poll,checked});}
+ if(nativeUserOriginCheck){stage='native-user-origin';await progress();await checkNativeUserOrigin({app,result,root,userData,state,project,profile,task,prompt,marker,probe:nativeUserOriginProbe,poll,checked});}
+ if(draftLifecycleCheck){stage='draft-lifecycle-native';await progress();await checkDraftLifecycle({app,result,root,userData,state,project,profile,task,marker,probe:draftLifecycleProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(cacheAgentsCheck){stage='cache-agents-native';await progress();await checkCacheAgents({app,result,root,userData,state,project,profile,task,marker,probe:cacheAgents,poll,checked,waiterCancellation:cacheWaitersCheck,rangeRevocation:cacheRangesCheck,sourceMutation:cacheMutationCheck,sourceFaults:cacheSourceFaultsCheck,diskFull:cacheDiskFullCheck,quotaPressure:cacheQuotaCheck,resources:join(appRoot,'Contents/Resources'),reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(connectionLifecycleCheck){stage='connection-lifecycle-service';await progress();await checkConnectionLifecycle({app,result,root,userData,state,project,profile,task,marker,probe:availability,poll,checked});}
  if(scopeRestartCheck){
   stage='project-scope-restart';await progress();assert(result.sharedProjects&&!selectedSecondProject);assert(result.sharedProjects.bRequests.every(request=>request.managedSkillNames.length===0),'B native catalog must not contain A managed Skills');
   const query=q=>JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),q],{encoding:'utf8'})||'[]');
@@ -663,10 +884,51 @@ try{
   const a=await app.invoke('applications.session',task.id),b=await app.invoke('applications.session',secondTask.id);assert(a.ok&&b.ok);assert.equal(a.value.snapshotHash,result.sharedProjects.aSessionAfterB.snapshotHash);assert.deepEqual(b.value.applications,[]);assert.equal((await app.invoke('applications.drafts',result.sharedProjects.projectB,{limit:50})).code,'SCOPE_DENIED');
   result.scopeRestart.after=truth();result.scopeRestart.databaseAfter=databaseAfter;result.scopeRestart.aSession=a.value;result.scopeRestart.bSession=b.value;await writeFile(join(root,'scope-new-host.log'),app.logs());checked('Actual host normal exit/restart keeps both private connections, A/B project selection, fixed snapshots, original draft and one exact explicit SQLite path');
  }
- if(complexPaths){const locations=readdirSync(root,{recursive:true}).filter(p=>typeof p==='string'&&p.endsWith('smartdd.db')).map(p=>join(root,p));if(scopeRestartCheck)result.scopeRestart.diskDatabases=classifyScopeDatabases(locations);else assert.deepEqual(locations,[join(userData,'smartdd.db')]);assert(Buffer.byteLength(userData)>256);result.pathVerification={userDataBytes:Buffer.byteLength(userData),databaseLocations:scopeRestartCheck?result.scopeRestart.diskDatabases.primary:locations,verifiedBackupLocations:scopeRestartCheck?result.scopeRestart.diskDatabases.backups:[],explicitUserData:true,spacesAndChinese:true};checked('Long explicit userData with Chinese and spaces retains one SmartDD database through actual native handshake and host restart');}
- assert.deepEqual(app.rendererErrors,[]);result.status='passed-partial';
-}catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{result.dom=await app.evaluate('document.body.innerText');if(task?.ptyId)await writeFile(join(root,'terminal-failure.txt'),await app.output(task.ptyId));await app.screenshot(join(root,'failure.png'));}catch{}}
-finally{
- if(app){if(hostReplayCheck)try{await collectAndRestoreBrokerObserver(app);result.brokerObserverFinalCleanup=true;}catch{result.brokerObserverFinalCleanup=false;}if(secondTask?.id)try{result.cleanupSecondTask=await app.invoke('tasks.kill',secondTask.id);}catch(e){result.cleanupSecondTaskError=String(e);}if(task?.id)try{result.cleanupTask=await app.invoke('tasks.kill',task.id);}catch(e){result.cleanupTaskError=String(e);}result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.ownAppCleanupComplete=true;}
+ if(complexPaths){
+  const locations=readdirSync(root,{recursive:true}).filter(p=>typeof p==='string'&&p.endsWith('smartdd.db')).map(p=>join(root,p));
+  // A verified migration backup is retained data, never a fallback business DB.
+  // Apply the same strict receipt/hash classification in every long-U mode.
+  const classified=classifyScopeDatabases(locations);
+  if(scopeRestartCheck)result.scopeRestart.diskDatabases=classified;
+  assert(Buffer.byteLength(userData)>256);
+  result.pathVerification={userDataBytes:Buffer.byteLength(userData),databaseLocations:classified.primary,verifiedBackupLocations:classified.backups,explicitUserData:true,spacesAndChinese:true};
+  checked('Long explicit userData with Chinese and spaces retains one SmartDD database through actual native handshake and host restart');
+ }
+ if(scopeUiCheck){
+  const cRoot=join(userData,'capabilities'),rows=JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),'SELECT app_id,version,package_hash,relative_path FROM capability_packages ORDER BY app_id'],{encoding:'utf8'}));
+  for(const row of rows){assert.equal(row.relative_path,'apps/'+row.app_id+'/'+row.version+'/'+row.package_hash);const manifest=JSON.parse(await readFile(join(cRoot,row.relative_path,'manifest.json'),'utf8'));assert.equal(manifest.appId,row.app_id);assert.equal(manifest.version,row.version);}
+  const a=await app.invoke('tasks.get',task.id),b=await app.invoke('tasks.get',secondTask.id);assert.equal(a.cwd,cwd);assert.equal(b.cwd,join(root,'project-b'));const identities=JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),'SELECT id,state_root FROM tasks'],{encoding:'utf8'}));assert.equal(identities.find(t=>t.id===a.id).state_root,state);assert.equal(identities.find(t=>t.id===b.id).state_root,state);assert.notEqual(a.nativeSessionId,b.nativeSessionId);
+  const sPaths=[a,b].map(t=>join(cRoot,'sessions',t.id,'snapshot.json'));for(const path of sPaths)assert((await readFile(path)).length>0);assert(result.nativeBoundTask.runtimeSnapshot.manifestPath.startsWith(join(cRoot,'runs',project.id,task.id)+'/'));
+  result.scopePaths={U:userData,C:cRoot,H:home,R:join(appRoot,'Contents/Resources'),W:[a.cwd,b.cwd],N:state,S:sPaths,T:result.nativeBoundTask.runtimeSnapshot.manifestPath,packages:rows};await app.screenshot(join(root,'t48-after-restart.png'));checked('T48 design3 path mapping preserves global immutable C packages, separate project W/session S/run T/native N and exact explicit U after normal restart');
+ }
+ if(bootstrapReplay)await bootstrapReplay.finish(app);
+ if(projectResources)await projectResources.run({app,task,result,project,poll,checked});
+ if(zenSwitchCheck){stage='real-zentao-stop-before-switch';await progress();await checkZenTaoSwitch({app,result,root,userData,home,project,profile,task,marker,probe:zenSwitchProbe,poll,checked,gates:zenSwitchGatesCheck,wire:zenSwitchWireCheck,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(projectLifecycleCheck){stage='shared-project-connection-lifecycle';await progress();await checkProjectLifecycle({app,result,root,userData,home,state,project,profile,task,marker,probe:projectLifecycleProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(savedQueryDaysCheck){stage='saved-query-days-restarts';await progress();await checkSavedQueryDays({app,result,root,userData,home,state,project,profile,task,marker,probe:savedQueryDaysProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(accountIsolationCheck){stage='single-account-source-isolation';await progress();await checkAccountIsolation({app,result,root,userData,home,state,project,profile,task,marker,probe:accountIsolationProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(inflightDefaultCheck){stage='inflight-saved-default';await progress();await checkInflightDefault({app,result,root,userData,home,state,project,profile,task,marker,probe:inflightDefaultProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(concurrentDefaultCheck){stage='concurrent-saved-default';await progress();await checkConcurrentDefault({app,result,root,userData,home,state,project,profile,task,marker,probe:concurrentDefaultProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(missingMailDateCheck){stage='missing-mail-date';await progress();await checkMissingMailDate({app,result,root,userData,home,project,task,marker,probe:missingMailDateProbe,poll,checked});}
+ if(mailMimeCheck){stage='mail-mime';await progress();await checkMailMime({app,result,root,userData,home,project,task,marker,probe:mailMimeProbe,poll,checked});}
+ if(mailIncompleteCheck){stage='mail-incomplete';await progress();await checkIncompleteMime({app,result,root,userData,home,project,task,marker,probe:mailIncompleteProbe,poll,checked});}
+ if(earlyResumeStopCheck){stage='early-resume-stop';await progress();await checkEarlyResumeStop({app,result,root,userData,task,project,marker,probe:concurrentProbe,poll,checked});}
+ if(concurrentVersionsCheck){stage='production-concurrent-versions';await progress();await checkConcurrentVersions({app,result,root,userData,home,state,resources:join(appRoot,'Contents/Resources'),task,project,profile,marker,probe:concurrentProbe,poll,checked,projectBCheck:concurrentProjectCheck,trace:concurrentTrace});}
+ if(fourHistoryCheck){stage='four-real-histories';await progress();await checkFourNativeHistories({app,result,root,userData,home,state,resources:join(appRoot,'Contents/Resources'),task,project,profile,marker,probe:historyProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(historyReferenceCheck){stage='native-history-reference-faults';await progress();await checkHistoryReferences({app,result,root,userData,home,state,resources:join(appRoot,'Contents/Resources'),probe:historyProbe,marker,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(retryAfterCheck){stage='retry-after';await progress();await checkRetryAfterNative({app,root,userData,state,task,profile,project,marker,probe:availability,poll,checked,result,ui:retryDiagnosticsUiCheck?{click,key}:null});}
+ if(discoveryOrphanCheck){stage='orphan-discovery';await progress();await checkOrphanDiscovery({root,userData,home,state,cwd,executable,cli,privateEnv,args,task,result,poll,checked,openElectron,getApp:()=>app,setApp:value=>{app=value;},marker,originalProfile:profileText,kind:discoveryOrphanKind});}
+ if(discoveryCrashPhase){stage='publication-crash';await progress();await (publisherGuardCheck?checkPublicationGuard:checkPublicationCrash)({root,userData,home,state,cwd,task,profile,phase:discoveryCrashPhase,executable,privateEnv,marker,poll,checked,openElectron,getApp:()=>app,setApp:value=>{app=value;},result,originalProfile:profileText});}
+ if(nodeModeUnavailableCheck)await checkUnavailableNodeMode({app,task,result,userData,checked,poll,collectObserver:collectAndRestoreBrokerObserver,restoreRuntime:nodeModeRestoreExecutable?async()=>{
+  const restoredRoot=resolve(dirname(nodeModeRestoreExecutable),'../..'),asarSha256=sha(await readFile(join(restoredRoot,'Contents/Resources/app.asar')));assert.equal(asarSha256,nodeModeRestoreAsar);assert.equal(asarSha256,result.asarSha256,'Repair changes only runtime fuse/signature, not business source');
+  await app.close();app=await openElectron({executable:nodeModeRestoreExecutable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);result.nodeModeRestoredHost={pid:app.processId,executable:nodeModeRestoreExecutable,asarSha256};return app;
+ }:undefined});
+ assert.deepEqual(app.rendererErrors,[]);result.status=result.nodeModeUnavailable?.hasUnresolvedWindow?'incomplete-native-lifecycle':'passed-partial';if(result.status==='incomplete-native-lifecycle')process.exitCode=3;
+}catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;if(error.electronStartupProcess)result.electronStartupProcess=error.electronStartupProcess;if(error.electronStartupLogs)result.electronStartupLogs=error.electronStartupLogs;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{result.dom=await app.evaluate('document.body.innerText');if(task?.ptyId)await writeFile(join(root,'terminal-failure.txt'),await app.output(task.ptyId));await app.screenshot(join(root,'failure.png'));}catch{}}
+finally{if(cancelFreezeUi&&app){try{result.cancelUiGuard=await app.mainEvaluate('({calls:globalThis.__ouCancel?.calls,records:globalThis.__ouCancel?.records})');assert.deepEqual(result.cancelUiGuard.calls,[]);await app.mainEvaluate('globalThis.__ouCancel.restore();true');}catch(error){result.cancelUiGuardError=String(error);result.status='failed';process.exitCode=1;}}
+ if(app&&historyCaptureCheck)try{result.historyCaptureFinalCleanup=await restoreHistoryCapture(app);}catch(error){result.historyCaptureCleanupError=String(error);}
+ if(app){if(bootstrapReplay)try{await bootstrapReplay.restore(app);result.bootstrapObserverFinalCleanup=true;}catch{result.bootstrapObserverFinalCleanup=false;}if(hostReplayCheck||nodeModeUnavailableCheck)try{await collectAndRestoreBrokerObserver(app);result.brokerObserverFinalCleanup=true;}catch{result.brokerObserverFinalCleanup=false;}if(secondTask?.id)try{result.cleanupSecondTask=await app.invoke('tasks.kill',secondTask.id);}catch(e){result.cleanupSecondTaskError=String(e);}if(task?.id)try{result.cleanupTask=await app.invoke('tasks.kill',task.id);}catch(e){result.cleanupTaskError=String(e);}result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.ownAppCleanupComplete=true;}
+ if(cacheDiskFullCheck)try{await finishCacheSpaceVolume(result);}catch(error){result.cacheVolumeCleanupError=String(error);result.status='failed';process.exitCode=1;}
+ if(projectResources)await projectResources.close();
  for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');await writeFile('/private/tmp/willyou-m10-native-service-latest-result.txt',join(root,'result.json')+'\n');console.log(JSON.stringify({status:result.status,stage,checks:result.checks.length,error:result.error,result:join(root,'result.json')}));
 }

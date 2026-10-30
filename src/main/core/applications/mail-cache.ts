@@ -8,6 +8,9 @@ import { boundedJson } from '@shared/application-bridge';
 import { canonicalJson,digest } from './manifest';
 import type { ResourceStore } from './resource-store';
 import type { ProcessIdentity,ProcessIdentityReader } from './process-identity';
+import type {DatabaseAccessLease} from '../../db/database-access-gate';
+import {acquireMailCacheAccess,mailCacheControlUsage,MAIL_CACHE_CONTROL_RESERVE} from './mail-cache-access';
+import {hasPendingMailCacheRepair,mailCacheRetention,rebuildMailCache,type MailCacheRecoveryOptions} from './mail-cache-recovery';
 const HASH=/^[a-f0-9]{64}$/,UUID=/^[a-f0-9-]{36}$/;
 const DAY=24*60*60*1000,PAGE=4096;
 export const MAIL_CACHE_LIMIT=500000000;
@@ -21,7 +24,7 @@ export interface MailCacheOptions {
   maxBytes?:number;indexBytes?:number;ttlMs?:number;objectMaxBytes?:number;now?:()=>number;
   checkpoint?:(phase:'reserved'|'written'|'renamed'|'published'|'deleting',id:string)=>void|Promise<void>;
 }
-export interface MailCacheUsage {limit:number;indexLimit:number;metadataReserved:number;chargedObjectBytes:number;pendingWriteBytes:number;readyObjects:number;activeLeases:number;actual:{index:number;auxiliary:number;objects:number;staging:number;other:number;total:number};unrecognized:string[];overBudget:boolean;availableForObjects:number}
+export interface MailCacheUsage {limit:number;indexLimit:number;metadataReserved:number;chargedObjectBytes:number;pendingWriteBytes:number;readyObjects:number;activeLeases:number;recoveryRetainedBytes?:number;actual:{index:number;auxiliary:number;objects:number;staging:number;other:number;total:number};unrecognized:string[];overBudget:boolean;availableForObjects:number}
 const SQL=`
 CREATE TABLE IF NOT EXISTS cache_state(singleton INTEGER PRIMARY KEY CHECK(singleton=1),store_id TEXT NOT NULL,max_bytes INTEGER NOT NULL,index_bytes INTEGER NOT NULL,ttl_ms INTEGER NOT NULL,last_clock_ms INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS cache_sessions(session_id TEXT PRIMARY KEY,pid INTEGER NOT NULL,started_at TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('open','closed')));
@@ -49,7 +52,7 @@ export class MailCache {
   private readonly activeWrites=new Set<string>();
   private readonly puts=new Map<string,{work:Promise<MailCacheRef>;abort:AbortController;waiters:number}>();
   private closed=false;private closing?:Promise<void>;private foreign:string[]=[];
-  private constructor(private readonly store:ResourceStore,private readonly processes:ProcessIdentityReader,private readonly options:MailCacheOptions){
+  private constructor(private readonly store:ResourceStore,private readonly processes:ProcessIdentityReader,private readonly options:MailCacheOptions,private readonly access:DatabaseAccessLease){
     this.maxBytes=options.maxBytes??MAIL_CACHE_LIMIT;this.indexBytes=options.indexBytes??16*1024*1024;this.metadataEnvelope=4*this.indexBytes;this.ttlMs=options.ttlMs??MAIL_CACHE_TTL;this.objectMaxBytes=options.objectMaxBytes??32*1024*1024;
     if(!Number.isSafeInteger(this.indexBytes)||this.indexBytes<128*1024||this.indexBytes%PAGE||!Number.isSafeInteger(this.maxBytes)||this.maxBytes<=this.metadataEnvelope||!Number.isSafeInteger(this.ttlMs)||this.ttlMs<1||!Number.isSafeInteger(this.objectMaxBytes)||this.objectMaxBytes<1)throw new ApplicationError('INVALID_INPUT','缓存预算参数无效');
     const identity=processes.read(process.pid);if(!identity||identity.pid!==process.pid)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','无法核验缓存宿主进程身份');this.host=Object.freeze({...identity});
@@ -62,27 +65,31 @@ export class MailCache {
     const ms=lstatSync(marker);if(!ms.isFile()||ms.isSymbolicLink()||ms.nlink!==1||ms.size>4096)throw new ApplicationError('OWNERSHIP_CONFLICT','邮件缓存标记无效');
     const owner=JSON.parse(readFileSync(marker,'utf8'));if(owner.schema!==1||owner.storeId!==store.storeId)throw new ApplicationError('OWNERSHIP_CONFLICT','邮件缓存属于其他存储或版本');
     this.directory(join(this.root,'objects'));this.directory(join(this.root,'staging'));
-    const index=join(this.root,'index.sqlite');for(const file of ['index.sqlite','index.sqlite-journal'])if(existsSync(join(this.root,file))){const st=lstatSync(join(this.root,file));if(!st.isFile()||st.isSymbolicLink()||st.nlink!==1||st.size>(file==='index.sqlite'?this.indexBytes:this.metadataEnvelope-this.indexBytes))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','缓存索引大小或归属异常');}
+    const index=join(this.root,'index.sqlite');for(const file of ['index.sqlite','index.sqlite-journal'])if(existsSync(join(this.root,file))){const st=lstatSync(join(this.root,file));if(!st.isFile()||st.isSymbolicLink()||st.nlink!==1||st.size>(file==='index.sqlite'?this.indexBytes:this.metadataEnvelope-this.indexBytes-MAIL_CACHE_CONTROL_RESERVE))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','缓存索引大小或归属异常');}
     if(existsSync(index+'-wal')||existsSync(index+'-shm'))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','缓存索引存在非本版本的辅助文件，保留现场');
-    this.db=new Database(index,{timeout:50});
+    const retention=mailCacheRetention(store,this.root);this.db=new Database(index,{timeout:50});
     try{
       this.db.pragma('foreign_keys=ON');this.db.pragma('busy_timeout=50');
       if(this.db.pragma('journal_mode=DELETE',{simple:true})!=='delete')throw new Error('journal');
       this.db.pragma('synchronous=FULL');this.db.pragma('fullfsync=ON');this.db.pragma('locking_mode=NORMAL');this.db.pragma('temp_store=MEMORY');this.db.pragma('cache_spill=OFF');this.db.pragma('journal_size_limit=0');this.db.pragma('mmap_size=0');
-      if(this.db.pragma('page_size',{simple:true})!==PAGE||this.db.pragma('temp_store',{simple:true})!==2||this.db.pragma('cache_spill',{simple:true})!==0||Number(this.db.pragma('user_version',{simple:true}))>1)throw new Error('cache format');
+      const format=Number(this.db.pragma('user_version',{simple:true}));
+      if(this.db.pragma('page_size',{simple:true})!==PAGE||this.db.pragma('temp_store',{simple:true})!==2||this.db.pragma('cache_spill',{simple:true})!==0||format>2||format===2&&!retention.authorizedV2)throw new Error('cache format');
       if(this.db.pragma('max_page_count='+this.indexBytes/PAGE,{simple:true})!==this.indexBytes/PAGE)throw new Error('page ceiling');
       const compiled=this.db.pragma('compile_options') as {compile_options:string}[];if(compiled.some(c=>c.compile_options==='TEMP_STORE=0'))throw new Error('disk temporary storage');
       this.db.transaction(()=>{
         this.db.exec(SQL);const state=this.db.prepare('SELECT * FROM cache_state WHERE singleton=1').get() as {store_id:string;max_bytes:number;index_bytes:number;ttl_ms:number}|undefined;
         if(state&&(state.store_id!==store.storeId||state.max_bytes!==this.maxBytes||state.index_bytes!==this.indexBytes||state.ttl_ms!==this.ttlMs))throw new ApplicationError('CONFIG_INCOMPATIBLE','已有缓存的归属或预算与当前引擎不同');
         if(!state)this.db.prepare('INSERT INTO cache_state VALUES(1,?,?,?,?,?)').run(store.storeId,this.maxBytes,this.indexBytes,this.ttlMs,this.now());
-        this.db.pragma('user_version=1');this.db.prepare("INSERT INTO cache_sessions VALUES(?,?,?,'open')").run(this.sessionId,this.host.pid,this.host.startedAt);
+        this.db.pragma('user_version='+Math.max(1,format));this.db.prepare("INSERT INTO cache_sessions VALUES(?,?,?,'open')").run(this.sessionId,this.host.pid,this.host.startedAt);
       }).immediate();
     }catch(error){this.db.close();throw safeError(error);}
   }
   static async open(store:ResourceStore,processes:ProcessIdentityReader,options:MailCacheOptions={}):Promise<MailCache>{
-    let cache:MailCache|undefined;try{cache=new MailCache(store,processes,options);await cache.recover();await cache.maintain();return cache;}catch(error){await cache?.dispose();throw safeError(error);}
+    const access=await acquireMailCacheAccess(store,'shared');let cache:MailCache|undefined;
+    try{if(hasPendingMailCacheRepair(store))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','缓存修复尚未完成，请继续原清理缓存操作');cache=new MailCache(store,processes,options,access);await cache.recover();await cache.maintain();return cache;}
+    catch(error){try{await cache?.dispose();}finally{access.release();}throw safeError(error);}
   }
+  static rebuild(store:ResourceStore,options:MailCacheRecoveryOptions):Promise<void>{return rebuildMailCache(store,options,{maxBytes:MAIL_CACHE_LIMIT,indexBytes:16*1024*1024});}
   private now(){return this.options.now?.()??Date.now();}
   private clock():number{const old=this.db.prepare('SELECT last_clock_ms t FROM cache_state WHERE singleton=1').get() as {t:number},value=Math.max(old.t,this.now());if(value!==old.t)this.db.prepare('UPDATE cache_state SET last_clock_ms=? WHERE singleton=1').run(value);return value;}
   private directory(path:string){try{mkdirSync(path,{mode:0o700});}catch(error){if((error as NodeJS.ErrnoException).code!=='EEXIST')throw error;}const st=lstatSync(path);if(!st.isDirectory()||st.isSymbolicLink()||realpathSync(path)!==path)throw new ApplicationError('OWNERSHIP_CONFLICT','缓存目录不是独立受管目录');}
@@ -101,7 +108,7 @@ export class MailCache {
   private sameFile(path:string,row:{device:string|null;inode:string|null},size?:number):boolean{
     try{const st=lstatSync(path,{bigint:true});return st.isFile()&&!st.isSymbolicLink()&&st.nlink===1n&&String(st.dev)===row.device&&String(st.ino)===row.inode&&(size===undefined||st.size===BigInt(size));}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return false;throw error;}
   }
-  private objectBudget(){return(this.db.prepare('SELECT COALESCE(SUM(byte_size),0) n FROM cache_objects').get() as {n:number}).n;}
+  private objectBudget(){return(this.db.prepare('SELECT COALESCE(SUM(byte_size),0) n FROM cache_objects').get() as {n:number}).n+mailCacheRetention(this.store,this.root).bytes;}
   private growth(extra=1024){const used=Number(this.db.pragma('page_count',{simple:true}))-Number(this.db.pragma('freelist_count',{simple:true})),max=this.indexBytes/PAGE,reserve=Math.min(256,Math.floor(max/8));if(used+Math.ceil(extra/PAGE)*2+4>max-reserve)throw new ApplicationError('RESOURCE_BUSY','缓存索引接近预算，需回收后继续');}
   private lease(row:ObjectRow,touch=true):string{
     this.validate(row);if(row.state!=='ready')throw new ApplicationError('SOURCE_UNAVAILABLE','缓存尚未完成或已回收');
@@ -346,14 +353,15 @@ export class MailCache {
       }
       const after=lstatSync(folder,{bigint:true});if(after.dev!==parent.dev||after.ino!==parent.ino||!after.isDirectory()||after.isSymbolicLink())throw new ApplicationError('OWNERSHIP_CONFLICT','磁盘统计期间缓存目录已替换');
     };
-    scan(this.root,'',0);const chargedObjectBytes=data.rows.reduce((n,r)=>n+r.byte_size,0),pendingWriteBytes=data.rows.filter(r=>r.state==='writing').reduce((n,r)=>n+r.byte_size,0);
-    const overBudget=actual.index+actual.auxiliary+actual.other>this.metadataEnvelope||actual.total>this.maxBytes;
+    scan(this.root,'',0);const control=mailCacheControlUsage(this.access),retention=mailCacheRetention(this.store,this.root);actual.auxiliary+=control.bytes+retention.bytes;actual.total+=control.bytes+retention.bytes;for(const name of control.unrecognized)unrecognized.add('@control/'+name);
+    const chargedObjectBytes=data.rows.reduce((n,r)=>n+r.byte_size,0),pendingWriteBytes=data.rows.filter(r=>r.state==='writing').reduce((n,r)=>n+r.byte_size,0);
+    const overBudget=actual.index+actual.auxiliary-retention.bytes+actual.other>this.metadataEnvelope||actual.total>this.maxBytes;
     this.foreign=[...unrecognized];
     if(overBudget&&!this.foreign.length)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','实际缓存文件超出当前预算，停止扩张并保留现场');
-    return{limit:this.maxBytes,indexLimit:this.indexBytes,metadataReserved:this.metadataEnvelope,chargedObjectBytes,pendingWriteBytes,readyObjects:data.rows.filter(r=>r.state==='ready').length,activeLeases:data.leases,actual,unrecognized:this.foreign,overBudget,availableForObjects:this.foreign.length||overBudget?0:Math.max(0,this.maxBytes-this.metadataEnvelope-chargedObjectBytes)};
+    return{limit:this.maxBytes,indexLimit:this.indexBytes,metadataReserved:this.metadataEnvelope,chargedObjectBytes,pendingWriteBytes,readyObjects:data.rows.filter(r=>r.state==='ready').length,activeLeases:data.leases,recoveryRetainedBytes:retention.bytes,actual,unrecognized:this.foreign,overBudget,availableForObjects:this.foreign.length||overBudget?0:Math.max(0,this.maxBytes-this.metadataEnvelope-chargedObjectBytes-retention.bytes)};
   }
   dispose():Promise<void>{
     if(this.closing)return this.closing;this.closed=true;this.abort.abort();
-    this.closing=(async()=>{await Promise.allSettled([...this.pending]);try{await this.tx(()=>this.db.prepare("UPDATE cache_sessions SET state='closed' WHERE session_id=?").run(this.sessionId));}finally{this.db.close();}})();return this.closing;
+    this.closing=(async()=>{await Promise.allSettled([...this.pending]);try{await this.tx(()=>this.db.prepare("UPDATE cache_sessions SET state='closed' WHERE session_id=?").run(this.sessionId));}finally{try{this.db.close();}finally{this.access.release();}}})();return this.closing;
   }
 }

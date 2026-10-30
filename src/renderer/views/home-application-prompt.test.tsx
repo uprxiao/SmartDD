@@ -13,9 +13,19 @@ vi.mock('./voice-controls',()=>({VoiceButton:()=>null}));
 vi.mock('./capabilities',()=>({CapabilityLaunchPreview:()=>null}));
 vi.mock('./projects/project-dialogs',()=>({ProjectDialog:()=>null}));
 vi.mock('@renderer/lib/profile-health',()=>({ProfileHealthMark:()=>null}));
-beforeEach(()=>{vi.clearAllMocks();navigation.homePreset=null;navigation.currentProjectId=null;navigation.currentTaskId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});});
+beforeEach(()=>{vi.clearAllMocks();navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.currentProjectId=null;navigation.currentTaskId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});});
 afterEach(()=>cleanup());
 describe('application example handoff to the real home composer',()=>{
+ it('preserves unsent input across actual composer unmount and appends a later summary once',async()=>{
+  const view=render(<HomeView/>);const input=await screen.findByTestId('home-input');fireEvent.change(input,{target:{value:'unsubmitted original text'}});view.unmount();
+  act(()=>navigation.prepareApplicationTask('p1','selected summary\n  exact second line'));render(<HomeView/>);const restored=await screen.findByTestId('home-input');
+  await waitFor(()=>expect(restored).toHaveProperty('value','unsubmitted original text\nselected summary\n  exact second line'));expect(m.create).not.toHaveBeenCalled();expect(m.update).not.toHaveBeenCalled();
+ });
+ it('keeps separate projects unsent input isolated across summary navigation and clears a deleted projects draft',async()=>{
+  m.projects.push({id:'p2',name:'Second project'});const view=render(<HomeView/>);const input=await screen.findByTestId('home-input');fireEvent.change(input,{target:{value:'project A private unsent'}});view.unmount();
+  act(()=>navigation.prepareApplicationTask('p2','project B selected summary'));const second=render(<HomeView/>);const b=await screen.findByTestId('home-input');await waitFor(()=>expect(b).toHaveProperty('value','project B selected summary'));second.unmount();
+  act(()=>navigation.newTask('p1'));render(<HomeView/>);await waitFor(()=>expect(screen.getByTestId('home-input')).toHaveProperty('value','project A private unsent'));expect(navigation.homeInput('p2')).toBe('project B selected summary');act(()=>navigation.closeProject('p2'));expect(navigation.homeInput('p2')).toBe('');expect(m.create).not.toHaveBeenCalled();
+ });
  it('appends an explicit example to existing editable input,focuses it,and starts no task',async()=>{render(<HomeView/>);const input=await screen.findByTestId('home-input');fireEvent.change(input,{target:{value:'existing-prefix'}});act(()=>navigation.prepareApplicationTask('p1','approved example'));await waitFor(()=>expect(input).toHaveProperty('value','existing-prefix\napproved example'));expect(document.activeElement).toBe(input);expect(navigation.homePreset?.applicationPrompt).toBeUndefined();expect(m.create).not.toHaveBeenCalled();expect(m.update).not.toHaveBeenCalled();});
  it('consumes one handoff once across rerenders while preserving later user edits',async()=>{act(()=>navigation.prepareApplicationTask('p1','first example'));const view=render(<HomeView/>);const input=await screen.findByTestId('home-input');await waitFor(()=>expect(input).toHaveProperty('value','first example'));fireEvent.change(input,{target:{value:'first example plus user words'}});view.rerender(<HomeView/>);expect(input).toHaveProperty('value','first example plus user words');expect(m.create).not.toHaveBeenCalled();});
  it('does not apply a missing project handoff to the existing project or launch a task',async()=>{act(()=>navigation.prepareApplicationTask('deleted-project','foreign example'));render(<HomeView/>);const input=await screen.findByTestId('home-input');expect(input).toHaveProperty('value','');expect(m.create).not.toHaveBeenCalled();expect(navigation.homePreset?.applicationPrompt).toBe('foreign example');});

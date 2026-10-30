@@ -8,6 +8,7 @@ import {inspectLegacySessionFiles} from './legacy-session-files';
 import {retainedLegacySource} from './legacy-session-source';
 import {assertLegacySessionSource} from './legacy-session-source';
 import type {ResourceStore} from './resource-store';
+import {projectCapabilityEnabled,type ProjectCapabilitySetting} from '../projects/project-capability-setting';
 import {canonicalJson,digest} from './manifest';
 import {verifyOwnedBundle} from './owned-bundle';
 import {readLegacyOwnedTree} from './legacy-resource-adopter';
@@ -60,7 +61,8 @@ export function legacyPlannerInput(store:ResourceStore,input:LegacyAgentLoadRequ
    for(const version of versions){if(!/^[a-z][a-z0-9-]{0,63}$/.test(version.skillId)||!/^[a-f0-9]{64}$/.test(version.hash)||version.id!==version.skillId+':'+version.hash)problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力版本记录无效');const dir=join(home,'.agents/skills',`smartdd-${version.skillId}-${version.hash.slice(0,16)}`);try{lstatSync(dir);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')continue;throw error;}inside(home,dir);const originalRoot=join(store.root,'packages',version.skillId,version.hash);inside(store.root,originalRoot);const original=readLegacyOwnedTree(originalRoot,version.hash),projection=readLegacyOwnedTree(dir,version.hash);if(canonicalJson({...original})!==canonicalJson({...projection}))problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力完整投影不符');const candidate={path:join(dir,'SKILL.md'),nativeName:nativeName(original),sourceHash:version.hash},known=managedSkills.find(s=>s.path===candidate.path);if(known&&canonicalJson(known)!==canonicalJson(candidate))problem('RESOURCE_RECOVERY_REQUIRED','原H目录已有不同来源');if(!known)managedSkills.push(candidate);}
    if(managedSkills.length>4096||new Set(managedSkills.map(s=>s.path)).size!==managedSkills.length||selectedPaths.some(p=>!managedSkills.some(s=>s.path===p)))problem('RESOURCE_RECOVERY_REQUIRED','旧选择未在完整管理目录中找到');
   }
-  const contextEnabled=(store.sqlite.prepare('SELECT enabled FROM project_capabilities WHERE id=?').get(input.projectId+':smartdd-project-context') as {enabled:number}|undefined)?.enabled!==0;
+  const settings=store.sqlite.prepare('SELECT id,project_id AS projectId,capability_id AS capabilityId,enabled FROM project_capabilities WHERE project_id=?').all(input.projectId) as ProjectCapabilitySetting[];
+  const contextEnabled=projectCapabilityEnabled(settings,input.projectId,'smartdd-project-context');
   const mcp:LegacyPlannerInput['mcp']=contextEnabled?evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,command:'python3',args:[join(evidence.runtimePath,'context_mcp.py'),join(store.root,'runs',input.projectId,input.taskId,input.runId,'context.json')],env:{}})):[];
   const ownPaths=new Set([...managedSkills.map(s=>s.path),...selectedPaths]),selectedNames=new Set(selected.map(s=>s.nativeName));
   for(const item of input.inventory){const own=item.kind==='skill'&&ownPaths.has(item.path)||item.kind==='plugin'&&item.path===evidence.pluginRoot&&item.name===evidence.pluginName;if(own)continue;if(item.kind==='plugin'&&evidence.pluginRoot&&item.name===evidence.pluginName||item.kind==='skill'&&([...selectedNames].some(name=>item.name===name||item.name===evidence.pluginName+':'+name))||item.kind==='mcp'&&mcp.some(m=>m.serverName===item.name))problem('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原M4名称冲突，保留原配置');}

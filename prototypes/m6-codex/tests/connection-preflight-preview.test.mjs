@@ -70,3 +70,7 @@ test('a held reply delivered after form cancellation or a newer test is observed
  checks.request(()=>{if(!live||second!==generation)return false;current='new ready';return true;},{hold:true});assert.equal(checks.snapshot().started,2);checks.release();assert.equal(current,'untested');checks.release();assert.equal(current,'new ready');
  checks.request(()=>{if(!live)return false;current='closed form ready';return true;},{hold:true});live=false;checks.release();assert.equal(current,'new ready');assert.deepEqual(checks.snapshot(),{started:3,pending:0,held:0,completed:3,ignored:2});assert.equal(observations.length,6);checks.dispose();
 });
+
+test('range and sender-address edits invalidate the tested candidate and survive a new test',()=>{
+ const {state}=setup();for(const draft of [{...state.connections[1],queryDays:30},{id:'sender-fields',app:'mail',kind:'smtp',name:'Sender',host:'smtp.example.invalid',port:465,account:'service-login',fromAddress:'old@example.invalid',auth:'password'}]){const plan=preparePreviewConnection(state,[],draft,{now:100});const field=draft.kind==='local'?'queryDays':'fromAddress',value=draft.kind==='local'?7:'new@example.invalid',changed={...draft,[field]:value};assert.equal(commitPreviewConnection(state,[],changed,true,plan,{now:200}).code,'CANDIDATE_CHANGED');const next=preparePreviewConnection(state,[],changed,{now:200}),saved=commitPreviewConnection(state,[],changed,true,next,{now:300});assert.equal(saved.ok,true);assert.equal(saved.connection[field],value);}
+});

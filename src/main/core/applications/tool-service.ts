@@ -7,6 +7,7 @@ import { AjvJsonSchemaValidator } from '@modelcontextprotocol/server/validators/
 import type { JsonSchemaType } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { ApplicationError, type ApplicationManifest, type InstalledApplicationPackage } from '@shared/applications';
+import {retryAfterWait} from './retry-after';
 import { BRIDGE_LIMITS, boundedJson, bridgeCallSchema, type BridgeToolCall, type BridgeFailure, type BridgeResponse, type BridgeTool } from '@shared/application-bridge';
 import { canonicalJson, digest } from './manifest';
 import { verifyPackageTree } from './package-files';
@@ -19,7 +20,7 @@ const interruptionCode=(signal:AbortSignal,timeout:AbortSignal):'TIMEOUT'|'CANCE
 export interface ApplicationOperationContext { operationId: string;requestId: string;attempt: number;deadline: number;signal: AbortSignal;packageHash: string;appId: string;toolName: string;contractMajor: number;connectionId: string | null }
 export interface HostToolOperation {
   semantics: 'read' | 'write';
-  /** Only a trusted read executor may request transport retries; annotations alone never authorize them. */
+  /** Only a trusted read executor may request transient transport/source retries; annotations alone never authorize them. */
   retry: 'safe-read' | 'never';timeoutMs?: number;
   authorize(context: RunContext,connectionId: string | null): void;
   /** Revalidate the original operation target before returning a cached receipt. */
@@ -33,7 +34,7 @@ interface InvocationRow { operation_id: string;request_hash: string;state: 'runn
 interface SelectedTool { application: InstalledApplicationPackage;declaration: ApplicationManifest['tools'][number];tool: BridgeTool }
 const failure = (error: unknown,attempts = 0,effect: BridgeFailure['effectState'] = 'not-started',exhausted = false): BridgeFailure => {
   const code = error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE';
-  return { code,message: error instanceof ApplicationError ? error.message : '应用能力本次调用未完成',layer: ['SCOPE_DENIED','AUTH_REQUIRED','AUTH_FAILED','AUTHORIZATION_REQUIRED'].includes(code) ? 'auth' : ['CONFIG_INCOMPATIBLE','HOST_INCOMPATIBLE','INVALID_INPUT','INVALID_PACKAGE','TOO_LARGE'].includes(code) ? 'config' : 'provider',retryable: effect !== 'unknown' && ['TRANSIENT_FAILURE','TIMEOUT'].includes(code),attemptCount: attempts,retryExhausted: exhausted,effectState: effect,nextAction: effect === 'unknown' ? '查看已有业务执行记录并核实结果，不要自动重发' : '核对本次错误后重新明确操作' };
+  return { code,message: error instanceof ApplicationError ? error.message : '应用能力本次调用未完成',layer: ['SCOPE_DENIED','AUTH_REQUIRED','AUTH_FAILED','AUTHORIZATION_REQUIRED'].includes(code) ? 'auth' : ['CONFIG_INCOMPATIBLE','HOST_INCOMPATIBLE','INVALID_INPUT','INVALID_PACKAGE','TOO_LARGE'].includes(code) ? 'config' : 'provider',retryable: effect !== 'unknown' && (['TRANSIENT_FAILURE','TIMEOUT'].includes(code) || (code === 'RESOURCE_BUSY' && effect === 'read-only')),attemptCount: attempts,retryExhausted: exhausted,effectState: effect,nextAction: effect === 'unknown' ? '查看已有业务执行记录并核实结果，不要自动重发' : exhausted ? '本次重试已结束，请稍后明确重试' : '核对本次错误后重新明确操作' };
 };
 /** Fixed package contracts + run-derived context. No model argument ever selects project or package. */
 export class ApplicationToolService {
@@ -159,10 +160,11 @@ export class ApplicationToolService {
             effect = handler.semantics === 'read' ? 'read-only' : 'completed'; await this.end(operationId!,'succeeded',attempts,effect,null);
             return { schema: 1 as const,id: requestId,status: 'ok' as const,value,operationId,effectState: effect };
           } catch (error) {
-            const retryable = error instanceof ApplicationError && ['TRANSIENT_FAILURE','TIMEOUT'].includes(error.code);
+            const retryable = error instanceof ApplicationError && ['TRANSIENT_FAILURE','TIMEOUT','RESOURCE_BUSY'].includes(error.code);
             if (!canRetry || !retryable || signal.aborted) throw error;
             if (attempts >= 3) { exhausted = true; throw error; }
-            const wait = Math.min(5000,Math.max(0,this.options.retryDelays?.[attempts - 1] ?? ([1000,3000][attempts - 1] + Math.floor(Math.random() * 100))));
+            const backoff = Math.min(5000,Math.max(0,this.options.retryDelays?.[attempts - 1] ?? ([1000,3000][attempts - 1] + Math.floor(Math.random() * 100))));
+            const wait = Math.max(backoff,retryAfterWait(error));
             if (this.clock() + wait >= deadline) { exhausted = true; throw error; }
             try { await delay(wait,undefined,{ signal }); } catch { throw new ApplicationError(interruptionCode(signal,timeout),'重试等待已取消'); }
           }

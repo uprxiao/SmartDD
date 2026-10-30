@@ -13,7 +13,7 @@ import { PrivateApplicationBroker } from '../private-broker';
 import { ApplicationBridgeClient, consumeBridgeBootstrap } from '../bridge-client';
 import { FixtureProcessReader, runFixture } from './run-fixture';
 let f: Awaited<ReturnType<typeof runFixture>>, broker: PrivateApplicationBroker, run: Awaited<ReturnType<typeof f.create>>, time: number, count: number, onInvoke: (() => void) | undefined;
-let ticketTtlMs:number|undefined;
+let ticketTtlMs:number|undefined, tools:ApplicationToolService;
 let disconnected: ReturnType<typeof vi.fn<(runId:string,bridgeId:string)=>void>>;
 const peers = new Set<Socket>();
 async function peer(endpoint: string) {
@@ -27,7 +27,7 @@ const exchange = (data: BridgeBootstrap) => ({ schema: 1,method: 'exchange',runI
 const valueToken = (response: BridgeResponse) => { expect(response.status).toBe('ok'); return (response as Extract<BridgeResponse,{ status: 'ok' }>).value as { token: string;hostGeneration: string }; };
 describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials, one-use files and request boundaries', () => {
   beforeEach(async () => { time = Date.now(); count = 0; ticketTtlMs=undefined; disconnected=vi.fn(); onInvoke = undefined; const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001);
-    const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time, disconnected, get ticketTtlMs(){return ticketTtlMs;} }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
+    tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (ctx,args,op) => { count++; onInvoke?.(); return { value: String(args.value),packageHash: op.packageHash,projectId: ctx.run.projectId,taskId: ctx.run.taskId,operationId: op.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools,{ now: () => time, disconnected, get ticketTtlMs(){return ticketTtlMs;} }); await broker.start(); f.setRevoke(() => broker.revokeRun(run.runId)); });
   afterEach(async () => { for (const socket of peers) socket.destroy(); await broker.close(); f.cleanup(); });
   it('persists redacted broker denials with only server-owned scope and a response audit reference',async()=>{
     const prepared=await ticket(),owned=await peer(broker.endpoint),token=valueToken(await owned.send(exchange(prepared.data))).token;
@@ -145,14 +145,20 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
   it('audits an in-flight input flood and preserves a separate authenticated peer',async()=>{
     const rejected=await peer(broker.endpoint),rejectedToken=valueToken(await rejected.send(exchange((await ticket()).data))).token;
     const healthy=await peer(broker.endpoint),token=valueToken(await healthy.send(exchange((await ticket()).data))).token;
-    // One transport write makes all frames arrive before asynchronous responses settle.
+    // A stream may split one write across multiple data events. Hold list replies
+    // so the test really has 32 requests in flight when the 33rd frame arrives.
+    let release!:()=>void;const held=new Promise<void>(resolve=>{release=resolve;}),list=tools.list.bind(tools);
+    const replies=vi.spyOn(tools,'list').mockImplementation(async runId=>{const value=await list(runId);await held;return value;});
+    try{
     rejected.socket.write(Array.from({length:33},()=>JSON.stringify({schema:1,id:randomUUID(),method:'tools/list',token:rejectedToken})+'\n').join(''));
     await vi.waitFor(()=>expect(rejected.socket.destroyed).toBe(true),{timeout:2000});
     const rows=f.sqlite.prepare("SELECT * FROM capability_broker_denials WHERE error_code='RESOURCE_BUSY'").all();
     expect(rows).toHaveLength(1);expect(rows[0]).toMatchObject({run_id:run.runId,method:'unknown',error_code:'RESOURCE_BUSY'});
-    expect(JSON.stringify(rows)).not.toContain(rejectedToken);expect(count).toBe(0);
+    expect(JSON.stringify(rows)).not.toContain(rejectedToken);expect(count).toBe(0);expect(replies).toHaveBeenCalledTimes(32);
+    replies.mockRestore();release();
     expect(await healthy.send({schema:1,method:'tools/list',token})).toMatchObject({status:'ok',value:{tools:expect.any(Array)}});
     expect(f.runs.get(run.runId).state).toBe('active');
+    }finally{release();replies.mockRestore();}
   });
   it.each([false,true])('bounds an oversized request with newline=%s and keeps another authenticated socket usable',async newline=>{
     const rejected=await peer(broker.endpoint),rejectedToken=valueToken(await rejected.send(exchange((await ticket()).data))).token;

@@ -28,6 +28,19 @@ describe('bounded host-observed native user input origin; no send grant',()=>{
  it('refuses cursor/history/unknown control reconstruction and recovers only after clear or submission',()=>{
   input('send original\x1b[A\r');expect(match('send original')).toBeNull();input('send after reset\r');expect(match('send after reset')).not.toBeNull();input('hidden\tchange\x15known exact\r');expect(match('known exact')).not.toBeNull();input('canceled\x03replacement\r');expect(match('canceled')).toBeNull();expect(match('replacement')).not.toBeNull();
  });
+ it.each(['whole','characters','irregular'])('RE keeps terminal replies/focus/SGR mouse out of exact user text, including %s chunks',chunks=>{
+  const reports='\x1b[1;1R\x1b]10;rgb:f1f1/f1f1/f1f1'+String.fromCharCode(27,92)+'\x1b]11;rgb:2020/2020/2020\x07\x1b[?1;2c\x1b[O\x1b[<35;69;27M\x1b[I\x1b[<0;69;27M\x1b[<0;69;27m';
+  const text='RE exact user message 中文',stream=reports+text.slice(0,8)+'\x1b[I'+text.slice(8)+'\r';
+  if(chunks==='whole')input(stream);else if(chunks==='characters')for(const character of stream)input(character);else for(let i=0;i<stream.length;){const size=1+i%7;input(stream.slice(i,i+size));i+=size;}
+  const receipt=match(text)!;expect(receipt).not.toBeNull();expect(receipt.transport).toBe('terminal');expect(receipt.inputSequence).toBe(1);expect(match(reports+text)).toBeNull();
+ });
+ it('RE never manufactures a new user receipt or latest turn from terminal reports alone',()=>{
+  input('real submitted text\r');const receipt=match('real submitted text')!;input('\x1b[2;4R\x1b[>0;276;0c\x1b]12;rgb:ffff/ffff/ffff\x07\x1b[I\x1b[<64;1;1M\r');expect(match('real submitted text')).toBe(receipt);expect(ledger.isLatest(receipt)).toBe(true);expect(match('rgb:ffff/ffff/ffff')).toBeNull();
+ });
+ it.each(['\x1b[A','\x1b[1;5D','\x1b]52;c;Zm9yZ2Vk\x07','\x1b]10;rgb:invalid\x07','\x1b['+'1'.repeat(200)+'R'])('RE keeps unknown/editing/unsupported control input unprovable: %j',control=>{
+  input(control+'looks approved\r');expect(match('looks approved')).toBeNull();input('new known exact line\r');expect(match('new known exact line')).not.toBeNull();
+ });
+ it('RE does not interpret report-shaped bytes inside a user paste as harmless terminal metadata',()=>{input('\x1b[200~typed\x1b[Itext\x1b[201~\r');expect(match('typedtext')).toBeNull();expect(match('typed\x1b[Itext')).toBeNull();});
  it('never treats another window or a mismatched PTY as observed authority',()=>{
   expect(()=>ledger.observe({...sender},target,'send\r')).toThrow('untrusted sender');ledger.observe(sender,{...target,ptyId:'other'},'send\r');expect(match('send')).toBeNull();
  });

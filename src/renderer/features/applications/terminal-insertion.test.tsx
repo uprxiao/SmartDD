@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import {useState} from 'react';
+import {AppDialog} from './controls';
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {ApplicationTerminalButton} from './terminal-insertion';
@@ -10,12 +12,47 @@ vi.mock('@renderer/features/files/terminal-context/store',()=>({currentFileTermi
 const source={kind:'skill' as const,appId:'mail' as const,skillId:'work-assistant'},binding={id:'binding1',taskId:'t1',ptyId:'pty1',projectId:'p1',runId:'run1',text:'host-resolved example',expiresAt:9999999999999};
 const mount=()=>render(<ApplicationTerminalButton projectId="p1" source={source} onInserted={m.close} label="插入示例到终端"/>);
 beforeEach(()=>{vi.clearAllMocks();m.task={id:'t1',projectId:'p1',ptyId:'pty1',title:'Explicit original task',archivedAt:null};m.terminals.clear();m.terminals.set('t1','pty1');m.bind.mockResolvedValue({ok:true,value:binding});m.insert.mockImplementation(async(input)=>({ok:true,value:{operationId:input.operationId,state:'inserted'}}));m.release.mockResolvedValue({ok:true,value:{released:true}});});
-afterEach(()=>cleanup());
+afterEach(()=>{cleanup();vi.restoreAllMocks();m.focus.mockReset();Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');Reflect.deleteProperty(HTMLDialogElement.prototype,'close');});
 describe('explicit application target delivery UI',()=>{
+ it('PE compact project entry keeps the approved label and prepares only the composer without a current target',()=>{m.task=null;render(<ApplicationTerminalButton projectId="p1" source={source} compact label="在 WillYou 终端使用"/>);fireEvent.click(screen.getByRole('button',{name:'在 WillYou 终端使用'}));expect(m.prepare).toHaveBeenCalledWith('p1',expect.stringContaining('本地邮件'));expect(m.bind).not.toHaveBeenCalled();expect(m.insert).not.toHaveBeenCalled();expect(screen.queryByText(/请先在本项目打开/)).toBeNull();});
+ it('PE compact project entry reports unavailable host binding without inserting or preparing another task',async()=>{m.bind.mockResolvedValue({ok:false,code:'CAPABILITY_UNAVAILABLE',message:'应用能力服务暂不可用，原任务可继续'});render(<ApplicationTerminalButton projectId="p1" source={source} compact label="在 WillYou 终端使用"/>);fireEvent.click(screen.getByRole('button',{name:'在 WillYou 终端使用'}));await screen.findByText('应用能力服务暂不可用，原任务可继续');expect(m.insert).not.toHaveBeenCalled();expect(m.prepare).not.toHaveBeenCalled();expect(m.focus).not.toHaveBeenCalled();});
  it('sends only a typed source to the captured task,focuses that terminal,and never calls a task launch',async()=>{mount();fireEvent.click(screen.getByRole('button',{name:/插入示例/}));await waitFor(()=>expect(m.focus).toHaveBeenCalledTimes(1));expect(m.bind).toHaveBeenCalledWith({projectId:'p1',target:{taskId:'t1',ptyId:'pty1'},source});expect(m.insert.mock.calls[0][0]).toMatchObject({bindingId:'binding1'});expect(m.close).toHaveBeenCalledTimes(1);expect(m.open).toHaveBeenCalledWith('t1');expect(m.prepare).not.toHaveBeenCalled();});
  it('does not choose a running task from another project and prepares a composer only on explicit action',async()=>{m.task.projectId='other';mount();expect(m.bind).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:/准备新任务/}));expect(m.prepare).toHaveBeenCalledWith('p1',expect.stringContaining('本地邮件'));expect(m.insert).not.toHaveBeenCalled();});
  it('does not rebind a detail to a replacement task or PTY after it was opened',()=>{const view=mount();m.task={...m.task,id:'t2',ptyId:'pty2'};m.terminals.set('t2','pty2');view.rerender(<ApplicationTerminalButton projectId="p1" source={source}/>);expect(screen.queryByRole('button',{name:/插入终端/})).toBeNull();expect(m.bind).not.toHaveBeenCalled();});
  it('releases late preparation after unmount without dispatching a paste or stealing focus',async()=>{let finish!:(v:unknown)=>void;m.bind.mockImplementation(()=>new Promise(r=>finish=r));const view=mount();fireEvent.click(screen.getByRole('button',{name:/插入示例/}));view.unmount();finish({ok:true,value:binding});await waitFor(()=>expect(m.release).toHaveBeenCalledWith('binding1'));expect(m.insert).not.toHaveBeenCalled();expect(m.focus).not.toHaveBeenCalled();});
  it('shows an explicit host guard rejection as not inserted,while transport loss stays unknown',async()=>{m.insert.mockResolvedValue({ok:false,code:'SCOPE_DENIED',message:'原引用来源已经撤销，未写入'});mount();fireEvent.click(screen.getByRole('button',{name:/插入示例/}));await screen.findByText('原引用来源已经撤销，未写入');expect(screen.queryByText('插入结果未知；不会自动重发')).toBeNull();expect(m.focus).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();m.insert.mockRejectedValueOnce(new Error('transport lost'));fireEvent.click(screen.getByRole('button',{name:/插入示例/}));await screen.findByText('插入结果未知；不会自动重发');expect(m.insert).toHaveBeenCalledTimes(2);});
  it('blocks repeated clicks and leaves an ambiguous result unknown without retry',async()=>{m.insert.mockResolvedValue({ok:true,value:{operationId:'mismatch',state:'inserted'}});mount();const button=screen.getByRole('button',{name:/插入示例/});fireEvent.click(button);fireEvent.click(button);await screen.findByText('插入结果未知；不会自动重发');expect(m.bind).toHaveBeenCalledTimes(1);expect(m.insert).toHaveBeenCalledTimes(1);expect(button).toHaveProperty('disabled',true);expect(m.focus).not.toHaveBeenCalled();});
+
+ it('returns focus after the real application dialog closes and restores its trigger',async()=>{
+  Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.setAttribute('open','');}});
+  Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:function(this:HTMLDialogElement){this.removeAttribute('open');}});
+  function Shell(){const [open,setOpen]=useState(false);return <><button onClick={()=>setOpen(true)}>Open application</button><textarea aria-label="Original terminal"/>{open&&<AppDialog title="Application" onClose={()=>setOpen(false)}><ApplicationTerminalButton projectId="p1" source={source} onInserted={()=>setOpen(false)} label="Insert example"/></AppDialog>}</>;}
+  render(<Shell/>);const trigger=screen.getByRole('button',{name:'Open application'}),terminal=screen.getByRole('textbox',{name:'Original terminal'});trigger.focus();fireEvent.click(trigger);
+  // Native modal dialogs reject focus outside their top layer. This small
+  // adapter models that browser rule; the actual AppDialog owns close/restore.
+  m.focus.mockImplementation(()=>{if(!document.querySelector('dialog[open]'))terminal.focus();});fireEvent.click(screen.getByRole('button',{name:'Insert example'}));
+  await waitFor(()=>expect(document.activeElement).toBe(terminal));expect(screen.queryByRole('dialog')).toBeNull();expect(m.insert).toHaveBeenCalledTimes(1);
+ });
+ it('does not redirect focus if the selected task changes while dialog closure is pending',async()=>{
+  const frames:FrameRequestCallback[]=[];vi.spyOn(globalThis,'requestAnimationFrame').mockImplementation(callback=>{frames.push(callback);return frames.length;});mount();fireEvent.click(screen.getByRole('button',{name:/插入示例/}));await waitFor(()=>expect(m.open).toHaveBeenCalled());
+  m.task={...m.task,id:'t2',ptyId:'pty2'};for(const frame of frames.splice(0))frame(0);await Promise.resolve();expect(m.focus).not.toHaveBeenCalled();expect(m.insert).toHaveBeenCalledTimes(1);
+ });
+
+ it.each(['terminal','another dialog'])('preserves a deliberate focus transfer to %s during dialog teardown',kind=>{
+  Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.setAttribute('open','');}});
+  Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:function(this:HTMLDialogElement){this.removeAttribute('open');}});
+  render(<><button>Original trigger</button>{kind==='terminal'?<textarea aria-label="Next focus"/>:<div role="dialog"><input aria-label="Next focus"/></div>}</>);const trigger=screen.getByRole('button',{name:'Original trigger'}),next=screen.getByRole('textbox',{name:'Next focus'});trigger.focus();const modal=render(<AppDialog title="Closing application" onClose={()=>{}}><button>Original dialog action</button></AppDialog>);screen.getByRole('button',{name:'Original dialog action'}).focus();next.focus();modal.unmount();expect(document.activeElement).toBe(next);
+ });
+ it('still restores the original trigger on ordinary application dialog closure',()=>{
+  Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.setAttribute('open','');}});
+  Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:function(this:HTMLDialogElement){this.removeAttribute('open');}});
+  render(<button>Original trigger</button>);const trigger=screen.getByRole('button',{name:'Original trigger'});trigger.focus();const modal=render(<AppDialog title="Closing application" onClose={()=>{}}><button>Original dialog action</button></AppDialog>);screen.getByRole('button',{name:'Original dialog action'}).focus();modal.unmount();expect(document.activeElement).toBe(trigger);
+ });
+});
+
+it('QE session example keeps the prompt inside the typed-source action and retains original target/receipt/focus semantics',async()=>{
+ render(<ApplicationTerminalButton projectId="p1" source={source} onInserted={m.close} label="插入示例到终端" variant="example"/>);const button=screen.getByRole('button',{name:'插入示例到终端'});expect(button.textContent).toContain('本地邮件');fireEvent.click(button);await waitFor(()=>expect(m.focus).toHaveBeenCalledTimes(1));expect(m.bind).toHaveBeenCalledWith({projectId:'p1',target:{taskId:'t1',ptyId:'pty1'},source});expect(m.insert).toHaveBeenCalledTimes(1);expect(m.prepare).not.toHaveBeenCalled();expect(m.close).toHaveBeenCalledTimes(1);
+});
+it('QE no-target session example exposes explicit preparation without binding/inserting or choosing another terminal',()=>{
+ m.task=null;render(<ApplicationTerminalButton projectId="p1" source={source} label="插入示例到终端" variant="example"/>);const button=screen.getByRole('button',{name:'准备新任务'});expect(button.textContent).toContain('本地邮件');fireEvent.click(button);expect(m.prepare).toHaveBeenCalledWith('p1',expect.stringContaining('本地邮件'));expect(m.bind).not.toHaveBeenCalled();expect(m.insert).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();
 });

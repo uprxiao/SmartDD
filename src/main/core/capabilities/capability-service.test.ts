@@ -59,6 +59,29 @@ function runGuard(run: PreparedRuntime, changes: Record<string, string | undefin
 }
 
 describe('project runtime projection', () => {
+  it('M10-UG-01 reads legacy random-id imported settings without rewriting them or injecting resources', () => {
+    projects.createDatabase(a.id, dbInput('legacy-disabled-password'));
+    db.insert(schema.projectCapabilities).values(['project-db-diagnostics', 'remote-password-ssh', 'smartdd-project-context'].map(capabilityId => ({ id: randomUUID(), projectId: a.id, capabilityId, enabled: false }))).run();
+    const before = db.select().from(schema.projectCapabilities).all();
+    expect(svc.list(a.id).every(s => !s.enabled)).toBe(true);
+    expect(svc.enabled(a.id, 'smartdd-project-context')).toBe(false);
+    const run = prepare();
+    expect(run.env.PROJECT_DB_CONFIG).toBeUndefined();
+    expect(Object.values(run.env)).not.toContain('legacy-disabled-password');
+    expect(JSON.parse(readFileSync(run.snapshot.manifestPath, 'utf8')).pythonModules).toEqual([]);
+    expect(db.select().from(schema.projectCapabilities).all()).toEqual(before);
+    expect(svc.list(b.id).every(s => s.enabled)).toBe(true);
+  });
+  it('M10-UG-01 normalizes legacy rows only when that project setting is explicitly saved', () => {
+    db.insert(schema.projectCapabilities).values({ id: randomUUID(), projectId: a.id, capabilityId: 'project-db-diagnostics', enabled: false }).run();
+    svc.setEnabled(a.id, 'project-db-diagnostics', true);
+    const matching = db.select().from(schema.projectCapabilities).all().filter(row => row.projectId === a.id && row.capabilityId === 'project-db-diagnostics');
+    expect(matching).toEqual([{ id: `${a.id}:project-db-diagnostics`, projectId: a.id, capabilityId: 'project-db-diagnostics', enabled: true }]);
+    expect(svc.enabled(a.id, 'project-db-diagnostics')).toBe(true);
+    svc.setEnabled(a.id, 'project-db-diagnostics', false);
+    expect(svc.enabled(a.id, 'project-db-diagnostics')).toBe(false);
+    expect(svc.list(b.id).every(s => s.enabled)).toBe(true);
+  });
   it('projects only the selected project, no raw credentials on disk/argv, with a matching config version', () => {
     const da = projects.createDatabase(a.id, dbInput('alpha-password'));
     projects.createDatabase(b.id, dbInput('beta-password', { database: 'beta' }));
@@ -214,15 +237,18 @@ describe('terminal self-check and MCP', () => {
     projects.createDatabase(a.id, dbInput('never-in-mcp'));
     const run = prepare();
     const mcp = JSON.parse(readFileSync(join(dirname(run.snapshot.manifestPath), 'mcp.json'), 'utf8')).mcpServers[run.snapshot.mcp[0].name];
+    const publicBytes = readFileSync(mcp.args[1]);
     const requests = [{ id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05' } }, { method: 'notifications/initialized' }, { id: 2, method: 'tools/list' }, { id: 3, method: 'tools/call', params: { name: 'project_context' } }];
     const result = spawnSync(mcp.command, mcp.args, { input: requests.map((r) => JSON.stringify({ jsonrpc: '2.0', ...r })).join('\n') + '\n', encoding: 'utf8', timeout: 5000 });
     expect(result.status, result.stderr).toBe(0);
     const replies = result.stdout.trim().split('\n').map((line) => JSON.parse(line));
     expect(replies).toHaveLength(3);
     expect(replies[1].result.tools[0].name).toBe('project_context');
+    expect(replies[1].result.tools[0].annotations).toEqual({ readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });
     const context = JSON.parse(replies[2].result.content[0].text);
     expect(context.projectId).toBe(a.id); expect(context.configVersion).toBe(projects.getProject(a.id).configVersion);
     expect(result.stdout).not.toContain('never-in-mcp'); expect(result.stdout).not.toContain(b.id);
+    expect(readFileSync(mcp.args[1])).toEqual(publicBytes);
   });
 });
 

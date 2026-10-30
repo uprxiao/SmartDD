@@ -7,6 +7,10 @@ import {execFileSync} from 'node:child_process';
 import {createServer} from 'node:net';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
+// This prerequisite mode never requests credentials; the original verification path stays available.
+if(process.env.WILLYOU_MAIL_SLOTS_PREREQUISITE==='disconnected'){
+ await import('./fixtures/mail-slots-disconnected-ui.mjs');
+}else{
 const executable=process.env.WILLYOU_ACCEPTANCE_APP;assert(executable);
 const root=await mkdtemp('/private/tmp/willyou-m10-mail-slots-');
 const sha=b=>createHash('sha256').update(b).digest('hex');
@@ -42,3 +46,4 @@ try{
  await app.screenshot(join(root,'slots-cleared.png'));assert.equal(result.smtpData,0);assert.deepEqual(app.rendererErrors,[]);result.status='passed-partial';
 }catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.stage=stage;result.error=String(error);process.exitCode=2;if(app)try{result.dom=await app.evaluate('document.body.innerText');await app.screenshot(join(root,'failure.png'));}catch{}}
 finally{if(app){await writeFile(join(root,'electron.log'),app.logs());await app.close();result.cleanup=true;}for(const s of sockets)s.destroy();await new Promise(r=>smtp.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({root,status:result.status,checks:result.checks.length,error:result.error}));}
+}

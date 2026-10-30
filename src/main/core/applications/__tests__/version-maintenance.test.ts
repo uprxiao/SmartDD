@@ -13,11 +13,21 @@ import {PackageRegistry} from '../package-registry';
 import {ResourceStore} from '../resource-store';
 import {RuntimeRegistry} from '../runtime-registry';
 import {fixtureBundle} from './fixtures';
+import {withCoordinatorLock} from '../coordinator-lock';
 let root:string,db:Database.Database,store:ResourceStore,packages:PackageRegistry,maintenance:ApplicationVersionMaintenance,oldHash:string,currentHash:string,fault:VersionCleanupCheckpoint|null,ownerState:'running'|'stopped'|'unknown';
 const owner={pid:process.pid,startedAt:'darwin-proc-v1:123456:1'},processes={read:()=>owner,state:()=>ownerState};
 async function install(version:string){const source=fixtureBundle(version);source.manifest.runtime.hash=(await new RuntimeRegistry(store).install({id:'applications',protocolMajor:1,bridgeEntry:'bridge.cjs',files:{'bridge.cjs':Buffer.from('module.exports={};\n')}})).contentHash;return packages.install(source);}
 async function item(hash=oldHash){return(await maintenance.list('zentao')).items.find(i=>i.packageHash===hash)!;}
 async function clean(){const selected=await item();return maintenance.cleanup({appId:'zentao',packageHash:selected.packageHash,planHash:selected.planHash});}
+it('cancels a version cleanup waiting for C without changing the package or the current coordinator owner',async()=>{
+ const selected=await item(),controller=new AbortController(),executing=vi.fn();let entered!:()=>void,release!:()=>void;
+ const acquired=new Promise<void>(done=>{entered=done;}),gate=withCoordinatorLock(join(store.root,'locks'),'resource',async()=>{entered();await new Promise<void>(done=>{release=done;});});await acquired;
+ const before=db.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all();
+ try{
+  const pending=Reflect.apply(maintenance.cleanup,maintenance,[{appId:'zentao',packageHash:selected.packageHash,planHash:selected.planHash},{signal:controller.signal,onExecuting:executing,lockOptions:()=>({signal:controller.signal,timeoutMs:1000})}]);controller.abort();
+  await expect(pending).rejects.toMatchObject({code:'CANCELED'});expect(executing).not.toHaveBeenCalled();expect(packages.get(oldHash).state).toBe('ready');expect(db.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all()).toEqual(before);expect(existsSync(join(store.root,packages.get(oldHash).relativePath))).toBe(true);
+ }finally{release();await gate;}
+});
 async function retainVersion(packageHash=oldHash,taskId='valid-history'){
   const installed=packages.get(packageHash),manifest=installed.manifest,adapterHash=digest('fixture adapter');
   await store.publish({resourceId:'agent-adapter:claude-code:'+adapterHash,kind:'agent-adapter',contentHash:adapterHash,relativePath:'agent-adapters/fixture/'+adapterHash,dependencies:[],materialize:dir=>{requireDirectory(dir);writeFileSync(join(dir,'adapter.cjs'),'fixture adapter');},verify:()=>{}});
@@ -100,3 +110,17 @@ describe('authoritative version inventory and crash-safe owned package cleanup',
 });
 import {mkdirSync} from 'node:fs';
 function requireDirectory(path:string){mkdirSync(path,{recursive:true});}
+
+it('reports the original failed publication without exposing thrown detail or changing durable records',async()=>{
+ const source=fixtureBundle('0.9.3');source.manifest.runtime.hash=packages.get(currentHash).manifest.runtime.hash;const publisher=new ResourceStore(db,root,at=>{if(at==='materialized')throw Error('PG_PRIVATE_DETAIL_MUST_NOT_APPEAR');},{processes});await expect(new PackageRegistry(publisher,'test-publication').install(source)).rejects.toThrow('PG_PRIVATE_DETAIL_MUST_NOT_APPEAR');const before=db.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all();const value=(await maintenance.list('zentao')).items.find(v=>v.version==='0.9.3')!;
+ expect(value).toMatchObject({state:'recovery-required',canCleanup:false,publication:{state:'failed',errorCode:'INSTALL_FAILED',updatedAt:expect.any(String)}});expect(JSON.stringify(value)).not.toContain('PG_PRIVATE_DETAIL_MUST_NOT_APPEAR');expect(db.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all()).toEqual(before);expect(packages.active('zentao')!.packageHash).toBe(currentHash);
+});
+it.each(['foreign-owner','wrong-resource','malformed-plan'])('does not borrow or reveal an unverified %s publication record',async mode=>{
+ const resource=store.get('app:'+oldHash),op=db.prepare('SELECT * FROM capability_resource_operations WHERE operation_id=?').get(resource.operationId) as {plan_json:string};let plan=op.plan_json;
+ if(mode==='foreign-owner')db.prepare('UPDATE capability_resource_operations SET owner_store_id=? WHERE operation_id=?').run(randomUUID(),resource.operationId);
+ if(mode==='wrong-resource'){const parsed=JSON.parse(plan);parsed.resourceId='another-resource';plan=JSON.stringify(parsed);}
+ if(mode==='malformed-plan')plan='{private-path=/must-not-leak';db.prepare('UPDATE capability_resource_operations SET plan_json=?,error_code=? WHERE operation_id=?').run(plan,'PASSWORD=PRIVATE_CANARY',resource.operationId);const value=await item();expect(value.publication).toEqual({state:'unknown',errorCode:null,updatedAt:null});expect(JSON.stringify(value)).not.toContain('PRIVATE_CANARY');expect(JSON.stringify(value)).not.toContain('/must-not-leak');
+});
+it('sanitizes unrecognized publication errors while retaining verified public phase and time',async()=>{
+ const resource=store.get('app:'+oldHash);db.prepare('UPDATE capability_resource_operations SET error_code=? WHERE operation_id=?').run('PASSWORD=PRIVATE_CANARY',resource.operationId);const value=await item();expect(value.publication).toMatchObject({state:'committed',errorCode:null,updatedAt:expect.any(String)});expect(JSON.stringify(value)).not.toContain('PRIVATE_CANARY');
+});

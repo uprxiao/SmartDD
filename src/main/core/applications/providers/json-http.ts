@@ -1,6 +1,7 @@
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { ApplicationError } from '@shared/applications';
+import {retainRetryAfter} from '../retry-after';
 export interface HttpReadOptions {method?:'GET'|'POST';token?:string;body?:unknown;signal:AbortSignal;timeoutMs?:number;maxBytes?:number;accept?:string}
 export interface HttpBytes {bytes:Buffer;mediaType:string}
 /** One bounded attempt; only the owning execution service may retry. Redirects are never followed. */
@@ -16,7 +17,7 @@ export function requestBytes(url:URL,options:HttpReadOptions):Promise<HttpBytes>
     const fail=(error:ApplicationError)=>{if(!settled){settled=true;reject(error);}};
     const request=(url.protocol==='https:'?httpsRequest:httpRequest)(url,{method:options.method??'GET',headers,agent:false},response=>{
       const status=response.statusCode??0;
-      if(status<200||status>=300){response.destroy();fail(new ApplicationError(status===401?'AUTH_FAILED':status===403?'SCOPE_DENIED':status===404?'NOT_FOUND':status===429||status>=500?'TRANSIENT_FAILURE':'CONNECTION_UNAVAILABLE',status===401?'服务拒绝当前认证':status===403?'当前账号无权读取该对象':status===404?'来源对象已不存在':'服务暂时不可用或返回非成功状态'));return;}
+      if(status<200||status>=300){response.destroy();const error=new ApplicationError(status===401?'AUTH_FAILED':status===403?'SCOPE_DENIED':status===404?'NOT_FOUND':status===429||status>=500?'TRANSIENT_FAILURE':'CONNECTION_UNAVAILABLE',status===401?'服务拒绝当前认证':status===403?'当前账号无权读取该对象':status===404?'来源对象已不存在':'服务暂时不可用或返回非成功状态');fail(error.code==='TRANSIENT_FAILURE'?retainRetryAfter(error,response.headers['retry-after']):error);return;}
       const declared=response.headers['content-length'];
       if(declared!==undefined&&(!/^\d+$/.test(declared)||!Number.isSafeInteger(Number(declared)))){fail(new ApplicationError('INVALID_RESPONSE','服务内容长度无效'));response.destroy();return;}
       if(declared!==undefined&&Number(declared)>max){fail(new ApplicationError('INCOMPLETE_RESULT','服务响应超过本次资源预算'));response.destroy();return;}

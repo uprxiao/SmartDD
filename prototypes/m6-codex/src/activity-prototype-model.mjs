@@ -1,9 +1,10 @@
+import{isPublicDraftFixture}from'./draft-recovery-preview.mjs';
 // Fixed synthetic P08 records. No credentials, external calls or real run IDs.
 const id = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value) ? value : null;
 export function projectDemoActivity(record) {
   const callerKind = ['ui', 'agent-run', 'index-job'].includes(record.callerKind) ? record.callerKind : 'ui';
   return {
-    id: String(record.id), app: record.app === 'zentao' ? 'zentao' : 'mail',
+    id: String(record.id), ...(isPublicDraftFixture(record.draftFixture)?{draftFixture:record.draftFixture}:{}), app: record.app === 'zentao' ? 'zentao' : 'mail',
     operation: String(record.operation || ''),
     status: ['success','failed','unknown','handoff','draft','sending'].includes(record.status) ? record.status : 'unknown',
     project: id(record.project), connectionId: String(record.connectionId || ''), at: String(record.at || ''),
@@ -30,7 +31,7 @@ export function filterDemoActivity(records, {app='all',connection='all',project=
 }
 export function demoActivityRecovery(record, state) {
   const draft = state.drafts?.find(d => d.id === record.draftId && d.project === record.project);
-  if (record.app === 'mail' && draft) return {kind:'draft', app:'mail', project:draft.project, draftId:draft.id};
+  if (record.app === 'mail' && draft) return {kind:'draft', app:'mail', project:draft.project, draftId:draft.id,revision:record.revision,activityId:record.id};
   const connection = state.connections.find(c => c.id === record.connectionId && c.app === record.app);
   return connection ? {kind:'connection',app:record.app,connectionId:connection.id} : null;
 }

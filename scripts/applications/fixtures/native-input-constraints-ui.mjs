@@ -1,0 +1,35 @@
+// RK: observed native browser constraint behavior, not attribute-string-only tests.
+import assert from'node:assert/strict';
+import{join}from'node:path';
+export async function checkNativeInputConstraints({app,result,root,layer,theme,enter,fill,cancel,key,click,labels,check}){
+ const data=result.nativeInputConstraints??={layer,groups:[],observations:[],failures:[],boundary:'A real renderer/P synthetic;native ValidityState and actual keyboard,not system IME or authentication'};
+ let context='';const sel=name=>'dialog [aria-label='+JSON.stringify(labels[name]??name)+']';
+ async function read(name){return app.evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(sel(name))});if(!e)throw Error('RK missing field');const flags=['badInput','customError','patternMismatch','rangeOverflow','rangeUnderflow','stepMismatch','tooLong','tooShort','typeMismatch','valid','valueMissing'];return{type:e.type,required:e.required,min:e.min,max:e.max,step:e.step,maxLength:e.maxLength,disabled:e.disabled,readOnly:e.readOnly,willValidate:e.willValidate,value:e.type==='password'?null:e.value,empty:e.value==='',validity:Object.fromEntries(flags.map(k=>[k,e.validity[k]]))}})()`);}
+ function expect(id,actual,expected){data.observations.push({context,id,actual,expected});for(const[k,v]of Object.entries(expected)){const found=k.startsWith('validity.')?actual.validity[k.slice(9)]:actual[k];if(found!==v)data.failures.push({context,id,field:k,actual:found,expected:v});}}
+ async function group(id,run){const before=data.failures.length;await run();const passed=data.failures.length===before;data.groups.push({id,context,passed});if(passed)check(context+' '+id);}
+ async function nativeKey(name,value,arrow,expected){await fill(name,value);assert(await app.evaluate(`document.activeElement===document.querySelector(${JSON.stringify(sel(name))})`));await key(arrow,arrow,{windowsVirtualKeyCode:arrow==='ArrowUp'?38:40,nativeVirtualKeyCode:arrow==='ArrowUp'?126:125});await app.evaluate('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r(true))))');expect(name+' '+value+' '+arrow,await read(name),{value:String(expected)});data.observations.at(-1).input={method:'actual browser keyDown/keyUp',key:arrow,initial:value};}
+ async function flags(name,value,expected){await fill(name,value);expect(name+' flags '+value,await read(name),expected);}
+ const fields={smtp:[['连接名称','text'],['host','text'],['port','number'],['login','text'],['from','email'],['secret','password']],zentao:[['连接名称','text'],['url','url'],['user','text'],['secret','password']],foxmail:[['连接名称','text'],['path','text'],['account','text'],['days','number']]};
+ for(const size of ['regular','minimum']){
+  const wh=await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(join(root,'userdata'))})throw Error('RK own size');const w=E.BrowserWindow.getAllWindows()[0];${size==='regular'?'w.setContentSize(1400,900,false)':'w.setSize(...w.getMinimumSize(),false)'};return w.getContentSize()})()`);await app.waitFor(`innerWidth===${wh[0]}&&innerHeight===${wh[1]}`);
+  for(const kind of ['smtp','zentao','foxmail']){
+   context=theme+'-'+size+'-'+kind;await enter(kind);
+   await group('native-required-contract',async()=>{for(const[name,type]of fields[kind]){const value=await read(name),expected={type,required:true,disabled:false,willValidate:true,'validity.valueMissing':value.empty,'validity.valid':!value.empty};if(name==='连接名称')expected.maxLength=120;if(name==='port')Object.assign(expected,{min:'1',max:'65535',step:''});if(name==='days')Object.assign(expected,{min:'1',max:'100',step:'1'});expect(name+' initial',value,expected);}});
+   if(kind==='smtp'){
+    await group('port-native-validity',async()=>{await flags('port','0',{'validity.rangeUnderflow':true,'validity.valid':false});await flags('port','65536',{'validity.rangeOverflow':true,'validity.valid':false});await flags('port','1.5',{'validity.stepMismatch':true,'validity.valid':false});await flags('port','',{'validity.valueMissing':true,'validity.valid':false});});
+    await group('port-real-arrow-boundaries',async()=>{await nativeKey('port','1','ArrowDown',1);await nativeKey('port','65535','ArrowUp',65535);await app.screenshot(join(root,context+'-port-upper.png'));await nativeKey('port','1','ArrowUp',2);await nativeKey('port','65535','ArrowDown',65534);});
+    await group('native-email-and-new-credential',async()=>{await flags('from','bad-address',{'validity.typeMismatch':true,'validity.valid':false});await flags('from','rk@example.invalid',{'validity.typeMismatch':false,'validity.valid':true});await flags('secret','',{'validity.valueMissing':true,'validity.valid':false});await flags('secret','RK_PUBLIC_SYNTHETIC',{'validity.valueMissing':false,'validity.valid':true});await flags('secret','',{'validity.valueMissing':true,'validity.valid':false});});
+   }else if(kind==='zentao'){
+    await group('native-url-syntax',async()=>{await flags('url','not a url',{'validity.typeMismatch':true,'validity.valid':false});await flags('url','https://example.invalid/rk',{'validity.typeMismatch':false,'validity.valid':true});});
+   }else{
+    await group('days-native-validity',async()=>{await flags('days','0',{'validity.rangeUnderflow':true,'validity.valid':false});await flags('days','101',{'validity.rangeOverflow':true,'validity.valid':false});await flags('days','1.5',{'validity.stepMismatch':true,'validity.valid':false});await flags('days','',{'validity.valueMissing':true,'validity.valid':false});});
+    await group('days-real-arrow-boundaries',async()=>{await nativeKey('days','1','ArrowDown',1);await nativeKey('days','100','ArrowUp',100);await app.screenshot(join(root,context+'-days-upper.png'));await nativeKey('days','1','ArrowUp',2);await nativeKey('days','100','ArrowDown',99);});
+   }
+   assert(await app.evaluate('[...document.querySelectorAll("dialog button")].find(b=>b.textContent.trim()==="保存连接").disabled'));await cancel();
+  }
+ }
+ if(layer==='P'){
+  context=theme+'-minimum-existing-synthetic-credential';await click('.m10-sidebar .installed','禅道');await app.waitFor('!!document.querySelector(".m10-app-heading")');const old=await app.evaluate(`JSON.parse(localStorage.getItem('willyou-m10-prototype-v2')).connections.find(c=>c.kind==='zentao'&&c.credentialPresent)`);assert(old,'Existing synthetic credential prerequisite');await click('[aria-label='+JSON.stringify('管理'+old.name)+']');await click('[role=menuitem]','编辑／重新连接');await app.waitFor('!!document.querySelector("dialog form")');await group('P-only-existing-credential-keep-replace-clear',async()=>{expect('saved empty',await read('secret'),{required:false,empty:true,'validity.valueMissing':false,'validity.valid':true});await flags('secret','RK_PUBLIC_REPLACEMENT',{required:false,'validity.valueMissing':false,'validity.valid':true});await flags('secret','',{required:false,'validity.valueMissing':false,'validity.valid':true});});await app.screenshot(join(root,context+'.png'));await cancel();
+ }
+ assert.deepEqual(await app.mainEvaluate('globalThis.__rjValidation.calls'),[]);
+}

@@ -21,6 +21,18 @@ export function localMailRange(days: number, now = new Date()): MailDateRange {
   return { days, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, startDate: day(start), endDate: day(now), start: start.toISOString(), endExclusive: end.toISOString() };
 }
 const mimeOptions: PostalMimeOptions = { maxNestingDepth: 32, maxHeadersSize: 256 * 1024, maxPartCount: 256, maxRfc822NestingDepth: 4, maxForwardedAddresses: 500, attachmentEncoding: 'arraybuffer' };
+const mimeBudgetErrors = new Set([
+  `Maximum MIME nesting depth of ${mimeOptions.maxNestingDepth} levels exceeded`,
+  `Maximum MIME part count of ${mimeOptions.maxPartCount} parts exceeded`,
+  `Maximum header size of ${mimeOptions.maxHeadersSize} bytes exceeded`,
+]);
+async function parseMime(bytes: Buffer): Promise<Email> {
+  try { return await PostalMime.parse(bytes,mimeOptions); }
+  catch (error) {
+    if (error instanceof Error && mimeBudgetErrors.has(error.message)) throw new ApplicationError('INCOMPLETE_RESULT','邮件 MIME 超过解析预算，内容未完整读取');
+    throw error;
+  }
+}
 const addresses = (list: Address[] = []): string[] => list.flatMap(a => a.group ? addresses(a.group) : [a.address]);
 async function readRegular(path: string, maxBytes: number, prefix = false): Promise<{ bytes: Buffer; stamp: string }> {
   const fd = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
@@ -93,7 +105,7 @@ export class FoxmailSource {
     if (cached?.stamp === stamp) return { value: cached.value, reused: true };
     const read = await readRegular(path,65536,true), end = read.bytes.indexOf('\r\n\r\n'), lfEnd = read.bytes.indexOf('\n\n'), boundary = end >= 0 ? end : lfEnd;
     if (boundary < 0) throw new ApplicationError('INCOMPLETE_RESULT','邮件头不完整或超过预算');
-    const email = await PostalMime.parse(Buffer.concat([read.bytes.subarray(0,boundary),Buffer.from('\r\n\r\n')]),mimeOptions), value = summary(id,email,read.stamp);
+    const email = await parseMime(Buffer.concat([read.bytes.subarray(0,boundary),Buffer.from('\r\n\r\n')])), value = summary(id,email,read.stamp);
     if (this.headers.size >= 2000) this.headers.delete(this.headers.keys().next().value!); this.headers.set(path,{ stamp: read.stamp, value }); return { value, reused: false };
   }
   async query(config: Config, input: MailSearch, expected?: VerifiedConnectionIdentity, now = new Date()): Promise<LocalMailQuery> {
@@ -178,7 +190,7 @@ export class FoxmailSource {
     const result: Record<string,string> = {}; for (const [id,path] of files) { const s = await lstat(path,{ bigint: true }); result[id] = path + ':' + statStamp(s); } return result;
   }
   private async content(root: string, path: string, id: string): Promise<LocalMailContent & { bytes: Buffer[]; observedStamp: string }> {
-    await this.path(root,path); const read = await readRegular(path,8 * 1024 * 1024), email = await PostalMime.parse(read.bytes,mimeOptions);
+    await this.path(root,path); const read = await readRegular(path,8 * 1024 * 1024), email = await parseMime(read.bytes);
     const bytes = email.attachments.map(a => typeof a.content === 'string' ? Buffer.from(a.content,a.encoding === 'base64' ? 'base64' : 'utf8') : a.content instanceof ArrayBuffer ? Buffer.from(a.content) : Buffer.from(a.content));
     if (bytes.reduce((n,b) => n + b.length,Buffer.byteLength(email.text ?? '') + Buffer.byteLength(email.html ?? '')) > 16 * 1024 * 1024) throw new ApplicationError('INCOMPLETE_RESULT','解码后邮件超过读取预算');
     const missing = email.attachments.some(a => a.rfc822DepthExceeded) ? ['nested-message-depth'] : [];

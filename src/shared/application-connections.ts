@@ -13,7 +13,7 @@ const baseUrl = z.string().trim().max(2048).refine(value => {
 export const zentaoConfigSchema = z.object({ kind: z.literal('zentao'), baseUrl, username: short, authMode: z.enum(['token', 'password']) }).strict();
 export const foxmailConfigSchema = z.object({ kind: z.literal('foxmail'), sourcePath: z.string().trim().min(1).max(4096).refine(noControls), account: short, queryDays: z.number().int().min(1).max(100).default(30) }).strict();
 export const smtpConfigSchema = z.object({
-  kind: z.literal('smtp'), host: short.refine(s => !/[\s/@\\]/u.test(s), '发件服务器地址无效'), port: z.number().int().min(1).max(65535),
+  kind: z.literal('smtp'), host: short.refine(s => !/[\s/@?#\\]/u.test(s), '发件服务器地址无效'), port: z.number().int().min(1).max(65535),
   username: short, fromAddress: z.email().max(512), authMode: z.literal('password'), mode: z.enum(['plain', 'starttls', 'implicit-tls']),
 }).strict();
 export const connectionConfigSchema = z.discriminatedUnion('kind', [zentaoConfigSchema, foxmailConfigSchema, smtpConfigSchema]);
@@ -38,8 +38,10 @@ export interface ConnectionChangePlan { connectionId: string | null; expectedRev
 export const projectApplicationSelectionSchema = z.object({
   projectId: z.string().min(1).max(128), appId: applicationIdSchema, expectedRevision: z.number().int().nonnegative(), enabled: z.boolean(),
   connections: z.object({ zentao: z.uuid().nullable().optional(), foxmail: z.uuid().nullable().optional(), smtp: z.uuid().nullable().optional() }).strict(),
+  repair: z.object({slot:providerIdSchema,fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict().optional(),
  }).strict().superRefine((value, ctx) => {
   const slots = value.appId === 'zentao' ? ['zentao'] : ['foxmail', 'smtp'];
+  if (value.repair && !slots.includes(value.repair.slot)) ctx.addIssue({code:'custom',message:'恢复目标必须属于当前应用'});
   if (slots.some(s => !Object.hasOwn(value.connections, s)) || Object.keys(value.connections).some(s => !slots.includes(s))) ctx.addIssue({ code: 'custom', message: '必须明确提供本应用的全部连接槽，未选用时使用null' });
 });
 export type ProjectApplicationSelectionInput = z.infer<typeof projectApplicationSelectionSchema>;
@@ -47,6 +49,8 @@ export interface ProjectApplicationSelection {
   projectId: string; appId: ApplicationId; enabled: boolean; revision: number; pendingOperationId: string | null;
   connections: Partial<Record<ApplicationProvider, string | null>>;
   slotRevisions: Partial<Record<ApplicationProvider, number>>;
+  /** UI diagnostic only. Business callers must still use strict selection reads. */
+  repair?: {slots:ApplicationProvider[];fingerprint:string};
 }
 export const providerApplication = (provider: ApplicationProvider): ApplicationId => provider === 'zentao' ? 'zentao' : 'mail';
 

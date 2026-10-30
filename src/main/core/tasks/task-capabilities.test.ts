@@ -118,3 +118,25 @@ describe('project stop while managed preparation is pending',()=>{
   expect(svc.runningInProject(projectId)).toBe(1);release();await rejected;expect(await stopping).toBe(true);expect(ptys.launches).toHaveLength(1);expect(consumers()).toEqual([]);
  });
 });
+
+
+describe('SK stop covers the first await of an owned resume',()=>{
+ it('immediate kill cancels before preparation or fork and keeps the original session refs',async()=>{
+  const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));const saved=await f.sessions.get(first.task.id),beforeRuns=[...runIds];
+  const opening=svc.open({taskId:first.task.id});const rejected=expect(opening).rejects.toThrow('取消');svc.kill(first.task.id);await rejected;
+  expect(ptys.launches).toHaveLength(1);expect(runIds).toEqual(beforeRuns);expect(consumers()).toEqual([]);expect(await f.sessions.get(first.task.id)).toEqual(saved);expect(svc.get(first.task.id).ptyId).toBeNull();
+ });
+ it('immediate project stop sees the pending resume and cannot report idle before it settles',async()=>{
+  const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));const opening=svc.open({taskId:first.task.id});const rejected=expect(opening).rejects.toThrow('取消');const busy=svc.runningInProject(projectId);const stopping=svc.stopProject(projectId,1000);await rejected;expect(busy).toBe(1);expect(await stopping).toBe(true);expect(ptys.launches).toHaveLength(1);expect(svc.runningInProject(projectId)).toBe(0);expect(consumers()).toEqual([]);
+ });
+ it('refuses plain archive while the resume has entered its first await',async()=>{
+  const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));const opening=svc.open({taskId:first.task.id});const rejected=expect(opening).rejects.toThrow('取消');let failure:unknown;try{svc.setArchived(first.task.id,true);}catch(error){failure=error;}svc.kill(first.task.id);await rejected;expect(String(failure)).toContain('正在运行');expect(svc.get(first.task.id).archivedAt).toBeNull();expect(ptys.launches).toHaveLength(1);
+ });
+ it('deleting during the first resume await cannot fork a task that no longer exists',async()=>{
+  const first=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toEqual([]));const opening=svc.open({taskId:first.task.id});const rejected=expect(opening).rejects.toThrow(/取消|不存在/);svc.delete(first.task.id);await rejected;expect(svc.list()).toEqual([]);expect(ptys.launches).toHaveLength(1);expect(consumers()).toEqual([]);
+ });
+});
+
+it('SK early cancellation is scoped to one task and a later explicit resume is not sticky-canceled',async()=>{
+ const first=await create(),other=await create();ptys.exit(first.ptyId);await vi.waitFor(()=>expect(consumers()).toHaveLength(1));const saved=await f.sessions.get(first.task.id),beforeRuns=[...runIds];const opening=svc.open({taskId:first.task.id}),joined=svc.open({taskId:first.task.id});expect(joined).toBe(opening);const rejected=expect(opening).rejects.toThrow('取消');svc.kill(first.task.id);await rejected;expect(runIds).toEqual(beforeRuns);expect(ptys.launches).toHaveLength(2);expect(svc.activePty(other.task.id)).toBe(other.ptyId);expect(svc.runningInProject('unrelated-project')).toBe(0);const restored=await svc.open({taskId:first.task.id});expect(restored.task.runtimeSnapshot?.sessionCapabilities).toEqual(first.task.runtimeSnapshot?.sessionCapabilities);expect((await f.sessions.get(first.task.id)).snapshot).toEqual(saved.snapshot);expect(ptys.launches).toHaveLength(3);expect(svc.activePty(other.task.id)).toBe(other.ptyId);
+});

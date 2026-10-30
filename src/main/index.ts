@@ -52,9 +52,18 @@ import type { FileCloseRequest } from '@shared/files';
 import { FileDiagramRenderer } from './core/files/diagram-renderer';
 import { installMediaProtocol, installViewerAssets, registerViewerAssetScheme } from './core/files/viewer-assets';
 
-// Preserve both the existing data root and Electron's safeStorage identity.
-configureAppIdentity(app, process.env.SMARTDD_USER_DATA);
-registerViewerAssetScheme();
+// A supported Electron Node launch executes the requested CJS without loading
+// this browser entry. Reaching it with Node intent means the fuse ignored that
+// intent; refuse before opening user data or a second normal App.
+const embeddedNodeModeRejected = process.env.ELECTRON_RUN_AS_NODE === '1';
+if (embeddedNodeModeRejected) {
+  process.stderr.write('WillYou application bridge unavailable: HOST_INCOMPATIBLE\n');
+  app.exit(1);
+} else {
+  // Preserve both the existing data root and Electron's safeStorage identity.
+  configureAppIdentity(app, process.env.SMARTDD_USER_DATA);
+  registerViewerAssetScheme();
+}
 
 const isProbeMode = process.env.SMARTDD_PROBE === '1';
 
@@ -180,7 +189,7 @@ async function main(): Promise<void> {
   let managedTasks:ManagedTaskCapabilities|undefined;
   try {
     if(agentSupport){
-      applications=new ApplicationService(agentSupport.store,{distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
+      applications=new ApplicationService(agentSupport.store,{distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>events.emit(applicationsChangedEvent,change)});
       await applications.recover();
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),stopPty:id=>ptys.kill(id)});
@@ -331,7 +340,7 @@ async function main(): Promise<void> {
   });
 }
 
-main().catch((e) => {
+if (!embeddedNodeModeRejected) main().catch((e) => {
   console.error(e);
   app.exit(1);
 });

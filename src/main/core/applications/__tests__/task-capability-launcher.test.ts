@@ -49,6 +49,7 @@ import {CapabilityBundleSource} from '../bundle-source';
 let root:string,home:string,cwd:string,sqlite:Database.Database,capabilities:CapabilityService,support:AgentSupportService,applications:ApplicationService,managed:ManagedTaskCapabilities,tasks:TaskService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,ptys:TestPtys,projectId:string,codexId:string,claudeId:string;
 let expectedDisposeError:unknown;
 let argMax:number|null;
+let applicationRuntimeAvailable:boolean;
 // TestPtys has no native bridge child. Its synthetic exit callbacks must settle
 // before their SQLite store/root is closed; retain every rejection for teardown.
 let fixtureBridgeExits:Promise<PromiseSettledResult<void>>[]=[];
@@ -67,14 +68,14 @@ class TestPtys extends EventEmitter implements PtyHost{
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
 beforeEach(async()=>{
- fixtureBridgeExits=[];expectedDisposeError=undefined;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
+ fixtureBridgeExits=[];expectedDisposeError=undefined;applicationRuntimeAvailable=true;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
  capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
- applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,peers:{read:async()=>null},stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+ applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,peers:{read:async()=>null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
 });
 afterEach(async()=>{
  const failures:unknown[]=[];
@@ -87,6 +88,47 @@ afterEach(async()=>{
 });
 const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
 const consumers=()=>readdirSync(join(home,'.agents/smartdd-runtime/catalog-consumers'));
+// Capture the real TaskService plan before publication. The original publisher
+// uses a distinct software kernel-birth epoch; actual SIGKILL/App evidence is
+// recorded by discovery-publication-native.mjs, not inferred from this fixture.
+async function interruptedTaskPublication(phase:'intent-recorded'|'registered'|'renamed'|'catalog-published'|'records-committed',owner:'stopped'|'running'='stopped'){
+ await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+ const original=SessionCapabilityProjector.prototype.sourceSkills;let captured:ReturnType<typeof original>|undefined;
+ const tap=vi.spyOn(SessionCapabilityProjector.prototype,'sourceSkills').mockImplementationOnce(function(this:SessionCapabilityProjector,...args){captured=original.apply(this,args);throw new Error('private capture before H publication');});
+ try{await expect(create()).rejects.toThrow('private capture before H publication');}finally{tap.mockRestore();}
+ expect(captured?.length).toBeGreaterThan(0);const birth=owner==='running'?reader.read(process.pid)!.startedAt:'darwin-proc-v1:99:9';
+ const processes={read:(pid:number)=>({pid,startedAt:birth}),state:()=> 'running' as const},checkpoint=(at:string)=>{if(at===phase)throw Error('private original H interruption');};
+ const catalog=new DiscoveryCatalog(support.store,home,processes,{checkpoint,intentCheckpoint:()=>checkpoint('intent-recorded')});
+ // A killed publisher cannot unwind its pre-C intent. Keep that distinction
+ // explicit; throwing alone legitimately cleans this one early checkpoint.
+ const unwind=phase==='intent-recorded'?vi.spyOn(catalog as unknown as {cancelPending:()=>Promise<void>},'cancelPending').mockRejectedValue(new Error('private dead publisher has no unwind')):undefined;
+ try{await expect(catalog.publish(captured!)).rejects.toThrow('private original H interruption');}finally{unwind?.mockRestore();}
+ const path=join(home,'.agents/smartdd-runtime/pending.json'),bytes=readFileSync(path),pending=JSON.parse(String(bytes));
+ return{path,bytes,pending};
+}
+describe('TaskService entry for interrupted matching H publication',()=>{
+ beforeEach(()=>{
+  // TestPtys never forks an MCP child; deliver the same explicit synthetic
+  // child exit used by the other production-composition fixtures.
+  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
+ });
+ it.each(['intent-recorded','registered','renamed','catalog-published','records-committed'] as const)('recovers a dead matching H publication at %s through the normal task entry',async phase=>{
+  const interrupted=await interruptedTaskPublication(phase);const created=await create();expect(created.task.runtimeSnapshot!.sessionCapabilities).toBeDefined();expect(existsSync(interrupted.path)).toBe(false);
+  expect(sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(interrupted.pending.operationId)).toEqual({state:'committed'});expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_operations WHERE kind='publish-H'").get()).toEqual({n:1});expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_id=? AND state<>'released'").get(interrupted.pending.operationId)).toEqual({n:0});expect(ptys.launches).toHaveLength(1);tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+ });
+ it.each(['running','unknown','tampered-source'] as const)('retains original H intent for %s rather than adopting its publication',async reason=>{
+  const interrupted=await interruptedTaskPublication('renamed',reason==='tampered-source'?'stopped':'running');
+  if(reason==='unknown')reader.unknown.add(process.pid);
+  if(reason==='tampered-source')sqlite.prepare("UPDATE capability_resources SET integrity='invalid' WHERE kind='application-package' AND path_scope='C'").run();
+  const before=sqlite.prepare('SELECT * FROM capability_resource_operations WHERE operation_id=?').get(interrupted.pending.operationId);
+  await expect(create()).rejects.toThrow(/维护|待核查|使用|存活|未知|就绪|来源/);expect(readFileSync(interrupted.path)).toEqual(interrupted.bytes);expect(sqlite.prepare('SELECT * FROM capability_resource_operations WHERE operation_id=?').get(interrupted.pending.operationId)).toEqual(before);expect(ptys.launches).toHaveLength(0);reader.unknown.clear();
+ });
+ it('repairs the original immutable publication before applying a newly confirmed selection, without treating old content as new authority',async()=>{
+  const interrupted=await interruptedTaskPublication('renamed');await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});const created=await create();expect(existsSync(interrupted.path)).toBe(false);expect(sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(interrupted.pending.operationId)).toEqual({state:'committed'});const saved=await managed.sessions.get(created.task.id);expect(saved.snapshot.packages.map(p=>p.appId).sort()).toEqual(['mail','zentao']);tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+ });
+});
 // Historical success fixtures need actual native history, not only a claimed ID/root.
 const codexDayDirectory=(stateRoot:string,stamp:number)=>{const day=new Date(stamp),pad=(n:number)=>String(n).padStart(2,'0');return join(stateRoot,'sessions',String(day.getFullYear()),pad(day.getMonth()+1),pad(day.getDate()));};
 const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(home,runner==='codex'?'.codex':'.claude'))=>{
@@ -96,6 +138,26 @@ const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(h
 };
 
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+ it('M10-UG-01 keeps legacy imported disabled standard capabilities out of a new managed Mail session',async()=>{
+  projects.createDatabase(projectId,{env:'test',label:'definition only',aliases:[],vendor:'postgres',host:'127.0.0.1',port:9,database:'fixture',schema:'public',username:'fixture',accessLevel:'readonly',isDefault:true,note:'Never connected',password:'isolated-disabled-password'});
+  for(const id of ['project-db-diagnostics','remote-password-ssh',MCP_CAPABILITY])sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,0)').run(randomUUID(),projectId,id);
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  let prepared:Awaited<ReturnType<typeof managed.broker.prepare>>|undefined;const original=managed.broker.prepare.bind(managed.broker);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{prepared=await original(...args);return prepared;});
+  const created=await create();
+  try{
+   const session=await managed.sessions.get(created.task.id);if(session.snapshot.schema!==2)throw Error('Expected current managed snapshot');
+   expect(session.snapshot.standardSkills).toEqual([]);expect(session.snapshot.mcp.some(m=>m.kind==='legacy-project-context')).toBe(false);
+   expect(session.snapshot.packages.map(p=>p.appId)).toEqual(['mail']);expect(session.snapshot.mcp.some(m=>m.kind==='applications')).toBe(true);
+   const runtime=created.task.runtimeSnapshot!;expect(runtime.skills.filter(s=>s.enabled)).toEqual([]);expect(runtime.mcp).toEqual([]);
+   expect(JSON.parse(readFileSync(runtime.manifestPath,'utf8')).pythonModules).toEqual([]);
+   expect(ptys.launches[0].env.PROJECT_DB_CONFIG).toBeUndefined();expect(Object.values(ptys.launches[0].env)).not.toContain('isolated-disabled-password');
+  }finally{
+   tasks.kill(created.task.id);
+   // This fake PTY never forks a native bridge; settle its explicit fixture receipt only.
+   if(prepared)await prepared.bridge.exited();
+  }
+ });
  it('connects the host recovery descriptor to a fresh authenticated broker instance without replacing the Agent',async()=>{
   const clients:ApplicationBridgeClient[]=[];
   vi.spyOn(support.adapters,'recovery').mockReturnValue({capability:'supported',evidence:'controlled adapter and kernel-peer fixture only',replace:async request=>{const client=new ApplicationBridgeClient(consumeBridgeBootstrap(request.bootstrapPath));clients.push(client);await client.start();}});
@@ -386,7 +448,8 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
    await expect(async()=>applications.insertTerminal(sender,{bindingId:revoked.id,operationId:randomUUID()})).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(readFileSync(inputReport,'utf8')).toBe(expected);expect(real.has(first.ptyId)).toBe(true);
    writeFileSync(stop,'owned fixture exit');await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'),{timeout:10000});await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(existsSync(first.task.runtimeSnapshot!.manifestPath)).toBe(false);
    expect(await applications.nativeMessages.verify(homeSource)).toBe(false);await applications.selections.setGlobalEnabled('mail',true,2);for(const path of [report,inputReport,stop])rmSync(path);
-   const resumed=await tasks.open({taskId:first.task.id}),nextRun=resumed.task.runtimeSnapshot!.runId;expect(nextRun).not.toBe(runId);await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const second=JSON.parse(readFileSync(report,'utf8')) as {initialArgument:string;result:{isError?:boolean}};expect(second.result.isError).not.toBe(true);expect(second.initialArgument).toBe(nativeId);expect(second.initialArgument).not.toBe(homePrompt);expect((await applications.nativeMessages.read(nextRun)).messages).toEqual([]);expect(sqlite.prepare('SELECT COUNT(*) AS n FROM mail_send_grants').get()).toEqual({n:0});
+   // The fixture opens the file before writing its JSON; existence is not a completed receipt.
+   const resumed=await tasks.open({taskId:first.task.id}),nextRun=resumed.task.runtimeSnapshot!.runId;expect(nextRun).not.toBe(runId);const second=await vi.waitFor(()=>JSON.parse(readFileSync(report,'utf8')) as {initialArgument:string;result:{isError?:boolean}},{timeout:10000});expect(second.result.isError).not.toBe(true);expect(second.initialArgument).toBe(nativeId);expect(second.initialArgument).not.toBe(homePrompt);expect((await applications.nativeMessages.read(nextRun)).messages).toEqual([]);expect(sqlite.prepare('SELECT COUNT(*) AS n FROM mail_send_grants').get()).toEqual({n:0});
    if(process.env.WY_M10_INPUT_EVIDENCE_ROOT){const dir=process.env.WY_M10_INPUT_EVIDENCE_ROOT;mkdirSync(dir,{recursive:true});writeFileSync(join(dir,'actual-argv-and-resume.json'),JSON.stringify({layer:'actual OS PTY/kernel/native MCP with synthetic CLI and native user JSON',initial:{taskId:first.task.id,runId,ptyId:first.ptyId,cliPid:observed.cliPid,bridgePid:observed.bridgePid,argument:observed.initialArgument,source:homeSource},resumed:{runId:nextRun,ptyId:resumed.ptyId,cliPid:managed.runs.get(nextRun).pid,argument:second.initialArgument,nativeUserMatches:0},sendGrants:0,actualAgents:false})+'\n',{flag:'wx',mode:0o600});}
    writeFileSync(stop,'owned resumed fixture exit');await vi.waitFor(()=>expect(managed.runs.get(nextRun).state).toBe('stopped'),{timeout:10000});await vi.waitFor(()=>expect(consumers()).toEqual([]));
 
@@ -530,6 +593,29 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
 });
 
 
+describe('task cancellation before the native fork',()=>{
+ it.each(['cancel','prepare-error','host-shutdown','host-shutdown-before-arming'] as const)('settles the known unspawned CLI and bridge after %s during arming',async reason=>{
+  await applications.selections.setAdded('mail',true,0);
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const original=managed.prepare.bind(managed);
+  const spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{
+   const launch=await original(input),before=launch.beforeSpawn.bind(launch);
+   launch.beforeSpawn=async()=>{
+    if(reason==='host-shutdown-before-arming'){tasks.dispose();await vi.waitFor(()=>expect(sqlite.prepare('SELECT state FROM capability_runs').get()).toEqual({state:'stopped'}));return;}
+    await before();if(reason==='cancel')tasks.kill(input.taskId);else if(reason==='host-shutdown')tasks.dispose();else throw new Error('controlled pre-fork preparation failure');
+   };
+   return launch;
+  });
+  await expect(create()).rejects.toThrow(reason==='prepare-error'?'controlled pre-fork preparation failure':'任务启动已取消');
+  expect(ptys.launches).toHaveLength(0);
+  await vi.waitFor(()=>expect(sqlite.prepare('SELECT state,revocation_state,pid FROM capability_runs').all()).toEqual([{state:'stopped',revocation_state:'revoked',pid:null}]));
+  expect(sqlite.prepare('SELECT kind,state,pid FROM capability_run_processes ORDER BY kind').all()).toEqual([{kind:'bridge',state:'canceled',pid:null},{kind:'cli',state:'canceled',pid:null}]);
+  expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_resource_leases WHERE owner_kind='run' AND state<>'released'").get()).toEqual({n:0});
+  if(reason.startsWith('host-shutdown'))expect(ptys.listenerCount('exit')).toBe(0);
+  expect(consumers()).toEqual([]);spy.mockRestore();
+ });
+});
+
 describe('native history loss after managed preparation is armed',()=>{
  it.each(['claude-code','codex'] as const)('refuses a late %s history loss before fork and cancels the known unspawned run',async runner=>{
   const first=await create(runner==='codex'?codexId:claudeId),nativeId=runner==='codex'?randomUUID():first.task.id,nativeRoot=join(home,runner==='codex'?'.codex':'.claude'),file=seedNativeHistory(runner,nativeId,nativeRoot);
@@ -573,7 +659,9 @@ describe('automatic original M4 activation through the real TaskService composit
   if(runner==='codex'){const flags=(parseToml(argv.find(a=>a.startsWith('skills.config='))!).skills as {config:{path:string;enabled:boolean}[]}).config;for(const path of paths)expect(flags).toContainEqual({path,enabled:true});expect(argv.join('\n')).toContain('mcp_servers.'+mcp);}
   else{expect(argv[argv.indexOf('--plugin-dir')+1]).toBe(join(dirname(original.snapshot.manifestPath),'plugin'));const config=JSON.parse(readFileSync(join(dirname(opened.task.runtimeSnapshot!.manifestPath),'mcp.json'),'utf8'));expect(Object.keys(config.mcpServers)).toEqual([mcp]);expect(config.mcpServers[mcp].args[1]).toBe(join(dirname(opened.task.runtimeSnapshot!.manifestPath),'context.json'));}
   expect(sqlite.prepare('SELECT source_record_json,state FROM capability_legacy_migration_preparations WHERE task_id=?').get(id)).toEqual({source_record_json:raw,state:'migrated'});expect(sqlite.prepare('SELECT count(*) n FROM mail_send_grants').get()).toEqual({n:0});tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(opened.task.runtimeSnapshot!.runId).state).toBe('stopped'));const again=await tasks.open({taskId:id});expect((await managed.sessions.get(id)).pointer).toEqual(current.pointer);expect(again.task.nativeSessionId).toBe(sessionId);expect(managed.runs.assertActive(again.task.runtimeSnapshot!.runId).snapshot).toEqual(current.snapshot);tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(again.task.runtimeSnapshot!.runId).state).toBe('stopped'));
- });
+ // Three full preparation/stop cycles use durable stores and native discovery.
+ // Keep their state waits and assertions; give this scenario a bounded budget.
+ },30000);
 });
 
 
@@ -615,6 +703,20 @@ async function stopForSwitchFixture(task:Awaited<ReturnType<typeof create>>,runn
  expect(tasks.get(task.task.id).recovery).toBe('resumable');tasks.kill(task.task.id);await vi.waitFor(()=>expect(managed.runs.get(task.task.runtimeSnapshot!.runId).state).toBe('stopped'));
  return id;
 }
+async function activeSwitchPair(){
+ const first=await create(codexId),nativeId=randomUUID();seedNativeHistory('codex',nativeId);
+ await vi.waitFor(()=>expect(tasks.get(first.task.id).nativeSessionId).toBe(nativeId),{timeout:6000});
+ await vi.waitFor(async()=>expect((await managed.sessions.get(first.task.id)).snapshot.native.sessionId).toBe(nativeId));
+ const second=await create(claudeId);seedNativeHistory('claude-code',second.task.id);expect(tasks.get(second.task.id).recovery).toBe('resumable');
+ return{first,second,firstNative:nativeId,firstFixed:await managed.sessions.get(first.task.id),secondFixed:await managed.sessions.get(second.task.id)};
+}
+async function foreignSwitchTask(sender:ApplicationUiSender,connectionId:string){
+ const directory=join(root,'foreign-switch-project');mkdirSync(directory);mkdirSync(join(directory,'.git'));
+ const project=projects.createProject({name:'foreign switch fixture',aliases:[],description:'',rulesPath:null},[{label:'',path:directory}]);
+ await applications.select(sender,{projectId:project.id,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:connectionId}});
+ const created=await tasks.create({projectId:project.id,dirId:null,aiProfileId:claudeId,firstMessage:''});
+ return{...created,projectId:project.id,selection:applications.selections.projectSettings(project.id,'zentao')};
+}
 describe('ZenTao switch only affects loaded application runs and gates their fork',()=>{
  beforeEach(()=>{
   // TestPtys never forks a native CLI or MCP bridge. Deliver the synthetic
@@ -652,6 +754,42 @@ describe('ZenTao switch only affects loaded application runs and gates their for
   try{await expect(create(claudeId)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(ptys.launches).toHaveLength(0);expect(sqlite.prepare("SELECT count(*) n FROM capability_runs WHERE state NOT IN ('stopped','failed')").get()).toEqual({n:0});}
   finally{release();await switching;prepare.mockRestore();stop.mockRestore();}
  },20000);
+ it('preserves A after one of two loaded runs fails to stop, gates resume during the wait and requires explicit retry',async()=>{
+  const x=await zentaoSwitchFixture(),pair=await activeSwitchPair(),foreign=await foreignSwitchTask(x.sender,x.a.id),before=applications.selections.projectSettings(projectId,'zentao'),count=ptys.launches.length;
+  const failedStop=new Error('controlled second loaded PTY stop failure'),kill=vi.mocked(ptys.kill),workingKill=kill.getMockImplementation()!;
+  kill.mockImplementation(id=>{if(id===pair.second.ptyId)throw failedStop;workingKill(id);});
+  let release!:()=>void,entered!:()=>void;const gate=new Promise<void>(r=>release=r),ready=new Promise<void>(r=>entered=r),originalStop=tasks.stopProject.bind(tasks);
+  const stop=vi.spyOn(tasks,'stopProject').mockImplementation(async(...args)=>{tasks.kill(pair.first.task.id);await vi.waitFor(()=>expect(managed.runs.get(pair.first.task.runtimeSnapshot!.runId).state).toBe('stopped'));entered();await gate;return originalStop(...args);});
+  let restored=false;const switching=x.next(),settled=switching.then(value=>({value,error:undefined}),error=>({value:undefined,error}));
+  try{
+   await ready;expect(applications.selections.projectSettings(projectId,'zentao')).toMatchObject({connections:{zentao:x.a.id},pendingOperationId:expect.any(String)});
+   await expect(tasks.open({taskId:pair.first.task.id})).rejects.toMatchObject({code:'RESOURCE_BUSY'});await expect(create()).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(ptys.launches).toHaveLength(count);
+   expect(tasks.activePty(foreign.task.id)).toBe(foreign.ptyId);release();expect((await settled).error).toBe(failedStop);
+   expect(applications.selections.projectSettings(projectId,'zentao')).toEqual(before);expect(tasks.activePty(pair.first.task.id)).toBeNull();expect(ptys.live.has(pair.second.ptyId)).toBe(true);expect(ptys.launches).toHaveLength(count);
+   expect(managed.runs.get(pair.second.task.runtimeSnapshot!.runId).state).toBe('stopping');expect(()=>managed.runs.assertActive(pair.second.task.runtimeSnapshot!.runId)).toThrow();
+   expect(applications.selections.projectSettings(foreign.projectId,'zentao')).toEqual(foreign.selection);expect(tasks.activePty(foreign.task.id)).toBe(foreign.ptyId);expect(managed.runs.assertActive(foreign.task.runtimeSnapshot!.runId).snapshot.projectId).toBe(foreign.projectId);expect(applications.selections.requireEnabled(foreign.projectId,'zentao').connections.zentao).toBe(x.a.id);
+   kill.mockImplementation(workingKill);stop.mockRestore();restored=true;tasks.kill(pair.second.task.id);await vi.waitFor(()=>expect(tasks.runningInProject(projectId)).toBe(0));
+   expect((await x.next()).connections.zentao).toBe(x.b.id);expect(ptys.launches).toHaveLength(count);
+   for(const[created,fixed,nativeId]of[[pair.first,pair.firstFixed,pair.firstNative],[pair.second,pair.secondFixed,pair.second.task.id]] as const){
+    const reopened=await tasks.open({taskId:created.task.id});expect(reopened.task.nativeSessionId).toBe(nativeId);expect((await managed.sessions.get(created.task.id)).snapshot).toEqual(fixed.snapshot);expect(reopened.task.runtimeSnapshot!.runId).not.toBe(created.task.runtimeSnapshot!.runId);
+    const detail=await applications.diagnoseSession(x.sender,created.task.id);expect(detail.applications.find(a=>a.appId==='zentao')!.connections[0]).toMatchObject({id:x.b.id,originalId:x.a.id,selection:'changed'});
+   }
+   expect(tasks.activePty(foreign.task.id)).toBe(foreign.ptyId);
+  }finally{release();await settled;if(!restored){kill.mockImplementation(workingKill);stop.mockRestore();}}
+ },40000);
+ it('rolls back a B binding commit after both loaded runs stopped and never restarts them automatically',async()=>{
+  const x=await zentaoSwitchFixture(),pair=await activeSwitchPair(),foreign=await foreignSwitchTask(x.sender,x.a.id),before=applications.selections.projectSettings(projectId,'zentao'),count=ptys.launches.length;
+  const slots=()=>sqlite.prepare('SELECT * FROM application_binding_slot_revisions WHERE project_id=? ORDER BY app_id,slot').all(projectId),bindings=()=>sqlite.prepare('SELECT * FROM application_project_bindings WHERE project_id=? ORDER BY app_id,slot').all(projectId),oldSlots=slots(),oldBindings=bindings();
+  sqlite.exec(`CREATE TEMP TRIGGER fail_switch_binding BEFORE INSERT ON application_project_bindings WHEN NEW.project_id='${projectId}' AND NEW.connection_id='${x.b.id}' BEGIN SELECT RAISE(ABORT,'controlled B binding commit failure'); END`);
+  try{await expect(x.next()).rejects.toThrow('controlled B binding commit failure');}finally{sqlite.exec('DROP TRIGGER fail_switch_binding');}
+  expect(tasks.runningInProject(projectId)).toBe(0);expect(tasks.activePty(pair.first.task.id)).toBeNull();expect(tasks.activePty(pair.second.task.id)).toBeNull();expect(ptys.launches).toHaveLength(count);
+  expect(applications.selections.projectSettings(projectId,'zentao')).toEqual(before);expect(slots()).toEqual(oldSlots);expect(bindings()).toEqual(oldBindings);expect(sqlite.prepare("SELECT state FROM application_binding_changes WHERE project_id=? ORDER BY rowid DESC LIMIT 1").get(projectId)).toEqual({state:'failed'});
+  expect((await managed.sessions.get(pair.first.task.id)).snapshot).toEqual(pair.firstFixed.snapshot);expect((await managed.sessions.get(pair.second.task.id)).snapshot).toEqual(pair.secondFixed.snapshot);expect(applications.selections.projectSettings(foreign.projectId,'zentao')).toEqual(foreign.selection);expect(tasks.activePty(foreign.task.id)).toBe(foreign.ptyId);expect(managed.runs.assertActive(foreign.task.runtimeSnapshot!.runId).snapshot.projectId).toBe(foreign.projectId);expect(applications.selections.requireEnabled(foreign.projectId,'zentao').connections.zentao).toBe(x.a.id);
+  expect((await x.next()).connections.zentao).toBe(x.b.id);expect(ptys.launches).toHaveLength(count);
+  const reopened=await tasks.open({taskId:pair.first.task.id});expect(reopened.task.nativeSessionId).toBe(pair.firstNative);expect((await managed.sessions.get(pair.first.task.id)).snapshot).toEqual(pair.firstFixed.snapshot);
+  const newTask=await create();const newDetail=await applications.diagnoseSession(x.sender,newTask.task.id);expect(newDetail.applications.find(a=>a.appId==='zentao')!.connections[0]).toMatchObject({id:x.b.id,originalId:x.b.id});
+  expect(sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);expect(tasks.activePty(foreign.task.id)).toBe(foreign.ptyId);
+ },40000);
 });
 
 describe('ZenTao switch retains already narrowed native-only running work',()=>{
@@ -1163,5 +1301,38 @@ describe('actual host preparation records independent native diagnostics',()=>{
 
   }}else expect(preparation.capabilities.every(i=>i.state==='unavailable')).toBe(true);const stored=(sqlite.prepare('SELECT evidence_json FROM capability_run_preparations WHERE run_id=?').get(running.task.runtimeSnapshot!.runId) as {evidence_json:string}).evidence_json;expect(stored).not.toMatch(/MUST_NOT_PERSIST/);expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(fixed.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);expect(ptys.live.has(running.ptyId)).toBe(true);
   }finally{if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
+ },30000);
+});
+
+
+describe('embedded runtime failure narrows only application execution',()=>{
+ beforeEach(()=>{
+  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
+ });
+ it.each(['codex','claude-code'].flatMap(runner=>['new','resume'].map(mode=>[runner,mode] as const)))('preserves fixed S and independent M4 on %s %s, then restores Apps only in a new owned run',async(runner,mode)=>{
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const profile=runner==='codex'?codexId:claudeId;
+  let seed:Awaited<ReturnType<typeof create>>|undefined,nativeId:string|undefined,prior:Awaited<ReturnType<typeof managed.sessions.get>>|undefined;
+  if(mode==='resume'){seed=await create(profile);nativeId=await stopForSwitchFixture(seed,runner as 'codex'|'claude-code');prior=await managed.sessions.get(seed.task.id);}
+  applicationRuntimeAvailable=false;
+  const preparation=vi.spyOn(managed.broker,'prepare'),before=preparation.mock.calls.length;
+  const running=seed?await tasks.open({taskId:seed.task.id}):await create(profile),id=running.task.id,runId=running.task.runtimeSnapshot!.runId,fixed=await managed.sessions.get(id),scope=managed.runs.assertActive(runId);
+  expect(scope.applicationScope).toEqual([]);expect(scope.excludedApplications).toEqual([{appId:'mail',packageHash:fixed.snapshot.packages[0].packageHash,code:'HOST_INCOMPATIBLE'}]);
+  expect(preparation.mock.calls.length).toBe(before);expect(sqlite.prepare("SELECT * FROM capability_run_processes WHERE run_id=? AND kind='bridge'").all(runId)).toEqual([]);
+  expect(fixed.snapshot.packages.map(p=>p.appId)).toEqual(['mail']);if(prior){expect(fixed.snapshot).toEqual(prior.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);}
+  const diagnostic=await applications.sessionDiagnostics.inspect(id),receipt=diagnostic.currentRun!.preparation!;expect(receipt.schema).toBe(2);
+  if(receipt.schema!==2)throw new Error('Expected per-capability preparation');
+  expect(receipt.capabilities.find(c=>c.kind==='application')).toMatchObject({state:'unavailable',issueCode:'HOST_INCOMPATIBLE'});
+  const independent=receipt.capabilities.filter(c=>c.kind!=='application');expect(independent.length).toBeGreaterThan(0);expect(independent.every(c=>c.state==='prepared')).toBe(true);
+  expect(running.task.runtimeSnapshot!.skills.filter(s=>s.enabled).length).toBe(fixed.snapshot.standardSkills.length);expect(running.task.runtimeSnapshot!.mcp.some(m=>m.name===fixed.snapshot.mcp.find(m=>m.kind==='legacy-project-context')!.serverName)).toBe(true);
+  const tools=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data));expect(await tools.call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'HOST_INCOMPATIBLE'}});
+  applicationRuntimeAvailable=true;expect(managed.runs.assertActive(runId).applicationScope).toEqual([]);
+  if(mode==='new')nativeId=await stopForSwitchFixture(running,runner as 'codex'|'claude-code');else{tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+  expect(sqlite.prepare("SELECT * FROM capability_resource_leases WHERE owner_kind='run' AND owner_id=? AND state='active'").all(runId)).toEqual([]);
+  const resumed=await tasks.open({taskId:id}),newRun=resumed.task.runtimeSnapshot!.runId;expect(newRun).not.toBe(runId);expect(resumed.task.nativeSessionId).toBe(nativeId);expect((await managed.sessions.get(id)).selectionHash).toBe(fixed.selectionHash);expect(managed.runs.assertActive(newRun).applicationScope??fixed.snapshot.packages.map(p=>p.appId)).toEqual(['mail']);expect(preparation.mock.calls.length).toBe(before+1);
+  expect(await tools.call(newRun,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});
+  tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(newRun).state).toBe('stopped'));
  },30000);
 });

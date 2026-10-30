@@ -3,7 +3,7 @@ import {existsSync,lstatSync,mkdtempSync,readFileSync,realpathSync,rmSync,writeF
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
-import {beforeAll,afterAll,beforeEach,afterEach,describe,it,expect} from 'vitest';
+import {beforeAll,afterAll,beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {ApplicationError} from '@shared/applications';
 import {agentFixture} from './agent-fixture';
 import {FixtureProcessReader} from './run-fixture';
@@ -29,6 +29,14 @@ describe.skipIf(process.platform!=='darwin')('whole graph transaction, real nati
  const restart=()=>{reader.identities.set(process.pid,'darwin-proc-v1:200:20');return new ResourceGraphMaintenance(f.store,reader,input=>restoreOwnedDirectory(helper,input));};
  async function upgrade(separateRuntime=false){const source=fixtureBundle('2.0.0');source.manifest.runtime.hash=separateRuntime?(await new RuntimeRegistry(f.store).install({id:'applications',protocolMajor:1,bridgeEntry:'mcp-bridge.cjs',files:{'mcp-bridge.cjs':Buffer.from('module.exports={next:true};')}})).contentHash:f.source.manifest.runtime.hash;const next=await f.packages.install(source);await f.packages.activate(next.packageHash,1);return next;}
  async function setup(separateRuntime=false){const snapshot=f.plan('codex'),original=await catalog.publish(f.projector.sourceSkills(snapshot));await upgrade(separateRuntime);return original;}
+ it('propagates cleanup cancellation past its initial C read into the occupied H coordinator',async()=>{
+  const collection=await setup(),proposal=await engine.plan(root()),source=f.snapshotTree(f.store.directory(f.store.get(root()))),before=f.sqlite.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all();expect(proposal.canCollect).toBe(true);
+  let held!:()=>void,release!:()=>void,requestedH!:()=>void;const ready=new Promise<void>(done=>{held=done;}),hRequest=new Promise<void>(done=>{requestedH=done;});const holder=catalog.coordinateGc(async()=>{held();await new Promise<void>(done=>{release=done;});});await ready;
+  const controller=new AbortController(),executing=vi.fn();let acquisitions=0,settled=false;
+  try{
+   const pending=engine.cleanup(root(),proposal.planHash,{signal:controller.signal,onExecuting:executing,lockOptions:()=>{if(++acquisitions===2)requestedH();return{signal:controller.signal,timeoutMs:1000};}});void pending.then(()=>{settled=true;},()=>{settled=true;});await hRequest;await new Promise<void>(done=>setImmediate(done));expect(settled).toBe(false);controller.abort();await expect(pending).rejects.toMatchObject({code:'CANCELED'});expect(executing).not.toHaveBeenCalled();expect(f.snapshotTree(f.store.directory(f.store.get(root())))).toEqual(source);expect(f.sqlite.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all()).toEqual(before);catalog.verify(collection);
+  }finally{release();await holder;}
+ });
  const sessionRows=()=>({snapshots:f.sqlite.prepare('SELECT * FROM capability_session_snapshots ORDER BY task_id').all(),refs:f.sqlite.prepare('SELECT * FROM capability_session_refs ORDER BY task_id,ref_id').all(),identities:f.sqlite.prepare('SELECT * FROM capability_session_identities ORDER BY task_id').all()});
  it('keeps a committed original S and its resumed run authoritative after the default changes; GC cannot remove its source',async()=>{
   const snapshot=f.plan('codex'),collection=await catalog.publish(f.projector.sourceSkills(snapshot));snapshot.catalogGeneration=collection.generation;const saved=await f.sessions.create(snapshot,f.home);await upgrade();const before=sessionRows(),source=f.snapshotTree(f.store.directory(f.store.get(root()))),proposal=await engine.plan(root());expect(proposal.canCollect).toBe(false);

@@ -54,6 +54,35 @@ describe('fixed-package tools, exact request receipts, semantic retries and reso
     expect(await service.call(run.runId,randomUUID(),call())).toMatchObject({ status: 'error',error: { attemptCount: 3,retryExhausted: true,effectState: 'read-only' } }); expect(count).toBe(3);
     execute = async () => { throw new ApplicationError('AUTH_FAILED','controlled auth failure'); }; expect(await service.call(run.runId,randomUUID(),call('different'))).toMatchObject({ status: 'error',error: { code: 'AUTH_FAILED',attemptCount: 1,retryable: false } }); expect(count).toBe(4);
   });
+  it('retries a busy safe read inside its original operation and deadline, then returns the recovered result', async () => {
+    const original = execute, operations: ApplicationOperationContext[] = [];
+    execute = async (context,args,operation) => { operations.push(operation); if (operation.attempt < 2) throw new ApplicationError('RESOURCE_BUSY','controlled source lock'); return original(context,args,operation); };
+    expect(await service.call(run.runId,randomUUID(),call())).toMatchObject({ status: 'ok',value: { value: 'synthetic-body' } });
+    expect(count).toBe(2); expect(new Set(operations.map(o => o.operationId)).size).toBe(1); expect(new Set(operations.map(o => o.deadline)).size).toBe(1);
+    expect(f.sqlite.prepare('SELECT attempt_count,state FROM application_invocations').get()).toEqual({ attempt_count: 2,state: 'succeeded' });
+  });
+  it('exhausts a busy safe read after three attempts with one failed operation and no result payload', async () => {
+    execute = async () => { throw new ApplicationError('RESOURCE_BUSY','controlled source lock'); };
+    const response = await service.call(run.runId,randomUUID(),call());
+    expect(response).toMatchObject({ status: 'error',error: { code: 'RESOURCE_BUSY',attemptCount: 3,retryable: true,retryExhausted: true,effectState: 'read-only' } }); expect(response).not.toHaveProperty('value'); expect(count).toBe(3);
+    expect(f.sqlite.prepare('SELECT attempt_count,state,error_code FROM application_invocations').get()).toEqual({ attempt_count: 3,state: 'failed',error_code: 'RESOURCE_BUSY' });
+  });
+  it('rechecks current authorization before retrying a busy safe read', async () => {
+    execute = async () => { connectionAllowed = false; throw new ApplicationError('RESOURCE_BUSY','controlled source lock'); };
+    expect(await service.call(run.runId,randomUUID(),call())).toMatchObject({ status: 'error',error: { code: 'AUTH_REQUIRED',attemptCount: 1,retryable: false } }); expect(count).toBe(1);
+  });
+  it('cancels a busy read during backoff without another source attempt', async () => {
+    const controller = new AbortController();
+    execute = async () => { setTimeout(() => controller.abort(),0); throw new ApplicationError('RESOURCE_BUSY','controlled source lock'); };
+    const delayed = new ApplicationToolService(f.store,f.runs,{ resolve: () => ({ semantics: 'read',retry: 'safe-read',authorize: () => undefined,execute: async (...args) => { count++; return execute(...args); } }) },{ retryDelays: [5000,5000] });
+    expect(await delayed.call(run.runId,randomUUID(),call(),controller.signal)).toMatchObject({ status: 'error',error: { code: 'CANCELED',attemptCount: 1 } });
+    await vi.waitFor(() => expect(f.sqlite.prepare('SELECT state FROM application_invocations').get()).toEqual({ state: 'failed' })); expect(count).toBe(1);
+  });
+  it('does not replay busy writes or reads whose trusted executor disallows retry', async () => {
+    execute = async () => { throw new ApplicationError('RESOURCE_BUSY','controlled busy operation'); };
+    expect(await service.call(run.runId,randomUUID(),call('write',true))).toMatchObject({ status: 'error',error: { code: 'RESOURCE_BUSY',attemptCount: 1,retryable: false,effectState: 'unknown' } });
+    retry = 'never'; expect(await service.call(run.runId,randomUUID(),call())).toMatchObject({ status: 'error',error: { code: 'RESOURCE_BUSY',attemptCount: 1,retryExhausted: false } }); expect(count).toBe(2);
+  });
   it('persists unknown before invoking a write and never retries it or leaks arbitrary thrown text', async () => {
     execute = async (_context,_args,op) => { expect(f.sqlite.prepare('SELECT effect_state,state FROM application_invocations WHERE operation_id=?').get(op.operationId)).toEqual({ effect_state: 'unknown',state: 'running' }); throw new Error('DO-NOT-LOG-SECRET'); };
     const response = await service.call(run.runId,randomUUID(),call('write',true)); expect(response).toMatchObject({ status: 'error',error: { effectState: 'unknown',retryable: false,attemptCount: 1 } }); expect(JSON.stringify(response)).not.toContain('DO-NOT-LOG-SECRET'); expect(count).toBe(1); expect(f.sqlite.prepare('SELECT state FROM application_invocations').get()).toEqual({ state: 'unknown' });

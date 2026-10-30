@@ -49,7 +49,7 @@ async function sharedDatabase(store:ResourceStore):Promise<StorageMeasurement>{
   if(!Number.isSafeInteger(bytes))throw Error('size');return{bytes,complete:true};
  }catch{return unavailable();}
 }
-export async function mailBusinessUsage(store:ResourceStore,root:string):Promise<MailBusinessUsage>{
+export async function mailBusinessUsage(store:ResourceStore,root:string,externalMaterialsPending=false):Promise<MailBusinessUsage>{
  const [files,database]=await Promise.all([ownedMailFiles(store,root),sharedDatabase(store)]);
- return{files,sharedDatabase:database,drafts:(store.sqlite.prepare('SELECT count(*) n FROM mail_drafts').get() as {n:number}).n,sends:(store.sqlite.prepare('SELECT count(*) n FROM mail_send_executions').get() as {n:number}).n};
+ return{files:externalMaterialsPending?unavailable():files,sharedDatabase:database,drafts:(store.sqlite.prepare('SELECT count(*) n FROM mail_drafts').get() as {n:number}).n,sends:(store.sqlite.prepare('SELECT count(*) n FROM mail_send_executions').get() as {n:number}).n};
 }

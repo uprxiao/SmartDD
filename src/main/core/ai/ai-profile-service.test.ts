@@ -129,6 +129,11 @@ describe('AiProfileService', () => {
     expect(secretRows()).toEqual([]);
   });
 
+  it.each(['opencode','pi','dsh'])('PW refuses unsupported runner %s before saving a guessed command or credentials',runner=>{
+    svc.create(input({name:'Original private Codex',runner:'codex',executable:'/private/test/codex',env:[]}));const before=svc.list(),beforeSecrets=secretRows();
+    expect(()=>svc.create(input({name:'Unknown runner attempt',runner:runner as never,executable:null}))).toThrow('运行器');expect(svc.list()).toEqual(before);expect(secretRows()).toEqual(beforeSecrets);
+  });
+
   it('explains invalid input in Chinese', () => {
     expect(() => svc.create(input({ name: ' ' }))).toThrow('输入无效：配置名称不能为空');
     expect(() => svc.create(input({ env: [{ name: '1BAD', secret: false, value: '' }] }))).toThrow(

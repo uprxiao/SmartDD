@@ -7,6 +7,7 @@ export const projectKey = (id: string) => ['project', id] as const;
 export function useProjectList(includeArchived = false) {
   return useQuery({
     queryKey: projectListKey(includeArchived),
+    networkMode: 'always', // Local IPC; main owns filesystem and provider failures.
     queryFn: () => rpc.projects.list({ includeArchived }),
   });
 }
@@ -14,6 +15,7 @@ export function useProjectList(includeArchived = false) {
 export function useProject(id: string | null) {
   return useQuery({
     queryKey: projectKey(id ?? ''),
+    networkMode: 'always',
     queryFn: () => rpc.projects.get(id as string),
     enabled: Boolean(id),
     // Directory status is read from disk; coming back to the window should show moved/deleted dirs.

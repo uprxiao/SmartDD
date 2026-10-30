@@ -11,6 +11,7 @@ import {PackageRegistry} from './package-registry';
 import type {ProcessIdentityReader} from './process-identity';
 import type {ResourceStore} from './resource-store';
 import {withResourceLock} from './resource-lock';
+import type {CleanupWaitControl} from './maintenance-waits';
 import {CapabilitySessionRegistry} from './session-registry';
 import type {DirectoryRestorer} from './restore-owned-directory';
 import {RuntimeRegistry} from './runtime-registry';
@@ -41,6 +42,16 @@ export class ApplicationVersionMaintenance {
  private readonly sessions:CapabilitySessionRegistry;
  constructor(private readonly store:ResourceStore,private readonly processes:ProcessIdentityReader,private readonly checkpoint?:(phase:VersionCleanupCheckpoint)=>void,private readonly restoreDirectory?:DirectoryRestorer,private readonly graph?:ResourceGraphMaintenance){
   this.packages=new PackageRegistry(store,'maintenance-reader');this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw new Error('read only');},verifyExtraResource:()=>{throw new Error('read only');}});
+ }
+ private publicationRecord(resourceId:string,hash:string,relativePath:string,operationId:string|null):ApplicationVersionUsage['publication']{
+  const unknown={state:'unknown' as const,errorCode:null,updatedAt:null};if(!operationId)return unknown;
+  const row=this.store.sqlite.prepare('SELECT kind,state,plan_json,error_code,updated_at FROM capability_resource_operations WHERE operation_id=? AND owner_store_id=?').get(operationId,this.store.storeId) as {kind:string;state:string;plan_json:string;error_code:string|null;updated_at:string}|undefined;if(!row)return unknown;
+  if(!['install-application-package','restore-application-package'].includes(row.kind))return undefined;
+  try{const plan=JSON.parse(row.plan_json);if(plan?.resourceId!==resourceId||plan.hash!==hash||plan.relativePath!==relativePath)return unknown;}catch{return unknown;}
+  const state=z.enum(['preparing','verified','published','failed','committed']).safeParse(row.state);if(!state.success)return unknown;
+  const codes=new Set(['INSTALL_FAILED','HASH_MISMATCH','OWNERSHIP_CONFLICT','RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','RESOURCE_STATE_CHANGED','CANCELED','NOT_FOUND','INVALID_PACKAGE','HOST_INCOMPATIBLE','SOURCE_UNAVAILABLE']);
+  const date=new Date(row.updated_at),updatedAt=Number.isFinite(date.valueOf())&&date.toISOString()===row.updated_at?row.updated_at:null;
+  return{state:state.data,errorCode:row.error_code&&codes.has(row.error_code)?row.error_code:null,updatedAt};
  }
  private metadata(){
   const db=this.store.sqlite;
@@ -80,10 +91,10 @@ export class ApplicationVersionMaintenance {
    const leases=db.prepare("SELECT resource_id,owner_kind,owner_id FROM capability_resource_leases WHERE state<>'released'").all() as {resource_id:string;owner_kind:string;owner_id:string}[];
    const held=leases.filter(l=>ids.has(l.resource_id));for(const l of held)if(l.owner_kind==='run')runIds.add(l.owner_id);
    if(held.length||runIds.size)reasons.add('运行或资源操作仍有占用');
-   const measured=new Set<string>();
+   const measured=new Set<string>();let publication:ApplicationVersionUsage['publication'];
    let sourceBytes:number|null=null,projectionBytes:number|null=0,integrity:ApplicationVersionUsage['integrity']='unknown',compatibility:ApplicationVersionUsage['compatibility']='unknown',state='recovery-required',generation=0;
    try{
-    const resource=this.store.get(row.resourceId);state=resource.state;generation=resource.generation;
+    const resource=this.store.get(row.resourceId);state=resource.state;generation=resource.generation;publication=this.publicationRecord(row.resourceId,row.hash,resource.relativePath,resource.operationId);
     const installed=this.packages.get(row.hash);try{assertHostCompatible(installed.manifest);compatibility='compatible';}catch{compatibility='incompatible';issues.push('原版本与当前宿主契约不兼容');}
     if(state==='removed'){integrity='removed';sourceBytes=0;reasons.add('版本文件已清理，保留身份记录');}
     else if(resource.pathScope!=='C'){reasons.add('版本原件归属待核查');}
@@ -98,7 +109,7 @@ export class ApplicationVersionMaintenance {
    }
    let graph:ResourceGcPlan|undefined;try{graph=gcPlans(row.resourceId);if(graph.issues.length)reasons.add('资源依赖与保留依据待核查');}catch{reasons.add('资源依赖与保留依据待核查');}
    const canCleanup=state==='ready'&&integrity==='valid'&&reasons.size===0&&graph?.canCollect===true;
-   return{appId,version:row.version,packageHash:row.hash,resourceId:row.resourceId,state,defaultForNewSessions:isDefault,sessionRefCount,tombstoneRefCount,activeRunCount:runIds.size,references,sourceBytes,projectionBytes,reclaimableBytes:canCleanup?sourceBytes:0,integrity,compatibility,retentionReasons:[...reasons],issues,canCleanup,planHash:digest(canonicalJson({resourceId:row.resourceId,generation,proof:this.proof(row.resourceId,appId,unresolved,graph?.planHash)})),cleanupRecovery:state==='deleting'?this.cleanupPreview(row.resourceId,row.hash):undefined,cleanupGraph:graph?{planHash:graph.planHash,deleteOrder:graph.deleteOrder,retained:graph.retained,issues:graph.issues,requiresSharedCoordinator:graph.resources.some(r=>r.pathScope==='H')}:undefined};
+   return{appId,version:row.version,packageHash:row.hash,resourceId:row.resourceId,state,publication,defaultForNewSessions:isDefault,sessionRefCount,tombstoneRefCount,activeRunCount:runIds.size,references,sourceBytes,projectionBytes,reclaimableBytes:canCleanup?sourceBytes:0,integrity,compatibility,retentionReasons:[...reasons],issues,canCleanup,planHash:digest(canonicalJson({resourceId:row.resourceId,generation,proof:this.proof(row.resourceId,appId,unresolved,graph?.planHash)})),cleanupRecovery:state==='deleting'?this.cleanupPreview(row.resourceId,row.hash):undefined,cleanupGraph:graph?{planHash:graph.planHash,deleteOrder:graph.deleteOrder,retained:graph.retained,issues:graph.issues,requiresSharedCoordinator:graph.resources.some(r=>r.pathScope==='H')}:undefined};
   });
   return{appId,items,checkedAt:new Date().toISOString(),recoveryPending:(db.prepare("SELECT count(*) AS n FROM capability_resource_operations WHERE kind='cleanup-application' AND owner_store_id=? AND state NOT IN ('committed','canceled')").get(this.store.storeId) as {n:number}).n};
  }
@@ -182,10 +193,11 @@ export class ApplicationVersionMaintenance {
   this.store.sqlite.transaction(()=>{this.assertNoConsumers(plan);const row=this.store.get(plan.resourceId);if(row.state!=='deleting'||row.operationId!==operationId||row.generation!==plan.generation)throw new ApplicationError('RESOURCE_STATE_CHANGED','原清理资源已变化');this.store.sqlite.prepare("UPDATE capability_resources SET state='ready',integrity='valid',generation=generation+1,operation_id=? WHERE resource_id=?").run(cancelOperationId,plan.resourceId);this.phase(operationId,'canceled');this.phase(cancelOperationId,'committed');}).immediate();this.checkpoint?.('cancel-committed');
   return{packageHash:plan.packageHash,operationId,cancelOperationId,state:'canceled'};
  }
- async cleanup(input:ApplicationVersionCleanup):Promise<ApplicationVersionCleanupResult>{
+ async cleanup(input:ApplicationVersionCleanup,waiting?:CleanupWaitControl):Promise<ApplicationVersionCleanupResult>{
   const value=cleanupInput.parse(input);
-  if(this.graph){const installed=this.packages.get(value.packageHash);if(installed.appId!==value.appId)throw new ApplicationError('RESOURCE_STATE_CHANGED','清理应用身份不同');const result=await this.graph.cleanup(installed.resourceId,value.planHash);if(result.state!=='removed')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源图未完成删除');return{packageHash:value.packageHash,operationId:result.operationId,state:'removed',removedFileBytes:result.removedFileBytes};}
+  if(this.graph){const installed=this.packages.get(value.packageHash);if(installed.appId!==value.appId)throw new ApplicationError('RESOURCE_STATE_CHANGED','清理应用身份不同');const result=await this.graph.cleanup(installed.resourceId,value.planHash,waiting);if(result.state!=='removed')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源图未完成删除');return{packageHash:value.packageHash,operationId:result.operationId,state:'removed',removedFileBytes:result.removedFileBytes};}
   return withResourceLock(this.store.root,()=>{
+   waiting?.onExecuting();
    const usage=this.inventory(value.appId).items.find(i=>i.packageHash===value.packageHash);
    if(!usage)throw new ApplicationError('NOT_FOUND','本机没有该应用版本');
    if(usage.planHash!==value.planHash)throw new ApplicationError('RESOURCE_STATE_CHANGED','版本占用已变化，请重新检查清理计划');
@@ -201,7 +213,7 @@ export class ApplicationVersionMaintenance {
     this.store.sqlite.prepare("UPDATE capability_resources SET state='deleting',generation=?,operation_id=? WHERE resource_id=? AND state='ready'").run(plan.generation,operationId,plan.resourceId);
    }).immediate();
    this.checkpoint?.('marked');return this.finish(operationId,plan);
-  });
+  },waiting?.lockOptions());
  }
  private verifyRemainder(path:string,plan:Plan,partial:boolean){
   const st=lstatSync(path);if(st.isSymbolicLink()||!st.isDirectory()||st.dev!==plan.directory.dev||st.ino!==plan.directory.ino)throw new ApplicationError('OWNERSHIP_CONFLICT','原清理目录身份已改变，保留现场');

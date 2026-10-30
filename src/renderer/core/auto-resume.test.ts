@@ -13,6 +13,7 @@ const task = (over: Partial<TaskView> = {}): TaskView => ({
   aiProfileColor: null,
   runner: 'claude',
   nativeSessionId: 's1',
+  runtimeSnapshot: { runId:'known-run', projectId:'p1', configVersion:1, configHash:'known-hash', manifestPath:'/tmp/known/manifest', auditPath:'/tmp/known/audit', skills:[], mcp:[], selfCheck:{status:'passed',issues:[],at:0} },
   title: 'T',
   firstMessage: 'hi',
   injectedEnvNames: [],
@@ -29,6 +30,11 @@ const task = (over: Partial<TaskView> = {}): TaskView => ({
 });
 
 describe('shouldAutoResume', () => {
+  it.each(['claude','codex'] as const)('keeps %s native history without a recorded capability snapshot read-only until explicit resume', runner => {
+    expect(shouldAutoResume(task({runner,runtimeSnapshot:null}),new Set())).toBe(false);
+    expect(shouldAutoResume(task({runner,runtimeSnapshot:undefined}),new Set())).toBe(false);
+    expect(shouldAutoResume(task({runner}),new Set())).toBe(true);
+  });
   it('resumes a stopped task with a session to continue', () => {
     expect(shouldAutoResume(task(), new Set())).toBe(true);
     expect(shouldAutoResume(task({ recovery: 'fresh' }), new Set())).toBe(true);

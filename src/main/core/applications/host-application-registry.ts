@@ -11,12 +11,14 @@ export type HostedIdentity<C extends HostedConfiguration>=Omit<VerifiedConnectio
 export type HostedConnection<C extends HostedConfiguration,A extends string>=Omit<ApplicationConnection,'appId'|'providerId'|'config'|'identity'>&{appId:A;providerId:C['kind'];config:C;identity:HostedIdentity<C>};
 export type HostedSave<C extends HostedConfiguration>=Omit<SaveApplicationConnection,'config'>&{config:C};
 export type HostedCandidate<C extends HostedConfiguration>=Omit<VerifiedConnectionCandidate,'identity'>&{identity:HostedIdentity<C>};
-export type HostedSelectionInput<C extends HostedConfiguration,A extends string>=Omit<ProjectApplicationSelectionInput,'appId'|'connections'>&{appId:A;connections:Partial<Record<C['kind'],string|null>>};
-export type HostedSelection<C extends HostedConfiguration,A extends string>=Omit<ProjectApplicationSelection,'appId'|'connections'|'slotRevisions'>&{appId:A;connections:Partial<Record<C['kind'],string|null>>;slotRevisions:Partial<Record<C['kind'],number>>};
+export type HostedSelectionInput<C extends HostedConfiguration,A extends string>=Omit<ProjectApplicationSelectionInput,'appId'|'connections'|'repair'>&{appId:A;connections:Partial<Record<C['kind'],string|null>>;repair?:{slot:C['kind'];fingerprint:string}};
+export type HostedSelection<C extends HostedConfiguration,A extends string>=Omit<ProjectApplicationSelection,'appId'|'connections'|'slotRevisions'|'repair'>&{appId:A;connections:Partial<Record<C['kind'],string|null>>;slotRevisions:Partial<Record<C['kind'],number>>;repair?:{slots:C['kind'][];fingerprint:string}};
 export interface HostProvider<C extends HostedConfiguration,A extends string>{
  id:C['kind'];appId:A;configApiMajor:1;configSchemaVersion?:number;configSchema:z.ZodType<C>;
  authentication:{kind:'secret';modes:readonly string[]}|{kind:'none';mode:string};
  permissions:{read:string;write:string};
+ /** Non-authority defaults pinned per read operation; only trusted, unauthenticated providers may declare them. */
+ readDefaultKeys?:readonly string[];
  validateCandidate?:(config:C,previous:C|null,secretSupplied:boolean)=>void;
 }
 export interface HostApplicationDefinitions<C extends HostedConfiguration,A extends string>{
@@ -27,7 +29,7 @@ const id=z.string().regex(/^[a-z][a-z0-9-]{0,63}$/);
 const text=z.string().trim().min(1).max(512).refine(s=>!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/u.test(s));
 const identitySchema=z.object({providerId:id,serviceId:text,accountId:text,contractMajor:z.literal(1)}).strict();
 const saveFields=z.object({id:z.uuid().optional(),expectedRevision:z.number().int().nonnegative(),name:text.max(120),config:z.unknown(),secret:z.string().min(1).max(65536).optional(),acceptedImpactHash:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict();
-const selectionFields=z.object({projectId:z.string().min(1).max(128),appId:id,expectedRevision:z.number().int().nonnegative(),enabled:z.boolean(),connections:z.record(id,z.uuid().nullable())}).strict();
+const selectionFields=z.object({projectId:z.string().min(1).max(128),appId:id,expectedRevision:z.number().int().nonnegative(),enabled:z.boolean(),connections:z.record(id,z.uuid().nullable()),repair:z.object({slot:id,fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict().optional()}).strict();
 const exactKeys=(value:unknown,keys:readonly string[])=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Reflect.ownKeys(value).every(key=>typeof key==='string'&&keys.includes(key));
 /** Compiled main-process definitions only. Neither RPC nor package manifests can
  * register schemas,executors or providers. Persistent rows are FK metadata,not
@@ -43,11 +45,12 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
    this.applications.set(application.id,Object.freeze({...application,slots:Object.freeze([...application.slots])}));
   }
   for(const provider of definitions.providers){
-   if(!exactKeys(provider,['id','appId','configApiMajor','configSchemaVersion','configSchema','authentication','permissions','validateCandidate'])||!id.safeParse(provider.id).success||this.providers.has(provider.id)||!this.applications.has(provider.appId)||provider.configApiMajor!==1||!Number.isSafeInteger(provider.configSchemaVersion??1)||(provider.configSchemaVersion??1)<1||!provider.configSchema||typeof provider.configSchema.safeParse!=='function'||!exactKeys(provider.permissions,['read','write'])||![provider.permissions.read,provider.permissions.write].every(p=>typeof p==='string'&&p.startsWith(provider.appId+'.')&&/^[a-z][a-z0-9.-]{0,127}$/.test(p)))throw invalid();
+   if(!exactKeys(provider,['id','appId','configApiMajor','configSchemaVersion','configSchema','authentication','permissions','readDefaultKeys','validateCandidate'])||!id.safeParse(provider.id).success||this.providers.has(provider.id)||!this.applications.has(provider.appId)||provider.configApiMajor!==1||!Number.isSafeInteger(provider.configSchemaVersion??1)||(provider.configSchemaVersion??1)<1||!provider.configSchema||typeof provider.configSchema.safeParse!=='function'||!exactKeys(provider.permissions,['read','write'])||![provider.permissions.read,provider.permissions.write].every(p=>typeof p==='string'&&p.startsWith(provider.appId+'.')&&/^[a-z][a-z0-9.-]{0,127}$/.test(p)))throw invalid();
    const auth=provider.authentication;
    if(!auth||auth.kind!=='none'&&auth.kind!=='secret'||auth.kind==='secret'&&(!exactKeys(auth,['kind','modes'])||!Array.isArray(auth.modes)||!auth.modes.length||new Set(auth.modes).size!==auth.modes.length||auth.modes.some((v:unknown)=>!id.safeParse(v).success))||auth.kind==='none'&&(!exactKeys(auth,['kind','mode'])||!id.safeParse(auth.mode).success))throw invalid();
+   if(provider.readDefaultKeys!==undefined&&(!Array.isArray(provider.readDefaultKeys)||!provider.readDefaultKeys.length||provider.readDefaultKeys.length>8||auth.kind!=='none'||new Set(provider.readDefaultKeys).size!==provider.readDefaultKeys.length||provider.readDefaultKeys.some((key:unknown)=>typeof key!=='string'||!/^[a-z][A-Za-z0-9]{0,63}$/.test(key)||['kind','constructor','prototype'].includes(key))))throw invalid();
    if(provider.validateCandidate!==undefined&&typeof provider.validateCandidate!=='function')throw invalid();
-   this.providers.set(provider.id,Object.freeze({...provider,permissions:Object.freeze({...provider.permissions}),authentication:auth.kind==='secret'?Object.freeze({kind:'secret' as const,modes:Object.freeze([...auth.modes])}):Object.freeze({...auth})}));
+   this.providers.set(provider.id,Object.freeze({...provider,...(provider.readDefaultKeys?{readDefaultKeys:Object.freeze([...provider.readDefaultKeys])}:{}),permissions:Object.freeze({...provider.permissions}),authentication:auth.kind==='secret'?Object.freeze({kind:'secret' as const,modes:Object.freeze([...auth.modes])}):Object.freeze({...auth})}));
   }
   for(const application of this.applications.values())if(application.slots.some(slot=>this.providers.get(slot)?.appId!==application.id))throw invalid();
   for(const provider of this.providers.values())if(!this.applications.get(provider.appId)!.slots.includes(provider.id))throw invalid();
@@ -66,7 +69,7 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
  parseSave(value:unknown):HostedSave<C>{const parsed=saveFields.safeParse(value);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','连接字段无效，请核对表单');return{...parsed.data,config:this.parseConfig(parsed.data.config)};}
  parseSelection(value:unknown):HostedSelectionInput<C,A>{
   const parsed=selectionFields.safeParse(value),application=parsed.success?this.applications.get(parsed.data.appId):undefined;
-  if(!parsed.success||!application||application.slots.some(slot=>!Object.hasOwn(parsed.data.connections,slot))||Object.keys(parsed.data.connections).some(slot=>!application.slots.includes(slot)))throw new ApplicationError('INVALID_INPUT','项目连接必须按来源类别分别单选，也可明确不选用');
+  if(!parsed.success||!application||application.slots.some(slot=>!Object.hasOwn(parsed.data.connections,slot))||Object.keys(parsed.data.connections).some(slot=>!application.slots.includes(slot))||parsed.data.repair&&!application.slots.includes(parsed.data.repair.slot))throw new ApplicationError('INVALID_INPUT','项目连接必须按来源类别分别单选，也可明确不选用');
   const connections:Partial<Record<C['kind'],string|null>>={};for(const slot of application.slots)connections[slot]=parsed.data.connections[slot];return{...parsed.data,appId:application.id,connections};
  }
  parseIdentity(value:unknown,expectedProvider?:string):HostedIdentity<C>{
@@ -97,7 +100,7 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
 }
 export const builtinHostApplications:HostApplicationDefinitions<ConnectionConfig,ApplicationId>={api:1,applications:[{id:'zentao',slots:['zentao'],stopBeforeSwitch:true},{id:'mail',slots:['foxmail','smtp'],stopBeforeSwitch:false}],providers:[
  {id:'zentao',appId:'zentao',configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'secret',modes:['token','password']},permissions:{read:'zentao.read',write:'zentao.read'}},
- {id:'foxmail',appId:'mail',configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'none',mode:'local-readonly'},permissions:{read:'mail.read',write:'mail.read'},validateCandidate:(config,previous)=>{
+ {id:'foxmail',appId:'mail',readDefaultKeys:['queryDays'],configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'none',mode:'local-readonly'},permissions:{read:'mail.read',write:'mail.read'},validateCandidate:(config,previous)=>{
   if(config.kind!=='foxmail')throw new ApplicationError('INVALID_INPUT','来源类型不符');if(!isAbsolute(config.sourcePath))throw new ApplicationError('INVALID_INPUT','请选择本机Foxmail的完整来源路径');if(previous?.kind==='foxmail'&&previous.sourcePath!==config.sourcePath)throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION','已有来源路径不能覆盖，请新建来源并显式选用');
  }},
  {id:'smtp',appId:'mail',configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'secret',modes:['password']},permissions:{read:'mail.send',write:'mail.send'}},

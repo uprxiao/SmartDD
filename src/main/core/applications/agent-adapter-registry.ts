@@ -4,6 +4,7 @@ import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-st
 import { createRequire } from 'node:module';
 import { basename, dirname, join, relative } from 'node:path';
 import { ApplicationError } from '@shared/applications';
+import {BRIDGE_LIMITS} from '@shared/application-bridge';
 import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan } from '@shared/agent-adapters';
 import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
@@ -18,6 +19,20 @@ interface AdapterRow { agent_id: string;version: string;adapter_hash: string;res
 export interface InstalledAgentAdapter { metadata: AgentAdapterMetadata;hash: string;resource: ResourceRecord;manifest: OwnedBundleManifest }
 const loader = createRequire(import.meta.url);
 const within = (root: string,path: string): boolean => { const r = relative(root,path); return r === '' || (!r.startsWith('..') && !r.startsWith('/')); };
+/** Codex's model history has a separate MCP output ceiling. Align only the
+ * verified application's declared tools with the already bounded host result.
+ * The byte ceiling is a conservative token ceiling, including JSON escaping
+ * and the MCP text/structured representations. This adds no tool or authority.
+ * Host transport policy also applies to retained adapters without changing
+ * their immutable bytes or the session's fixed package/adapter selection. */
+function codexOutputBudget(plan:AgentLoadPlan,input:AgentLoadRequest):AgentLoadPlan{
+  if(plan.agentId!=='codex'||input.cliVersion!=='0.162.1')return plan;
+  const bridge=input.mcp.find(m=>m.kind==='applications');if(!bridge)return plan;
+  const names=[...new Set(input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)).flatMap(p=>Object.keys(p.toolContractMajors)))].sort();
+  if(!names.length)return plan;
+  const tools=names.map(name=>JSON.stringify(name)+'={output_token_limit='+BRIDGE_LIMITS.responseBytes+'}').join(',');
+  return agentLoadPlanSchema.parse({...plan,args:[...plan.args,'-c','mcp_servers.'+bridge.serverName+'.tools={'+tools+'}']});
+}
 export class AgentAdapterRegistry {
   constructor(readonly store: ResourceStore) {}
   recovery(hash:string,cliVersion:string):{capability:AgentAdapterMetadata['bridgeRecovery'];evidence?:string;replace?:(request:NativeBridgeReplacement)=>Promise<void>} {
@@ -118,7 +133,7 @@ export class AgentAdapterRegistry {
     try {
       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner || plan.bridgeRecovery !== installed.metadata.bridgeRecovery) throw new Error(); return plan; }
+      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner || plan.bridgeRecovery !== installed.metadata.bridgeRecovery) throw new Error(); return codexOutputBudget(plan,input); }
     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
   }
   planLegacy(hash:string,value:unknown):AgentLoadPlan {

@@ -175,6 +175,25 @@ describe('owned host receipt before an OS fork is attempted',()=>{
   const run=await active();await expect(run.cancelBeforeFork()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
   expect(leases(run.runId)).toEqual([{state:'active'}]);expect(f.runs.get(run.runId).state).toBe('active');await run.cli.exited();
  });
+ it('settles an already stopped reserved-only launch without a synthetic exit',async()=>{
+  const run=await f.create();await run.prepare();await run.reserveBridge();await run.stop();
+  await run.cancelBeforeFork();expect(f.runs.get(run.runId).state).toBe('stopped');expect(f.revocations()).toBe(1);expect(leases(run.runId)).toEqual([{state:'released'}]);
+  expect(f.sqlite.prepare('SELECT state,pid FROM capability_run_processes WHERE run_id=?').all(run.runId)).toEqual([{state:'canceled',pid:null},{state:'canceled',pid:null}]);
+ });
+ it.each(['revoked','revoking'] as const)('accepts the current launch closure no-fork receipt after stop is %s',async phase=>{
+  const run=await f.create();await run.prepare();const bridge=await run.reserveBridge();await bridge.arm();await run.cli.arm();
+  let complete!:()=>void;
+  if(phase==='revoking'){const gate=new Promise<void>(resolve=>{complete=resolve;});f.setRevoke(()=>gate);}
+  const stopping=run.stop().then(()=>null,error=>error);
+  await vi.waitFor(()=>expect(f.sqlite.prepare('SELECT revocation_state FROM capability_runs WHERE run_id=?').get(run.runId)).toEqual({revocation_state:phase}),{interval:1});
+  const canceled=run.cancelBeforeFork().then(()=>null,error=>error);
+  if(phase==='revoking'){
+   await vi.waitFor(()=>expect(f.sqlite.prepare("SELECT COUNT(*) n FROM capability_run_processes WHERE run_id=? AND state<>'canceled'").get(run.runId)).toEqual({n:0}),{interval:1});
+   expect(leases(run.runId)).toEqual([{state:'active'}]);complete();
+  }
+  expect(await Promise.all([stopping,canceled])).toEqual([null,null]);
+  expect(f.runs.get(run.runId).state).toBe('stopped');expect(leases(run.runId)).toEqual([{state:'released'}]);expect(f.revocations()).toBe(1);
+ });
  it('refuses an uncertain fork and leaves the existing hold intact',async()=>{
   const run=await f.create();await run.prepare();await run.cli.arm();await expect(run.cli.attach(999999)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});
   await expect(run.cancelBeforeFork()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});

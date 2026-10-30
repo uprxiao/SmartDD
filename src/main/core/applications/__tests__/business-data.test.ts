@@ -77,13 +77,14 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
  it('creates without either external slot and lets the other supported Agent and UI read the same business object',async()=>{
   const created=await draft();expect(app.selections.projectSettings('p1','mail').connections).toEqual({foxmail:null,smtp:null});
   const second=await call(codex,'draft_get',{draftId:created.id});expect(second).toMatchObject({status:'ok',value:{draft:{id:created.id,revision:1,sourceTaskId:runs.assertActive(cc.runId).run.taskId}}});
-  expect(await app.viewDraft(sender,'p1',created.id)).toEqual({draft:created});expect(created).not.toHaveProperty('projectId');expect(typeof created.content.text.id).toBe('string');expect(f.sqlite.prepare('SELECT count(*) n FROM application_connections').get()).toEqual({n:0});
+  expect(await app.viewDraft(sender,'p1',created.id)).toEqual({draft:created,currentRevision:1,sendRecord:null});expect(created).not.toHaveProperty('projectId');expect(typeof created.content.text.id).toBe('string');expect(f.sqlite.prepare('SELECT count(*) n FROM application_connections').get()).toEqual({n:0});
  });
  it('continues across Agents with CAS and preserves revision-bound original body resources',async()=>{
   const original=await draft();const update=await call(codex,'draft_update',{draftId:original.id,expectedRevision:1,content:content('Codex第二版')});expect(update).toMatchObject({status:'ok',value:{draft:{id:original.id,revision:2}}});
   expect(await call(cc,'draft_update',{draftId:original.id,expectedRevision:1,content:content('不能覆盖')})).toMatchObject({status:'error',error:{code:'REVISION_CONFLICT'}});
   expect(await app.readBusinessResource(sender,'p1',{resource:original.content.text,offset:0,length:100})).toMatchObject({data:'隔离草稿第一版',eof:true});
   expect(await call(cc,'draft_get',{draftId:original.id,revision:1})).toMatchObject({status:'ok',value:{draft:{revision:1,content:{text:original.content.text}}}});
+  const old=await app.viewDraft(sender,'p1',original.id,1),current=await app.viewDraft(sender,'p1',original.id,2);expect(old).toMatchObject({currentRevision:2,sendRecord:null,draft:{revision:1,content:{text:original.content.text}}});expect(current).toMatchObject({currentRevision:2,sendRecord:null,draft:{revision:2}});const v1=await call(cc,'draft_get',{draftId:original.id,revision:1});expect(v1.status).toBe('ok');if(v1.status==='ok')expect(Object.keys(v1.value as object)).toEqual(['draft']);
  });
  it('keeps immutable resource identities across a business-service restart and expires old actor capabilities',async()=>{
   const created=await draft();let actor!:MailActor;await ui(async scope=>{actor=app.contexts.actor(scope);return null;});expect(()=>app.drafts.get(actor,created.id)).toThrow();
@@ -348,4 +349,36 @@ it('keeps application catalog and unrelated connection management available with
  // This fixture installs only mail; packaged IPC separately covers ZenTao's trusted management path.
  expect(()=>app.connections.list('zentao')).toThrow(expect.objectContaining({code:'CONFIG_INCOMPATIBLE'}));
  expect(f.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(connection.id)).toEqual(before);
+});
+
+it.each(['stale','pending']as const)('SD records original selection %s precondition as failed without any binding effect',async mode=>{
+ const current=app.selections.projectSettings('p1','mail');if(mode==='pending')f.sqlite.prepare("UPDATE application_project_settings SET pending_operation_id=? WHERE project_id='p1'AND app_id='mail'").run(randomUUID());
+ const domain=()=>['application_project_settings','application_project_bindings','application_binding_changes'].map(t=>f.sqlite.prepare('SELECT * FROM '+t+' ORDER BY rowid').all());const before=domain();
+ await expect(app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:mode==='stale'?current.revision-1:current.revision,connections:{foxmail:null,smtp:null}})).rejects.toMatchObject({code:mode==='stale'?'REVISION_CONFLICT':'RESOURCE_BUSY'});
+ expect(domain()).toEqual(before);expect(f.sqlite.prepare("SELECT state,error_code,ended_at FROM application_data_operations WHERE action='application.project.select'ORDER BY rowid DESC LIMIT 1").get()).toEqual({state:'failed',error_code:mode==='stale'?'REVISION_CONFLICT':'RESOURCE_BUSY',ended_at:expect.any(String)});
+});
+it('SD a same-code ordinary error after a write stays unknown and existing unknown is never rewritten',async()=>{
+ await expect(app.contexts.withManagement(sender,{appId:'mail',action:'application.project.select',semantics:'write',projectId:'p1'},async()=>{f.sqlite.prepare("UPDATE application_project_settings SET enabled=0 WHERE project_id='p1'AND app_id='mail'").run();throw new ApplicationError('REVISION_CONFLICT','SD after-write ambiguous result');})).rejects.toMatchObject({code:'REVISION_CONFLICT'});
+ const old=f.sqlite.prepare("SELECT * FROM application_data_operations WHERE action='application.project.select'ORDER BY rowid DESC LIMIT 1").get()as {operation_id:string;state:string};expect(old.state).toBe('unknown');const current=app.selections.projectSettings('p1','mail');await expect(app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:current.revision-1,connections:{foxmail:null,smtp:null}})).rejects.toMatchObject({code:'REVISION_CONFLICT'});expect(f.sqlite.prepare('SELECT * FROM application_data_operations WHERE operation_id=?').get(old.operation_id)).toEqual(old);
+});
+it('SD a selection rejection cannot classify an unrelated write action as failed',async()=>{
+ const current=app.selections.projectSettings('p1','mail');let rejected:unknown;try{await app.selections.select({projectId:'p1',appId:'mail',enabled:true,expectedRevision:current.revision-1,connections:{foxmail:null,smtp:null}});}catch(error){rejected=error;}expect(rejected).toMatchObject({code:'REVISION_CONFLICT'});
+ await expect(app.contexts.withManagement(sender,{appId:'mail',action:'connection.save',semantics:'write'},async()=>{throw rejected;})).rejects.toBe(rejected);expect(f.sqlite.prepare("SELECT state FROM application_data_operations WHERE action='connection.save'ORDER BY rowid DESC LIMIT 1").get()).toEqual({state:'unknown'});
+});
+
+it('SF exposes UI diagnosis but grants a recovered source only through the audited explicit selection path',async()=>{
+ const c=await fox('sf-ui-recovery');await selectConnections({foxmail:c.id,smtp:null});f.sqlite.prepare("UPDATE application_project_bindings SET identity_revision=identity_revision+1 WHERE project_id='p1'AND app_id='mail'AND slot='foxmail'").run();const view=await app.projectSettings(sender,'p1','mail');expect(view.repair?.slots).toEqual(['foxmail']);expect(view.connections.foxmail).toBeNull();expect(()=>app.selections.connectionSlot('p1','mail','foxmail')).toThrowError(expect.objectContaining({code:'CONFIG_COMPATIBILITY_UNVERIFIED'}));const before=f.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(c.id);
+ await expect(app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:view.revision,connections:{foxmail:c.id,smtp:null}})).rejects.toMatchObject({code:'CONFIG_COMPATIBILITY_UNVERIFIED'});
+ await expect(app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:view.revision,connections:{foxmail:c.id,smtp:null},repair:{slot:'foxmail',fingerprint:'0'.repeat(64)}})).rejects.toMatchObject({code:'REVISION_CONFLICT'});expect(f.sqlite.prepare("SELECT state,error_code FROM application_data_operations WHERE action='application.project.select'ORDER BY rowid DESC LIMIT 1").get()).toEqual({state:'failed',error_code:'REVISION_CONFLICT'});
+ const recovered=await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:view.revision,connections:{foxmail:c.id,smtp:null},repair:{slot:'foxmail',fingerprint:view.repair!.fingerprint}});expect(recovered.repair).toBeUndefined();expect(app.selections.connectionSlot('p1','mail','foxmail').connectionId).toBe(c.id);expect(f.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(c.id)).toEqual(before);expect(f.sqlite.prepare("SELECT state,error_code FROM application_data_operations WHERE action='application.project.select'ORDER BY rowid DESC LIMIT 1").get()).toEqual({state:'succeeded',error_code:null});
+});
+
+// SL I layer: original service/context/SQLite; held query implementation, no native source claim.
+it('SL mail status cancellation reaches only its own context and keeps a lease until ignored work settles',async()=>{
+ const releases:Array<()=>void>=[],signals:AbortSignal[]=[],ids=[randomUUID(),randomUUID()];
+ const value:Awaited<ReturnType<typeof app.mailStatus>>={query:{items:[],nextCursor:null,complete:true,matched:0,range:{days:7,startDate:'2026-10-23',endDate:'2026-10-29',timeZone:'Asia/Singapore',start:'2026-10-22T16:00:00.000Z',endExclusive:'2026-10-29T16:00:00.000Z'},checkedAt:'2026-10-29T00:00:00Z',problems:[]},refresh:{scanned:0,total:0,finished:true,problemCount:0,lastSuccessfulRefreshAt:null}};
+ vi.spyOn(app.mailReads,'queryStatus').mockImplementation(async scope=>{signals.push(scope.signal!);await new Promise<void>(r=>releases.push(r));return value;});
+ const pending=ids.map(id=>app.mailStatus(sender,'p1',{},id).then(value=>({value,error:null}),error=>({value:null,error})));
+ try{await vi.waitFor(()=>expect(signals).toHaveLength(2));expect(signals.every(Boolean)).toBe(true);expect(signals[0]).not.toBe(signals[1]);expect(app.cancelUiRead(sender,ids[0]!)).toEqual({canceled:true});expect(signals.map(s=>s.aborted)).toEqual([true,false]);expect(app.cancelUiRead(sender,ids[0]!)).toEqual({canceled:false});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:2});}finally{releases.forEach(r=>r());}
+ const results=await Promise.all(pending);expect(results[0]!.error).toMatchObject({code:'CANCELED'});expect(results[1]!.value).toEqual(value);expect(app.cancelUiRead(sender,ids[1]!)).toEqual({canceled:false});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:0});
 });

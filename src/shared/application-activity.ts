@@ -1,3 +1,4 @@
+import type {AttachmentSaveResult,MailAttachmentSource} from './application-attachments';
 import {z} from 'zod';
 import type {ApplicationId} from './application-connections';
 import type {MailDraftContent,MailAttachment} from './mail-drafts';
@@ -16,6 +17,8 @@ export interface ApplicationActivityItem {
 }
 export interface ApplicationActivityPage {recoveryIssue?:{code:string;message:string}|null;items:ApplicationActivityItem[];nextCursor:string|null;checkedAt:string}
 export interface ApplicationActivityDetail {
+ mailAttachmentSource?:MailAttachmentSource;
+ attachmentSave?:AttachmentSaveResult;
  recoveryIssue?:{code:string;message:string}|null;item:ApplicationActivityItem;
  send:null|{messageId:string;fromAddress:string|null;draftRevision:number;content:MailDraftContent|null;attachments:MailAttachment[];result:MailSendResult|null;priorUnknownExecutionIds:string[]};
 }

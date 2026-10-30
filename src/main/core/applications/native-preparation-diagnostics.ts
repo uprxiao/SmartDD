@@ -12,11 +12,11 @@ export function assertNativeCapabilityPreparation(snapshot:CapabilitySessionSnap
 }
 /** The actual emitted subset is supplied by the launcher; this receipt grants
  * nothing and deliberately includes unavailable original selections. */
-export function nativeCapabilityPreparation(snapshot:CapabilitySessionSnapshotV2,input:{applications:readonly string[];standardPaths:readonly string[];mcpNames:readonly string[];facets?:NativeCapabilityConflicts;issue?:string;projectMcpEnabled?:boolean}):NativePreparationCapability[]{
+export function nativeCapabilityPreparation(snapshot:CapabilitySessionSnapshotV2,input:{applications:readonly string[];standardPaths:readonly string[];mcpNames:readonly string[];facets?:NativeCapabilityConflicts;issue?:string;applicationIssue?:string;projectMcpEnabled?:boolean}):NativePreparationCapability[]{
  const result:NativePreparationCapability[]=selection(snapshot).map(item=>{
   const key=item.kind+':'+item.id,sources=input.facets?.sources.get(key)??[],conflict=item.kind==='application'?input.facets?.applications.has(item.id):item.kind==='standard-skill'?input.facets?.standardSkills.has(item.paths[0]):input.facets?.projectMcp,damaged=item.kind==='application'?input.facets?.unavailableApplications.has(item.id):item.kind==='standard-skill'?input.facets?.unavailableStandardSkills.has(item.paths[0]):false,delivered=item.kind==='application'?input.applications.includes(item.id):item.kind==='standard-skill'?input.standardPaths.includes(item.paths[0]):input.mcpNames.includes(item.id);
   let state:NativePreparationCapability['state']='prepared',issueCode:string|null=null;
-  if(input.issue){state='unavailable';issueCode=input.issue;}else if(conflict){state='unavailable';issueCode='AGENT_CAPABILITY_NAME_CONFLICT';}else if(damaged||!delivered){state=item.kind==='project-mcp'&&input.projectMcpEnabled===false?'disabled':'unavailable';issueCode='CAPABILITY_UNAVAILABLE';}
+  if(input.issue){state='unavailable';issueCode=input.issue;}else if(item.kind==='application'&&input.applicationIssue){state='unavailable';issueCode=input.applicationIssue;}else if(conflict){state='unavailable';issueCode='AGENT_CAPABILITY_NAME_CONFLICT';}else if(damaged||!delivered){state=item.kind==='project-mcp'&&input.projectMcpEnabled===false?'disabled':'unavailable';issueCode='CAPABILITY_UNAVAILABLE';}
   const fallback:NativePreparationSource={kind:state==='disabled'?'policy':'resource',name:item.id,path:null,configurationPath:null,location:'unrecorded'};
   return{...item,state,issueCode,sources:state==='prepared'?[]:sources.length?sources:[fallback]};
  });

@@ -1,0 +1,18 @@
+import assert from'node:assert/strict';import{join}from'node:path';import{measureActivityControl}from'./activity-controls-ui.mjs';
+// Actual wheel + stable compositor frames;no direct scroll/focus/style/store mutation.
+export async function inspectResultCard(app,root,label){
+ const layout=await app.evaluate(`(()=>{const e=document.querySelector('dialog .m10-draft-send-result'),s=getComputedStyle(e),width=e.clientWidth-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight),title=e.querySelector(':scope>strong'),r=document.createRange();r.selectNodeContents(title);return{display:s.display,width,titleLines:new Set([...r.getClientRects()].map(x=>Math.round(x.y*2)/2)).size,paragraphs:[...e.querySelectorAll(':scope>p')].map(p=>({width:p.getBoundingClientRect().width,text:p.textContent}))}})()`);
+ assert.equal(layout.display,'block','RW result facts must use full-width stacked layout');assert.equal(layout.titleLines,1,'RW result heading must remain one readable line');assert(layout.paragraphs.every(p=>Math.abs(p.width-layout.width)<1),'RW every result paragraph retains full available width');
+ const base='dialog .m10-draft-send-result',count=await app.evaluate('document.querySelector('+JSON.stringify(base)+').querySelectorAll(\':scope>p\').length'),samples=[];
+ for(const[index,selector]of[[0,base+'>strong'],...Array.from({length:count},(_,i)=>[i+1,base+'>p:nth-of-type('+(i+1)+')'])]){
+  let value;
+  for(let n=0;n<45;n++){
+   value=await app.evaluate(`new Promise((resolve,reject)=>{let last='',same=0,frames=0;function tick(){const e=document.querySelector(${JSON.stringify(selector)}),p=document.querySelector('dialog'),r=e.getBoundingClientRect(),b=p.getBoundingClientRect(),v={scroll:p.scrollTop,top:r.top,bottom:r.bottom,left:r.left,right:r.right,clipTop:Math.max(0,b.top+p.clientTop),clipBottom:Math.min(innerHeight,b.top+p.clientHeight),clipLeft:Math.max(0,b.left+p.clientLeft),clipRight:Math.min(innerWidth,b.left+p.clientLeft+p.clientWidth),x:b.x+b.width/2,y:Math.max(5,Math.min(innerHeight-5,b.y+p.clientHeight/2))},now=JSON.stringify(v);same=now===last?same+1:0;last=now;if(same>=3)return resolve(v);if(++frames>90)return reject(Error('RW result paragraph viewport unstable'));requestAnimationFrame(tick)}requestAnimationFrame(tick)})`);
+   if(value.top>=value.clipTop+5&&value.bottom<=value.clipBottom-5)break;
+   const deltaY=value.top<value.clipTop?Math.max(-220,value.top-value.clipTop-8):Math.min(220,value.bottom-value.clipBottom+8);await app.cdp('Input.dispatchMouseEvent',{type:'mouseWheel',x:value.x,y:value.y,deltaX:0,deltaY});
+   if(n===44)throw Error('RW original result paragraph not wheel reachable');
+  }
+  assert(value.top>=value.clipTop+5&&value.bottom<=value.clipBottom-5);const paint=await measureActivityControl(app,'document.querySelector('+JSON.stringify(selector)+')');assert(paint.visible);const horizontal=await app.evaluate(`(()=>{const p=document.querySelector('dialog'),e=document.querySelector(${JSON.stringify(base)});return{dialogWidth:p.clientWidth,dialogScroll:p.scrollWidth,cardWidth:e.clientWidth,cardScroll:e.scrollWidth,text:document.querySelector(${JSON.stringify(selector)}).textContent}})()`);assert(horizontal.dialogScroll<=horizontal.dialogWidth+1&&horizontal.cardScroll<=horizontal.cardWidth+1);await app.screenshot(join(root,label+'-paragraph-'+index+'.png'));const after=await app.evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)}),p=document.querySelector('dialog'),r=e.getBoundingClientRect();return{scroll:p.scrollTop,top:r.top,bottom:r.bottom}})()`);for(const k of['scroll','top','bottom'])assert.equal(after[k],value[k]);samples.push({selector,value,paint,horizontal,after,layout});
+ }
+ return samples;
+}

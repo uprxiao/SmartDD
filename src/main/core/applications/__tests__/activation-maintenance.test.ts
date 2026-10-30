@@ -1,3 +1,5 @@
+import {randomUUID} from 'node:crypto';
+import {FixtureProcessReader} from './run-fixture';
 import {z} from 'zod';
 import {connectionConfigSchema} from '@shared/application-connections';
 import fs from 'node:fs';
@@ -179,3 +181,21 @@ it.skipIf(process.platform!=='darwin')('rejects identity drift between final pre
  expect(db.prepare("SELECT state FROM capability_resource_operations WHERE kind='application-activation'").get()).toEqual({state:'verified'});
  expect(db.prepare("SELECT identity_revision FROM application_connections WHERE id='identity-race'").get()).toEqual({identity_revision:2});
 },15000);
+
+async function qrActivationOwner(){
+ const target=await install(),operationId=randomUUID(),oldIdentity='darwin-proc-v1:100:1',processes=new FixtureProcessReader();
+ const plan={operationId,storeId:store.storeId,requests:[{hash:target.packageHash,expectedGeneration:0}]};
+ db.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'application-activation',?,'verified',?,'now','now')").run(operationId,store.storeId,canonicalJson(plan));
+ db.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'application-activation',?,'stopped-owner',?,?,'active','now')").run(randomUUID(),target.resourceId,operationId,process.pid,oldIdentity);
+ processes.identities.set(process.pid,'darwin-proc-v1:100:2');return{operationId,processes,scoped:new ResourceStore(db,root,undefined,{processes})};
+}
+it('QR checks stopped activation identities outside the business transaction',async()=>{
+ const x=await qrActivationOwner(),state=x.processes.state.bind(x.processes);let calls=0;const watch=vi.spyOn(x.processes,'state').mockImplementation(identity=>{calls++;expect(db.inTransaction).toBe(false);return state(identity);});
+ try{await x.scoped.recoverActivationLeases(x.operationId,lease);expect(calls).toBeGreaterThan(0);expect(db.prepare("SELECT state FROM capability_resource_leases WHERE owner_kind='application-activation' AND owner_id=?").all(x.operationId)).toEqual([{state:'released'}]);}
+ finally{watch.mockRestore();}
+});
+it('QR preserves an activation lease when its plan changes during the identity query',async()=>{
+ const x=await qrActivationOwner(),state=x.processes.state.bind(x.processes);let changed=false;const watch=vi.spyOn(x.processes,'state').mockImplementation(identity=>{if(!changed){changed=true;const row=db.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(x.operationId) as {plan_json:string};const plan=JSON.parse(row.plan_json);plan.concurrentMarker='preserve';db.prepare('UPDATE capability_resource_operations SET plan_json=? WHERE operation_id=?').run(canonicalJson(plan),x.operationId);}return state(identity);});
+ try{await expect(x.scoped.recoverActivationLeases(x.operationId,lease)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(changed).toBe(true);expect(db.prepare("SELECT state FROM capability_resource_leases WHERE owner_kind='application-activation' AND owner_id=?").all(x.operationId)).toEqual([{state:'active'}]);}
+ finally{watch.mockRestore();}
+});

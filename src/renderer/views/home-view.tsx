@@ -29,10 +29,11 @@ export const HomeView = observer(function HomeView() {
   const { data: projects } = useProjectList(false);
   const { data: profiles } = useAiProfiles();
   const draft = useAppSettingsKey('homeDraft');
-  const [message, setMessage] = useState('');
   const [launchSettings, setLaunchSettings] = useState(false);
   const [creatingProject, setCreatingProject] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const message = navigation.homeInput(projectId);
+  const setMessage = (value: string) => navigation.setHomeInput(projectId, value);
   const [dirId, setDirId] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -68,7 +69,7 @@ export const HomeView = observer(function HomeView() {
     if (!preset || appliedPreset.current === preset.seq || !projects?.some((p) => p.id === preset.projectId)) return;
     appliedPreset.current = preset.seq;
     const applicationPrompt=navigation.consumeApplicationPrompt(preset.seq);
-    if(applicationPrompt)setMessage(existing=>existing?existing+'\n'+applicationPrompt:applicationPrompt);
+    if(applicationPrompt){const existing=navigation.homeInput(preset.projectId);navigation.setHomeInput(preset.projectId,existing?existing+'\n'+applicationPrompt:applicationPrompt);}
     setProjectId(preset.projectId);
     setDirId(null);
     inputRef.current?.focus();
@@ -119,7 +120,7 @@ export const HomeView = observer(function HomeView() {
     { Icon: Wrench, key: 'fix' },
   ] as const;
 
-  const projectPicker = <Select value={projectId} onValueChange={(v) => { setProjectId(v as string | null); setDirId(null); if (v) navigation.newTask(String(v)); }}>
+  const projectPicker = <Select value={projectId} onValueChange={(v) => { if(!projectId&&v&&message){const existing=navigation.homeInput(String(v));navigation.setHomeInput(String(v),existing?existing+'\n'+message:message);navigation.setHomeInput(null,'');}setProjectId(v as string | null); setDirId(null); if (v) navigation.newTask(String(v)); }}>
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;

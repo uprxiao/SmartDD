@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "scope": "OriginalT15badMIME/RFC822/headers;syntheticonly;not realclient orsystemopen/save evidence",
+  "cases": [
+    {
+      "id": 1,
+      "label": "missing-multipart-boundary",
+      "raw": "Date: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-malformed\r\nMessage-ID: <nv-malformed@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"never-present\"\r\n\r\nnot-a-MIME-boundary\r\n",
+      "missing": "body",
+      "attachments": 0
+    },
+    {
+      "id": 2,
+      "label": "inline-rfc822-within-depth",
+      "raw": "Date: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-3\r\nMessage-ID: <nv-outer-3@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer3\"\r\n\r\n--outer3\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-3\r\n--outer3\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-2\r\nMessage-ID: <nv-outer-2@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer2\"\r\n\r\n--outer2\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-2\r\n--outer2\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-1\r\nMessage-ID: <nv-outer-1@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer1\"\r\n\r\n--outer1\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-1\r\n--outer1\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-leaf\r\nMessage-ID: <nv-leaf@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"leaf\"\r\n\r\n--leaf\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-leaf-content\r\n--leaf\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=\"nested-proof.bin\"\r\nContent-Transfer-Encoding: base64\r\n\r\nAP+ACQ==\r\n--leaf--\r\n\r\n--outer1--\r\n\r\n--outer2--\r\n\r\n--outer3--\r\n",
+      "expectedTextParts": [
+        "nv-leaf-content",
+        "nv-outer-body-1",
+        "nv-outer-body-2",
+        "nv-outer-body-3"
+      ],
+      "expectedAttachmentBase64": "AP+ACQ==",
+      "attachments": 1
+    },
+    {
+      "id": 3,
+      "label": "inline-rfc822-over-depth",
+      "raw": "Date: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-6\r\nMessage-ID: <nv-outer-6@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer6\"\r\n\r\n--outer6\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-6\r\n--outer6\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-5\r\nMessage-ID: <nv-outer-5@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer5\"\r\n\r\n--outer5\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-5\r\n--outer5\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-4\r\nMessage-ID: <nv-outer-4@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer4\"\r\n\r\n--outer4\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-4\r\n--outer4\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-3\r\nMessage-ID: <nv-outer-3@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer3\"\r\n\r\n--outer3\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-3\r\n--outer3\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-2\r\nMessage-ID: <nv-outer-2@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer2\"\r\n\r\n--outer2\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-2\r\n--outer2\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-1\r\nMessage-ID: <nv-outer-1@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer1\"\r\n\r\n--outer1\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-1\r\n--outer1\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-leaf\r\nMessage-ID: <nv-leaf@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"leaf\"\r\n\r\n--leaf\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-leaf-content\r\n--leaf\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=\"nested-proof.bin\"\r\nContent-Transfer-Encoding: base64\r\n\r\nAP+ACQ==\r\n--leaf--\r\n\r\n--outer1--\r\n\r\n--outer2--\r\n\r\n--outer3--\r\n\r\n--outer4--\r\n\r\n--outer5--\r\n\r\n--outer6--\r\n",
+      "missing": "nested-message-depth",
+      "expectedOpaqueTemplate": "Date: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-outer-1\r\nMessage-ID: <nv-outer-1@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"outer1\"\r\n\r\n--outer1\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-outer-body-1\r\n--outer1\r\nContent-Type: message/rfc822\r\nContent-Disposition: inline\r\n\r\nDate: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-leaf\r\nMessage-ID: <nv-leaf@example.test>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"leaf\"\r\n\r\n--leaf\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-leaf-content\r\n--leaf\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=\"nested-proof.bin\"\r\nContent-Transfer-Encoding: base64\r\n\r\nAP+ACQ==\r\n--leaf--\r\n\r\n--outer1--\r\n",
+      "attachments": 1
+    },
+    {
+      "id": 4,
+      "label": "oversized-MIME-header",
+      "raw": "Date: {{DATE}}\r\nFrom: sender@example.test\r\nTo: receiver@example.test\r\nSubject: nv-header\r\nMessage-ID: <nv-header@example.test>\r\nMIME-Version: 1.0\r\nX-Oversized: {{HEADER_PADDING}}\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nnv-header-body",
+      "headerPaddingBytes": 262145,
+      "error": "INCOMPLETE_RESULT",
+      "attachments": 0
+    }
+  ]
+}

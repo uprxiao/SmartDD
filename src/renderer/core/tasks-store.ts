@@ -72,7 +72,8 @@ class TasksStore {
 
   /**
    * Open a task in its tab (a new one if needed) and, when it is stopped, resume it on the
-   * profile it ran on. The stopped panel only stays when there is a real choice to make.
+   * profile it ran on. Unknown native capability history stays read-only until explicit resume,
+   * and the stopped panel also stays when there is a real profile choice to make.
    */
   show(taskId: string): void {
     this.tabs = withTab(this.tabs, taskId, navigation.currentViewId === 'task' ? navigation.currentTaskId : null);

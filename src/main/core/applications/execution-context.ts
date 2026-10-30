@@ -1,6 +1,9 @@
+import {SelectionPreconditionError} from './selection-precondition-error';
 import {CredentialHandles,type CredentialHandle} from './credential-handles';
 import {assertRunApplication} from './application-run-scope';
 import { randomUUID } from 'node:crypto';
+import {setTimeout as delay} from 'node:timers/promises';
+import {retryAfterWait} from './retry-after';
 import type { IpcMainInvokeEvent } from 'electron';
 import { z } from 'zod';
 import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
@@ -28,11 +31,12 @@ export interface ApplicationExecutionContext<A extends string=ApplicationId> {
   readonly action:string;readonly semantics:'read'|'write';readonly allowedOperations:readonly string[];
   readonly signal:AbortSignal;readonly startedAt:string;
 }
-interface Target<P extends string> {slot:P;id:string;identityRevision:number;configRevision:number;policyRevision:number;bindingRevision:number;identityOnly?:true}
+interface ReadDefaults {configHash:string;values:Record<string,unknown>}
+interface Target<P extends string> {readDefaults?:ReadDefaults;slot:P;id:string;identityRevision:number;configRevision:number;policyRevision:number;bindingRevision:number;identityOnly?:true}
 interface ContextRecord<C extends HostedConfiguration,A extends string> {context:ApplicationExecutionContext<A>;active:boolean;abort:AbortController;check:()=>void;allowed:Set<string>;targets:Map<C['kind'],Target<C['kind']>>;scopeHash:string}
 interface OperationRow {scope_hash:string;targets_json:string;state:string;semantics:'read'|'write';attempt_count:number}
 const actionSchema=z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
-const targetSchema=z.object({slot:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional()}).strict();
+const targetSchema=z.object({slot:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional(),readDefaults:z.object({configHash:z.string().regex(/^[a-f0-9]{64}$/),values:z.record(z.string().min(1).max(64),z.unknown()).refine(value=>Object.keys(value).length<=8&&JSON.stringify(value).length<=4096)}).strict().optional()}).strict();
 const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
 
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
@@ -49,7 +53,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   constructor(readonly store:ResourceStore,private readonly selections:ApplicationSelectionService<C,A>,private readonly connections:ApplicationConnectionService<C,A>,private readonly deps:{
     requireSender(sender:ApplicationUiSender):void;
     assertRun(runId:string):RunContext;
-    now?:()=>number;changed?:()=>void;
+    now?:()=>number;changed?:(change?:{kind:'health';appId:A;connectionId:string})=>void;uiReadRetryDelays?:readonly number[];uiReadTimeoutMs?:number;
   }){this.builtin=new BuiltinPackageRegistry(store,this.connections.registry);}
   private get registry(){return this.connections.registry;}
   private decodeTargets(value:string,appId:A):Target<C['kind']>[] {
@@ -59,7 +63,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   private record(context:ApplicationExecutionContext<A>):ContextRecord<C,A>{
     const record=this.records.get(context);
     if(!record?.active||this.closed)throw new ApplicationError('SCOPE_DENIED','业务操作上下文不属于当前有效宿主');
-    if(record.abort.signal.aborted||context.signal.aborted)throw new ApplicationError('CANCELED','本次业务操作已取消');
+    if(record.abort.signal.aborted||context.signal.aborted){if(context.signal.reason instanceof ApplicationError&&context.signal.reason.code==='TIMEOUT')throw context.signal.reason;throw new ApplicationError('CANCELED','本次业务操作已取消');}
     record.check();for(const target of record.targets.values())this.checkTarget(context,target);return record;
   }
   async subject(context:ApplicationExecutionContext<A>,kind:'connection'|'mail-send'|'mail-draft',subjectId:string):Promise<void>{
@@ -100,10 +104,24 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const activity=this.store.use(application.resourceId,'mail-send',intentId,()=>{this.assertActive(context);return work();},{identity});this.pending.add(activity);void activity.finally(()=>this.pending.delete(activity)).catch(()=>{});return activity;
   }
   async sendConnection(context:ApplicationExecutionContext<A>):Promise<HostedConnection<C,A>>{this.require(context,'mail.send');return this.pinConnection(context,this.registry.provider('smtp').id,null,false);}
-  private checkTarget(context:Pick<ApplicationExecutionContext<A>,'projectId'|'appId'>,target:Target<C['kind']>):void{
+  private readDefaults(connection:HostedConnection<C,A>):ReadDefaults|undefined{
+    const provider=this.registry.provider(connection.providerId),keys=provider.readDefaultKeys;if(!keys?.length)return;
+    const config=this.registry.parseConfig(connection.config),fields={...config} as Record<string,unknown>,values:Record<string,unknown>={};
+    for(const key of keys){if(!Object.hasOwn(fields,key))throw new ApplicationError('CONFIG_INCOMPATIBLE','已声明的读取默认值缺失');values[key]=fields[key];delete fields[key];}
+    return{configHash:digest(canonicalJson({provider:connection.providerId,schema:connection.configSchemaVersion??1,definitionSchema:provider.configSchemaVersion??1,keys,fields})),values};
+  }
+  private restoreReadDefaults(connection:HostedConnection<C,A>,original:ReadDefaults):HostedConnection<C,A>{
+    const current=this.readDefaults(connection);
+    if(!current||current.configHash!==original.configHash||canonicalJson(Object.keys(current.values).sort())!==canonicalJson(Object.keys(original.values).sort()))throw new ApplicationError('REVISION_CONFLICT','本次来源配置或契约已变化，结果未交付');
+    return{...connection,config:this.registry.parseConfig({...connection.config,...original.values})};
+  }
+  private checkTarget(context:Pick<ApplicationExecutionContext<A>,'projectId'|'appId'|'semantics'>,target:Target<C['kind']>):void{
     if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','来源使用需要真实项目');
     const selected=this.selections.connectionSlot(context.projectId,context.appId,target.slot),current=this.connections.get(target.id);
-    if(selected.connectionId!==target.id||selected.identityRevision!==target.identityRevision||selected.revision!==target.bindingRevision||current.identityRevision!==target.identityRevision||current.configRevision!==target.configRevision||current.policyRevision!==target.policyRevision||!target.identityOnly&&(!current.enabled||current.authorization!=='connected'))throw new ApplicationError('REVISION_CONFLICT','本次来源身份、配置或选用已变化，结果未交付');
+    // A captured read default is a preference, not a grant. Every other config
+    // field/schema and all identity/policy/binding/enablement checks stay current.
+    const sameConfig=target.readDefaults?context.semantics==='read'&&!!this.restoreReadDefaults(current,target.readDefaults):current.configRevision===target.configRevision;
+    if(selected.connectionId!==target.id||selected.identityRevision!==target.identityRevision||selected.revision!==target.bindingRevision||current.identityRevision!==target.identityRevision||!sameConfig||current.policyRevision!==target.policyRevision||!target.identityOnly&&(!current.enabled||current.authorization!=='connected'))throw new ApplicationError('REVISION_CONFLICT','本次来源身份、配置或选用已变化，结果未交付');
   }
   /** Only resolve a view for a source already pinned by this operation. No credential access. */
   configView(context:ApplicationExecutionContext<A>,connection:HostedConnection<C,A>){
@@ -124,13 +142,11 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const provider=this.registry.provider(connection.providerId);
     this.require(context,context.semantics==='write'?provider.permissions.write:provider.permissions.read);
     const configView=this.configView(context,connection);
-    const {id,identityRevision,configRevision,policyRevision}=connection;
+    const id=connection.id; // Never follow a caller-mutated returned metadata object.
     const credentialHandle=this.credentials.issue(context,()=>{
-      this.assertActive(context);
-      const current=this.connections.get(id);
-      // Target revalidation checks identity/config/policy/binding. Same-identity
-      // secret rotation is allowed and must use the latest secret revision.
-      if(current.identityRevision!==identityRevision||current.configRevision!==configRevision||current.policyRevision!==policyRevision)throw new ApplicationError('REVISION_CONFLICT','认证前连接已变化');
+      // assertActive revalidates the exact pinned target, including the narrow
+      // read-default fingerprint, before resolving the latest same-identity secret.
+      this.assertActive(context);const current=this.connections.get(id);
       return this.connections.authentication(current.id,current);
     });
     return {connection,configView,credentialHandle};
@@ -148,15 +164,21 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     if(expectedId!==null&&expectedId!==selected.connectionId)throw new ApplicationError('SCOPE_DENIED','请求的连接不是当前项目明确选用的连接');
     const connection=this.connections.get(selected.connectionId);
     if(!identityOnly&&(!connection.enabled||connection.authorization!=='connected'))throw new ApplicationError('AUTH_REQUIRED','当前连接已停用或断开');
-    const target:Target<C['kind']>={slot,id:connection.id,identityRevision:connection.identityRevision,configRevision:connection.configRevision,policyRevision:connection.policyRevision,bindingRevision:selected.revision,...(identityOnly?{identityOnly:true as const}:{})};
+    const defaults=context.semantics==='read'?this.readDefaults(connection):undefined;let pinned=connection,target:Target<C['kind']>={slot,id:connection.id,identityRevision:connection.identityRevision,configRevision:connection.configRevision,policyRevision:connection.policyRevision,bindingRevision:selected.revision,...(identityOnly?{identityOnly:true as const}:{}),...(defaults?{readDefaults:defaults}:{})};
     await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
       const record=this.record(context),row=this.store.sqlite.prepare('SELECT targets_json FROM application_data_operations WHERE operation_id=?').get(context.operationId) as {targets_json:string};
       let targets:Target<C['kind']>[];try{targets=this.decodeTargets(row.targets_json,context.appId);}catch{throw new ApplicationError('HASH_MISMATCH','原业务来源记录无法核验');}
-      const prior=targets.find(t=>t.slot===slot);if(prior&&canonicalJson(prior)!==canonicalJson(target))throw new ApplicationError('REVISION_CONFLICT','同一操作不能在重试时改用其他来源');
+      const prior=targets.find(t=>t.slot===slot);
+      if(prior){
+        this.checkTarget(context,prior);
+        if(prior.readDefaults)pinned={...this.restoreReadDefaults(connection,prior.readDefaults),configRevision:prior.configRevision};
+        else{const{readDefaults:_defaults,...strict}=target;if(canonicalJson(prior)!==canonicalJson(strict))throw new ApplicationError('REVISION_CONFLICT','同一操作不能在重试时改用其他来源');}
+        target=prior;
+      }
       if(!prior){targets.push(target);this.store.sqlite.prepare('UPDATE application_data_operations SET targets_json=? WHERE operation_id=?').run(canonicalJson(targets),context.operationId);}
       record.targets.set(slot,target);this.checkTarget(context,target);
     }).immediate());
-    return connection;
+    return pinned;
   }
   async draftSender(context:ApplicationExecutionContext<A>,expectedId:string|null):Promise<HostedConnection<C,A>|null>{
     this.require(context,'mail.draft');if(context.appId!=='mail'||context.scopeKind!=='project'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','回复身份需要真实邮件项目');
@@ -165,7 +187,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     return this.pinConnection(context,this.registry.provider('smtp').id,expectedId,true);
   }
   async connectionHealth(context:ApplicationExecutionContext<A>,connection:HostedConnection<C,A>,code:ApplicationError['code']|null):Promise<void>{
-    this.assertActive(context);const target=this.record(context).targets.get(connection.providerId);if(!target||target.id!==connection.id)throw new ApplicationError('SCOPE_DENIED','健康结果不属于本次已固定来源');const changed=await this.connections.reportHealth(connection.id,connection,code);this.assertActive(context);if(changed)this.deps.changed?.();
+    this.assertActive(context);const target=this.record(context).targets.get(connection.providerId);if(!target||target.id!==connection.id)throw new ApplicationError('SCOPE_DENIED','健康结果不属于本次已固定来源');const changed=await this.connections.reportHealth(connection.id,connection,code);this.assertActive(context);if(changed)this.deps.changed?.({kind:'health',appId:context.appId,connectionId:connection.id});
   }
   /** A bounded caller may stop waiting before its native producer actually exits. */
   retainActivity<T>(context:ApplicationExecutionContext<A>,work:()=>Promise<T>):Promise<T>{
@@ -176,10 +198,30 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   private activePackage(appId:A):InstalledApplicationPackage{
     const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前应用没有已准备的默认版本');return this.builtin.packages.get(active.packageHash);
   }
-  withUi<T>(sender:ApplicationUiSender,input:{projectId:string;appId:A;action:string;operations:readonly string[];semantics:'read'|'write';signal?:AbortSignal},work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
+  withUi<T>(sender:ApplicationUiSender,input:{projectId:string;appId:A;action:string;operations:readonly string[];semantics:'read'|'write';signal?:AbortSignal;retry?:'safe-read'},work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
     this.deps.requireSender(sender);const application=this.activePackage(input.appId),stamp=this.selections.policyStamp(input.projectId,input.appId);
     const check=()=>{this.deps.requireSender(sender);if(canonicalJson(this.selections.policyStamp(input.projectId,input.appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','应用授权已变化，原业务操作失效');};
-    return this.begin(application,{operationId:randomUUID(),callerKind:'ui',scopeKind:'project',projectId:input.projectId,taskId:null,runId:null,jobId:null,parentOperationId:null,appId:input.appId,packageHash:application.packageHash,dataApi:1,action:input.action,semantics:input.semantics,allowedOperations:input.operations,signal:input.signal??new AbortController().signal,startedAt:new Date(this.now()).toISOString()},check,stamp,work,true);
+    if(input.retry&&input.semantics!=='read')throw new ApplicationError('INVALID_INPUT','只有受信只读操作可使用读取重试');
+    const timeout=input.retry?new AbortController():null,duration=Math.min(30000,Math.max(1,this.deps.uiReadTimeoutMs??30000)),deadline=performance.now()+duration;
+    const timer=timeout?setTimeout(()=>timeout.abort(new ApplicationError('TIMEOUT','本次读取到达总时限，未继续请求')),duration):undefined;
+    const signal=AbortSignal.any([input.signal??new AbortController().signal,...(timeout?[timeout.signal]:[])]);
+    try{return this.begin(application,{operationId:randomUUID(),callerKind:'ui',scopeKind:'project',projectId:input.projectId,taskId:null,runId:null,jobId:null,parentOperationId:null,appId:input.appId,packageHash:application.packageHash,dataApi:1,action:input.action,semantics:input.semantics,allowedOperations:input.operations,signal,startedAt:new Date(this.now()).toISOString()},check,stamp,input.retry?context=>this.retryUiRead(context,deadline,work):work,true).catch(error=>{if(signal.aborted&&signal.reason instanceof ApplicationError&&signal.reason.code==='TIMEOUT')throw signal.reason;throw error;}).finally(()=>{if(timer)clearTimeout(timer);});}catch(error){if(timer)clearTimeout(timer);throw error;}
+  }
+  /** UI owns one budget. Agent operations enter withAgent and keep their existing outer ToolService budget. */
+  private async retryUiRead<T>(context:ApplicationExecutionContext<A>,deadline:number,work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
+    let attempts=0;
+    try{while(true){
+      await withResourceLock(this.store.root,()=>{this.record(context);attempts++;this.store.sqlite.prepare('UPDATE application_data_operations SET attempt_count=? WHERE operation_id=?').run(attempts,context.operationId);});
+      try{return await work(context);}catch(error){
+        this.record(context);
+        if(!(error instanceof ApplicationError)||!['TRANSIENT_FAILURE','TIMEOUT','RESOURCE_BUSY'].includes(error.code))throw error;
+        const exhausted=()=>new ApplicationError(error.code,error.message+'；本次已尝试 '+attempts+' 次，读取预算已结束，请稍后明确重试');
+        if(attempts>=3)throw exhausted();
+        const backoff=Math.min(5000,Math.max(0,this.deps.uiReadRetryDelays?.[attempts-1]??([1000,3000][attempts-1]+Math.floor(Math.random()*100)))),wait=Math.max(backoff,retryAfterWait(error));
+        if(performance.now()+wait>=deadline)throw exhausted();
+        await delay(wait,undefined,{signal:context.signal});
+      }
+    }}catch(error){if(context.signal.aborted)this.record(context);throw error;}
   }
   withManagement<T>(sender:ApplicationUiSender,input:{appId:A;action:string;semantics:'read'|'write';projectId?:string;signal?:AbortSignal},work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
     this.deps.requireSender(sender);if(!managementActions.has(input.action))throw new ApplicationError('SCOPE_DENIED','连接管理只允许明确的配置动作');const application=this.activePackage(input.appId);
@@ -226,7 +268,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
       }).immediate());
       this.records.set(context,record);this.active.add(record);
       try{const value=await work(context);this.record(context);await this.end(context,'succeeded',null);this.record(context);return value;}
-      catch(error){const code=error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE';await this.end(context,code==='CANCELED'?'cancelled':context.semantics==='write'?'unknown':'failed',code);throw error;}
+      catch(error){const code=error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',selectionRejected=context.scopeKind==='connection-management'&&context.action==='application.project.select'&&error instanceof SelectionPreconditionError;await this.end(context,code==='CANCELED'?'cancelled':context.semantics==='write'&&!selectionRejected?'unknown':'failed',code);throw error;}
       finally{record.active=false;abort.abort();this.active.delete(record);}
     };
     const execution=lease?this.store.use(application.resourceId,input.callerKind==='index-job'?'index-job':'ui',input.operationId,run):run();
@@ -242,14 +284,20 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const policy=this.selections.policyStamp(row.project_id,row.app_id),hash=digest(canonicalJson({callerKind:row.caller_kind,scopeKind:row.scope_kind,projectId:row.project_id,taskId:row.task_id,runId:row.run_id,jobId:row.job_id,parentOperationId:row.parent_operation_id,appId:row.app_id,packageHash:row.package_hash,action:row.action,semantics:row.semantics,policy}));
     if(hash!==row.scope_hash)throw new ApplicationError('SCOPE_DENIED','原回执对应的应用授权代次已变化');
     let targets:Target<C['kind']>[];try{targets=this.decodeTargets(row.targets_json,row.app_id);}catch{throw new ApplicationError('HASH_MISMATCH','原回执来源记录已损坏');}
-    for(const target of targets)this.checkTarget({projectId:row.project_id,appId:row.app_id},target);
+    for(const target of targets)this.checkTarget({projectId:row.project_id,appId:row.app_id,semantics:row.semantics},target);
   }
   withReadReceipt<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,originalOperationId:string,work:(context:ApplicationExecutionContext<A>)=>Promise<T>,signal?:AbortSignal):Promise<T>{
     this.assertAgentReceipt(claim,binding,originalOperationId);
     const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const application=this.builtin.assertTrusted(binding.packageHash),id=randomUUID();
     const check=()=>this.assertAgentReceipt(known,binding,originalOperationId);
     return this.begin(application,{operationId:id,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId:this.registry.appId(application.appId),packageHash:application.packageHash,dataApi:1,action:binding.toolName+'.receipt',semantics:'read',allowedOperations:[binding.permission],signal:AbortSignal.any([known.signal,...(signal?[signal]:[])]),startedAt:new Date(this.now()).toISOString()},check,{receiptOf:originalOperationId},async context=>{
-      await withResourceLock(this.store.root,()=>{this.assertActive(context);this.store.sqlite.prepare('INSERT INTO application_read_receipt_checks VALUES(?,?,?)').run(id,originalOperationId,new Date(this.now()).toISOString());});return work(context);
+      await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
+        this.assertActive(context);const original=this.store.sqlite.prepare('SELECT targets_json FROM application_data_operations WHERE operation_id=?').get(originalOperationId) as {targets_json:string};
+        const pinned=this.decodeTargets(original.targets_json,context.appId).filter(target=>target.readDefaults!==undefined),record=this.record(context);
+        for(const target of pinned){this.checkTarget(context,target);record.targets.set(target.slot,target);}
+        if(pinned.length)this.store.sqlite.prepare('UPDATE application_data_operations SET targets_json=? WHERE operation_id=?').run(canonicalJson(pinned),context.operationId);
+        this.store.sqlite.prepare('INSERT INTO application_read_receipt_checks VALUES(?,?,?)').run(id,originalOperationId,new Date(this.now()).toISOString());
+      }).immediate());return work(context);
     },false);
   }
   invalidate():void{for(const record of this.active)try{this.record(record.context);}catch{record.abort.abort();}}
