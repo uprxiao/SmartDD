@@ -19,7 +19,9 @@ function authenticatedInvalidPayload(json: string): Buffer {
   } finally { key.fill(0); }
 }
 
-describe('M8 portable encryption and strict input', () => {
+// Keep the actual production KDF for each encrypt/decrypt and tamper variant;
+// multiple sequential derivations need more than the default 5s on CI hosts.
+describe('M8 portable encryption and strict input', { timeout: 20_000 }, () => {
   it('E02 accepts eight characters, preserves whitespace/Chinese, and enforces UTF-8 length', async () => {
     expect(passphraseIssue('1234567')).toBeTruthy(); expect(passphraseIssue('12345678')).toBeNull();
     expect(passphraseIssue('你好'.repeat(172))).toBeTruthy(); expect(passphraseIssue('12345678', '12345679')).toBeTruthy();
