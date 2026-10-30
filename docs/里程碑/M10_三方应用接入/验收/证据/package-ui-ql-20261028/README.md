@@ -1,0 +1,1 @@
+QL: resumed guarded actual UI. Final P/A21 checks each;8 native window scenes each,all declared tool rows/footer reached without occlusion. P09 light30 includes3QE functional checks;dark setup failed and is not counted. Original failures/intermediate captures retained. No production/build change or formal72 increment.

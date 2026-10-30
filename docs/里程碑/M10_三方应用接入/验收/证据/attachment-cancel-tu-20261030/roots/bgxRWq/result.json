@@ -1,0 +1,365 @@
+{
+  "root": "/private/tmp/willyou-m10-prototype-cancel-bgxRWq",
+  "userData": "/private/tmp/willyou-m10-prototype-cancel-bgxRWq/userdata",
+  "startedAt": "2026-10-29T23:18:53.471Z",
+  "status": "passed-prototype-new-attachment-cancel",
+  "checks": [
+    {
+      "stage": "light",
+      "name": "Save-only does not open the chooser or decode PDF",
+      "at": "2026-10-29T23:18:57.933Z"
+    },
+    {
+      "stage": "light",
+      "name": "Escape closes only nested chooser and preserves original draft",
+      "at": "2026-10-29T23:18:58.033Z"
+    },
+    {
+      "stage": "light",
+      "name": "Cancelled overwrite never opens",
+      "at": "2026-10-29T23:18:58.058Z"
+    },
+    {
+      "stage": "light",
+      "name": "Explicit overwrite alone reaches chooser;explicit cancel preserves draft",
+      "at": "2026-10-29T23:18:58.359Z"
+    },
+    {
+      "stage": "light",
+      "name": "Canceled failed and unknown saves never open",
+      "at": "2026-10-29T23:18:58.468Z"
+    },
+    {
+      "stage": "light",
+      "name": "Empty application list disables Open and cancels locally",
+      "at": "2026-10-29T23:18:58.521Z"
+    },
+    {
+      "stage": "light",
+      "name": "Final parent Escape restores the draft list without persisted fixture mutation",
+      "at": "2026-10-29T23:18:58.622Z"
+    },
+    {
+      "stage": "dark",
+      "name": "Save-only does not open the chooser or decode PDF",
+      "at": "2026-10-29T23:18:59.209Z"
+    },
+    {
+      "stage": "dark",
+      "name": "Escape closes only nested chooser and preserves original draft",
+      "at": "2026-10-29T23:18:59.271Z"
+    },
+    {
+      "stage": "dark",
+      "name": "Cancelled overwrite never opens",
+      "at": "2026-10-29T23:18:59.286Z"
+    },
+    {
+      "stage": "dark",
+      "name": "Explicit overwrite alone reaches chooser;explicit cancel preserves draft",
+      "at": "2026-10-29T23:18:59.317Z"
+    },
+    {
+      "stage": "dark",
+      "name": "Canceled failed and unknown saves never open",
+      "at": "2026-10-29T23:18:59.360Z"
+    },
+    {
+      "stage": "dark",
+      "name": "Empty application list disables Open and cancels locally",
+      "at": "2026-10-29T23:18:59.392Z"
+    },
+    {
+      "stage": "dark",
+      "name": "Final parent Escape restores the draft list without persisted fixture mutation",
+      "at": "2026-10-29T23:18:59.463Z"
+    }
+  ],
+  "inputs": [
+    {
+      "stage": "start",
+      "selector": "[aria-label=\"当前应用项目\"]",
+      "choice": "ais",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-draft-row"
+    },
+    {
+      "stage": "light",
+      "selector": "dialog .m10-runtime-demo summary",
+      "text": "草稿并发与保存故障 · 合成演示"
+    },
+    {
+      "stage": "light",
+      "selector": "dialog .m10-runtime-demo label",
+      "text": "包含文字附件 · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment .m10-runtime-demo summary",
+      "text": "附件保存场景 · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": "[aria-label=\"附件类型场景\"]",
+      "choice": "pdf",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "保存附件 · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "打开已保存附件 · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "awaiting-replace",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "取消覆盖"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "覆盖这个文件"
+    },
+    {
+      "stage": "light",
+      "selector": "dialog[aria-label=\"打开已保存附件\"] footer button",
+      "text": "取消"
+    },
+    {
+      "stage": "light",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "cancelled",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "failed",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "unknown",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "light",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "saved",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": "[aria-label=\"附件打开场景\"]",
+      "choice": "none",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "light",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"切换深色主题\"]"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-draft-row"
+    },
+    {
+      "stage": "dark",
+      "selector": "dialog .m10-runtime-demo summary",
+      "text": "草稿并发与保存故障 · 合成演示"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment .m10-runtime-demo summary",
+      "text": "附件保存场景 · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"附件类型场景\"]",
+      "choice": "pdf",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "保存附件 · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "打开已保存附件 · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "awaiting-replace",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "取消覆盖"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "覆盖这个文件"
+    },
+    {
+      "stage": "dark",
+      "selector": "dialog[aria-label=\"打开已保存附件\"] footer button",
+      "text": "取消"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "cancelled",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "failed",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "unknown",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"附件保存场景\"]",
+      "choice": "saved",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "dark",
+      "selector": "[aria-label=\"附件打开场景\"]",
+      "choice": "none",
+      "method": "native select focus + actual character typeahead;no value setter"
+    },
+    {
+      "stage": "dark",
+      "selector": ".m10-attachment button",
+      "text": "保存并打开… · 合成"
+    }
+  ],
+  "requests": [
+    "http://127.0.0.1:65428/?preview=m10",
+    "http://127.0.0.1:65428/assets/index-giezsxGc.js",
+    "http://127.0.0.1:65428/assets/index-Btp6kUHh.css",
+    "http://127.0.0.1:65428/assets/app-icon.png",
+    "file:///private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+    "file:///private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/theme-init.js",
+    "file:///private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/index-DvRctmU_.js",
+    "file:///private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/preload-helper-B_AKg5Wz.js",
+    "file:///private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/index-BGuqkEEF.css",
+    "file:///private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/app-icon-DeEYHTMt.png"
+  ],
+  "appPids": [
+    81736
+  ],
+  "app": "/private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app",
+  "asar": "bfbe418dc953c2ccc007d2f023d819ee9561862ee49f5e773c2978af62dc60b1",
+  "layer": "P synthetic attachment UI,real browser keyboard and shared dialog;no filesystem save/open or product operation",
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 81736,
+    "checkedInputs": 117
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 81736,
+      "checkedInputs": 117
+    }
+  ],
+  "before": "{\"version\":2,\"packages\":{\"zentao\":\"1.0.0\",\"mail\":\"1.0.0\"},\"versionPreview\":{\"zentao\":{\"scene\":\"tasks\",\"removed\":[]},\"mail\":{\"scene\":\"tasks\",\"removed\":[]}},\"projectApps\":{\"ais\":{\"zentao\":true,\"mail\":true},\"smartdd\":{\"zentao\":true,\"mail\":false}},\"globalApps\":{\"zentao\":true,\"mail\":true},\"mailQueryDays\":30,\"drafts\":[{\"id\":\"tu-dialog\",\"project\":\"ais\",\"fixture\":\"m10-review\",\"revision\":1,\"senderId\":\"\",\"mailBindingRevision\":-1,\"mailSendSlotRevision\":-1,\"status\":\"draft\",\"at\":\"本次合成\"}],\"installedVersions\":{\"zentao\":[\"1.0.0\"],\"mail\":[\"1.0.0\"]},\"dataSchema\":1,\"installed\":[\"zentao\",\"mail\"],\"connections\":[{\"id\":\"zt-demo\",\"app\":\"zentao\",\"kind\":\"zentao\",\"name\":\"公司禅道\",\"url\":\"http://zentao.intranet.example/biz/\",\"account\":\"demo.user\",\"auth\":\"password\",\"credentialPresent\":true,\"enabled\":true,\"validation\":\"ready\",\"revision\":1},{\"id\":\"fox-demo\",\"app\":\"mail\",\"kind\":\"local\",\"name\":\"工作邮箱 · Foxmail\",\"path\":\"/Users/demo/Library/Containers/com.tencent.Foxmail/Data/Library/Foxmail/\",\"account\":\"work@example.invalid\",\"enabled\":true,\"validation\":\"ready\",\"revision\":1,\"queryDays\":30}],\"connectionCompatibility\":{},\"bindings\":{\"ais\":[\"zt-demo\",\"fox-demo\"],\"smartdd\":[\"zt-demo\"]},\"mailSlotRevisions\":{},\"mailBindingRevisions\":{},\"activity\":[]}",
+  "guard": {
+    "calls": [],
+    "restored": true
+  },
+  "carrierCleanup": {
+    "from": "http://127.0.0.1:65428/?preview=m10#apps/mail",
+    "to": "file:///private/tmp/willyou-m10-tu-package-20261030/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+    "restoredOriginalRenderer": true,
+    "classification": "Prototype test cleanup via original native renderer; not product normal-exit acceptance",
+    "syntheticCloseReplies": 0
+  },
+  "exit": {
+    "pid": 81736,
+    "code": 0,
+    "signal": null
+  },
+  "finishedAt": "2026-10-29T23:19:00.027Z"
+}

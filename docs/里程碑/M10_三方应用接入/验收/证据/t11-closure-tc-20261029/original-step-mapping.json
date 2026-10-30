@@ -1,0 +1,26 @@
+{
+  "case": "T11",
+  "coreDefinition": "../evidence-closure-qy-20261028/original-72-core-before.json",
+  "steps": {
+    "1": "page2Failure/page2Requests;50 rows retained;3 attempts",
+    "2": "completeBug,story404,partialDetail;explicit incomplete state",
+    "3": "networkCancel;original transport closes before release",
+    "4": "lateOriginalResult;completed original response gated after handler",
+    "5": "same cursor only page2;final101;detail restored",
+    "6": "transientRestores[503,503,200];two >=1000ms;RetryAfter31 exceeds30s",
+    "7": "auth401,story403,missingConfiguration AUTH_REQUIRED/0 HTTP,backoffCancel,reconnectedConfiguration same identity",
+    "8": "real original HTTP counts1/3;software tool-service/bridge-runtime/retry-after;provider single request and Python no retry loop"
+  },
+  "layers": {
+    "software": "8 files143 passed",
+    "packaged": "18 groups,actual native storage/provider/controls",
+    "I": "Original RPC connection prerequisite,controlled server faults,only delayed original response gate",
+    "notClaimed": "Actual biz13.0,actual Agent/CLI/write/send/other platforms"
+  },
+  "formalBefore": 49,
+  "formalAfter": 50,
+  "remaining": 22,
+  "percent": 69.44,
+  "onlyNewFormalPass": "T11",
+  "immutableCoreFields": 504
+}

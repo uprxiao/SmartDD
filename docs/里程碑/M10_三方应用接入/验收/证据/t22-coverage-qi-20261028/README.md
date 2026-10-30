@@ -1,0 +1,1 @@
+QI: prior-manifest format correction and 35-group inventory. No new App/UI. Opt-in initial focus gate waits for user activation after confirmed availability;sticky input guard unchanged. Four stub contracts only,not product tests. Historical manifests/failed results preserved.

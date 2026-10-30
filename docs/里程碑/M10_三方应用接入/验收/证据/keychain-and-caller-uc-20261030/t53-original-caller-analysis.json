@@ -1,0 +1,57 @@
+{
+  "oldAppAsarSha256": "7ff7930e49bf74c9f3f202ab7f10dcc2b1b6b1b4eba8aede4564b601bcdab54f",
+  "oldMainSha256": "b613fb0876ddc616a31f827af51c75743e2ce6aec2eae726c3263dc17ab619b6",
+  "actualFailedFixtureSha256": "e8e4ee5a552df73f46d60a3b409f03e2b9a9969babde44945c53addacde673ed",
+  "fixtureExplicitOpenCallSites": 2,
+  "oldClassMethods": [
+    {
+      "method": "open",
+      "calls": [
+        {
+          "expression": "this.openOnce",
+          "line": 30974
+        }
+      ]
+    },
+    {
+      "method": "openOnce",
+      "calls": [
+        {
+          "expression": "this.spawn",
+          "line": 31001
+        }
+      ]
+    },
+    {
+      "method": "spawn",
+      "calls": [
+        {
+          "expression": "this.d.managedCapabilities.prepare",
+          "line": 31200
+        }
+      ]
+    }
+  ],
+  "parentExplicitOpenSites": [
+    {
+      "line": 673,
+      "call": "app.invoke('tasks.open',{taskId:task.id,cols:100,rows:30})",
+      "guards": [
+        "restartCheck",
+        "deferredSkillHistory",
+        "skillPhase",
+        "nodeModeUnavailableCheck"
+      ],
+      "functions": []
+    }
+  ],
+  "oldRecordedRestartCheck": false,
+  "conclusions": [
+    "Old TaskService already deduplicates in-flight open calls; missing dedup is not supported as explanation.",
+    "The actual failed fixture has two explicit open sites; its own source does not contain a third explicit recovery call.",
+    "Archived parent explicit open is under restartCheck=false in actual failed result.",
+    "This is static source structure, not the missing original request trace; does not establish the fifth-run caller or close M10-NK-01."
+  ],
+  "protectedOldRootAccessed": false,
+  "newRuntimeTests": 0
+}

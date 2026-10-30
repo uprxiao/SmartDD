@@ -1,0 +1,79 @@
+{
+  "node_modules/.pnpm/@tanstack+query-core@5.104.2/node_modules/@tanstack/query-core/src/infiniteQueryObserver.ts": {
+    "sha256": "7d0d69afa7b6ecd33343533dbced76bdab08612fb2bf204bc662dfeda0d5bccc",
+    "ranges": [
+      {
+        "start": 165,
+        "end": 176,
+        "lines": [
+          "  fetchNextPage(",
+          "    options?: FetchNextPageOptions,",
+          "  ): Promise<InfiniteQueryObserverResult<TData, TError>> {",
+          "    return this.fetch({",
+          "      ...options,",
+          "      meta: {",
+          "        fetchMore: { direction: 'forward' },",
+          "      },",
+          "    })",
+          "  }",
+          "",
+          "  /**"
+        ]
+      }
+    ]
+  },
+  "node_modules/.pnpm/@tanstack+query-core@5.104.2/node_modules/@tanstack/query-core/src/queryObserver.ts": {
+    "sha256": "36133d63b06cef2a83eab03ade2b37c6fbac8e2abe9799a3659b4480935bae4d",
+    "ranges": [
+      {
+        "start": 466,
+        "end": 480,
+        "lines": [
+          "   * Fetches the observed query and updates the result once the fetch settles. Used by `refetch` and,",
+          "   * in `InfiniteQueryObserver`, to fetch more pages.",
+          "   * @param fetchOptions - Options for this fetch. `cancelRefetch` defaults to `true`.",
+          "   * @returns A promise that resolves with the updated result.",
+          "   */",
+          "  protected fetch(",
+          "    fetchOptions: ObserverFetchOptions,",
+          "  ): Promise<QueryObserverResult<TData, TError>> {",
+          "    return this.#executeFetch({",
+          "      ...fetchOptions,",
+          "      cancelRefetch: fetchOptions.cancelRefetch ?? true,",
+          "    }).then(() => {",
+          "      this.updateResult()",
+          "      return this.#currentResult",
+          "    })"
+        ]
+      }
+    ]
+  },
+  "node_modules/.pnpm/@tanstack+query-core@5.104.2/node_modules/@tanstack/query-core/src/query.ts": {
+    "sha256": "f0d1a0506e088a99b63fa95664648d12cb8e3183720ef491613923819b0327fa",
+    "ranges": [
+      {
+        "start": 708,
+        "end": 724,
+        "lines": [
+          "      this.state.fetchStatus !== 'idle' &&",
+          "      // If the promise in the retryer is already rejected, we have to definitely",
+          "      // re-start the fetch; there is a chance that the query is still in a",
+          "      // pending state when that happens",
+          "      this.#retryer?.status() !== 'rejected'",
+          "    ) {",
+          "      if (this.state.data !== undefined && fetchOptions?.cancelRefetch) {",
+          "        // Silently cancel current fetch if the user wants to cancel refetch",
+          "        this.cancel({ silent: true })",
+          "      } else if (this.#retryer) {",
+          "        // make sure that retries that were potentially cancelled due to unmounts can continue",
+          "        this.#retryer.continueRetry()",
+          "        // Return current promise if we are already fetching",
+          "        return this.#retryer.promise",
+          "      }",
+          "    }",
+          ""
+        ]
+      }
+    ]
+  }
+}

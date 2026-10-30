@@ -1,0 +1,30 @@
+{
+  "passed": 3,
+  "failed": 5,
+  "skipped": 0,
+  "status": "original production component defect red",
+  "failedTests": [
+    {
+      "name": "retains the successful bug page and retries only its failed next cursor",
+      "reason": "TestingLibraryElementError: Unable to find an accessible element with the role \"button\" and name `/bug-row-1/`"
+    },
+    {
+      "name": "retains the successful story page and retries only its failed next cursor",
+      "reason": "TestingLibraryElementError: Unable to find an accessible element with the role \"button\" and name `/story-row-1/`"
+    },
+    {
+      "name": "retains two successful pages when page3 fails and does not refetch either earlier page",
+      "reason": "TestingLibraryElementError: Unable to find an accessible element with the role \"button\" and name `/bug-row-1/`"
+    },
+    {
+      "name": "labels a failed explicit refresh while retaining prior data and retries refresh rather than next-page",
+      "reason": "Error: Unable to find an element with the text: /列表刷新未完成/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+    },
+    {
+      "name": "does not label a prior empty list as a current successful empty result after refresh fails",
+      "reason": "TestingLibraryElementError: Unable to find an accessible element with the role \"button\" and name \"重试刷新\""
+    }
+  ],
+  "source": "component-red-source.tsx",
+  "productionSource": "zentao-panel-before.tsx"
+}

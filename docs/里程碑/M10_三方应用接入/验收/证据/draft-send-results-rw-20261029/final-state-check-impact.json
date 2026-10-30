@@ -1,0 +1,23 @@
+{
+  "callersOfNewHelper": [
+    "ApplicationService.viewDraft"
+  ],
+  "integrationViewDraftOccurrences": [
+    [
+      88,
+      "  const shown=await app.viewDraft(sender,'p1',original.draftId,original.draftRevision);expect(shown.draft.activeIntentId).toBeNull();expect(shown.sendRecord?.item).toMatchObject({id:original.id,state,projectId:'p1'});expect(shown.sendRecord?.item.send?.executionId).toBe(shown.draft.lastExecutionId);expect(shown.sendRecord?.send?.content?.subject).toBe(content().subject);"
+    ],
+    [
+      377,
+      "  const intent=await prepare();await confirm(intent);const old=app.connections.get(smtpId);await app.setConnectionEnabled(sender,smtpId,false,old.revision);expect(await app.viewSend(sender,'p1',intent.id)).toMatchObject({intent:{state:'stale',authorized:false,errorCode:'POLICY_CHANGED'}});expect(await app.viewDraft(sender,'p1',intent.draftId)).toMatchObject({draft:{activeIntentId:null,state:'draft'}});expect(messages).toHaveLength(0);"
+    ]
+  ],
+  "fullBeforeFinalGuard": 297,
+  "addedStateMismatchCase": 1,
+  "lastFollowup": {
+    "helperActivityAndComponent": 30,
+    "exactUiIntegration": 2,
+    "other106IntegrationFilteredOnlyInTargetedFollowup": true
+  },
+  "boundary": "108 integration cases previously passed;two RW terminal cases reach the new execution-state comparison. One existing viewDraft call follows revoking an unexecuted preparing intent:execution_id remains null,so helper returns before the new guard. Other immutable DataAPI1 paths do not call the helper."
+}

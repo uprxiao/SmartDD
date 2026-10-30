@@ -1,0 +1,1 @@
+QJ: current T07 software revalidation;298 existing assertions in7files passed. Four implementation snapshots identical to BK. Original8step assertions mapped only for U/I,not real CLI/UI/system/external-provider acceptance. No new production/test code,App or release.

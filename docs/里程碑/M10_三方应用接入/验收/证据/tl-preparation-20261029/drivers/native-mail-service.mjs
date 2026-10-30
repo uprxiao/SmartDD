@@ -1,0 +1,947 @@
+import {assertTlConsent} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/loopback-mail-sink.mjs';
+const tlMode=process.env.WILLYOU_TL_EXECUTE==='1'?'execute':process.env.WILLYOU_TL_PREPARE==='1'?'prepare':null;
+if(!tlMode){console.log(JSON.stringify({status:'prepared-not-executed',requiresActualUserReply:true,defaultStartsApp:false,defaultSendsData:false}));process.exit(0);}
+let tlApproval=null;
+if(tlMode==='execute'){const p=process.env.WILLYOU_TL_APPROVAL_FILE;if(p!=='/private/tmp/willyou-m10-tl-20261029/approval.json')throw Error('Exact actual consent evidence file required');tlApproval=assertTlConsent(JSON.parse(readFileSync(p,'utf8')));const budget='/private/tmp/willyou-m10-tl-20261029/once-'+createHash('sha256').update(tlApproval.questionReference).digest('hex')+'.json';if(process.getBuiltinModule('fs').existsSync(budget))throw Error('This actual user grant already permitted DATA;continue original root read-only,never start a second send');}
+import{checkEarlyResumeStop}from'/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/early-resume-stop-native.mjs';
+const earlyResumeStopCheck=process.env.WILLYOU_EARLY_RESUME_STOP_CHECK==='1';
+// Service-layer checks use production IPC. Optional diagnostic UI checks are recorded separately.
+// Reuses the archived M10 T actual-CLI UI driver (original SHA256 af541844bf67142b4394cdaf5dbfddf79e2921a8cbebbc4f6cca9a301b444bef).
+// Real App/PTY/Codex/MCP and private SQLite; Responses model is a loopback synthetic fixture.
+// No daily credentials, external business services, actual model reasoning or email send.
+// This driver records partial coverage; it cannot close all layers of a formal case.
+import assert from 'node:assert/strict';
+import {homedir} from 'node:os';
+const tgKeychainHome=homedir();
+import {readFileSync,readdirSync} from 'node:fs';
+import {createServer} from 'node:http';
+import {connect} from 'node:net';
+import {execFileSync} from 'node:child_process';
+import {mkdtemp,mkdir,readFile,writeFile,readdir,lstat,rm} from 'node:fs/promises';
+import {join,dirname,resolve} from 'node:path';
+import {createHash,randomUUID} from 'node:crypto';
+import {cacheAgentsProbe,checkCacheAgents} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/cache-agents-native.mjs';
+import {checkNativeExitUi} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/native-exit-ui.mjs';
+import {checkNativeUserOrigin} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/native-user-origin.mjs';
+import {focusNewInstalledWindow} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/dmg-install-ui.mjs';
+import {checkDraftLifecycle} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/draft-lifecycle-native.mjs';
+import {checkTransferUi} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/transfer-ui.mjs';
+import {checkDiagnosticClipboardUi} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/diagnostic-clipboard-ui.mjs';
+import {prepareCacheSpaceVolume,finishCacheSpaceVolume} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/cache-space-native.mjs';
+import {checkConnectionLifecycle} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/connection-lifecycle.mjs';
+import {checkLoopbackMail as checkZenTaoSwitch} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/loopback-send-native.mjs';
+import {checkProjectLifecycle} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/project-lifecycle-native.mjs';
+import {checkSavedQueryDays} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/saved-query-days-native.mjs';
+import {checkAccountIsolation} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/account-isolation-native.mjs';
+import {checkInflightDefault} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/inflight-default-native.mjs';
+import {checkConcurrentDefault} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/concurrent-default-native.mjs';
+import {checkMissingMailDate} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/missing-mail-date-native.mjs';
+import {checkMailMime} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/mail-mime-native.mjs';
+import {checkIncompleteMime} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/mail-incomplete-native.mjs';
+import {checkOrphanDiscovery} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/discovery-orphan-native.mjs';
+import {checkPublicationCrash} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/discovery-publication-native.mjs';
+import {checkPublicationGuard} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/discovery-publication-guard-native.mjs';
+import {checkHistoryReferences} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/history-reference-native.mjs';
+import {fourHistoryProbe,checkFourNativeHistories,restoreHistoryCapture} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/four-history-native.mjs';
+import {concurrentVersionsProbe,checkConcurrentVersions} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/concurrent-versions-native.mjs';
+import {captureBudgetService} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/budget-main-capture.mjs';
+import {checkRetryAfterNative} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/retry-after-native.mjs';
+import {openElectron as openHarnessElectron} from '/Users/hx/hx/hxWork/SmartDD/scripts/lib/electron-harness.mjs';
+import {installBrokerObserver,collectAndRestoreBrokerObserver,replayOldCredential} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/broker-replay-observer.mjs';
+import {bootstrapReplayFixture} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/bootstrap-replay.mjs';
+import {checkUnavailableNodeMode} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/node-mode-unavailable.mjs';
+import {projectResourceProbe} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/project-resource-regression.mjs';
+import {installAppFocusGuard,isAppFocusYield} from '/Users/hx/hx/hxWork/SmartDD/scripts/lib/app-focus-guard.mjs';
+import {prepareNativeGcRace,verifyNativeGcRace} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/native-gc-race.mjs';
+import {availabilityProbe,checkProjectAvailability} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/project-availability.mjs';
+import {legacyRegressionProbe,prepareLegacyRegression,checkLegacyRegression} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/legacy-regression.mjs';
+import {maintenanceWaitProbe,prepareMaintenanceWaitUi,checkMaintenanceWaitUi} from '/Users/hx/hx/hxWork/SmartDD/scripts/applications/fixtures/maintenance-wait-ui.mjs';
+
+const restartExecutable=process.env.WILLYOU_RESTART_APP;
+const restartAsar=process.env.WILLYOU_RESTART_ASAR_SHA;
+const dualStoreCheck=process.env.WILLYOU_DUAL_STORE_CHECK==='1';
+const cancelFreezeUi=process.env.WILLYOU_CANCEL_FREEZE_UI==='1';
+const cancelFreezeCheck=process.env.WILLYOU_CANCEL_FREEZE_CHECK==='1'||cancelFreezeUi;
+const freezeCheck=process.env.WILLYOU_FREEZE_CHECK==='1'||cancelFreezeCheck;
+const userMcpCheck=process.env.WILLYOU_USER_MCP_CHECK==='1';
+const expectBrokerAudit=process.env.WILLYOU_EXPECT_BROKER_AUDIT==='1';
+const hostReplayCheck=process.env.WILLYOU_HOST_REPLAY_CHECK==='1';
+const bootstrapReplayCheck=process.env.WILLYOU_BOOTSTRAP_REPLAY_CHECK==='1';
+const externalSkillCheck=process.env.WILLYOU_EXTERNAL_SKILL_CHECK==='1';
+const naturalExitHistory=process.env.WILLYOU_NATURAL_EXIT_HISTORY==='1';
+const shutdownHistory=process.env.WILLYOU_SHUTDOWN_HISTORY==='1';
+const restoreSelection=process.env.WILLYOU_RESTORE_SELECTION==='1';
+const revokeCheck=process.env.WILLYOU_REVOKE_CHECK==='1';
+const longNativeTail=process.env.WILLYOU_LONG_NATIVE_TAIL==='1';
+const skillPhase=process.env.WILLYOU_SKILL_PHASE??'';
+const nodeModeUnavailableCheck=process.env.WILLYOU_EXPECT_NODE_MODE_UNAVAILABLE==='1';
+const nodeModeRestoreExecutable=process.env.WILLYOU_NODE_MODE_RESTORE_APP,nodeModeRestoreAsar=process.env.WILLYOU_NODE_MODE_RESTORE_ASAR_SHA;
+assert(!nodeModeRestoreExecutable||nodeModeUnavailableCheck&&nodeModeRestoreAsar,'Node-mode repair needs the explicit negative fixture and a pinned standard App');
+assert(['','discovery','read','tool'].includes(skillPhase),'Unknown Skill phase');
+const deferredSkillHistory=process.env.WILLYOU_DEFER_SKILL_DIAGNOSTICS==='1';
+const complexPaths=process.env.WILLYOU_COMPLEX_PATHS==='1';
+const diagnosticUi=process.env.WILLYOU_SKILL_DIAGNOSTIC_UI==='1';
+const expectSkillHistory=process.env.WILLYOU_EXPECT_SKILL_HISTORY==='1';
+const expectSkillDiscovery=process.env.WILLYOU_EXPECT_SKILL_DISCOVERY==='1';
+const expectSkillRead=process.env.WILLYOU_EXPECT_SKILL_READ==='1';
+const expectRecoveryUnsupported=process.env.WILLYOU_EXPECT_RECOVERY_UNSUPPORTED==='1';
+const bridgeFaultSignal=process.env.WILLYOU_BRIDGE_FAULT_SIGNAL==='SIGTERM'?'SIGTERM':'SIGKILL';
+const bridgeFaultCheck=process.env.WILLYOU_BRIDGE_FAULT_CHECK==='1';
+const restartCheck=process.env.WILLYOU_RESTART_CHECK==='1';
+const packageRepairCheck=process.env.WILLYOU_PACKAGE_REPAIR_CHECK==='1';assert(!packageRepairCheck||(restartCheck&&!restartExecutable&&!hostReplayCheck),'Package repair uses one exact standard package and native host restart');
+const forgeScope=process.env.WILLYOU_FORGE_SCOPE==='1';
+const crossProjectTool=process.env.WILLYOU_CROSS_PROJECT_TOOL==='1';
+const selectedSecondProject=process.env.WILLYOU_SELECTED_SECOND_PROJECT==='1';
+const sharedProjectCheck=process.env.WILLYOU_SHARED_PROJECT_CHECK==='1';
+const sameCwdProjects=process.env.WILLYOU_SAME_CWD_PROJECTS==='1';
+const persistedSameCwdFixture=process.env.WILLYOU_SAME_CWD_PERSISTED_FIXTURE==='1';assert(!persistedSameCwdFixture||sameCwdProjects,'Persisted same-cwd fixture requires explicit same-cwd mode');assert(!sameCwdProjects||sharedProjectCheck,'Same cwd requires shared-project mode');
+const unselectedProject=process.env.WILLYOU_UNSELECTED_PROJECT==='1';
+const scopeUiCheck=process.env.WILLYOU_SCOPE_UI_CHECK==='1';
+const projectAvailabilityCheck=process.env.WILLYOU_PROJECT_AVAILABILITY_CHECK==='1';
+const cacheDiskFullCheck=process.env.WILLYOU_CACHE_DISK_FULL_CHECK==='1';
+const cacheSourceFaultsCheck=process.env.WILLYOU_CACHE_SOURCE_FAULTS_CHECK==='1';
+const cacheMutationCheck=process.env.WILLYOU_CACHE_MUTATION_CHECK==='1';
+const cacheRangesCheck=process.env.WILLYOU_CACHE_RANGES_CHECK==='1';
+const cacheWaitersCheck=process.env.WILLYOU_CACHE_WAITERS_CHECK==='1';
+const retryDiagnosticsUiCheck=process.env.WILLYOU_RETRY_DIAGNOSTICS_UI==='1';
+const diagnosticClipboardUiCheck=process.env.WILLYOU_DIAGNOSTIC_CLIPBOARD_UI_CHECK==='1';
+const transferFormatOnly=process.env.WILLYOU_TRANSFER_FORMAT_UI_ONLY==='1';
+const transferUiCheck=process.env.WILLYOU_TRANSFER_UI_CHECK==='1'||transferFormatOnly;
+const nativeUserOriginCheck=process.env.WILLYOU_NATIVE_USER_ORIGIN_CHECK==='1';
+const nativeExitUiCheck=process.env.WILLYOU_NATIVE_EXIT_UI_CHECK==='1',homeNativeCheck=nativeUserOriginCheck||nativeExitUiCheck;
+assert(!nativeExitUiCheck||!Object.entries(process.env).some(([k,v])=>k.startsWith('WILLYOU_')&&v==='1'&&k!=='WILLYOU_NATIVE_EXIT_UI_CHECK'),'Native exit UI check has its own ordinary baseline only');
+assert(!nativeUserOriginCheck||!Object.entries(process.env).some(([k,v])=>k.startsWith('WILLYOU_')&&v==='1'&&k!=='WILLYOU_NATIVE_USER_ORIGIN_CHECK'),'Native origin check has its own ordinary baseline only');
+const draftLifecycleCheck=process.env.WILLYOU_DRAFT_LIFECYCLE_CHECK==='1';
+const cacheQuotaCheck=process.env.WILLYOU_CACHE_QUOTA_CHECK==='1';
+const cacheAgentsCheck=process.env.WILLYOU_CACHE_AGENTS_CHECK==='1'||cacheWaitersCheck||cacheRangesCheck||cacheMutationCheck||cacheSourceFaultsCheck||cacheDiskFullCheck||cacheQuotaCheck;
+assert(!cacheQuotaCheck||!cacheWaitersCheck&&!cacheRangesCheck&&!cacheMutationCheck&&!cacheSourceFaultsCheck&&!cacheDiskFullCheck,'Quota pressure uses one own two-Agent baseline without other fault modes');
+assert(!cacheDiskFullCheck||!cacheSourceFaultsCheck&&!cacheMutationCheck&&!cacheRangesCheck&&!cacheWaitersCheck&&!complexPaths,'Disk full uses one original-source baseline and private cache volume only');
+assert(!cacheSourceFaultsCheck||!cacheMutationCheck&&!cacheRangesCheck&&!cacheWaitersCheck,'Source faults use original unchanged source and ordinary two-task baseline only');
+const zenSwitchWireCheck=process.env.WILLYOU_ZENTAO_SWITCH_WIRE_CHECK==='1';
+const zenSwitchGatesCheck=process.env.WILLYOU_ZENTAO_SWITCH_GATES_CHECK==='1'||zenSwitchWireCheck;
+const zenSwitchCheck=process.env.WILLYOU_ZENTAO_SWITCH_CHECK==='1'||zenSwitchGatesCheck;
+const projectLifecycleCheck=process.env.WILLYOU_PROJECT_LIFECYCLE_CHECK==='1';
+const savedQueryDaysCheck=process.env.WILLYOU_SAVED_QUERY_DAYS_CHECK==='1';
+const accountIsolationCheck=process.env.WILLYOU_ACCOUNT_ISOLATION_CHECK==='1';
+const inflightDefaultCheck=process.env.WILLYOU_INFLIGHT_DEFAULT_CHECK==='1';
+const concurrentDefaultCheck=process.env.WILLYOU_CONCURRENT_DEFAULT_CHECK==='1';
+const missingMailDateCheck=process.env.WILLYOU_MISSING_MAIL_DATE_CHECK==='1';
+const mailMimeCheck=process.env.WILLYOU_MAIL_MIME_CHECK==='1';
+const mailIncompleteCheck=process.env.WILLYOU_MAIL_INCOMPLETE_CHECK==='1';
+const connectionLifecycleCheck=process.env.WILLYOU_CONNECTION_LIFECYCLE_CHECK==='1';
+const discoveryOrphanCheck=process.env.WILLYOU_DISCOVERY_ORPHAN_CHECK==='1';
+const discoveryOrphanKind=process.env.WILLYOU_DISCOVERY_ORPHAN_KIND??'live-child';assert(['live-child','identity-unavailable'].includes(discoveryOrphanKind));
+const discoveryCrashPhase=process.env.WILLYOU_DISCOVERY_CRASH_PHASE??'';assert(['','intent-recorded','registered','renamed','catalog-published','records-committed'].includes(discoveryCrashPhase));
+const retryAfterCheck=process.env.WILLYOU_RETRY_AFTER_CHECK==='1';
+const historyReferenceCheck=process.env.WILLYOU_HISTORY_REFERENCE_CHECK==='1';
+const fourHistoryCheck=process.env.WILLYOU_FOUR_HISTORY_CHECK==='1'||historyReferenceCheck;
+const concurrentTrace=process.env.WILLYOU_CONCURRENT_TRACE==='1';
+const concurrentProjectCheck=process.env.WILLYOU_CONCURRENT_PROJECT_B_CHECK==='1',concurrentVersionsCheck=process.env.WILLYOU_CONCURRENT_VERSIONS_CHECK==='1'||concurrentProjectCheck,historyCaptureCheck=zenSwitchCheck||earlyResumeStopCheck||fourHistoryCheck||concurrentVersionsCheck||zenSwitchGatesCheck||nativeUserOriginCheck;
+assert(!earlyResumeStopCheck||![fourHistoryCheck,concurrentVersionsCheck,zenSwitchGatesCheck,nativeUserOriginCheck,restartCheck,revokeCheck,freezeCheck,retryAfterCheck].some(Boolean),'SK uses ordinary own baseline and its first-await gate only');
+const publisherGuardCheck=process.env.WILLYOU_DISCOVERY_PUBLISHER_GUARD==='1';assert(!publisherGuardCheck||discoveryCrashPhase==='registered','Publisher guard uses only the exact registered publication checkpoint');
+const projectResourceCheck=process.env.WILLYOU_PROJECT_RESOURCE_CHECK==='1';
+const projectContextOnly=process.env.WILLYOU_PROJECT_CONTEXT_ONLY==='1';assert(!projectContextOnly||projectResourceCheck,'Context-only control records the original resource scenario SSH gap separately');
+// Explicit user approval is required after MA's native sandbox audit denial.
+// This switch is default-off and never changes an existing/daily profile.
+const projectResourcePermissionsApproved=process.env.WILLYOU_PROJECT_RESOURCE_PERMISSIONS_APPROVED==='1';
+assert(!projectResourcePermissionsApproved||projectResourceCheck&&!projectContextOnly,'Approved permissions are scoped to the private full project-resource regression');
+const legacyRegressionCheck=process.env.WILLYOU_LEGACY_REGRESSION_CHECK==='1';
+const maintenanceCancelUi=process.env.WILLYOU_MAINTENANCE_CANCEL_UI==='1';
+const maintenanceDark=process.env.WILLYOU_MAINTENANCE_DARK==='1';
+const scopeRestartCheck=process.env.WILLYOU_SCOPE_RESTART_CHECK==='1';assert(!scopeRestartCheck||(sharedProjectCheck&&!selectedSecondProject&&!unselectedProject&&!restartCheck&&!restartExecutable),'Scope restart isolates A-selected/B-unselected in one standard package');
+const graphGcCheck=process.env.WILLYOU_GRAPH_GC_CHECK==='1',graphFixture=process.env.WILLYOU_GRAPH_GC_FIXTURE,graphFixtureSha=process.env.WILLYOU_GRAPH_GC_FIXTURE_SHA;
+assert(!cacheAgentsCheck||!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!projectResourceCheck,'Cache Agents uses ordinary baseline, two own tasks and one exact package');
+assert(!connectionLifecycleCheck||!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable,'Connection lifecycle uses one ordinary baseline and independent service/CLI phases');
+assert(!discoveryOrphanCheck||!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!dualStoreCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!deferredSkillHistory&&!projectResourceCheck&&!complexPaths&&!hostReplayCheck&&!nodeModeUnavailableCheck&&!diagnosticUi&&!unselectedProject&&!naturalExitHistory&&!shutdownHistory&&!externalSkillCheck&&!bootstrapReplayCheck&&!longNativeTail,'Orphan check uses one ordinary baseline with own captured process tree and no other fault mode');
+assert(!discoveryCrashPhase||!discoveryOrphanCheck&&!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!dualStoreCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!deferredSkillHistory&&!projectResourceCheck&&!complexPaths&&!hostReplayCheck&&!nodeModeUnavailableCheck&&!diagnosticUi&&!unselectedProject&&!naturalExitHistory&&!shutdownHistory&&!externalSkillCheck&&!bootstrapReplayCheck&&!longNativeTail,'H publication crash uses one baseline and one exact private filesystem checkpoint');
+assert(!retryAfterCheck||!discoveryCrashPhase&&!discoveryOrphanCheck&&!connectionLifecycleCheck&&!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!freezeCheck&&!dualStoreCheck&&!revokeCheck&&!maintenanceCancelUi&&!restartExecutable&&!skillPhase&&!deferredSkillHistory&&!projectResourceCheck&&!complexPaths&&!hostReplayCheck&&!nodeModeUnavailableCheck&&!diagnosticUi&&!unselectedProject&&!naturalExitHistory&&!shutdownHistory&&!externalSkillCheck&&!bootstrapReplayCheck&&!longNativeTail,'Retry-After uses one exact private read-only host preflight with original production budget');
+assert(!graphGcCheck||graphFixture&&graphFixtureSha&&!scopeRestartCheck&&!restartCheck&&!restartExecutable&&!freezeCheck&&!sharedProjectCheck&&!diagnosticUi&&!deferredSkillHistory&&!skillPhase,'Graph competition uses one ordinary real Codex task and an explicitly pinned offline fixture');
+assert(!scopeUiCheck||(scopeRestartCheck&&!sameCwdProjects),'T48 UI scope uses distinct projects, normal selection and restart');
+assert(!projectAvailabilityCheck||scopeUiCheck,'T31 availability needs the real UI project-scope scaffold');
+assert(!legacyRegressionCheck||(scopeUiCheck&&!projectAvailabilityCheck),'T23 regression uses the real UI scaffold with its own controlled model turn');
+assert(!maintenanceCancelUi||!scopeUiCheck&&!graphGcCheck&&!restartCheck&&!sharedProjectCheck&&!skillPhase&&!restartExecutable&&!diagnosticUi&&!deferredSkillHistory,'T71 cancellation uses one current package, actual composer, original Codex and independent unused fixture');
+assert(!fourHistoryCheck||![cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'Four histories uses one ordinary baseline and own sample versions only');
+assert(!concurrentVersionsCheck||![fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'Concurrent versions uses one ordinary baseline, two own native tasks and trusted sample only');
+assert(!projectLifecycleCheck||![concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T03 projectlifecycle usesordinarybaseline andthreeownsamepackage native tasks only');
+assert(!zenSwitchCheck||![savedQueryDaysCheck,accountIsolationCheck,inflightDefaultCheck,concurrentDefaultCheck,missingMailDateCheck,mailMimeCheck,mailIncompleteCheck,draftLifecycleCheck,transferUiCheck,diagnosticClipboardUiCheck,retryDiagnosticsUiCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'PQ T57 only standalone original baseline;no other modes');
+assert(!savedQueryDaysCheck||![projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 savedranges usesordinarybaseline andoneownsamepackage native task only');
+assert(!accountIsolationCheck||![savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 accountisolation usesordinarybaseline andtwoownsamepackage native tasks only');
+assert(!inflightDefaultCheck||![accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 inflightdefault usesordinarybaseline andtwoownsamepackage native tasks only');
+assert(!concurrentDefaultCheck||![inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 concurrentdefault usesordinarybaseline andtwoownsamepackage native tasks only');
+assert(!missingMailDateCheck||![concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T14 missingmaildate usesordinarybaseline oneownnative task andsource only');
+assert(!mailMimeCheck||![missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T15 MIME usesordinarybaseline oneownnative task andsyntheticsource only');
+assert(!mailIncompleteCheck||![mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T15 incompleteMIME usesordinarybaseline oneownnative task andsyntheticsource only');
+assert(!draftLifecycleCheck||![mailIncompleteCheck,mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T18 noSMTP draft lifecycle uses one ordinary own baseline only');
+assert(!transferUiCheck||![draftLifecycleCheck,mailIncompleteCheck,mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T21 transfer UI uses one ordinary own baseline only');
+assert(!diagnosticClipboardUiCheck||![transferUiCheck,draftLifecycleCheck,mailIncompleteCheck,mailMimeCheck,missingMailDateCheck,concurrentDefaultCheck,inflightDefaultCheck,accountIsolationCheck,savedQueryDaysCheck,projectLifecycleCheck,concurrentVersionsCheck,fourHistoryCheck,cacheAgentsCheck,connectionLifecycleCheck,discoveryOrphanCheck,discoveryCrashPhase,retryAfterCheck,graphGcCheck,scopeUiCheck,restartCheck,sharedProjectCheck,freezeCheck,dualStoreCheck,revokeCheck,maintenanceCancelUi,restartExecutable,skillPhase,deferredSkillHistory,projectResourceCheck,complexPaths,hostReplayCheck,nodeModeUnavailableCheck,diagnosticUi,unselectedProject,naturalExitHistory,shutdownHistory,externalSkillCheck,bootstrapReplayCheck,longNativeTail,userMcpCheck,projectAvailabilityCheck,legacyRegressionCheck].some(Boolean),'T71 diagnostic clipboard UI uses one ordinary own baseline only');
+let scopeConnections=[];
+assert(!retryDiagnosticsUiCheck||retryAfterCheck,'PD diagnostics UI requires original retry-after batch');
+const root=await mkdtemp(maintenanceCancelUi?'/private/tmp/willyou-m10-maintenance-ui-':graphGcCheck?'/private/tmp/willyou-m10-graph-app-native-':'/private/tmp/willyou-m10-tl-native-');
+async function openElectron(options){
+ options={...options,env:{...options.env,HOME:tgKeychainHome}};
+ const inspected=retryAfterCheck||historyCaptureCheck?{...options,startupMainHook:info=>captureBudgetService({...info,mainFile:resolve(dirname(options.executable),'../Resources/app.asar/out/main/index.js'),target:historyCaptureCheck?'history':'budget',checkpoint:join(root,historyCaptureCheck?'history-startup-capture-'+info.processId+'.json':'budget-startup-capture.json')})}:options;
+ const instance=await openHarnessElectron(inspected);try{
+ await instance.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron'),s=globalThis.__ncHistoryProbe.service;if(E.app.getPath('userData')!==${JSON.stringify(options.userData)})throw Error('Own TG profile guard');const map=E.ipcMain._invokeHandlers,g={originals:[],forbidden:[],profileChecks:0};const check=entries=>{const v=Object.fromEntries(entries.map(x=>[x.name,x.value]));if(v.HOME!==${JSON.stringify(options.env.ZDOTDIR)}||v.ZDOTDIR!==${JSON.stringify(options.env.ZDOTDIR)}||v.CODEX_HOME!==${JSON.stringify(options.env.CODEX_HOME)})throw Error('Own private Agent roots required');g.profileChecks++;};for(const name of ['aiProfiles.create','tasks.create','tasks.open']){const f=map.get(name);g.originals.push([name,f]);map.set(name,async function(event,...args){if(name==='aiProfiles.create'){if(args[0].runner!=='codex'||args[0].executable!==${JSON.stringify(cli)})throw Error('Own fixed CLI only');check(args[0].env);}else{const id=name==='tasks.create'?args[0].aiProfileId:s.store.sqlite.prepare('SELECT ai_profile_id FROM tasks WHERE id=?').get(args[0].taskId)?.ai_profile_id,row=s.store.sqlite.prepare('SELECT env FROM ai_profiles WHERE id=?').get(id);if(!row)throw Error('Own private profile required');check(JSON.parse(row.env));}return f.call(this,event,...args);});}for(const name of ['aiProfiles.importZshrc','applications.replyDraft','applications.importAttachment','applications.captureAttachment','applications.prepareSend','applications.reviewSend','applications.authorizeSend','applications.executeSend','app.openExternal']){const f=map.get(name);if(f){g.originals.push([name,f]);map.set(name,()=>{g.forbidden.push(name);throw Error('TG retained reply/import/send boundary');});}}g.restore=()=>{for(const[n,f]of g.originals)map.set(n,f);return{forbidden:g.forbidden,profileChecks:g.profileChecks}};globalThis.__tgProfileGuard=g;return true})()`);
+
+ await instance.evaluate('document.title='+JSON.stringify('A · M10 · isolated service '+root.split('-').at(-1)+' · '+options.userData.split('/').at(-1))+';true');
+ await instance.evaluate("window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true");
+ return instance;
+ }catch(error){await instance.close();throw error;}
+}
+const longSegment='长路径 验收 '+ 'x'.repeat(64);
+const home=join(root,complexPaths?'home 中文 空格':'home'),state=join(root,complexPaths?'codex 中文 空格':'codex'),cwd=join(root,complexPaths?'project 中文 空格':'project'),userData=complexPaths?join(root,'userdata 中文 空格',longSegment,longSegment,longSegment):join(root,'userdata');
+const executable=process.env.WILLYOU_ACCEPTANCE_APP,cli=process.env.WILLYOU_CODEX_CLI;
+assert(!hostReplayCheck||restartCheck&&!bridgeFaultCheck,'Host replay requires ordinary restart mode');
+assert(!bootstrapReplayCheck||hostReplayCheck&&!restartExecutable&&!connectionLifecycleCheck&&!graphGcCheck&&!freezeCheck&&!sharedProjectCheck&&!skillPhase&&!diagnosticUi,'Bootstrap replay isolates one current package and ordinary real Codex restart');
+assert(!nodeModeUnavailableCheck||skillPhase==='discovery'&&!restartCheck&&!hostReplayCheck&&!graphGcCheck&&!sharedProjectCheck&&!connectionLifecycleCheck&&!freezeCheck&&!deferredSkillHistory,'Disabled Node mode uses one selected task with ordinary discovery-only response');
+assert(!projectResourceCheck||!restartCheck&&!hostReplayCheck&&!bootstrapReplayCheck&&!nodeModeUnavailableCheck&&!graphGcCheck&&!sharedProjectCheck&&!connectionLifecycleCheck&&!skillPhase&&!scopeUiCheck&&!unselectedProject,'Project resource regression uses one ordinary Mail Task and explicit same-host resume');
+assert(!selectedSecondProject||sharedProjectCheck,'Selected second project requires shared-project mode');
+assert(!crossProjectTool||sharedProjectCheck&&selectedSecondProject,'Cross-project tool requires two selected project mode');
+assert(!forgeScope||crossProjectTool,'Scope forgery requires cross-project tool mode');
+assert(!naturalExitHistory||deferredSkillHistory&&!shutdownHistory,'Natural exit history requires deferred diagnostics without host quit');
+assert(!shutdownHistory||deferredSkillHistory,'Shutdown history requires deferred diagnostics');
+assert(executable&&cli,'Set WILLYOU_ACCEPTANCE_APP and WILLYOU_CODEX_CLI to this private package and isolated Codex executable');
+const appRoot=resolve(dirname(executable),'../..');
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const bundleIndexBytes=await readFile(join(appRoot,'Contents/Resources/capability-bundles/index.json'));
+const bundleIndex=JSON.parse(bundleIndexBytes);
+const marker='M10_UI_NATIVE_TASK_'+root.split('-').at(-1);
+const result={schema:'m10-packaged-native-service-v1',startedAt:new Date().toISOString(),root,userData,home,state,cwd,
+ branch:execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim(),sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),sourceDirty:!!execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),
+ packageBuild:bundleIndex.build,bundleIndexSha256:sha(bundleIndexBytes),
+ app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
+ layer:nativeExitUiCheck?'A actual Home/terminal natural exit/navigation/explicit resume;I original Task/Run/DB observations;synthetic provider,no credential or send':nativeUserOriginCheck?'A actual Home creation and terminal keyboard;I original captured host input/native record verification;synthetic provider,no SMTP/credential/authorization/send':cancelFreezeUi?'A actual Home input/launch/cancel;I source-free projects/profile baseline and explicit post-stop retry;actual Codex and synthetic model;no secrets/SMTP/reply/import/clipboard':scopeUiCheck?'A: actual project creation, application selection and composer launch for two projects; actual Codex/MCP, service/disk path assertions and normal host restart; synthetic provider, no external business services':'Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance',
+ isolation:{minimalDriverEnv:true,freshHome:true,freshCodexHome:true,freshUserData:true,noDailyCredentialsCopied:true,proxy:'unreachable loopback except localhost',setup:nativeExitUiCheck?'project/profile/application selection and peer B creation via RPC prerequisites;tested A Home creation/exit/resume/navigation and explicit B stop via actual UI':nativeUserOriginCheck?'project/profile/application selection via RPC are prerequisites;A Home Task/terminal inputs use real UI;B Task creation is an I source control':scopeUiCheck?'AI profile and two synthetic local sources via RPC are prerequisites; projects, application add/selection and both task launches use actual UI':'project, AI profile and application selection via RPC are prerequisites, not UI coverage'},
+ naturalExitHistory,shutdownHistory,restoreSelection,revokeCheck,longNativeTail,skillPhase,deferredSkillHistory,complexPaths,diagnosticUi,expectSkillHistory,expectSkillDiscovery,expectSkillRead,expectRecoveryUnsupported,bridgeFaultSignal,bridgeFaultCheck,restartCheck,packageRepairCheck,sharedProjectCheck,sameCwdProjects,persistedSameCwdFixture,selectedSecondProject,crossProjectTool,forgeScope,unselectedProject,scopeRestartCheck,scopeUiCheck,projectAvailabilityCheck,marker,requests:[],checks:[],status:'running'};
+assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,'Pin the actual ASAR SHA256 before acceptance');
+assert.equal(result.asarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
+result.cli={path:cli,version:execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),entrySha256:sha(await readFile(cli))};
+assert.equal(result.cli.version,'codex-cli 0.162.1');
+for(const p of [home,state,join(cwd,'.git'),join(home,'.agents/skills/m10-owned-config')])await mkdir(p,{recursive:true});
+const skill=join(home,'.agents/skills/m10-owned-config/SKILL.md');
+const userMcpManifest=join(root,'user MCP 中文 marker.json');
+if(userMcpCheck)await writeFile(userMcpManifest,JSON.stringify({version:'1.0.0',marker:'user-owned-preserve',skillSha256:'synthetic'}));
+await writeFile(skill,'---\nname: m10-owned-config\ndescription: Private configuration preservation marker.\n---\nNo action is required.\n');
+const projectResources=projectResourceCheck?await projectResourceProbe({root,home,marker,contextOnly:projectContextOnly}):null;
+if(projectResources)result.projectResources=projectResources.record;
+let stage='setup',app,task,project,profile,secondTask;
+result.transferUiCheck=transferUiCheck;result.diagnosticClipboardUiCheck=diagnosticClipboardUiCheck;
+const nativeExitUiProbe=nativeExitUiCheck?cacheAgentsProbe(marker):null;
+const nativeUserOriginProbe=nativeUserOriginCheck?cacheAgentsProbe(marker):null;result.nativeUserOriginCheck=nativeUserOriginCheck;result.nativeExitUiCheck=nativeExitUiCheck;
+const draftLifecycleProbe=draftLifecycleCheck?cacheAgentsProbe(marker):null;result.draftLifecycleCheck=draftLifecycleCheck;
+const cacheAgents=cacheAgentsCheck?cacheAgentsProbe(marker):null;
+const historyProbe=fourHistoryCheck?fourHistoryProbe(marker):null;
+const zenSwitchProbe=zenSwitchCheck?concurrentVersionsProbe(marker):null;
+const projectLifecycleProbe=projectLifecycleCheck?concurrentVersionsProbe(marker):null;
+const savedQueryDaysProbe=savedQueryDaysCheck?concurrentVersionsProbe(marker):null;
+const accountIsolationProbe=accountIsolationCheck?concurrentVersionsProbe(marker):null;
+const inflightDefaultProbe=inflightDefaultCheck?concurrentVersionsProbe(marker):null;
+const concurrentDefaultProbe=concurrentDefaultCheck?cacheAgentsProbe(marker):null;
+const missingMailDateProbe=missingMailDateCheck?cacheAgentsProbe(marker):null;
+const mailMimeProbe=mailMimeCheck?cacheAgentsProbe(marker):null;
+const mailIncompleteProbe=mailIncompleteCheck?cacheAgentsProbe(marker):null;
+const concurrentProbe=(concurrentVersionsCheck||earlyResumeStopCheck)?concurrentVersionsProbe(marker):null;
+result.fourHistoryCheck=fourHistoryCheck;result.historyReferenceCheck=historyReferenceCheck;result.concurrentVersionsCheck=concurrentVersionsCheck;result.concurrentProjectCheck=concurrentProjectCheck;result.projectLifecycleCheck=projectLifecycleCheck;result.savedQueryDaysCheck=savedQueryDaysCheck;result.accountIsolationCheck=accountIsolationCheck;result.inflightDefaultCheck=inflightDefaultCheck;result.concurrentDefaultCheck=concurrentDefaultCheck;result.missingMailDateCheck=missingMailDateCheck;result.mailMimeCheck=mailMimeCheck;result.mailIncompleteCheck=mailIncompleteCheck;
+const availability=projectAvailabilityCheck||connectionLifecycleCheck||retryAfterCheck?availabilityProbe(marker):null;
+const legacy=legacyRegressionCheck?legacyRegressionProbe(marker):null;
+const maintenanceProbe=maintenanceCancelUi?maintenanceWaitProbe(marker):null;
+result.legacyRegressionCheck=legacyRegressionCheck;
+result.maintenanceCancelUi=maintenanceCancelUi;
+if(retryDiagnosticsUiCheck)result.layer='A actual P09 outcome display;actual Codex/MCP service calls and I exact-run read-only loopback preflight;synthetic model;no authentication/send/clipboard';
+if(maintenanceCancelUi){result.layer='A: actual composer, original Codex/MCP, version confirmation, keyboard wait cancellation and continued terminal input; controlled own C gate fault';result.isolation.setup='Project/profile/application selection and unused package/runtime are explicit prerequisites; tested task launch, cancellation and normal cleanup use actual UI';result.maintenanceTheme=maintenanceDark?'ydark':'ylight';}
+const sockets=new Set();
+const progress=async()=>{const value={at:new Date().toISOString(),stage,root,pid:app?.processId,taskId:task?.id,requests:result.requests.length};await writeFile(join(root,'progress.json'),JSON.stringify(value,null,2)+'\n');console.log(JSON.stringify(value));};
+const checked=(name,details={})=>{result.checks.push({name,at:new Date().toISOString(),passed:true,...details});};
+const bootstrapReplay=bootstrapReplayCheck?bootstrapReplayFixture({root,userData,home,executable,bundleRoot:join(appRoot,'Contents/Resources/capability-bundles'),runtime:bundleIndex.runtimes[0],checked,result,poll}):null;
+const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{bytes+=b.length;if(bytes>4*1024*1024)req.destroy();else chunks.push(b);});req.on('end',()=>{void(async()=>{
+ if(!req.url?.endsWith('/responses')){res.writeHead(404);res.end('{}');return;}
+ let body;try{body=JSON.parse(Buffer.concat(chunks).toString())}catch{res.writeHead(400);res.end('{}');return;}
+ if(body.tools?.some(x=>(x.name??'').startsWith('mcp__wy_')))writeFile(join(root,'native-tool-definitions.json'),JSON.stringify(body.tools.filter(x=>(x.name??'').startsWith('mcp__wy_')),null,2)+'\n').catch(()=>{});
+ const raw=JSON.stringify(body),taskRequest=raw.includes(marker),healthCode=raw.match(/SMARTDD-OK-[0-9a-f]{8}/)?.[0];
+ const secondProjectRequest=raw.includes(marker+'_PROJECT_B');
+ const isResume=(restartCheck||revokeCheck||result.nodeModeRestoring)&&raw.includes(marker+'_RESUME_READ');
+ let text=isResume?marker+(result.restoringSelection?'_RESTORED_DONE':'_RESUMED_DONE'):secondProjectRequest?marker+'_PROJECT_B_DONE':taskRequest?marker+'_DONE':healthCode??'M10_PRIVATE_FIXTURE_OK';
+ const item={at:new Date().toISOString(),kind:secondProjectRequest?'project-b-task':taskRequest?'ui-task':healthCode?'profile-health':'unclassified',model:body.model,
+  requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m10-owned-config'),
+  managedSkillNames:[...new Set(raw.match(/smartdd-a-(?:mail|zentao)-[A-Za-z0-9_-]+/g)??[])],
+  userMcpVisible:(body.tools??[]).some(x=>x.name?.includes('m10_user_marker')||x.tools?.some(t=>t.name==='fixed_marker')),resumed:isResume,
+  toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
+ if(nodeModeUnavailableCheck){
+  item.appFunctions=(body.tools??[]).flatMap(x=>x.name?.startsWith('mcp__wy_')?(x.tools??[x]).map(t=>({namespace:x.name,name:t.name})):[]);
+  item.independentFunctions=(body.tools??[]).flatMap(x=>x.name?.startsWith('mcp__smartdd_project_')?(x.tools??[x]).map(t=>({namespace:x.name,name:t.name})):[]);
+ }
+ res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
+ if(projectResources?.respond(body,res))return;
+ if(nativeExitUiProbe?.respond(body,res))return;
+ if(nativeUserOriginProbe?.respond(body,res))return;
+ if(draftLifecycleProbe?.respond(body,res))return;
+ if(cacheAgents?.respond(body,res))return;
+ if(historyProbe?.respond(body,res))return;
+ if(zenSwitchProbe?.respond(body,res))return;
+ if(projectLifecycleProbe?.respond(body,res))return;
+ if(savedQueryDaysProbe?.respond(body,res))return;
+ if(accountIsolationProbe?.respond(body,res))return;
+ if(inflightDefaultProbe?.respond(body,res))return;
+ if(concurrentDefaultProbe?.respond(body,res))return;
+ if(missingMailDateProbe?.respond(body,res))return;
+ if(mailMimeProbe?.respond(body,res))return;
+ if(mailIncompleteProbe?.respond(body,res))return;
+ if(concurrentProbe?.respond(body,res))return;
+ if(availability?.respond(body,res))return;
+ if(legacy?.respond(body,res))return;
+ if(maintenanceProbe?.respond(body,res)){item.response=maintenanceProbe.lastResponse;return;}
+ if(userMcpCheck&&taskRequest&&!secondProjectRequest){
+  const phase=isResume?'resumed':'initial';result.userMcpCalls??={};
+  if(!result.userMcpCalls[phase]){
+   const ns=(body.tools??[]).find(x=>x.type==='namespace'&&x.name?.includes('m10_user_marker')&&(x.tools??[]).some(t=>t.name==='fixed_marker'));assert(ns,'User MCP namespace must remain independently callable');
+   const call={type:'function_call',id:'fc_user_marker_'+phase,call_id:'call_user_marker_'+phase,name:'fixed_marker',namespace:ns.name,arguments:'{}',status:'completed'};
+   result.userMcpCalls[phase]={call,at:new Date().toISOString()};
+   const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+   send('response.created',{response:{id:'resp_user_'+phase,object:'response',status:'in_progress',output:[]}});
+   send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});
+   send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:'{}'});
+   send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:'{}'});
+   send('response.output_item.done',{output_index:0,item:call});
+   send('response.completed',{response:{id:'resp_user_'+phase,object:'response',status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+  }
+  const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id===result.userMcpCalls[phase].call.call_id);
+  assert(output,'Actual Codex must return the user MCP tool result');
+  const text=typeof output.output==='string'?output.output:JSON.stringify(output.output);
+  assert(text.includes('user-owned-preserve'));assert(text.includes(sha(await readFile(userMcpManifest))));
+  result.userMcpCalls[phase].output=output;
+ }
+ if(secondProjectRequest&&crossProjectTool){
+  if(!result.issuedCrossProjectTool){
+   assert(selectedSecondProject&&result.createdDraft);
+   const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_get_v1'));assert(ns);
+   const argumentsText=JSON.stringify({draftId:result.createdDraft.id,revision:result.createdDraft.revision,...(forgeScope?{projectId:project.id,taskId:task.id}:{})});
+   const call={type:'function_call',id:'fc_m10_cross_project',call_id:'call_m10_cross_project',name:'smartdd_mail_draft_get_v1',namespace:ns.name,arguments:argumentsText,status:'completed'};result.issuedCrossProjectTool=call;
+   const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+   send('response.created',{response:{id:'resp_cross_project',object:'response',status:'in_progress',output:[]}});send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});send('response.output_item.done',{output_index:0,item:call});send('response.completed',{response:{id:'resp_cross_project',object:'response',status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+  }
+  const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id==='call_m10_cross_project');assert(output);result.crossProjectToolOutput=output;
+ }
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&(!skillPhase||skillPhase==='read')&&!result.issuedRead){
+  const skillRoot=join(home,'.agents/skills');const names=readdirSync(skillRoot).filter(n=>n.startsWith('smartdd-a-mail-work-assistant-'));assert.equal(names.length,1);const path=join(skillRoot,names[0],'SKILL.md');const contents=readFileSync(path,'utf8');
+  result.issuedRead={path,sha256:sha(contents),bytes:Buffer.byteLength(contents),callId:'call_m10_skill_read',method:'actual Codex exec_command /bin/cat of this private fixed Skill only;synthetic provider selects read'};
+  const command='/bin/cat '+"'"+path.replaceAll("'", "'\\''")+"'";
+  const argumentsText=JSON.stringify({cmd:command,max_output_tokens:5000,yield_time_ms:1000});const call={type:'function_call',id:'fc_m10_skill_read',call_id:result.issuedRead.callId,name:'exec_command',arguments:argumentsText,status:'completed'};
+  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+  send('response.created',{response:{id:'resp_m10_read',object:'response',status:'in_progress',output:[]}});send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});send('response.output_item.done',{output_index:0,item:call});send('response.completed',{response:{id:'resp_m10_read',object:'response',status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+ }
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&result.issuedRead&&!result.nativeSkillReadOutput){const output=(body.input??[]).find(x=>x.type==='function_call_output'&&x.call_id===result.issuedRead.callId);assert(output,'Missing actual native Skill read output');const contents=readFileSync(result.issuedRead.path,'utf8');assert(output.output.includes(contents.trim()),'Native read output must contain the entire selected Skill body');result.nativeSkillReadOutput=output;}
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&(!skillPhase||skillPhase==='tool')&&!result.issuedTool){
+  const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_create_v1'));
+  assert(ns,'Actual native request is missing the local draft MCP function');
+  const argumentsText=JSON.stringify({content:{mode:'new',sourceMessageRef:null,senderConnectionId:null,to:[],cc:[],bcc:[],subject:marker+'_LOCAL_DRAFT',inReplyTo:null,references:[],attachmentIds:[],text:marker+'_LOCAL_BODY',html:null}});
+  const call={type:'function_call',id:'fc_m10_local_draft',call_id:'call_m10_local_draft',name:'smartdd_mail_draft_create_v1',namespace:ns.name,arguments:argumentsText,status:'completed'};
+  result.issuedTool={...call,at:new Date().toISOString(),fixture:'private synthetic provider chooses this exact local-only operation; not evidence of autonomous real-model tool selection'};
+  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+  send('response.created',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
+  send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});
+  send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});
+  send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});
+  send('response.output_item.done',{output_index:0,item:call});
+  send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+ }
+ if(taskRequest&&!secondProjectRequest&&!unselectedProject&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;}
+ if(restartExecutable&&taskRequest&&raw.includes(marker+'_RESUME_WRITE')&&!result.issuedUpgradeWrite){
+  const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_update_v1'));
+  assert(ns,'Actual native request is missing the local draft MCP function');
+  const content={...JSON.parse(result.issuedTool.arguments).content,subject:marker+'_UPDATED_SUBJECT',text:marker+'_UPDATED_BODY'};const argumentsText=JSON.stringify({draftId:result.createdDraft.id,expectedRevision:result.createdDraft.revision,content});
+  const sequence=(result.upgradeWriteCount??0)+1;result.upgradeWriteCount=sequence;
+  const call={type:'function_call',id:'fc_m10_upgrade_write_'+sequence,call_id:'call_m10_upgrade_write_'+sequence,name:'smartdd_mail_draft_update_v1',namespace:ns.name,arguments:argumentsText,status:'completed'};
+  result.issuedUpgradeWrite={...call,at:new Date().toISOString(),fixture:'private synthetic provider updates only the original isolated draft through its old fixed package'};
+  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+  send('response.created',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
+  send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});
+  send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});
+  send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});
+  send('response.output_item.done',{output_index:0,item:call});
+  send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+ }
+ if(result.issuedUpgradeWrite)result.nativeUpgradeWriteOutputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id===result.issuedUpgradeWrite.call_id);
+ if(taskRequest&&isResume&&!result.issuedResumeTool){
+  const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_list_v1'));
+  assert(ns,'Actual native request is missing the local draft MCP function');
+  const argumentsText='{}';
+  const sequence=(result.resumeCallCount??0)+1;result.resumeCallCount=sequence;
+  const call={type:'function_call',id:'fc_m10_resume_list_'+sequence,call_id:'call_m10_resume_list_'+sequence,name:'smartdd_mail_draft_list_v1',namespace:ns.name,arguments:argumentsText,status:'completed'};
+  result.issuedResumeTool={...call,at:new Date().toISOString(),fixture:'private synthetic provider chooses local draft list in the actual resumed native session'};
+  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+  send('response.created',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
+  send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});
+  send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:argumentsText});
+  send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:argumentsText});
+  send('response.output_item.done',{output_index:0,item:call});
+  send('response.completed',{response:{id:'resp_m10_tool',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+ }
+ if(taskRequest&&result.issuedTool){const outputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id==='call_m10_local_draft');result.nativeToolOutputs=outputs;result.nativeResumeOutputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id===result.issuedResumeTool?.call_id);}
+ if(nodeModeUnavailableCheck&&result.nodeModeRestoring&&result.issuedResumeTool)result.nativeResumeOutputs=(body.input??[]).filter(x=>x.type==='function_call_output'&&x.call_id===result.issuedResumeTool.call_id);
+ if(longNativeTail&&taskRequest&&!isResume&&!secondProjectRequest){
+  assert(!skillPhase&&!deferredSkillHistory&&!restartCheck,'Long native tail uses the selected draft task');
+  await poll(async()=>{try{const n=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); print(json.dumps(c.execute(\"SELECT count(*) FROM capability_skill_observations WHERE kind='read'\").fetchone()[0])); c.close()",join(userData,'smartdd.db')],{encoding:'utf8'}));return n>0;}catch{return false;}},15000);
+  // Real CLI persists this synthetic response; never edit its native log.
+  const padding='bounded-tail-fixture '.repeat(225000);text=padding+'\n'+text;
+  result.longTailResponse={bytes:Buffer.byteLength(text),sha256:sha(text),priorReadPersisted:true};
+ }
+ const id='msg_m10_'+result.requests.length,message={id,type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text,annotations:[]}]};
+ const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+ send('response.created',{response:{id:'resp_'+id,object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});
+ send('response.output_item.added',{output_index:0,item:{...message,status:'in_progress',content:[]}});
+ send('response.content_part.added',{item_id:id,output_index:0,content_index:0,part:{type:'output_text',text:'',annotations:[]}});
+ send('response.output_text.delta',{item_id:id,output_index:0,content_index:0,delta:text});
+ send('response.output_text.done',{item_id:id,output_index:0,content_index:0,text});
+ send('response.content_part.done',{item_id:id,output_index:0,content_index:0,part:message.content[0]});
+ send('response.output_item.done',{output_index:0,item:message});
+ send('response.completed',{response:{id:'resp_'+id,object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[message],usage:{input_tokens:1,output_tokens:1,total_tokens:2,input_tokens_details:{cached_tokens:0},output_tokens_details:{reasoning_tokens:0}}}});res.end();
+ })().catch(error=>{result.providerFailure=String(error);res.destroy(error);});});});server.on('connection',s=>{sockets.add(s);s.on('error',()=>{});s.on('close',()=>sockets.delete(s));});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const port=server.address().port;
+let config='model="m10-base-model"\nmodel_provider="m10_local_fixture"\nnotify=[]\n[model_providers.m10_local_fixture]\nname="M10 Synthetic Local Fixture"\nbase_url="http://127.0.0.1:'+port+'/v1"\nwire_api="responses"\nrequires_openai_auth=false\n[analytics]\nenabled=false\n[feedback]\nenabled=false\n[projects.'+JSON.stringify(cwd)+']\ntrust_level="trusted"\n[mcp_servers.m10_user_disabled]\ncommand="/usr/bin/false"\nenabled=false\n';
+if(userMcpCheck)config+='[mcp_servers.m10_user_marker]\ncommand='+JSON.stringify(process.execPath)+'\nargs='+JSON.stringify([resolve('scripts/applications/fixtures/codex-marker-mcp.mjs'),userMcpManifest])+'\nenabled=true\n';
+const nativeNoticeState="\n[tui]\nscreen_reader_detection_done = true\n\n[tui.model_availability_nux]\n\"gpt-6.1-sol\" = 1\n";
+const profileText='model="m10-ui-profile-model"\nskills.config=[{path='+JSON.stringify(skill)+',enabled=false}]\n';
+await writeFile(join(state,'config.toml'),config);await writeFile(join(state,'m10-native.config.toml'),profileText);
+const privateEnv={HOME:home,ZDOTDIR:home,CODEX_HOME:state,HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',ALL_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost',SHELL:'/bin/zsh',...projectResources?.env};
+// This script is itself an isolated driver process. Do not rely on its caller
+// having removed ambient provider credentials or other user configuration.
+for(const name of Object.keys(process.env))if(!['PATH','TMPDIR','LANG','LC_ALL','WILLYOU_ACCEPTANCE_APP','WILLYOU_CODEX_CLI','WILLYOU_ACCEPTANCE_ASAR_SHA'].includes(name))delete process.env[name];
+Object.assign(process.env,privateEnv);
+async function poll(fn,timeout=30000){const end=Date.now()+timeout;let value;do{value=await fn();if(value)return value;await new Promise(r=>setTimeout(r,150));}while(Date.now()<end);throw Error('Bounded state wait timed out: '+stage);}
+function classifyScopeDatabases(paths){
+ const primary=[],backups=[];
+ for(const path of paths){
+  if(path===join(userData,'smartdd.db')){primary.push(path);continue;}
+  assert(path.startsWith(join(userData,'backups/m10')+'/'),'Unexpected second business SQLite location: '+path);
+  const receipt=JSON.parse(readFileSync(join(dirname(path),'operation.json'),'utf8'));assert.equal(receipt.schema,1);assert.equal(receipt.state,'verified');assert.equal(receipt.file,'smartdd.db');assert.equal(sha(readFileSync(path)),receipt.sha256);backups.push({path,operationId:receipt.operationId,sha256:receipt.sha256});
+ }
+ assert.deepEqual(primary,[join(userData,'smartdd.db')]);return {primary,backups};
+}
+async function packageTree(path){const files={};for(const name of await readdir(path)){const file=join(path,name),stat=await lstat(file);assert(!stat.isSymbolicLink());if(stat.isDirectory()){for(const [child,value] of Object.entries(await packageTree(file)))files[name+'/'+child]=value;}else{assert(stat.isFile());files[name]={sha256:sha(await readFile(file)),mode:stat.mode&0o777};}}return files;}
+const packageQuery=query=>JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),query],{encoding:'utf8'})||'[]');
+async function capturePackageRepair(){
+ const hash=result.nativeBoundSession.applications.find(app=>app.appId==='mail').packageHash;assert(/^[a-f0-9]{64}$/.test(hash));const row=packageQuery("SELECT * FROM capability_packages WHERE package_hash='"+hash+"'")[0];assert(row&&row.app_id==='mail');const path=join(userData,'capabilities',row.relative_path);assert(path.startsWith(join(userData,'capabilities/apps/mail')+'/'));
+ const owner=JSON.parse(await readFile(join(path,'.willyou-package-owner.json'),'utf8'));assert.equal(owner.packageHash,hash);assert.equal(owner.storeId,packageQuery('SELECT store_id FROM capability_store_state')[0].store_id);
+ const source=bundleIndex.apps.find(app=>app.hash===hash);assert(source);const sourcePath=join(appRoot,'Contents/Resources/capability-bundles',source.path);const sourceManifest=JSON.parse(await readFile(join(sourcePath,'manifest.json'),'utf8'));assert.deepEqual(sourceManifest,JSON.parse(row.manifest_json));
+ result.packageRepair={hash,path,sourcePath,sourceManifestSha256:sha(await readFile(join(sourcePath,'manifest.json'))),sourceFiles:await packageTree(sourcePath),packageRow:row,files:await packageTree(path),resource:packageQuery("SELECT * FROM capability_resources WHERE resource_id='app:"+hash+"'")[0],defaults:packageQuery('SELECT * FROM capability_active_packages ORDER BY app_id'),snapshot:packageQuery("SELECT * FROM capability_session_snapshots WHERE task_id='"+task.id+"'")[0],refs:packageQuery("SELECT * FROM capability_session_refs WHERE task_id='"+task.id+"' ORDER BY rowid")};
+}
+async function assertPackageRepaired(){
+ const before=result.packageRepair;assert.deepEqual(await packageTree(before.path),before.files);assert.deepEqual(packageQuery("SELECT * FROM capability_packages WHERE package_hash='"+before.hash+"'")[0],before.packageRow);assert.deepEqual(packageQuery('SELECT * FROM capability_active_packages ORDER BY app_id'),before.defaults);assert.deepEqual(packageQuery("SELECT * FROM capability_session_snapshots WHERE task_id='"+task.id+"'")[0],before.snapshot);assert.deepEqual(packageQuery("SELECT * FROM capability_session_refs WHERE task_id='"+task.id+"' ORDER BY rowid"),before.refs);
+ const resource=packageQuery("SELECT * FROM capability_resources WHERE resource_id='app:"+before.hash+"'")[0];assert.equal(resource.state,'ready');assert.equal(resource.integrity,'valid');assert.equal(resource.generation,before.resource.generation+1);assert.notEqual(resource.operation_id,before.resource.operation_id);
+ const operation=packageQuery("SELECT * FROM capability_resource_operations WHERE operation_id='"+resource.operation_id+"'")[0];assert.equal(operation.state,'committed');assert.equal(operation.kind,'restore-application-package');assert.equal(sha(await readFile(join(before.sourcePath,'manifest.json'))),before.sourceManifestSha256);result.packageRepair.after={resource,operation};checked('Unmodified packaged startup restored full same-hash cache bytes and committed exact restore operation; original package metadata/default generations/S/refs unchanged');
+}
+async function click(selector,text){result.lastAction={selector,text};const p=await app.evaluate(`(()=>{const e=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height&&${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`});if(!e)throw Error('Control missing: '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
+async function key(key,code,num,modifiers=0,commands){for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:num,modifiers,...(type==='keyDown'&&commands?{commands}:{})});}
+async function fillScopeField(selector,text){await click(selector);await key('a','KeyA',65,4,['selectAll']);await app.cdp('Input.insertText',{text});await app.waitFor(`document.querySelector(${JSON.stringify(selector)})?.value===${JSON.stringify(text)}`);}
+async function createScopeProject(name,path){
+ await click('[data-testid=sidebar-new-project]');await app.waitFor('!!document.querySelector("[role=menu]")');await click('[role=menuitem]','新建项目');await app.waitFor('!!document.querySelector("#project-name")');await fillScopeField('#project-name',name);await fillScopeField('#project-dir',path);
+ const label=await app.evaluate(`Array.from(document.querySelectorAll('[role=dialog] button')).map(e=>e.textContent.trim()).find(t=>t==='创建'||t==='创建项目')`);assert(label,'Missing actual create button');await click('[role=dialog] button',label);await app.waitFor('!document.querySelector("#project-name")');
+ const value=await poll(async()=>{const rows=await app.invoke('projects.list',{includeArchived:false});return rows.find(p=>p.name===name);});assert(value);checked('T48 actual UI created '+name+' with explicit private directory');return value;
+}
+async function launchScopeTask(name,text){
+ await click('[data-testid=nav-home]');await app.waitFor('!!document.querySelector("[data-testid=home-input]")');await click('[data-testid=home-project]');await app.waitFor('!!document.querySelector("[role=option]")');await click('[role=option]',name);await app.waitFor('document.querySelector("[data-testid=home-project]")?.textContent.includes('+JSON.stringify(name)+')');await fillScopeField('[data-testid=home-input]',text);await app.waitFor('!document.querySelector("[data-testid=home-launch]").disabled');await click('[data-testid=home-launch]');
+ return poll(async()=>{const rows=await app.invoke('tasks.list',{includeArchived:true});const t=rows.find(t=>t.firstMessage===text);return t?{task:t}:null;},25000);
+}
+try{
+ if(cacheDiskFullCheck)await prepareCacheSpaceVolume({root,userData,result});
+ await progress();app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:zenSwitchCheck||cancelFreezeUi||diagnosticClipboardUiCheck||transferUiCheck||draftLifecycleCheck||concurrentDefaultCheck||inflightDefaultCheck||accountIsolationCheck||savedQueryDaysCheck||projectLifecycleCheck||cacheAgentsCheck||shutdownHistory||hostReplayCheck||scopeRestartCheck||graphGcCheck||nodeModeUnavailableCheck||!!discoveryCrashPhase||retryAfterCheck||historyCaptureCheck||nativeExitUiCheck});if(!homeNativeCheck)installAppFocusGuard(app,result);result.pid=app.processId;if(cancelFreezeUi)await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Own cancel UI App only');const map=E.ipcMain._invokeHandlers,g={calls:[],records:[],originals:[],cipher:[]};for(const name of ['encryptString','decryptString']){g.cipher.push([name,E.safeStorage[name]]);E.safeStorage[name]=()=>{g.calls.push('safeStorage.'+name);throw Error('Cancel UI does not use credentials');};}for(const name of ['applications.replyDraft','applications.importAttachment','applications.captureAttachment','applications.prepareSend','applications.reviewSend','applications.authorizeSend','applications.executeSend','app.openExternal']){const fn=map.get(name);if(!fn)continue;g.originals.push([name,fn]);map.set(name,()=>{g.calls.push(name);throw Error('Cancel UI forbidden side effect');});}for(const name of ['tasks.create','tasks.cancelCreate']){const fn=map.get(name);g.originals.push([name,fn]);map.set(name,async function(event,...args){const row={name,args,at:Date.now(),sender:event.sender.id};g.records.push(row);try{const value=await fn.call(this,event,...args);row.value=value;return value;}catch(e){row.errorCode=e.code??null;row.error=String(e);throw e;}finally{row.finishedAt=Date.now();}});}g.restore=()=>{for(const[n,f]of g.originals)map.set(n,f);for(const[n,f]of g.cipher)E.safeStorage[n]=f;};globalThis.__ouCancel=g;return true})()`);
+ await app.evaluate(`document.title='A · M10 · isolated Codex native CLI';true`);
+ stage='prerequisites';await progress();
+ project=scopeUiCheck?await createScopeProject('M10 原生 CLI 隔离项目',cwd):await app.invoke('projects.create',{name:'M10 原生 CLI 隔离项目',aliases:[],description:'Private native Task prerequisite',rulesPath:null},[{label:'fixture',path:cwd}]);result.projectId=project.id;
+ if(projectResources)await projectResources.prepare(app,project);
+ if(legacyRegressionCheck){stage='legacy-before-applications';await progress();await prepareLegacyRegression({app,result,root,cwd,project,click,checked});}
+ const catalog=await app.invoke('applications.catalog');assert(catalog.ok);const mail=catalog.value.find(x=>x.appId==='mail');if(scopeUiCheck){await click('[data-testid=nav-apps]');await app.waitFor(`!!document.querySelector('[aria-label="添加邮件"]')`);await click('[aria-label="添加邮件"]');await poll(async()=>{const c=await app.invoke('applications.catalog');return c.ok&&c.value.find(x=>x.appId==='mail').added;});checked('T48 added the bundled Mail application through actual catalog UI');}else assert((await app.invoke('applications.setAdded','mail',true,mail.revision)).ok);
+ if(scopeRestartCheck){
+  for(const suffix of ['one','two']){
+   const source=join(root,'synthetic-scope-mail-'+suffix);await mkdir(join(source,'Mail/Inbox'),{recursive:true});await writeFile(join(source,'Mail/Inbox/1.mail'),'From: sender@example.test\r\nTo: receiver@example.test\r\nSubject: SCOPE '+suffix+'\r\nMessage-ID: <scope-'+suffix+'@example.test>\r\nContent-Type: text/plain\r\n\r\nSCOPE PRIVATE '+suffix);
+   execFileSync('/usr/bin/sqlite3',[join(source,'messages.db'),"CREATE TABLE mailinfo(mailid INTEGER PRIMARY KEY,subject TEXT,from_ TEXT,to_ TEXT,messageid TEXT,date INTEGER,mail_receivedate INTEGER,fileexist INTEGER,attachment INTEGER);INSERT INTO mailinfo VALUES(1,'SCOPE','sender@example.test','receiver@example.test','scope',0,0,1,0);"]);
+   const tested=await app.invoke('applications.testConnection',{name:'Scope private '+suffix,expectedRevision:0,config:{kind:'foxmail',sourcePath:source,account:'receiver@example.test',queryDays:30}});assert(tested.ok,JSON.stringify(tested));const saved=await app.invoke('applications.saveConnection','mail',tested.value.operationId,tested.value.candidateHash);assert(saved.ok,JSON.stringify(saved));scopeConnections.push(saved.value);
+  }
+  assert.notEqual(scopeConnections[0].id,scopeConnections[1].id);result.scopeConnections=scopeConnections;
+ }
+ if(scopeUiCheck){
+  await click('.m10-sidebar button','项目选用');const toggle='[aria-label="为M10 原生 CLI 隔离项目启用邮件"]';await app.waitFor(`!!document.querySelector(${JSON.stringify(toggle)})&&!document.querySelector(${JSON.stringify(toggle)}).disabled`);await click(toggle);await app.waitFor(`document.querySelector(${JSON.stringify(toggle)})?.getAttribute('aria-checked')==='true'`);
+  const option='input[aria-label="为M10 原生 CLI 隔离项目选用Scope private one"]';await app.waitFor(`!!document.querySelector(${JSON.stringify(option)})&&!document.querySelector(${JSON.stringify(option)}).disabled`);await click(option);await app.waitFor(`document.querySelector(${JSON.stringify(option)}).checked`);await poll(async()=>{const r=await app.invoke('applications.projectSettings',project.id,'mail');return r.ok&&r.value.connections.foxmail===scopeConnections[0].id;});await app.screenshot(join(root,'t48-selected-project-a.png'));checked('T48 actual project UI enables Mail and explicitly selects the first of two saved local sources only for A');
+ }else if(!unselectedProject)assert((await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:scopeConnections[0]?.id??null,smtp:null}})).ok);
+ const args=['--profile','m10-native','--disable','hooks','--disable','apps','--disable','remote_plugin','--disable','multi_agent','--disable','shell_snapshot','-c','web_search="disabled"','-c','skills.config=[]','--sandbox','read-only','--ask-for-approval','never'];
+ if(projectResourcePermissionsApproved){
+  const audit=join(userData,'capabilities/resource-audit');
+  assert(root.startsWith('/private/tmp/willyou-m10-tl-native-')&&userData===join(root,'userdata')&&cwd.startsWith(root+'/'));
+  await mkdir(audit,{recursive:true,mode:0o700});
+  args[args.indexOf('--sandbox')+1]='workspace-write';
+  args.push('--add-dir',audit,'-c','sandbox_mode="workspace-write"','-c','approval_policy="never"','-c','sandbox_workspace_write.writable_roots='+JSON.stringify([audit]),'-c','sandbox_workspace_write.network_access=true');
+  result.projectResourcePermissionBoundary={explicitUserApprovalRequired:true,flag:'WILLYOU_PROJECT_RESOURCE_PERMISSIONS_APPROVED=1',profile:'this fresh private profile only',cwd,audit,mode:'workspace-write',networkAccess:true,networkBoundary:'Native network switch is not a loopback allowlist. The deterministic provider and SSH fixture use only 127.0.0.1; SSH endpoint accepts only the exact self-authored cat command.',approvalPolicy:'never',dailyProfileChanged:false,args:[...args]};
+ }
+ profile=await app.invoke('aiProfiles.create',{name:'M10 私有 Codex 0.162.1',runner:'codex',executable:cli,env:Object.entries(privateEnv).map(([name,value])=>({name,value,secret:false})),args,color:null,isDefault:true});result.profileId=profile.id;
+ stage='profile-health';await progress();const health=await poll(async()=>{const p=await app.invoke('aiProfiles.get',profile.id);return !p.checking&&p.check?p:null;},45000);result.profileHealth=health.check;assert.equal(health.check.status,'ok');
+ checked('Automatic AI-profile health check is separately classified and completed against private provider');
+ if(maintenanceCancelUi){stage='maintenance-ui-prerequisite';await progress();app=await prepareMaintenanceWaitUi({app,result,root,userData,home,project,executable,privateEnv,checked,reopen:async()=>{const next=await openElectron({executable,userData,cwd,env:privateEnv});installAppFocusGuard(next,result);return next;}});}
+ if(graphGcCheck){stage='graph-offline-prerequisite';await progress();app=await prepareNativeGcRace({app,result,root,userData,home,executable,privateEnv,compiledFixture:graphFixture,compiledSha:graphFixtureSha,native:join(appRoot,'Contents/Resources/native/willyou-process-identity'),projectId:project.id,checked,reopen:async()=>{const next=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(next,result);return next;}});}
+ if(hostReplayCheck){await installBrokerObserver(app);result.brokerObserver={kind:'passive Socket.write observation only on this private broker endpoint; no bytes or policy changed',installed:true};}
+ if(bootstrapReplay)await bootstrapReplay.install(app);
+ if(nodeModeUnavailableCheck)await installBrokerObserver(app);
+ if(scopeUiCheck){const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=nav-home]')`,15000,{navigation:true});await app.evaluate("document.title='A · M10 · T48 project scopes';true");}
+ stage='service-task-launch';await progress();if(homeNativeCheck){const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=home-input]')`,15000,{navigation:true});await app.evaluate('document.title='+JSON.stringify(nativeExitUiCheck?'A · RF 原生退出同步 · 隔离':'A · RE 原生输入来源 · 隔离')+';true');assert(!result.focusGuard);await focusNewInstalledWindow(app,userData,result);installAppFocusGuard(app,result);}
+ await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true`);
+ const prompt=skillPhase?marker+': '+(skillPhase==='discovery'?'Reply with the completion marker without reading files or using tools.':skillPhase==='read'?'Read the selected private Mail Skill once, then reply with the completion marker. Do not invoke application tools or create drafts.':'Create one local draft with no recipients or SMTP, without reading Skill files. No external services or sending.') :unselectedProject?marker+': Reply with the completion marker only. Do not invoke tools, read files, create drafts or send mail.':marker+': Create one LOCAL DRAFT only, subject '+marker+'_LOCAL_DRAFT, body '+marker+'_LOCAL_BODY. No recipients, attachments, SMTP or sending. No external services.';
+ const before=await app.invoke('tasks.list',{includeArchived:true});assert.equal(before.length,0);
+ const opened=scopeUiCheck||maintenanceCancelUi||homeNativeCheck?await launchScopeTask(project.name,prompt):await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:profile.id,firstMessage:prompt,cols:100,rows:30});task=opened.task;result.taskId=task.id;
+ checked(nativeExitUiCheck?'RF actual Home composer created the original native Task':nativeUserOriginCheck?'T07 actual Home composer and launch created the original actual Codex Task':maintenanceCancelUi?'T71 actual Home composer and launch button created the original actual Codex Task':scopeUiCheck?'T48 actual project A composer and launch button created exactly one native Task':'Production TaskService IPC created exactly one native Task;not composer/UI coverage',{taskId:task.id});
+ stage='native-task-response';await progress();
+ await poll(async()=>{const current=await app.invoke('tasks.get',task.id);task=current;const out=current.ptyId?await app.output(current.ptyId):'';await writeFile(join(root,'terminal-current.txt'),out);await writeFile(join(root,'task-current.json'),JSON.stringify(current,null,2)+'\n');const done=result.requests.some(r=>r.kind==='ui-task')&&out.includes(marker+'_DONE');if(longNativeTail&&result.longTailResponse){const logs=readdirSync(state,{recursive:true}).filter(p=>typeof p==='string'&&p.endsWith('.jsonl')&&p.includes('rollout-'));return logs.some(p=>{const bytes=readFileSync(join(state,p));if(bytes.length<=4*1024*1024||bytes.length>32*1024*1024||bytes.at(-1)!==10)return false;const last=bytes.lastIndexOf(10,bytes.length-2);try{const record=JSON.parse(bytes.subarray(last+1,bytes.length-1).toString('utf8'));return record.type==='event_msg'&&record.payload?.type==='task_complete';}catch{return false;}});}return done;},45000);
+ const requests=result.requests.filter(r=>r.kind==='ui-task');assert(requests.length>0);assert(requests.every(r=>r.model==='m10-ui-profile-model'&&!r.userSkillMarkerPresent));
+ checked('Real Task CLI used native profile model and preserved profile-disabled user Skill under later CLI empty array',{requestCount:requests.length});
+ if(nodeModeUnavailableCheck){
+  stage='node-mode-unavailable-scope';await progress();
+  await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);
+ }else if(skillPhase){
+  assert(!unselectedProject&&!restartCheck&&!sharedProjectCheck&&!diagnosticUi&&!deferredSkillHistory,'Phase isolation uses one selected Task');
+  stage='skill-phase-'+skillPhase;await progress();
+  await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);
+  const diagnostic=await poll(async()=>{const d=await app.invoke('applications.session',task.id);if(!d.ok)return null;const e=d.value.applications.find(a=>a.appId==='mail')?.evidence;return e?.skillDiscovery==='verified'&&(skillPhase!=='read'||e.skillRead==='verified')?d.value:null;},15000);
+  result.skillPhaseDiagnostic=diagnostic;const e=diagnostic.applications.find(a=>a.appId==='mail').evidence;
+  assert.equal(e.skillRead,skillPhase==='read'?'verified':'unverified');assert.equal(e.toolRequests,skillPhase==='tool'?1:0);assert.equal(e.successfulToolRequests,skillPhase==='tool'?1:0);assert.equal(!!result.issuedTool,skillPhase==='tool');
+  if(skillPhase!=='read'){assert(!result.issuedRead&&!result.nativeSkillReadOutput);assert.deepEqual(e.skillReadObservations,[]);}else assert(result.nativeSkillReadOutput);
+  assert(e.skillDiscoveryObservations.length>0);assert(e.skillDiscoveryObservations.every(o=>o.runId===diagnostic.currentRun.id));
+  const drafts=await app.invoke('applications.drafts',project.id,{limit:50});assert(drafts.ok);assert.equal(drafts.value.items.length,skillPhase==='tool'?1:0);if(skillPhase==='tool'){assert(result.nativeToolOutputs?.length===1);assert.equal(drafts.value.items[0].subject,marker+'_LOCAL_DRAFT');assert(result.nativeToolOutputs[0].output.includes(drafts.value.items[0].id));}
+  checked(skillPhase==='discovery'?'Actual native catalog discovery remains independent of Skill reading and application use':skillPhase==='read'?'Actual native Skill reading remains independent of application tool use':'Actual successful MCP operation does not manufacture native Skill-read evidence');
+ }else if(deferredSkillHistory){
+  assert(!unselectedProject&&!restartCheck&&!sharedProjectCheck&&!diagnosticUi,'Deferred history uses one selected task without prior diagnostics');
+  stage='skill-history-without-prior-diagnostics';await progress();
+  assert(result.nativeSkillReadOutput,'Actual native Skill read must complete before stopping');
+  const bound=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);
+  result.nativeBoundTask=bound;
+  if(shutdownHistory){
+   stage='normal-host-quit-with-live-task';await progress();
+   await writeFile(join(root,'before-normal-quit.txt'),app.logs());
+   result.quitConfirmationFixture={layer:'host-service only; native dialog acceptance deferred',scope:'only this isolated App live-task exit confirmation',choice:'exit',restoration:'original showMessageBoxSync restored on the first matching call'};
+   await app.mainEvaluate("(()=>{const e=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');const original=e.dialog.showMessageBoxSync;e.dialog.showMessageBoxSync=function(...args){const options=args.at(-1);if(options?.message?.match(/^有 [0-9]+ 个任务正在运行$/)&&JSON.stringify(options.buttons)===JSON.stringify(['退出','取消'])){e.dialog.showMessageBoxSync=original;return 0;}return original.apply(this,args);};setTimeout(()=>e.app.quit(),30);return true})()");
+   result.normalExit=await app.waitForExit(30000);assert.equal(result.normalExit.code,0);assert.equal(result.normalExit.signal,null);
+   await writeFile(join(root,'normal-quit.txt'),app.logs());await app.close();app=null;
+   app=await openElectron({executable,userData,cwd,env:privateEnv});installAppFocusGuard(app,result);result.reopenedPid=app.processId;
+   await app.waitFor('!!window.electronAPI?.invoke',20000);
+   checked('Normal Electron app.quit exits with the live native task, then the same isolated store reopens');
+  }else{
+   if(naturalExitHistory){result.nativeExitInput={transport:'owned PTY input',command:'/quit',usesTaskKill:false};await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'/quit'})});true`);await poll(async()=>String(await app.output(task.ptyId)).includes('/quit'),10000);await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'\r'})});true`);}
+   else await app.invoke('tasks.kill',task.id);
+   await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return !t.ptyId?t:null;},15000);
+  }
+  result.stoppedRun=await poll(async()=>{const rows=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); c.row_factory=sqlite3.Row; print(json.dumps([dict(r) for r in c.execute('SELECT run_id,state FROM capability_runs WHERE task_id=?',(sys.argv[2],))])); c.close()",join(userData,'smartdd.db'),task.id],{encoding:'utf8'}));return rows.length===1&&rows[0].state==='stopped'?rows[0]:null;},30000);
+  if(naturalExitHistory){result.nativeExitCode=await app.evaluate(`window.__m5.exits[${JSON.stringify(task.ptyId)}]`);assert.equal(result.nativeExitCode,0,'Native CLI must exit normally');checked('Actual owned Codex exits with code zero after its terminal quit command, without tasks.kill');}
+  const history=await app.invoke('applications.session',task.id);assert(history.ok);
+  result.firstDiagnosticAfterStop=history.value;
+  assert.equal(history.value.currentRun,null);
+  assert(history.value.recentRuns.some(r=>r.skillObservations.some(o=>o.kind==='read')),'Native Skill read must remain observable after stop without opening diagnostics during the run');
+  const retained=history.value.recentRuns.find(r=>r.id===result.stoppedRun.run_id);assert(retained);
+  assert.equal(retained.skillObservationIssue,null);
+  assert(retained.skillObservations.some(o=>o.kind==='discovery'),'Native catalog discovery must also be retained independently');
+  assert(retained.skillObservations.every(o=>o.runId===result.stoppedRun.run_id&&Date.parse(o.observedAt)<=Date.parse(retained.endedAt)));
+  result.retainedWithoutPriorDiagnostics=retained;
+  checked('First diagnostic query after native task stop retains independent discovery and reading history of the stopped run');
+ }else{
+ stage='session-diagnostics';await progress();const session=await app.invoke('applications.session',task.id);assert(session.ok,session.message);result.session=session.value;result.finalTask=await app.invoke('tasks.get',task.id);assert(result.finalTask.ptyId);
+ await app.screenshot(join(root,'task-native-response.png'));
+ if(unselectedProject){
+  assert.equal(session.value.applications.length,0,'Unselected project must have an empty application snapshot');
+  assert(requests.every(r=>r.toolNames.every(n=>!String(n).startsWith('mcp__wy_'))),'Unselected native request contains application namespace');
+  assert(!result.issuedRead&&!result.issuedTool);
+  const drafts=await app.invoke('applications.drafts',project.id,{limit:50});result.unselectedDraftListResponse=drafts;
+  assert.equal(drafts.ok,false);assert.equal(drafts.code,'SCOPE_DENIED');
+  const stored=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); print(json.dumps({'draftCount':c.execute('SELECT count(*) FROM mail_drafts WHERE project_id=?',(sys.argv[2],)).fetchone()[0]})); c.close()",join(userData,'smartdd.db'),project.id],{encoding:'utf8'}));
+  result.unselectedStoredData=stored;assert.equal(stored.draftCount,0);
+  const selectedProjectionNames=readdirSync(join(home,'.agents/skills')).filter(n=>n.startsWith('smartdd-a-'));
+  assert.deepEqual(selectedProjectionNames,[]);
+  result.unselectedProjections=selectedProjectionNames;
+  checked('Production project without selection has empty application snapshot, no native app tools/projections and no drafts');
+  stage='unselected-native-id';await progress();
+  result.nativeBoundTask=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);
+  checked('Unselected project still completes real native Codex work and binds native session ID');
+ }else{
+ assert(result.issuedTool);assert(result.nativeToolOutputs?.length===1,'Native CLI did not return the real MCP tool result');
+ const drafts=await app.invoke('applications.drafts',project.id,{limit:50});assert(drafts.ok,drafts.message);assert.equal(drafts.value.items.length,1);const draft=drafts.value.items[0];assert.equal(draft.subject,marker+'_LOCAL_DRAFT');result.createdDraft=draft;
+ const detail=await app.invoke('applications.draft',project.id,draft.id,draft.revision);assert(detail.ok,detail.message);result.createdDraftDetail=detail.value;assert.equal(detail.value.draft.sourceTaskId,task.id);assert(result.nativeToolOutputs[0].output.includes(draft.id));assert.equal(detail.value.draft.content.senderConnectionId,null);assert.deepEqual(detail.value.draft.content.to,[]);
+ const usage=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.applications.some(a=>a.appId==='mail'&&a.evidence.successfulToolRequests>=1)?d.value:null;});result.sessionAfterTool=usage;
+ checked('Actual native Codex function call crossed the real M10 MCP bridge and persisted one draft without SMTP or recipients');
+ assert(result.nativeSkillReadOutput);const selected=usage.applications.find(a=>a.appId==='mail');assert(selected.skills.some(s=>s.projectionPath===result.issuedRead.path));result.readToPackage={taskId:task.id,packageHash:selected.packageHash,skillPath:result.issuedRead.path,skillFileSha256:result.issuedRead.sha256,declaredSourceHash:selected.skills[0].sourceHash};checked('Actual native shell read of fixed production Mail Skill precedes real MCP operation in the same Task');
+ stage='native-id-binding';await progress();const bound=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},15000);result.nativeBoundTask=bound;const fixed=await app.invoke('applications.session',task.id);assert(fixed.ok);result.nativeBoundSession=fixed.value;assert.equal(fixed.value.applications.find(a=>a.appId==='mail').packageHash,usage.applications.find(a=>a.appId==='mail').packageHash);
+ if(externalSkillCheck){
+  stage='external-skill-scope';await progress();
+  const listing=execFileSync('/usr/sbin/lsof',['-a','-p',String(app.processId),'-U','-Fn'],{encoding:'utf8',timeout:5000});
+  const endpoints=[...new Set(listing.split('\n').filter(s=>/^n(?:\/private)?\/tmp\/wy-\d+-[^/]+\/broker\.sock$/.test(s)).map(s=>s.slice(1)))];assert.equal(endpoints.length,1,'Use only the socket owned by this exact App PID');
+  const other=await app.invoke('projects.create',{name:'M10 外部客户端目标B',aliases:[],description:'Private unauthorized target',rulesPath:null});
+  const before=await app.invoke('applications.session',task.id);assert(before.ok);
+  const output=execFileSync(process.execPath,[resolve('scripts/applications/fixtures/external-skill-client.mjs')],{cwd,env:{PATH:process.env.PATH,HOME:home},input:JSON.stringify({endpoint:endpoints[0],skillPath:result.issuedRead.path,skillSha256:result.issuedRead.sha256,otherProjectId:other.id}),encoding:'utf8',timeout:20000});
+  const external=JSON.parse(output);assert.equal(external.cwd,cwd);assert.equal(external.skillSha256,result.issuedRead.sha256);assert(!output.includes(marker+'_LOCAL_BODY'));assert(!output.includes(draft.id));
+  const after=await app.invoke('applications.session',task.id);assert(after.ok);assert.equal(after.value.currentRun.id,before.value.currentRun.id);assert.equal(after.value.applications.find(a=>a.appId==='mail').evidence.toolRequests,before.value.applications.find(a=>a.appId==='mail').evidence.toolRequests);
+  const preserved=await app.invoke('applications.draft',project.id,draft.id,draft.revision);assert(preserved.ok);assert.deepEqual(preserved.value,detail.value);
+  result.externalSkillScope={endpoint:endpoints[0],appPid:app.processId,external};checked('Unmanaged same-cwd process reads actual Skill projection but cannot authenticate or select another project/package; no business invocation or draft change');
+ }
+ if(longNativeTail){
+  const paths=readdirSync(state,{recursive:true}).filter(p=>typeof p==='string'&&p.endsWith('.jsonl'));
+  const matching=paths.map(p=>({path:join(state,p),bytes:readFileSync(join(state,p))})).filter(item=>item.bytes.includes(bound.nativeSessionId)&&item.bytes.includes('call_m10_skill_read'));
+  assert.equal(matching.length,1);const item=matching[0],lastRead=item.bytes.lastIndexOf('call_m10_skill_read');assert(item.bytes.length-lastRead>4*1024*1024,'Read evidence must actually leave the bounded tail');
+  result.nativeTailExtent={path:item.path,bytes:item.bytes.length,lastReadOffset:lastRead,sha256:sha(item.bytes)};
+ }
+ if(expectSkillRead){stage='native-skill-read-diagnostic';await progress();const observed=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.applications.find(a=>a.appId==='mail')?.evidence.skillRead==='verified'?d.value:null;},10000);const evidence=observed.applications.find(a=>a.appId==='mail').evidence;assert.equal(evidence.skillDiscovery,expectSkillDiscovery?'verified':'unverified');if(expectSkillDiscovery){assert(evidence.skillDiscoveryObservations.length>0);assert(evidence.skillDiscoveryObservations.every(r=>r.runId===observed.currentRun.id));}assert(evidence.skillReadObservations.length>0);assert(evidence.skillReadObservations.every(r=>r.runId===observed.currentRun.id));result.nativeSkillDiagnostic=observed;checked('Production diagnostics verifies complete actual native Skill reading in the current run, without inferring discovery');}
+ checked('Actual native session ID is bound while fixed Mail package hash remains unchanged',{nativeSessionId:bound.nativeSessionId,snapshotHash:fixed.value.snapshotHash});
+ checked('Production draft read interface returns actual persisted native-tool output;no UI assertion');
+ if(graphGcCheck){stage='graph-native-competition';await progress();await verifyNativeGcRace({app,result,root,userData,home,task,profile,project,marker,sql:packageQuery,poll,checked});}
+ if(dualStoreCheck){
+  assert(!freezeCheck&&!restartCheck&&!sharedProjectCheck,'Dual store mode requires one active original task');
+  stage='two-app-shared-home';await progress();
+  const catalogPath=join(home,'.agents/smartdd-runtime/catalog.json'),consumersPath=join(home,'.agents/smartdd-runtime/catalog-consumers');
+  const catalogBytes=await readFile(catalogPath),files=()=>Object.fromEntries(readdirSync(join(home,'.agents/skills'),{recursive:true,withFileTypes:true}).filter(e=>e.isFile()).map(e=>{const path=join(e.parentPath,e.name);return[path,sha(readFileSync(path))];}));
+  const originalFiles=files(),originalConsumers=Object.fromEntries(readdirSync(consumersPath).map(n=>[n,readFileSync(join(consumersPath,n),'utf8')])),originalTask=await app.invoke('tasks.get',task.id);
+  const userDataB=join(root,'userdata-b');let b,bTask;
+  result.dualStore={userDataA:userData,userDataB,home,originalConsumers,originalFiles};
+  try{
+   b=await openElectron({executable,userData:userDataB,cwd,env:privateEnv});result.dualStore.pidB=b.processId;assert.notEqual(b.processId,app.processId);
+   await b.evaluate(`document.title='A · M10 · isolated second data root';window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});true`);
+   const bp=await b.invoke('projects.create',{name:'M10 第二数据根',aliases:[],description:'Same HOME isolated userData B',rulesPath:null},[{label:'same-home',path:cwd}]);
+   const bc=await b.invoke('applications.catalog');assert(bc.ok);const bm=bc.value.find(a=>a.appId==='mail');assert((await b.invoke('applications.setAdded','mail',true,bm.revision)).ok);
+   assert((await b.invoke('applications.select',{projectId:bp.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}})).ok);
+   const profileB=await b.invoke('aiProfiles.create',{name:'M10 第二数据根Codex',runner:'codex',executable:cli,env:Object.entries(privateEnv).map(([name,value])=>({name,value,secret:false})),args,color:null,isDefault:true});
+   await poll(async()=>{const p=await b.invoke('aiProfiles.get',profileB.id);return !p.checking&&p.check?.status==='ok';},45000);
+   const openedB=await b.invoke('tasks.create',{projectId:bp.id,dirId:null,aiProfileId:profileB.id,firstMessage:marker+'_PROJECT_B: Reply only; no tools or file changes.',cols:100,rows:30});bTask=openedB.task;
+   await poll(async()=>{bTask=await b.invoke('tasks.get',bTask.id);return bTask.ptyId&&(await b.output(bTask.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
+   const diagnostic=await b.invoke('applications.session',bTask.id);assert(diagnostic.ok);result.dualStore.bSession=diagnostic.value;
+   assert(JSON.stringify(diagnostic.value).includes('AGENT_CAPABILITY_NAME_CONFLICT'));
+   assert(result.requests.filter(r=>r.kind==='project-b-task').every(r=>r.toolNames.every(n=>!n.startsWith('mcp__wy_'))));
+   assert.deepEqual(await readFile(catalogPath),catalogBytes);assert.deepEqual(files(),originalFiles);
+   for(const [name,bytes] of Object.entries(originalConsumers))assert.equal(await readFile(join(consumersPath,name),'utf8'),bytes);
+   const alive=await app.invoke('tasks.get',task.id);assert.equal(alive.ptyId,originalTask.ptyId);assert.equal(alive.nativeSessionId,originalTask.nativeSessionId);
+   const a=await app.invoke('applications.session',task.id);assert(a.ok&&a.value.currentRun.bridge.connected);assert.equal(a.value.snapshotHash,fixed.value.snapshotHash);result.dualStore.aSession=a.value;
+   checked('Two actual App processes with same HOME and separate userData preserve original projection/catalog/consumer bytes; second user store gets explicit conflict and ordinary Codex response without application namespace');
+  }finally{if(b){if(bTask?.id)await b.invoke('tasks.kill',bTask.id).catch(()=>{});await writeFile(join(root,'electron-b.txt'),b.logs());await b.close();result.dualStore.secondAppClosed=true;}}
+  for(const [name,bytes] of Object.entries(originalConsumers))assert.equal(await readFile(join(consumersPath,name),'utf8'),bytes);
+  assert.deepEqual(files(),originalFiles);assert.deepEqual(await readFile(catalogPath),catalogBytes);
+  checked('Closing second App preserves first store consumer and shared directory bytes');
+ }
+ if(freezeCheck){
+  assert(!restartCheck&&!sharedProjectCheck&&!revokeCheck,'Freeze mode requires one original active task');
+  stage='live-codex-directory-freeze';await progress();
+  const catalogPath=join(home,'.agents/smartdd-runtime/catalog.json'),pendingPath=join(home,'.agents/smartdd-runtime/pending.json');
+  const beforeBytes=await readFile(catalogPath),beforeCatalog=JSON.parse(beforeBytes),beforeTree=()=>Object.fromEntries(readdirSync(join(home,'.agents/skills'),{recursive:true,withFileTypes:true}).filter(e=>e.isFile()).map(e=>{const path=join(e.parentPath,e.name);return[path,sha(readFileSync(path))];}));
+  const originalTree=beforeTree(),beforeTask=await app.invoke('tasks.get',task.id);
+  const cwdB=join(root,'freeze-project-b');await mkdir(join(cwdB,'.git'),{recursive:true});
+  const other=await app.invoke('projects.create',{name:'M10 冻结新增禅道',aliases:[],description:'Isolated directory freeze',rulesPath:null},[{label:'freeze',path:cwdB}]);
+  const cat=await app.invoke('applications.catalog');assert(cat.ok);const zen=cat.value.find(a=>a.appId==='zentao');assert((await app.invoke('applications.setAdded','zentao',true,zen.revision)).ok);
+  const select=await app.invoke('applications.select',{projectId:other.id,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});assert(select.ok,JSON.stringify(select));
+  const request={projectId:other.id,dirId:null,aiProfileId:profile.id,firstMessage:marker+'_PROJECT_B: Reply only. No tools or file changes.',cols:100,rows:30,...(cancelFreezeCheck?{launchToken:'33333333-3333-4333-8333-333333333333'}:{})};
+  let outcome;
+  if(cancelFreezeUi){
+   await app.invoke('appSettings.update','homeDraft',{projectId:other.id,dirId:null,aiProfileId:profile.id});
+   const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&!!document.querySelector('[data-testid=home-input]')`,20000,{navigation:true});
+   await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});true`);
+   await app.waitFor(`document.querySelector('[data-testid=home-project]')?.textContent.includes('M10 冻结新增禅道')&&!document.querySelector('[data-testid=home-launch]').disabled`,10000);
+   result.cancelUiInitialFocus=await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)}||E.BrowserWindow.getAllWindows().length!==1)throw Error('Own single cancel UI window required');const w=E.BrowserWindow.getAllWindows()[0];w.show();E.app.focus({steal:false});w.focus();w.webContents.focus();return{pid:process.pid,focused:w.isFocused(),initialOnly:true}})()`);await app.waitFor('document.hasFocus()&&document.visibilityState==="visible"',5000);await app.evaluate("document.title='A · M10 OU · 隔离 首页取消准备';true");
+   await click('[data-testid=home-input]');await app.cdp('Input.insertText',{text:request.firstMessage});await app.waitFor('document.querySelector("[data-testid=home-input]").value==='+JSON.stringify(request.firstMessage));await click('[data-testid=home-launch]');
+  }else outcome=app.invoke('tasks.create',request).then(value=>({value,error:null}),error=>({value:null,error:String(error)}));
+  const pending=await poll(async()=>{try{return JSON.parse(await readFile(pendingPath,'utf8'));}catch{return null;}},10000);assert.equal(pending.phase,'waiting');
+  assert.deepEqual(await readFile(catalogPath),beforeBytes);assert.deepEqual(beforeTree(),originalTree);
+  let rejected;
+  if(cancelFreezeUi){
+   assert.equal(await app.evaluate(`document.querySelector('[data-testid=home-launch]').getAttribute('aria-label')`),'取消准备');
+   await click('[data-testid=home-launch]');
+   await app.waitFor(`document.querySelector('[data-testid=home-error]')?.textContent.includes('取消')&&!document.querySelector('[data-testid=home-launch]').disabled`,15000);
+   assert.equal(await app.evaluate(`document.querySelector('[data-testid=home-input]').value`),request.firstMessage);
+   assert(!(await app.invoke('tasks.list')).some(t=>t.projectId===other.id));
+   rejected={value:null,error:await app.evaluate(`document.querySelector('[data-testid=home-error]').textContent`)};
+   await app.screenshot(join(root,'home-preparation-canceled.png'));result.cancelUi={promptRetained:true,newTaskAbsent:true,screenshot:'home-preparation-canceled.png'};
+  }else{if(cancelFreezeCheck)assert.equal(await app.invoke('tasks.cancelCreate',request.launchToken),true);rejected=await outcome;}
+  assert(rejected.error?.includes(cancelFreezeCheck?'取消':'共享发现目录仍被运行使用'),JSON.stringify(rejected));
+  assert.deepEqual(await readFile(catalogPath),beforeBytes);assert.deepEqual(beforeTree(),originalTree);
+  await assert.rejects(readFile(pendingPath),{code:'ENOENT'});
+  const live=await app.invoke('tasks.get',task.id);assert.equal(live.ptyId,beforeTask.ptyId);assert.equal(live.nativeSessionId,beforeTask.nativeSessionId);
+  result.freeze={beforeGeneration:beforeCatalog.generation,pending,rejected,originalTree,originalTask:beforeTask};
+  checked(cancelFreezeCheck?'Actual pending publication is explicitly canceled by its launch token, preserving original Codex and shared bytes and releasing own intent':'Actual running Codex freezes shared projection bytes; new ZenTao publication times out with explicit busy result, preserves original task and cancels own intent');
+  await app.invoke('tasks.kill',task.id);await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&!d.value.currentRun&&d.value.recentRuns.every(r=>['stopped','failed'].includes(r.state));},30000);
+  let next;
+  if(cancelFreezeUi){await app.waitFor('!!document.querySelector("[data-testid=home-launch]")&&!document.querySelector("[data-testid=home-launch]").disabled');assert.equal(await app.evaluate('document.querySelector("[data-testid=home-input]").value'),request.firstMessage);await click('[data-testid=home-launch]');next=await poll(async()=>{const rows=await app.invoke('tasks.list');const t=rows.find(t=>t.projectId===other.id&&t.firstMessage===request.firstMessage);return t?{task:t}:null;},30000);}else next=await app.invoke('tasks.create',request);secondTask=next.task;
+  await poll(async()=>{secondTask=await app.invoke('tasks.get',secondTask.id);return secondTask.ptyId&&(await app.output(secondTask.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
+  const afterCatalog=JSON.parse(await readFile(catalogPath,'utf8'));assert.notEqual(afterCatalog.generation,beforeCatalog.generation);assert(afterCatalog.entries.length>beforeCatalog.entries.length);
+  for(const [path,hash] of Object.entries(originalTree))assert.equal(sha(await readFile(path)),hash);
+  const bSession=await app.invoke('applications.session',secondTask.id);assert(bSession.ok);assert(bSession.value.currentRun.bridge.connected);result.freeze.newSession=bSession.value;assert(bSession.value.applications.some(a=>a.appId==='zentao'&&a.resourceState==='verified'&&a.issueCode===null));
+  result.freeze.afterCatalog=afterCatalog;result.freeze.newSession=bSession.value;
+  if(cancelFreezeUi){const history=await app.mainEvaluate('globalThis.__ouCancel.records');const attempts=history.filter(r=>r.name==='tasks.create'&&r.args[0].projectId===other.id);assert.equal(attempts.length,2);assert.notEqual(attempts[0].args[0].launchToken,attempts[1].args[0].launchToken);assert.equal(attempts[0].errorCode,'CANCELED');assert(attempts[1].value?.task?.id===secondTask.id);assert.equal((await app.invoke('tasks.list')).filter(t=>t.projectId===other.id).length,1);result.cancelUi.retry={method:'Actual Home launch click after explicit stopA',newToken:attempts[1].args[0].launchToken,taskId:secondTask.id,oneNewTask:true};}
+  checked('After original Codex stops, new task publishes added projection, retains old bytes and starts real Codex with ZenTao bridge');
+ }
+ if(sharedProjectCheck){
+  stage='same-instance-project-b';await progress();if(sameCwdProjects&&selectedSecondProject){result.profileBeforeSecondNative=await readFile(join(state,'m10-native.config.toml'),'utf8');assert.equal(result.profileBeforeSecondNative,profileText+nativeNoticeState);}
+  const cwdB=sameCwdProjects?cwd:join(root,'project-b');await mkdir(join(cwdB,'.git'),{recursive:true});const standardBefore=sameCwdProjects?result.nativeBoundTask.runtimeSnapshot.skills.map(item=>({id:item.skillId,path:item.path,hash:item.hash,bytesSha256:sha(readFileSync(item.path))})):null;
+  const other=scopeUiCheck?await createScopeProject('M10 未选邮件项目 B',cwdB):await app.invoke('projects.create',{name:selectedSecondProject?'M10 已选邮件项目 B':'M10 未选邮件项目 B',aliases:[],description:'Same App shared-H negative project',rulesPath:null},persistedSameCwdFixture?[]:[{label:'fixture-b',path:cwdB}]);
+  if(persistedSameCwdFixture){const dirId=randomUUID();execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,time; c=sqlite3.connect(sys.argv[1]); ts=int(time.time()*1000); c.execute('INSERT INTO project_dirs(id,project_id,label,path,is_default,created_at,updated_at) VALUES(?,?,?,?,1,?,?)',(sys.argv[2],sys.argv[3],'Synthetic historical duplicate cwd',sys.argv[4],ts,ts)); c.commit(); c.close()",join(userData,'smartdd.db'),dirId,other.id,cwdB]);result.sameCwdFixture={kind:'Explicit synthetic historical persisted duplicate path; normal projects.create rejects duplicate; no UI creation claim',projectId:other.id,dirId,cwd:cwdB};}
+  if(selectedSecondProject)assert((await app.invoke('applications.select',{projectId:other.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}})).ok);
+  const bPrompt=marker+'_PROJECT_B: '+(crossProjectTool?'Read the supplied isolated cross-project draft ID once to verify denial. Do not create or modify anything.':'Reply with the completion marker only. No tools, no files, no drafts, no mail.');const next=scopeUiCheck?await launchScopeTask(other.name,bPrompt):await app.invoke('tasks.create',{projectId:other.id,dirId:null,aiProfileId:profile.id,firstMessage:bPrompt,cols:100,rows:30});secondTask=next.task;
+  await poll(async()=>{const t=await app.invoke('tasks.get',secondTask.id);secondTask=t;return t.ptyId&&(await app.output(t.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
+  if(crossProjectTool){const output=JSON.stringify(result.crossProjectToolOutput);assert((forgeScope?/INVALID_INPUT/:/NOT_FOUND/).test(output),'Native tool must reject the supplied cross-project request with the expected error');assert(!output.includes(marker+'_LOCAL_BODY'));checked(forgeScope?'B actual native MCP rejects forged project/task arguments without returning A body':'B actual native MCP draft read rejects A draft identity without returning A body');}
+  const bRequests=result.requests.filter(r=>r.kind==='project-b-task');assert(bRequests.length>0);
+  assert(bRequests.every(r=>selectedSecondProject?r.toolNames.some(n=>String(n).startsWith('mcp__wy_')):r.toolNames.every(n=>!String(n).startsWith('mcp__wy_'))));
+  const bSession=await app.invoke('applications.session',secondTask.id);assert(bSession.ok);
+  const bDrafts=await app.invoke('applications.drafts',other.id,{limit:50});
+  if(selectedSecondProject){assert.equal(bSession.value.currentRun.state,'active');assert.equal(bSession.value.currentRun.bridge.connected,true);assert.equal(bSession.value.applications.find(a=>a.appId==='mail').packageHash,selected.packageHash);assert.equal(bDrafts.ok,true);assert.deepEqual(bDrafts.value.items,[]);}
+  else{assert.deepEqual(bSession.value.applications,[]);assert.equal(bDrafts.ok,false);assert.equal(bDrafts.code,'SCOPE_DENIED');}
+  const oldSession=await app.invoke('applications.session',task.id);assert(oldSession.ok);assert.equal(oldSession.value.snapshotHash,fixed.value.snapshotHash);
+  assert.equal(oldSession.value.applications.find(a=>a.appId==='mail').packageHash,selected.packageHash);
+  const retained=await app.invoke('applications.draft',project.id,draft.id,draft.revision);assert(retained.ok);assert.equal(retained.value.draft.sourceTaskId,task.id);
+  const wrongProject=await app.invoke('applications.draft',other.id,draft.id,draft.revision);assert.equal(wrongProject.ok,false);assert(['SCOPE_DENIED','NOT_FOUND'].includes(wrongProject.code));if(selectedSecondProject){assert.equal(oldSession.value.currentRun.state,'active');assert.equal(oldSession.value.currentRun.bridge.connected,true);assert.notEqual(oldSession.value.currentRun.id,bSession.value.currentRun.id);}
+  result.sharedProjects={projectA:project.id,projectB:other.id,taskA:task.id,taskB:secondTask.id,bSession:bSession.value,bDraftList:bDrafts,wrongProjectDraft:wrongProject,aSessionAfterB:oldSession.value,bRequests};
+  if(sameCwdProjects){
+   const a=await app.invoke('tasks.get',task.id),b=await app.invoke('tasks.get',secondTask.id);assert.equal(a.cwd,cwd);assert.equal(b.cwd,cwd);assert.notEqual(a.projectId,b.projectId);assert.notEqual(a.dirId,b.dirId);assert.notEqual(a.nativeSessionId,b.nativeSessionId);
+   const standards=t=>t.runtimeSnapshot.skills.map(item=>({id:item.skillId,path:item.path,hash:item.hash,bytesSha256:sha(readFileSync(item.path))}));assert.deepEqual(standards(a),standardBefore);assert.deepEqual(standards(b),standardBefore);assert.equal(standardBefore.length,2);assert.equal(new Set(standardBefore.map(s=>s.id)).size,2);assert.equal(new Set(standardBefore.map(s=>s.path)).size,2);
+   for(const d of [oldSession.value,bSession.value]){const prep=d.currentRun.preparation.capabilities;assert.equal(prep.filter(c=>c.kind==='standard-skill').length,2);assert(prep.filter(c=>c.kind==='standard-skill').every(c=>c.state==='prepared'));if(selectedSecondProject){assert.equal(prep.filter(c=>c.kind==='application').length,1);const mail=d.applications.find(x=>x.appId==='mail');assert.equal(mail.skills.length,1);assert(!standardBefore.some(s=>s.path===mail.skills[0].projectionPath));}}
+   const am=a.runtimeSnapshot.mcp.map(m=>m.name),bm=b.runtimeSnapshot.mcp.map(m=>m.name);assert.equal(am.length,1);assert.equal(bm.length,1);assert.notEqual(am[0],bm[0]);assert(bRequests.some(r=>r.toolNames.some(n=>n.includes(bm[0]))));assert(bRequests.every(r=>r.toolNames.every(n=>!n.includes(am[0]))));
+   result.sameCwdIdentity={cwd,a,b,standardBefore,projectMcpA:am,projectMcpB:bm};checked('Two real native tasks share exact cwd but retain distinct project/directory/native/run identity and project MCP namespaces; standard Skill IDs/paths/hash/bytes stay deduplicated alongside one Mail Skill');
+  }
+
+  checked(selectedSecondProject?'Same App: two selected projects have simultaneously active native runs and authenticated application bridges':'Same App: unselected B native request has no application tools despite A fixed Skill projection existing');
+  checked(selectedSecondProject?'Same App: selected B draft list is empty and A draft access is denied; A original draft and fixed snapshot retained':'Same App: B draft list and A draft access denied; A original draft and fixed snapshot retained');
+ }
+
+ }
+ if(revokeCheck){
+  assert(!restartCheck&&!sharedProjectCheck&&!skillPhase&&!longNativeTail&&!unselectedProject,'Revocation fixture uses one selected active task');
+  stage='live-project-revocation';await progress();const original=result.nativeBoundSession;
+  const settings=await app.invoke('applications.projectSettings',project.id,'mail');assert(settings.ok);
+  const changed=await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:false,expectedRevision:settings.value.revision,connections:{foxmail:null,smtp:null}});assert(changed.ok);result.revokedSelection=changed.value;
+  const alive=await app.invoke('tasks.get',task.id);assert.equal(alive.ptyId,task.ptyId);assert.equal(alive.nativeSessionId,result.nativeBoundTask.nativeSessionId);
+  const text=marker+'_RESUME_READ: Try listing drafts once to check revoked capability, then reply with the completion marker. Do not create, modify or send anything.';
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:text})});true`);
+  await poll(async()=>(await app.output(task.ptyId)).includes(marker+'_RESUME_READ'),10000);
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'\r'})});true`);
+  await poll(async()=>result.nativeResumeOutputs?.length===1&&(await app.output(task.ptyId)).includes(marker+'_RESUMED_DONE'),30000);
+  assert(JSON.stringify(result.nativeResumeOutputs[0]).includes('SCOPE_DENIED'));assert(!JSON.stringify(result.nativeResumeOutputs[0]).includes(result.createdDraft.id));
+  const after=await app.invoke('applications.session',task.id);assert(after.ok);assert.equal(after.value.currentRun.id,original.currentRun.id);assert.equal(after.value.snapshotHash,original.snapshotHash);assert.equal((await app.invoke('tasks.get',task.id)).ptyId,task.ptyId);
+  const stored=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); print(json.dumps(c.execute('SELECT id,current_revision FROM mail_drafts WHERE project_id=?',(sys.argv[2],)).fetchall())); c.close()",join(userData,'smartdd.db'),project.id],{encoding:'utf8'}));assert.deepEqual(stored,[[result.createdDraft.id,result.createdDraft.revision]]);
+  result.liveRevocation={originalRunId:original.currentRun.id,after:after.value,toolResult:result.nativeResumeOutputs[0],stored};checked('Current project disable rejects a real subsequent native MCP call while preserving the running Agent, fixed snapshot and original draft');
+  if(restoreSelection){
+   stage='live-project-restoration';await progress();
+   const disabled=await app.invoke('applications.projectSettings',project.id,'mail');assert(disabled.ok);
+   const restored=await app.invoke('applications.select',{projectId:project.id,appId:'mail',enabled:true,expectedRevision:disabled.value.revision,connections:{foxmail:null,smtp:null}});assert(restored.ok);
+   result.restoringSelection=true;result.issuedResumeTool=null;result.nativeResumeOutputs=[];
+   const prompt=marker+'_RESUME_READ_RESTORED: List drafts once after the same project capability was restored. Do not create, modify or send anything.';
+   await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:prompt})});true`);
+   await poll(async()=>(await app.output(task.ptyId)).includes(marker+'_RESUME_READ_RESTORED'),10000);
+   await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'\r'})});true`);
+   await poll(async()=>result.nativeResumeOutputs?.length===1&&(await app.output(task.ptyId)).includes(marker+'_RESTORED_DONE'),30000);
+   assert(result.nativeResumeOutputs[0].output.includes(result.createdDraft.id));assert(!result.nativeResumeOutputs[0].output.includes('SCOPE_DENIED'));
+   const fresh=await app.invoke('applications.session',task.id);assert(fresh.ok);assert.equal(fresh.value.currentRun.id,original.currentRun.id);assert.equal(fresh.value.snapshotHash,original.snapshotHash);
+   const aliveAgain=await app.invoke('tasks.get',task.id);assert.equal(aliveAgain.ptyId,task.ptyId);assert.equal(aliveAgain.nativeSessionId,result.nativeBoundTask.nativeSessionId);
+   const drafts=await app.invoke('applications.drafts',project.id,{limit:50});assert(drafts.ok);assert.equal(drafts.value.items.length,1);assert.equal(drafts.value.items[0].id,result.createdDraft.id);assert.equal(drafts.value.items[0].revision,result.createdDraft.revision);
+   result.liveRestoration={selection:restored.value,diagnostic:fresh.value,toolResult:result.nativeResumeOutputs[0],drafts:drafts.value.items};
+   checked('Same native Agent and run regain explicit project capability after restoration, with original snapshot and unchanged draft');
+  }
+
+ }
+ if(restartCheck){
+  assert(!unselectedProject&&!sharedProjectCheck,'Restart mode uses one selected production Task');
+  stage='service-stop-before-host-restart';await progress();
+  if(bootstrapReplay){result.bootstrapBaselineBeforeBinding=result.nativeBoundSession.snapshotHash;result.nativeBoundSession=await bootstrapReplay.stable(app,task);await bootstrapReplay.phase(app,task,'original');}
+  const original=result.nativeBoundSession,nativeId=result.nativeBoundTask.nativeSessionId,oldPid=app.processId;
+  let oldCredential;
+  if(hostReplayCheck){const captured=await collectAndRestoreBrokerObserver(app);assert(captured?.restored&&captured.tokens.length>0,'Original bridge handshake must be observed');oldCredential=captured.tokens.at(-1);result.brokerObserver.originalRestored=true;result.oldCredential={sha256:sha(oldCredential.token),endpoint:oldCredential.endpoint,issuedAt:oldCredential.at};}
+  await app.invoke('tasks.kill',task.id);
+  await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.recentRuns.some(r=>r.id===original.currentRun.id&&r.state==='stopped');},30000);
+  const stopped=await app.invoke('tasks.get',task.id);assert.equal(stopped.nativeSessionId,nativeId);assert.equal(stopped.recovery,'resumable');
+  if(packageRepairCheck)await capturePackageRepair();
+  await writeFile(join(root,'electron-before-restart.txt'),app.logs());assert.deepEqual(app.rendererErrors,[]);
+  await app.close();result.firstHostExit=await app.waitForExit(5000);app=undefined;
+  if(packageRepairCheck){await rm(result.packageRepair.path,{recursive:true});assert.deepEqual(await packageTree(result.packageRepair.sourcePath),result.packageRepair.sourceFiles);result.packageRepair.removedCacheOnly=true;checked('Removed only this owned installed package after real CLI stop and observed host exit; trusted original distribution untouched');}
+  if(hostReplayCheck){
+   assert.equal(result.firstHostExit.code,0);
+   const endpointResult=await new Promise((resolve,reject)=>{const socket=connect(oldCredential.endpoint);const timer=setTimeout(()=>{socket.destroy();reject(Error('Closed endpoint probe timed out'));},3000);socket.once('connect',()=>{clearTimeout(timer);socket.destroy();reject(Error('Old broker endpoint still accepts connections after host exit'));});socket.once('error',error=>{clearTimeout(timer);socket.destroy();['ENOENT','ECONNREFUSED'].includes(error.code)?resolve(error.code):reject(error);});});
+   const projection=await readFile(result.issuedRead.path);assert.equal(sha(projection),result.issuedRead.sha256);
+   for(const forbidden of [oldCredential.token,marker+'_LOCAL_BODY',marker+'_LOCAL_DRAFT',result.createdDraft.id])assert(!projection.includes(forbidden),'Fixed Skill projection contains private run or business material');
+   result.closedEndpoint={endpoint:oldCredential.endpoint,result:endpointResult,hostExit:result.firstHostExit};result.projectionPrivacy={sha256:sha(projection),bytes:projection.length,unchanged:true,credentialAndBusinessCanariesAbsent:true};
+   checked('Exited host old endpoint rejects connections before restart; fixed Skill bytes contain neither issued credential nor created draft material');
+  }
+
+  stage='service-host-reopen';await progress();
+  if(restartExecutable){assert(restartAsar,'Pin new package hash');const nextApp=resolve(dirname(restartExecutable),'../..');const actual=sha(await readFile(join(nextApp,'Contents/Resources/app.asar')));assert.equal(actual,restartAsar);assert.notEqual(actual,result.asarSha256);result.upgradePackages={old:{path:appRoot,asar:result.asarSha256},current:{path:nextApp,asar:actual}};}
+  app=await openElectron({executable:restartExecutable??executable,userData,cwd,env:privateEnv,inspectMain:hostReplayCheck});installAppFocusGuard(app,result);
+  if(restartExecutable){const current=await app.invoke('applications.catalog');assert(current.ok);result.upgradePackages.currentCatalog=current.value;}
+  if(hostReplayCheck)await installBrokerObserver(app);
+  if(bootstrapReplay)await bootstrapReplay.install(app);
+  assert.notEqual(app.processId,oldPid);result.reopenedPid=app.processId;if(packageRepairCheck)await assertPackageRepaired();
+  const recovered=await app.invoke('tasks.get',task.id);assert.equal(recovered.nativeSessionId,nativeId);assert(!recovered.ptyId);
+  await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true`);
+  stage='service-resume-original-task';await progress();await app.invoke('tasks.open',{taskId:task.id,cols:100,rows:30});
+  const resumed=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.currentRun?.id!==original.currentRun.id&&d.value.currentRun?.bridge.connected?d.value:null;},45000);
+  task=await app.invoke('tasks.get',task.id);assert.equal(task.nativeSessionId,nativeId);assert(task.ptyId);
+  assert.equal(resumed.snapshotHash,original.snapshotHash);assert.equal(resumed.applications.find(a=>a.appId==='mail').packageHash,original.applications.find(a=>a.appId==='mail').packageHash);
+  const retained=await app.invoke('applications.draft',project.id,result.createdDraft.id,result.createdDraft.revision);assert(retained.ok);assert.equal(retained.value.draft.sourceTaskId,task.id);
+  result.restart={kind:'TaskService stop then harness SIGTERM host close and same isolated userData reopen; not UI quit',original,resumed,task,retainedDraftId:retained.value.draft.id};
+  if(hostReplayCheck){
+   const captured=await collectAndRestoreBrokerObserver(app);assert(captured?.restored&&captured.tokens.length>0,'Resumed bridge must receive a fresh actual credential');const fresh=captured.tokens.at(-1);result.brokerObserver.resumedRestored=true;
+   assert(fresh.token!==oldCredential.token,'Resumed credential differs');assert(fresh.endpoint!==oldCredential.endpoint,'Restart has a new owned endpoint');
+   const response=await replayOldCredential(fresh.endpoint,oldCredential.token);assert(response.status==='error'&&response.error.code==='AUTH_REQUIRED','Old credential must be rejected');
+   result.hostCredentialReplay={oldSha256:sha(oldCredential.token),freshSha256:sha(fresh.token),oldEndpoint:oldCredential.endpoint,newEndpoint:fresh.endpoint,response,oldRunId:original.currentRun.id,newRunId:resumed.currentRun.id};oldCredential=undefined;
+   checked('Actual host restart issues a different bridge credential and rejects the captured old credential on its new endpoint');
+  }
+  if(bootstrapReplay)await bootstrapReplay.phase(app,task,'resumed');
+
+  checked('Actual App host restart and TaskService resume preserve native identity, snapshot and draft; new run establishes real MCP bridge');
+  if(bridgeFaultCheck){
+   stage='owned-bridge-fault';await progress();
+   const rows=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); c.row_factory=sqlite3.Row; print(json.dumps([dict(r) for r in c.execute(\"SELECT process_id,pid,process_started_at FROM capability_run_processes WHERE run_id=? AND kind='bridge' AND state='active'\",(sys.argv[2],))])); c.close()",join(userData,'smartdd.db'),resumed.currentRun.id],{encoding:'utf8'}));
+   assert.equal(rows.length,1);const owned=rows[0];
+   const helper=join(appRoot,'Contents/Resources/native/willyou-process-identity');
+   const actual=JSON.parse(execFileSync(helper,[String(owned.pid)],{encoding:'utf8'}));
+   assert.equal(actual.state,'running');assert.equal(actual.startedAt,owned.process_started_at);assert.equal(actual.pid,owned.pid);
+   result.bridgeFault={kind:bridgeFaultSignal+' of this private current run bridge after kernel identity check',runId:resumed.currentRun.id,owned,actual};
+   process.kill(owned.pid,bridgeFaultSignal);
+   await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&!d.value.currentRun?.bridge.connected;},15000);
+   const alive=await app.invoke('tasks.get',task.id);assert.equal(alive.ptyId,task.ptyId);assert.equal(alive.nativeSessionId,task.nativeSessionId);
+  }
+  stage='service-resumed-read';await progress();
+  const text=marker+'_RESUME_READ: List the local drafts only. Do not create, change or send anything.';
+  // Trusted renderer's production PTY event, with both task and current PTY identity.
+  // Service integration only: this is not keyboard, focus or UI acceptance.
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:text})});true`);
+  await poll(async()=>(await app.output(task.ptyId)).includes(marker+'_RESUME_READ'),10000);
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'\r'})});true`);
+  await poll(async()=>result.nativeResumeOutputs?.length===1&&(await app.output(task.ptyId)).includes(marker+'_RESUMED_DONE'),30000);
+  if(bridgeFaultCheck)assert(/Transport closed/.test(JSON.stringify(result.nativeResumeOutputs[0].output)),'Native tool must report bridge failure');
+  else assert(result.nativeResumeOutputs[0].output.includes(result.createdDraft.id));
+  const after=await app.invoke('applications.session',task.id);assert(after.ok);assert.equal(after.value.currentRun.id,resumed.currentRun.id);
+  if(expectSkillRead){const evidence=after.value.applications.find(a=>a.appId==='mail').evidence;assert.equal(evidence.skillRead,'unverified');assert.deepEqual(evidence.skillReadObservations,[]);if(!expectSkillDiscovery)assert.equal(evidence.skillDiscovery,'unverified');else assert((evidence.skillDiscoveryObservations??[]).every(r=>r.runId===after.value.currentRun.id&&Date.parse(r.observedAt)>=Date.parse(after.value.currentRun.startedAt)));checked('New run after host restart does not reuse old native Skill-read evidence, even after a new successful MCP call');}
+  if(expectSkillHistory){const history=after.value.recentRuns.find(r=>r.id===original.currentRun.id);assert(history);assert.equal(history.skillObservationIssue,null);for(const kind of ['read','discovery']){const old=result.nativeSkillDiagnostic.applications.find(a=>a.appId==='mail').evidence[kind==='read'?'skillReadObservations':'skillDiscoveryObservations'];assert(old.length>0);assert(history.skillObservations.some(r=>r.kind===kind&&r.runId===original.currentRun.id&&r.recordHash===old[0].recordHash));}result.retainedSkillHistory=history;checked('Historical native discovery and reading metadata survive actual host restart and remain assigned to the old run');}
+  if(bridgeFaultCheck){assert.equal(after.value.currentRun.bridge.connected,false);if(expectRecoveryUnsupported)assert.equal(after.value.currentRun.bridge.issueCode,'RECOVERY_UNSUPPORTED','Unverified native reload must be explicitly diagnosed');assert.equal(after.value.applications.find(a=>a.appId==='mail').evidence.successfulToolRequests,0);assert.equal((await app.invoke('tasks.get',task.id)).ptyId,task.ptyId);}
+  else assert(after.value.applications.find(a=>a.appId==='mail').evidence.successfulToolRequests>=1);
+  const draftsAfter=await app.invoke('applications.drafts',project.id,{limit:50});assert(draftsAfter.ok);assert.equal(draftsAfter.value.items.length,1);assert.equal(draftsAfter.value.items[0].revision,result.createdDraft.revision);
+  result.resumedRead={inputLayer:'trusted renderer production PTY event; not UI',output:result.nativeResumeOutputs[0],session:after.value,draftCount:1};
+  checked(bridgeFaultCheck?'Actual owned bridge fault leaves native Agent running; tool reports failure, no false recovery or draft mutation':'Resumed actual Codex invokes production MCP list, returns original draft and does not duplicate or modify it');
+
+ }
+ if(restartExecutable){
+  stage='new-default-after-upgrade';await progress();
+  const writePrompt=marker+'_RESUME_WRITE: Update only the existing isolated draft subject and body. Do not send anything.';
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:writePrompt})});true`);
+  await poll(async()=>(await app.output(task.ptyId)).includes(marker+'_RESUME_WRITE'),10000);
+  await app.evaluate(`window.electronAPI.eventSend('pty:input',${JSON.stringify({taskId:task.id,ptyId:task.ptyId,data:'\r'})});true`);
+  await poll(async()=>result.nativeUpgradeWriteOutputs?.length===1,30000);
+  assert(JSON.stringify(result.nativeUpgradeWriteOutputs[0]).includes(result.createdDraft.id));
+  const updated=await app.invoke('applications.draft',project.id,result.createdDraft.id,result.createdDraft.revision+1);assert(updated.ok,JSON.stringify(updated));
+  assert.equal(updated.value.draft.revision,result.createdDraft.revision+1);assert.equal(updated.value.draft.content.subject,marker+'_UPDATED_SUBJECT');assert.equal(updated.value.draft.content.text.revision,sha(marker+'_UPDATED_BODY'));assert.equal(updated.value.draft.sourceTaskId,task.id);assert.equal(updated.value.draft.state,'draft');assert.equal(updated.value.draft.lastExecutionId,null);result.upgradedDraft=updated.value.draft;
+  const writeSession=await app.invoke('applications.session',task.id);assert(writeSession.ok);assert.equal(writeSession.value.snapshotHash,result.nativeBoundSession.snapshotHash);assert.equal(writeSession.value.applications.find(a=>a.appId==='mail').packageHash,result.nativeBoundSession.applications.find(a=>a.appId==='mail').packageHash);result.upgradeWriteSession=writeSession.value;
+  checked('After host upgrade the old fixed package writes the original draft through real Codex/MCP, increments exactly one revision and preserves task/snapshot without sending');
+  const original=result.nativeBoundSession;const oldPackage=original.applications.find(a=>a.appId==='mail').packageHash,currentDefault=result.upgradePackages.currentCatalog.find(a=>a.appId==='mail').defaultPackageHash;
+  assert.notEqual(oldPackage,currentDefault,'Use actual differing package versions for upgrade validation');
+  await app.invoke('tasks.kill',task.id);await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&!d.value.currentRun&&d.value.recentRuns.every(r=>['stopped','failed'].includes(r.state));},30000);
+  const created=await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:profile.id,firstMessage:marker+'_PROJECT_B: Reply only, do not modify files or drafts.',cols:100,rows:30});secondTask=created.task;
+  await poll(async()=>{secondTask=await app.invoke('tasks.get',secondTask.id);return secondTask.ptyId&&(await app.output(secondTask.ptyId)).includes(marker+'_PROJECT_B_DONE');},45000);
+  const current=await app.invoke('applications.session',secondTask.id),old=await app.invoke('applications.session',task.id);assert(current.ok&&old.ok);
+  assert.equal(current.value.applications.find(a=>a.appId==='mail').packageHash,currentDefault);assert(current.value.currentRun.bridge.connected);
+  assert.equal(old.value.applications.find(a=>a.appId==='mail').packageHash,oldPackage);assert.equal(old.value.snapshotHash,original.snapshotHash);
+  const retained=await app.invoke('applications.draft',project.id,result.createdDraft.id,result.upgradedDraft.revision);assert(retained.ok);assert.equal(retained.value.draft.sourceTaskId,task.id);assert.equal(retained.value.draft.contentHash,result.upgradedDraft.contentHash);
+  result.upgradePackages.newDefaultSession=current.value;result.upgradePackages.oldSessionAfterNew=old.value;
+  checked('New actual Codex session uses upgraded default package while old session hash and original draft remain fixed');
+ }
+ if(diagnosticUi){
+  assert(restartCheck&&expectSkillHistory,'UI history inspection requires the real restart fixture');stage='skill-history-ui';await progress();
+  await app.evaluate(`document.title='A · M10 · Skill证据隔离验收';true`);
+  const click=async(selector,text)=>{await app.waitFor(`Array.from(document.querySelectorAll(${JSON.stringify(selector)})).some(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width>0)`,15000);const p=await app.evaluate(`(()=>{const e=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width>0);e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(!e.contains(document.elementFromPoint(x,y))||e.matches(':disabled'))throw Error('UI control blocked');return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});};
+  const openHistory=async()=>{
+  await click('[data-testid=sidebar-task] .reference-task-label',task.title);
+  const action=await app.evaluate(`document.querySelector('[data-testid=task-applications]')?.textContent.trim()`);assert(action);await click('[data-testid=task-applications]',action);
+  await app.waitFor(`document.querySelector('dialog[open]')?.innerText.includes('Agent 读取 Skill：未验证')`,15000);
+  const historyLabel=await app.evaluate(`Array.from(document.querySelectorAll('dialog summary')).find(e=>e.textContent.startsWith('最近 '))?.textContent.trim()`);assert(historyLabel);await click('dialog summary',historyLabel);
+  await click('.m10-session-history summary','本运行 Skill 观察记录');
+  await app.waitFor(`document.querySelector('.m10-session-history')?.innerText.includes('原生清单发现')&&document.querySelector('.m10-session-history')?.innerText.includes('正文读取')`,10000);
+  };
+  for(const theme of ['ydark','ylight']){await app.invoke('appSettings.update','theme',theme);const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&document.documentElement.classList.contains(${JSON.stringify(theme)})`,20000,{navigation:true});await app.evaluate(`document.title='A · M10 · Skill证据隔离验收';true`);await openHistory();await app.screenshot(join(root,'skill-history-'+theme+'.png'));}
+  result.skillHistoryUi={taskId:task.id,oldRunId:result.retainedSkillHistory.id,currentRunId:result.resumedRead.session.currentRun.id,themeSetup:'settings RPC prerequisite; not settings UI acceptance',screenshots:['skill-history-ydark.png','skill-history-ylight.png']};
+  checked('Actual P09 UI opens retained discovery/read history in both themes while current Skill reading remains unverified');
+ }
+ }
+ if(expectBrokerAudit){
+  const rejected=[...(result.externalSkillScope?.external.responses.map(r=>r.response)??[]),...(result.hostCredentialReplay?[result.hostCredentialReplay.response]:[])];assert(rejected.length>0,'Audit mode requires denial scenarios');assert(rejected.every(r=>typeof r.auditId==='string'&&!r.auditUnavailable),'Every rejection must identify its persisted audit');
+  const rows=JSON.parse(execFileSync('/usr/bin/python3',['-c',"import sqlite3,sys,json; c=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True); c.row_factory=sqlite3.Row; print(json.dumps([dict(r) for r in c.execute('SELECT * FROM capability_broker_denials ORDER BY observed_at,audit_id')])); c.close()",join(userData,'smartdd.db')],{encoding:'utf8'}));
+  for(const response of rejected){const row=rows.find(r=>r.audit_id===response.auditId);assert(row,'Response audit ID must survive in the actual database');assert.equal(row.error_code,response.error.code);assert.equal(row.run_id,null);assert.equal(row.bridge_id,null);assert.deepEqual(Object.keys(row).sort(),['audit_id','host_generation','run_id','bridge_id','method','error_code','observed_at'].sort());}
+  assert(!JSON.stringify(rows).includes(marker));result.brokerDenialAudit={rows,expectedAuditIds:rejected.map(r=>r.auditId),scope:'read-only packaged SQLite; external callers remain unattributed; external pre-restart records survive host restart when enabled'};checked('Actual rejected wire responses correlate with durable redacted audit rows, including pre-restart rows');
+ }
+ assert.equal(await readFile(join(state,'config.toml'),'utf8'),config);const profileAfter=await readFile(join(state,'m10-native.config.toml'),'utf8');const expectedNotice=(dualStoreCheck||restartExecutable||(sameCwdProjects&&selectedSecondProject))?nativeNoticeState.replace('= 1\n','= 2\n'):nativeNoticeState;assert.equal(profileAfter,profileText+expectedNotice);result.nativeConfigWrite={actor:'actual isolated Codex TUI',historicalControl:'docs/里程碑/M10_三方应用接入/验收/证据/m10-packaged-native-task-t-20261021.json (prior control only; no new standalone control claimed)',beforeSha256:sha(profileText),afterSha256:sha(profileAfter),delta:expectedNotice};result.originalConfigBytesUnchanged={base:true,profile:false,businessFieldsPreserved:true};
+ if(userMcpCheck){
+  assert(restartCheck,'User MCP preservation covers launch and native resume');
+  const requests=result.requests.filter(r=>r.kind==='ui-task');
+  assert(requests.some(r=>!r.resumed&&r.userMcpVisible),'Original native session must discover the user MCP');
+  assert(requests.some(r=>r.resumed&&r.userMcpVisible),'Resumed native session must still discover the user MCP');
+  assert.equal(await readFile(skill,'utf8'),'---\nname: m10-owned-config\ndescription: Private configuration preservation marker.\n---\nNo action is required.\n');
+  assert.equal(await readFile(userMcpManifest,'utf8'),JSON.stringify({version:'1.0.0',marker:'user-owned-preserve',skillSha256:'synthetic'}));
+  result.userMcpPreservation={baseConfigSha256:sha(config),skillSha256:sha(await readFile(skill)),manifestSha256:sha(await readFile(userMcpManifest)),discoveredBeforeAndAfter:true,called:true};
+  assert(result.userMcpCalls.initial.output&&result.userMcpCalls.resumed.output);
+  checked('Actual Codex launch and same-ID resume call the enabled user MCP and return its original marker/hash while preserving user Skill, manifest and base config bytes');
+ }
+ checked('Base config bytes and original profile business fields retained; native TUI notice-only mutation recorded separately');
+ if(projectAvailabilityCheck){stage='project-availability-ui';await progress();const other=await app.invoke('projects.get',result.sharedProjects.projectB);await checkProjectAvailability({app,result,root,marker,probe:availability,project,other,task,connections:scopeConnections,click,key,poll,checked});}
+ if(legacyRegressionCheck){stage='legacy-affected-regression-ui';await progress();await checkLegacyRegression({app,result,root,cwd,project,task,secondTask,probe:legacy,marker,click,key,poll,checked});}
+ if(maintenanceCancelUi){stage='maintenance-wait-ui';await progress();await checkMaintenanceWaitUi({app,result,root,userData,executable,privateEnv,task,probe:maintenanceProbe,marker,click,key,poll,checked,dark:maintenanceDark});}
+ if(diagnosticClipboardUiCheck){stage='diagnostic-clipboard-ui';await progress();await checkDiagnosticClipboardUi({app,result,root,userData,task,poll,checked});}
+ if(transferUiCheck){stage='transfer-ui';await progress();await checkTransferUi({app,result,root,userData,project,profile,task,poll,checked,formatOnly:transferFormatOnly});}
+ if(nativeExitUiCheck){stage='native-exit-ui';await progress();await checkNativeExitUi({app,result,root,userData,task,project,profile,marker,probe:nativeExitUiProbe,poll,checked});}
+ if(nativeUserOriginCheck){stage='native-user-origin';await progress();await checkNativeUserOrigin({app,result,root,userData,state,project,profile,task,prompt,marker,probe:nativeUserOriginProbe,poll,checked});}
+ if(draftLifecycleCheck){stage='draft-lifecycle-native';await progress();await checkDraftLifecycle({app,result,root,userData,state,project,profile,task,marker,probe:draftLifecycleProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(cacheAgentsCheck){stage='cache-agents-native';await progress();await checkCacheAgents({app,result,root,userData,state,project,profile,task,marker,probe:cacheAgents,poll,checked,waiterCancellation:cacheWaitersCheck,rangeRevocation:cacheRangesCheck,sourceMutation:cacheMutationCheck,sourceFaults:cacheSourceFaultsCheck,diskFull:cacheDiskFullCheck,quotaPressure:cacheQuotaCheck,resources:join(appRoot,'Contents/Resources'),reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(connectionLifecycleCheck){stage='connection-lifecycle-service';await progress();await checkConnectionLifecycle({app,result,root,userData,state,project,profile,task,marker,probe:availability,poll,checked});}
+ if(scopeRestartCheck){
+  stage='project-scope-restart';await progress();assert(result.sharedProjects&&!selectedSecondProject);assert(result.sharedProjects.bRequests.every(request=>request.managedSkillNames.length===0),'B native catalog must not contain A managed Skills');
+  const query=q=>JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),q],{encoding:'utf8'})||'[]');
+  const tables=['application_connections','application_project_settings','application_project_bindings','capability_active_packages','capability_session_snapshots','capability_session_refs','mail_drafts'];
+  const truth=()=>Object.fromEntries(tables.map(name=>[name,query('SELECT * FROM '+name+' ORDER BY rowid')]));
+  const before=truth();assert.equal(before.application_connections.length,2);assert.equal(before.application_project_bindings.filter(row=>row.project_id===project.id&&row.connection_id===scopeConnections[0].id).length,1);assert.equal(before.application_project_bindings.filter(row=>row.project_id===result.sharedProjects.projectB).length,0);
+  const dbPaths=()=>{const output=execFileSync('/usr/sbin/lsof',['-a','-p',String(app.processId),'-Fn'],{encoding:'utf8',timeout:5000});return [...new Set(output.split('\n').filter(line=>line.startsWith('n')&&line.endsWith('/smartdd.db')).map(line=>line.slice(1)))];};
+  const databaseBefore=classifyScopeDatabases(dbPaths());result.scopeRestart={before,databaseBefore,bNativeSkillCatalogEmpty:true};checked('Two global private connections, selected A and unselected B retain distinct actual native capability catalogs; only A has an explicit binding');
+  await app.invoke('tasks.kill',secondTask.id);await app.invoke('tasks.kill',task.id);await writeFile(join(root,'scope-old-host.log'),app.logs());await app.mainEvaluate("(()=>{setTimeout(()=>process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron').app.quit(),30);return true})()");const exit=await app.waitForExit();assert.equal(exit.code,0);result.scopeRestart.normalExit=exit;await app.close();app=undefined;
+  app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);assert.deepEqual(truth(),before);const databaseAfter=classifyScopeDatabases(dbPaths());
+  const a=await app.invoke('applications.session',task.id),b=await app.invoke('applications.session',secondTask.id);assert(a.ok&&b.ok);assert.equal(a.value.snapshotHash,result.sharedProjects.aSessionAfterB.snapshotHash);assert.deepEqual(b.value.applications,[]);assert.equal((await app.invoke('applications.drafts',result.sharedProjects.projectB,{limit:50})).code,'SCOPE_DENIED');
+  result.scopeRestart.after=truth();result.scopeRestart.databaseAfter=databaseAfter;result.scopeRestart.aSession=a.value;result.scopeRestart.bSession=b.value;await writeFile(join(root,'scope-new-host.log'),app.logs());checked('Actual host normal exit/restart keeps both private connections, A/B project selection, fixed snapshots, original draft and one exact explicit SQLite path');
+ }
+ if(complexPaths){
+  const locations=readdirSync(root,{recursive:true}).filter(p=>typeof p==='string'&&p.endsWith('smartdd.db')).map(p=>join(root,p));
+  // A verified migration backup is retained data, never a fallback business DB.
+  // Apply the same strict receipt/hash classification in every long-U mode.
+  const classified=classifyScopeDatabases(locations);
+  if(scopeRestartCheck)result.scopeRestart.diskDatabases=classified;
+  assert(Buffer.byteLength(userData)>256);
+  result.pathVerification={userDataBytes:Buffer.byteLength(userData),databaseLocations:classified.primary,verifiedBackupLocations:classified.backups,explicitUserData:true,spacesAndChinese:true};
+  checked('Long explicit userData with Chinese and spaces retains one SmartDD database through actual native handshake and host restart');
+ }
+ if(scopeUiCheck){
+  const cRoot=join(userData,'capabilities'),rows=JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),'SELECT app_id,version,package_hash,relative_path FROM capability_packages ORDER BY app_id'],{encoding:'utf8'}));
+  for(const row of rows){assert.equal(row.relative_path,'apps/'+row.app_id+'/'+row.version+'/'+row.package_hash);const manifest=JSON.parse(await readFile(join(cRoot,row.relative_path,'manifest.json'),'utf8'));assert.equal(manifest.appId,row.app_id);assert.equal(manifest.version,row.version);}
+  const a=await app.invoke('tasks.get',task.id),b=await app.invoke('tasks.get',secondTask.id);assert.equal(a.cwd,cwd);assert.equal(b.cwd,join(root,'project-b'));const identities=JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),'SELECT id,state_root FROM tasks'],{encoding:'utf8'}));assert.equal(identities.find(t=>t.id===a.id).state_root,state);assert.equal(identities.find(t=>t.id===b.id).state_root,state);assert.notEqual(a.nativeSessionId,b.nativeSessionId);
+  const sPaths=[a,b].map(t=>join(cRoot,'sessions',t.id,'snapshot.json'));for(const path of sPaths)assert((await readFile(path)).length>0);assert(result.nativeBoundTask.runtimeSnapshot.manifestPath.startsWith(join(cRoot,'runs',project.id,task.id)+'/'));
+  result.scopePaths={U:userData,C:cRoot,H:home,R:join(appRoot,'Contents/Resources'),W:[a.cwd,b.cwd],N:state,S:sPaths,T:result.nativeBoundTask.runtimeSnapshot.manifestPath,packages:rows};await app.screenshot(join(root,'t48-after-restart.png'));checked('T48 design3 path mapping preserves global immutable C packages, separate project W/session S/run T/native N and exact explicit U after normal restart');
+ }
+ if(bootstrapReplay)await bootstrapReplay.finish(app);
+ if(projectResources)await projectResources.run({app,task,result,project,poll,checked});
+ if(zenSwitchCheck){stage='tl-scoped-loopback-mail';await progress();await checkZenTaoSwitch({app,result,root,userData,home,project,profile,task,marker,probe:zenSwitchProbe,poll,checked,executionMode:tlMode,approval:tlApproval,gates:zenSwitchGatesCheck,wire:zenSwitchWireCheck,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(projectLifecycleCheck){stage='shared-project-connection-lifecycle';await progress();await checkProjectLifecycle({app,result,root,userData,home,state,project,profile,task,marker,probe:projectLifecycleProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(savedQueryDaysCheck){stage='saved-query-days-restarts';await progress();await checkSavedQueryDays({app,result,root,userData,home,state,project,profile,task,marker,probe:savedQueryDaysProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(accountIsolationCheck){stage='single-account-source-isolation';await progress();await checkAccountIsolation({app,result,root,userData,home,state,project,profile,task,marker,probe:accountIsolationProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(inflightDefaultCheck){stage='inflight-saved-default';await progress();await checkInflightDefault({app,result,root,userData,home,state,project,profile,task,marker,probe:inflightDefaultProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(concurrentDefaultCheck){stage='concurrent-saved-default';await progress();await checkConcurrentDefault({app,result,root,userData,home,state,project,profile,task,marker,probe:concurrentDefaultProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(missingMailDateCheck){stage='missing-mail-date';await progress();await checkMissingMailDate({app,result,root,userData,home,project,task,marker,probe:missingMailDateProbe,poll,checked});}
+ if(mailMimeCheck){stage='mail-mime';await progress();await checkMailMime({app,result,root,userData,home,project,task,marker,probe:mailMimeProbe,poll,checked});}
+ if(mailIncompleteCheck){stage='mail-incomplete';await progress();await checkIncompleteMime({app,result,root,userData,home,project,task,marker,probe:mailIncompleteProbe,poll,checked});}
+ if(earlyResumeStopCheck){stage='early-resume-stop';await progress();await checkEarlyResumeStop({app,result,root,userData,task,project,marker,probe:concurrentProbe,poll,checked});}
+ if(concurrentVersionsCheck){stage='production-concurrent-versions';await progress();await checkConcurrentVersions({app,result,root,userData,home,state,resources:join(appRoot,'Contents/Resources'),task,project,profile,marker,probe:concurrentProbe,poll,checked,projectBCheck:concurrentProjectCheck,trace:concurrentTrace});}
+ if(fourHistoryCheck){stage='four-real-histories';await progress();await checkFourNativeHistories({app,result,root,userData,home,state,resources:join(appRoot,'Contents/Resources'),task,project,profile,marker,probe:historyProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(historyReferenceCheck){stage='native-history-reference-faults';await progress();await checkHistoryReferences({app,result,root,userData,home,state,resources:join(appRoot,'Contents/Resources'),probe:historyProbe,marker,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
+ if(retryAfterCheck){stage='retry-after';await progress();await checkRetryAfterNative({app,root,userData,state,task,profile,project,marker,probe:availability,poll,checked,result,ui:retryDiagnosticsUiCheck?{click,key}:null});}
+ if(discoveryOrphanCheck){stage='orphan-discovery';await progress();await checkOrphanDiscovery({root,userData,home,state,cwd,executable,cli,privateEnv,args,task,result,poll,checked,openElectron,getApp:()=>app,setApp:value=>{app=value;},marker,originalProfile:profileText,kind:discoveryOrphanKind});}
+ if(discoveryCrashPhase){stage='publication-crash';await progress();await (publisherGuardCheck?checkPublicationGuard:checkPublicationCrash)({root,userData,home,state,cwd,task,profile,phase:discoveryCrashPhase,executable,privateEnv,marker,poll,checked,openElectron,getApp:()=>app,setApp:value=>{app=value;},result,originalProfile:profileText});}
+ if(nodeModeUnavailableCheck)await checkUnavailableNodeMode({app,task,result,userData,checked,poll,collectObserver:collectAndRestoreBrokerObserver,restoreRuntime:nodeModeRestoreExecutable?async()=>{
+  const restoredRoot=resolve(dirname(nodeModeRestoreExecutable),'../..'),asarSha256=sha(await readFile(join(restoredRoot,'Contents/Resources/app.asar')));assert.equal(asarSha256,nodeModeRestoreAsar);assert.equal(asarSha256,result.asarSha256,'Repair changes only runtime fuse/signature, not business source');
+  await app.close();app=await openElectron({executable:nodeModeRestoreExecutable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);result.nodeModeRestoredHost={pid:app.processId,executable:nodeModeRestoreExecutable,asarSha256};return app;
+ }:undefined});
+ assert.deepEqual(app.rendererErrors,[]);result.status=result.nodeModeUnavailable?.hasUnresolvedWindow?'incomplete-native-lifecycle':'passed-partial';if(result.status==='incomplete-native-lifecycle')process.exitCode=3;
+}catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;if(error.electronStartupProcess)result.electronStartupProcess=error.electronStartupProcess;if(error.electronStartupLogs)result.electronStartupLogs=error.electronStartupLogs;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{result.dom=await app.evaluate('document.body.innerText');if(task?.ptyId)await writeFile(join(root,'terminal-failure.txt'),await app.output(task.ptyId));await app.screenshot(join(root,'failure.png'));}catch{}}
+finally{if(cancelFreezeUi&&app){try{result.cancelUiGuard=await app.mainEvaluate('({calls:globalThis.__ouCancel?.calls,records:globalThis.__ouCancel?.records})');assert.deepEqual(result.cancelUiGuard.calls,[]);await app.mainEvaluate('globalThis.__ouCancel.restore();true');}catch(error){result.cancelUiGuardError=String(error);result.status='failed';process.exitCode=1;}}
+ if(app)try{result.tgProfileGuard=await app.mainEvaluate('globalThis.__tgProfileGuard.restore()');assert.deepEqual(result.tgProfileGuard.forbidden,[]);}catch(error){result.tgProfileGuardError=String(error);result.status='failed';process.exitCode=1;}
+ if(app&&historyCaptureCheck)try{result.historyCaptureFinalCleanup=await restoreHistoryCapture(app);}catch(error){result.historyCaptureCleanupError=String(error);}
+ if(app){if(bootstrapReplay)try{await bootstrapReplay.restore(app);result.bootstrapObserverFinalCleanup=true;}catch{result.bootstrapObserverFinalCleanup=false;}if(hostReplayCheck||nodeModeUnavailableCheck)try{await collectAndRestoreBrokerObserver(app);result.brokerObserverFinalCleanup=true;}catch{result.brokerObserverFinalCleanup=false;}if(secondTask?.id)try{result.cleanupSecondTask=await app.invoke('tasks.kill',secondTask.id);}catch(e){result.cleanupSecondTaskError=String(e);}if(task?.id)try{result.cleanupTask=await app.invoke('tasks.kill',task.id);}catch(e){result.cleanupTaskError=String(e);}result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.ownAppCleanupComplete=true;}
+ if(cacheDiskFullCheck)try{await finishCacheSpaceVolume(result);}catch(error){result.cacheVolumeCleanupError=String(error);result.status='failed';process.exitCode=1;}
+ if(projectResources)await projectResources.close();
+ for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');await writeFile('/private/tmp/willyou-m10-native-service-latest-result.txt',join(root,'result.json')+'\n');console.log(JSON.stringify({status:result.status,stage,checks:result.checks.length,error:result.error,result:join(root,'result.json')}));
+}

@@ -1,0 +1,77 @@
+{
+  "time": "2026-10-29T05:27:34.048189+00:00",
+  "branch": "feature/0.0.2",
+  "commit": "f1f1728d68a8595e665d4833dff048189e63e0f8",
+  "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "checks": {
+    "selected_sources": {
+      "count": 1496,
+      "mismatches": []
+    },
+    "packaged_resources": {
+      "count": 19,
+      "mismatches": [],
+      "app": "/private/tmp/willyou-m10-so-package-20261029/mac-arm64/WillYou.app",
+      "asarSha256": "f423b16dd4cdec19769687340aa2f935d0eddfbbd0ce450f9160f13bc361a8ff"
+    },
+    "prototype_static": {
+      "count": 327,
+      "root": "/Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/dist/client",
+      "mismatches": []
+    },
+    "formal_ledger": {
+      "total": 72,
+      "passed": 48,
+      "remaining": 24,
+      "completionPercent": 66.67,
+      "pending": [
+        "T01",
+        "T02",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T18",
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T24",
+        "T37",
+        "T53",
+        "T57",
+        "T58",
+        "T67"
+      ],
+      "historicalReplaced": [
+        "T45"
+      ],
+      "coreFields": 504,
+      "coreDifferences": [],
+      "sha256": "5ac0471e40673f16df4cec7c1ef6379aff9dffe85d73019d61e896144eb8a153"
+    }
+  },
+  "prerequisiteSources": {
+    "src/main/core/capabilities/capability-service.ts": "14ba9368ca26bec4778181fb6a576dd7aa096e5f9e295608feaea7509e1c3343",
+    "resources/standard-skills/project-db-diagnostics/scripts/db_query.py": "d1bf357f923ca370b823876f10c3d304865a28fa62e5dc1a02f199d3f094fc04",
+    "src/main/core/projects/transfer-service.ts": "f415dee2e35296de5cff42ef032ec12ca1a466ae2a5bce75e2c2d9ce18027326"
+  },
+  "facts": {
+    "credentialBinding": "capability-service.ts bindSecret requires persisted database password before session preparation",
+    "auditBeforeQuery": "db_query.py main appends attempted audit before execute_query and connection",
+    "transferGuard": "transfer-service.ts snapshot and commit require SecretsStore.assertAvailable",
+    "limits": "Read-only source review; no safeStorage call, keychain interaction, database/SSH network attempt, export, or new acceptance test."
+  },
+  "testExecutions": 0,
+  "formalNewPasses": 0,
+  "auditToolErrors": [
+    "First audit used dist rather than configured dist/client; all prototype misses were incorrect root selection.",
+    "First parser matched T72补充 and overwrote original T72; first count 47 was invalid. Original case and product were unchanged."
+  ]
+}

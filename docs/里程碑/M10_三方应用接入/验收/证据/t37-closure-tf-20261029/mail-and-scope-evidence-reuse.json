@@ -1,0 +1,52 @@
+{
+  "reusedOriginalFiles": [
+    {
+      "path": "docs/里程碑/M10_三方应用接入/验收/证据/terminal-scope-nx-20261027/actual/willyou-m10-native-terminal-2yMFcQ/result.json",
+      "sha256": "70f8fe97c1b6901532d16688f0afc9cba1c6e13af2e3e88ccf5072788939ae2e"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/验收/证据/terminal-scope-nx-20261027/actual/willyou-m10-native-terminal-CrRtLD/result.json",
+      "sha256": "9a25d44eda0c09767d76b371a240d195cc8f39d52bec17a120999913849a89e6"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/验收/证据/terminal-scope-nx-20261027/verification.json",
+      "sha256": "86e1d3a9acde970f0e18b85c049e351dbc7b76dc920ece0a855860b638324641"
+    }
+  ],
+  "wholeFilesUnchanged": [
+    "src/main/core/applications/terminal-insertion.ts",
+    "src/main/core/applications/terminal-sources.ts",
+    "src/main/core/applications/mail-read-data-service.ts",
+    "src/main/core/applications/read-context-recovery.ts",
+    "src/shared/application-terminal.ts",
+    "scripts/applications/fixtures/terminal-scope-ui.mjs"
+  ],
+  "bindInsertFocusBlock": {
+    "old": "docs/里程碑/M10_三方应用接入/验收/证据/ui-focus-nw-20261027/source-overlays/src/renderer/features/applications/terminal-insertion.tsx",
+    "current": "src/renderer/features/applications/terminal-insertion.tsx",
+    "sha256": "3a1e43a4599647d34a4b58e8b6dddc28851f5509c9bd2d006e7cd12716983017"
+  },
+  "dialogFocusLifecycleBlock": {
+    "old": "docs/里程碑/M10_三方应用接入/验收/证据/ui-focus-nw-20261027/source-overlays/src/renderer/features/applications/controls.tsx",
+    "current": "src/renderer/features/applications/controls.tsx",
+    "sha256": "4ecedbfd0e659bcc478eb328b2f711d5ea7e6289876cf1f821bb45cc2e658d54"
+  },
+  "mailButtonTypedSourceProps": {
+    "old": "docs/里程碑/M10_三方应用接入/验收/证据/cache-business-ui-nz-20261027/mail-panel.tsx.before",
+    "current": "src/renderer/features/applications/mail-panel.tsx",
+    "sha256": "5c3b0a0458d2482ae0cb7f5a67ec2581a1193b2f636feccac9c9be3c9139c74f"
+  },
+  "changedBoundary": "Not whole-App equivalence. TaskService has later cancellation/startup changes; current true Codex/UI covers launch/stop and shared insertion. Mail read/loading/history guards changed; current3 mailbox component tests cover the normal/error/history entry while the normal Mail reference source/props and host resolution remain unchanged. Dialog changed heading/class/backdrop; focus lifecycle unchanged and current Bug/Story actual dialogs rechecked. No new reply/import prerequisite.",
+  "executionContextReview": {
+    "old": "docs/里程碑/M10_三方应用接入/验收/证据/inflight-default-nq-20261027/executed-source/src/main/core/applications/execution-context.ts",
+    "oldMatchesNXBaseline": true,
+    "diff": "context-diff.patch",
+    "facts": [
+      "terminal-sources mail reference withUi does not pass retry",
+      "current withUi only creates retry timeout and retry loop when retry is set",
+      "normal source operations/selection stamp/project/send semantics remain the same",
+      "new cancellation timeout reason and selection-management error classification are explicit changes,not whole-file equivalence"
+    ],
+    "currentSoftware": "Current mail-read-data.test.ts61/61 passed (223.54s test time/224.93s total), exercising actual app.contexts.withUi mail.read without retry;ui-read-requests10/10 separately covers request lifecycle. Nonexistent execution-context.test.ts filter was ignored by Vitest and is not counted as an executed file."
+  }
+}
