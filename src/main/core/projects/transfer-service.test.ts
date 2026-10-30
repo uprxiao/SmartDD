@@ -49,7 +49,9 @@ function ready(svc: ProjectTransferService, preview: TransferPreview, name: stri
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'willyou-m8-')); clock = Date.now(); });
 afterEach(() => { services.splice(0).forEach(s => s.disposeAll()); clients.splice(0).forEach(c => c.close()); rmSync(root, { recursive: true, force: true }); });
 
-describe('M8 real SQLite transfer services', () => {
+// These integration cases retain the production scrypt cost. A fault/retry
+// round trip can derive five keys, so allow for the hosted runner's CPU budget.
+describe('M8 real SQLite transfer services', { timeout: 20_000 }, () => {
   it('I01/D07/S01 imports atomically with new ids, receiver encryption, no tasks or old default changes', async () => {
     const a = setup('A'), b = setup('B');
     const preview = await unlock(a.svc), draft = ready(a.svc, preview);
