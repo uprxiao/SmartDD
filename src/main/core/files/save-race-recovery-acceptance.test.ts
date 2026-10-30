@@ -60,6 +60,8 @@ async function coldReplay(f:ReturnType<typeof fixture>,input:Awaited<ReturnType<
  return restarted.save('one',{...input,ref:doc.ref});
 }
 describe.skipIf(process.platform!=='darwin')('Y02 real competing writers and pre-commit capacity',()=>{
+ // Writer startup permits 12s and each native request permits 15s. The outer
+ // integration budget must cover those stages; their own deadlines stay intact.
  it.each(['before-swap-path','dual-inplace','dual-replace'] as const)('%s preserves current/displaced/independent local versions without a second swap',async variant=>{
   let writers:SaveWriterBatch,writerError:string|undefined;const phase=variant==='before-swap-path'?'before-swap':'swapped',f=fixture(phase,()=>{try{writers.finishSync();}catch(error){writerError=String(error);}}),{input}=await openInput(f),specifications=variant==='before-swap-path'?[{mode:'path-inplace' as const,text:PATH}]:[{mode:'old-fd' as const,text:OLD},{mode:variant==='dual-inplace'?'path-inplace' as const:'path-replace' as const,text:PATH}];
   writers=await prepareSaveWriters(f.base,join(f.root,'value.txt'),specifications);cleanups.push(()=>writers.cancel());const original=version(join(f.root,'value.txt'));for(const writer of writers.evidence().writers)expect(writer.ready.identity.inode).toBe(original.inode);
@@ -68,7 +70,7 @@ describe.skipIf(process.platform!=='darwin')('Y02 real competing writers and pre
   const hotReplay=await f.service.save('one',input);expect(hotReplay).toEqual(receipt);const blocked=await f.service.save('one',{...input,opId:randomUUID()});expect(blocked.state).toBe('conflict');expect(blocked.recoveryId).toBe(input.opId);expect(f.broker.saveCalls).toBe(1);
   const inspection=await f.service.recovery.inspect({projectKey:recoveryProjectKey('race'),id:input.opId,requestId:randomUUID()});expect(inspection.materials.find(x=>x.kind==='displaced')?.preview).toBe(variant==='before-swap-path'?PATH:OLD);expect(savedMaterials(f,input.opId)).toEqual(before);
   const cold=await coldReplay(f,input);expect(cold).toEqual(receipt);expect(savedMaterials(f,input.opId)).toEqual(before);Object.assign(rows.at(-1)!,{inspection,hotReplay,blocked,cold,after:savedMaterials(f,input.opId),pass:true});
- });
+ },30_000);
  it('rejects a known changed base before native save while preserving the already durable local checkpoint',async()=>{
   const f=fixture(null),{doc,input,checkpoint}=await openInput(f),writers=await prepareSaveWriters(f.base,join(f.root,'value.txt'),[{mode:'path-inplace',text:PATH}]);cleanups.push(()=>writers.cancel());await writers.release();const externalWriters=await writers.wait(),before=version(join(f.root,'value.txt')),receipt=await f.service.save('one',input);
   expect(receipt.state).toBe('conflict');expect(receipt.recoveryId).toBeUndefined();expect(f.broker.saveCalls).toBe(0);expect(version(join(f.root,'value.txt'))).toEqual(before);expect(readdirSync(f.root)).toEqual(['value.txt']);const draft=await f.service.readDraft('one',doc.ref,checkpoint!.draftId);expect(Buffer.from(draft.base64,'base64').toString()).toBe(L);expect(await f.service.save('one',input)).toEqual(receipt);

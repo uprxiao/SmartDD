@@ -16,5 +16,11 @@ export default defineConfig({
       '@renderer': resolve('src/renderer'),
     },
   },
-  test: { include: ['src/**/*.test.{ts,tsx}'], environment: 'node' },
+  test: {
+    include: ['src/**/*.test.{ts,tsx}'],
+    environment: 'node',
+    // Native fixtures launch helpers and competing writers. Keep CI resource
+    // contention from consuming their bounded transaction-gate waits.
+    maxWorkers: 2,
+  },
 });
