@@ -1,0 +1,42 @@
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+(node:84621) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: scroll.current.scrollTo is not a function
+ ❯ src/renderer/features/files/pdf/preview.tsx:31:51
+     29|   const goto = useCallback((value: number) => {
+     30|     const next = clampPdfPage(value, total); setPage(next); buffer.upd…
+     31|     if (!review && scroll.current) scroll.current.scrollTo({ top: offs…
+       |                                                   ^
+     32|   }, [buffer, offsets, total, review]);
+     33|   const syncVisiblePage = useCallback((node: HTMLDivElement) => {
+ ❯ onClick src/renderer/features/files/pdf/preview.tsx:156:451
+ ❯ executeDispatch node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20804:9
+ ❯ runWithFiberInDEV node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ processDispatchQueue node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20854:19
+ ❯ node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+ ❯ batchedUpdates$1 node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:3437:40
+ ❯ dispatchEventForPluginEventSystem node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21008:7
+ ❯ dispatchEvent node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:26142:11
+ ❯ dispatchDiscreteEvent node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:26110:11
+
+This error originated in "src/renderer/features/files/pdf/controls-acceptance.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "T08 resynchronizes after a large scroll mounts a previously virtualized page". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  5 passed (5)
+      Tests  58 passed (58)
+     Errors  1 error
+   Start at  05:56:32
+   Duration  1.25s (transform 343ms, setup 0ms, import 1.04s, tests 811ms, environment 1.23s)
+

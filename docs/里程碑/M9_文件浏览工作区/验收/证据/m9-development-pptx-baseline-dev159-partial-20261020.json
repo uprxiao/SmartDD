@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-19T18:16:02.647103+00:00",
+  "caseId": "M9-T-J02",
+  "status": "partial U/I passed;A unexecuted",
+  "revision": "R3.4/R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r95-build/mac-arm64/WillYou.app",
+  "productionSourceChanged": false,
+  "r95PrebuildInputsVerified": 1340,
+  "rows": [
+    {
+      "scenario": "matching",
+      "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+      "savedHash": "f0c9924bd3e00187ee741f1277e1319d44ee6e6b5ec953e825096ae2fdfef39d",
+      "version": 1,
+      "pass": true
+    },
+    {
+      "scenario": "different-source",
+      "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+      "actualHash": "8446b15b0602fba29e42815c06153a0c258e3e2eb47185cbf01638c135b1d93b",
+      "error": "FileError: [CHANGED] Resource revision changed",
+      "pass": true
+    },
+    {
+      "scenario": "empty-hash",
+      "rejectedByOriginalSchema": true,
+      "error": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"invalid_format\",\n    \"format\": \"regex\",\n    \"pattern\": \"/^[a-f0-9]{64}$/\",\n    \"path\": [\n      \"baseHash\"\n    ],\n    \"message\": \"Invalid string: must match pattern /^[a-f0-9]{64}$/\"\n  }\n]",
+      "sourceUnchanged": true,
+      "pass": true
+    }
+  ],
+  "counts": "Formal265/419,151unexecuted+3blocked unchanged;these3contractscenarios are not3newformalcase passes or extraVitest tests.",
+  "boundary": "Actual original schema + native FileService/source revision guard/packaged PPTX Worker. Matching source real edit/save/independent package read; source changed after file open rejects before owner remains; empty baseline schema rejects before Worker creation. Synthetic private fixtures only; no renderer or App interaction claimed. Standalone probe compiled from exact current main source with local esbuild; original source/schema/native/packaged Worker used, no renderer mock called. No UI/visual/currentCodex/model/externalservice/clipboard or release.",
+  "next": "After W28 GUI batch completes, A checks actual matching-baseline editing/save and two negative initial-baseline states. Mismatch can delay original file-open metadata while real synthetic file changes; emptybaseline needs explicitly recorded one-field provider response corruption without fabricating success/write or changing original main document record. Keep fault/auth/input/output changes and normal UI separate. Do not countAuntilactuallyexecuted.",
+  "artifacts": {
+    "willyou-dev159-baseline-native.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-baseline-dev159-partial/willyou-dev159-baseline-native.ts",
+      "sha256": "ca9551a2a8b2168524d4b46f9776685554264ed004ebc3a89cd56f6d35810dc8",
+      "bytes": 5656
+    },
+    "willyou-dev159-build-native-probe.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-baseline-dev159-partial/willyou-dev159-build-native-probe.mjs",
+      "sha256": "545f10d887edd0c75fb44abdd8fc6f4b6d4a655473cb2efc0cca03758d4b9d84",
+      "bytes": 655
+    },
+    "willyou-dev159-baseline-native.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-baseline-dev159-partial/willyou-dev159-baseline-native.cjs",
+      "sha256": "6eb8b08807d711249ba74dbf5dcb02b9c06ff460f67067b63b86a88d81b77980",
+      "bytes": 2757483
+    },
+    "willyou-dev159-baseline-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-baseline-dev159-partial/willyou-dev159-baseline-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "willyou-dev159-baseline-native.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-baseline-dev159-partial/willyou-dev159-baseline-native.log",
+      "sha256": "d0a61429988d0ecc480a24c0145dfa202d7f1e5126c5faa11d46c0c38ba1de8a",
+      "bytes": 30
+    },
+    "willyou-dev159-baseline-native-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-baseline-dev159-partial/willyou-dev159-baseline-native-result.json",
+      "sha256": "8f3a4c6cd880c6e7078b6f2a06c87cfa340a7ba4677114bc7fbf716caf274387",
+      "bytes": 1531
+    }
+  }
+}

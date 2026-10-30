@@ -1,0 +1,92 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/external-tree-refresh-acceptance.test.tsx -t 'unobserved replacement|original inode|before saving without|between main' --reporter=default --reporter=json --outputFile=/private/tmp/willyou-replacement-adjacent-red-tests.json
+
+[1018/134726.197537:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/134726.316099:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (14 tests | 3 failed | 10 skipped) 733ms
+     ↓ B08 'ordinary writer' / 'native watch' updates create/delete/rename and marks the old document missing
+     ↓ B08 'ordinary writer' / 'explicit refresh' updates create/delete/rename and marks the old document missing
+     ↓ B08 'ordinary writer' / 'resume scan' updates create/delete/rename and marks the old document missing
+     ↓ B08 'CLI process' / 'native watch' updates create/delete/rename and marks the old document missing
+     ↓ B08 'CLI process' / 'explicit refresh' updates create/delete/rename and marks the old document missing
+     ↓ B08 'CLI process' / 'resume scan' updates create/delete/rename and marks the old document missing
+     ↓ B08 ordinary writer cannot redirect a missing dirty document to a new same-name same-bytes file
+     ↓ B08 CLI process cannot redirect a missing dirty document to a new same-name same-bytes file
+     ↓ L06 observes another process changing the file immediately after an acknowledged local save
+     × B08 preserves a dirty buffer when an unobserved replacement has the same disk bytes 196ms
+     ✓ B08 allows the original inode to return and preserves clean atomic external replacement behavior 189ms
+     × B08 rejects a same-bytes replacement discovered by main before saving without a renderer refresh 174ms
+     × B08 rejects replacement between main preflight and native save even when hashes match 172ms
+     ↓ L07 rescans changes made after the initial list/read but before native subscription starts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 preserves a dirty buffer when an unobserved replacement has the same disk bytes
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:125:51
+    123|     const f = await fixture(), path = join(f.project, 'a.txt'); edit(f…
+    124|     writeFileSync(join(f.project, 'replacement.txt'), 'original a'); r…
+    125|     await f.a.refresh(); expect(await f.a.save()).toBe(false); expect(…
+       |                                                   ^
+    126|     rows.push({ caseId: 'M9-T-B08', scenario: 'replacement without an …
+    127|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 rejects a same-bytes replacement discovered by main before saving without a renderer refresh
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:139:30
+    137|     const f = await fixture(), path = join(f.project, 'a.txt'); edit(f…
+    138|     writeFileSync(join(f.project, 'replacement.txt'), 'original a'); r…
+    139|     expect(await f.a.save()).toBe(false); expect(f.a.raw).toBe('local …
+       |                              ^
+    140|     rows.push({ caseId: 'M9-T-B08', scenario: 'main preflight detects …
+    141|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 rejects replacement between main preflight and native save even when hashes match
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:148:64
+    146|       return request<T>(input, options);
+    147|     };
+    148|     edit(f.a, 'local unsaved draft'); expect(await f.a.save()).toBe(fa…
+       |                                                                ^
+    149|     rows.push({ caseId: 'M9-T-B08', scenario: 'replacement after main …
+    150|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed | 10 skipped (14)
+   Start at  13:47:26
+   Duration  1.54s (transform 325ms, setup 0ms, import 583ms, tests 733ms, environment 163ms)
+
+JSON report written to /private/tmp/willyou-replacement-adjacent-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

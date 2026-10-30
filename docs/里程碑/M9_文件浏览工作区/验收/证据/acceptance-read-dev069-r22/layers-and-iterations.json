@@ -1,0 +1,19 @@
+{
+  "defect": "DEV069: no retry after initial open/read failure; recovery metadata failure must preserve later edits; late older refresh must not overwrite newer load.",
+  "nativeRed": "first 3 pass/5 fail included an incorrect new-inode expectation. Corrected identity split plus added cross load/refresh race: 4 pass/5 actual failures.",
+  "unitRed": "19 pass/2 actual recovery failures.",
+  "typeCorrection": "ReadGate explicit type replaces narrowed typeof null -> never; final typecheck passes, no runtime semantic change.",
+  "appIterations": [
+    "r21 r1 wrongly expected a different inode to be silently adopted after missing. Existing identity protection correctly denies it; final tests same-inode recovery and explicit close/reopen for new inode, no FileService policy change.",
+    "r21 r2 reaches6 checks, fails missing Retry control.",
+    "r22 r1 snapshot actually contains Retry, but the assertion ran during queued native automatic retry. Final stops only its own watcher, waits terminal error/control, then repairs permissions and uses actual UI. No product code changed after r22 build.",
+    "r22 r2 passes10 read/recovery flows; actual tasks0; exact native durable draft retained.",
+    "r22 save regression passes16 scenarios for6 previously passed cases; not recounted."
+  ],
+  "coverage": "115 related selected tests/0 failed/0 skipped; actual renderer UI + native filesystem oracles + separately gated actual native reads for late delivery. Public setup/watch stop/post-flow draft reads are I, not UI input.",
+  "screenshotsViewed": [
+    "app/r22-final/initial-open-error.png",
+    "app/r22-final/dirty-read-recovered.png"
+  ],
+  "boundaries": "Only macOS arm64; no physical IME/OS focus/chooser/clipboard, source attachments, full themes/visual/copy equality or other-platform claim. Existing raw error copy still has visual work remaining. Old r4/r6,57 bytes,AIS,accounts/model/realCLI unchanged. No commit/merge/tag/push/release."
+}

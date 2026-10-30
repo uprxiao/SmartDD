@@ -1,0 +1,1 @@
+const fs=require('node:fs'),c=require('node:crypto');const path="/private/tmp/willyou-m9-acceptance-batch-r79-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/node_modules/@parcel/watcher-darwin-arm64/watcher.node";console.log(JSON.stringify({path,sha256:c.createHash('sha256').update(fs.readFileSync(path)).digest('hex')},null,2));

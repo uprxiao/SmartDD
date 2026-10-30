@@ -1,0 +1,93 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/files/native-broker.test.ts src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/workspace-store.test.ts src/main/core/files/controller.test.ts src/main/core/files/watch-ownership-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev058-regression-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/core/files/controller.test.ts (4 tests) 8ms
+ ✓ src/renderer/features/files/workspace-store.test.ts (6 tests) 16ms
+ ✓ src/renderer/features/files/file-buffer.test.ts (15 tests) 30ms
+ ↓ src/main/core/files/watch-ownership-acceptance.test.ts (3 tests | 3 skipped)
+ ❯ src/main/core/files/native-broker.test.ts (54 tests | 1 failed) 8599ms
+     ✓ persists and recovers an Office draft beyond the text budget without weakening text limits  1198ms
+     ✓ maps HTML resources through the real root FD, denies foreign owners and escaping links, and revokes on source changes 61ms
+     ✓ classifies only the authorized revision sample and preserves the complete original bytes 44ms
+     ✓ enforces the media budget in native IO and both transport capabilities at 128MiB -1/equal/+1 249ms
+     ✓ invalidates media streams on replacement, cross-window access, document close and root replacement 75ms
+     ✓ reads real Git states/attributes within a nested root without writing the index  320ms
+     ✓ returns exact real blame lines and rejects modified contents or a replaced root  419ms
+     ✓ keeps hostile filter/fsmonitor helpers from running and makes their failure explicit 131ms
+     ✓ binds Git queries to the owning scope and does not expose arbitrary commands 156ms
+     ✓ supports worktree metadata outside the file root and reports a non-Git directory 169ms
+     × creates an exact independent copy and preserves an existing destination in its journal 77ms
+     ✓ rejects source aliases, symlink destinations and modified source bytes without writing a copy 58ms
+     ✓ does not clobber a destination created between the native dialog and atomic creation 48ms
+     ✓ preserves a post-install external writer and reports the copy as a conflict 49ms
+     ✓ rejects replaced save-dialog parents and changed overwrite targets 43ms
+     ✓ binds copy dialogs to the owning document and protects their transaction after restart 128ms
+     ✓ blocks a copy destination after a killed transaction at copy-prepared and restart 100ms
+     ✓ blocks a copy destination after a killed transaction at copy-installed and restart 102ms
+     ✓ decodes oversized embedded rasters into bounded previews in the native child 157ms
+     ✓ binds image decoding and cancellable resource requests to the owning document 33ms
+     ✓ returns exact bytes and a stable content revision 6ms
+     ✓ resolves document-local references within the same trusted root 26ms
+     ✓ lists dotfiles and normally excluded search directories without reading special files 15ms
+     ✓ resolves only contained symbolic links, including nested relative aliases 22ms
+     ✓ rejects root replacement and bounded reads before returning content 16ms
+     ✓ filters internal identities through aliases but keeps user lookalikes 12ms
+     ✓ saves exact bytes while retaining the independent draft and both inodes 57ms
+     ✓ refuses an already changed base without creating a transaction 13ms
+     ✓ rejects a same-content replacement after main preflight without creating a transaction 26ms
+     ✓ accepts the exact preflight revision and replays its receipt after later external changes 53ms
+     ✓ preserves changes made to the old open fd during exchange and never swaps back 43ms
+     ✓ preserves a third writer at the target path after exchange 44ms
+     ✓ retains independently recoverable versions after SIGKILL at prepared 39ms
+     ✓ retains independently recoverable versions after SIGKILL at swapped 39ms
+     ✓ aborts a pending operation and waits for process termination 38ms
+     ✓ refuses symlinked recovery objects and preexisting transaction directories 11ms
+     ✓ binds leases and document handles to the issuing frame and generation 30ms
+     ✓ keeps task cwd independent of later project directory edits and rejects non-local sources 26ms
+     ✓ invalidates a registered symlink root when its target changes 20ms
+     ✓ gives aliases one physical document key and serializes competing window saves 91ms
+     ✓ recovers idempotent receipts after restart without overwriting a newer disk file 112ms
+     ✓ isolates corrupt recovery journals including FIFO while still reporting healthy records 109ms
+     ✓ rejects recovery quotas before changing disk and accounts for concurrent reservations 11ms
+     ✓ persists evolving drafts independently, retains mixed bytes and restores after restart 287ms
+     ✓ does not let an old save acknowledgement resolve newer input or another window draft 202ms
+     ✓ keeps private drafts writable after the source lease is revoked but closes the capability with its document 75ms
+     ✓ refuses read-only writes and invalidates resource chunks on a disk revision change 43ms
+     ✓ allows retry after a real parent-permission failure, including an app restart 130ms
+     ✓ shares real native directory subscriptions and observes replacements after one consumer leaves  374ms
+     ✓ releases a native subscription that finishes after disposal and advertises polling on failure 146ms
+     ✓ enumerates unexpanded real directories with fixed exclusions and no symlink traversal  605ms
+     ✓ streams literal Unicode matches with original UTF-16 offsets and masks that cannot reinclude exclusions 48ms
+     ✓ reports invalid/binary/oversized files separately and terminates at 100 matching lines 55ms
+     ✓ rejects overlong result frames and search aliases replaced after enumeration 55ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/files/native-broker.test.ts > native file boundary (real macOS filesystem) > creates an exact independent copy and preserves an existing destination in its journal
+AssertionError: expected 'conflict' to be 'saved' // Object.is equality
+
+Expected: "saved"
+Received: "conflict"
+
+ ❯ src/main/core/files/native-broker.test.ts:187:120
+    185|     expect(statSync(destination).ino).not.toBe(statSync(join(project, …
+    186|     writeFileSync(destination, 'previous destination');
+    187|     const overwrite = await copyRequest(destination); expect((await br…
+       |                                                                                                                        ^
+    188|     expect(readFileSync(join(fixture, `.willyou-recovery-test-installa…
+    189|     const journal = JSON.parse(readFileSync(join(overwrite.recoveryRoo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed | 1 skipped (5)
+      Tests  1 failed | 78 passed | 3 skipped (82)
+   Start at  13:48:52
+   Duration  9.43s (transform 1.31s, setup 0ms, import 2.04s, tests 8.65s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev058-regression-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

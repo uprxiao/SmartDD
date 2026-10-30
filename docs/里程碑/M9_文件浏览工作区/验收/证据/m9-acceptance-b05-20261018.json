@@ -1,0 +1,73 @@
+{
+  "recordedAt": "2026-10-18T03:40:49.795293+00:00",
+  "caseId": "M9-T-B05",
+  "requiredLayers": "P+I+A / D01+D02",
+  "status": "P/I passed; A pending",
+  "basis": {
+    "requirement": "M9-R02.3",
+    "steps": "展开 D02/empty。",
+    "expected": "明确空目录态；无无限 spinner、无伪文件项；可折叠。",
+    "P": "共享原型已有 fixtures/空目录 是合成 D02/empty 的对应空目录样本；展开出现 status 此目录为空；无伪文件，折叠后 status 消失。fixture 命名差异明示。",
+    "I": "公共真实 D02/empty native entries=[]；DOM 显示空目录、读取提示消失、treeitem 数未增加、折叠 aria-expanded=false 且空态消失。",
+    "caseId": "M9-T-B05",
+    "status": "P/I passed; A pending",
+    "nativeObservation": {
+      "caseId": "M9-T-B05",
+      "requests": [
+        {
+          "operation": "list",
+          "relativePath": ""
+        },
+        {
+          "operation": "list",
+          "relativePath": "empty"
+        }
+      ],
+      "explicitEmpty": true,
+      "noFakeFileOrInfiniteSpinner": true,
+      "collapsible": true
+    }
+  },
+  "sharedEvidence": "m9-acceptance-tree-basic-20261018.json",
+  "appPending": {
+    "status": "pending",
+    "reason": "Root received explicit Mac locked response; user away and asked to skip manual/unlock requirements. No native GUI re-probe by this agent.",
+    "exactSteps": [
+      {
+        "case": "B01",
+        "steps": [
+          "登记这个 D02 为新的本机项目目录并打开文件树，初始保持所有目录折叠。",
+          "展开 level1，只出现 level2；展开 level2，只出现 level3；不展开更深层。",
+          "折叠并重新展开 level1，目录缓存复用且无重复加载。"
+        ],
+        "expected": "初始只列根、只显示单层。精确请求序列和并发去重由同份 fixture 的真实 I 记录提供；无额外 App 调试入口要求。"
+      },
+      {
+        "case": "B04",
+        "steps": [
+          "普通文件树保持查找为空、变化过滤关闭；确认 .env、.gitignore、.hidden、node_modules 均可见。",
+          "展开 .hidden 和 node_modules，各显示 x。"
+        ],
+        "expected": "隐藏项和依赖目录子项不被搜索排除规则隐藏。"
+      },
+      {
+        "case": "B05",
+        "steps": [
+          "展开 empty，确认明确空目录文字，无无限读取或伪文件；再单击折叠。"
+        ],
+        "expected": "空目录状态可读且可折叠。"
+      },
+      {
+        "case": "B18",
+        "steps": [
+          "首次单击 A.txt，确认预览标签及 Tree A baseline。",
+          "首次双击尚未打开的 B.txt，确认固定 B 和 Tree B baseline，无重复 B。",
+          "单击任一目录展开/收起，B 保持活动且标签内容不变。"
+        ],
+        "expected": "A 为预览、B 为固定；目录仅展开收起；双击无重复标签。"
+      }
+    ],
+    "noAddedAppRequirement": "No terminal/model/edit operation or additional App diagnostic endpoint required; per-case exact request accounting belongs to recorded native I chain.",
+    "next": "Root executes same common directory in a packaged App when native UI is available; records exact package/hash and actual outcomes."
+  }
+}

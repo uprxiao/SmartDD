@@ -1,0 +1,225 @@
+{
+  "revision": "R3.4-20261017",
+  "timestamp": "2026-10-17T07:41:05.063924+00:00",
+  "engine": {
+    "version": "0.17.0",
+    "archiveSHA256": "a3f1cac7c5678f01661a92212f58480ae3b0634115d880dbc59e2953ded45667",
+    "binarySHA256": "b52b5a730e2b0b33087304f7720f649603953f270a6b1c88bb031e1ae01f7f9c",
+    "bundleSHA256": "e7d6f9ab00f368f3530e60555d7a794b74d3ae6bec539dd293481e7aa08d6189",
+    "bundleSourceCommit": "8c0126a9653239a2e6e0a5274af9b8510f643030",
+    "bundleScope": "74 official test assets + derived SHA256SUM, minimal Plain TeX; not a full LaTeX distribution"
+  },
+  "environment": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "arch": "arm64"
+  },
+  "policy": "(version 1)(deny default)(allow process-exec (literal \"/private/tmp/m9-r34-tex/tectonic\"))(allow process-info* (target self))(allow sysctl-read)(allow file-read* (subpath \"/usr/lib\")(subpath \"/System/Library\")(subpath \"/System/Volumes/Preboot\")(subpath \"/private/var/db/dyld\")(literal \"/\")(literal \"/dev/null\")(literal \"/dev/random\")(literal \"/dev/urandom\")(literal \"/private/tmp/m9-r34-tex/tectonic\")(literal \"/private/tmp/m9-r34-tex/minimal-plain-bundle.zip\")(subpath \"/private/tmp/m9-r34-tex/case-normal\"))(allow file-write* (subpath \"/private/tmp/m9-r34-tex/case-normal/out\")(subpath \"/private/tmp/m9-r34-tex/case-normal/home\")(subpath \"/private/tmp/m9-r34-tex/case-normal/cache\")(subpath \"/private/tmp/m9-r34-tex/case-normal/tmp\"))",
+  "limits": {
+    "wallDefaultSeconds": 15,
+    "cpuSeconds": [
+      3,
+      4
+    ],
+    "rssKillKiB": 262144,
+    "outputFileBytes": 16777216,
+    "openFiles": 64
+  },
+  "checks": [
+    {
+      "id": "TEX34-01",
+      "title": "真实离线 Plain TeX 编译产生可解析 PDF，根内 include 可用",
+      "status": "passed",
+      "detail": {
+        "exit": 0,
+        "stop": null,
+        "elapsedMs": 109,
+        "peakRssKiB": 198256,
+        "pdf": true,
+        "pages": 1,
+        "text": "Hello WillYou.\nAuthorized local include.\n1",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Running xdvipdfmx ...\nnote: Writing `/private/tmp/m9-r34-tex/case-normal/out/main.log` (79 B)\nnote: Writing `/private/tmp/m9-r34-tex/case-normal/out/main.pdf` (3.517578125 KiB)\n",
+        "stderr": "",
+        "sourceSHA256": "8e1c8c36d73cc5b0bb94b30d2a485c0860eb535eb5960ec817d58f8df0041849",
+        "pdfSHA256": "a440893130aee2fd337f33b649540b246c65ba6e6bd0131da17e920965ddb060"
+      }
+    },
+    {
+      "id": "TEX34-02",
+      "title": "资源缺失显式失败，不联网补字体，保留源码",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stop": null,
+        "elapsedMs": 108,
+        "peakRssKiB": 195168,
+        "pdf": false,
+        "pages": 0,
+        "text": "",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Running xdvipdfmx ...\nnote: Writing `/private/tmp/m9-r34-tex/case-missing-font/out/main.log` (67 B)\n",
+        "stderr": "warning: Tectonic unable to generate PK font \"cmmi10.pfb\" (dpi 600) on-the-fly\nwarning: Could not locate a virtual/physical font for TFM \"cmmi10\".\nwarning: >> This font is mapped to a physical font \"cmmi10.pfb\".\nwarning: >> Please check if kpathsea library can find this font: cmmi10.pfb\nerror: something bad happened inside xdvipdfmx; its output follows:\n\n===============================================================================\n\n===============================================================================\nerror: the xdvipdfmx engine had an unrecoverable error\ncaused by: Cannot proceed without .vf or \"physical\" font for PDF output...\n",
+        "sourceSHA256": "c7eafadec73d1ca0ef3939bc9be02ec8fa5f0ed11549c81b341994542a5070cc"
+      }
+    },
+    {
+      "id": "TEX34-03",
+      "title": "拒绝根外读取：absolute-read",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stop": null,
+        "elapsedMs": 80,
+        "peakRssKiB": 190736,
+        "pdf": false,
+        "pages": 0,
+        "text": "",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Writing `/private/tmp/m9-r34-tex/case-absolute-read/out/main.log` (12 B)\n",
+        "stderr": "warning: open of input /private/tmp/m9-r34-tex/outside-secret.tex failed\ncaused by: Operation not permitted (os error 1)\nerror: something bad happened inside XeTeX; its output follows:\n\n===============================================================================\n(main.tex===============================================================================\nerror: the XeTeX engine had an unrecoverable error\ncaused by: failed to open input file \"/private/tmp/m9-r34-tex/outside-secret.tex\"\n",
+        "sourceSHA256": "879b67f291f1e0e98580d9989b862737c449e1f57afcc1e3bd7785b4948e8acf"
+      }
+    },
+    {
+      "id": "TEX34-04",
+      "title": "拒绝根外读取：parent-read",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stop": null,
+        "elapsedMs": 79,
+        "peakRssKiB": 190816,
+        "pdf": false,
+        "pages": 0,
+        "text": "",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Writing `/private/tmp/m9-r34-tex/case-parent-read/out/main.log` (12 B)\n",
+        "stderr": "warning: open of input ../outside-secret.tex failed\ncaused by: Operation not permitted (os error 1)\nerror: something bad happened inside XeTeX; its output follows:\n\n===============================================================================\n(main.tex===============================================================================\nerror: the XeTeX engine had an unrecoverable error\ncaused by: failed to open input file \"../outside-secret.tex\"\n",
+        "sourceSHA256": "57889e5e49e96f10dc26bb9af7f9a1826ccb628291f424c758beb1e1998c545f"
+      }
+    },
+    {
+      "id": "TEX34-05",
+      "title": "拒绝根外读取：symlink-read",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stop": null,
+        "elapsedMs": 82,
+        "peakRssKiB": 172912,
+        "pdf": false,
+        "pages": 0,
+        "text": "",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Writing `/private/tmp/m9-r34-tex/case-symlink-read/out/main.log` (12 B)\n",
+        "stderr": "warning: open of input link.tex failed\ncaused by: Operation not permitted (os error 1)\nerror: something bad happened inside XeTeX; its output follows:\n\n===============================================================================\n(main.tex===============================================================================\nerror: the XeTeX engine had an unrecoverable error\ncaused by: failed to open input file \"link.tex\"\n",
+        "sourceSHA256": "f12a73c094662c813c7c9309b5a94a3f267aa7b1352ccfc73e5062f44cafd2f1"
+      }
+    },
+    {
+      "id": "TEX34-06",
+      "title": "根外写入不覆盖合成 canary",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stop": null,
+        "elapsedMs": 103,
+        "peakRssKiB": 198912,
+        "pdf": true,
+        "pages": 1,
+        "text": "done\n1",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Running xdvipdfmx ...\nnote: Writing `/private/tmp/m9-r34-tex/case-outside-write/out/main.log` (126 B)\nnote: Writing `/private/tmp/m9-r34-tex/case-outside-write/out/main.pdf` (2.1611328125 KiB)\nnote: Writing `/private/tmp/m9-r34-tex/outside-write.txt` (9 B)\n",
+        "stderr": "error: File exists (os error 17)\n",
+        "sourceSHA256": "9dec9c122a58bcb50fedf78ff204c9b6724c7cd4217174e84e903290d5a5000e"
+      }
+    },
+    {
+      "id": "TEX34-07",
+      "title": "--untrusted 即使收到 shell-escape 开关也不执行 shell",
+      "status": "passed",
+      "detail": {
+        "exit": 0,
+        "stop": null,
+        "elapsedMs": 110,
+        "peakRssKiB": 202096,
+        "pdf": true,
+        "pages": 1,
+        "text": "Shell disabled.\n1",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Running xdvipdfmx ...\nnote: Writing `/private/tmp/m9-r34-tex/case-shell/out/main.log` (135 B)\nnote: Writing `/private/tmp/m9-r34-tex/case-shell/out/main.pdf` (2.876953125 KiB)\n",
+        "stderr": "warning: main.tex:1: \nrunsystem(touch /private/tmp/m9-r34-tex/shell-marker)...disabled.\n",
+        "sourceSHA256": "a249100b0d8f9abef925692f7e2a36fa5648dece78cf51efd4976bf5a229da34"
+      }
+    },
+    {
+      "id": "TEX34-08",
+      "title": "编译语法失败保留明确错误与源码",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stop": null,
+        "elapsedMs": 80,
+        "peakRssKiB": 125072,
+        "pdf": false,
+        "pages": 0,
+        "text": "",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\nnote: Writing `/private/tmp/m9-r34-tex/case-syntax/out/main.log` (103 B)\n",
+        "stderr": "error: main.tex:1: Undefined control sequence\nerror: something bad happened inside XeTeX; its output follows:\n\n===============================================================================\n(main.tex\n! Undefined control sequence.\nl.1 \\UnknownM\n             9Command\\bye\nNo pages of output.\nTranscript written on main.log.\n===============================================================================\nerror: the XeTeX engine had an unrecoverable error\ncaused by: halted on potentially-recoverable error as specified\n",
+        "sourceSHA256": "ad3131c3d3c126bb142cda2179381224de5d9d843f7f96b55df82b218536363c"
+      }
+    },
+    {
+      "id": "TEX34-09",
+      "title": "真实编译死循环由宿主限时终止",
+      "status": "passed",
+      "detail": {
+        "exit": -9,
+        "stop": "timeout",
+        "elapsedMs": 707,
+        "peakRssKiB": 191216,
+        "pdf": false,
+        "pages": 0,
+        "text": "",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\n",
+        "stderr": "",
+        "sourceSHA256": "1b07f21f992f4367a4ffc9f937a832d1880da8195dc93b6b2637d1b91b390555"
+      }
+    },
+    {
+      "id": "TEX34-10",
+      "title": "真实编译任务可取消且没有成功产物",
+      "status": "passed",
+      "detail": {
+        "exit": -9,
+        "stop": "cancelled",
+        "elapsedMs": 163,
+        "peakRssKiB": 191584,
+        "pdf": false,
+        "pages": 0,
+        "text": "",
+        "stdout": "note: \"version 2\" Tectonic command-line interface activated\nnote: using only cached resource files\nnote: generating format \"plain\"\nnote: Running TeX ...\n",
+        "stderr": "",
+        "sourceSHA256": "1b07f21f992f4367a4ffc9f937a832d1880da8195dc93b6b2637d1b91b390555"
+      }
+    },
+    {
+      "id": "TEX34-11",
+      "title": "同一 OS 策略禁止 socket（只试本机既有原型端口）",
+      "status": "passed",
+      "detail": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Auto configuration failed\n8322015616:error:02FFF001:system library:func(4095):Operation not permitted:/AppleInternal/Library/BuildRoots/4~CTzXugBFCxhZ492Edy-igjnepdP69SzlG80V1IQ/Library/Caches/com.apple.xbs/TemporaryDirectory.yQ55nz/Sources/libressl/libressl-3.3/crypto/bio/bss_file.c:122:fopen('/private/etc/ssl/openssl.cnf', 'rb')\n8322015616:error:20FFF002:BIO routines:CRYPTO_internal:system lib:/AppleInternal/Library/BuildRoots/4~CTzXugBFCxhZ492Edy-igjnepdP69SzlG80V1IQ/Library/Caches/com.apple.xbs/TemporaryDirectory.yQ55nz/Sources/libressl/libressl-3.3/crypto/bio/bss_file.c:127:\n8322015616:error:0EFFF002:configuration file routines:CRYPTO_internal:system lib:/AppleInternal/Library/BuildRoots/4~CTzXugBFCxhZ492Edy-igjnepdP69SzlG80V1IQ/Library/Caches/com.apple.xbs/TemporaryDirectory.yQ55nz/Sources/libressl/libressl-3.3/crypto/conf/conf_def.c:202:\n"
+      }
+    },
+    {
+      "id": "TEX34-12",
+      "title": "编译策略拒绝执行其他程序",
+      "status": "passed",
+      "detail": {
+        "exit": 71,
+        "stderr": "sandbox-exec: execvp() of '/usr/bin/true' failed: Operation not permitted\n"
+      }
+    }
+  ],
+  "summary": {
+    "passed": 12,
+    "failed": 0
+  },
+  "boundary": "Real Plain TeX and real macOS sandbox only. Full LaTeX packages/fonts, Chinese/Office-equivalent fidelity, production broker, App Sandbox distribution, Windows/Linux and safe output commit remain unverified."
+}

@@ -1,0 +1,41 @@
+✔ file drag resolves a complete path preserving Chinese, spaces, quotes and image extension (1.293541ms)
+✔ file drag rejects control/bidi/lone surrogate paths rather than sanitising another file (0.117958ms)
+✔ file drag rejects missing or ambiguous roots, traversal and foreign absolute paths (0.070583ms)
+✔ drag payload is an ephemeral catalog token and cannot be replayed or moved to another task (0.076459ms)
+✔ path insertion preserves input, separates successive paths, leaves space for typing and never Enter (0.191042ms)
+✔ path insertion refuses stopped or unrelated terminals without starting a task (0.100125ms)
+✔ a successful drop consumes its token and a newer drag invalidates the previous token (0.048625ms)
+✖ cancelled prototype drop gives one re-drag reason; newer input clears old cancellation (0.464875ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46.020958
+
+✖ failing tests:
+
+test at prototypes/m6-codex/tests/file-drag-model.test.mjs:46:1
+✖ cancelled prototype drop gives one re-drag reason; newer input clears old cancellation (0.464875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unknown-drag'
+  - 'cancelled-drag'
+  
+      at TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/file-drag-model.test.mjs:46:195)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unknown-drag',
+    expected: 'cancelled-drag',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

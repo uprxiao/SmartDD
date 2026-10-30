@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import * as pty from 'node-pty';
 import { LAUNCH_SCRIPT } from './launch-env';
+import { TerminalModes } from './terminal-modes';
 
 export interface SpawnOptions {
   command: string;
@@ -30,6 +31,7 @@ export function shellWrapped(
 
 export class PtyManager extends EventEmitter {
   private readonly ptys = new Map<string, pty.IPty>();
+  private readonly modes = new Map<string, TerminalModes>();
 
   spawn(opts: SpawnOptions): string {
     const id = randomUUID();
@@ -42,9 +44,11 @@ export class PtyManager extends EventEmitter {
       env: opts.env,
     });
     this.ptys.set(id, p);
-    p.onData((d) => this.emit('data', id, d));
+    const modes = new TerminalModes(); this.modes.set(id, modes);
+    p.onData((d) => { modes.feed(d); this.emit('data', id, d); });
     p.onExit(({ exitCode }) => {
       this.ptys.delete(id);
+      modes.dispose(); this.modes.delete(id);
       this.emit('exit', id, exitCode);
     });
     return id;
@@ -54,6 +58,19 @@ export class PtyManager extends EventEmitter {
 
   write(id: string, data: string): void {
     this.ptys.get(id)?.write(data);
+  }
+
+  /** Acknowledges only a write accepted by the live native PTY instance. */
+  writeControlled(id: string, data: string): void {
+    const pty = this.ptys.get(id);
+    if (!pty) throw new Error('TERMINAL_TARGET_DENIED');
+    pty.write(data);
+  }
+
+  async bracketedPaste(id: string): Promise<boolean> {
+    const modes = this.modes.get(id);
+    if (!modes || !this.ptys.has(id)) throw new Error('TERMINAL_TARGET_DENIED');
+    return modes.bracketedPaste();
   }
 
   resize(id: string, cols: number, rows: number): void {
@@ -67,9 +84,12 @@ export class PtyManager extends EventEmitter {
   killAll(): void {
     for (const p of this.ptys.values()) p.kill();
     this.ptys.clear();
+    for (const modes of this.modes.values()) modes.dispose();
+    this.modes.clear();
   }
 
   get count(): number {
     return this.ptys.size;
   }
+  processId(id: string): number | null { return this.ptys.get(id)?.pid ?? null; }
 }

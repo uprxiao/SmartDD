@@ -1,0 +1,106 @@
+{
+  "schema": "m9-partial-acceptance/v1",
+  "caseIds": [
+    "M9-T-B06",
+    "M9-T-B07",
+    "M9-T-B13"
+  ],
+  "completedAt": "2026-10-18T05:34:29.485441+00:00",
+  "layersCompleted": [
+    "I"
+  ],
+  "formalCasesPassed": false,
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad + archived workspace",
+  "package": {
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r9-build/mac-arm64/WillYou.app",
+    "asarSha256": "ac07e16c48b80a0a2041e64850dd78d90ae30e175d60533e58391c06e6b97a07",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "sourceSnapshot": "willyou-m9-acceptance-batch-r9-sources.tar.gz",
+    "sourceSnapshotSha256": "027667563fdea1944f66c829548996855139bc485fd65b7ba09302d3e04d3e86",
+    "sourceFiles": 833,
+    "snapshotFileChangesAfterBuild": [],
+    "postSnapshotAdditions": [
+      "src/renderer/features/files/tree-failure-native-acceptance.test.tsx (test only)"
+    ],
+    "includedFixes": [
+      "DEV052",
+      "DEV053",
+      "DEV054",
+      "DEV055",
+      "DEV056"
+    ],
+    "typecheckExit": 0,
+    "buildExit": 0,
+    "nativeChecks": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "packagedOfficeTests": 20,
+    "compiledEntryInspection": "willyou-r9-js-inspection.json",
+    "GUIStarted": false
+  },
+  "observations": [
+    {
+      "caseId": "M9-T-B06",
+      "permissionModes": [
+        "000",
+        "755"
+      ],
+      "siblingReadable": true,
+      "childInstances": 1,
+      "sourceUnchanged": true
+    },
+    {
+      "caseId": "M9-T-B07",
+      "error": "[MISSING] stat component: No such file or directory",
+      "deletedBeforeNativeRead": true,
+      "staleContentShown": false,
+      "treeRemovedMissing": true,
+      "tabClosable": true
+    },
+    {
+      "caseId": "M9-T-B13",
+      "count": 10000,
+      "returned": 10000,
+      "renderedRows": [
+        19,
+        24,
+        17
+      ],
+      "listedMs": 1021.5237079999997,
+      "heapDeltaBytes": 11021780,
+      "lastFile": "item-09999.txt",
+      "exactTailText": "fixture 9999",
+      "boundary": "jsdom timings/Node heap are diagnostics, not native App scroll latency or renderer-memory budget acceptance."
+    },
+    {
+      "caseId": "M9-T-B13",
+      "count": 10001,
+      "returned": 10001,
+      "renderedRows": [
+        19,
+        24,
+        17
+      ],
+      "listedMs": 1027.8827500000007,
+      "heapDeltaBytes": 10197084,
+      "lastFile": "item-10000.txt",
+      "exactTailText": "fixture 10000",
+      "boundary": "jsdom timings/Node heap are diagnostics, not native App scroll latency or renderer-memory budget acceptance."
+    }
+  ],
+  "tests": {
+    "passed": 4,
+    "failed": 0,
+    "report": "acceptance-j08-r9/willyou-tree-failures-r2-tests.json"
+  },
+  "boundary": "Real filesystem/native helper/service/store and jsdom production tree. P and packaged App A remain outstanding. B13 jsdom/Node timing and heap are diagnostics, not actual App performance-budget acceptance. No synthetic result replaces a native IO result.",
+  "source": "2c14e957fdfa8d3779dd6558893fa502d908c8bb852458cced7a1b1240ebaa1c",
+  "evidenceRoot": "acceptance-j08-r9",
+  "retainedFailure": "B07 expected undefined instead of API null in r1; fixed assertion, no runtime change."
+}

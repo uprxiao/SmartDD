@@ -1,0 +1,344 @@
+{
+  "at": "2026-10-19T06:38:58.951Z",
+  "caseIds": [
+    "M9-T-Y04",
+    "M9-T-Y05"
+  ],
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r74-build/mac-arm64/WillYou.app",
+  "rows": [
+    {
+      "scenario": "real subdirectory permission loss",
+      "updates": [
+        {
+          "id": "ec7d84b9-7b4a-4836-b700-95a6fe56da3b",
+          "lease": "66d05c1c-9638-45fe-bd27-8c26de5f8789",
+          "generation": 1,
+          "sequence": 2,
+          "coverage": "native",
+          "resyncRequired": true,
+          "changed": false
+        },
+        {
+          "id": "ec7d84b9-7b4a-4836-b700-95a6fe56da3b",
+          "lease": "66d05c1c-9638-45fe-bd27-8c26de5f8789",
+          "generation": 1,
+          "sequence": 3,
+          "coverage": "native",
+          "resyncRequired": false,
+          "changed": false
+        },
+        {
+          "id": "ec7d84b9-7b4a-4836-b700-95a6fe56da3b",
+          "lease": "66d05c1c-9638-45fe-bd27-8c26de5f8789",
+          "generation": 1,
+          "sequence": 4,
+          "coverage": "native",
+          "resyncRequired": false,
+          "changed": true
+        }
+      ],
+      "calls": [
+        {
+          "at": 1792391934688,
+          "operation": "inspect-root",
+          "elapsedMs": 6
+        },
+        {
+          "at": 1792391934695,
+          "operation": "initialize-recovery",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934700,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/userdata/file-recovery/v1",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934705,
+          "operation": "stat",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/project",
+          "elapsedMs": 4
+        },
+        {
+          "at": 1792391934713,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/project",
+          "elapsedMs": 6
+        },
+        {
+          "at": 1792391934713,
+          "operation": "list",
+          "relativePath": "sub",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/project",
+          "elapsedMs": 6
+        },
+        {
+          "at": 1792391934714,
+          "operation": "metadata",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/project",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934830,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/project",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934830,
+          "operation": "list",
+          "relativePath": "sub",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/project",
+          "elapsedMs": 5,
+          "error": "FileError: [PERMISSION] open component: Permission denied"
+        },
+        {
+          "at": 1792391934830,
+          "operation": "metadata",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-8YixWD/project",
+          "elapsedMs": 5
+        }
+      ]
+    },
+    {
+      "scenario": "native create rejection, true fallback reads",
+      "phases": [
+        {
+          "kind": "added",
+          "updates": [
+            {
+              "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+              "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "poll",
+              "resyncRequired": false,
+              "changed": true,
+              "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+            }
+          ]
+        },
+        {
+          "kind": "modified",
+          "updates": [
+            {
+              "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+              "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "poll",
+              "resyncRequired": false,
+              "changed": true,
+              "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+            }
+          ]
+        },
+        {
+          "kind": "deleted",
+          "updates": [
+            {
+              "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+              "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "poll",
+              "resyncRequired": false,
+              "changed": true,
+              "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+            }
+          ]
+        }
+      ],
+      "updates": [
+        {
+          "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+          "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+          "generation": 1,
+          "sequence": 2,
+          "coverage": "poll",
+          "resyncRequired": true,
+          "changed": false,
+          "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+        },
+        {
+          "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+          "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+          "generation": 1,
+          "sequence": 3,
+          "coverage": "poll",
+          "resyncRequired": false,
+          "changed": false,
+          "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+        },
+        {
+          "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+          "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+          "generation": 1,
+          "sequence": 4,
+          "coverage": "poll",
+          "resyncRequired": false,
+          "changed": true,
+          "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+        },
+        {
+          "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+          "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+          "generation": 1,
+          "sequence": 5,
+          "coverage": "poll",
+          "resyncRequired": false,
+          "changed": true,
+          "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+        },
+        {
+          "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+          "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+          "generation": 1,
+          "sequence": 6,
+          "coverage": "poll",
+          "resyncRequired": false,
+          "changed": true,
+          "message": "原生监听不可用，正在补扫已展开目录和打开文件：Explicit native create failure fixture"
+        },
+        {
+          "id": "b79b7b3b-928c-4309-8182-f09af6f45774",
+          "lease": "4c1df19d-d246-464a-825b-4058ab0287df",
+          "generation": 1,
+          "sequence": 7,
+          "coverage": "none",
+          "resyncRequired": true,
+          "changed": false,
+          "message": "目录来源已失效，监听已停止；已有编辑仍保留，请重新关联原目录",
+          "rootInvalidated": true
+        }
+      ],
+      "calls": [
+        {
+          "at": 1792391934850,
+          "operation": "inspect-root",
+          "elapsedMs": 4
+        },
+        {
+          "at": 1792391934854,
+          "operation": "initialize-recovery",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934859,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/userdata/file-recovery/v1",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934864,
+          "operation": "stat",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934870,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 6
+        },
+        {
+          "at": 1792391934871,
+          "operation": "list",
+          "relativePath": "sub",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391934871,
+          "operation": "metadata",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 5
+        },
+        {
+          "at": 1792391936876,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 12
+        },
+        {
+          "at": 1792391936877,
+          "operation": "list",
+          "relativePath": "sub",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 11
+        },
+        {
+          "at": 1792391936877,
+          "operation": "metadata",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 11
+        },
+        {
+          "at": 1792391937890,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 20
+        },
+        {
+          "at": 1792391937891,
+          "operation": "list",
+          "relativePath": "sub",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 19
+        },
+        {
+          "at": 1792391937892,
+          "operation": "metadata",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 18
+        },
+        {
+          "at": 1792391938911,
+          "operation": "list",
+          "relativePath": "",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 19
+        },
+        {
+          "at": 1792391938913,
+          "operation": "list",
+          "relativePath": "sub",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 17
+        },
+        {
+          "at": 1792391938914,
+          "operation": "metadata",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 16
+        },
+        {
+          "at": 1792391938939,
+          "operation": "read",
+          "relativePath": "a.txt",
+          "root": "/private/tmp/willyou-watch-recovery-native-bbDWj6/project",
+          "elapsedMs": 10
+        }
+      ],
+      "pass": true,
+      "boundary": "Explicit rejected subscribe only; all list/metadata/read results are original packaged native. No OS EMFILE claim."
+    }
+  ],
+  "boundary": "I real FileService/roots/recovery with packaged native/Parcel binding. Source resolver synthetic, no GUI/admission claim. chmod on own subdirectory is real EACCES; native creation rejection is explicit injected fault, no fabricated snapshots. Own closed descendants/sentinel preserved."
+}

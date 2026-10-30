@@ -1,0 +1,78 @@
+# 03 Markdown 编辑器：开发前路线与真实最小实验
+
+2026-10-17，依据 [需求 R3.4](../需求.md) R06.2、R08.11 和[前期划分](../开发前与开发中工作划分.md)。本次实验与 App、共享原型组件分离。**真实 CodeMirror + 当前 Markdown Worker 最小闭环完成，最终 14/14 检查通过。** 物理系统输入法候选窗口、系统切换快捷键仍未验证；CDP 组合输入不能冒充该证据。完整 Markdown 编辑器和正式 App 验收尚未完成。
+
+## 1. 已确定的实现路线
+
+| 层 | 选定接口与责任 | 本轮证据 |
+| --- | --- | --- |
+| 编辑状态 | CodeMirror `EditorState` / transaction 为唯一编辑入口；禁止从预览 DOM 反序列化覆盖源文档；保存接收当前内容 revision 的完整源文档 | PE01–04、PE13 |
+| 原始换行 | 原文 UTF-16 偏移与 CodeMirror LF 规范化偏移显式互转；未编辑部分保留原 CRLF / CR / LF；新插入换行采用文件最多的换行形式，无换行时 LF。编码/BOM 交保存服务 | PE02–03 |
+| 撤销重做 | 文本使用 CodeMirror history；`invertedEffects` 携带压缩 EOL run 元数据恢复原换行，不给每次撤销额外保存全文。undo/redo 后再次校验规范化原文与编辑器全文一致 | PE03–04、PE09、PE13 |
+| 解析 | 复用 R3.4 真实 `file-markdown-model.mjs` 与原生 Worker；Worker 保留 markdown-it token，返回可转移范围索引，再按窗口给 HTML/metadata/Mermaid source DTO | PE01、PE07、PE10–11；沿用 MW01–11 |
+| 调度 | 每个编辑器最多 1 个活动 Worker、1 份合并后待解析快照；30ms 合并连续编辑。`epoch + jobId + revision` 三重匹配，旧结果丢弃；一旦编辑，旧预览范围立即失效，不能点击过期坐标 | PE07 |
+| 视图 | `StateField` 直接提供会改变高度的 block decorations；正文仍由 CodeMirror 管理 DOM。数学块用真实 KaTeX widget；点“显露源码”选中精确源码范围并移除该替换装饰。预览块也可定位精确源码 | PE05–06 |
+| 输入 | 默认编辑/历史 keymap；输入法组合期间保留原生编辑器机制，不在 composition 过程中重建编辑器或由解析结果改文档 | PE08–09、PE13–14 |
+| 生命周期 | 取消/超时/换文档/卸载真正 terminate 自有 Worker；迟到消息不能复活窗口。错误保留编辑器原文，后续可重试解析 | 旧 MW06–10；本轮 PE12 |
+
+该最小实验只把数学块做成编辑器内替换 widget；表格、列表、引用、frontmatter、图像、Mermaid 的完整编辑装饰、内联点击精细映射、测高及辅助技术仍属于生产实现。实验右侧独立预览是验证器，不替代已确认产品布局。
+
+CodeMirror 的直接/间接 decorations 限制以及 transaction、composition、UTF-16/Text 语义按官方文档核对：[系统指南](https://codemirror.net/docs/guide/)、[API](https://codemirror.net/docs/ref/)、[decorations 示例](https://codemirror.net/examples/decoration/)。没有从论坛推断或复制 Codex 私有代码。
+
+## 2. 版本、资源和复现
+
+- 独立临时依赖：`@codemirror/state 6.7.6`、`@codemirror/view 6.43.14`、`@codemirror/commands 6.11.1`；包含传递依赖共 12 包，均 MIT。已保留[依赖来源/版本/许可文件哈希](../验收/证据/predev-editor-dependencies.json)、[准确 lock](../验收/证据/predev-editor-package-lock.json)和[package](../验收/证据/predev-editor-package.json)。从官方 npm registry 获取，未修改项目 package 或 lock。
+- 独立生成的未压缩浏览器包 672001 字节；这不是正式 App 体积增量。实际打包时应与产品依赖去重、保留 MIT 许可，不能直接搬临时目录。
+- [实验目录](../../../../prototypes/m6-codex/tests/predev-editor/)包含源码、预算、浏览器检查。依赖放 `/private/tmp/m9-predev-editor`，Playwright 使用已有 `/private/tmp/m9-qa`。独立 Vite 端口 4193；未操作共享 4176 服务。
+- macOS arm64，Chrome 155.0.8059.80，1440×1000；新建无用户 profile 的浏览器、仅合成数据、拦截非本机请求。源 revision 为 R3.4 文件，工作区基提交 `d75bbaa81e924d1f9a9509ae1d068d69d4ea8ec7`，未提交实验依文件哈希恢复。
+
+复现时先根据归档 lock 在临时目录 `npm ci --ignore-scripts`，将 `deps-entry.mjs` 复制到临时目录，再用原型现有 esbuild 生成 `codemirror.mjs`；启动：
+
+```sh
+node prototypes/m6-codex/node_modules/vite/bin/vite.js --config prototypes/m6-codex/tests/predev-editor/vite.config.mjs
+node prototypes/m6-codex/tests/predev-editor/check.mjs
+```
+
+这两条命令只针对隔离实验；安装依赖的确切输入已保留。端口被占时应先核对占用，不能停止其他进程。
+
+## 3. 实际验证与判断
+
+最终 [机器结果](../验收/证据/predev-editor-result-1792225655743.json)，2026-10-17T08:27:31.365Z，共 **14/14**。所有旧运行保留，不叠加通过数。[最终截图](../验收/证据/predev-editor-screenshot.png)已人工查看，是实验 UI，不是 Codex 对照图或正式 App。
+
+| 检查 | 实测结果 |
+| --- | --- |
+| PE01–03 | 实际 editor/Worker 运行；混合 CRLF/CR/LF + 中文/emoji 各合法编辑器位置往返一致；替换、undo、redo 原始换行精确恢复 |
+| PE04 | 真实 CodeMirror 选区跨列表、表格、引用与代码块，替换后撤销还原原文；不是拼接独立 contenteditable 的模拟选区 |
+| PE05–06 | 数学 widget 真实 KaTeX 显示，点回源码选中 `a^2+b^2=c^2` 所属完整块；heading 预览点回源码包含原始 `#` |
+| PE07 | 旧请求故意延迟 350ms；连续 100 次编辑，实际丢弃 1 条旧回调，最终 revision 102 对齐；待处理队列最多 1 |
+| PE08–09、14 | Chromium CDP `imeSetComposition` 先拼音串，再中文+emoji，再 commit；最终只有一份“中文😀”；undo/redo 整段恢复；空 composition 取消保留原文。属于浏览器真实 composition 管线自动注入，不是物理拼音候选窗 |
+| PE13 | 真实键盘 ArrowRight 跨过完整 emoji 两个 UTF-16 unit；Backspace 删除整个 emoji；撤销还原 |
+| PE10 | 精确 2MiB 单行、100 层引用、1000×20 表格、2000 条不闭合数学片段均得到当前输出；真实字节与 SHA-256 见机器结果；未宣称无限复杂度 |
+| PE11 | 精确 10MiB 文档初始化 24.0ms；包含编辑与等待的流程 1139.7ms；追加 emoji 后源码/解析 revision 一致；当前 DOM 9 行，预览 60 块；该测量窗未观测到 ≥50ms long task |
+| PE12 | 11 个观察到的原生 Worker 全部关闭；外部请求 0，页面异常 0 |
+
+复杂样本首次得到当前输出：2MiB 单行 约 332ms，100 层引用 163ms，1000×20 表格 237ms，异常数学 124ms；这些包含 Worker 启动/消息/轮询，不能当作精确解析时间。解析时间分别约 37.0/1.7/28.9/12.7ms。
+
+[运行前预算](../../../../prototypes/m6-codex/tests/predev-editor/budget.json)：解析/复杂样本 deadline 15s；初始化 <3s；编辑阶段主线程单任务 <1s；DOM 行数 <1000；视口 DTO ≤60 块；输入 10MiB 与 2MiB 单行预先固定。此处 <1s 是实验拒绝门槛，不是产品体验目标；应用内交互仍按既有受影响验收和实测调优。
+
+历史失败保持可见：首轮[8 通过、2 失败](../验收/证据/predev-editor-result-1792225200993.json)中，widget 鼠标默认处理先折叠了选区，已由 widget 自己管理按钮事件修复；同轮复杂样本等待超时，未保留到足以唯一归因的内部状态，不推断成已定位引擎缺陷。随后稳定运行以及最终增加诊断的 14 项均通过。期间将不精确命名的约 1.8MiB 单行改为精确 2MiB；最终只使用准确夹具哈希和结果，不覆盖旧失败。
+
+## 4. 开发时必须落实、不能由本次代替的内容
+
+1. 真实 file identity/root lease、文件切换、保存 revision/dirty、冲突和多标签状态；实验只接合成字符串。
+2. 完整受支持 Markdown 类型的交互装饰、inline/atomic 定位、滚动测高、搜索、图像、快捷键、深浅主题和可访问性。数学块成功不能外推所有 widget。
+3. 活动 editor/Worker 总量、历史记录与大表格/超长单段 DOM 的总内存预算；本次测可编辑、窗口及有限生命周期，没有测整个 renderer/Worker/GPU 峰值或数小时编辑。EOL metadata 已避免额外全文快照，但混合换行的最坏历史成本仍要测。
+4. **物理系统输入法**：本机拼音候选选择、跨块 composition、取消、切换文件/焦点、系统快捷键和 Electron 中实际行为。自动化 CDP 通过降低了编辑器路线风险，不能将这些填通过；若尚未取得该证据，03 的此条前期检查仍明确未完成。
+5. ASAR / CSP / workerURL、字体、清理和目标平台；正式 419 条用例仍未执行。
+
+结论：可以据此确定 CodeMirror + 当前 Worker 的实现路线并开始对应接口设计；并非“完整 Markdown 编辑器已完成”或“03 所有验收已通过”。物理 IME 验证不应在交接里消失。
+
+## 5. 物理系统输入法实际尝试与工具边界（2026-10-17 补充）
+
+已实际尝试 Computer Use，详见[操作与静态输入源记录](../验收/证据/predev-editor-system-ime-attempt.json)。本机启用了 ABC 和 Apple 简体拼音 `com.apple.inputmethod.SCIM.ITABC`，静态已选输入源为简体拼音。因此不是缺少中文输入法；静态配置也不能证明候选窗操作已通过。
+
+具体阻塞：CUA返回可控浏览器列表为空；创建4193隔离Chrome页返回 `Browser is not available: chrome`。再尝试原生 `cua.getApp('com.google.Chrome')` 时，**自动审批拒绝了绑定整个已运行Chrome应用**，理由是可能暴露当前窗口或登录/私有标签，而本次授权仅针对隔离本机实验，目标范围过大。已停止，不通过脚本、复制应用或其它输入注入绕过。没有向用户日常文本发送按键，也未操作Codex。
+
+物理候选选择/提交、Esc取消、跨块或widget处composition和系统切换快捷键均保留**未执行**。当前CDP composition、undo/redo、取消结果继续有效，但不是替代证据。此项属于前期的独立工具限制，不写成“开发后自然解决”。可由用户在[隔离实验页](http://127.0.0.1:4193/tests/predev-editor/index.html)手动完成，或在工具能精确绑定该隔离窗口后重新验证。没有据此重新请求整个浏览器权限。
+
+自有4193服务按阶段交接要求保留；共享4176未停止。输入法验证入口只使用合成文档，未挂载真实文件服务。

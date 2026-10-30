@@ -1,0 +1,202 @@
+{
+  "schema": "m9-acceptance-batch/v1",
+  "recordedAt": "2026-10-18T04:54:33.818961+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "status": "passed",
+  "caseIds": [
+    "M9-T-Q01",
+    "M9-T-Q02",
+    "M9-T-Q03",
+    "M9-T-Q04"
+  ],
+  "requiredLayers": [
+    "R",
+    "I"
+  ],
+  "actualResults": {
+    "Q01": "R+I完整：静态C04功能开关与active门控；真实服务禁用/未配置/启动失败与none/definition/full握手，实际EditorView菜单五分支及hover可用性按能力表达。",
+    "Q02": "R+I完整：两种修饰键+token、四类0/1/101结果；0不跳、1正确UTF-16范围、多项按100追加，201结果验证第二批与末项点击；根外仅位置不授权。DEV052列表偏差已修复。",
+    "Q03": "R+I完整：实际EditorView按299/300、后两次500ms及100ms关闭执行；连续null最多3次总请求；移开/编辑/切tab取消并拒绝迟到结果；真实主进程版本与取消协议通过。",
+    "Q04": "R+I完整：实际工作区A→B→C、键盘后退前进及边界禁用；同位置去重、分支截断、非活动旧视图/其他surface/终端不导航，后端失败明确呈现。DEV052历史/active守卫已修复。"
+  },
+  "reference": {
+    "document": "调研/M9_文件类型与编辑状态全集.md",
+    "sections": "C04-C08",
+    "module": "V17 review-file-source-breadcrumb-123b3bed238e.js",
+    "existingEvidenceId": "ev_55b47eb3b7d655b1b283aa58cb63e6f09ef003fc94e7392f92d84e78cb0a1ed0",
+    "boundary": "Archived static evidence only; no new Codex runtime interaction or pixel claims."
+  },
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "nativeBroker": "/private/tmp/willyou-m9-acceptance-batch-r7-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "nativeBrokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "realServer": "/usr/bin/clangd; version/capabilities asserted in host test; C++ UTF-16/emoji/CRLF actual query"
+  },
+  "validation": {
+    "rendererAndEditorRegression": {
+      "passed": 24,
+      "failed": 0,
+      "report": "willyou-language-q-final-r2.json"
+    },
+    "realHostAndProtocolBoundaries": {
+      "passed": 21,
+      "failed": 0,
+      "report": "willyou-language-q-host.json"
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "log": "willyou-language-q-typecheck-r2.log"
+    },
+    "prototypeBuild": {
+      "exitCode": 0,
+      "command": "../../node_modules/.bin/vite build",
+      "log": "willyou-language-q-prototype-build-r2.log"
+    }
+  },
+  "prototypeObservation": {
+    "tool": "CUA Chrome extension",
+    "url": "http://127.0.0.1:4176/tests/source-boundary-runtime.html",
+    "data": "Synthetic built-in src/main.ts; no real source files or services",
+    "steps": [
+      "Filter main.ts; open tree file; right-click editor; choose 转到定义",
+      "Read 100 location buttons plus 加载更多",
+      "Click 加载更多; read 101 location buttons, first remains, final src/main.ts:101:5, no more button"
+    ],
+    "beforeLocations": 100,
+    "afterLocations": 101,
+    "firstPreserved": true,
+    "screenshotsArchived": false,
+    "scope": "Only changed cumulative results behavior; not full prototype/visual parity"
+  },
+  "failureHistory": [
+    "Initial expanded harness r1: duplicate toolbar and nonexistent revealRequest, fixed in r2 (15 passed).",
+    "DEV052 red: four failures exposed replace-page UI, missing history dedup and inactive editor dispatch.",
+    "First green: remaining defaultPrevented assertion also measured CodeMirror local key handling; changed to semantic file-open/history assertions.",
+    "Expanded final first run: inactive fixture needed store.activate to remount before backend query; outside location lacked required nullable relativePath type. Both test-only corrections retained.",
+    "Prototype pnpm build could not locate local vite binary; used existing root-installed Vite as earlier successful runs; no dependencies installed."
+  ],
+  "boundaries": [
+    "R+I original case layers, not packaged App GUI acceptance.",
+    "Renderer actual React/EditorView with IPC substitutes; independent host suite exercises actual FileService, native broker, stdio protocol peer and installed clangd. No false real TypeScript/Python claim.",
+    "DEV052 product changes occurred after r7 build; r7 lacks these JavaScript changes.",
+    "Y29 full real-language and packaged App matrix remains pending.",
+    "Root-external readonly position display follows approved LS07; does not promise file preview or grant roots."
+  ],
+  "baseline": {
+    "sourceFiles": {
+      "docs/里程碑/M9_文件浏览工作区/调研/M9_文件类型与编辑状态全集.md": "07127ed2672a4f755fa0cff5bb4a55bbb03ec029363592ad775e8734cee430d6",
+      "prototypes/m6-codex/src/FileLanguageTools.jsx": "2f2c84ec46873d41c70d01a655ec38572130af30e85aa64bfbd033736dbcd257",
+      "src/main/core/files/file-service.ts": "17051138b2de1f75c2dacd393429cb8214ef27493a6fae2b23a7031cb8eb3c07",
+      "src/main/core/files/lsp/acceptance.test.ts": "fa7cd2b10567bc8c55cf143eca45e4e88ba593f1885657b7e42f3b8d2d13480d",
+      "src/main/core/files/lsp/client.ts": "7bd88c76f960c8ac31395de75728bbd31e52c10c1807982f349c0edbfdfe33b7",
+      "src/main/core/files/lsp/discovery.ts": "b921f78aa5a7de04ed1345429acb83501e54cdd5702b60cf086e3768fe7a4972",
+      "src/main/core/files/lsp/fixtures/server.cjs": "94212ec19b56ef8a18f56a34ff8cadf87231c50bd5d29a0c7e518998c16c8b5a",
+      "src/main/core/files/lsp/reader.test.ts": "dca353207e7504fd7807a82cf549f8cb9a7dc1b2fe1d2fb65eddfe0f01a6e2de",
+      "src/main/core/files/lsp/reader.ts": "deb3936f6676565852c13aa9f811b7fd9ed050dbdcffeaf9d0d6757a67adf8f4",
+      "src/main/core/files/lsp/service.ts": "468de3c03bfdbe8e8c674e6a2d87813fd5938f191d042474b374b1f228af502f",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/roots.ts": "b1b77a0ce53d686d3500624dda47b32b810ceeab20f9c7e8921f3c83813bdcc1",
+      "src/renderer/features/files/file-buffer.ts": "9387ce199b3cc07d9708da37f38dac9da3ed37687b12cd8e2cf27ff0ba7171e5",
+      "src/renderer/features/files/lsp/components.tsx": "65f2214780b71f2969e6dd06073ef804637d1c836a08463ee94e500f98c9d9f2",
+      "src/renderer/features/files/lsp/document.ts": "9d23520c65c1167951549006bbd613a9c002c7e75a3498b659502bb981ac84ee",
+      "src/renderer/features/files/lsp/model.ts": "5748cfaa5a9b30bfa12b2153cd4e9b8c418960cd9037d431960ac15d5f699360",
+      "src/renderer/features/files/lsp/renderer.test.tsx": "64f9cfe746cd9f2f68aee45cddc91205c2c1e559c3407fe21717acb0ddc8ae15",
+      "src/renderer/features/files/lsp/style.css": "a55279b986f3e18d2253f97ed12f3424390b6ec0702184f6a05862b9dbbe08cf",
+      "src/renderer/features/files/lsp/workspace.ts": "9c9d701508ca0ce44d3086ed69adb2dd221ab674af87d571520db41053221ee0",
+      "src/renderer/features/files/text-editor.test.tsx": "022c4b52ed616cc194b5d6be0ffa3a7f2e09381bbcdd1d64c10ce597fada7de8",
+      "src/renderer/features/files/text-editor.tsx": "d94defd7056b19bce041e2958e89bdce63751d9900caa029f1ba3a6604e39848",
+      "src/renderer/features/files/workspace-store.ts": "bd356da772556ccfbf40eaadcd7f8458d648be80871cb514e9e1374cc0c84b01",
+      "src/shared/file-languages.mjs": "dae79365e6fce1f83d778f7e8af642e2b0559884a75ceb99d7b9b42630839e56",
+      "src/shared/file-lsp.ts": "91587d7dc244d38260aac8b0d061e927bb8d6a839aa6c926b252fceee4e2d0c7"
+    },
+    "snapshot": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/sources.tar.gz",
+      "sha256": "674275933859fe3e31fc37223475ccf6c7d8a8ce4ef5583344499e61bc161878"
+    }
+  },
+  "artifacts": {
+    "willyou-language-q-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-r1.log",
+      "sha256": "bd4a217154790cd1b7b274f4af07a1bfc3b2afd09b3640303eac33212a5f2a3d"
+    },
+    "willyou-language-q-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-r2.log",
+      "sha256": "9c6d1a63ae268972ad16cb2ef335bc24d2e481eea2c2428f3d1eb9df5c165389"
+    },
+    "willyou-language-q-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-red.json",
+      "sha256": "703b8ca508f2171eada7264e558a1a5d40acb4fbe057e32f2d73868f33ae6af4"
+    },
+    "willyou-language-q-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-final.json",
+      "sha256": "e4507291eee8d756b3f75e5aa09508db10ceeded6c99615ebaafebe6c002e67a"
+    },
+    "willyou-language-q-prototype-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-prototype-build.log",
+      "sha256": "d6ee6adac17867c14a2afddf57faffacbaf367851f02219ced704588e55ede3c"
+    },
+    "willyou-language-q-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-final.log",
+      "sha256": "47c50d34206297a4419a7f8b794158fad06bbc7037592bea8c0f3c2b69e8076b"
+    },
+    "willyou-language-q-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-red.log",
+      "sha256": "2661b50a6132ef1f467e78815f85a6f4eda454825b0862ff0f1cd4442f361487"
+    },
+    "willyou-language-q-final-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-final-r2.log",
+      "sha256": "d8db0528952d666592736c54821432e9726f1ec9854ba608262cf3fdf9a9bdd3"
+    },
+    "willyou-language-q-typecheck-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-typecheck-r2.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-language-q-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-r1.json",
+      "sha256": "06947708f9d94d9d5a9d69663707fcb27e52770280c016821a7b0a96e80bf4b0"
+    },
+    "willyou-language-q-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-r2.json",
+      "sha256": "a4e5c987d6eb34d3368c66bc9b32b2875e73d486824af6e3469b85bf13e606d8"
+    },
+    "willyou-language-q-prototype-build-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-prototype-build-r2.log",
+      "sha256": "46fd852164967a092c87108fda08fcbbf625b0d2cf73da21130bdedd469486d9"
+    },
+    "willyou-language-q-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-green.json",
+      "sha256": "520164a392f6b69354557f7daa32a1e786b351fd4497ba048a47fb774d284597"
+    },
+    "willyou-language-q-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-green.log",
+      "sha256": "a4644be60b524a0f96a8767c11905ee977bdf4e390d9ce6f0cd1a011e2c12d12"
+    },
+    "willyou-language-q-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-typecheck.log",
+      "sha256": "703b352bbf9b073142e41820ae2e36ccab3b0a7d6a7267f08d0eb239d155dafc"
+    },
+    "willyou-language-q-final-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-final-r2.json",
+      "sha256": "3d79c766e27e6924cbe650e3296a1bee912abf60b4d3db4e5a273a990bb682a6"
+    },
+    "willyou-language-q-host.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-host.log",
+      "sha256": "043e16aead7c748b61b9d6f56be7b61761766e0a40c1dcc2e5d1f0fa3330cd79"
+    },
+    "willyou-language-q-host.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/willyou-language-q-host.json",
+      "sha256": "fd6dda4dc0389d02d33f8b51ccc969bdfd85e5b1440d229f27a2b818b944c606"
+    },
+    "sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/sources.json",
+      "sha256": "64f83097ec1c7f8712f6130131ed6649846705537fd0d7bbd3d0b067e852f731"
+    },
+    "sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-q/sources.tar.gz",
+      "sha256": "674275933859fe3e31fc37223475ccf6c7d8a8ce4ef5583344499e61bc161878"
+    }
+  }
+}

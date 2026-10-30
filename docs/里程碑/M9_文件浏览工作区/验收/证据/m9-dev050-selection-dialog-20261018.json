@@ -1,0 +1,83 @@
+{
+  "id": "M9-DEV-050",
+  "at": "2026-10-18T11:33:23.299599+08:00",
+  "status": "fixed-code-tests-passed-A-pending-new-package",
+  "caseIds": [
+    "M9-T-E12",
+    "M9-T-E16"
+  ],
+  "reportedBy": "actual r6 packaged App",
+  "actualFailure": {
+    "steps": [
+      "Keyboard selected the exact second line const greeting = \"中文🙂 selected\"; in context-selection.ts.",
+      "Right-clicked real editor; chose 让 CLI 修改所选代码…; dialog showed exact expected selected text.",
+      "Typed instruction and clicked 加入终端引用."
+    ],
+    "result": "Dialog incorrectly displayed 选区内容已改变，请重新选择; no reference/PTY write. After cancel actual screenshot showed caret at final empty line, source unchanged.",
+    "rootCause": "current() required live caret range to equal captured range. Menu focus collapse invalidated unchanged captured source. Independent real EditorView reproduction fails with same guard."
+  },
+  "fix": "Capture range/text/version once; current requires same EditorView, buffer instance/version, input settled, and exact captured text at original offsets. Mere caret movement no longer invalidates; edited document/replaced editor/composition still rejected.",
+  "validation": {
+    "red": {
+      "passed": 0,
+      "failed": 1,
+      "notSelected": 5
+    },
+    "green": {
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    "types": "Shared web typecheck reached only concurrent attachment test API/cast errors; owner fixing; final combined types pending. No diagnostic in changed selection files."
+  },
+  "sourceHashes": {
+    "src/renderer/features/files/terminal-context/selection.tsx": "a6a7fce75b6bf1b907dedc28ad5d4581fba6b45bbb2b2cf649a84bc89117f857",
+    "src/renderer/features/files/terminal-context/components.test.tsx": "5f5e34bae6c6adcfb82275f26452258849dc39a84929665409f3b3762de40d89",
+    "src/renderer/features/files/terminal-context/store.ts": "2a6a4ca37c749d71a88b03f0a125d0b5361cb8f26ef123887806a5e4446a8795",
+    "src/renderer/features/files/text-editor.tsx": "d94defd7056b19bce041e2958e89bdce63751d9900caa029f1ba3a6604e39848"
+  },
+  "sourceArchive": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/sources.tar.gz",
+    "sha256": "7d64994a2e7b47ec40f9eaf47cab4c3c3cca30d2d8d9d54185d1171d1c25f7e3"
+  },
+  "artifacts": {
+    "willyou-dev050-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/willyou-dev050-red.json",
+      "sha256": "19c7cb6be4b506a3a6ce0b117e4c8cb206c54fb992afa55aa7ba1abab66b3576"
+    },
+    "willyou-dev050-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/willyou-dev050-red.log",
+      "sha256": "7997ae071aefbe35692f7b10c80c774e344ae0073d0c1b502cb98e5a7364ed6b"
+    },
+    "willyou-dev050-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/willyou-dev050-green.json",
+      "sha256": "363b1b913effb569dee41bba33c220c15c25bcae2635889b686bc057c6637d8e"
+    },
+    "willyou-dev050-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/willyou-dev050-green.log",
+      "sha256": "fe58708beb4fff3636019cc8666ef03db9bbd95934cafb784e2170904f2b4c98"
+    },
+    "willyou-dev050-types.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/willyou-dev050-types.log",
+      "sha256": "f153f3f89d61863d7355b3261ea4d763646ecde2a5ec062e0c9295f52339ef58"
+    },
+    "willyou-dev045-gui-fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/willyou-dev045-gui-fixtures.json",
+      "sha256": "0348b9a1c92593b028ac06f41723561cd27c638c9a767a600d11bf962080b005"
+    },
+    "willyou-dev045-gui-stage1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-selection-dialog/willyou-dev045-gui-stage1.json",
+      "sha256": "9ce83220d2277611f4ed80dffb5ed12448566ee6412b757d75289f5a49388bbf"
+    }
+  },
+  "otherR6ActualResults": {
+    "treeReference": "Explicit tree reference insert preserved prefix and wrote exactly one bracketed payload; unbracketedNewlines=0.",
+    "drag": "Tree and tab drag tool calls produced no payload or new status. No noWindowsAvailable error in this attempt; cause unresolved. Await user manual discriminator after return; do not mark passed or blame tool without proof.",
+    "search": "DEV046 production session search found h13-equal-r6.txt exact content; click opened correct file; scanned93 with46 explained exclusions."
+  },
+  "boundaries": [
+    "No product change to approved flow or prototype behavior; this fixes implementation to existing captured-selection contract.",
+    "No new package/App retest of fix yet.",
+    "No real model invoked; isolated Python receiver never executes text."
+  ]
+}

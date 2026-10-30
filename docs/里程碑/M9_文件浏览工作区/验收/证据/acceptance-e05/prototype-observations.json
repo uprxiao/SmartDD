@@ -1,0 +1,36 @@
+{
+  "observer": "area_marker_review",
+  "method": "Documented cua_repl Chrome Playwright DOM locators; no global/native input, no CDP/evaluate.",
+  "browser": "Chrome extension 1 / tab531330457",
+  "url": "http://127.0.0.1:4176/?preview=m9",
+  "steps": [
+    {
+      "action": "On selected AGENTS.md click 使用 TextEdit 打开（原型模拟）.",
+      "result": "TextEdit：原型模拟打开 /workspace/SmartDD/AGENTS.md；未启动外部应用。",
+      "activeTabRetained": true,
+      "preferredStillTextEdit": true
+    },
+    {
+      "action": "Filter 未知.bin, click exact fixture treeitem.",
+      "result": "Selected 未知.bin; content heading 不支持预览此文件, text 可以通过外部应用打开此文件。, fallback button 使用外部应用打开 visible."
+    },
+    {
+      "action": "Click fallback 使用外部应用打开.",
+      "result": "Open-with menu exposes TextEdit（系统默认）, Visual Studio Code, remember checkbox false."
+    },
+    {
+      "action": "Select TextEdit（系统默认） leaving remember false.",
+      "result": "TextEdit：原型模拟打开 /workspace/SmartDD/fixtures/未知.bin；未启动外部应用。",
+      "activeTabRetained": true,
+      "preferredStillTextEdit": true
+    }
+  ],
+  "failureBranchReused": {
+    "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-prototype-actions-20261018.json",
+    "sha256": "58a7d03691a8a08017ad03a03af2dc687832d237569804b87d6beca5afcb9ec6",
+    "observation": "observations.M9-T-E06.steps: deleted scenario reports 文件不存在，原标签和内容已保留。 with no remembered preference change. Reused existing tested behavior, not a new browser rerun."
+  },
+  "screenshotsArchived": false,
+  "rawDOMSnapshotsArchived": false,
+  "boundary": "Synthetic fixtures and external-open simulation only; no actual external application is called by this prototype."
+}

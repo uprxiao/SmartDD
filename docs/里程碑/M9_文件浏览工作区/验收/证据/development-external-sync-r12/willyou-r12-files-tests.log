@@ -1,0 +1,29 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/external-tree-refresh-acceptance.test.tsx src/renderer/features/files/markdown-refresh-acceptance.test.tsx src/main/core/files/watch-ownership-acceptance.test.ts src/renderer/features/files/tree-failure-native-acceptance.test.tsx --no-file-parallelism --reporter=default --reporter=json --outputFile=/private/tmp/willyou-r12-files-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/renderer/features/files/markdown-refresh-acceptance.test.tsx (8 tests) 6952ms
+     ✓ 'ordinary writer' / 'native watch' updates source and real rich widgets twice without writeback  1193ms
+     ✓ 'ordinary writer' / 'reactivation' updates source and real rich widgets twice without writeback  832ms
+     ✓ 'ordinary writer' / 'explicit refresh' updates source and real rich widgets twice without writeback  865ms
+     ✓ 'CLI process' / 'native watch' updates source and real rich widgets twice without writeback  1144ms
+     ✓ 'CLI process' / 'reactivation' updates source and real rich widgets twice without writeback  985ms
+     ✓ 'CLI process' / 'explicit refresh' updates source and real rich widgets twice without writeback  953ms
+     ✓ reports actual missing-file read error and recovers fresh Markdown without writes  407ms
+     ✓ only a later actual local edit plus differing disk bytes becomes an ordinary conflict  374ms
+ ✓ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests) 4438ms
+     ✓ B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position  1976ms
+     ✓ B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position  1883ms
+ ✓ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (20 tests) 3690ms
+ ✓ src/main/core/files/watch-ownership-acceptance.test.ts (3 tests) 919ms
+     ✓ L04: real native changes stay with the authenticated IPC owner, and forged IDs cannot read/reconfigure/stop another watch  473ms
+
+ Test Files  4 passed (4)
+      Tests  37 passed (37)
+   Start at  13:57:06
+   Duration  18.83s (transform 778ms, setup 0ms, import 1.83s, tests 16.00s, environment 704ms)
+
+JSON report written to /private/tmp/willyou-r12-files-tests.json

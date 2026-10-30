@@ -1,0 +1,50 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/search-session-acceptance.test.tsx src/renderer/features/files/search-failure-acceptance.test.tsx src/renderer/features/files/content-search-acceptance.test.tsx src/renderer/features/files/search-race-acceptance.test.tsx src/renderer/features/files/search-history-acceptance.test.tsx src/renderer/features/files/name-search-acceptance.test.tsx src/main/core/files/root-retry-controller.test.ts src/shared/file-root-location.test.ts src/renderer/features/files/window-boundary-acceptance.test.ts src/renderer/features/files/root-recovery-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev099-regression-r52.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/core/files/root-retry-controller.test.ts (1 test) 12ms
+ ✓ src/shared/file-root-location.test.ts (4 tests) 7ms
+ ✓ src/renderer/features/files/root-recovery-acceptance.test.ts (2 tests) 761ms
+     ✓ keeps text/history/private checkpoints, rejects a lookalike root, and reconnects only the restored original physical root  546ms
+ ✓ src/renderer/features/files/window-boundary-acceptance.test.ts (7 tests) 1746ms
+     ✓ L14 independent real buffers from one base serialize saves and preserve the losing private draft as an explicit conflict  344ms
+ ✓ src/renderer/features/files/name-search-acceptance.test.tsx (6 tests) 1909ms
+   ✓ C18 binds name results to the current query before debounce and rejects an old delayed success  498ms
+   ✓ C18 binds content results to the current query before debounce and rejects an old delayed success  478ms
+     ✓ C18 binds real native successes to the current query and ignores a delayed previous success  605ms
+ ✓ src/renderer/features/files/search-race-acceptance.test.tsx (6 tests) 2182ms
+     ✓ C16 twenty real pending mount/unmount cycles leave zero jobs,processes or renderer IPC listeners  1385ms
+ ✓ src/renderer/features/files/search-history-acceptance.test.tsx (10 tests) 2711ms
+     ✓ R07: retains 30 unique queries and 20 masks, newest first, across dialog restart  647ms
+     ✓ R07: scopes do not leak histories and only the newest 20 survive a 21st scope and restart  884ms
+ ✓ src/renderer/features/files/content-search-acceptance.test.tsx (10 tests) 2588ms
+     ✓ R06 same basenames in unexpanded CJK directories open by click/Enter at exact emoji/BOM/CRLF-aware source range  425ms
+     ✓ R12 native permission issues and outside symlinks are bounded; changed/deleted hits are revalidated instead of locating obsolete bytes  386ms
+     ✓ R09 plain arrows traverse results then history and restore the unsent draft before Enter opens; Escape closes  480ms
+ ✓ src/renderer/features/files/search-session-acceptance.test.tsx (16 tests) 5908ms
+     ✓ C10: real search with legacy host=false selects its supported endpoint and caches only capability  857ms
+     ✓ C10: real search with legacy host=true selects its supported endpoint and caches only capability  540ms
+     ✓ C10: real 'PERMISSION' on legacy=false remains an error without extra retries  395ms
+     ✓ C10: real 'IO' on legacy=false remains an error without extra retries  365ms
+     ✓ C10: real 'PERMISSION' on legacy=true remains an error without extra retries  385ms
+     ✓ C10: real 'IO' on legacy=true remains an error without extra retries  399ms
+     ✓ C10: clear while the absent-session response is pending never starts fallback  305ms
+     ✓ C11: 'name' / 'unmount' while 'success reply pending'  311ms
+     ✓ C11: 'content' / 'clear' while 'success reply pending'  302ms
+     ✓ C11: 'content' / 'unmount' while 'success reply pending'  307ms
+ ✓ src/renderer/features/files/search-failure-acceptance.test.tsx (5 tests) 21183ms
+     ✓ C12 empty native matches complete successfully without an error  1797ms
+     ✓ C12 genuine root permission error remains an error and retry succeeds after chmod restore  1200ms
+     ✓ C12 real unchanged main timeout kills a withheld genuine success and retry starts a fresh native job  15804ms
+     ✓ C15 selected cached delete result revalidates on open and never chooses its neighbor  1102ms
+     ✓ C15 selected cached rename result revalidates on open and never chooses its neighbor  1278ms
+
+ Test Files  10 passed (10)
+      Tests  67 passed (67)
+   Start at  04:08:50
+   Duration  23.91s (transform 7.18s, setup 0ms, import 12.18s, tests 39.01s, environment 6.96s)
+
+JSON report written to /private/tmp/willyou-dev099-regression-r52.json

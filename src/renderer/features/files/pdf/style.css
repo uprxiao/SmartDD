@@ -1,0 +1,34 @@
+/* M9 approved prototype geometry, scoped to the production PDF host. Text-layer
+ * rules below derive from pdfjs-dist 5.4.296 (Apache-2.0; licenses/M9). */
+.fw-pdf{isolation:isolate;position:relative;display:flex;flex-direction:column;flex:1;min-height:0;background:var(--surface);overflow:hidden}
+.fw-pdf-tools{display:flex;align-items:center;gap:8px;min-height:36px;padding:5px 8px;border-bottom:1px solid var(--border);background:var(--bg);font-size:11px;flex-shrink:0}
+.fw-pdf-zoom{display:flex;align-items:center;gap:5px;padding:5px}
+.fw-pdf-main{display:flex;flex:1;min-height:0;overflow:hidden}.fw-pdf-scroll{flex:1;min-width:0;overflow:auto;padding:22px;position:relative;overflow-anchor:none}
+.fw-production .fw-pdf .fw-pdf-page{position:relative;flex-shrink:0;min-height:0;padding:0;margin:0 auto 12px;background:#fff;box-shadow:0 0 0 1px var(--border);overflow:hidden}
+.fw-pdf-canvas{display:block;background:#fff;max-width:none}
+.fw-pdf-thumbnails{width:25px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;padding:4px;transition:width .12s;border-right:1px solid var(--border)}
+.fw-pdf-thumbnails[data-expanded=true]{width:90px;padding:8px}
+.fw-pdf-dock{font-size:9px;display:flex;align-items:center;justify-content:center;gap:3px;min-height:26px;flex-shrink:0;margin-bottom:6px}
+.fw-pdf-thumb-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+.fw-pdf-thumb-button{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:92px;margin:0 0 10px;padding:4px;border:1px solid var(--border);border-radius:5px;background:var(--bg);overflow:hidden;gap:2px}
+.fw-pdf-thumb-button[aria-current],.fw-pdf-thumb-rail .current{outline:2px solid var(--accent);outline-offset:-2px}.fw-pdf-thumb-button>.fw-pdf-thumb{margin:0;pointer-events:none;max-height:66px;overflow:hidden;flex-shrink:1}.fw-pdf-thumb-button>span{font-size:7px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fw-pdf-thumb-button>small{font-size:10px;color:var(--secondary)}
+.fw-pdf-thumbnails[data-expanded=false] .fw-pdf-dock>span,.fw-pdf-thumbnails[data-expanded=false] .fw-pdf-thumb-button>.fw-pdf-thumb,.fw-pdf-thumbnails[data-expanded=false] .fw-pdf-thumb-button>span{display:none}
+.fw-pdf-thumbnails[data-expanded=false] .fw-pdf-thumb-button{padding:3px 0}
+.fw-pdf-link{position:absolute;display:block;cursor:pointer;z-index:3}.fw-pdf-link:hover,.fw-pdf-link:focus-visible{outline:2px solid var(--accent);outline-offset:0;background:#339cff1f}
+.fw-pdf-page-error{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);padding:3px 6px;border-radius:4px;background:var(--surface);color:var(--text);font-size:12px}.fw-pdf-page-error button{margin-left:8px;color:var(--accent)}
+.fw-pdf-status{font-size:10px;line-height:1.5;padding:5px 10px;margin:0;border-top:1px solid var(--border);color:var(--secondary);background:var(--bg);flex-shrink:0;overflow-wrap:anywhere}
+.fw-pdf-pager{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:15px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px 12px;opacity:0;font-size:12px}.fw-pdf-review:hover .fw-pdf-pager,.fw-pdf-review:focus-within .fw-pdf-pager{opacity:1}.fw-pdf-pager button{display:flex}.fw-pdf-pager button:disabled{opacity:.4}
+.fw-pdf-password{position:absolute;z-index:20;left:50%;top:80px;transform:translateX(-50%);width:280px;display:flex;flex-direction:column;gap:8px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px #0003;font-size:12px}.fw-pdf-password input{padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)}.fw-pdf-password>div{display:flex;justify-content:flex-end;gap:12px}.fw-pdf-password button:disabled{opacity:.4}
+.fw-pdf .textLayer{position:absolute;text-align:initial;inset:0;overflow:clip;opacity:1;line-height:1;text-size-adjust:none;forced-color-adjust:none;transform-origin:0 0;caret-color:CanvasText;z-index:0}
+.fw-pdf .textLayer :is(span,br){color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0}
+.fw-pdf .textLayer>:not(.markedContent),.fw-pdf .textLayer .markedContent span:not(.markedContent){z-index:1}.fw-pdf .textLayer span.markedContent{top:0;height:0}.fw-pdf .textLayer span[role=img]{user-select:none;cursor:default}
+.fw-pdf .textLayer ::selection{background:color-mix(in srgb,AccentColor,transparent 75%)}.fw-pdf .textLayer br::selection{background:transparent}
+.fw-pdf .textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:0;cursor:default;-webkit-user-select:none;user-select:none}
+.fw-pdf .textLayer.selecting .endOfContent{top:0}
+.fw-pdf button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.fw-pdf *{scroll-behavior:auto!important;transition:none!important}}
+
+.fw-pdf-thumb-panel[hidden]{display:none}.fw-pdf-thumb-rail{pointer-events:none}.fw-pdf-thumb-rail .fw-pdf-thumb-button{padding:3px 0}
+.fw-pdf-comment-card{position:absolute;z-index:12;width:280px;max-width:calc(100% - 16px);display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);box-shadow:0 12px 35px #0003;font-size:12px}
+.fw-pdf-comment-card header,.fw-pdf-comment-card footer,.fw-pdf-comment-batch{display:flex;align-items:center;gap:8px}.fw-pdf-comment-card header strong,.fw-pdf-comment-batch span{flex:1}.fw-pdf-comment-card footer{justify-content:flex-end}.fw-pdf-comment-card small{color:var(--secondary)}.fw-pdf-comment-card blockquote{max-height:70px;overflow:auto;white-space:pre-wrap;margin:0;border-left:2px solid var(--border);padding-left:8px}.fw-pdf-comment-card textarea{min-height:80px;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:7px;background:var(--bg);color:var(--text)}.fw-pdf-comment-card button:disabled,.fw-pdf-comment-batch button:disabled{opacity:.4}
+.fw-pdf-comment-batch{flex-shrink:0;padding:8px 12px;border-top:1px solid var(--border);background:var(--bg);font-size:12px}.fw-pdf-comment-region{position:absolute;pointer-events:none;z-index:4;outline:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent)}.fw-pdf-comment-marker{position:absolute;z-index:5;min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px}.fw-pdf-page[data-pdf-comment-mode=true]{cursor:crosshair}.fw-pdf-tools>.active{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}

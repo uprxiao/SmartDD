@@ -1,0 +1,91 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/external-tree-refresh-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-external-tree-red-tests.json
+
+[1018/134526.417654:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/134526.759385:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/134616.901459:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/134616.952035:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/134625.299788:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (10 tests | 10 failed) 57496ms
+     × B08 'ordinary writer' / 'native watch' updates create/delete/rename and marks the old document missing 8117ms
+     × B08 'ordinary writer' / 'explicit refresh' updates create/delete/rename and marks the old document missing 8101ms
+     × B08 'ordinary writer' / 'resume scan' updates create/delete/rename and marks the old document missing 8105ms
+     × B08 'CLI process' / 'native watch' updates create/delete/rename and marks the old document missing 8105ms
+     × B08 'CLI process' / 'explicit refresh' updates create/delete/rename and marks the old document missing 8108ms
+     × B08 'CLI process' / 'resume scan' updates create/delete/rename and marks the old document missing 8121ms
+     × B08 ordinary writer cannot redirect a missing dirty document to a new same-name same-bytes file 226ms
+     × B08 CLI process cannot redirect a missing dirty document to a new same-name same-bytes file 297ms
+     × L06 observes another process changing the file immediately after an acknowledged local save 8101ms
+     × L07 rescans changes made after the initial list/read but before native subscription starts 213ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 'ordinary writer' / 'native watch' updates create/delete/rename and marks the old document missing
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 'ordinary writer' / 'explicit refresh' updates create/delete/rename and marks the old document missing
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 'ordinary writer' / 'resume scan' updates create/delete/rename and marks the old document missing
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 'CLI process' / 'native watch' updates create/delete/rename and marks the old document missing
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 'CLI process' / 'explicit refresh' updates create/delete/rename and marks the old document missing
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 'CLI process' / 'resume scan' updates create/delete/rename and marks the old document missing
+Error: Real filesystem/tree/watch did not settle
+ ❯ until src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:28:132
+
+ ❯ fixture src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:76:35
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:86:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 ordinary writer cannot redirect a missing dirty document to a new same-name same-bytes file
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 CLI process cannot redirect a missing dirty document to a new same-name same-bytes file
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:108:21
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > L06 observes another process changing the file immediately after an acknowledged local save
+Error: Real filesystem/tree/watch did not settle
+ ❯ until src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:28:132
+
+ ❯ fixture src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:76:35
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:116:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > L07 rescans changes made after the initial list/read but before native subscription starts
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:126:136
+    124|     external(f.project, 'write', true, 'written before native subscrib…
+    125|     await act(async () => { f.release(); await until(() => f.a.raw ===…
+    126|     expect(f.api.save).not.toHaveBeenCalled(); expect(f.updates.some(u…
+       |                                                                                                                                        ^
+    127|     rows.push({ caseId: 'M9-T-L07', changedBeforeNativeSubscribe: true…
+    128|   }, 15_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed (10)
+   Start at  13:45:26
+   Duration  58.63s (transform 356ms, setup 0ms, import 744ms, tests 57.50s, environment 320ms)
+
+JSON report written to /private/tmp/willyou-external-tree-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

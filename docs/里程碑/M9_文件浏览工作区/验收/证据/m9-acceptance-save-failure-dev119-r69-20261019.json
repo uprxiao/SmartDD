@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-SAVE-FAILURE-DEV119-R69",
+  "at": "2026-10-19T02:41:59.344719+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-one-case",
+  "revision": "R3.4 / R3.4-P1; H09 R07.4 original steps/expected unchanged",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "macOS": "26.6.1",
+  "architecture": "arm64",
+  "fullCasesPassed": [
+    "M9-T-H09"
+  ],
+  "productionChanges": [],
+  "prototypeChanges": [],
+  "defects": [],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r69-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "4ee64b38636975dddce540e2958ae66869ae2669d1dbf3ca95743faf2c9edac0",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecksReused": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 82,
+    "privateFaultApp": {
+      "path": "/private/tmp/willyou-native-save-failure-d97c04/WillYou-Fault-Test.app",
+      "wrapperSha256": "b7c7296a6f14890c20cc90744c85686a2c934cc80f6c67c1826724b46c8b0601",
+      "originalSourceApp": "/private/tmp/willyou-m9-acceptance-batch-r69-build/mac-arm64/WillYou.app"
+    },
+    "faultBoundary": "A actual packaged renderer/CM/main service and byte-identical original native broker, in a private APFS-cloned App with explicitly substituted transparent native relay. Own64MiB APFS image only: chmod parent0500, real ENOSPC filler/capacity rejection, genuine native EFBIG via4096-byte RLIMIT_FSIZE on save. Original request/frame bytes forwarded; no fabricated result/error or Store/editor/DOM value injection. userData/drafts off full volume. No whole-host disk-full, clipboard, model, external App/service, live Codex or physical IME claim."
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-text-conflict-dev118-r69-20261019.json",
+    "sha256": "9c41075e8191f8ffc29d579eca31552f5225bb28e52dd275f6a2ad70dfabd873",
+    "all93ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "buildFiles": 1126,
+    "previousTestedFiles": 1126,
+    "testedFiles": 1130,
+    "buildSha256": "f525599c4f30480a8d61d84d1e65bcd3112645070f50b85b2e4cb20b43598edf",
+    "previousTestedSha256": "e3eb83e440b2ab35c8b70fbd993fb2e1854f8482737e589d57cf1a373090aefa",
+    "finalTestedSha256": "b2d1bde5259401622bf284ad0fc6899668880010829ff40391e0833f7f689c26",
+    "postPreviousCheckpointChanges": [
+      "src/renderer/features/files/file-buffer.test.ts"
+    ],
+    "postPreviousCheckpointNewFiles": [
+      "scripts/files/text-save-failure-fixture.d.mts",
+      "scripts/files/text-save-failure-fixture.mjs",
+      "scripts/files/text-save-failure-ui.mjs",
+      "src/renderer/features/files/save-failure-native-acceptance.test.ts"
+    ],
+    "productionChanges": [],
+    "prototypeChanges": []
+  },
+  "verification": {
+    "currentCodePassed": 41,
+    "newUniqueCodeTests": 6,
+    "newTestsByBoundary": {
+      "U": 3,
+      "I": 3
+    },
+    "nativeRows": 3,
+    "currentSkipped": 0,
+    "unhandledErrors": 0,
+    "actualUiChecks": 6,
+    "actualModes": [
+      "permission",
+      "disk-full",
+      "generic-EFBIG"
+    ],
+    "actualThemes": [
+      "light",
+      "dark"
+    ],
+    "intentionalNativeFailedSaves": 6,
+    "intentionalNativeSuccessfulRetries": 6,
+    "normalQuit": {
+      "pid": 11425,
+      "code": 0,
+      "signal": null
+    },
+    "ownVolumesDetached": 6,
+    "currentTypecheckExit": 0,
+    "formalPassed": 227,
+    "formalTotal": 419,
+    "formalRemaining": 192,
+    "unexecuted": 190,
+    "blocked": 2,
+    "appRemaining": 189
+  },
+  "boundaries": [
+    "A actual packaged renderer/CM/main service and byte-identical original native broker, in a private APFS-cloned App with explicitly substituted transparent native relay. Own64MiB APFS image only: chmod parent0500, real ENOSPC filler/capacity rejection, genuine native EFBIG via4096-byte RLIMIT_FSIZE on save. Original request/frame bytes forwarded; no fabricated result/error or Store/editor/DOM value injection. userData/drafts off full volume. No whole-host disk-full, clipboard, model, external App/service, live Codex or physical IME claim.",
+    "I real source/FileBuffer/FileService/recovery/native binary/OS volume and errno; fake timers only. Transparent relay applies4096-byte RLIMIT_FSIZE to original save subprocess for genuine EFBIG; no protocol substitution. Not actual UI or whole-system disk exhaustion.",
+    "HFS+ unsupported atomic exchange is retained, not changed into an unsafe write. APFS fault fixture maintains actual bounded write pressure.",
+    "No fresh P UI/full suite/physical IME/clipboard/Codex/platform claim. Reused base r69 and earlier results remain separately identified.",
+    "All419 still required; current goal remains active and unpublished."
+  ],
+  "artifacts": {
+    "willyou-dev119-app-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-app-final.log",
+      "sha256": "d13461116b03d7c0b64d90fcc835aca0964e00726f57f471954a0806c79c3ec1"
+    },
+    "willyou-dev119-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-app-r1.log",
+      "sha256": "84ce024154dc50d5077e7e9683b5e6c4d7b4db8c54f81cd842ad385eaecac085"
+    },
+    "willyou-dev119-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-archive.py",
+      "sha256": "09da24165083326c3592f9088860cbe80bbe6771e9bb59e8280b0a1eb2834d88"
+    },
+    "willyou-dev119-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-code-final.json",
+      "sha256": "e479433d1cb2836ba608c1db8bbb785573806eb677e87bb863f08c0dc5c12284"
+    },
+    "willyou-dev119-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-code-final.log",
+      "sha256": "030be12a3a0bc89537ff9bcaf72953df342e1a6f5fb547f39425913e2e7d5d1e"
+    },
+    "willyou-dev119-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-code-r1.json",
+      "sha256": "0d116cd71ab46229201442ab786ec80755ede0a797b3f000cda455db154af709"
+    },
+    "willyou-dev119-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-code-r1.log",
+      "sha256": "6fdb9874e25e8e7a5e15d7864e5807229a65903a82fc02c9fb8b59b626ce343b"
+    },
+    "willyou-dev119-code-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-code-r2.json",
+      "sha256": "0319e60dab06b3dff4dcd6eb7b476508bf029c6a68c0e083e7d26337abc23ff4"
+    },
+    "willyou-dev119-code-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-code-r2.log",
+      "sha256": "fe325c1cb89c6b9dfd4dafd0fef6d1a25e2a1f7d982a1ca3203499e706025e1e"
+    },
+    "willyou-dev119-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-index-before.json",
+      "sha256": "662f3cc756c35ae94ae5bd78b6c69be026282061ac8f88cf1115d1193fff3507"
+    },
+    "willyou-dev119-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-native-final.json",
+      "sha256": "148c6919e5e46fcc402ee49015cc7642c863645af2937bddd664ded0c9244d63"
+    },
+    "willyou-dev119-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-native-r1.json",
+      "sha256": "6a040f66d198f511110ab0e8badfb67455b9d556259d2eddbb37826de67965b1"
+    },
+    "willyou-dev119-native-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-native-r2.json",
+      "sha256": "fa6a3c7dd0765e59a578d62bc1efe819628f5e7169c999f9f5ba85f2eafa942f"
+    },
+    "willyou-dev119-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-process-audit.json",
+      "sha256": "04af1255b67f82eea849bdded4f666c8efb909bd10e53933d6438b8ede482a18"
+    },
+    "willyou-dev119-process-audit.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-process-audit.py",
+      "sha256": "d5b92c8096603630543d1d4d8bd655099ae183ec1dd8973f29ccc080838b305f"
+    },
+    "willyou-dev119-runtime-r69.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-runtime-r69.json",
+      "sha256": "0ef51add6a099bcebce2c97f0873fa784891725fdb130cf20013f14d293c9204"
+    },
+    "willyou-dev119-runtime-stderr.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-runtime-stderr.log",
+      "sha256": "f115d1f1e56d14c29525a7ecbde5a635283db9a72a7a467048ba3eaf6269ec07"
+    },
+    "willyou-dev119-tested-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-tested-snapshot.py",
+      "sha256": "0d3b6c314f2a9e50db89a03b8e4129c09829e5d04a4f856c0839348ca1e0b084"
+    },
+    "willyou-dev119-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev119-volume-probe-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-volume-probe-r1.json",
+      "sha256": "d0e991852d2dcb049e361eec4b434dfa6d066b489562069a2475e66343973ea2"
+    },
+    "willyou-dev119-volume-probe.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-volume-probe.json",
+      "sha256": "0b60d6ebe06bf4265a8c8c19b95246c886e542987b1c4b0fe971c3228b7dd253"
+    },
+    "willyou-dev119-volume-probe.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-volume-probe.py",
+      "sha256": "7943486e8bda6ce217136acb26091efe864239d2a44456b69416d3316f1d0698"
+    },
+    "willyou-dev119-watcher-r69.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-watcher-r69.json",
+      "sha256": "c3f7da672ed4cbd5cae12df0c9e75cd9284a5fe60dd0eb81ce3d678870585b79"
+    },
+    "willyou-dev119-watcher-stderr.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-dev119-watcher-stderr.log",
+      "sha256": "f115d1f1e56d14c29525a7ecbde5a635283db9a72a7a467048ba3eaf6269ec07"
+    },
+    "willyou-m9-acceptance-batch-r69-dev119-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-m9-acceptance-batch-r69-dev119-tested-sources.json",
+      "sha256": "e80e57b556d48b0809df72409248c1b9ce3df7e77a682594562cbacde5b7d150"
+    },
+    "willyou-m9-acceptance-batch-r69-dev119-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/willyou-m9-acceptance-batch-r69-dev119-tested-sources.tar.gz",
+      "sha256": "b2d1bde5259401622bf284ad0fc6899668880010829ff40391e0833f7f689c26"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/dark-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/dark-permission.txt-failure.png",
+      "sha256": "321cda6467745449c7de39e3acc0ea1f6cf8805f3c9b4cb19c0e9426e9c009fc"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/dark-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/dark-permission.txt-retry.png",
+      "sha256": "52d22d5f8da4cf9f21aee709cab4ac8acd27133d2f4c5fd01c90f2df134368e5"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/failure-electron.log",
+      "sha256": "5d134e65dcf9026b9818878261bd7a9de3262d44c5a6dd1db1a725daf51ab724"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/failure.png",
+      "sha256": "7c3d749f3ab0e3f499198ce52f1117adc33a2d10648cc52009dcef3290358a8d"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/light-disk-full.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/light-disk-full.txt-failure.png",
+      "sha256": "0c0b4c1a12c2c062bddb0f62f6c5b8c8c24bc033423e55570d027829bf57de3d"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/light-disk-full.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/light-disk-full.txt-retry.png",
+      "sha256": "adc7c4dbcd69c0141463b913e7cb36581bc3cc4b49be58101ddf34960a5fcee9"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/light-generic.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/light-generic.txt-failure.png",
+      "sha256": "b27814338a4bb8769068f2950cf178c057ff9b8920d66ad327b62a169d3c5b11"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/light-generic.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/light-generic.txt-retry.png",
+      "sha256": "2f32deb3d8ca1bf2b3183b2c00b8664759d5ff5259fb58e8d4e1d86dc085e7d0"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/light-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/light-permission.txt-failure.png",
+      "sha256": "e6451d08895b704311ae46296c77f75f94c1cfe01afacf9c58a0d8dd3a45d537"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/light-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/light-permission.txt-retry.png",
+      "sha256": "005c50463df32fade8ce1bbd81e2efc628754fe7105b0f9148b1eaf284c6fde5"
+    },
+    "runs/willyou-native-save-failure-XLqfJZ/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-XLqfJZ/result.json",
+      "sha256": "097d3dbc2d99e97d6c7857f7e12b2d8a59cebd54da453c33448156d32c7ac005"
+    },
+    "runs/willyou-native-save-failure-d97c04/dark-disk-full.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/dark-disk-full.txt-failure.png",
+      "sha256": "044999a8e2fe1051fc0255f1ce612145538bfeeba36743c76f1ff1f926455636"
+    },
+    "runs/willyou-native-save-failure-d97c04/dark-disk-full.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/dark-disk-full.txt-retry.png",
+      "sha256": "05d432ed63f9c06a4b087aab709558e4610a23bfcbe18e5b2af28fc8b5dca77e"
+    },
+    "runs/willyou-native-save-failure-d97c04/dark-generic.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/dark-generic.txt-failure.png",
+      "sha256": "93dcf5b4a17d402e0118b137b1292f35b723a5419ae0f13373dcbd5869a99f44"
+    },
+    "runs/willyou-native-save-failure-d97c04/dark-generic.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/dark-generic.txt-retry.png",
+      "sha256": "16b67240c37aa33f51ecac2b40570b31ef8dacb98b508673dfd7f1d5270d1c7d"
+    },
+    "runs/willyou-native-save-failure-d97c04/dark-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/dark-permission.txt-failure.png",
+      "sha256": "07051a5292a9bdb40198081b0a22057b9a25bc53948bc97d55b2349a2cc14dc1"
+    },
+    "runs/willyou-native-save-failure-d97c04/dark-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/dark-permission.txt-retry.png",
+      "sha256": "b8998ab266bd3d825d96ef6826e4789ec0d7876866519948a6e28384d7117f78"
+    },
+    "runs/willyou-native-save-failure-d97c04/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/electron.log",
+      "sha256": "4b0c7bd9d849aa2ffd7cddb7a02fb61dc5138d31f4a7064a4ce9ad5d01cbd11e"
+    },
+    "runs/willyou-native-save-failure-d97c04/light-disk-full.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/light-disk-full.txt-failure.png",
+      "sha256": "b9ea182439d364ea6e6faafe0ee92593c37827f98ea5b1a67dd086db6138e5fd"
+    },
+    "runs/willyou-native-save-failure-d97c04/light-disk-full.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/light-disk-full.txt-retry.png",
+      "sha256": "d54ff4a73d90ec3ec123df2aaea8ec6d46dca567145b8937a5b1d7d832ddfe45"
+    },
+    "runs/willyou-native-save-failure-d97c04/light-generic.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/light-generic.txt-failure.png",
+      "sha256": "8257c34e8a59e05ec68f6739cf5a9ea193c116bdcd9d2be3f1452fcd1f9b8ec3"
+    },
+    "runs/willyou-native-save-failure-d97c04/light-generic.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/light-generic.txt-retry.png",
+      "sha256": "e7a6621aeeeb1a6ab556697348e33580a2805f6d4be4b9880c2673ee8f700682"
+    },
+    "runs/willyou-native-save-failure-d97c04/light-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/light-permission.txt-failure.png",
+      "sha256": "b69342a0a3c4d9a14ed19556c92dbee2720069ee4f4070453c3b3ddd1ea60be5"
+    },
+    "runs/willyou-native-save-failure-d97c04/light-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/light-permission.txt-retry.png",
+      "sha256": "3497372779bf54cc0b1e2455156d515ae87c413da55110c18c36c4da59069aaa"
+    },
+    "runs/willyou-native-save-failure-d97c04/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/runs/willyou-native-save-failure-d97c04/result.json",
+      "sha256": "7640e582b9e342ead16d7a94a05eb3ceeed568717712bf7be5471d457f6d1310"
+    },
+    "environments/willyou-native-save-failure-d97c04/environment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-d97c04/environment.json",
+      "sha256": "21afe487bf84873138ffafde76888cd865414e6f2fae4c3cd1c4f98b1d11e4eb"
+    },
+    "environments/willyou-native-save-failure-d97c04/attach.plist": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-d97c04/attach.plist",
+      "sha256": "d2a3a4821ead00fb652d300cec3ef86f9ef3db401d491b000fe7cb06c6c9aded"
+    },
+    "environments/willyou-native-save-failure-d97c04/native-relay.jsonl": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-d97c04/native-relay.jsonl",
+      "sha256": "cd2d49f9b220071c24e0cc965fe966f57ba218f85778659fcee9c762cbe5e525"
+    },
+    "environments/willyou-native-save-failure-d97c04/willyou-files-relay": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-d97c04/willyou-files-relay",
+      "sha256": "b7c7296a6f14890c20cc90744c85686a2c934cc80f6c67c1826724b46c8b0601"
+    },
+    "environments/willyou-native-save-failure-QKPuiK/environment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-QKPuiK/environment.json",
+      "sha256": "3b506bb7154c952c7b38a38067bd4a00943ad3a5be3cf9be334658c3ae94f61c"
+    },
+    "environments/willyou-native-save-failure-QKPuiK/attach.plist": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-QKPuiK/attach.plist",
+      "sha256": "9ba0123306446185f1b36489a9ef954171c71bd33eade0fd63dfa413d4f58471"
+    },
+    "environments/willyou-native-save-failure-QKPuiK/native-relay.jsonl": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-QKPuiK/native-relay.jsonl",
+      "sha256": "393506347b0db0afb2a9d6420e4ae54e8637566df96881ecfddc67687847baf8"
+    },
+    "environments/willyou-native-save-failure-QKPuiK/willyou-files-relay": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-QKPuiK/willyou-files-relay",
+      "sha256": "eeee153123bd75d4b153a8229d4b6ddceaa7d78518a2096bc7859fbd9a538f1f"
+    },
+    "environments/willyou-native-save-failure-XLqfJZ/environment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-XLqfJZ/environment.json",
+      "sha256": "9130ba42b7e00575a07b0e707968c1bd1d889da751ea1a8aaedf80cebfebdc4d"
+    },
+    "environments/willyou-native-save-failure-XLqfJZ/attach.plist": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-XLqfJZ/attach.plist",
+      "sha256": "cdb6175f1f1cb508f8741e6f48c84b8ceed484c1d1fd3814464ed63a957cbaaf"
+    },
+    "environments/willyou-native-save-failure-XLqfJZ/native-relay.jsonl": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-XLqfJZ/native-relay.jsonl",
+      "sha256": "321db39268d81465651d8af0d07c9635180e7e9d5f6edc5f2f355fa4f181ec26"
+    },
+    "environments/willyou-native-save-failure-XLqfJZ/willyou-files-relay": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-XLqfJZ/willyou-files-relay",
+      "sha256": "e9363605fe7d8516292d59a61c8d76fe3f1cdf417ab67d4c2cf334b6b551033c"
+    },
+    "environments/willyou-native-save-failure-U0pjGc/environment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-U0pjGc/environment.json",
+      "sha256": "54f1c3148bf5fcde5415807420176298b598d2323c8a47abad282490013ae40d"
+    },
+    "environments/willyou-native-save-failure-U0pjGc/attach.plist": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-U0pjGc/attach.plist",
+      "sha256": "125f07e3d1e95776bc2b911bfbfe5451028cf6abe891761b26fb9cddbdd2a0db"
+    },
+    "environments/willyou-native-save-failure-U0pjGc/native-relay.jsonl": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-U0pjGc/native-relay.jsonl",
+      "sha256": "632fcf54b800680dc45651f4e9dcc0a07969dce71d398f92729546ed29922b8d"
+    },
+    "environments/willyou-native-save-failure-U0pjGc/willyou-files-relay": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-U0pjGc/willyou-files-relay",
+      "sha256": "32c0714bb4e2760c402a3bce5f7c31e69a7e5c33becd7eef60e4dbd09a923b1a"
+    },
+    "environments/willyou-native-save-failure-Uge5r4/environment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-Uge5r4/environment.json",
+      "sha256": "2cf819b098eae8177d386484ac3cdb5c226424302e1e8289964e933896473f16"
+    },
+    "environments/willyou-native-save-failure-Uge5r4/attach.plist": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-Uge5r4/attach.plist",
+      "sha256": "939ab89603bdc54bdf58983d66d8f9ebc62ecf84b28a2206004a3e36a46ae765"
+    },
+    "environments/willyou-native-save-failure-Uge5r4/native-relay.jsonl": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-Uge5r4/native-relay.jsonl",
+      "sha256": "32781e34e8dbbebacf2c8943917fa243cc74109459707c0a1cf41a45cb7fa1c4"
+    },
+    "environments/willyou-native-save-failure-Uge5r4/willyou-files-relay": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/environments/willyou-native-save-failure-Uge5r4/willyou-files-relay",
+      "sha256": "aa3516a96b205801765d90d65588defbf5a45b940288a1d6855e1a2294699fda"
+    },
+    "probes/willyou-h09-volume-probe-56axqucp/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/probes/willyou-h09-volume-probe-56axqucp/result.json",
+      "sha256": "d0e991852d2dcb049e361eec4b434dfa6d066b489562069a2475e66343973ea2"
+    },
+    "probes/willyou-h09-volume-probe-09nith2x/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/probes/willyou-h09-volume-probe-09nith2x/result.json",
+      "sha256": "0b60d6ebe06bf4265a8c8c19b95246c886e542987b1c4b0fe971c3228b7dd253"
+    },
+    "failure-history.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-failure-dev119-r69/failure-history.txt",
+      "sha256": "7d79a584e7a1ca3e77a53c182513abe525d47e58cb17af28d6215664c616c648"
+    }
+  }
+}

@@ -1,0 +1,717 @@
+{
+  "createdAt": "2026-10-18T07:38:47.870754+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4-P1",
+  "scope": "P09 modern chart source data adapter and isolated vector feasibility; full modern chart implementation still open",
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "libreOffice": "26.2.4.2",
+    "libreOfficeBuild": "0229ac93fcf0d7cbc6376066c6f35021cef002dc"
+  },
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-chartex-data-r1-sources.tar.gz",
+    "sha256": "41ee1a33ed525d21a53e3b91e5be8d7aa9d314b29ec7477496ca7b7bdbb5e85f",
+    "files": 609,
+    "manifest": "/private/tmp/willyou-m9-chartex-data-r1-sources.json",
+    "currentFilesMatch": true
+  },
+  "production": {
+    "implemented": [
+      "Recognize live ChartEx as chart objects",
+      "Resolve selected single series dataId to contiguous finite nonnegative 1-8 point cache and local embedded workbook",
+      "Same-length data changes update actual workbook cells and cx:pt text; fork only selected chart, preserving shared users and all old dependencies",
+      "History, version conflicts, save, recovery remain on source packages"
+    ],
+    "limits": [
+      "Modern chart preview still guarded; vector probe is not connected to product",
+      "Modern insertion/type conversion/options, count changes and custom style fidelity remain pending",
+      "No App UI acceptance in this batch"
+    ]
+  },
+  "researchCorrection": {
+    "firstAttempt": "vector-r1 helper keyword name collision fixed before native rendering",
+    "correctedFields": [
+      "CT_Binning binCount uses element text, not val attribute",
+      "CT_ExternalData autoUpdate attribute is unqualified"
+    ],
+    "source": "https://learn.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/2e5dfc5a-d3b7-4390-bc00-188a2fefcb3a",
+    "externalDataSource": "https://learn.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/9a9d715b-dcae-4b03-89e9-a6362994e1a2",
+    "note": "r1 artifacts retained. r2 regenerated from corrected schema and reproduced identical wrong-line PNGs; correction does not close DEV-029."
+  },
+  "nativeOriginalR2": {
+    "directory": "/private/tmp/willyou-chartex-render-r2",
+    "reportSha256": "6a46355f5cd597d10c46021f11c5dee7586e3b4c635d7e387ea018efe16077b3",
+    "results": [
+      {
+        "name": "funnel.pptx",
+        "inputHash": "8b7984b219e9391fdd606194948f8198db46b988d1354567d71f9d0474cf7676",
+        "pages": 1,
+        "error": null,
+        "pngSha256": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2"
+      },
+      {
+        "name": "histogram.pptx",
+        "inputHash": "090833e4d6c7e2d921f51b70818af5eee1ec347f9901f4f59b8eaeec3b900781",
+        "pages": 1,
+        "error": null,
+        "pngSha256": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2"
+      },
+      {
+        "name": "treemap.pptx",
+        "inputHash": "502935cbe4da92a5aeaf8eeed7469f7da183b32e58fcc6efae876867e4582878",
+        "pages": 1,
+        "error": null,
+        "pngSha256": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2"
+      },
+      {
+        "name": "waterfall.pptx",
+        "inputHash": "1b16c7ead59734848e4b3e1e104c8cc41ebaf819205e799e0dc6a89c90675978",
+        "pages": 1,
+        "error": null,
+        "pngSha256": "27443a9df0e7b5b43492df5958eb7d6b796ce7397d82093ecc264c3d77cf91c2"
+      }
+    ],
+    "result": "FAIL: all four native outputs still identical line plot"
+  },
+  "vectorFeasibility": {
+    "directory": "/private/tmp/willyou-chartex-vector-render-r2",
+    "inputDirectory": "/private/tmp/willyou-chartex-vector-input-r2",
+    "sourceDirectory": "/private/tmp/willyou-chartex-fixtures-r2",
+    "sourceAndProjection": [
+      {
+        "kind": "funnel",
+        "values": [
+          6.0,
+          3.0,
+          4.0,
+          2.0,
+          5.0
+        ],
+        "plotted": [
+          6.0,
+          3.0,
+          4.0,
+          2.0,
+          5.0
+        ],
+        "rectangles": [
+          [
+            20.0,
+            15.0,
+            180.0,
+            18.0
+          ],
+          [
+            65.0,
+            34.0,
+            90.0,
+            18.0
+          ],
+          [
+            50.0,
+            53.0,
+            120.0,
+            18.0
+          ],
+          [
+            80.0,
+            72.0,
+            60.0,
+            18.0
+          ],
+          [
+            35.0,
+            91.0,
+            150.0,
+            18.0
+          ]
+        ],
+        "inputHash": "8b7984b219e9391fdd606194948f8198db46b988d1354567d71f9d0474cf7676",
+        "projectionHash": "1f16bb58f4a3057893aa0f3d5dcabaafeaa9377c6d7044b98c6bd0b6fb25659b",
+        "sourceAndDataPreserved": true,
+        "changedParts": [
+          "ppt/slides/slide1.xml"
+        ],
+        "limits": "Geometry experiment only. Colors are prototype reference; title/labels/axes/legend/custom source styles not yet projected."
+      },
+      {
+        "kind": "histogram",
+        "values": [
+          6.0,
+          3.0,
+          4.0,
+          2.0,
+          5.0
+        ],
+        "plotted": [
+          2,
+          1,
+          2
+        ],
+        "rectangles": [
+          [
+            15.0,
+            25.0,
+            63.333333333333336,
+            85.0
+          ],
+          [
+            78.33333333333334,
+            67.5,
+            63.333333333333336,
+            42.5
+          ],
+          [
+            141.66666666666669,
+            25.0,
+            63.333333333333336,
+            85.0
+          ]
+        ],
+        "inputHash": "090833e4d6c7e2d921f51b70818af5eee1ec347f9901f4f59b8eaeec3b900781",
+        "projectionHash": "3390026925e28f66573019562c47f553a46370a0605e1e803eba706f7b4116a1",
+        "sourceAndDataPreserved": true,
+        "changedParts": [
+          "ppt/slides/slide1.xml"
+        ],
+        "limits": "Geometry experiment only. Colors are prototype reference; title/labels/axes/legend/custom source styles not yet projected."
+      },
+      {
+        "kind": "treemap",
+        "values": [
+          6.0,
+          3.0,
+          4.0,
+          2.0,
+          5.0
+        ],
+        "plotted": [
+          6.0,
+          3.0,
+          4.0,
+          2.0,
+          5.0
+        ],
+        "rectangles": [
+          [
+            15.0,
+            15,
+            57.0,
+            95
+          ],
+          [
+            72.0,
+            15,
+            28.5,
+            95
+          ],
+          [
+            100.49999999999999,
+            15,
+            38.0,
+            95
+          ],
+          [
+            138.5,
+            15,
+            19.0,
+            95
+          ],
+          [
+            157.5,
+            15,
+            47.5,
+            95
+          ]
+        ],
+        "inputHash": "502935cbe4da92a5aeaf8eeed7469f7da183b32e58fcc6efae876867e4582878",
+        "projectionHash": "4825dd326fada7010230cb5264daca916596f0a6837ce72b134c05e310b5772c",
+        "sourceAndDataPreserved": true,
+        "changedParts": [
+          "ppt/slides/slide1.xml"
+        ],
+        "limits": "Geometry experiment only. Colors are prototype reference; title/labels/axes/legend/custom source styles not yet projected."
+      },
+      {
+        "kind": "waterfall",
+        "values": [
+          6.0,
+          3.0,
+          4.0,
+          2.0,
+          5.0
+        ],
+        "plotted": [
+          6.0,
+          3.0,
+          4.0,
+          2.0,
+          5.0
+        ],
+        "rectangles": [
+          [
+            15.0,
+            83.0,
+            32.0,
+            27.0
+          ],
+          [
+            53.0,
+            69.5,
+            32.0,
+            13.5
+          ],
+          [
+            91.0,
+            51.50000000000001,
+            32.0,
+            17.999999999999993
+          ],
+          [
+            129.0,
+            42.5,
+            32.0,
+            9.000000000000007
+          ],
+          [
+            167.0,
+            20.0,
+            32.0,
+            22.5
+          ]
+        ],
+        "inputHash": "1b16c7ead59734848e4b3e1e104c8cc41ebaf819205e799e0dc6a89c90675978",
+        "projectionHash": "2be3592941e07836263953ce7b2cae01e589cffda34475b98a1b3e766e238d45",
+        "sourceAndDataPreserved": true,
+        "changedParts": [
+          "ppt/slides/slide1.xml"
+        ],
+        "limits": "Geometry experiment only. Colors are prototype reference; title/labels/axes/legend/custom source styles not yet projected."
+      }
+    ],
+    "measurements": [
+      {
+        "type": "funnel",
+        "pdfSha256": "c6bbea510332dd9286f4b8146898d9bfa65ff6176e2077df5bf7c13cd8f16d70",
+        "expected": [
+          6,
+          3,
+          4,
+          2,
+          5
+        ],
+        "components": [
+          {
+            "color": 0,
+            "x": 218,
+            "y": 106,
+            "width": 524,
+            "height": 59,
+            "pixels": 30916
+          },
+          {
+            "color": 1,
+            "x": 349,
+            "y": 168,
+            "width": 262,
+            "height": 59,
+            "pixels": 15458
+          },
+          {
+            "color": 2,
+            "x": 306,
+            "y": 231,
+            "width": 348,
+            "height": 58,
+            "pixels": 20184
+          },
+          {
+            "color": 3,
+            "x": 393,
+            "y": 293,
+            "width": 174,
+            "height": 59,
+            "pixels": 10266
+          },
+          {
+            "color": 0,
+            "x": 262,
+            "y": 356,
+            "width": 436,
+            "height": 58,
+            "pixels": 25288
+          }
+        ],
+        "proportionMaxErrorPixels": 0.8000000000000114,
+        "pass": true
+      },
+      {
+        "type": "histogram",
+        "pdfSha256": "0ae2b8fa603e40127d68defc3aeaa4fbbda7d701a200b25068f6743aceb8e4da",
+        "expected": [
+          2,
+          1,
+          2
+        ],
+        "components": [
+          {
+            "color": 0,
+            "x": 204,
+            "y": 139,
+            "width": 184,
+            "height": 278,
+            "pixels": 51013
+          },
+          {
+            "color": 1,
+            "x": 388,
+            "y": 278,
+            "width": 184,
+            "height": 139,
+            "pixels": 25576
+          },
+          {
+            "color": 2,
+            "x": 572,
+            "y": 139,
+            "width": 184,
+            "height": 278,
+            "pixels": 51152
+          }
+        ],
+        "proportionMaxErrorPixels": 0.0,
+        "pass": true
+      },
+      {
+        "type": "waterfall",
+        "pdfSha256": "5d75273974a20b299982fb3455f335fecd30fb0ad700ca9b5d59f417f8bae502",
+        "expected": [
+          6,
+          3,
+          4,
+          2,
+          5
+        ],
+        "components": [
+          {
+            "color": 0,
+            "x": 204,
+            "y": 329,
+            "width": 92,
+            "height": 88,
+            "pixels": 8096
+          },
+          {
+            "color": 1,
+            "x": 314,
+            "y": 285,
+            "width": 93,
+            "height": 44,
+            "pixels": 4092
+          },
+          {
+            "color": 2,
+            "x": 425,
+            "y": 226,
+            "width": 92,
+            "height": 58,
+            "pixels": 5336
+          },
+          {
+            "color": 3,
+            "x": 535,
+            "y": 196,
+            "width": 93,
+            "height": 29,
+            "pixels": 2697
+          },
+          {
+            "color": 0,
+            "x": 646,
+            "y": 123,
+            "width": 93,
+            "height": 73,
+            "pixels": 6789
+          }
+        ],
+        "proportionMaxErrorPixels": 0.4000000000000057,
+        "pass": true
+      },
+      {
+        "type": "treemap",
+        "pdfSha256": "f5aae72b4d3c01c4b7ffbee65466434c08d1fadc288dd6e99b21a270114a3f1e",
+        "expected": [
+          6,
+          3,
+          4,
+          2,
+          5
+        ],
+        "components": [
+          {
+            "color": 0,
+            "x": 204,
+            "y": 106,
+            "width": 165,
+            "height": 311,
+            "pixels": 51315
+          },
+          {
+            "color": 1,
+            "x": 370,
+            "y": 106,
+            "width": 82,
+            "height": 311,
+            "pixels": 25502
+          },
+          {
+            "color": 2,
+            "x": 453,
+            "y": 106,
+            "width": 109,
+            "height": 311,
+            "pixels": 33899
+          },
+          {
+            "color": 3,
+            "x": 563,
+            "y": 106,
+            "width": 55,
+            "height": 311,
+            "pixels": 17105
+          },
+          {
+            "color": 0,
+            "x": 618,
+            "y": 106,
+            "width": 138,
+            "height": 311,
+            "pixels": 42918
+          }
+        ],
+        "proportionMaxErrorPixels": 0.7999999999999972,
+        "pass": true
+      }
+    ],
+    "renderReportSha256": "bdb11090065e9b8dc7ebbcee8ac5b9c2e606e115dbb78e0c1039a6942a9c4c96",
+    "allNonSlidePartsIdentical": true,
+    "inputBytesUnchanged": true,
+    "visualInspection": [
+      "funnel/histogram/treemap viewed in r1; r2 PNG hashes match exactly",
+      "waterfall-r2 viewed directly"
+    ],
+    "limits": "Geometry feasibility only. Numeric bin histogram [2,1,2]; source title/labels/axes/legend/custom styles not projected. Prototype categorical histogram integration remains pending; no requirement change.",
+    "images": [
+      {
+        "file": "m9-chartex-vector-funnel-20261018.png",
+        "sha256": "c0b10c9c2b2aaa53918ca3fc4b0b737c5a3b41797acc9152862677829434b58e",
+        "kind": "isolated synthetic geometry experiment, not App UI"
+      },
+      {
+        "file": "m9-chartex-vector-histogram-20261018.png",
+        "sha256": "de5e67007aeaaa6ed0ddc67234aceaf2313e575d2c75686bf6293be64a4ec241",
+        "kind": "isolated synthetic geometry experiment, not App UI"
+      },
+      {
+        "file": "m9-chartex-vector-waterfall-20261018.png",
+        "sha256": "d90b691c723dd00b164a28721f18169181a5ec948a49aee7b2569d51af36ff86",
+        "kind": "isolated synthetic geometry experiment, not App UI"
+      },
+      {
+        "file": "m9-chartex-vector-treemap-20261018.png",
+        "sha256": "7b38462f08b2875e69321feb1d38e7353481949a94394f8de44a83501478fae5",
+        "kind": "isolated synthetic geometry experiment, not App UI"
+      }
+    ]
+  },
+  "codeTests": [
+    {
+      "path": "/private/tmp/willyou-chartex-data-regression-r2.json",
+      "sha256": "c4f78b8d4b76624ba22a79eda0df1c4c47121422747ebf37f823e59b6f813ccc",
+      "passed": 276,
+      "failed": 0,
+      "notExecuted": 57
+    },
+    {
+      "path": "/private/tmp/willyou-chartex-data-renderer-r1.json",
+      "sha256": "c6f7fffaec19867bf4735265fb9c4749564b6af014cc51f6345d1cb9c7b5a76a",
+      "passed": 95,
+      "failed": 0,
+      "notExecuted": 0
+    }
+  ],
+  "typecheck": {
+    "path": "/private/tmp/willyou-chartex-data-typecheck-r2.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "passed": true
+  },
+  "package": {
+    "state": "PASSED",
+    "path": "/private/tmp/willyou-m9-chartex-data-r1-build/mac-arm64/WillYou.app",
+    "log": "/private/tmp/willyou-m9-chartex-data-package-r1.log",
+    "asarSha256": "0f0ee0e05bf927278ba22f899c9113dbc751803ffbf7b04179de719a6fa3e853",
+    "logSha256": "70c877017e5519c9f3ab1526f44c48b6ff2fa88aaabda7c92cffbd9d257f54d1",
+    "nativeChecks": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "released": false,
+    "uiLaunched": false
+  },
+  "packagedTest": {
+    "state": "PASSED",
+    "report": "/private/tmp/willyou-chartex-data-packaged-r1.json",
+    "log": "/private/tmp/willyou-chartex-data-packaged-r1.log",
+    "passed": 3,
+    "failed": 0,
+    "notSelected": 7,
+    "reportSha256": "1df7ef2c7c04669712fb08902375eb64643661a638d91fe0de34093d300359b1",
+    "logSha256": "acde8ae15fa982c89b72fce1782d17696015d50bc29a3ca7dd94814d3e5150c5",
+    "detail": "/private/tmp/willyou-m9-chartex-data-packaged-r1-evidence/chartex-data.json",
+    "scope": "Actual shipped Worker and native helper; source FileService orchestration tied to build snapshot. Four source value edits, independent ZIP/XML/workbook read, save/reopen/raw-input recovery/undo; previous modern refusal and five basic chart regression. Not App UI.",
+    "detailSha256": "67afdf126c418a7c919dbc1746e4aced3b1e475f9f4cbd5ac7ab1482989eb59e",
+    "modernResults": [
+      {
+        "type": "funnel",
+        "sourceHash": "78f1e64e2f14ed3fdd2d219a88e577bc20f1d499b7334b70bc343b81872e5186",
+        "savedHash": "4e74bdd2c1edeb698b317a026c79d04c2101a226a0547667aec52bf0e2e3343d",
+        "independent": {
+          "values": [
+            15,
+            6
+          ],
+          "embeddedValues": [
+            "15",
+            "6"
+          ],
+          "changed": [
+            "ppt/slides/slide1.xml",
+            "ppt/slides/_rels/slide1.xml.rels",
+            "[Content_Types].xml"
+          ],
+          "oldChartAndWorkbookPreserved": true,
+          "otherEmbeddedPartsPreserved": true
+        },
+        "previewRefused": true,
+        "pendingRecovered": true,
+        "reopened": true,
+        "undoAllOriginalParts": true
+      },
+      {
+        "type": "histogram",
+        "sourceHash": "3953ad1d99e158f2a80436836b5bfd9e50000833180e58263bb5c799b854c06a",
+        "savedHash": "2d125e6c68ba1601dc78a5cb495046198aef194cb3012cae2bb3280ea683cfc9",
+        "independent": {
+          "values": [
+            15,
+            6
+          ],
+          "embeddedValues": [
+            "15",
+            "6"
+          ],
+          "changed": [
+            "ppt/slides/slide1.xml",
+            "ppt/slides/_rels/slide1.xml.rels",
+            "[Content_Types].xml"
+          ],
+          "oldChartAndWorkbookPreserved": true,
+          "otherEmbeddedPartsPreserved": true
+        },
+        "previewRefused": true,
+        "pendingRecovered": true,
+        "reopened": true,
+        "undoAllOriginalParts": true
+      },
+      {
+        "type": "waterfall",
+        "sourceHash": "f7fd0ad7d3f5760e4ccc162bcd73d1640d37506a9601481b570e8e93f571ae17",
+        "savedHash": "eb0b4cd0a15c09a4265a8dd9ae52f97ff8087e942830a22c02200e52627a9d84",
+        "independent": {
+          "values": [
+            15,
+            6
+          ],
+          "embeddedValues": [
+            "15",
+            "6"
+          ],
+          "changed": [
+            "ppt/slides/slide1.xml",
+            "ppt/slides/_rels/slide1.xml.rels",
+            "[Content_Types].xml"
+          ],
+          "oldChartAndWorkbookPreserved": true,
+          "otherEmbeddedPartsPreserved": true
+        },
+        "previewRefused": true,
+        "pendingRecovered": true,
+        "reopened": true,
+        "undoAllOriginalParts": true
+      },
+      {
+        "type": "treemap",
+        "sourceHash": "ff59156a5ce60e7ae32c3877210b497bdefb8171e0d1f040420637e4c672d538",
+        "savedHash": "4737894641140f6fb142d86bde4952afb295699a2c5e7d11a1e104fa3d713b36",
+        "independent": {
+          "values": [
+            15,
+            6
+          ],
+          "embeddedValues": [
+            "15",
+            "6"
+          ],
+          "changed": [
+            "ppt/slides/slide1.xml",
+            "ppt/slides/_rels/slide1.xml.rels",
+            "[Content_Types].xml"
+          ],
+          "oldChartAndWorkbookPreserved": true,
+          "otherEmbeddedPartsPreserved": true
+        },
+        "previewRefused": true,
+        "pendingRecovered": true,
+        "reopened": true,
+        "undoAllOriginalParts": true
+      }
+    ]
+  },
+  "appUI": {
+    "state": "BLOCKED",
+    "observation": "CUA recheck returned Mac locked, automatic unlock could not unlock it",
+    "runningPackage": "pptx-image-r1",
+    "pendingUserStep": "Previously requested unlock and image chooser red.png confirmation remains pending; no repeated question"
+  },
+  "formalAcceptance": {
+    "current": 419,
+    "passed": 3,
+    "remaining": 416,
+    "passPercentage": 0.72,
+    "excludedFuture": 6,
+    "newFormalPasses": 0,
+    "status": "开发中",
+    "passedCaseIds": [
+      "M9-T-S02",
+      "M9-T-T18",
+      "M9-T-T22"
+    ]
+  },
+  "defect": {
+    "id": "M9-DEV-029",
+    "state": "OPEN",
+    "reason": "Source data editing now implemented, but correct full ChartEx product preview still pending"
+  },
+  "checks": {
+    "caseIndex": "PASS: 425 unique / 419 current / 6 future",
+    "diffCheck": "PASS",
+    "snapshotFilesUnchanged": 609
+  }
+}

@@ -1,13 +1,19 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TaskView } from '@shared/tasks';
 
-const rpc = vi.hoisted(() => ({ tasks: { open: vi.fn(), list: vi.fn(), kill: vi.fn(), create: vi.fn(), delete: vi.fn(), setArchived: vi.fn(), stopAndArchive: vi.fn() } }));
+const rpc = vi.hoisted(() => ({ tasks: { open: vi.fn(), list: vi.fn(), kill: vi.fn(), closeSession: vi.fn(), create: vi.fn(), delete: vi.fn(), setArchived: vi.fn(), stopAndArchive: vi.fn() } }));
+const files = vi.hoisted(() => ({ prepareFileWorkspaceClose: vi.fn() }));
+vi.mock('../features/files/workspace-store', () => files);
 vi.mock('../lib/ipc', () => ({ rpc, events: { on: () => () => undefined } }));
 vi.mock('./terminal-size', () => ({ terminalSize: () => ({ cols: 80, rows: 24 }) }));
 
 import { navigation } from './navigation';
 import { tasksStore } from './tasks-store';
 
+beforeEach(() => {
+  files.prepareFileWorkspaceClose.mockResolvedValue({ assertCurrent: vi.fn(), commit: vi.fn(async () => undefined), cancel: vi.fn() });
+  rpc.tasks.closeSession.mockImplementation(async (id: string) => ({ ...tasksStore.byId.get(id), ptyId: null }));
+});
 afterEach(() => vi.clearAllMocks());
 
 describe('tasksStore archiving', () => {
@@ -125,12 +131,84 @@ describe('tasksStore.resume', () => {
 
     tasksStore.show(stopped.id);
     expect(tasksStore.resuming.has(stopped.id)).toBe(true);
-    await tasksStore.closeTab(stopped.id);
+    const closing = tasksStore.closeTab(stopped.id);
+    expect(tasksStore.tabs).toContain(stopped.id);
+    expect(tasksStore.closing.has(stopped.id)).toBe(true);
     release({ task: { ...stopped, ptyId: 'late-pty' }, ptyId: 'late-pty' });
+    await closing;
 
-    await vi.waitFor(() => expect(rpc.tasks.kill).toHaveBeenCalledWith(stopped.id));
+    expect(rpc.tasks.closeSession).toHaveBeenCalledWith(stopped.id);
+    expect(rpc.tasks.kill).not.toHaveBeenCalled();
     await vi.waitFor(() => expect(tasksStore.resuming.has(stopped.id)).toBe(false));
     expect(tasksStore.tabs).toEqual([]);
     expect(tasksStore.terminals.has(stopped.id)).toBe(false);
+  });
+});
+
+describe('tasksStore session close transaction', () => {
+  const opened = (id: string) => {
+    const a = { id, projectId: 'kept-project', title: 'Kept history', archivedAt: null, ptyId: 'pty-' + id } as TaskView;
+    const b = { id: id + '-other', archivedAt: null, ptyId: 'pty-other' } as TaskView;
+    tasksStore.tasks = [a, b]; tasksStore.tabs = [a.id, b.id]; tasksStore.terminals.clear();
+    tasksStore.terminals.set(a.id, a.ptyId!); tasksStore.terminals.set(b.id, b.ptyId!);
+    navigation.openTask(a.id); return { a, b };
+  };
+  it('keeps view and terminal when file preparation fails and never requests a stop', async () => {
+    const { a, b } = opened('save-failure');
+    files.prepareFileWorkspaceClose.mockRejectedValueOnce(new Error('keep draft'));
+    await expect(tasksStore.closeTab(a.id)).rejects.toThrow('keep draft');
+    expect(navigation.currentTaskId).toBe(a.id); expect(tasksStore.tabs).toEqual([a.id, b.id]);
+    expect(tasksStore.terminals.get(a.id)).toBe(a.ptyId); expect(rpc.tasks.closeSession).not.toHaveBeenCalled();
+    expect(tasksStore.closing.size).toBe(0);
+  });
+  it('waits for exact terminal exit before scope commit and keeps other sessions intact', async () => {
+    const { a, b } = opened('exit-receipt');
+    const preparation = { assertCurrent: vi.fn(), commit: vi.fn(async () => undefined), cancel: vi.fn() };
+    files.prepareFileWorkspaceClose.mockResolvedValueOnce(preparation);
+    let exited!: (task: TaskView) => void;
+    rpc.tasks.closeSession.mockImplementationOnce(() => new Promise(resolve => { exited = resolve; }));
+    const closing = tasksStore.closeTab(a.id);
+    await vi.waitFor(() => expect(rpc.tasks.closeSession).toHaveBeenCalledWith(a.id));
+    expect(navigation.currentTaskId).toBe(a.id); expect(preparation.commit).not.toHaveBeenCalled();
+    navigation.openTask(b.id); exited({ ...a, ptyId: null }); await closing;
+    expect(preparation.commit).toHaveBeenCalledOnce(); expect(navigation.currentTaskId).toBe(b.id);
+    expect(tasksStore.terminals.get(b.id)).toBe(b.ptyId); expect(tasksStore.terminals.has(a.id)).toBe(false);
+    expect(tasksStore.byId.get(a.id)).toMatchObject({ title: 'Kept history', projectId: 'kept-project', archivedAt: null });
+    expect(rpc.tasks.delete).not.toHaveBeenCalled(); expect(rpc.tasks.setArchived).not.toHaveBeenCalled();
+  });
+  it('does not evict files or hide the view after a failed stop and permits an explicit retry', async () => {
+    const { a } = opened('stop-failure');
+    const preparation = { assertCurrent: vi.fn(), commit: vi.fn(async () => undefined), cancel: vi.fn() };
+    files.prepareFileWorkspaceClose.mockResolvedValue(preparation);
+    rpc.tasks.closeSession.mockRejectedValueOnce(new Error('PTY still alive'));
+    await expect(tasksStore.closeTab(a.id)).rejects.toThrow('PTY still alive');
+    expect(preparation.commit).not.toHaveBeenCalled(); expect(preparation.cancel).toHaveBeenCalledOnce();
+    expect(navigation.currentTaskId).toBe(a.id); expect(tasksStore.terminals.get(a.id)).toBe(a.ptyId);
+    await tasksStore.closeTab(a.id); expect(tasksStore.tabs).not.toContain(a.id);
+  });
+  it('keeps the view when scope release fails, including an explicitly discarded draft', async () => {
+    const { a } = opened('scope-failure');
+    files.prepareFileWorkspaceClose.mockResolvedValueOnce({ assertCurrent: vi.fn(), commit: vi.fn(async () => { throw new Error('scope not released'); }), cancel: vi.fn() });
+    await expect(tasksStore.closeTab(a.id, 'discard')).rejects.toThrow('scope not released');
+    expect(files.prepareFileWorkspaceClose).toHaveBeenCalledWith({ kind: 'task', taskId: a.id }, 'discard');
+    expect(navigation.currentTaskId).toBe(a.id); expect(tasksStore.tabs).toContain(a.id);
+  });
+  it('drains a late resume before closing and cannot stop or replace the later reopened PTY', async () => {
+    const { a, b } = opened('generation');
+    tasksStore.tasks = [{ ...a, ptyId: null, aiProfileId: 'profile', recovery: 'resumable' }, b];
+    tasksStore.terminals.delete(a.id);
+    let late!: (result: { task: TaskView; ptyId: string }) => void;
+    rpc.tasks.open.mockImplementationOnce(() => new Promise(resolve => { late = resolve; }));
+    const resuming = tasksStore.resume({ taskId: a.id });
+    const closing = tasksStore.closeTab(a.id);
+    tasksStore.show(a.id);
+    await expect(tasksStore.resume({ taskId: a.id })).rejects.toThrow('会话正在关闭');
+    expect(rpc.tasks.open).toHaveBeenCalledOnce(); expect(rpc.tasks.closeSession).not.toHaveBeenCalled();
+    late({ task: a, ptyId: 'old-late-pty' }); await Promise.all([resuming, closing]);
+    rpc.tasks.open.mockResolvedValueOnce({ task: a, ptyId: 'fresh-reopened-pty' });
+    rpc.tasks.list.mockResolvedValue([a, b]);
+    await tasksStore.resume({ taskId: a.id });
+    expect(tasksStore.terminals.get(a.id)).toBe('fresh-reopened-pty');
+    expect(rpc.tasks.closeSession).toHaveBeenCalledOnce(); expect(rpc.tasks.kill).not.toHaveBeenCalled();
   });
 });

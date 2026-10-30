@@ -1,0 +1,1001 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-SAVE-RACES-DEV128-R74",
+  "at": "2026-10-19T06:24:08.492685+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-scoped-macos-case",
+  "revision": "R3.4/R3.4-P1; original Y02 scope retained",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "architecture": "arm64",
+  "fullCasesPassed": [
+    "M9-T-Y02"
+  ],
+  "productionChanges": [
+    "src/main/core/files/recovery-store.ts"
+  ],
+  "prototypeChanges": [],
+  "defects": [
+    {
+      "id": "DEV128-D01",
+      "description": "After actual swap and native exit, prepared journal without exchanged hides real retained base inode from recovery inspection",
+      "status": "fixed-and-reverified",
+      "red": "native1/1 plus originalr73 App normal restart missingdisplacedB",
+      "green": "new I physical recovery including equal-bytes/new-inode negative plus r74 actual normal restarts"
+    }
+  ],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r74-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "d59b5e997ff7f31dc49b3373131dbfa4094f4e2abe2e506eecd6032500b23483",
+    "brokerSha256": "c4176b6b72465e048cfefce014c8f4e52b32083763fd2d9f9270f51230f234d9",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "runtimeAssetsVerified": 82,
+    "nativeChecksCurrent": [
+      "sqlite",
+      "pty",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ],
+    "published": false
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-directory-anchor-dev127-r73-20261019.json",
+    "sha256": "29e84868926aa17843e14670b1e5423f7818b1ad0a7a32977d975336d434bec7",
+    "all41ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "previousTestedFiles": 1181,
+    "buildFiles": 1183,
+    "testedSnapshotFiles": 1188,
+    "changedFromPrevious": [
+      "docs/里程碑/M9_文件浏览工作区/技研/开发前_08_保存与恢复.md",
+      "src/main/core/files/recovery-store.ts"
+    ],
+    "newVerificationFiles": [
+      "scripts/files/save-crash-recovery-ui.mjs",
+      "scripts/files/save-race-writer-ui.mjs",
+      "scripts/files/save-race-writer.py",
+      "scripts/files/save-race-writers.mjs",
+      "scripts/files/save-race-writers.d.mts",
+      "src/main/core/files/save-race-recovery-acceptance.test.ts"
+    ],
+    "newDocumentationFiles": [
+      "docs/真实App自动验收流程.md"
+    ],
+    "changedAfterBuild": [
+      "docs/里程碑/M9_文件浏览工作区/技研/开发前_08_保存与恢复.md",
+      "scripts/files/save-crash-recovery-ui.mjs",
+      "src/main/core/files/save-race-recovery-acceptance.test.ts"
+    ],
+    "addedAfterBuild": [
+      "docs/真实App自动验收流程.md",
+      "scripts/files/save-race-writer-ui.mjs",
+      "scripts/files/save-race-writer.py",
+      "scripts/files/save-race-writers.d.mts",
+      "scripts/files/save-race-writers.mjs"
+    ],
+    "productionInputsUnchangedAfterBuild": true,
+    "testedTarSha256": "406f46da1ab36e0724c4a77b3da960238c44ab2b20de7284e258d183d047f497",
+    "buildTarSha256": "2296e03facf50146db05182aa68ae5ec20f2c6261b6c2847d139912b7fe370b1"
+  },
+  "verification": {
+    "currentCodePassed": 86,
+    "newUniqueCodeTests": 11,
+    "newTestsByBoundary": {
+      "I": 11
+    },
+    "currentSkipped": 0,
+    "currentTypecheckExit": 0,
+    "actualAppScenarios": 24,
+    "faultWriterApp": 6,
+    "normalWriterAndReceiptApp": 8,
+    "realNativeInterruptionRestartApp": 4,
+    "realOsFailureApp": 6,
+    "finalNormalExits": [
+      {
+        "pid": 4562,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 4666,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 4730,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 4807,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 4887,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 4985,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 5070,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 5150,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 548,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 3259,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 5831,
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "fullProcessRestarts": 4,
+    "autosaveTimedProbe": "dual-replace3200ms, boththemes",
+    "ownImagesDetached": 1,
+    "formalPassed": 237,
+    "formalTotal": 419,
+    "formalRemaining": 182,
+    "unexecuted": 180,
+    "blocked": 2,
+    "appRemaining": 179
+  },
+  "boundaries": [
+    "I real FileService/roots/recovery/current native invocation. Same native source existing TEST pauses; only own native child killed for interruption cases. Separate Python old-fd/path writers share a gate at the actual commit window; original reserve verifies project/global intended-capacity accounting without disk allocation. Fresh services read unchanged journals and real identities/hashes; no fabricated exchanged field/receipt. Static resolver names own synthetic source, not GUI/SQLite admission. App physical capacity is separate.",
+    "Y02 original scope/steps/expected. Current macOS26.6.1arm64 passes86 selected unique code tests (11 new I, existing native59/recoveryI8/dialogU4/save-windowI4), typecheck, new r74 six native smokes/82 runtime files, and24 final App array checks (fault-writers6, normal8, true native kill plus normal restart4, real OS failures6). Final selected App normal exits11; prior generic successes/partial failures are retained but not counted again.\nKnown base conflict refuses before native save and keeps local checkpoint. Final-check before-swap path writer preserves currentL/displacedD/draftL. At swapped, two separate Python processes released by the same gate write an fd acquired before exchange and the new pathname (in-place or atomic replacement). Both run while native is paused; this does not claim their CPU instructions are literally simultaneous. CurrentD/displacedE/draftL remain, materialized is D for in-place or L for replacement. Conflicts preserve recoveryId, no implicit second swap; hot replay and blocked new-op calls leave materials unchanged and native-save count unchanged. Autosave3200ms representative probe is dual-replace in both themes; other conflict variants use the same real conflict/dirty guard and no extra native commit, not a claimed3200ms probe for every row.\nNative kill at prepared/swapped yields unknown service receipt; durable journal staysprepared without exchanged. Red native1pass1fail and old r73 actual App normal restart showed physicalB retained but UI unavailable. RecoveryStore.inspect now recognizes candidate as old target only with registered transactionIdentity/baseRevision and real base dev/ino; equal bytes on a different prepared inode are a negative control. Old-fd content changes remain visible/changed. Inspection never modifies historical state, receipt, source or recovery data or replays/rolls back. Actual protected UI close and same-userData full-process restart show independentL/current/displaced/materialized with per-case unique contents and target-record/full-hash ready checks. Hot unknown receipt is exactly cached; cold prepared journal has no persisted terminal receipt, so returns consistentunknown/opId/recoveryId rather than claiming identical diagnostic text. Changed payload is IDEMPOTENCY. Repeated inspection/closure/restarts leave recorded identities/mtime/hash unchanged.\nAfter returned saved receipt, old fd writesE only to retained displaced inode; targetL stays intact, originalsaved receipt remains historical, UI recovery showsE withchanged. No infinite-fd-lifetime safe reclamation or system-wide CAS guarantee. Normal control saves exact bytes/history; original saved response is held unchanged while actual newer inputL2/checkpoint occurs, then old receipt preservesL2dirty and a second actualCtrl-S savesL2. Programmatic replay/denials are explicit idempotence substeps, not UI save replacements. Original auth/request/result bytes and handler identities remain, restored after tests.\nProject/global512MiB/2GiB capacity tested through original recovery.reserve valid intended-candidate reservations, no disk allocation/fake journal. App physical capacity tested separately with actual ENOSPC on own64MiBAPFS plus0500parent and4096-byte native RLIMIT_FSIZE EFBIG. Original targetunchanged on refusal, local draft retained, explicit edit clears old error and actual retry exact. Own image detached and currenthdiutil image-path match empty; host disk never filled.\nFailures retained: first App attempted normalquit with protecteddirty buffer and was correctly blocked; driver now uses actual explicit protectedclose beforequit and proves unresolved materials stay. First race App passed2 then observed empty/transitioning recovery panel after switching records; strengthened to per-case unique data and target-record/all-material hash readiness, retaining assertions. Initial selected code run omitted opt-in helper and skipped8; proper current helper enabled, final86zero skip. Earlier generic-data App4passed retained as prior evidence, strengthened current4restarted for fresh record binding. Read-only diagnostic probes that assumed missing JSON keys affected no App operation. These driver/setup failures are not product fixes.\nOnly production change RecoveryStore.inspect physical-role recovery. Native source/binary, renderer/prototype/style/dependencies/budgets unchanged.1183build and1188final snapshot including6new verificationfiles and shared-flow doc; afterbuild only2verificationfiles+save contract changed and4verificationfiles+flow doc added. Production inputs byte-identical to r74 build. Shared guide records fixture reuse and record/hash waiting. No new P/fullpixel/systemIME/clipboard/model/dailyresources/crossplatform claim. Prior41artifacts unchanged. Formal237/41956.56%,180unexecuted2blocked,179remaining A. Other cases retained, no release/merge/tag/push.\n"
+  ],
+  "artifacts": {
+    "willyou-dev128-app-capacity-r74-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-capacity-r74-r1.log",
+      "sha256": "53bf2aed4002e4b1057dbf6eb921e6fc3cd03fa7104f433f4ff481887785a0ca"
+    },
+    "willyou-dev128-app-crash-r74-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-crash-r74-r1.log",
+      "sha256": "ed4aa2a32d26929100665f0efb5c3b554ec8fe78113daea833e9c93bdd0e333c"
+    },
+    "willyou-dev128-app-crash-r74-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-crash-r74-r2.log",
+      "sha256": "cc612df1b6263271059fd8d97292b21a655bbc589ffd062bf2417ab5fcb62054"
+    },
+    "willyou-dev128-app-crash-red-r73-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-crash-red-r73-r2.log",
+      "sha256": "ccf3453258b6d11727b392ab503f0deb5743bde1e3bac1dac483512d83fac9ce"
+    },
+    "willyou-dev128-app-crash-red-r73.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-crash-red-r73.log",
+      "sha256": "7ee5d8a05af024928e793163bdcc1638447e1b1864623d7dfde8383cc4d0b617"
+    },
+    "willyou-dev128-app-normal-r74-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-normal-r74-r1.log",
+      "sha256": "26bcc6146f5298433c0ea537b6111d493882e4026a43d05c01c3c17e319f302e"
+    },
+    "willyou-dev128-app-race-r74-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-race-r74-r1.log",
+      "sha256": "377e699ac75e31845d44f78dfb9b7883436290b507a5c4d2be5525c83103aa7e"
+    },
+    "willyou-dev128-app-race-r74-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-app-race-r74-r2.log",
+      "sha256": "736c72443b94fc6f05af89b443944363e94d37ee791002048ba80d293aeb272b"
+    },
+    "willyou-dev128-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-archive.py",
+      "sha256": "f7bce9aecfe004b7eb097401b9404a813d6f55db4e470502e2d82cee46086236"
+    },
+    "willyou-dev128-build-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-build-snapshot.py",
+      "sha256": "78273be4921ad35040a2ce288112e64843719d7496c9940b2a9370d96b8f0b36"
+    },
+    "willyou-dev128-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-final.json",
+      "sha256": "723c2ffd86dfa7e1292393280d41e6fafe849a76cf2fc23ffc1e10c9b2049750"
+    },
+    "willyou-dev128-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-final.log",
+      "sha256": "561f670218a9b4776e728113dbc5d927a496046039ab8e0688f7258256dfd78c"
+    },
+    "willyou-dev128-code-fixed.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-fixed.json",
+      "sha256": "fdc9a5aa41bf3f18b910763234e7f7c85f0eb0c4d4343ff446565c509fd6907b"
+    },
+    "willyou-dev128-code-fixed.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-fixed.log",
+      "sha256": "27016893e2ae154b51b153c41b0319ce6ba0c6ef0d22c0473414dc12932d69e7"
+    },
+    "willyou-dev128-code-matrix-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-matrix-r1.json",
+      "sha256": "ee6fc7be08d18f1be14a37559eb7a5a2a951154b82bf9a21063cf4855c818bf8"
+    },
+    "willyou-dev128-code-matrix-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-matrix-r1.log",
+      "sha256": "1cd48448fb3dc08edd49cdeae4699f4dffe1616dda6b98f13fbc8eb12e546aa1"
+    },
+    "willyou-dev128-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-r1.json",
+      "sha256": "db1f88dccfdbc47a5e1fc44f9833d21a5994d8ba0736f96c20ebc11367aec4bc"
+    },
+    "willyou-dev128-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-r1.log",
+      "sha256": "e0984a476b98483702c4dcb23981c5a6c0c85d5d4df8d9456ed625fc7c622999"
+    },
+    "willyou-dev128-code-verified.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-verified.json",
+      "sha256": "eb04956b179474c361ec37f2adb567e2774c2d66d43904ac87b7f24d2e7d980a"
+    },
+    "willyou-dev128-code-verified.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-code-verified.log",
+      "sha256": "3fbd7fe928aa7dbb58ac580c8b5b844d452fd482f9affbbf61c159d1c6784fc5"
+    },
+    "willyou-dev128-crash-ui-r1.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-crash-ui-r1.mjs",
+      "sha256": "ac327f947ef41a05eb072496d679df5e8444ec94f4238386bd2dfa31c9a51146"
+    },
+    "willyou-dev128-crash-ui-r2-source.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-crash-ui-r2-source.mjs",
+      "sha256": "1556533d23ca2d3a18a8bb48e90b9765c3bac09cdb61567f1db4f7ec9b792aac"
+    },
+    "willyou-dev128-fixed-test-baseline.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-fixed-test-baseline.ts",
+      "sha256": "c6b4e52771dd010cd89449fc607a548a79dcefd1adb9514da7e5cb1a5692f265"
+    },
+    "willyou-dev128-helper-compile.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-helper-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-dev128-helper.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-helper.json",
+      "sha256": "95763939844c7b6df59d16a598db5b71dc925cec7e7df5e9bb75d7588890a52a"
+    },
+    "willyou-dev128-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-index-before.json",
+      "sha256": "2e18bae638782ffc710c0308515120ad5df7ff18b91071a99e6e6b5c21d8c95d"
+    },
+    "willyou-dev128-matrix-regression-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-matrix-regression-final.json",
+      "sha256": "e21f33235156cc65a78673c0957ffdb9e58c7b79d5292c4350bd2a8f7fd0e01c"
+    },
+    "willyou-dev128-matrix-regression-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-matrix-regression-final.log",
+      "sha256": "a863d7bb2ed8bee2d07e4cdb50a9d09bd5c8c62d303bfcfddffc6a38e309657a"
+    },
+    "willyou-dev128-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-native-final.json",
+      "sha256": "1c9aa6220a39c6e929a26c6c79db4bfcd8d3de8db93f561463c8c4ab55a8a8c0"
+    },
+    "willyou-dev128-native-fixed.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-native-fixed.json",
+      "sha256": "50ebae1d5c1fdfd45dec5fd7332105b8ae2a9ef0bc6c84a3c737bb043e1de27e"
+    },
+    "willyou-dev128-native-matrix-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-native-matrix-final.json",
+      "sha256": "3dc0a02291c3131a7afd78df67b952e696ef42af7f8ff484478290e40e2b3b6b"
+    },
+    "willyou-dev128-native-matrix-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-native-matrix-r1.json",
+      "sha256": "de390d6577b6ac7129f06d9c2aa6b4fde0a529b80789377851b6f37d2587d1c0"
+    },
+    "willyou-dev128-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-native-r1.json",
+      "sha256": "f9d99adf138beb19820da8b58eb254d99e88a8e673ff33f7fff5fad7532b13d1"
+    },
+    "willyou-dev128-native-verified.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-native-verified.json",
+      "sha256": "f4f3c24dcbfda052b7a071f45b601b3bffff8afbb72112507075f4bccee9f9a1"
+    },
+    "willyou-dev128-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-package.log",
+      "sha256": "ba43deb1a301bbd683e797df43768b6b1a74b452e1dd5eeff9e258d4af073999"
+    },
+    "willyou-dev128-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-process-audit.json",
+      "sha256": "b6777cec95e45369d2266a693004ec52e48021b3bd73f28cc436d06decd93de2"
+    },
+    "willyou-dev128-r74-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-r74-hashes.json",
+      "sha256": "7cfbb940ffc7185c5929efd6d47d529bd7fc3c98313862ddc89279e0d5559c35"
+    },
+    "willyou-dev128-race-ui-r1-source.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-race-ui-r1-source.mjs",
+      "sha256": "5a000cc2d704070ba62ca358a398d3aefe84219d57ca050ff2ec76429e1afb25"
+    },
+    "willyou-dev128-recovery-inspection-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-recovery-inspection-final.json",
+      "sha256": "2c46c3efc16335b9e346e0bc41254a63fd0ae84e14725e2e26be683e53674d2e"
+    },
+    "willyou-dev128-recovery-inspection-final2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-recovery-inspection-final2.json",
+      "sha256": "a5163edb4d6ff54265b6c63f043c4bb2970a66907ecf525d8ac07751ab11f847"
+    },
+    "willyou-dev128-red-recovery-store.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-red-recovery-store.ts",
+      "sha256": "a430f48289fe09f5126a8fe4bf77941cd5739773747f564cbdeece1d2c739f13"
+    },
+    "willyou-dev128-red-test-baseline.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-red-test-baseline.ts",
+      "sha256": "8ed03b63cc37061507d8ce371ad75d90a6042863ef5fd7e4eb65f92afb203ee9"
+    },
+    "willyou-dev128-runtime-r74.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-runtime-r74.json",
+      "sha256": "20b657192aa5219d1bbeee6915f1c32d5f4a0bc4567e2d4137465f5178f323e4"
+    },
+    "willyou-dev128-runtime-r74.stderr": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-runtime-r74.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-dev128-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev128-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-typecheck-r1.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev128-verify-runtime-r74.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-verify-runtime-r74.cjs",
+      "sha256": "094820dcf2cb2a763fab2178cb1bf7ad2d04b14a8919ce033e98e3aa649d94f7"
+    },
+    "willyou-dev128-watcher-r74.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-watcher-r74.cjs",
+      "sha256": "204421aa6d228a1342bfa1ab77d0b714d4e1fa012d5819b892fae5af20e068b6"
+    },
+    "willyou-dev128-watcher-r74.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-watcher-r74.json",
+      "sha256": "c3440fe25e5131d59e7f72ce8dcb3d55cf9bad83135b42d0be4e5cd53e006928"
+    },
+    "willyou-dev128-watcher-r74.stderr": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-dev128-watcher-r74.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-m9-acceptance-batch-r74-dev128-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-m9-acceptance-batch-r74-dev128-tested-sources.json",
+      "sha256": "a97013c1b43c55f7915add3704d35232ffb0f3f267f4e205e28e352286ab844d"
+    },
+    "willyou-m9-acceptance-batch-r74-dev128-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-m9-acceptance-batch-r74-dev128-tested-sources.tar.gz",
+      "sha256": "406f46da1ab36e0724c4a77b3da960238c44ab2b20de7284e258d183d047f497"
+    },
+    "willyou-m9-acceptance-batch-r74-build-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-m9-acceptance-batch-r74-build-sources.json",
+      "sha256": "361dc882f3208ec37e9da59b505cc13ebc6968adea00f98a57bab1e0b74f8209"
+    },
+    "willyou-m9-acceptance-batch-r74-build-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/willyou-m9-acceptance-batch-r74-build-sources.tar.gz",
+      "sha256": "2296e03facf50146db05182aa68ae5ec20f2c6261b6c2847d139912b7fe370b1"
+    },
+    "runs/willyou-save-race-crash-app-JM0xOa/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-JM0xOa/broker-test.mm",
+      "sha256": "88d0e1abe5162f48a9ff8780509819c0158793e69c143e7f06ec427e87ce796b"
+    },
+    "runs/willyou-save-race-crash-app-JM0xOa/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-JM0xOa/failure-electron.log",
+      "sha256": "2e2b877e56825daebea29a574a0cb8ae3cdfbb2275c6978442ce97699d84b137"
+    },
+    "runs/willyou-save-race-crash-app-JM0xOa/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-JM0xOa/failure.png",
+      "sha256": "687ef7dbd28c8dcd7ccf918ecf640d0250857c375d851a3bc3f6c2ce54f45d9a"
+    },
+    "runs/willyou-save-race-crash-app-JM0xOa/light-prepared.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-JM0xOa/light-prepared.txt-fault-electron.log",
+      "sha256": "6edaa96ddfd727e36dc2c93ac4977aa999d24fa41a7ae1fff5e942d95be588bc"
+    },
+    "runs/willyou-save-race-crash-app-JM0xOa/light-prepared.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-JM0xOa/light-prepared.txt-interrupted.png",
+      "sha256": "363731ad2e0ce027c3c2746d7338ab9df2db75fb910a974418a20e0c2d06f3b4"
+    },
+    "runs/willyou-save-race-crash-app-JM0xOa/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-JM0xOa/result.json",
+      "sha256": "174950cd1f137ffc24f2a08d45bf373b41ffea7dc9559753c7edc148edb48ed5"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/broker-test.mm",
+      "sha256": "2a7f33502876dd906ca442e42cfe5123ae0f7a8988bb09470171f071335af499"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/failure-electron.log",
+      "sha256": "d9160e8d74db12a953e8bffe5121e7b6a3359a3d3183dad832c60170013fec4c"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/failure.png",
+      "sha256": "619de304352a2005a7c9b62dacf0e76ae2d34a0b1b7343c749ca6ed5538b55ae"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-fault-electron.log",
+      "sha256": "df682aae940b5db4fb72f80a42b3e97cc0ce2a7876a6f49afbdcf2e3bfe5de18"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-interrupted.png",
+      "sha256": "0c607ade1132a16cecef7c3496ae99e2e5c7aa6d136813ed4fd394ecbd1b676b"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-recovered.png",
+      "sha256": "59a97b33ab2190dc0371a17a2156d1b22f2b8a060c67162ab19288fc44e12757"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/light-prepared.txt-restart-electron.log",
+      "sha256": "34f365878bf6507dd037e33df0e9464e1d7021772b954e63387ca5cd87a72c28"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/light-swapped.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/light-swapped.txt-fault-electron.log",
+      "sha256": "7e793a1eeba05b81e243db12968e9129bb0dce3eb9775e3114b12e52e60a7beb"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/light-swapped.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/light-swapped.txt-interrupted.png",
+      "sha256": "9ca2f6047f117215287435898748a618164d5b76cf6f8f8b69d7fdeee0246103"
+    },
+    "runs/willyou-save-race-crash-app-j2HNQD/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-j2HNQD/result.json",
+      "sha256": "a311ecdc6e2af8c7d4ddd224e1ddd55ad88c12ca5489aad2b364fd410dd8f810"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/broker-test.mm",
+      "sha256": "2c6ef093b4e0a115a4a8e51c7337c6a7bc411bdcf63500ee9345dfe5c95694ef"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-fault-electron.log",
+      "sha256": "5bd88b8d5784201c3f196a23c7490125d82128f2f613bc4880e645ff5fa962f6"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-interrupted.png",
+      "sha256": "4828a0949e11c980f817e1fcdff92cd35314fa82fa568173f519efb568cd0251"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-recovered.png",
+      "sha256": "7e03b7a22f145964e7a2f7cee108a19af7bbbbb32b4ecdc5b245f0e70d69c1dd"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-prepared.txt-restart-electron.log",
+      "sha256": "e8a1459cf961aef78d0a1aff82bb4422738deac80f4cd74e679ef6a127c92ed0"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-fault-electron.log",
+      "sha256": "907c2fc7121fd4509449470b2d34b5cf4ef70d15694f37df66378ffeaa85350d"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-interrupted.png",
+      "sha256": "104a2ae83cdb6379098d0039e55ccaf687269e8236b74c8beeacfba503f48223"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-recovered.png",
+      "sha256": "09ec94617dd875ed668326d43626476b65b5199c5b567f08c33825e71986af06"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/dark-swapped.txt-restart-electron.log",
+      "sha256": "41f0ddc195c40560dd87fa46931a097006e256619ec3efbd7afbf2f778af5ca1"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-fault-electron.log",
+      "sha256": "f9b6f2abc2404388c52417b4bba22b67a3d76e828c189a6cb304fb5997361c1c"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-interrupted.png",
+      "sha256": "c3846545c1d49f1dfeff44a5effb3845f08cceb53518e2d313877308cb4f91fd"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-recovered.png",
+      "sha256": "d4e1979b697af0f047750980e4d8dfdadc5b0bfa0b257f1c9bac90c6bf433833"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-prepared.txt-restart-electron.log",
+      "sha256": "8ed12afa51350add6059b7d5de928c0e814c95ab40254487bf7b5a66327a04e5"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-fault-electron.log",
+      "sha256": "69a590f85caec3bcf2fcfca4d44a0dc9d7a2bb8a74f6779ff8184586ce79894b"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-interrupted.png",
+      "sha256": "b404a2f3d4a58b17778bf9a77bb7b083432d19f13e821fe31b5b15c24f006bec"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-recovered.png",
+      "sha256": "2860f81bed9a671a9dc3e25eeac033f566af5a8525aeddc2584054e6afbfaf18"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/light-swapped.txt-restart-electron.log",
+      "sha256": "947c8767bec7f1fcedd1a6d6e812a281adf296b7563f41115d8c1ccb66e67890"
+    },
+    "runs/willyou-save-race-crash-app-8IIQZK/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-8IIQZK/result.json",
+      "sha256": "d93d5aebbfc9d881dcda2a2b15098fad68bbcaf2f94ef7feb192df19165cb583"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/broker-test.mm",
+      "sha256": "942022bbfdb4e3dd1935863197d521314ead69bb647d4a0433e29f478a435959"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-fault-electron.log",
+      "sha256": "a5781a184ea8cf928ce77a36c863e25cef1eb8da2969e71d00f432b6b4620f2a"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-interrupted.png",
+      "sha256": "b64c2e4238241cc350a80223247bc412057759bfb9c9c74e06b8352199ef5682"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-recovered.png",
+      "sha256": "a243951a3284b9e3ff586f5af2ec63a138d52612b51c8ef443090ff48518de1d"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-prepared.txt-restart-electron.log",
+      "sha256": "4f6ac1e1303fd6ddd82dac9e1b20ffbeacf1690773335299f0092efbf064d568"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-fault-electron.log",
+      "sha256": "2f2ff409a7e7280e9501fcd8bd34e85f2a4ced78909e777f268add782d92ef29"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-interrupted.png",
+      "sha256": "340a544b2df112f485ec10f53c98c78b98480ebe96c5bb743068e7f00655ab25"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-recovered.png",
+      "sha256": "c083de9bfed321b2b8a903372282e00a00f9d3748ca49eb16eaa336f0539876a"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/dark-swapped.txt-restart-electron.log",
+      "sha256": "319933aaf0c5f7c17d3fd7b31a5b4befe8d8c9c17162bc753f81f24aab196517"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-fault-electron.log",
+      "sha256": "d60e32009948acfd0bbc24e83da2e4c8cf58ba69e807e0c676f65dcf83dc91ec"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-interrupted.png",
+      "sha256": "75e998641a7c3cebe1de01badae65df620c9f877a0d86124db62e68a3795a4c1"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-recovered.png",
+      "sha256": "51921a18ec169512737c5a62d36288fb6dbb068b826619d676e41442904a8142"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-prepared.txt-restart-electron.log",
+      "sha256": "fafc007554c33b5424ff206da2753092f0897b0173d457c87af69f724d659322"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-fault-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-fault-electron.log",
+      "sha256": "6b567bfdbef31e8b8b935b57a4e2c7ccaef26af748dafe9589069e97c29b1375"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-interrupted.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-interrupted.png",
+      "sha256": "3198601ef655f2ded15f9785ca00175be208eba42df2d976458176c7dad8690e"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-recovered.png",
+      "sha256": "7f636568cab7e9dd9922ab556f890c475cb5deb7b7add4f0cba1ef75afc04c5b"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-restart-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/light-swapped.txt-restart-electron.log",
+      "sha256": "f82e63e282c267c0fc184aa78e79750b1999137737f4d4c8a1d75e75e03d3c8a"
+    },
+    "runs/willyou-save-race-crash-app-YRthkC/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-crash-app-YRthkC/result.json",
+      "sha256": "0391bcd3a789d81d64ec8ebe05bf03560029c1b1d86f2addbabc78e7fcb04482"
+    },
+    "runs/willyou-save-race-app-UkW9jU/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/broker-test.mm",
+      "sha256": "6397b96ed6c707e9f215591ad3c81ec7b9fe8906381b865065c7f932fb7b8628"
+    },
+    "runs/willyou-save-race-app-UkW9jU/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/failure-electron.log",
+      "sha256": "7881eea1d5c29aae1baa9b521992a5946987ebfefe58589dd210df00c17b2757"
+    },
+    "runs/willyou-save-race-app-UkW9jU/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/failure.png",
+      "sha256": "b6db017f3fff476d3bbeecb4e9f522a80cc3ad655c9b901020e6887b56e36b45"
+    },
+    "runs/willyou-save-race-app-UkW9jU/light-before-swap-path.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/light-before-swap-path.txt-retained.png",
+      "sha256": "86aabd710ce2f4a958e36f96b4064d64bfe534e663c81b76fb9b1b1a711e562c"
+    },
+    "runs/willyou-save-race-app-UkW9jU/light-dual-inplace.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/light-dual-inplace.txt-retained.png",
+      "sha256": "19e86b8b563d44641aba60065c3298e8bc138b78ab231d777a943a619b477ff4"
+    },
+    "runs/willyou-save-race-app-UkW9jU/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/result.json",
+      "sha256": "d80fb1256b2b77bd517586d9f4920d60e5fdb3d7955f25b63861f89b778a2922"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-3NYgQn/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-3NYgQn/0-config.json",
+      "sha256": "de7d07bcec1f3284b642f0f51e2d82ebf1f998502bca6d098d57c41fb46b15c8"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-3NYgQn/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-3NYgQn/0-ready.json",
+      "sha256": "019eedae5599786ad1a049c6106263f971167922e8c5c2deaf67b6681480ac07"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-3NYgQn/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-3NYgQn/0-result.json",
+      "sha256": "b1dacc5ca1d898f90f88f32861de5560c299dd11b247f4fe1af2311906008025"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/0-config.json",
+      "sha256": "3d0f5f2ba66787e1a7154c2666eb92475f1e26a66a8a561600b94487e3ec1e0c"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/0-ready.json",
+      "sha256": "8368779a500540929ac9fd323c912b1d4ac8e795a3627081fea0e962084cb941"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/0-result.json",
+      "sha256": "e3bfc990e7d4928468b99e8021cf34d7f34ba5261ed34703d7bf7bb4b952dccf"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/1-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/1-config.json",
+      "sha256": "ecc21a65ae0818767041f9bb96be87a5466682072ac37366d58f2a9472ac6135"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/1-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/1-ready.json",
+      "sha256": "4db29b1ec98c4d5b24889cf779de6703f2a24b92809454cb6409b58382131bfd"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/1-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-EAB3CZ/1-result.json",
+      "sha256": "7732ea2b0ce32256d800c9984a57ff2cf5066eff53cd590a60282b7edead1052"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-tLlUli/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-tLlUli/0-config.json",
+      "sha256": "af387d013720b98cb5121bbd8279741ddc3d085ddadac76e9c3806a35bee9990"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-tLlUli/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-tLlUli/0-ready.json",
+      "sha256": "2505d35e08b0d63b0ed5054c9a0c78aec454ff758c38e5908955530b4c9c9010"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-tLlUli/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-tLlUli/0-result.json",
+      "sha256": "41837e8bc97d0604f4c0f8dfadc0d6dd03e0372897dbbaa24938e0848a9ffac1"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-tLlUli/1-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-tLlUli/1-config.json",
+      "sha256": "4bc57036bb31b5715f9a2ef882b65bc899ac0a58d9b3bcdeaa471dc49061b6c2"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-tLlUli/1-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-tLlUli/1-ready.json",
+      "sha256": "adc0ac6c37c308a541367e20afce58c04e107df0cdc3b6a664f7d1a078a93661"
+    },
+    "runs/willyou-save-race-app-UkW9jU/writers-tLlUli/1-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-UkW9jU/writers-tLlUli/1-result.json",
+      "sha256": "797415e137346d41d2afec0a9099266099fca1b081bbe36c4fd372ac689f3310"
+    },
+    "runs/willyou-save-race-app-erURDz/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/broker-test.mm",
+      "sha256": "6d1e8261f2f4a75c544e1dfbbc518364ad89e5e668ec2b200bffefdfae2874f5"
+    },
+    "runs/willyou-save-race-app-erURDz/dark-before-swap-path.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/dark-before-swap-path.txt-retained.png",
+      "sha256": "66056b69652634c635e7dec99e266d813655780bb06c406d58623455f0961478"
+    },
+    "runs/willyou-save-race-app-erURDz/dark-dual-inplace.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/dark-dual-inplace.txt-retained.png",
+      "sha256": "aa5eefc18edeb107b3c721db139868c8b97d05e48f914b99e3223429e48a5ef8"
+    },
+    "runs/willyou-save-race-app-erURDz/dark-dual-replace.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/dark-dual-replace.txt-retained.png",
+      "sha256": "4abb725fa84f7b4fbf792758165b6fbe4a132028a627155e08fe0bf9c5c3b493"
+    },
+    "runs/willyou-save-race-app-erURDz/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/electron.log",
+      "sha256": "0c838850bea02d75107b445ac2f23d6d58fd4f6f88f99b7870e59eaf52cf4924"
+    },
+    "runs/willyou-save-race-app-erURDz/light-before-swap-path.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/light-before-swap-path.txt-retained.png",
+      "sha256": "7d0d7c18772c6353e2f0dc5209506b017b73682ae8e4642101f25b5641a82c0e"
+    },
+    "runs/willyou-save-race-app-erURDz/light-dual-inplace.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/light-dual-inplace.txt-retained.png",
+      "sha256": "9a8ccb09ee82b137d67009c7f8a78b38ef75c7f4d601027862e84b366df6c829"
+    },
+    "runs/willyou-save-race-app-erURDz/light-dual-replace.txt-retained.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/light-dual-replace.txt-retained.png",
+      "sha256": "885d3853e066cf6acdcd225f573c901a03661d86d651b9b9f8f649c972bbf7de"
+    },
+    "runs/willyou-save-race-app-erURDz/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/result.json",
+      "sha256": "f8131ce5b9f2924b74c4062451e0829c86382b42e1134fff6c4c81a150b384e3"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-HT0d9b/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-HT0d9b/0-config.json",
+      "sha256": "2da2fc7c45960988492b22e4457d583c2eaae2a87929fdf45903a633f35981d0"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-HT0d9b/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-HT0d9b/0-ready.json",
+      "sha256": "672201dd60e9d96c15b18919f59a17b4a72d36915eb351912ae01638dc0f98e4"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-HT0d9b/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-HT0d9b/0-result.json",
+      "sha256": "b1b74bcd39882756dc5fbcb4f4276476d7bf90ab8bd251daebb11dfbe5a289e4"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-HT0d9b/1-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-HT0d9b/1-config.json",
+      "sha256": "3b357b3381afe53c515858f836b510290a2181f26db89b177e848730e7788181"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-HT0d9b/1-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-HT0d9b/1-ready.json",
+      "sha256": "9dfe66c7cfb4d6adb6751516ba6fb28926eef066954ae090b7f2bdb7673f77fa"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-HT0d9b/1-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-HT0d9b/1-result.json",
+      "sha256": "b175a055bd9c5208c59a10dc636851b14081f168c4db8bf6cf6fab4e5758fbd1"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-T8wE4F/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-T8wE4F/0-config.json",
+      "sha256": "bdad2b39bf8e57bd22e9efb1ba9d7bc92fb3f66dee09306acdcbe8c8c4753d50"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-T8wE4F/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-T8wE4F/0-ready.json",
+      "sha256": "98828120329d2a38f880b687e487ceafe1b76352d11128e722243a2f91a02841"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-T8wE4F/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-T8wE4F/0-result.json",
+      "sha256": "effe24f020f46e32a73a39c7f309c28a030ac82b61586ff475411fe873939123"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-T8wE4F/1-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-T8wE4F/1-config.json",
+      "sha256": "d64612ad8cef0049be276c033efe77cb7cd77506c62b3c2aa208c5f8866a43e2"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-T8wE4F/1-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-T8wE4F/1-ready.json",
+      "sha256": "5add86270678a8a7c27adaadec305f49ec50780f78a6c4287ed6550e51b16ae2"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-T8wE4F/1-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-T8wE4F/1-result.json",
+      "sha256": "e3bde52656148866b52fae3e572079c59956638290d2b8bc5df9d1c4224cfef7"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-czng3U/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-czng3U/0-config.json",
+      "sha256": "9938b57237a5ea204920cc13cae783ade249be16d69a659b59cf019e099b53df"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-czng3U/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-czng3U/0-ready.json",
+      "sha256": "522fe3b4b15becff787bb58bb5f35c754541dece663c01da35ce2262f0c4eefb"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-czng3U/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-czng3U/0-result.json",
+      "sha256": "2ede26262ed01511158097d02436a7606b4c7017cba2587e3695f4718f1b8cab"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-oKrMT5/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-oKrMT5/0-config.json",
+      "sha256": "6bbc745b2939b1a3ffb70a8251be84b02fd4c41ce7e83f3b3caae69dbc798c1e"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-oKrMT5/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-oKrMT5/0-ready.json",
+      "sha256": "4a0b797bc8a88c96a0c4f1b9742bbaab03fcd1742b9354c788a9d318fd1f7336"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-oKrMT5/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-oKrMT5/0-result.json",
+      "sha256": "a884859c08d46ef44ee8d7455d3b9db264f48e57e4e58a1d5359105cc475d4f1"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-oKrMT5/1-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-oKrMT5/1-config.json",
+      "sha256": "361c0403151168448be235404f766fdaf5f0658d0643f02b0f5b298d32bedcad"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-oKrMT5/1-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-oKrMT5/1-ready.json",
+      "sha256": "a147a44267181afb00201a90d64c6b52641c9ebf6e2753c948bcb1e2aa132887"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-oKrMT5/1-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-oKrMT5/1-result.json",
+      "sha256": "fd8e9a24e3ff0a7ce09a3d6598a6394bdaac01240d265048acbb4f3fdbae33bc"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-uA5iw4/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-uA5iw4/0-config.json",
+      "sha256": "8b5a950d24480ad9c6dc425454cbbecb20d3c93aeb9766c115eac652b72f8ec9"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-uA5iw4/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-uA5iw4/0-ready.json",
+      "sha256": "d69cc592df0134643a7d4c136f6bde5463b18223ceab9b8c22e0c5395fb1f210"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-uA5iw4/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-uA5iw4/0-result.json",
+      "sha256": "a07b1e3cde04431cc844434b80ccff5ba65a037b32b5a5c345b6491abb02ba6a"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-uA5iw4/1-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-uA5iw4/1-config.json",
+      "sha256": "f0a50451952bb3bd294f7e8ff9c533406183ff0067718fe92b47d903e2fb119f"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-uA5iw4/1-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-uA5iw4/1-ready.json",
+      "sha256": "3096aef23be9699c97e5d5a3454c9df7a8d760fdbc8e67d5fb492227b16c163d"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-uA5iw4/1-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-uA5iw4/1-result.json",
+      "sha256": "101a6a5cd94b701f4962434ed3a1029d374053267b88171331e88311c7ac2a2e"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-yprhIm/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-yprhIm/0-config.json",
+      "sha256": "2493a62aac39c7945a0a6ad188959171a97d73fd4ef14f03c7d850975fd4d89d"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-yprhIm/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-yprhIm/0-ready.json",
+      "sha256": "0b96c1ef45acf087d50981053c560d905a18edc3dec4b66d2cebb852cda25e46"
+    },
+    "runs/willyou-save-race-app-erURDz/writers-yprhIm/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-erURDz/writers-yprhIm/0-result.json",
+      "sha256": "3710c50219f8b4d2afc7cd6a746f33bdb2f6ccd823482f9d351b480afa6d23cc"
+    },
+    "runs/willyou-save-race-app-SWG5NC/dark-control.txt-saved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/dark-control.txt-saved.png",
+      "sha256": "d49f1c4586f4199371dfbd680ccf83972dc1ce3fe897f06633c3b1d51ef43812"
+    },
+    "runs/willyou-save-race-app-SWG5NC/dark-known-conflict.txt-refused.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/dark-known-conflict.txt-refused.png",
+      "sha256": "13f1b8fa26d98f40fe7928baeea4f2aa22fe89472e3cf7ff8656c0826650e81e"
+    },
+    "runs/willyou-save-race-app-SWG5NC/dark-late-reply.txt-saved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/dark-late-reply.txt-saved.png",
+      "sha256": "95bd6286f55fa436c5bfb7b2370cab78751a3c93586565a9c79f770feb1e03b9"
+    },
+    "runs/willyou-save-race-app-SWG5NC/dark-old-fd-after-return.txt-saved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/dark-old-fd-after-return.txt-saved.png",
+      "sha256": "ff7373e63a76411fcb2a08a47ac0c6f80903c312dc2366a73e60ca048911fe85"
+    },
+    "runs/willyou-save-race-app-SWG5NC/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/electron.log",
+      "sha256": "e3fcdbea7b3aa0dea6006b323e9a00f83373d751690f7dc6f2992ecad2eb7b86"
+    },
+    "runs/willyou-save-race-app-SWG5NC/light-control.txt-saved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/light-control.txt-saved.png",
+      "sha256": "7ee2f6ab7ca275829b9041b895bd2b7d32a4536cb039e7d96920c59711bcb8c2"
+    },
+    "runs/willyou-save-race-app-SWG5NC/light-known-conflict.txt-refused.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/light-known-conflict.txt-refused.png",
+      "sha256": "fc0bc05c3598a855839c4917cdda8825862faae6ca202e9441c5c18cef0badeb"
+    },
+    "runs/willyou-save-race-app-SWG5NC/light-late-reply.txt-saved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/light-late-reply.txt-saved.png",
+      "sha256": "2491d3cc52070d4f46e35158f2978d788680a72bf86306c12101acca3512237b"
+    },
+    "runs/willyou-save-race-app-SWG5NC/light-old-fd-after-return.txt-saved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/light-old-fd-after-return.txt-saved.png",
+      "sha256": "601ce9bbe50442eef10414e50a0caed9058fe3154b596602c587180ee9bf6f05"
+    },
+    "runs/willyou-save-race-app-SWG5NC/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/result.json",
+      "sha256": "241330bb0d534639353a8ccbf03d259e8172bfecec1973d0f76e5b0e69ec9afc"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-cZwPIB/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-cZwPIB/0-config.json",
+      "sha256": "efa392af1bca4213015455852ca321c57cde2ca681f64292c1182c37d69f9233"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-cZwPIB/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-cZwPIB/0-ready.json",
+      "sha256": "5579a1eea04c1dc38615bdf91eb60f51aeddaddf46c0f4d2856b3a0edcf87408"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-cZwPIB/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-cZwPIB/0-result.json",
+      "sha256": "10341e4e96a961cda70686de061f12cacb7203875165d8fcefa33aae967c3c47"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-hWe4Q0/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-hWe4Q0/0-config.json",
+      "sha256": "78d06d9c98210add97d7bd4f071cfdf7ad126879997270d5599fb6f81bc53d57"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-hWe4Q0/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-hWe4Q0/0-ready.json",
+      "sha256": "5b16d122840928d3d8331ffff659904e9f1a3ef83222960ebb96e5ce39a3d666"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-hWe4Q0/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-hWe4Q0/0-result.json",
+      "sha256": "d9ff972ef2721901e89d14a727a3d5171a9c9964b52bae53c6ae47cf6688d93f"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-kcxuXS/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-kcxuXS/0-config.json",
+      "sha256": "e67c77f2c50fd225a282cfcd4dd1a0d743415506342658c44c97c234d6266813"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-kcxuXS/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-kcxuXS/0-ready.json",
+      "sha256": "c99cf2938fd9ed0733d1e778900a2f6ca5cbcdbebf1f0bcd18c042609354e672"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-kcxuXS/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-kcxuXS/0-result.json",
+      "sha256": "0fbc105df7d0e0701e03a31f2fa20cd20c244c1f583751e460d5f12454b60fce"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-nWmov0/0-config.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-nWmov0/0-config.json",
+      "sha256": "78fcd6353f3e5045f48d53a5e3a3481088c1558e76168415d2dd7e16e7c53873"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-nWmov0/0-ready.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-nWmov0/0-ready.json",
+      "sha256": "34fa0a3fe326bffe9d86b972b37b243d85e6792f486deab4914e102578c18d9c"
+    },
+    "runs/willyou-save-race-app-SWG5NC/writers-nWmov0/0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-save-race-app-SWG5NC/writers-nWmov0/0-result.json",
+      "sha256": "46191a47afaa696cc942714c2131078ab5798cc2a3b8aa692aa76abff9bdcb60"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/attach.plist": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/attach.plist",
+      "sha256": "adfc07b33e72ee7b507f8f78c0297f29ae9741a4695b4937d3bdc8d0a443d665"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/dark-disk-full.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/dark-disk-full.txt-failure.png",
+      "sha256": "816983f9c7461b8c8301bc816a45801ce5424407b0b8c855ed577917d4f8ff47"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/dark-disk-full.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/dark-disk-full.txt-retry.png",
+      "sha256": "becbb7fe49532fa0d7932136f79004774618184ef712b7d7876ab596701119dc"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/dark-generic.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/dark-generic.txt-failure.png",
+      "sha256": "51e88394c195b45fe019811d8cc62b521dc7c6293d5524eb741794f31fc6f542"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/dark-generic.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/dark-generic.txt-retry.png",
+      "sha256": "f95a289fb14fd7acb1f60d55fe857dcc9b07745b2395ddeb8d8edbdb0a899f92"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/dark-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/dark-permission.txt-failure.png",
+      "sha256": "c2d457f52ac8e0fbffc3eb1811157051b969a0789549a4b230458cccd598666b"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/dark-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/dark-permission.txt-retry.png",
+      "sha256": "6ccdf0b83aa6eb440e3511fa5749771195a9fc6760baae4f4b9c7087a89ab811"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/electron.log",
+      "sha256": "e151dcb3733e777bc088ae746d1368723ed29b9e808ff36c13cd1f253aa29cde"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/environment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/environment.json",
+      "sha256": "2031c978e3c4d4338c85d1233e2f57d85316a8215b7f403ae53e9686fd927b10"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/light-disk-full.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/light-disk-full.txt-failure.png",
+      "sha256": "32bae0b1c0d96d5e6a10bf94fcf55c7de175e3088b681690c114368edebf26d2"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/light-disk-full.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/light-disk-full.txt-retry.png",
+      "sha256": "354c075d06e7b6273055ca6adcb00b55dd16de8e680c2270780e58dfb919a1d5"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/light-generic.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/light-generic.txt-failure.png",
+      "sha256": "88c65c0c516757ae4dadec328cb8aa939e903f417ba182a6303ae3d808af1b7a"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/light-generic.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/light-generic.txt-retry.png",
+      "sha256": "0dc572fea677e3565ba18fedddffc46fc1dfb73b185299c88734ef9d807bb876"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/light-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/light-permission.txt-failure.png",
+      "sha256": "aa59abe80ee1186e040062f3028e27791e700c35e09f50f008b039d034f0b26c"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/light-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/light-permission.txt-retry.png",
+      "sha256": "0e6f10b5d4183a3ea7fc4f874f84f763fc329ec1ae248771f94a3652bff42ce3"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/native-relay.jsonl": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/native-relay.jsonl",
+      "sha256": "685d93542ab75900b2c322911593b983ffe77371c74e6443b8e3236bf2a2ff6b"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/result.json.gz",
+      "sha256": "7e959c3cee5a0a810b5a88b52c8c3e0f1b82f57ca461ee1faaeccc9594995741",
+      "encoding": "gzip",
+      "uncompressedSha256": "c0205bc82024725f8935c544bc8f49b4a8c73ccf9a8c989d1818e1035227cdbd"
+    },
+    "runs/willyou-native-save-failure-sjgTZa/relay-source.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/runs/willyou-native-save-failure-sjgTZa/relay-source.py",
+      "sha256": "8eb938a81e975f2b0633234b1366434ca379269f74b28629f181d36b3c5b6b30"
+    },
+    "execution-boundaries.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-save-races-dev128-r74/execution-boundaries.txt",
+      "sha256": "e2ea727aa2af929eb2d1bdf4de54352744c8b1c4ff96d1faa196b728efe420f5"
+    }
+  }
+}

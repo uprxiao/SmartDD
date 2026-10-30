@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/media/preview.test.tsx (24 tests | 1 failed) 5695ms
+     × T27 applies the 2500ms idle boundary only to playing overlay and clears its timer 5004ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/media/preview.test.tsx > media player user interactions (decoder isolated) > T27 applies the 2500ms idle boundary only to playing overlay and clears its timer
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/renderer/features/files/media/preview.test.tsx:177:3
+    175|     fireEvent(seek, ime); expect(ime.defaultPrevented).toBe(false); ex…
+    176|   });
+    177|   it('T27 applies the 2500ms idle boundary only to playing overlay and…
+       |   ^
+    178|     const view = render(<FileMediaPreview buffer={buffer()} presentati…
+    179|     const host = screen.getByLabelText('视频播放器'), bar = document.queryS…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 32 passed (33)
+   Start at  06:57:58
+   Duration  6.70s (transform 339ms, setup 0ms, import 955ms, tests 5.73s, environment 433ms)
+

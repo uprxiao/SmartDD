@@ -1,0 +1,241 @@
+{
+  "at": "2026-10-19T18:30:17.161285+00:00",
+  "localDate": "2026-10-20",
+  "caseId": "M9-T-J02",
+  "status": "passed U/I/A",
+  "revision": "R3.4/R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "electron": "42.11.14"
+  },
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r95-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "e45afd09753971d5b60ee9a6a3b2b345892f11095e7e83907e1d0c377b0edebb",
+    "brokerSha256": "803d456fd8b8853dde15fef6b543126b995bf56505fba5e6e2e50fe0f73fe0bf",
+    "newBuildForCase": false,
+    "installer": false,
+    "release": false
+  },
+  "sourceSnapshot": {
+    "at": "2026-10-19T18:27:49.836325+00:00",
+    "parent": "/private/tmp/willyou-dev157-source-delta.json",
+    "parentSha256": "859eb7d5483215596b82a536191755bcc7c71bbc0637de07fffe7d0ca9e01330",
+    "fileCount": 1340,
+    "changedParentFiles": {
+      "docs/真实App自动验收流程.md": "1b8d28909af50adf96b7bcb5456f67cd0c3c0227ae0e7c63903a508798b490aa",
+      "src/renderer/features/files/office/pptx-buffer.test.ts": "1b997d9415fe474b456db244d1b02410ec4c6df4946d1cf762f2d35344909688",
+      "src/renderer/features/files/office/pptx-buffer.ts": "c55c884bc7c58db45ef375168f13af4724f0608a671dfe31779cfd5c9d02dcd5"
+    },
+    "newFiles": {
+      "scripts/files/office-active-input-ui.mjs": "9f12fae086621981b671a04f9c1a451c0d1b13d015262f6b2af82d0238dea6c5",
+      "scripts/files/verify-office-active.py": "33c74e768226704cc7cf3c6690abcd823426c3168fa3b7f8c56ebef5cd37b670",
+      "scripts/files/write-office-active.py": "839ff7fbda0efdfe35d19b6f2e400c9baa33d42b1f5a16a3ce6f3cff2422c3e7",
+      "scripts/lib/office-active-observer.mjs": "0de6f33ccd879625d8d334f548828cbe08e1ceb0d479d4932b3e769ad5ffe771",
+      "src/renderer/features/files/office/active-input-native-acceptance.test.ts": "d62e15a65beda0219291b084fa7996a5822c6c5ba67e9cd38ce87775bd7aec8a"
+    },
+    "postBuildChanges": {},
+    "tar": "/private/tmp/willyou-dev158-source-delta.tar.gz",
+    "tarSha256": "5b0d46b0e8fbe85e041ef9425bc96b340c8f1acedaa11b80de735082f10d675e",
+    "fullPrebuild": "/private/tmp/willyou-dev158-r95-prebuild-source.tar.gz",
+    "fullPrebuildSha256": "5166a5fbf60e755550ea4af702a7dfa4e726c41203be7b0d4a94e8268e8f3251",
+    "boundary": "All1340 engineering inputs exactly match BEFORE r95 build, full snapshot independently extracted/hashed; 8-file delta from DEV157 includes PPT buffer production+5 race tests, common guide and five verification files. DEV159 private probes/evidence outside engineering inputs; not production changes. No release."
+  },
+  "results": {
+    "formalPassed": 266,
+    "formalTotal": 419,
+    "unexecuted": 150,
+    "blocked": 3,
+    "percentage": 63.48,
+    "appRemaining": 150,
+    "newStandaloneContractScenarios": 3,
+    "positiveInheritedAppChecks": 2,
+    "negativeAppChecks": 4,
+    "originalV8PayloadsChecked": 266,
+    "negativeOriginalPayloads": 16,
+    "positiveParentPayloads": 250,
+    "originalNativeErrors": 4,
+    "declaredEmptyHashTransportFaults": 2,
+    "originalMetadataReplyGates": 2,
+    "invalidBaselineWorkerStarts": 0,
+    "nativeWritesDuringNegativeScenarios": 0,
+    "nativeSmokeChecksInheritedR95": 6,
+    "runtimeFilesVerified": 82,
+    "sourceRecoveryInputs": 1340
+  },
+  "coverage": {
+    "U/I": "Actual original officeOpenSchema rejects blank64hex baseline before document creation, source unchanged. Actual native FileService/roots/r95 packaged PPTX Worker: matching source opens, edits notes, saves, independent OOXML reads latest/hash matches genuine receipt. FileService.open metadata is original; physically replacing notes part with same source identity before document-open causes genuine FileError CHANGED, keeps external sourcehash and no active document. Three standalone contract scenarios, not three formal cases or additional Vitest test count.",
+    "Apositive": "Precisely inherits light/dark normal notes from completed r95 W28 PPT14 run. Original files.open revision hash == independent source bytes == original openPptx args baseHash == original sourceHash. Actual UI text, focused Meta/CtrlS, newer unblurred close, two real native saved receipts, latest sourcehash and actual reopened notes verified. Whole parent250 original V8 payloads independently digest+decoded; only two explicit matching-baseline checks counted for J02.",
+    "Anegative": "Own actual r95 UI light/dark x changed-source/empty-hash4. Changed-source holds exact original files.open response then independent same-inode OOXML writer changes disk; original openPptx CHANGED rejects. Empty-hash deliberately corrupts ONLY a cloned original FileDocument.revision.hash at transport boundary and original backend schema rejects blank baseHash. Original authenticated frame/args/metadata/error retained untouched; clone delta independently verified. Real UI load-error/no editor, Save disabled and zero edit/save RPC/Worker start; exact original/external source retained. Close failed tabs, restore original handlers/watch/Worker constructor, normal0/null.",
+    "faultBoundary": "Empty provider hash cannot normally be produced by valid nativeFileService; this is explicitly faulty supplier input, not a normal-environment result. Watch delivery held during negative branches solely to prevent valid later refresh from replacing the fault before assertions; original frames released unchanged. No Store/DOM-value injection, fabricated native success, source-write spoof, clipboard/native picker/external model/daily data.",
+    "prototype": "No layout/entry change; J02 U/I/A only. No new P/V/system/platform result claimed. Existing original steps/expected preserved."
+  },
+  "inheritedBuildEvidence": {
+    "report": "m9-development-office-active-dev158-r95-fix-20261020.json",
+    "sha256": "ea2378a17fcff11f838abe9696e22c892e8c6b81ed782c6c4366c651c34c9463",
+    "runtime82Reused": true,
+    "sixSmokesReused": true,
+    "engineeringInputsUnchangedSinceR95Prebuild": 1340,
+    "newProductionChanges": 0
+  },
+  "remaining": "Only J02 advances. W28 full XLSX sixteen current execution and final32 audit still outstanding at this point.150unexecuted+3blocked retain all original scopes. M9 incomplete, no merge/push/tag/release.",
+  "artifacts": {
+    "willyou-dev159-baseline-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-baseline-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-dev159-build-native-probe.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-build-native-probe.mjs",
+      "bytes": 655,
+      "sha256": "545f10d887edd0c75fb44abdd8fc6f4b6d4a655473cb2efc0cca03758d4b9d84"
+    },
+    "willyou-dev159-baseline-native.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-baseline-native.cjs",
+      "bytes": 2757483,
+      "sha256": "6eb8b08807d711249ba74dbf5dcb02b9c06ff460f67067b63b86a88d81b77980"
+    },
+    "willyou-dev159-v8-audit.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-v8-audit.cjs",
+      "bytes": 5463,
+      "sha256": "6824bd99870c3e1823ca02a9a85ed1895523cc4bb7a04a117d096c9e73d61df9"
+    },
+    "willyou-dev159-baseline-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-baseline-ui.mjs",
+      "bytes": 10947,
+      "sha256": "bc5552601ca1b18969c8538161bb08a458f3ded1b22d81af3cfa9880398aa731"
+    },
+    "willyou-dev159-v8-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-v8-audit.json",
+      "bytes": 3007,
+      "sha256": "5c628b3867ccfc7f27a39820e8ee90d8d7ade072284a47d7d0578e6fe7a42b90"
+    },
+    "willyou-dev159-baseline-native.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-baseline-native.ts",
+      "bytes": 5656,
+      "sha256": "ca9551a2a8b2168524d4b46f9776685554264ed004ebc3a89cd56f6d35810dc8"
+    },
+    "willyou-dev159-baseline-native.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-baseline-native.log",
+      "bytes": 30,
+      "sha256": "d0a61429988d0ecc480a24c0145dfa202d7f1e5126c5faa11d46c0c38ba1de8a"
+    },
+    "willyou-dev159-baseline-native-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-baseline-native-result.json",
+      "bytes": 1531,
+      "sha256": "8f3a4c6cd880c6e7078b6f2a06c87cfa340a7ba4677114bc7fbf716caf274387"
+    },
+    "willyou-dev159-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-archive.py",
+      "bytes": 7243,
+      "sha256": "f2693c6df608fb6fd31dc5bbb46e75fa6c9fde279c748ccc6cf2c5e7cfa658c5"
+    },
+    "willyou-dev159-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-process-audit.json",
+      "bytes": 588,
+      "sha256": "4d1b4c4ec66a6c43aed9f058973b49c60d921110480e2aff77e01fb9e52e18ba"
+    },
+    "willyou-dev159-baseline-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-baseline-A.log",
+      "bytes": 364,
+      "sha256": "450d05ce4c2bdc05d9c8e0341c5de29c779ee79c7bd4c0cff65df55765735093"
+    },
+    "willyou-office-active-A-yi9Atz-result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-office-active-A-yi9Atz-result.json.gz",
+      "bytes": 202831,
+      "sha256": "0eb2ec3d3699a84399e6550c058d07f64c98e8c17ab90a03bc596939f88696bf",
+      "compression": "gzip",
+      "originalBytes": 2045969,
+      "originalSha256": "4ff605ea08b78bf8dd1613145176ac7cb7b7dac2970c1c168c613657be262d3d"
+    },
+    "willyou-office-active-baseline-A-E0If1U-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-office-active-baseline-A-E0If1U-result.json",
+      "bytes": 48585,
+      "sha256": "5e4945d243867a36e06d62fd8e0035f9c93037cfdc3a936fc4c84444fdaa9aad"
+    },
+    "willyou-office-active-baseline-A-E0If1U-light-empty-hash-rejected.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-office-active-baseline-A-E0If1U-light-empty-hash-rejected.png",
+      "bytes": 80889,
+      "sha256": "b4d723e4f27898a557f32a69796c944ae33bcb640886fd45c5ebebf28a9e94f3"
+    },
+    "willyou-office-active-baseline-A-E0If1U-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-office-active-baseline-A-E0If1U-electron.log",
+      "bytes": 9866,
+      "sha256": "a5743995736fcaa8a5e3916505fe61388a8099c23ed9510be9fc2ccb125ad89f"
+    },
+    "willyou-office-active-baseline-A-E0If1U-dark-empty-hash-rejected.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-office-active-baseline-A-E0If1U-dark-empty-hash-rejected.png",
+      "bytes": 80237,
+      "sha256": "c9e5b55d2026c4cfb0308510fd06b34ace49b4ddab1d0d75e749038a21bcd37d"
+    },
+    "willyou-office-active-baseline-A-E0If1U-light-different-source-rejected.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-office-active-baseline-A-E0If1U-light-different-source-rejected.png",
+      "bytes": 60576,
+      "sha256": "0d1230c87af3e50a85d7bf6c565ff74c877b0ac10179dfd9ea390265b454925b"
+    },
+    "willyou-office-active-baseline-A-E0If1U-dark-different-source-rejected.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-office-active-baseline-A-E0If1U-dark-different-source-rejected.png",
+      "bytes": 59584,
+      "sha256": "6aa10c2e6548a04d375b5ef23a1e977551cdb68988693762450d9bf79039060a"
+    },
+    "positive-light-notes-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/positive-light-notes-normal-reopened.png",
+      "bytes": 103893,
+      "sha256": "1f3deb6811203da0aaf9aebc24f79f9e8c746f46f0fb6611b944a57e29a4e9e4"
+    },
+    "positive-dark-notes-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/positive-dark-notes-normal-reopened.png",
+      "bytes": 101513,
+      "sha256": "7df542f1a4fc87040812f12a26237583d0aba00661c1141526b97e897eb99db9"
+    },
+    "willyou-dev158-source-delta.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-source-delta.json",
+      "bytes": 160804,
+      "sha256": "df933d1094127e85453cebaa8d716a28ed3fa7140091412f963752ee5acf8d60"
+    },
+    "willyou-dev158-source-delta.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-source-delta.tar.gz",
+      "bytes": 59587,
+      "sha256": "5b0d46b0e8fbe85e041ef9425bc96b340c8f1acedaa11b80de735082f10d675e"
+    },
+    "willyou-dev158-r95-prebuild-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-r95-prebuild-source.json",
+      "bytes": 159481,
+      "sha256": "cce8ec6d083f218e960879f590403dc285c67d489b7432b1d3cbd360b1c617ad"
+    },
+    "willyou-dev158-r95-prebuild-source.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-r95-prebuild-source.tar.gz",
+      "bytes": 12307723,
+      "sha256": "5166a5fbf60e755550ea4af702a7dfa4e726c41203be7b0d4a94e8268e8f3251"
+    },
+    "willyou-dev158-runtime-r95.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-runtime-r95.log",
+      "bytes": 13049,
+      "sha256": "27b8b7cad92aab70359064a389285f4139ce76c9e8783c548e59dcc233c42bd2"
+    },
+    "willyou-dev158-r95-fast-package-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-r95-fast-package-result.json",
+      "bytes": 2539,
+      "sha256": "6065bb8227275c9cf604b32d5f2e48673f5c96a29058273299eb78bd74ce7cbd"
+    },
+    "willyou-dev158-r95-native-smoke.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-r95-native-smoke.log",
+      "bytes": 182,
+      "sha256": "96572e052da16ca4746a35e68beb4ad23bbf960ad662db95c067c626d4137c8b"
+    },
+    "willyou-dev158-typecheck-fixed.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev158-typecheck-fixed.log",
+      "bytes": 130,
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev159-fixtures.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-pptx-baseline-dev159-r95-final/willyou-dev159-fixtures.tar.gz",
+      "bytes": 215541,
+      "sha256": "b7a07bf6d825ecf16a4b21783c8ffce37d1bd0afcdad67dcba050bf2dfe730ee"
+    }
+  },
+  "releasePerformed": false
+}

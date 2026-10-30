@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T04:44:28.880Z",
+  "scriptSha256": "b3c6bdf497876a0cdf16a9a97589e1c394f13b8f741ffab1b8ebe3b8a3d161ed",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0",
+    "server": "typescript-language-server 4.3.4",
+    "typescript": "5.9.3"
+  },
+  "scope": "仅 TypeScript 语言服务；最小自写 LSP 客户端；隔离临时项目；不含其他语言、服务器分发/安装、项目配置发现、工作区符号索引大项目性能",
+  "cases": [
+    {
+      "id": "LS01",
+      "title": "握手与能力门控：只对服务端声明的能力发请求",
+      "status": "passed",
+      "ms": 1554,
+      "evidence": {
+        "readyMs": 53,
+        "positionEncoding": "(未声明，LSP 默认 utf-16)",
+        "gate": {
+          "definition": true,
+          "references": true,
+          "hover": true,
+          "implementation": true
+        },
+        "unsupportedMethodGatedOff": true
+      }
+    },
+    {
+      "id": "LS02",
+      "title": "definition / references / hover 跨文件返回正确位置与类型文本",
+      "status": "passed",
+      "ms": 27,
+      "evidence": {
+        "definition": {
+          "file": "a.ts",
+          "line": 1
+        },
+        "referenceCount": 3,
+        "referenceFiles": [
+          "a.ts",
+          "b.ts"
+        ],
+        "hover": " ```typescript (alias) function add(x: number, y: number): number import add con"
+      }
+    },
+    {
+      "id": "LS03",
+      "title": "列单位是 UTF-16：emoji 之后的符号用 UTF-16 列才命中，用“字符数”会偏移",
+      "status": "passed",
+      "ms": 1,
+      "evidence": {
+        "utf16Column": 11,
+        "codePointColumn": 10,
+        "hitWithUtf16": 1,
+        "hitWithCodePoints": 0,
+        "note": "行列必须按 UTF-16 单位换算（编辑器选区同为 UTF-16）；按字符数或字节数换算会错位"
+      }
+    },
+    {
+      "id": "LS04",
+      "title": "过期响应：请求发出后文档版本变化，响应被丢弃而不是套到新文档上",
+      "status": "passed",
+      "ms": 6,
+      "evidence": {
+        "oldRequestStale": true,
+        "newRequestStale": false,
+        "freshHasResult": true
+      }
+    },
+    {
+      "id": "LS05",
+      "title": "取消：$/cancelRequest 后请求以 RequestCancelled 或正常结果结束，不挂起",
+      "status": "passed",
+      "ms": 1,
+      "evidence": {
+        "kind": "result",
+        "count": 0
+      }
+    },
+    {
+      "id": "LS06",
+      "title": "延迟：20 次 definition 的 p50/p95，以及服务进程内存",
+      "status": "passed",
+      "ms": 85,
+      "evidence": {
+        "runs": 20,
+        "p50Ms": 0.3,
+        "p95Ms": 4,
+        "maxMs": 4,
+        "processes": [
+          {
+            "pid": 71287,
+            "rssMiB": 3,
+            "cmd": "/bin/zsh -c source /Users/liubu/.claude/shell-snapshots/snapshot-zsh-1"
+          },
+          {
+            "pid": 71500,
+            "rssMiB": 56,
+            "cmd": "node /tmp/m9-lsp/node_modules/.bin/typescript-language-server --stdio"
+          },
+          {
+            "pid": 71504,
+            "rssMiB": 147,
+            "cmd": "/Users/liubu/.hermes/node/bin/node /tmp/m9-lsp/node_modules/typescript"
+          },
+          {
+            "pid": 71505,
+            "rssMiB": 172,
+            "cmd": "/Users/liubu/.hermes/node/bin/node /tmp/m9-lsp/node_modules/typescript"
+          }
+        ],
+        "note": "本机 Node 22 上的单项目小样本；预算未冻结"
+      }
+    },
+    {
+      "id": "LS07",
+      "title": "根外结果分类：definition 指向 typescript 内置 lib 时标记 outside-root（只读，不作为可编辑根内文件打开）",
+      "status": "passed",
+      "ms": 8,
+      "evidence": {
+        "locations": [
+          "(outside) …/m9-lsp/node_modules/typescript/lib/lib.dom.d.ts"
+        ],
+        "outsideCount": 1,
+        "policy": "根外位置只读展示、不加入根内标签、不获得保存能力"
+      }
+    },
+    {
+      "id": "LS08",
+      "title": "崩溃：强杀服务父进程 —— 未完成请求立即被拒绝；记录其子孙进程是否遗留",
+      "status": "passed",
+      "ms": 2106,
+      "evidence": {
+        "pendingRejectedWith": "EXIT",
+        "rejectedAfterMs": 2,
+        "descendantsBeforeKill": 3,
+        "descendantsDiedWithin5sMs": 51,
+        "survivorsAfter5s": 0,
+        "restartedAndAnswered": true,
+        "meaning": "子孙进程在父进程被强杀后自行退出（耗时见 descendantsDiedWithinMs）"
+      }
+    },
+    {
+      "id": "LS08b",
+      "title": "补救验证：服务自成进程组，kill(-pgid) 一次清掉整棵进程树",
+      "status": "passed",
+      "ms": 980,
+      "evidence": {
+        "treeSize": 4,
+        "allDeadAfterMs": 52,
+        "note": "用进程组（detached + 负 pid 信号）可无遗留；Windows 需另用 taskkill /T，未验证"
+      }
+    },
+    {
+      "id": "LS09",
+      "title": "正常关闭：shutdown+exit 后退出码 0，且整棵进程树在预算内退出",
+      "status": "passed",
+      "ms": 865,
+      "evidence": {
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "stopMs": 52,
+        "descendants": 3,
+        "descendantsDiedWithinMs": 0,
+        "survivors": 0
+      }
+    },
+    {
+      "id": "LS10",
+      "title": "超时：无响应请求在预算内被拒绝（不让界面一直等待）",
+      "status": "passed",
+      "ms": 766,
+      "evidence": {
+        "code": "TIMEOUT",
+        "ms": 613,
+        "cleanedUpAfterMs": 52
+      }
+    }
+  ],
+  "endOfRun": {
+    "leftoverProcessesOfMainServer": 0,
+    "mainServerTreeDiedAfterMs": 0
+  },
+  "fixtureCleanup": {
+    "removed": true
+  },
+  "completedAt": "2026-10-17T04:44:35.401Z",
+  "summary": {
+    "passed": 11
+  }
+}

@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-DIAGRAM-LIFECYCLE-DEV113-R64",
+  "at": "2026-10-18T23:58:47.167620+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-one-case",
+  "revision": "R3.4-20261017 / R3.4-P1; R06.2/R08.7 unchanged",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "fullCasesPassed": [
+    "M9-T-X10"
+  ],
+  "codeRegressionCases": [
+    "M9-T-X01",
+    "M9-T-X02",
+    "M9-T-X04",
+    "M9-T-X05",
+    "M9-T-X09",
+    "M9-T-X11",
+    "M9-T-H14",
+    "M9-T-H17"
+  ],
+  "productionChanges": [
+    "src/renderer/features/files/markdown/editor.ts",
+    "src/renderer/features/files/markdown/diagrams.ts"
+  ],
+  "prototypeChanges": [],
+  "defects": [
+    {
+      "id": "M9-DEV-113-01",
+      "state": "fixed-and-r64-retested",
+      "problem": "Global revision invalidated unchanged diagram DOM and renderer.",
+      "fix": "Range/source-verified retention and editor-scoped stable code/boundary records with lifecycle disposal."
+    },
+    {
+      "id": "M9-DEV-113-02",
+      "state": "fixed-and-r64-retested",
+      "problem": "Missing returned cleanup, diagram ResizeObserver and connected late-write guard.",
+      "fix": "Idempotent returned cleanup, per-DOM RO->measure and complete owner/observer/URL/record release."
+    }
+  ],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r64-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "f0047fcf14037b0cf44ed32817f4f1b72f7bed1c7b7fd2c566c467e9484ec7d6",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 81
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-mermaid-gate-dev112-r63-20261019.json",
+    "sha256": "e3af58bd0751c21cb6a852e862de0ca3f10cb41485cd000a2e7b7a9e74c0dfb4",
+    "all69ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "buildFiles": 1077,
+    "testedFiles": 1079,
+    "buildSha256": "754e27d024a7531adb15be4b83574f8851365dfb457cbd718b419bba35ddc245",
+    "finalTestedSha256": "9fa3f6377e378193eda05e3479e84d60430d366773753fcb84fd357055857a2a",
+    "postBuildProductionChanges": [],
+    "postBuildNewFiles": [
+      "scripts/files/markdown-diagram-lifecycle-ui.mjs",
+      "scripts/lib/diagram-rpc-observer.mjs"
+    ]
+  },
+  "verification": {
+    "codePassedDeduplicated": 96,
+    "newUniqueCodeTests": 9,
+    "newTestsByBoundary": {
+      "U": 7,
+      "I": 2
+    },
+    "cumulativeCodeUnion": 2101,
+    "currentSkipped": 0,
+    "prototypeSourceChanged": false,
+    "prototypeModelTestsThisBatch": 0,
+    "prototypeModelBaselineRetained": 241,
+    "historicalExternalCliOptInNotSelected": 2,
+    "priorUnrelatedPdfFixtureOptInNotSelected": 1,
+    "actualUiChecks": 8,
+    "nativeWorkerInstances": 5,
+    "originalDiagramRpcRows": 12,
+    "originalFileRpcRows": 19,
+    "originalSvgSuccessGates": 3,
+    "nativeDistinctResizeWidths": [
+      325.265625,
+      336.59375,
+      349.921875,
+      363.265625,
+      376.59375,
+      389.921875,
+      403.265625
+    ],
+    "nativeResizeToMeasureCalls": 6,
+    "actualSvgBlobsCreated": 4,
+    "allSvgBlobsRevokedExactlyOnce": true,
+    "intentionalPrivateFixtureSaves": 2,
+    "completedBatchNormalQuit": {
+      "pid": 67184,
+      "code": 0,
+      "signal": null
+    },
+    "codeExit": 0,
+    "typecheckExit": 0,
+    "packageExit": 0,
+    "unhandledErrors": 0,
+    "formalPassed": 221,
+    "formalTotal": 419,
+    "formalRemaining": 198,
+    "unexecuted": 196,
+    "blocked": 2,
+    "appRemaining": 195
+  },
+  "boundaries": [
+    "A actual packaged App with real sandboxed Mermaid and native file service. Real pointer/keyboard edits, resize and close/switch; original SVG replies delayed unchanged only after actual renderer success. Passive original native ResizeObserver/requestMeasure/URL observation, no synthetic resize/SVG or editor/Store/DOM value injection, clipboard, models, Codex or daily files.",
+    "U controlled RPC/SVG and I controlled resize are explicit layer boundaries; actual App real engine/native RO/native IO separately verified. No prototype/demo used as App success.",
+    "Per-DOM identity, actual SVG/blob identity and original renderer count jointly prove reuse; structural DOM equality alone is insufficient. Native RO delivered7 actual widths and invoked original measure6 times.",
+    "Three original actual SVG success replies held only after original service auth/render returned, delivered unchanged after code/close/switch; no forged data or revision. Two actual saves target private fixture files, all final bytes independently checked.",
+    "Prototype sources/styles unchanged, priorP241/build retained not new browser/visual verification. Math lazy/system/reference/platform/extra scroll and whole419 goal unfinished; no release."
+  ],
+  "artifacts": {
+    "willyou-dev113-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-red.json",
+      "sha256": "1afc44e4913780b17c1409d2f2f8408f4106ad05c17d4eb189ba5ba37f29f0cb"
+    },
+    "willyou-dev113-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-red.log",
+      "sha256": "bd577c48c235c9550975efabcaf3c7f2cd82dbe52c161603daebb38430cd2da0"
+    },
+    "willyou-dev113-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-native-final.json",
+      "sha256": "dced5ffd69191accde0145300c04b2c5f16f95b28bdb2df814ae8c918b434575"
+    },
+    "willyou-dev113-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-native-r1.json",
+      "sha256": "84dfecec8eee9a837fcc0ffb50b898ca3b5ab91dd94672a6fd777cd9fe937c6a"
+    },
+    "willyou-dev113-native-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-native-red.json",
+      "sha256": "5a4ac87a58f9be275960cf5bb01850880daa67c0a94b03155f7d24a5fb156f2c"
+    },
+    "willyou-dev113-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-code-final.json",
+      "sha256": "3b648921e954b053cdc7e0a1de42d1c67759a1d8d0a8bde26c087764775edf13"
+    },
+    "willyou-dev113-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-code-r1.json",
+      "sha256": "fcb46c482592656c2c099d5ee895a9eec56ae86a9f8677b7986f899632d30839"
+    },
+    "willyou-dev113-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-code-final.log",
+      "sha256": "36a729ec2238bd28bf40ca7eedaad6f333eef02395951c2981aad72b5f10af14"
+    },
+    "willyou-dev113-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-code-r1.log",
+      "sha256": "098e1997a7bd04ae1e2f811ca67392376285ec45092f0c0e24a4045af39d34ec"
+    },
+    "willyou-dev113-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev113-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-typecheck-r1.log",
+      "sha256": "72a5493da6d485e52794fec71db00370a698524d0d943174bc5ccc9dfba41741"
+    },
+    "willyou-dev113-package-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-package-hashes.json",
+      "sha256": "c3d076a629cba91b005442d926eb508f45199d19429f5d9eca3a334d134df687"
+    },
+    "willyou-dev113-package-r64.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-package-r64.log",
+      "sha256": "f852b868ec23e094ca9b641f3703f33b2fc983813ab586f1ebfd0773eab88657"
+    },
+    "willyou-dev113-runtime-r64.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-runtime-r64.json",
+      "sha256": "d2fdd671ea6ddd79039339d2defed7c79ffd6dbbba4d23bb62e86d3a6ca22655"
+    },
+    "willyou-dev113-watcher.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-watcher.json",
+      "sha256": "c8373289eb24b2a70ed0abdd3b1d59ea2f2f2088c85ab11b85479f03541a3f8a"
+    },
+    "willyou-dev113-verify-runtime-r64.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-verify-runtime-r64.cjs",
+      "sha256": "43282c1a2ea4b5c87158b99d07dc39ea1ae51ea193d03b8b062085ebbe1e81dd"
+    },
+    "willyou-dev113-watch-hash-r64.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-watch-hash-r64.cjs",
+      "sha256": "2a1f7a6cefa2d3c2cf97d71e827347fabdf9c1a6b6aaf852f57a191a15336004"
+    },
+    "willyou-dev113-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-app-r1.log",
+      "sha256": "f1d5731b2bc2978063901d671e413bb67d5ad8faed4b284f9b943336a110a41e"
+    },
+    "willyou-dev113-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-process-audit.json",
+      "sha256": "af197d3478c2c3b447120b840e170d40d7ac8f33f4446ab07a174a6b363446ee"
+    },
+    "willyou-dev113-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-index-before.json",
+      "sha256": "cdfb381730095c34b7a3c37a865060f03dd357bb9aa9b0228141257a18678d93"
+    },
+    "willyou-dev113-build-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-build-snapshot.py",
+      "sha256": "a240e6a2aae5f15af7d157d7d5baf9619755e385b228bc1d71f67a218b759d59"
+    },
+    "willyou-dev113-tested-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-dev113-tested-snapshot.py",
+      "sha256": "0f6028dafbc24d1c4af7863e54315df2583398b90fe6001017ee7bebc16c5719"
+    },
+    "willyou-m9-acceptance-batch-r64-build-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-m9-acceptance-batch-r64-build-sources.json",
+      "sha256": "01c6518df9c7e17eb58e7083bae96ce83976f60d2d9ab9f31c206a2327a3753f"
+    },
+    "willyou-m9-acceptance-batch-r64-dev113-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-m9-acceptance-batch-r64-dev113-tested-sources.json",
+      "sha256": "643165dd17885463affae02fe455be41775547c7bd3d8c2ec4ee6fb702c31ad6"
+    },
+    "willyou-m9-acceptance-batch-r64-build-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-m9-acceptance-batch-r64-build-sources.tar.gz",
+      "sha256": "754e27d024a7531adb15be4b83574f8851365dfb457cbd718b419bba35ddc245"
+    },
+    "willyou-m9-acceptance-batch-r64-dev113-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/willyou-m9-acceptance-batch-r64-dev113-tested-sources.tar.gz",
+      "sha256": "9fa3f6377e378193eda05e3479e84d60430d366773753fcb84fd357055857a2a"
+    },
+    "app/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/electron.log",
+      "sha256": "ee57a3aee211094e6919ca557d23fac4cce66ba40c7f70aa6651f11bc70b4699"
+    },
+    "app/project/late-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/project/late-close.md",
+      "sha256": "2fc9c3e279c98b3f8443aad2e3821dcf1f74d72ecffbf6b0b9093b884b54f27c"
+    },
+    "app/project/late-code.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/project/late-code.md",
+      "sha256": "c6255bd4bfae553be55beae965bb5bd2d43750f1c39d1cc4a0ef2ff54ad302f2"
+    },
+    "app/project/late-switch.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/project/late-switch.md",
+      "sha256": "10c6219cd12d7f7376fab264d5733758afa095551dbc50c613f6233324aa55fb"
+    },
+    "app/project/main.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/project/main.md",
+      "sha256": "5cb548e58b5ffecbef4dcd03ea5e15fd68d770a905761a39abb8bba95aa86371"
+    },
+    "app/project/other.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/project/other.txt",
+      "sha256": "ce9e4976dd6f3ee04176a60f734846043ffb0737da11fb0e28c159f16e195717"
+    },
+    "app/resized-changed-diagram.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/resized-changed-diagram.png",
+      "sha256": "2724026eb1a222eb4c01f163e51e75c4d705bde72cd3a54dcf8c7218e773473e"
+    },
+    "app/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/app/result.json",
+      "sha256": "09256fa2188b00a72e3911da2337b148cb5d1384779bed2f376f3a9428ce614f"
+    },
+    "failure-history.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-diagram-lifecycle-dev113-r64/failure-history.txt",
+      "sha256": "7940ee73cf469085e3d57f52df4ff4e70999643225457a4cdbb7233c33ba2803"
+    }
+  }
+}

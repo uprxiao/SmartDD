@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-17",
+  "scope": "M9 R3.4/R3.4-P1 R06.7/R07/R08, F17; J11 CSV subset",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "workingTree": "uncommitted M9 increment; other changes preserved",
+  "environment": {
+    "system": "macOS 26.6.1",
+    "architecture": "arm64",
+    "electron": "42.11.14"
+  },
+  "build": {
+    "path": "/private/tmp/willyou-m9-csv-build/mac-arm64/WillYou.app",
+    "asarSha256": "924ca617dbc1a145ed5177a9e9ce1774bc9e7c841359c45eecb81c07520a9e74",
+    "log": "/private/tmp/willyou-m9-csv-package.log",
+    "native": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "fileWatcher": "passed"
+    }
+  },
+  "tests": {
+    "passed": 23,
+    "files": 4,
+    "log": "/private/tmp/willyou-m9-csv-tests-final.log",
+    "boundary": "model + worker lifetime + React component + real buffer/API-isolated; not App end-to-end",
+    "typecheck": "/private/tmp/willyou-m9-csv-typecheck-final2.log",
+    "prototypeBuild": "/private/tmp/willyou-m9-csv-prototype-build.log",
+    "prototypePrepare": "/private/tmp/willyou-m9-csv-prototype-prepare.log"
+  },
+  "fixtures": [
+    {
+      "file": "quoted 中文.csv",
+      "bytes": 161,
+      "sha256": "abd491e0504491bc2dc8e577f08c6d0670ba5f8f751116724f8532d4df22825a"
+    },
+    {
+      "file": "quoted 中文.tsv",
+      "bytes": 158,
+      "sha256": "c331fb46d0ae3ea7d74e45203ed9d1dbd1d73a8c2f54f618b1d0e7427a4f24db"
+    },
+    {
+      "file": "empty.csv",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "invalid.csv",
+      "bytes": 25,
+      "sha256": "e42a836fc8ce3efadebf38a6e4456f0dd23fcb636dd82853cc9315a059beb5db"
+    },
+    {
+      "file": "wide-long.csv",
+      "bytes": 357109,
+      "sha256": "97b1a0d28b139e7915f121d64393612d506bfc43ebba1b90caf898a6c061da5d"
+    },
+    {
+      "file": "million.csv",
+      "bytes": 8000000,
+      "sha256": "22e6fafbfbe933c0f8e4485616ce066fcc5af65ab4e9eac31edcaca8282b1f48"
+    }
+  ],
+  "fixtureDirectory": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/csv-cases",
+  "sourceHashes": {
+    "src/renderer/features/files/csv/model.test.ts": "38a61ad2c8b075b5526a88972205f949891beaad3f373bfadac220815e110f27",
+    "src/renderer/features/files/csv/preview.tsx": "3caccf39d24c121c29bbe4ae757307e720b10913df200b750b55ac8a7e6672f3",
+    "src/renderer/features/files/csv/model.ts": "39fa905358a45e2c478290005a3b4ba8d6cd317a97df7c95e38698b586c6ee81",
+    "src/renderer/features/files/csv/preview.test.tsx": "18c02889933693d1b93fccb96dd92a75ff7b0ba9e843cfd692c8d5662d79c94e",
+    "src/renderer/features/files/csv/client.ts": "588fe8881abeaf3d2a4a5ff1acf0b9a65cd4de2739b0e7ba8420ed2efc17b261",
+    "src/renderer/features/files/csv/style.css": "4a17a84a1e44489ff6c6d1facaa513c1befb1f0b7017fba05cb666b38daff8c2",
+    "src/renderer/features/files/csv/client.test.ts": "f513e0177dc33173df11656e1e7ff7f42c889bda0a8b1918aaba8e3bbd93d295",
+    "src/renderer/features/files/csv/worker.ts": "69c50d9afcdb377c3c46d76db27465236a69f44d3a5565f823d85806f4321500",
+    "src/renderer/features/files/workspace-panel.tsx": "d1d7f3ea82c57b4f15dd5432ec12052c07d1f5952a441b4c8ab9fbc1e1f7485c",
+    "src/renderer/features/files/workspace-store.ts": "5c5249a4743ef1faba2698a553026f1c6ace2fc7007a6f543b8a44c457a6c041",
+    "prototypes/m6-codex/src/FileCsvPreview.jsx": "9e243dadf15031593f55bfeb570a55b089fb9a3c31581e8151c872028946522a",
+    "prototypes/m6-codex/src/FileArtifactPreview.jsx": "adeeb872ea27bc734fbf0d4204ecdac647fb9f8989e456912b3fa80693319886",
+    "prototypes/m6-codex/src/FileWorkspace.jsx": "e0657284adfc4204370a0fbd20bce3c0cf1cb561171ca79f391c316bbf9452db"
+  },
+  "appChecks": [],
+  "status": "packaged; real App not executed in this batch because Mac locked",
+  "limitations": [
+    "F17 remains unexecuted until real CSV and TSV opening/preview and independent unchanged-byte verification",
+    "J11 includes DOCX and remains pending",
+    "All formal counters unchanged: 3/419 passed",
+    "Prototype build passed; browser screenshot check not executed",
+    "Performance unit confirms 1,000,000 rows accepted; actual App responsiveness not yet verified"
+  ]
+}

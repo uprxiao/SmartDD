@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-19T09:48:44.499Z",
+  "layer": "I: actual NativeFileBroker/FileService/resource grant/production verified reader + real PDF.js legacy parser in Electron Node. fetch forwards only the minted local grant to original resource handler, no byte/result replacement. Node PDF.js uses its own fake-worker path; native browser Worker and user UI are separate A/P.",
+  "rows": [
+    {
+      "name": "truncated.pdf",
+      "hash": "9ffb22240a4a4f96e9850b632d5186c36723d473e5beca98a0c7245622ea8ee4",
+      "classification": {
+        "kind": "invalid",
+        "message": "文件不是有效的 PDF，或已损坏、不完整。"
+      },
+      "pass": true
+    },
+    {
+      "name": "garbage.pdf",
+      "hash": "de7ef6753f04ce592af55b7c15e1f03cf28d454d4e82a3b7537a9b3d13eeeaac",
+      "classification": {
+        "kind": "invalid",
+        "message": "文件不是有效的 PDF，或已损坏、不完整。"
+      },
+      "pass": true
+    },
+    {
+      "name": "invalid.pdf",
+      "hash": "c6b7375f3b4a2cffb0025329ca4cd63f5f303fcd0fd32668a5b6ce2c62335d55",
+      "classification": {
+        "kind": "invalid",
+        "message": "文件不是有效的 PDF，或已损坏、不完整。"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "missing/wrong/repeated-wrong/correct",
+      "reasons": [
+        1,
+        2,
+        2
+      ],
+      "pages": 3,
+      "textItemCount": 12,
+      "pass": true
+    },
+    {
+      "scenario": "password wait cancel",
+      "result": {
+        "success": false,
+        "name": "PasswordException",
+        "message": "No password given"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "classifier control errors only; parser errors in other real I cases",
+      "kinds": [
+        "invalid",
+        "password",
+        "read",
+        "worker",
+        "timeout"
+      ],
+      "pass": true
+    }
+  ]
+}

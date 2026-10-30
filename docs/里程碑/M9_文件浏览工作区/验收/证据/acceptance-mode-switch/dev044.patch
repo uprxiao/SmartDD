@@ -1,0 +1,39 @@
+--- failure/workspace-store.ts
++++ fixed/workspace-store.ts
+@@ -47,6 +47,7 @@
+   private disposed = false;
+   private epoch = 0;
+   private intent = 0;
++  private modeIntent = 0;
+   private readonly storageKey: string;
+   private persistenceQueue: Promise<void> = Promise.resolve();
+   private queuedState: string | null = null;
+@@ -322,10 +323,25 @@
+     finally { await this.api.closeDocument(document.ref).catch(() => undefined); }
+   }
+   async setMode(buffer: FileBuffer, mode: 'document' | 'source'): Promise<void> {
++    // Even an explicit request to keep the current mode supersedes an older
++    // switch that is still waiting for its save to finish.
++    const request = ++this.modeIntent;
+     const tab = this.tabs.find((entry) => entry.buffer === buffer);
+-    if (!tab || buffer.mode === mode) return;
+-    if (buffer.dirty || buffer.saving) { if (!await buffer.save()) throw new Error(buffer.saveError || '文件尚未保存，保留当前模式'); }
+-    if (!this.tabs.includes(tab) || tab.buffer !== buffer || buffer.dirty) return;
++    if (!tab || this.disposed || buffer.mode === mode) return;
++    const intent = this.intent, activeId = this.activeId, previousMode = buffer.mode, version = buffer.version;
++    const current = () => !this.disposed && this.modeIntent === request && this.intent === intent
++      && this.activeId === activeId && this.tabs.includes(tab) && tab.buffer === buffer
++      && buffer.mode === previousMode && buffer.version === version;
++    if (buffer.dirty || buffer.saving) {
++      let saved: boolean;
++      try { saved = await buffer.save(); }
++      catch (error) { if (current()) throw error; return; }
++      // A started write still completes, but its obsolete success/error must
++      // not change the newly selected file, mode or replacement save.
++      if (!current() || buffer.saving) return;
++      if (!saved) throw new Error(buffer.saveError || '文件尚未保存，保留当前模式');
++    }
++    if (!current() || buffer.dirty || buffer.saving) return;
+     buffer.mode = mode; tab.route.mode = mode; this.changed();
+     if (mode === 'source' && !buffer.editor && buffer.content.mime === 'image/svg+xml') await buffer.load();
+   }

@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-AUTHORITY-DEV121-R70",
+  "at": "2026-10-19T03:36:10.375826+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-two-cases",
+  "revision": "R3.4 / R3.4-P1; M01/M03 original steps/expected/scope unchanged",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "architecture": "arm64",
+  "fullCasesPassed": [
+    "M9-T-M01",
+    "M9-T-M03"
+  ],
+  "productionChanges": [],
+  "prototypeChanges": [],
+  "defects": [],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r70-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "b077bcb8da46fc88f16b5090da61ef5787474c28b164407c875336790bc970bd",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "runtimeAssetsVerified": 82,
+    "nativeChecksReused": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    }
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-inline-diff-dev120-r70-20261019.json",
+    "sha256": "44148ffd4b15b5201d519abde46703c715a9e2f816be0b5683389ae0dcea2ff9",
+    "all181ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "previousTestedFiles": 1148,
+    "testedFiles": 1152,
+    "previousTestedSha256": "ba7421cedcbcaab09ee58cf65d430f770e5d5b4a6425f618bae58c18befec9b9",
+    "finalTestedSha256": "57655abaa636981ceb9f812ef76c46e7d2bdb42dadbf2c65b48429ca424f843e",
+    "priorSourceFilesUnchanged": 1148,
+    "newVerificationFiles": [
+      "scripts/files/authority-boundary-fixtures.d.mts",
+      "scripts/files/authority-boundary-fixtures.mjs",
+      "scripts/files/authority-boundary-ui.mjs",
+      "src/main/core/files/authority-boundary-acceptance.test.ts"
+    ],
+    "productionAndPrototypeChanges": []
+  },
+  "verification": {
+    "currentCodePassed": 13,
+    "newUniqueCodeTests": 5,
+    "newTestsByBoundary": {
+      "I": 5
+    },
+    "currentSkipped": 0,
+    "unhandledErrors": 0,
+    "currentTypecheckExit": 0,
+    "nativeRows": 5,
+    "actualUiSecurityScenarios": 6,
+    "intentionalRejectedRendererRequests": 54,
+    "actualPositiveUiNavigations": 10,
+    "actualPositiveUiSaves": 1,
+    "normalQuit": {
+      "pid": 80818,
+      "code": 0,
+      "signal": null
+    },
+    "knownAppPidsClosed": 2,
+    "formalPassed": 230,
+    "formalTotal": 419,
+    "formalRemaining": 189,
+    "unexecuted": 187,
+    "blocked": 2,
+    "appRemaining": 186
+  },
+  "boundaries": [
+    "I actual SQLite migrations and project/task rows, FileSourceResolver, roots, service, recovery and byte-identical packaged native broker. Electron shell/window imports isolated, no OS reveal/open or real GUI claim. No fake resolver, native reply, auth bypass, credentials or CLI launch.",
+    "A security boundary in the actual packaged App/preload/IPC/main/database/native service: deliberately malformed requests originate from this own renderer, as required by M01/M03; they are security probes, not pointer actions. Positive authorized navigation/edit/save uses actual UI. Public API only prepares projects; normal request/results and authentication are unchanged. No fabricated native result, store/editor/DOM value injection, OS external-open/clipboard, model/CLI, credentials or daily data. macOS POSIX names only; Windows platform remains separately unverified.",
+    "A malformed-IPC security probes are intentional required inputs; normal pointer/keyboard controls and original service remain exercised separately. No Windows/system/physical IME/clipboard/full-pixel/reference claim.",
+    "No production/packaging changes or fresh P/full-app regression suite; all1148 prior source hashes and package hashes match. All419 still required."
+  ],
+  "artifacts": {
+    "willyou-dev121-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-app-r1.log",
+      "sha256": "fe22af2f0504f405965b623388388cd3b0541f16d6147ebadd2124793ac94445"
+    },
+    "willyou-dev121-app-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-app-r2.log",
+      "sha256": "dddd3b4f59804e24d4ccefaa56275004af011e60e982d7122aa883263d0c1e89"
+    },
+    "willyou-dev121-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-archive.py",
+      "sha256": "01e523ff1e722b0937b7ea9ef23ebb5184e3df0d55945042a3f55a2a28e81d11"
+    },
+    "willyou-dev121-code-final-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-code-final-r2.json",
+      "sha256": "0ff5ef233b134a44ddd1e7da057519820ef9db2f24a44c4b218b8497fbd80da2"
+    },
+    "willyou-dev121-code-final-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-code-final-r2.log",
+      "sha256": "57a395fcf23ed8d1927b022cc3619bb40b89b78cfc296698a8780e013e76c077"
+    },
+    "willyou-dev121-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-code-final.json",
+      "sha256": "589644e08c80f41feecdc273695582b788135f6031848505d9c0417b0faaed6c"
+    },
+    "willyou-dev121-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-code-final.log",
+      "sha256": "64a70bab684c4ba838e0240ed98ff68c3e0893460983034d9e10c38684bdb4bf"
+    },
+    "willyou-dev121-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-code-r1.json",
+      "sha256": "1c87a1bd74f812214e1488c68d7bca4afe14f16c76ec223bc58a3803e4dfe450"
+    },
+    "willyou-dev121-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-code-r1.log",
+      "sha256": "b70cbb0d7a7432ee5fb0a67b631b8aa44301e1c6bdd9a74da13f323de15fc56a"
+    },
+    "willyou-dev121-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-index-before.json",
+      "sha256": "3076422f4fef7620a42b531682957f9981a388689006d30df174bdd53ac227ed"
+    },
+    "willyou-dev121-native-final-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-native-final-r2.json",
+      "sha256": "9a752333b966b210d4926fa632565409d5703fb2baf63564b61f661fc172e77d"
+    },
+    "willyou-dev121-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-native-final.json",
+      "sha256": "fc920a6db0e167e901762b06b0743b503a65337cd2f0fa482a5a4b0e2c1349f8"
+    },
+    "willyou-dev121-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-native-r1.json",
+      "sha256": "27d33b9fc305cbd2376f1b372546de16f626595da89362dee7e3ba865ce879aa"
+    },
+    "willyou-dev121-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-process-audit.json",
+      "sha256": "972859f3846853c820af710813ae0d7de5541e27a1b0edb92bf55cb74ff9ddbc"
+    },
+    "willyou-dev121-runtime-r70.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-runtime-r70.json",
+      "sha256": "cdef66b48c87c5194dec3cd52c3791a0a325065fd2121fa124f72ca50509fdf2"
+    },
+    "willyou-dev121-runtime-r70.stderr.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-runtime-r70.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-dev121-tested-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-tested-snapshot.py",
+      "sha256": "3de77af2ce4096ff997aae669ff629ead9ce02215b096c12f7ee2e0ec902a5a9"
+    },
+    "willyou-dev121-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev121-verify-runtime-r70.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-verify-runtime-r70.cjs",
+      "sha256": "b82e7ad4ede464ab8da546ee6067cb134cadf6a8c851e427f76c693db3815172"
+    },
+    "willyou-dev121-watch-hash-r70.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-watch-hash-r70.cjs",
+      "sha256": "1742cda63c8c672e75b933f933b1ff8a2135c91aa17d6478801863285da9d5a8"
+    },
+    "willyou-dev121-watcher-r70.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-watcher-r70.json",
+      "sha256": "7b1677a0cdd08a7656de32ec01c3a2ba761f35c1d0a41db9f9c7bb7bb8d9078c"
+    },
+    "willyou-dev121-watcher-r70.stderr.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-dev121-watcher-r70.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-m9-acceptance-batch-r70-dev121-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-m9-acceptance-batch-r70-dev121-tested-sources.json",
+      "sha256": "40e7d7b811f3183e141a270aaeda5aa48d0be97ab379c86386a3140701f0f1ac"
+    },
+    "willyou-m9-acceptance-batch-r70-dev121-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/willyou-m9-acceptance-batch-r70-dev121-tested-sources.tar.gz",
+      "sha256": "57655abaa636981ceb9f812ef76c46e7d2bdb42dadbf2c65b48429ca424f843e"
+    },
+    "runs/willyou-authority-app-bne3UQ/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/runs/willyou-authority-app-bne3UQ/failure-electron.log",
+      "sha256": "5fafb51d1765508e22e47bb849c3cd676f9e9f03410029c0a447282e10abfd7f"
+    },
+    "runs/willyou-authority-app-bne3UQ/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/runs/willyou-authority-app-bne3UQ/failure.png",
+      "sha256": "ccd309859b3b4dd3e1e089c06f82bdec65a2831b3defe3a9e62902db47d8fff4"
+    },
+    "runs/willyou-authority-app-bne3UQ/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/runs/willyou-authority-app-bne3UQ/result.json",
+      "sha256": "73ffb08c7be255920a99229caf7fb0774e61642d0fecbcbc85a49f6b6a3191ab"
+    },
+    "runs/willyou-authority-app-DqJN2B/dark-safe-after-rejection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/runs/willyou-authority-app-DqJN2B/dark-safe-after-rejection.png",
+      "sha256": "de7a08106e29ec554da9224501e5c68e3e85d8a415cc96762ab7dd7fecfdfd26"
+    },
+    "runs/willyou-authority-app-DqJN2B/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/runs/willyou-authority-app-DqJN2B/electron.log",
+      "sha256": "771a20a31a6a7e52b6ec8a605b6ef6fcba7439ce4bbe29000f3aa73aa7dddb18"
+    },
+    "runs/willyou-authority-app-DqJN2B/light-safe-after-rejection.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/runs/willyou-authority-app-DqJN2B/light-safe-after-rejection.png",
+      "sha256": "f39d6eb9246883b17a71fdbc1145467e7ea1d56044059b8b086c0dccd3648f23"
+    },
+    "runs/willyou-authority-app-DqJN2B/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/runs/willyou-authority-app-DqJN2B/result.json",
+      "sha256": "6616ff86da93953c558382486aa76046822c381b1095adcfdb87dd617b5ef588"
+    },
+    "failure-history.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-authority-dev121-r70/failure-history.txt",
+      "sha256": "7f00841224aa3d96b38c635b27ac57695d40b75f85095d02cd0848e25feed629"
+    }
+  }
+}

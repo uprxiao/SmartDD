@@ -1,0 +1,42 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/content-search-acceptance.test.tsx src/renderer/features/files/search-history-acceptance.test.tsx src/renderer/features/files/search-session-acceptance.test.tsx src/renderer/features/files/search-race-acceptance.test.tsx src/renderer/features/files/search-failure-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev096-stream-green-code.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/renderer/features/files/search-race-acceptance.test.tsx (6 tests) 2199ms
+     ✓ C16 twenty real pending mount/unmount cycles leave zero jobs,processes or renderer IPC listeners  1483ms
+ ✓ src/renderer/features/files/content-search-acceptance.test.tsx (7 tests) 1932ms
+     ✓ R05 real 99 rows have exact UI/native cap and no101st streamed row  334ms
+     ✓ R06 same basenames in unexpanded CJK directories open by click/Enter at exact emoji/BOM/CRLF-aware source range  372ms
+     ✓ R12 native permission issues and outside symlinks are bounded; changed/deleted hits are revalidated instead of locating obsolete bytes  440ms
+ ✓ src/renderer/features/files/search-history-acceptance.test.tsx (10 tests) 2773ms
+     ✓ R07: retains 30 unique queries and 20 masks, newest first, across dialog restart  569ms
+     ✓ R07: scopes do not leak histories and only the newest 20 survive a 21st scope and restart  1057ms
+ ✓ src/renderer/features/files/search-session-acceptance.test.tsx (16 tests) 6062ms
+     ✓ C10: real search with legacy host=false selects its supported endpoint and caches only capability  703ms
+     ✓ C10: real search with legacy host=true selects its supported endpoint and caches only capability  401ms
+     ✓ C10: real 'PERMISSION' on legacy=false remains an error without extra retries  386ms
+     ✓ C10: real 'IO' on legacy=false remains an error without extra retries  423ms
+     ✓ C10: real 'PERMISSION' on legacy=true remains an error without extra retries  557ms
+     ✓ C10: real 'IO' on legacy=true remains an error without extra retries  413ms
+     ✓ C10: clear while the absent-session response is pending never starts fallback  450ms
+     ✓ C10: unmount while the absent-session response is pending never starts fallback  318ms
+     ✓ C11: 'name' / 'clear' while 'start pending'  327ms
+     ✓ C11: 'content' / 'clear' while 'start pending'  310ms
+     ✓ C11: 'content' / 'clear' while 'success reply pending'  308ms
+     ✓ C11: 'content' / 'unmount' while 'success reply pending'  301ms
+ ✓ src/renderer/features/files/search-failure-acceptance.test.tsx (5 tests) 20676ms
+     ✓ C12 empty native matches complete successfully without an error  1362ms
+     ✓ C12 genuine root permission error remains an error and retry succeeds after chmod restore  1484ms
+     ✓ C12 real unchanged main timeout kills a withheld genuine success and retry starts a fresh native job  15918ms
+     ✓ C15 selected cached delete result revalidates on open and never chooses its neighbor  866ms
+     ✓ C15 selected cached rename result revalidates on open and never chooses its neighbor  1047ms
+
+ Test Files  5 passed (5)
+      Tests  44 passed (44)
+   Start at  03:12:44
+   Duration  21.80s (transform 2.22s, setup 0ms, import 3.89s, tests 33.64s, environment 1.45s)
+
+JSON report written to /private/tmp/willyou-dev096-stream-green-code.json

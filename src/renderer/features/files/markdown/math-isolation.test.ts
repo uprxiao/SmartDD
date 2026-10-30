@@ -1,0 +1,11 @@
+import { createRequire } from 'node:module';
+import { writeFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import MarkdownIt from 'markdown-it';
+import katex from 'katex';
+import { renderMarkdownReadOnly } from './readonly.mjs';
+const require = createRequire(import.meta.url), texmath = require('markdown-it-texmath');
+describe('DEV114 document/Notebook engine isolation', () => {
+ it('preserves actual synchronous Notebook math bytes using the same pinned engine options', () => { const previous = texmath.katex; texmath.use(katex); try { const reference = new MarkdownIt().use(texmath, { engine: katex, delimiters: 'dollars', katexOptions: { throwOnError: false, strict: 'ignore', trust: false, maxExpand: 1000, maxSize: 100 } }); for (const source of ['Plain 中文🙂', 'x $a^2$ y', '$$\n\\frac{a}{b}\n$$\n', '$$a$$ (eq-1)', '$\\unknowncommand{$', 'price $5 and $6', '🙂 $x^2$ and $x^2$']) expect(renderMarkdownReadOnly(source), source).toBe(reference.render(source)); } finally { texmath.katex = previous; } });
+ it('keeps KaTeX out of ordinary Markdown workers while retaining both real math/Notebook engines', async () => { const esbuild = createRequire(require.resolve('vite'))('esbuild'), entries = ['src/renderer/features/files/markdown/worker.ts', 'src/shared/markdown-math-worker.mjs', 'src/renderer/features/files/notebook/worker.ts'], rows: { entry: string; engineInputs: string[]; texmathInputs: string[]; inputs: string[] }[] = []; for (const entry of entries) { const build = await esbuild.build({ entryPoints: [entry], bundle: true, platform: 'browser', format: 'esm', tsconfig: 'tsconfig.web.json', metafile: true, write: false }); const inputs = Object.keys(build.metafile.inputs); rows.push({ entry, engineInputs: inputs.filter(p => p.includes('node_modules') && p.includes('katex')), texmathInputs: inputs.filter(p => p.includes('node_modules') && p.includes('texmath')), inputs }); } if (process.env.SMARTDD_MATH_GRAPH_EVIDENCE) writeFileSync(process.env.SMARTDD_MATH_GRAPH_EVIDENCE, JSON.stringify({ at: new Date().toISOString(), rows }, null, 2) + '\n'); expect(rows[0].engineInputs).toEqual([]); expect(rows[0].texmathInputs).toEqual([]); expect(rows[1].engineInputs.length).toBeGreaterThan(0); expect(rows[2].engineInputs.length).toBeGreaterThan(0); expect(rows[2].texmathInputs).toEqual([]); });
+});

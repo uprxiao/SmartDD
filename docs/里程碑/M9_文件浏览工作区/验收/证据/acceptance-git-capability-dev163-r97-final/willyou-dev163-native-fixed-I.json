@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-19T19:19:51.853Z",
+  "caseId": "M9-T-S03",
+  "rows": [
+    {
+      "scenario": "nonGit explicit unavailable",
+      "status": {
+        "state": "unavailable",
+        "reason": "当前目录不在 Git 工作树中"
+      },
+      "blame": {
+        "state": "unavailable",
+        "reason": "当前目录不在 Git 工作树中"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "denied metadata, source still browsable",
+      "fileName": "history.txt",
+      "pass": true
+    },
+    {
+      "scenario": "missing taskcwd no fallback",
+      "result": {
+        "roots": [],
+        "unavailable": []
+      },
+      "pass": true
+    },
+    {
+      "scenario": "revoked root forbids old ref",
+      "pass": true
+    }
+  ],
+  "boundary": "Actual current FileService/root capability and packaged native broker; own Git fixture or plain/denied synthetic sources. No stub Git results, remote, UI or Git write claim."
+}

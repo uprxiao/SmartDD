@@ -1,0 +1,59 @@
+// W07: real DOCX layout and explicitly separated Worker-launch failures.
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { copyFile, mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { openFileAcceptanceApp } from './file-acceptance-ui.mjs';
+import { installFileMethodObserver, observeFileMethods, restoreFileMethodObserver } from '../lib/file-method-observer.mjs';
+import { installOfficeWorkerObserver, observeOfficeWorkers, restoreOfficeWorkerObserver } from '../lib/office-worker-observer.mjs';
+import { installOfficeWorkerFaults, armOfficeWorkerFault, observeOfficeWorkerFaults, restoreOfficeWorkerFaults } from '../lib/office-worker-faults.mjs';
+import { pause } from '../lib/electron-harness.mjs';
+const executable=process.env.WILLYOU_FILES_APP; assert(executable && process.env.WILLYOU_DOCX_FIXTURES);
+const f=JSON.parse(await readFile(process.env.WILLYOU_DOCX_FIXTURES,'utf8')), scratch=await mkdtemp('/private/tmp/willyou-docx-worker-A-'),project=join(scratch,'project'); await mkdir(project);
+const fixtures={}; for(const theme of ['light','dark'])for(const variant of ['normal','missing-entry','missing-import']){const c=f.cases.find(c=>c.name===(variant==='normal'?'revisions.docx':'font-fallback.docx')),name=theme+'-'+variant+'.docx'; await copyFile(join(f.project,c.name),join(project,name)); fixtures[name]=c;}
+const faultPaths={};for(const kind of ['missing-entry','missing-import']){const dir=join(scratch,kind);await mkdir(dir);faultPaths[kind]=join(dir,'m9-office-pages.js');if(kind==='missing-import')await writeFile(faultPaths[kind],'require('+JSON.stringify(join(dir,'intentionally-missing-dependency.cjs'))+');\n');}
+const sha=x=>createHash('sha256').update(x).digest('hex');
+const fingerprint=async()=>Object.fromEntries(await Promise.all(Object.keys(fixtures).map(async name=>{const p=join(project,name),s=await stat(p,{bigint:true});return[name,{sha256:sha(await readFile(p)),inode:String(s.ino),mtimeNs:String(s.mtimeNs),ctimeNs:String(s.ctimeNs)}]})));
+const r={at:new Date().toISOString(),caseId:'M9-T-W07',layer:'A',scratch,project,executable,status:'running',checks:[],before:await fingerprint(),asarSha256:sha(await readFile(resolve(executable,'../../Resources/app.asar'))),brokerSha256:sha(await readFile(resolve(executable,'../../Resources/native/willyou-files'))),boundary:'Original packaged App, fresh private userData/project and genuine generated DOCX. Normal and recovered layout uses unchanged shipped Worker/native LibreOffice. Four one-shot launch-fault scenarios redirect only the main Office pages Worker entry to an owned missing path or actual failing import bootstrap; original options/source bytes/owner authentication/error handling and receipts stay unchanged. Tested file, retry, zoom, scroll and close use trusted UI input. Poppler/ZIP/XML independently verify actual original projection bytes. No editor/Store/DOM/result injection, models, clipboard, native chooser or user documents. No MSWord/Codex pixel or DOCX editing/writeback claim.'};
+let app,observed=false,workers=false,faults=false,stage='setup';
+const poll=async(fn,label,ms=15000)=>{const end=Date.now()+ms;for(;;){const v=await fn();if(v)return v;assert(Date.now()<end,label);await pause(30)}};
+async function pixels(page,out){
+ await app.waitFor('Boolean(document.querySelector('+JSON.stringify('[aria-label="DOCX 文档预览"] canvas[aria-label="第 '+page+' 页"][data-rendered=true]')+'))',60000);
+ const x=await app.evaluate(`(()=>{const c=document.querySelector('[aria-label="DOCX 文档预览"] canvas[aria-label="第 ${page} 页"]'),data=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let nonwhite=0,green=0;for(let i=0;i<data.length;i+=4){if(data[i+3]&&Math.min(data[i],data[i+1],data[i+2])<245)nonwhite++;if(Math.abs(data[i]-25)<=3&&Math.abs(data[i+1]-150)<=3&&Math.abs(data[i+2]-110)<=3&&data[i+3]>250)green++;}return{width:c.width,height:c.height,nonwhite,green,png:c.toDataURL('image/png')}})()`);
+ assert(x.width>500&&x.height>700&&x.nonwhite>200);if(page===1)assert(x.green>1000);else assert.equal(x.green,0);const png=Buffer.from(x.png.split(',')[1],'base64');await writeFile(out,png);delete x.png;return{...x,pngSha256:sha(png)};
+}
+async function verifyLayout(name,theme,variant){
+ const out=join(scratch,name);await mkdir(out);await app.waitFor('Boolean(document.querySelector("[aria-label=\\"DOCX 文档预览\\"] canvas[data-rendered=true]"))',60000);
+ assert.equal(await app.evaluate('document.querySelector(".fw-office-state")?.textContent'),'只读预览');assert.equal(await app.evaluate('Boolean(document.querySelector("[aria-label=\\"DOCX 文档预览\\"] [contenteditable=true],.fw-office-edit-toggle,.fw-editor-host .cm-content"))'),false);
+ await app.click('[aria-label="文档缩放"]');await app.click('.fw-file-menu [role=menuitem]','100%');await app.waitFor('document.querySelector("[aria-label=文档缩放]")?.textContent.includes("100%")');
+ const first=await pixels(1,join(out,'actual-page1.png'));await app.screenshot(join(out,'window-page1.png'));
+ const trace=await observeFileMethods(app),result=trace.filter(x=>x.method==='openOfficePages'&&x.delivered).at(-1).output;assert.equal(result.sourceHash,fixtures[name].info.sha256);assert.equal(result.pages,2);assert.equal(result.info.kind,'docx');assert.equal(result.info.hasRevisions,true);
+ const chunks=trace.filter(x=>x.method==='officePagesChunk'&&x.args[0]===result.id&&x.delivered).sort((a,b)=>a.args[1]-b.args[1]),parts=[];let offset=0;for(const row of chunks){assert.equal(row.args[1],offset);const b=Buffer.from(row.output,'base64');assert.equal(b.length,row.args[2]);parts.push(b);offset+=b.length;}assert.equal(offset,result.bytes);const pdf=Buffer.concat(parts);assert.equal(sha(pdf),result.hash);const pdfPath=join(out,'actual.pdf');await writeFile(pdfPath,pdf);
+ const independent=JSON.parse(execFileSync('python3',[resolve('scripts/files/docx-preview-fixtures.py'),'verify',join(project,name),pdfPath,out],{encoding:'utf8',timeout:30000,maxBuffer:4*1024*1024}));assert(Object.values(independent.comparisons).every(Boolean));assert.deepEqual(independent.sourceInfo.parts,fixtures[name].info.parts);assert.deepEqual(independent.sourceInfo.names,fixtures[name].info.names);
+ const p=await app.evaluate('(()=>{const b=document.querySelector(".fw-office-page-scroll").getBoundingClientRect();return{x:b.x+b.width*.7,y:b.y+b.height*.55}})()');await app.cdp('Input.dispatchMouseEvent',{type:'mouseMoved',...p});await app.cdp('Input.dispatchMouseEvent',{type:'mouseWheel',...p,deltaX:0,deltaY:1100});await app.waitFor('document.querySelector(".fw-office-page-status")?.textContent.startsWith("第 2 / 2 页")');const second=await pixels(2,join(out,'actual-page2.png'));await app.screenshot(join(out,'window-page2.png'));
+ r.checks.push({theme,variant,name,result,first,second,independent,sourceUnchanged:sha(await readFile(join(project,name)))===fixtures[name].info.sha256,pass:true});await app.click('[aria-label='+JSON.stringify('关闭 '+name)+']');await app.waitFor('!document.querySelector("[aria-label=\\"DOCX 文档预览\\"]")');await poll(async()=>(await observeFileMethods(app)).some(x=>x.method==='releaseOfficePages'&&x.args[0]===result.id&&x.delivered),'Original Office pages release missing');
+}
+try{
+ app=await openFileAcceptanceApp({executable,projectPath:project,userData:join(scratch,'userdata'),name:'A · W07 isolated DOCX worker recovery',inspectMain:true});r.appPid=app.processId;await app.click('[aria-label="文件全屏"]');
+ await installFileMethodObserver(app,['open','read','openOfficePages','officePagesChunk','releaseOfficePages','save']);observed=true;await installOfficeWorkerObserver(app);workers=true;await installOfficeWorkerFaults(app);faults=true;
+ for(const theme of ['light','dark']){
+  await app.invoke('appSettings.update','theme','y'+theme);
+  for(const variant of ['normal','missing-entry','missing-import']){
+   const name=theme+'-'+variant+'.docx';stage=theme+':'+variant;console.log(JSON.stringify({progress:stage,at:new Date().toISOString()}));
+   if(variant!=='normal')await armOfficeWorkerFault(app,faultPaths[variant],variant);
+   await app.open(name);
+   if(variant!=='normal'){
+    await app.waitFor('Boolean(document.querySelector(".fw-office-page-loading[role=alert]"))',30000);const alert=await app.evaluate('document.querySelector(".fw-office-page-loading[role=alert]").textContent');assert(/Office 解析器已退出/.test(alert),alert);assert.equal(await app.evaluate('Boolean(document.querySelector("[aria-label=\\"DOCX 文档预览\\"] canvas[data-rendered=true]"))'),false);
+    const trace=await observeFileMethods(app),failed=trace.filter(x=>x.method==='openOfficePages').at(-1);assert(failed.error?.includes('Cannot find module'));assert(!failed.delivered);await app.screenshot(join(scratch,name+'-failure.png'));r.checks.push({theme,variant,phase:'actual-worker-failure',name,alert,failedRpc:failed,noRenderedCanvas:true,pass:true});
+    const openCount=trace.filter(x=>x.method==='open').length;await app.click('.fw-office-page-loading[role=alert] button','重新预览');await app.waitFor('!document.querySelector(".fw-office-page-loading[role=alert]")');assert.equal((await observeFileMethods(app)).filter(x=>x.method==='open').length,openCount);
+   }
+   await verifyLayout(name,theme,variant);await writeFile(join(scratch,'partial.json'),JSON.stringify(r,null,2)+'\n');
+  }
+ }
+ r.faultTrace=await observeOfficeWorkerFaults(app);assert.equal(r.faultTrace.rows.length,4);assert.equal(r.faultTrace.next,null);r.faultsRestored=await restoreOfficeWorkerFaults(app);faults=false;assert(r.faultsRestored.restored);
+ r.workerTrace=await poll(async()=>{const t=await observeOfficeWorkers(app);return t.rows.length===10&&t.rows.every(x=>x.exitedAt)?t:null},'Actual Office Workers did not finish');assert.equal(r.workerTrace.rows.filter(x=>x.messages.some(m=>m.hasResult)).length,6);for(const w of r.workerTrace.rows){for(const x of w.requests)assert.equal(x.before,x.after);for(const x of w.messages){assert(x.deliveredAt);assert.equal(x.before,x.after);}}
+ r.workersRestored=await restoreOfficeWorkerObserver(app);workers=false;assert(r.workersRestored.constructorRestored);r.trace=await observeFileMethods(app);assert.equal(r.trace.filter(x=>x.method==='save').length,0);for(const x of r.trace.filter(x=>x.delivered)){assert.equal(x.input,x.inputAfter);assert.equal(x.before,x.after);}r.restored=await restoreFileMethodObserver(app);observed=false;assert(Object.values(r.restored).every(Boolean));r.after=await fingerprint();assert.deepEqual(r.after,r.before);assert.deepEqual(app.rendererErrors,[]);
+ stage='normal-exit';await app.mainEvaluate("(()=>{const e=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');setTimeout(()=>e.app.quit(),50);return true})()");r.exit=await app.waitForExit(180000);assert.equal(r.exit.code,0);assert.equal(r.exit.signal,null);r.status='passed';
+}catch(error){r.status='failed';r.failedStage=stage;r.error=String(error);r.stack=error.stack;process.exitCode=1;if(app)try{r.dom=await app.evaluate('document.body.innerText');r.trace=await observeFileMethods(app);r.workerTrace=await observeOfficeWorkers(app);r.faultTrace=await observeOfficeWorkerFaults(app);await app.screenshot(join(scratch,'failure.png'));}catch{}}
+finally{if(app){if(faults)try{r.cleanupFaults=await restoreOfficeWorkerFaults(app)}catch{}if(workers)try{r.cleanupWorkers=await restoreOfficeWorkerObserver(app)}catch{}if(observed)try{r.cleanupRpc=await restoreFileMethodObserver(app)}catch{}await writeFile(join(scratch,'electron.log'),app.logs());await app.close();}r.finishedAt=new Date().toISOString();await writeFile(join(scratch,'result.json'),JSON.stringify(r,null,2)+'\n');console.log(JSON.stringify({status:r.status,checks:r.checks.length,stage:r.failedStage,error:r.error,scratch}));}

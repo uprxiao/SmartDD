@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-17T04:46:06.263709+00:00",
+  "evidenceScope": "Synthetic local filesystem and Office engines; no Codex UI/production implementation",
+  "runs": [
+    {
+      "report": "filesystem-result-20261017.json",
+      "reportSha256": "a21d47729485c5b1a29d318f3752fdb77279e9fb336b229f5f21e2c96b0ab201",
+      "script": "history/filesystem-probe-r1.mjs",
+      "scriptSha256": "18f2fc688ad31c529fe40ec4d11b38e3699d78dffbb6601aaddad6515f6a2552",
+      "executionContext": "default sandbox",
+      "startedAt": "2026-10-17T01:21:32.928Z",
+      "summary": {
+        "passed": 8,
+        "observed-gap": 2,
+        "failed": 1
+      }
+    },
+    {
+      "report": "filesystem-result-20261017-r2.json",
+      "reportSha256": "e6b1c4b2a29c7812dafa058187d2e78d1e59fc15317cfecc4c9f30ccdb8ac42c",
+      "script": "history/filesystem-probe-r2.mjs",
+      "scriptSha256": "9289440556d92dbd213ab9452091483a2945346e8fff41c488252fe33a67788e",
+      "executionContext": "default sandbox",
+      "startedAt": "2026-10-17T01:21:56.597Z",
+      "summary": {
+        "passed": 8,
+        "observed-gap": 2,
+        "failed": 1
+      }
+    },
+    {
+      "report": "filesystem-result-20261017-r3.json",
+      "reportSha256": "67618c5e4815b4d093ad90bd913299223d5451724d44532db607c0bc0876fb4a",
+      "script": "history/filesystem-probe-r2.mjs",
+      "scriptSha256": "9289440556d92dbd213ab9452091483a2945346e8fff41c488252fe33a67788e",
+      "executionContext": "require_escalated: automatically approved",
+      "startedAt": "2026-10-17T01:23:17.165Z",
+      "summary": {
+        "passed": 9,
+        "observed-gap": 2
+      }
+    },
+    {
+      "report": "filesystem-result-20261017-r4-sandbox.json",
+      "reportSha256": "804557dc76e3b8b657ff28fbf6ea5c6d90ca992aaf8d67656eb3803dd26b1e43",
+      "script": "filesystem-probe.mjs",
+      "scriptSha256": "3e91c2668b3812555543bbe01f2c3ec71f9b830343e718963b51c738718244a4",
+      "executionContext": "default sandbox",
+      "startedAt": "2026-10-17T01:24:45.744Z",
+      "summary": {
+        "passed": 9,
+        "observed-gap": 2,
+        "failed": 1
+      }
+    },
+    {
+      "report": "office-result-20261017.json",
+      "reportSha256": "5bf47d4d35a83a2c2053bfe68e0eb94461c1e93c65c138f9b58a6b22cadb1a29",
+      "script": "history/office-probe-r1.py",
+      "scriptSha256": "5a682595d132f48d20f5c4d52d8cef855b454b86db85335a2edb766e49f9954e",
+      "executionContext": "default sandbox",
+      "startedAt": "2026-10-17T01:22:41Z",
+      "summary": [
+        {
+          "format": "docx",
+          "status": "conversion-failed"
+        },
+        {
+          "format": "xlsx",
+          "status": "conversion-failed"
+        },
+        {
+          "format": "pptx",
+          "status": "conversion-failed"
+        }
+      ]
+    },
+    {
+      "report": "office-result-20261017-r2.json",
+      "reportSha256": "ee8202be793108d30f79ab1ccd3d0a546c18ec391b0d199995321739d4d2ce92",
+      "script": "history/office-probe-r1.py",
+      "scriptSha256": "5a682595d132f48d20f5c4d52d8cef855b454b86db85335a2edb766e49f9954e",
+      "executionContext": "require_escalated: automatically approved",
+      "startedAt": "2026-10-17T01:23:08Z",
+      "summary": [
+        {
+          "format": "docx",
+          "status": "conversion-failed"
+        },
+        {
+          "format": "xlsx",
+          "status": "converted-with-preservation-gap"
+        },
+        {
+          "format": "pptx",
+          "status": "conversion-failed"
+        }
+      ]
+    },
+    {
+      "report": "office-result-20261017-r3.json",
+      "reportSha256": "580ce77630ff2bcb32ff38aad088f50b0e1d13237a452cb19964d1737b9cf030",
+      "script": "office-probe.py",
+      "scriptSha256": "50c589b480035d571303a50b70dfe9c49c84734411632e3c9acf2ec7ddfee7a1",
+      "executionContext": "require_escalated: automatically approved",
+      "startedAt": "2026-10-17T01:24:06Z",
+      "summary": [
+        {
+          "format": "docx",
+          "status": "converted-with-preservation-gap"
+        },
+        {
+          "format": "xlsx",
+          "status": "converted-limited-fixture"
+        },
+        {
+          "format": "pptx",
+          "status": "converted-limited-fixture"
+        }
+      ]
+    },
+    {
+      "report": "office-uno-result-20261017.json",
+      "reportSha256": "f41b0ce167897a921f9218c18e2905633c9c7f0c6010e36bc3b80f8e86e16489",
+      "script": "office-uno-probe.py",
+      "scriptSha256": "a337a8e4344567497e04e76b47c003c25bcf9f4eddf071019a2c2dcbee479cfc",
+      "executionContext": "require_escalated: automatically approved",
+      "startedAt": "2026-10-17T01:25:40Z",
+      "summary": [
+        {
+          "format": "docx",
+          "status": "command-edit-and-export-passed"
+        },
+        {
+          "format": "xlsx",
+          "status": "command-edit-and-export-passed"
+        },
+        {
+          "format": "pptx",
+          "status": "command-edit-and-export-passed"
+        }
+      ]
+    },
+    {
+      "report": "anchored-save-result-20261017.json",
+      "reportSha256": "135624fa43dba6356291bfc8ed32a5610c4217570fde07524ca73004be1f7746",
+      "script": "anchored-save-probe.py",
+      "scriptSha256": "6042a0e6b1da8a04310d2cc0fab3465a47716515e066cca8b452d2f6afaa7b0a",
+      "executionContext": "default Claude Code Bash permissions (no escalation)",
+      "startedAt": "2026-10-17T02:40:33Z",
+      "summary": {
+        "passed": 9,
+        "observed-gap": 1
+      }
+    },
+    {
+      "report": "watch-recovery-result-20261017.json",
+      "reportSha256": "52e1907b3ae0bfbf973b7ca2bd3b0b6db6ad9eeab976b2ace9a987fc6cf0aa35",
+      "script": "watch-recovery-probe.mjs",
+      "scriptSha256": "b803c4224cb0f60ad676c39e1df82a7c45429bded872c12fa781e904d21752d4",
+      "executionContext": "default Claude Code Bash permissions (no escalation)",
+      "startedAt": "2026-10-17T02:17:05.878Z",
+      "summary": {
+        "passed": 6
+      }
+    },
+    {
+      "report": "engine-cost-result-20261017.json",
+      "reportSha256": "b0973fe0385231cbd92f66b13345e0c2681df5270aa9a6065a0ac9210b506f59",
+      "script": "engine-cost-probe.mjs",
+      "scriptSha256": "fc04b81276f29cbbf6e312b0cd834e2d0b98a7c7fdb5b8aaf24b3aed23178519",
+      "executionContext": "default Claude Code Bash permissions (no escalation); node --expose-gc",
+      "startedAt": "2026-10-17T02:40:33.688Z",
+      "summary": {
+        "passed": 8
+      }
+    },
+    {
+      "report": "ooxml-patch-result-20261017.json",
+      "reportSha256": "7933e1cb281faa571bec965dfe54661aa0f4867a0c57bbd82d750518ac73e9f6",
+      "script": "ooxml-patch-probe.py",
+      "scriptSha256": "7ca60f379dac5780c34290b44d9b18b86cd89b122be53f6b39b1451e19a8ff88",
+      "executionContext": "default Claude Code Bash permissions (no escalation); LibreOffice 26.2.4.2",
+      "startedAt": "2026-10-17T03:12:38Z",
+      "summary": {
+        "passed": 10,
+        "observed-gap": 3
+      }
+    },
+    {
+      "report": "pdf-engine-result-20261017.json",
+      "reportSha256": "2271793811d305b5b6e814c2e1c0222c528e4666096eed5ec7e28e3cd1e6a75e",
+      "script": "pdf-engine-probe.mjs",
+      "scriptSha256": "7d606ccf79a43a32208c85d51aba342f78087de2d2d1098aa827a35f88e42478",
+      "fixtureScript": "pdf-fixtures.py",
+      "fixtureScriptSha256": "5e2b2cbdc15d079b251893a0c54bfcc5bff5005d50f7cbfefa0fd9ff97495f1b",
+      "executionContext": "default Claude Code Bash permissions (no escalation); pdfjs-dist 5.4.296 legacy build in Node 22",
+      "startedAt": "2026-10-17T03:17:44.299Z",
+      "summary": {
+        "passed": 6
+      }
+    },
+    {
+      "report": "terminal-injection-result-20261017.json",
+      "reportSha256": "067443cce7b6a4a926785947b5412e7212ba3badb64e629132291317e725b1a4",
+      "script": "terminal-injection-probe.mjs",
+      "scriptSha256": "701087b4e5cb1b9698891fdba882abbcff52b27c4d2cf9fb244586b14162ff7f",
+      "executionContext": "default Claude Code Bash permissions (no escalation)",
+      "startedAt": "2026-10-17T04:44:17.476Z",
+      "summary": {
+        "passed": 7,
+        "observed-gap": 1
+      }
+    },
+    {
+      "report": "lsp-adapter-result-20261017.json",
+      "reportSha256": "3e27e913e4f8bb7488681a47ce06fd47bb2d0d3cda17284d8fd3815bbf9a7ee6",
+      "script": "lsp-adapter-probe.mjs",
+      "scriptSha256": "b3c6bdf497876a0cdf16a9a97589e1c394f13b8f741ffab1b8ebe3b8a3d161ed",
+      "executionContext": "default Claude Code Bash permissions (no escalation)",
+      "startedAt": "2026-10-17T04:44:28.880Z",
+      "summary": {
+        "passed": 11
+      }
+    },
+    {
+      "report": "mcp-adapter-result-20261017.json",
+      "reportSha256": "f85090a24813b1ea9735d6e5daf8373e2a691c3bd5913926043cb0a6fc75471e",
+      "script": "mcp-adapter-probe.mjs",
+      "scriptSha256": "4d98f2340cda72f2d3691cacaa24f5223d784f3f3a06d9c8e898ca523d5ef4c4",
+      "executionContext": "default Claude Code Bash permissions (no escalation)",
+      "startedAt": "2026-10-17T04:44:10.553Z",
+      "summary": {
+        "passed": 13
+      },
+      "fakeServer": "mcp-fake-server.mjs",
+      "fakeServerSha256": "e71d27f01066531c431a8eb7d104835fb96ca9e098dd1d7f7413a1a856ee8179"
+    },
+    {
+      "report": "sftp-provider-result-20261017.json",
+      "reportSha256": "3095b28b4c49beb9778e2d9d7fd5d4d281507cdf2699a7d8fbbe02b3d0726b69",
+      "script": "sftp-provider-probe.mjs",
+      "scriptSha256": "bb2a02c2c2ed1c8d8beb093855705b3465a5852cc80008b783bd6ab261eff8ef",
+      "executionContext": "default Claude Code Bash permissions (no escalation)",
+      "startedAt": "2026-10-17T04:44:35.470Z",
+      "summary": {
+        "passed": 7,
+        "observed-gap": 2
+      }
+    }
+  ],
+  "upstreamSources": [
+    {
+      "url": "https://github.com/VolodymyrBaydalka/docxjs",
+      "checked": "2026-10-17",
+      "fact": "Apache-2.0 rendering library; no realtime repagination; stable renderAsync surface"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/exceljs/exceljs/v4.4.0/README.md",
+      "checked": "2026-10-17",
+      "fact": "MIT; XLSX data/styles IO; formula results must be supplied"
+    },
+    {
+      "url": "https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html",
+      "checked": "2026-10-17",
+      "fact": "headless, convert-to, independent UserInstallation"
+    },
+    {
+      "url": "https://api.libreoffice.org/docs/idl/ref/interfacecom_1_1sun_1_1star_1_1frame_1_1XStorable.html",
+      "checked": "2026-10-17",
+      "fact": "storeAsURL vs export-only storeToURL"
+    },
+    {
+      "url": "https://www.libreoffice.org/licenses/",
+      "checked": "2026-10-17",
+      "fact": "MPL-2.0 and bundled component-specific licenses"
+    },
+    {
+      "url": "https://github.com/dream-num/univer",
+      "checked": "2026-10-17",
+      "fact": "OSS Apache-2.0; explicit OSS/Pro boundary"
+    },
+    {
+      "url": "https://docs.univer.ai/guides/sheets/features/import-export",
+      "checked": "2026-10-17",
+      "fact": "OOXML conversion backend required even for snapshot exchange"
+    },
+    {
+      "url": "https://github.com/ONLYOFFICE/DocumentServer",
+      "checked": "2026-10-17",
+      "fact": "Community AGPL-3.0, separate proprietary editions"
+    },
+    {
+      "url": "https://api.onlyoffice.com/docs/docs-api/get-started/installation/self-hosted",
+      "checked": "2026-10-17",
+      "fact": "separate self-hosted Docs service integration"
+    },
+    {
+      "url": "https://www.collaboraonline.com/terms/collabora-online-mplv2/",
+      "checked": "2026-10-17",
+      "fact": "source and executable distribution conditions distinguished"
+    }
+  ],
+  "installedEngineEvidence": [
+    {
+      "path": "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+      "bytes": 53136,
+      "sha256": "407fa38798973075956ed8ce10b2953a1d4661956289bc47d32bf9afbb6ddadd"
+    },
+    {
+      "path": "/Applications/LibreOffice.app/Contents/Resources/LICENSE",
+      "bytes": 480353,
+      "sha256": "182c3140614d5caaadee0f6adf24ebd8e19a4e02c66835d33f4f349427c0157e"
+    },
+    {
+      "path": "/Applications/LibreOffice.app/Contents/Resources/NOTICE",
+      "bytes": 1859,
+      "sha256": "8d34210ebbfaee4ba258ef7b30c3044170f356ab82c8259c81b53860bcdeef7b"
+    },
+    {
+      "path": "/Applications/LibreOffice.app/Contents/Resources/python",
+      "bytes": 1908,
+      "sha256": "89bbb9e90a15d89a20bc2062dd55d794d7b10e217b3ee5d04210d07772326d73"
+    },
+    {
+      "path": "/Applications/LibreOffice.app/Contents/Resources/uno.py",
+      "bytes": 17091,
+      "sha256": "6374b68bc6d38374857c0d8050ef5e6c1d1f10ae71d8c49bc5249e1366d9194a"
+    }
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 7392,
+      "sha256": "35b893d9271c219c7c505747e51829a30ddadb4fa283568ed906ce742c99db00"
+    },
+    {
+      "path": "__pycache__/ooxml-patch-probe.cpython-312.pyc",
+      "bytes": 47571,
+      "sha256": "2dbc2d2185648dc6cee0799ffb00e15222b44cd1876ff264b61ce02615cc92ad"
+    },
+    {
+      "path": "anchored-save-probe.py",
+      "bytes": 17382,
+      "sha256": "6042a0e6b1da8a04310d2cc0fab3465a47716515e066cca8b452d2f6afaa7b0a"
+    },
+    {
+      "path": "anchored-save-result-20261017.json",
+      "bytes": 4628,
+      "sha256": "135624fa43dba6356291bfc8ed32a5610c4217570fde07524ca73004be1f7746"
+    },
+    {
+      "path": "engine-cost-probe.mjs",
+      "bytes": 11172,
+      "sha256": "fc04b81276f29cbbf6e312b0cd834e2d0b98a7c7fdb5b8aaf24b3aed23178519"
+    },
+    {
+      "path": "engine-cost-result-20261017.json",
+      "bytes": 7425,
+      "sha256": "b0973fe0385231cbd92f66b13345e0c2681df5270aa9a6065a0ac9210b506f59"
+    },
+    {
+      "path": "filesystem-probe.mjs",
+      "bytes": 18930,
+      "sha256": "3e91c2668b3812555543bbe01f2c3ec71f9b830343e718963b51c738718244a4"
+    },
+    {
+      "path": "filesystem-result-20261017-r2.json",
+      "bytes": 5138,
+      "sha256": "e6b1c4b2a29c7812dafa058187d2e78d1e59fc15317cfecc4c9f30ccdb8ac42c"
+    },
+    {
+      "path": "filesystem-result-20261017-r3.json",
+      "bytes": 5818,
+      "sha256": "67618c5e4815b4d093ad90bd913299223d5451724d44532db607c0bc0876fb4a"
+    },
+    {
+      "path": "filesystem-result-20261017-r4-sandbox.json",
+      "bytes": 6069,
+      "sha256": "804557dc76e3b8b657ff28fbf6ea5c6d90ca992aaf8d67656eb3803dd26b1e43"
+    },
+    {
+      "path": "filesystem-result-20261017.json",
+      "bytes": 5137,
+      "sha256": "a21d47729485c5b1a29d318f3752fdb77279e9fb336b229f5f21e2c96b0ab201"
+    },
+    {
+      "path": "history/filesystem-probe-r1.mjs",
+      "bytes": 17194,
+      "sha256": "18f2fc688ad31c529fe40ec4d11b38e3699d78dffbb6601aaddad6515f6a2552"
+    },
+    {
+      "path": "history/filesystem-probe-r2.mjs",
+      "bytes": 17197,
+      "sha256": "9289440556d92dbd213ab9452091483a2945346e8fff41c488252fe33a67788e"
+    },
+    {
+      "path": "history/office-probe-r1.py",
+      "bytes": 11497,
+      "sha256": "5a682595d132f48d20f5c4d52d8cef855b454b86db85335a2edb766e49f9954e"
+    },
+    {
+      "path": "lsp-adapter-probe.mjs",
+      "bytes": 19271,
+      "sha256": "b3c6bdf497876a0cdf16a9a97589e1c394f13b8f741ffab1b8ebe3b8a3d161ed"
+    },
+    {
+      "path": "lsp-adapter-result-20261017.json",
+      "bytes": 5889,
+      "sha256": "3e27e913e4f8bb7488681a47ce06fd47bb2d0d3cda17284d8fd3815bbf9a7ee6"
+    },
+    {
+      "path": "mcp-adapter-probe.mjs",
+      "bytes": 17624,
+      "sha256": "4d98f2340cda72f2d3691cacaa24f5223d784f3f3a06d9c8e898ca523d5ef4c4"
+    },
+    {
+      "path": "mcp-adapter-result-20261017.json",
+      "bytes": 6989,
+      "sha256": "f85090a24813b1ea9735d6e5daf8373e2a691c3bd5913926043cb0a6fc75471e"
+    },
+    {
+      "path": "mcp-fake-server.mjs",
+      "bytes": 3509,
+      "sha256": "e71d27f01066531c431a8eb7d104835fb96ca9e098dd1d7f7413a1a856ee8179"
+    },
+    {
+      "path": "office-probe.py",
+      "bytes": 11529,
+      "sha256": "50c589b480035d571303a50b70dfe9c49c84734411632e3c9acf2ec7ddfee7a1"
+    },
+    {
+      "path": "office-result-20261017-r2.json",
+      "bytes": 33281,
+      "sha256": "ee8202be793108d30f79ab1ccd3d0a546c18ec391b0d199995321739d4d2ce92"
+    },
+    {
+      "path": "office-result-20261017-r3.json",
+      "bytes": 44842,
+      "sha256": "580ce77630ff2bcb32ff38aad088f50b0e1d13237a452cb19964d1737b9cf030"
+    },
+    {
+      "path": "office-result-20261017.json",
+      "bytes": 28583,
+      "sha256": "5bf47d4d35a83a2c2053bfe68e0eb94461c1e93c65c138f9b58a6b22cadb1a29"
+    },
+    {
+      "path": "office-uno-probe.py",
+      "bytes": 7159,
+      "sha256": "a337a8e4344567497e04e76b47c003c25bcf9f4eddf071019a2c2dcbee479cfc"
+    },
+    {
+      "path": "office-uno-result-20261017.json",
+      "bytes": 1535,
+      "sha256": "f41b0ce167897a921f9218c18e2905633c9c7f0c6010e36bc3b80f8e86e16489"
+    },
+    {
+      "path": "ooxml-patch-probe.py",
+      "bytes": 28755,
+      "sha256": "7ca60f379dac5780c34290b44d9b18b86cd89b122be53f6b39b1451e19a8ff88"
+    },
+    {
+      "path": "ooxml-patch-result-20261017.json",
+      "bytes": 14411,
+      "sha256": "7933e1cb281faa571bec965dfe54661aa0f4867a0c57bbd82d750518ac73e9f6"
+    },
+    {
+      "path": "pdf-engine-probe.mjs",
+      "bytes": 10087,
+      "sha256": "7d606ccf79a43a32208c85d51aba342f78087de2d2d1098aa827a35f88e42478"
+    },
+    {
+      "path": "pdf-engine-result-20261017.json",
+      "bytes": 5696,
+      "sha256": "2271793811d305b5b6e814c2e1c0222c528e4666096eed5ec7e28e3cd1e6a75e"
+    },
+    {
+      "path": "pdf-fixtures.py",
+      "bytes": 5194,
+      "sha256": "5e2b2cbdc15d079b251893a0c54bfcc5bff5005d50f7cbfefa0fd9ff97495f1b"
+    },
+    {
+      "path": "sftp-provider-probe.mjs",
+      "bytes": 20813,
+      "sha256": "bb2a02c2c2ed1c8d8beb093855705b3465a5852cc80008b783bd6ab261eff8ef"
+    },
+    {
+      "path": "sftp-provider-result-20261017.json",
+      "bytes": 5515,
+      "sha256": "3095b28b4c49beb9778e2d9d7fd5d4d281507cdf2699a7d8fbbe02b3d0726b69"
+    },
+    {
+      "path": "terminal-injection-probe.mjs",
+      "bytes": 9542,
+      "sha256": "701087b4e5cb1b9698891fdba882abbcff52b27c4d2cf9fb244586b14162ff7f"
+    },
+    {
+      "path": "terminal-injection-result-20261017.json",
+      "bytes": 4417,
+      "sha256": "067443cce7b6a4a926785947b5412e7212ba3badb64e629132291317e725b1a4"
+    },
+    {
+      "path": "watch-recovery-probe.mjs",
+      "bytes": 10578,
+      "sha256": "b803c4224cb0f60ad676c39e1df82a7c45429bded872c12fa781e904d21752d4"
+    },
+    {
+      "path": "watch-recovery-result-20261017.json",
+      "bytes": 3096,
+      "sha256": "52e1907b3ae0bfbf973b7ca2bd3b0b6db6ad9eeab976b2ace9a987fc6cf0aa35"
+    },
+    {
+      "path": "实验结论与迁移决策.md",
+      "bytes": 46294,
+      "sha256": "fd3bb76226647c21f935377ef40760a0b947b6bec9eac34d7faed87a8c4268cb"
+    }
+  ]
+}

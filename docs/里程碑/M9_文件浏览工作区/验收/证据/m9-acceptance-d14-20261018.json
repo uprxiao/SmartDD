@@ -1,0 +1,469 @@
+{
+  "schema": "smartdd-m9-acceptance-evidence-v1",
+  "caseId": "M9-T-D14",
+  "recordedAt": "2026-10-18T01:48:44.089226+00:00",
+  "requirementRevision": "R3.4-P1",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "caseDefinitionAtExecution": {
+    "id": "M9-T-D14",
+    "group": "D",
+    "title": "恢复排除preview",
+    "requirements": [
+      "M9-R04.7"
+    ],
+    "level": "组件／集成／安装端到端",
+    "environments": [
+      "P",
+      "I",
+      "A"
+    ],
+    "data": [
+      "D01",
+      "D04"
+    ],
+    "steps": "固定A，预览B；重启。",
+    "expected": "仅可持久route按规则恢复；参考preview排除；不把B草稿丢失与route排除混为一谈。",
+    "source": "L§4",
+    "prototype": "PS-tabs",
+    "basis": "参考事实＋迁移设计",
+    "status": "未执行",
+    "evidence": [],
+    "actual_result": null,
+    "defects": [],
+    "legacy_parent_requirements": [
+      "M9-R04",
+      "M9-R08"
+    ],
+    "prototype_pages": [
+      "P06"
+    ],
+    "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+    "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R04.7"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "status": "passed",
+  "formalIndexUpdated": false,
+  "requirements": [
+    "M9-R04.7"
+  ],
+  "environment": {
+    "platform": "macOS arm64",
+    "method": "Native CUA actual App operations by root; independent read-only SQLite snapshots and file checks"
+  },
+  "packages": {
+    "cleanPreviewBeforeAndAfterRestart": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+      "sourceManifest": "/private/tmp/willyou-m9-chart-resize-r1-sources.json"
+    },
+    "dirtyPromotionBeforeRestart": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+      "sourceManifest": "/private/tmp/willyou-m9-chart-resize-r1-sources.json"
+    },
+    "dirtyRestorationAfterRestart": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+      "sourceBaseline": {
+        "manifest": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.json",
+        "manifestSha256": "be6cc4310aeb917b972031fdb24a189b3686661db497b69a81b2fba64d4bdf11",
+        "archive": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.tar.gz",
+        "archiveSha256": "5ec8a673a2569d2f6a6439a4f22e170b828c254f993e0d951357c2e085a3f008",
+        "fileCount": 627
+      },
+      "nativeSmoke": "SQLite/PTY/voice/fileBroker/officeRenderer/watcher passed; full record in m9-acceptance-f10-20261018.json"
+    }
+  },
+  "uiObservations": {
+    "reportedBy": "root agent via native CUA",
+    "cleanPreview": [
+      {
+        "action": "double-click A",
+        "result": "A pinned"
+      },
+      {
+        "action": "single-click B",
+        "result": "B clean preview active"
+      },
+      {
+        "action": "normal Cmd+Q and reopen same package/project",
+        "result": "A restored, B not restored; other preexisting pinned tabs preserved"
+      }
+    ],
+    "dirtyPromotion": [
+      {
+        "action": "reopen B and append D14 retained edit",
+        "result": "UI dirty; B promoted to persistent routes"
+      },
+      {
+        "action": "allow autosave then normal quit",
+        "result": "Independent disk check contains Acceptance B preview\nD14 retained edit"
+      },
+      {
+        "action": "open new acceptance-batch-r1 package with same userdata/project",
+        "result": "B selected and text restored; TextEdit opener preference retained"
+      }
+    ],
+    "screenshotsArchived": false
+  },
+  "independentSnapshots": [
+    {
+      "path": "/private/tmp/willyou-d14-before-restart.json",
+      "sha256": "fa51957447ecc858f3fdaacd5e1cef92f61c0fda3a83f997aee9c47aa5920d5f",
+      "data": {
+        "time": "2026-10-18T09:34:55.143745+08:00",
+        "workspace": {
+          "schemaVersion": 1,
+          "routes": [
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "hello.txt",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "workspace.md",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "playwright.config.ts",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "git-reference.ts",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "tex-cases/no-output.tex",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "office-cases/checkbox-existing-ui.xlsx",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "pptx-image-ui-r1/images-ui.pptx",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "acceptance-batch-r1/accept-undo.txt",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "acceptance-batch-r1/accept-A.txt",
+              "mode": "document"
+            }
+          ],
+          "active": {
+            "source": "project-directory",
+            "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+            "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+            "relativePath": "acceptance-batch-r1/accept-B.txt",
+            "mode": "document"
+          },
+          "treeSource": "project-directory:a1014389-169d-4c10-9062-2a9d7691e21b:/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+          "expanded": {
+            "project-directory:a1014389-169d-4c10-9062-2a9d7691e21b:/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project": [
+              "pdf-cases",
+              "notebook-cases"
+            ]
+          },
+          "collapsedRoots": [],
+          "filters": {
+            "project-directory:a1014389-169d-4c10-9062-2a9d7691e21b:/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project": "accept-"
+          },
+          "treeWidth": 250
+        }
+      }
+    },
+    {
+      "path": "/private/tmp/willyou-d14-dirty-pinned.json",
+      "sha256": "b7b994d2addffe5279cd5178a419cd6d955ee58b8725eb81580805f3f5b0118e",
+      "data": {
+        "time": "2026-10-18T09:42:10.238617+08:00",
+        "workspace": {
+          "schemaVersion": 1,
+          "routes": [
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "hello.txt",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "workspace.md",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "playwright.config.ts",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "git-reference.ts",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "tex-cases/no-output.tex",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "office-cases/checkbox-existing-ui.xlsx",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "pptx-image-ui-r1/images-ui.pptx",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "acceptance-batch-r1/accept-undo.txt",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "acceptance-batch-r1/accept-A.txt",
+              "mode": "document"
+            },
+            {
+              "source": "project-directory",
+              "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+              "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+              "relativePath": "acceptance-batch-r1/accept-B.txt",
+              "mode": "document"
+            }
+          ],
+          "active": {
+            "source": "project-directory",
+            "sourceId": "a1014389-169d-4c10-9062-2a9d7691e21b",
+            "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+            "relativePath": "acceptance-batch-r1/accept-B.txt",
+            "mode": "document"
+          },
+          "treeSource": "project-directory:a1014389-169d-4c10-9062-2a9d7691e21b:/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+          "expanded": {
+            "project-directory:a1014389-169d-4c10-9062-2a9d7691e21b:/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project": []
+          },
+          "collapsedRoots": [],
+          "filters": {
+            "project-directory:a1014389-169d-4c10-9062-2a9d7691e21b:/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project": ""
+          },
+          "treeWidth": 250
+        },
+        "disk": {
+          "sha256": "cfb5fcf08f5b8c8b7966bb6e26fb5623a5344926af85a3124d525b038f2c7c55",
+          "text": "Acceptance B preview\nD14 retained edit",
+          "mtimeNs": 1792287726339139000
+        }
+      }
+    }
+  ],
+  "independentFinalDisk": {
+    "checkedAt": "2026-10-18T01:45:56.592601+00:00",
+    "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/accept-B.txt",
+    "sha256": "cfb5fcf08f5b8c8b7966bb6e26fb5623a5344926af85a3124d525b038f2c7c55",
+    "text": "Acceptance B preview\nD14 retained edit",
+    "matchesRecordedAutosave": true
+  },
+  "existingIntegrationEvidence": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-development-workspace-persistence-20261018.json",
+    "sha256": "840b42230ac48b1676154f1c4bc9a6ac59b38ea0a7930a1ac5c0e187e74ad449",
+    "reuseScope": "Only unchanged workspace persistence/store code and its tests, not earlier workspace-panel UI or whole prior crash run.",
+    "sourceComparisons": {
+      "src/shared/file-workspace.ts": {
+        "recordedSha256": "38943cbc479ea5a33a993243eeb8a45f9bdd9dbdfb7b575fc8ac43cded741815",
+        "currentSha256": "38943cbc479ea5a33a993243eeb8a45f9bdd9dbdfb7b575fc8ac43cded741815",
+        "same": true
+      },
+      "src/main/core/files/workspace-persistence.ts": {
+        "recordedSha256": "c186ad074f6ff2edb3c7b7d99054bdff66df2b244f121859c799e849b69d14f9",
+        "currentSha256": "c186ad074f6ff2edb3c7b7d99054bdff66df2b244f121859c799e849b69d14f9",
+        "same": true
+      },
+      "src/main/core/files/workspace-persistence.test.ts": {
+        "recordedSha256": "e1e68c57d836fdf7d83ba05340c49434fe859080dc2a6f22f4c242dd38cfbed6",
+        "currentSha256": "e1e68c57d836fdf7d83ba05340c49434fe859080dc2a6f22f4c242dd38cfbed6",
+        "same": true
+      },
+      "src/renderer/features/files/workspace-store.ts": {
+        "recordedSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+        "currentSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+        "same": true
+      },
+      "src/renderer/features/files/workspace-store.test.ts": {
+        "recordedSha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+        "currentSha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+        "same": true
+      }
+    },
+    "reportLog": {
+      "path": "/private/tmp/willyou-m9-routes-r3-tests.log",
+      "sha256": "5a1c258a8c51f6bcdf672227350def99c6670f14a67b63a85579542547022a68",
+      "reportedTotal": 33,
+      "fileCount": 5
+    },
+    "relevantTests": {
+      "workspaceStore": 6,
+      "workspacePersistence": 3
+    },
+    "validatedBranches": [
+      "A clean preview produces no persistent route.",
+      "Editing preview pins it; after the independent draft checkpoint, completion waits for the route persistence acknowledgement.",
+      "Main-process persistence uses an independent real SQLite connection to reopen committed scope data.",
+      "Failed database update keeps prior committed routes; corrupt records are surfaced without overwriting."
+    ],
+    "note": "The draft checkpoint and route commit are ordered durable operations, not claimed to be one atomic cross-store transaction. Other tests in the 33-test run are not counted as D14 or added to current acceptance totals."
+  },
+  "prototype": {
+    "status": "passed",
+    "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-prototype-actions-20261018.json",
+    "sha256": "58a7d03691a8a08017ad03a03af2dc687832d237569804b87d6beca5afcb9ec6",
+    "sourceArchive": "/private/tmp/willyou-m9-prototype-actions-r1-sources.tar.gz",
+    "sourceArchiveSha256": "29af43f413a27d0705765d9857a4dab75c6a8eb1f4289ce5675687e3431a2564",
+    "sourceFiles": 324,
+    "modelTests": "43/43 actions + workspace model tests",
+    "observation": {
+      "status": "passed",
+      "level": "P",
+      "steps": [
+        {
+          "action": "On the final source baseline, double-click AGENTS.md to pin A, then single-click CLAUDE.md to preview B. Do not edit either document.",
+          "actual": {
+            "tabs": [
+              "AGENTS.md",
+              "CLAUDE.md"
+            ],
+            "selected": "CLAUDE.md",
+            "footer": "预览 · UTF-8"
+          }
+        },
+        {
+          "action": "Reload the prototype.",
+          "actual": {
+            "tabs": [
+              "AGENTS.md"
+            ],
+            "selected": "AGENTS.md",
+            "bodyHeadingVisible": "SmartDD 协作与发布约定",
+            "preferenceStillTextEdit": true
+          }
+        },
+        {
+          "action": "Open CLAUDE.md again.",
+          "actual": {
+            "body": "CLAUDE.md\n\n请先阅读 AGENTS.md 中的项目约定。\n\n图片能力样例",
+            "tabs": [
+              {
+                "text": "AGENTS.md",
+                "wrapperClass": "fw-tab ",
+                "selected": false
+              },
+              {
+                "text": "CLAUDE.md",
+                "wrapperClass": "fw-tab selected preview",
+                "selected": true
+              }
+            ]
+          }
+        },
+        {
+          "action": "Reload a second time to leave only A.",
+          "actual": {
+            "tabs": [
+              {
+                "text": "AGENTS.md",
+                "wrapperClass": "fw-tab selected ",
+                "selected": true
+              }
+            ]
+          }
+        }
+      ],
+      "assertion": "Pinned A restores and clean preview B route does not. Reopening B shows its unchanged original content; this does not claim dirty-draft recovery.",
+      "priorRun": {
+        "path": "/private/tmp/willyou-d14-prototype.json",
+        "sha256": "5aea65bbdc3c5fa0537ffaf13031170fe7bc1e86ae92b88df9aab99a83ffeb0a",
+        "note": "Earlier same-case browser run before the external-action prototype changes. Final-source rerun above supersedes it for current P baseline."
+      }
+    },
+    "method": "Actual Chrome DOM through browser tool, no global keyboard input",
+    "screenshotFilesArchived": false,
+    "rawDomArchived": false,
+    "scope": "Clean preview exclusion and original B after reopen; dirty B covered only by actual App autosaved normal restart and existing integration evidence."
+  },
+  "layers": {
+    "P": "passed on final independent prototype baseline",
+    "I": "passed with retained unchanged-source tests and independent SQLite observations",
+    "A": "passed for clean normal restart and dirty-after-autosave normal restart"
+  },
+  "limitations": [
+    "Dirty branch is an autosaved normal restart. It does not prove unsaved-draft survival under crash or power loss.",
+    "No fresh screenshot files archived; observed App states are explicitly attributed to the root CUA operator."
+  ],
+  "r2AffectedRegression": {
+    "evidence": "m9-acceptance-r2-app-regression-20261018.json",
+    "status": "passed",
+    "packageAsarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6"
+  }
+}

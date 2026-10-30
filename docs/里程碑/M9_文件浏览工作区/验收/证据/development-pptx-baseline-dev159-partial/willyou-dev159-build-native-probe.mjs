@@ -1,0 +1,3 @@
+import{createRequire}from'node:module';import{join,resolve}from'node:path';
+const req=createRequire(join(process.cwd(),'package.json')),esbuild=createRequire(req.resolve('electron-vite/package.json'))('esbuild');
+esbuild.buildSync({entryPoints:['/private/tmp/willyou-dev159-baseline-native.ts'],bundle:true,platform:'node',format:'cjs',outfile:'/private/tmp/willyou-dev159-baseline-native.cjs',alias:{'@main':resolve('src/main'),'@shared':resolve('src/shared')},external:['electron','@parcel/watcher','better-sqlite3','node-pty'],banner:{js:'var require = require("node:module").createRequire('+JSON.stringify(join(process.cwd(),'package.json'))+');'}});

@@ -142,6 +142,68 @@ const writeCodexRollout = (cwd: string, id: string, at: number) => {
 };
 const claudeSessionPath = (cwd: string, id: string) => join(claudeRoot(), 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'), `${id}.jsonl`);
 
+describe('TaskService.closeSession', () => {
+  const pair = () => {
+    const p = project(), profile = codexProfile();
+    const a = svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'Keep original history' });
+    const b = svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'Other session' });
+    return { p, a, b };
+  };
+  it('waits for this exact PTY, preserves both records and project, and reopens normally', async () => {
+    vi.useFakeTimers();
+    const { p, a, b } = pair(), timersBefore = vi.getTimerCount(), listeners = ptys.listenerCount('exit');
+    vi.spyOn(ptys, 'kill').mockImplementation(id => { ptys.killed.push(id); });
+    let done = false; const closing = svc.closeSession(a.task.id).then(result => { done = true; return result; });
+    expect(() => svc.open({ taskId: a.task.id })).toThrow('会话正在关闭');
+    expect(() => svc.delete(a.task.id)).toThrow('会话正在关闭');
+    expect(() => svc.setArchived(a.task.id, true)).toThrow('会话正在关闭');
+    expect(svc.get(a.task.id).ptyId).toBe(a.ptyId); expect(done).toBe(false);
+    ptys.emit('exit', 'unrelated-pty', 0); await Promise.resolve(); expect(done).toBe(false);
+    ptys.emit('exit', a.ptyId, 0); const result = await closing;
+    expect(result).toMatchObject({ id: a.task.id, projectId: p.id, title: 'Keep original history', archivedAt: null, ptyId: null });
+    expect(svc.get(b.task.id).ptyId).toBe(b.ptyId); expect(svc.list()).toHaveLength(2);
+    expect(projects.getProject(p.id).name).toBe('AIS'); expect(ptys.killed).toEqual([a.ptyId]);
+    expect(ptys.listenerCount('exit')).toBe(listeners); expect(vi.getTimerCount()).toBe(timersBefore - 2);
+    const reopened = svc.open({ taskId: a.task.id }); expect(reopened.ptyId).not.toBe(a.ptyId);
+    expect(svc.get(b.task.id).ptyId).toBe(b.ptyId);
+  });
+  it('keeps the session visible and releases its close guard when native stop throws', async () => {
+    const { a, b } = pair(), listeners = ptys.listenerCount('exit');
+    const stop = vi.spyOn(ptys, 'kill').mockImplementation(() => { throw new Error('native stop refused'); });
+    await expect(svc.closeSession(a.task.id)).rejects.toThrow('native stop refused');
+    expect(svc.get(a.task.id)).toMatchObject({ ptyId: a.ptyId, archivedAt: null });
+    expect(svc.get(b.task.id).ptyId).toBe(b.ptyId); expect(ptys.listenerCount('exit')).toBe(listeners);
+    expect(svc.open({ taskId: a.task.id }).ptyId).toBe(a.ptyId);
+    stop.mockRestore(); await svc.closeSession(a.task.id); expect(svc.get(a.task.id).ptyId).toBeNull();
+  });
+  it('times out without hiding history, stops no other PTY, and supports a later retry', async () => {
+    vi.useFakeTimers(); const { a, b } = pair(), listeners = ptys.listenerCount('exit');
+    vi.spyOn(ptys, 'kill').mockImplementation(id => { ptys.killed.push(id); });
+    const closing = expect(svc.closeSession(a.task.id)).rejects.toThrow('会话仍保留');
+    await vi.advanceTimersByTimeAsync(ARCHIVE_STOP_TIMEOUT_MS); await closing;
+    expect(svc.get(a.task.id).ptyId).toBe(a.ptyId); expect(svc.get(b.task.id).ptyId).toBe(b.ptyId);
+    expect(ptys.listenerCount('exit')).toBe(listeners); expect(ptys.killed).toEqual([a.ptyId]);
+    ptys.emit('exit', a.ptyId, 0); const result = await svc.closeSession(a.task.id);
+    expect(result.archivedAt).toBeNull(); expect(result.ptyId).toBeNull(); expect(svc.list()).toHaveLength(2);
+  });
+  it('keeps native session files byte-exact and does not start a process when already stopped', async () => {
+    const { a } = pair(), marker = join(codexRoot(), 'owned-session-marker.jsonl');
+    mkdirSync(codexRoot(), { recursive: true }); writeFileSync(marker, 'public synthetic history\n');
+    ptys.emit('exit', a.ptyId, 0); const spawns = ptys.spawned.length;
+    await svc.closeSession(a.task.id);
+    expect(ptys.spawned).toHaveLength(spawns); expect(ptys.killed).toEqual([]);
+    expect(readFileSync(marker, 'utf8')).toBe('public synthetic history\n'); expect(svc.get(a.task.id).archivedAt).toBeNull();
+  });
+  it('cancels an unfinished session close on application exit without recording success', async () => {
+    vi.useFakeTimers(); const { a } = pair();
+    vi.spyOn(ptys, 'kill').mockImplementation(id => { ptys.killed.push(id); });
+    const closing = expect(svc.closeSession(a.task.id)).rejects.toThrow('会话关闭未完成');
+    svc.dispose(); await closing;
+    expect(svc.get(a.task.id)).toMatchObject({ ptyId: a.ptyId, archivedAt: null });
+    expect(vi.getTimerCount()).toBe(0); expect(ptys.listenerCount('exit')).toBe(0);
+  });
+});
+
 describe('TaskService.create', () => {
   it('launches in the project directory with the profile env injected and records only names', () => {
     const p = project();
@@ -225,6 +287,8 @@ describe('running state', () => {
     const t1 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'a' }).task;
     const t2 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'b' }).task;
     expect(svc.runningCount()).toBe(2);
+    expect(svc.activePty(t1.id)).toBe('pty-1');
+    expect(svc.activePty('unknown')).toBeNull();
     // A running task reopens to the same terminal instead of a second CLI.
     expect(svc.open({ taskId: t1.id }).ptyId).toBe('pty-1');
     expect(ptys.spawned).toHaveLength(2);
@@ -232,10 +296,21 @@ describe('running state', () => {
     const before = changed;
     ptys.emit('exit', 'pty-1', 0);
     expect(svc.get(t1.id).ptyId).toBeNull();
+    expect(svc.activePty(t1.id)).toBeNull();
     expect(svc.get(t2.id).ptyId).toBe('pty-2');
     expect(changed).toBe(before + 1);
     ptys.emit('exit', 'pty-unknown', 0);
     expect(changed).toBe(before + 1);
+  });
+
+  it('revokes input while stop waits for exit, then accepts only the reopened PTY', () => {
+    const created = svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '' });
+    svc.kill(created.task.id);
+    expect(svc.activePty(created.task.id)).toBeNull();
+    ptys.emit('exit', created.ptyId, 0);
+    const reopened = svc.open({ taskId: created.task.id });
+    expect(reopened.ptyId).not.toBe(created.ptyId);
+    expect(svc.activePty(created.task.id)).toBe(reopened.ptyId);
   });
 
   it('refuses to archive a running task; delete kills it and keeps the CLI files', () => {
@@ -244,6 +319,7 @@ describe('running state', () => {
     writeClaudeSession(task.cwd, task.id);
     expect(() => svc.setArchived(task.id, true)).toThrow('正在运行');
     svc.delete(task.id);
+    expect(svc.activePty(task.id)).toBeNull();
     expect(ptys.killed).toEqual(['pty-1']);
     expect(svc.list({ includeArchived: true })).toEqual([]);
     expect(() => svc.get(task.id)).toThrow('任务不存在');

@@ -1,0 +1,115 @@
+{
+  "at": "2026-10-19T19:34:04.843479+00:00",
+  "project": "/private/tmp/willyou-media-state-he3axxd_/project",
+  "cases": [
+    {
+      "name": "broken.wav",
+      "size": 50,
+      "sha256": "e83cc8af4f89b0a46f13d72f4c95814d9451cd8cd719847ac5b74f7cab8771d7"
+    },
+    {
+      "name": "live-webm.opus",
+      "size": 1866,
+      "sha256": "00c3e1077d3d7fd0b7e009d61e74eff752a21e8e99d45d983908738118e6d844"
+    },
+    {
+      "name": "no-eos.opus",
+      "size": 847,
+      "sha256": "398b14f1e60cd3fad342dfe06dfd9ef53544dc89622241c13a5afa612379d4eb"
+    },
+    {
+      "name": "normal.opus",
+      "size": 847,
+      "sha256": "3c2bf2d650ff2aefb7f976aa7a74eebcbd5a3488795a2b99b8c920bf3d23cda9"
+    },
+    {
+      "name": "normal.wav",
+      "size": 288078,
+      "sha256": "e0b1384097c3e914462261d21bda4a76bd1e5008a65ae824639e8616b6b8becb"
+    },
+    {
+      "name": "unknown-granule.opus",
+      "size": 847,
+      "sha256": "4d18fe5119684fd6d22d41d9f679eca550db6a22d1cbebfdb7d93a865c1c06c4"
+    },
+    {
+      "name": "zero.wav",
+      "size": 44,
+      "sha256": "531cd597b25052b4845ef2f3887dec2183240802a93b6e044960de8ba017caa0"
+    }
+  ],
+  "commands": [
+    {
+      "args": [
+        "/opt/homebrew/bin/ffmpeg",
+        "-nostdin",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "anullsrc=r=48000:cl=mono",
+        "-t",
+        "3",
+        "-c:a",
+        "pcm_s16le",
+        "/private/tmp/willyou-media-state-he3axxd_/project/normal.wav"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/opt/homebrew/bin/ffmpeg",
+        "-nostdin",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "anullsrc=r=48000:cl=mono",
+        "-t",
+        "3",
+        "-c:a",
+        "libopus",
+        "-b:a",
+        "32k",
+        "-f",
+        "webm",
+        "-live",
+        "1",
+        "/private/tmp/willyou-media-state-he3axxd_/project/live-webm.opus"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/opt/homebrew/bin/ffmpeg",
+        "-nostdin",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "anullsrc=r=48000:cl=mono",
+        "-t",
+        "3",
+        "-c:a",
+        "libopus",
+        "-b:a",
+        "32k",
+        "-f",
+        "ogg",
+        "/private/tmp/willyou-media-state-he3axxd_/project/normal.opus"
+      ],
+      "code": 0,
+      "stderr": ""
+    }
+  ],
+  "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+  "boundary": "All silent generated media. live-webm.opus deliberately declares an Opus extension over a live WebM container to explore decoder handling, not a valid Ogg-format conformance claim. Ogg no-EOS/unknown granule fixtures retain complete packets and recomputed page CRC; decoder duration/outcome measured, not assumed."
+}

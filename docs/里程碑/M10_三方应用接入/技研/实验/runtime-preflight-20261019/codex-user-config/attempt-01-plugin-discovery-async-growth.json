@@ -1,0 +1,216 @@
+{
+  "schema": "m10-codex-user-config-preflight-v1",
+  "startedAt": "2026-10-19T08:01:25.992Z",
+  "environment": {
+    "cliVersion": "codex-cli 0.162.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "HOME": "/Users/liubu",
+    "CODEX_HOME": "/Users/liubu/.codex",
+    "profile": null,
+    "profileNames": []
+  },
+  "isolation": {
+    "nativeHome": true,
+    "nativeCodexHome": true,
+    "temporaryProject": true,
+    "globalSkillsWritten": false,
+    "userConfigCopied": false,
+    "authCopied": false,
+    "originalHistoryResumed": false,
+    "userBusinessToolsCalled": false
+  },
+  "cases": [
+    {
+      "name": "actual-native-config-layer-and-user-mcp-definitions-preserved",
+      "status": "passed",
+      "userMcpCount": 8,
+      "effectiveMcpCount": 9,
+      "userConfigLayerSeen": true
+    },
+    {
+      "name": "actual-user-skills-present-and-version-filtered",
+      "status": "passed",
+      "userSkillCount": 196,
+      "userSkillEnabled": 196,
+      "managed": [
+        {
+          "name": "willyou-m10-native-probe-v1",
+          "path": "<fixture>/project/.agents/skills/v1/SKILL.md",
+          "enabled": true,
+          "scope": "repo"
+        },
+        {
+          "name": "willyou-m10-native-probe-v2",
+          "path": "<fixture>/project/.agents/skills/v2/SKILL.md",
+          "enabled": false,
+          "scope": "repo"
+        }
+      ]
+    },
+    {
+      "name": "actual-user-mcp-and-managed-mcp-native-discovery-no-calls",
+      "status": "passed",
+      "userMcp": [
+        {
+          "name": "memex",
+          "seen": true,
+          "toolCount": 0,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "openaiDeveloperDocs",
+          "seen": true,
+          "toolCount": 5,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "firecrawl",
+          "seen": true,
+          "toolCount": 3,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "scrapling",
+          "seen": true,
+          "toolCount": 0,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "node_repl",
+          "seen": true,
+          "toolCount": 4,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "computer-use",
+          "seen": true,
+          "toolCount": 0,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "rea",
+          "seen": true,
+          "toolCount": 207,
+          "authStatus": "unsupported"
+        },
+        {
+          "name": "clawchat",
+          "seen": true,
+          "toolCount": 15,
+          "authStatus": "unsupported"
+        }
+      ],
+      "managed": [
+        {
+          "name": "willyou_m10_preflight_native_c3fbdbad",
+          "toolCount": 1
+        }
+      ],
+      "toolsCalled": 0
+    },
+    {
+      "name": "prelaunch-name-collision-guard-detects-existing-user-skill",
+      "status": "passed",
+      "sameName": "agent-prompts-warmup",
+      "observedPaths": [
+        {
+          "name": "agent-prompts-warmup",
+          "path": "<fixture>/project/.agents/skills/collision/SKILL.md",
+          "enabled": true,
+          "scope": "repo"
+        },
+        {
+          "name": "agent-prompts-warmup",
+          "path": "/Users/liubu/.codex/skills/agent-prompts-warmup/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        }
+      ],
+      "scope": "probe-side guard; no production adapter yet"
+    },
+    {
+      "name": "post-start-addition-is-visible-and-needs-catalog-freeze",
+      "status": "passed",
+      "addedSkill": [
+        {
+          "name": "willyou-m10-native-probe-v3",
+          "path": "<fixture>/project/.agents/skills/v3/SKILL.md",
+          "enabled": true,
+          "scope": "repo"
+        }
+      ],
+      "inference": "Startup v1/v2 list is not a deny-default policy for later paths; freeze managed discovery changes while consumers live."
+    },
+    {
+      "name": "post-start-removal-is-observed-on-force-reload",
+      "status": "passed"
+    },
+    {
+      "name": "actual-user-skill-discovery-preserved-after-fixture-mutations",
+      "status": "failed"
+    },
+    {
+      "name": "immutable-fixture-files-unchanged",
+      "status": "passed"
+    }
+  ],
+  "configReadShape": [
+    "config",
+    "origins",
+    "layers"
+  ],
+  "userSkillInventorySha256": "fada81ef5dbddde304f3bb11aaf7d7beb9fbed7ef197349a229fd285336a3a38",
+  "status": "has-failures",
+  "originalFiles": [
+    {
+      "path": "/Users/liubu/.codex/config.toml",
+      "before": "de2d8763c33d02ff9e697c24ba1e5245add91214dcbe86f4faa50f9ff5cdb4ce",
+      "after": "de2d8763c33d02ff9e697c24ba1e5245add91214dcbe86f4faa50f9ff5cdb4ce",
+      "unchanged": true
+    },
+    {
+      "path": "/Users/liubu/.codex/auth.json",
+      "before": "649d65518e238fd2aad31e99aefa4dba645779c1ba1d3c9be4bbfa23956f329f",
+      "after": "649d65518e238fd2aad31e99aefa4dba645779c1ba1d3c9be4bbfa23956f329f",
+      "unchanged": true
+    },
+    {
+      "path": "/Users/liubu/.codex/hooks.json",
+      "before": "ae2f3e12882037f03bf23b20f817691803b7fc86c32b4f4cf5951a1c609e51df",
+      "after": "ae2f3e12882037f03bf23b20f817691803b7fc86c32b4f4cf5951a1c609e51df",
+      "unchanged": true
+    }
+  ],
+  "clients": [
+    {
+      "name": "native-config-discovery",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list",
+        "thread/start",
+        "mcpServerStatus/list",
+        "skills/list",
+        "skills/list",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "exited": true
+    }
+  ],
+  "cleanup": {
+    "temporaryProjectRemoved": true,
+    "allChildrenExited": true,
+    "ownNativeHistoryArchivedRatherThanDeleted": false
+  },
+  "limitations": [
+    "Actual user HOME and CODEX_HOME, temporary project; no global managed Skill projection was installed.",
+    "No real user business MCP tool was called. Discovery preserves user servers; model-only phase disables them and plugins/hooks/shell/apps for bounded synthetic execution.",
+    "Uses app-server protocol, not TUI; own new native history only, not existing business conversations.",
+    "No configured user profiles on this machine; named profile combinations remain a future versioned compatibility check.",
+    "WillYou production launcher, shared global catalog lock, error UI, and package upgrade remain implementation/acceptance work."
+  ],
+  "sourceSha256": "15083d0011bc98b67466bb81de58c2819513f8defb0d056dd8085938bcb35b40",
+  "finishedAt": "2026-10-19T08:01:36.915Z"
+}

@@ -1,0 +1,9 @@
+import React, { StrictMode, useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { FileMarkdown } from '../src/FileMarkdown.jsx';
+import { FileNotebookPreview } from '../src/FileNotebookPreview.jsx';
+import '../src/styles.css';
+const plain = '# Plain\n\nNo formula 中文🙂\n', math = '# Math\n\nInline $a^2$ and $\\frac{$.\n\n$$\n\\frac{a}{b}\n$$\n\nTail 中文🙂\n', complex = '# Budget\n\n$$\n' + Array.from({length:60},(_,i)=>`x_{${i}}`).join('+') + '\n$$\n\nTail\n';
+const notebook = JSON.stringify({nbformat:4,nbformat_minor:5,metadata:{},cells:[{id:'math',cell_type:'markdown',metadata:{},source:'# Notebook\n\nInline $a^2$.\n\n$$\\frac{a}{b}$$'}]});
+function Harness(){const[mode,setMode]=useState('plain'),[dark,setDark]=useState(false),[text,setText]=useState(plain);useEffect(()=>{document.documentElement.dataset.theme=dark?'dark':'light';document.documentElement.classList.toggle('ydark',dark);},[dark]);const choose=next=>{setMode(next);setText(next==='plain'?plain:next==='budget'?complex:math);};return <main style={{padding:24,color:'var(--text)',background:'var(--bg)',height:'100vh'}}><header><h1>数学惰性加载 · P 合成夹具</h1><p>实际共享 KaTeX Worker；不读取真实项目、不调用模型。</p>{['plain','math','budget','notebook','closed'].map(name=><button key={name} data-testid={'math-'+name} onClick={()=>choose(name)} style={{marginRight:12}}>{name}</button>)}<button data-testid="math-theme" onClick={()=>setDark(value=>!value)}>切换浅深色</button><output data-testid="math-mode">{mode}</output></header><section style={{height:680,width:1100,overflow:'auto'}}>{mode==='closed'?<p>已关闭</p>:mode==='notebook'?<FileNotebookPreview key={mode} initialValue={notebook} title="math.ipynb"/>:<FileMarkdown key={mode} text={text} path={mode+'.md'} onEdit={setText}/>}</section></main>;}
+createRoot(document.getElementById('root')).render(<StrictMode><Harness/></StrictMode>);

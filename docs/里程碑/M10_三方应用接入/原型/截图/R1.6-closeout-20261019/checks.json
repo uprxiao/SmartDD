@@ -1,0 +1,133 @@
+{
+  "schema": "m10-closeout-manual-ui-checks-v1",
+  "at": "2026-10-19T08:29:56.593460+00:00",
+  "environment": "macOS arm64 / Google Chrome / http://127.0.0.1:4176/?preview=m10 / synthetic prototype",
+  "method": "Computer Use native AX and screenshots; actions performed manually by agent, not inferred from model tests",
+  "cases": [
+    {
+      "id": "UI01",
+      "scenario": "邮件读取与SMTP分别单选、均可不选",
+      "status": "passed",
+      "evidence": "mail-single-selection-light.png + .txt"
+    },
+    {
+      "id": "UI02",
+      "scenario": "清空最后来源仍启用，刷新后保持空绑定与启用",
+      "status": "passed",
+      "evidence": "mail-empty-slots-draft-available-light.png + .txt"
+    },
+    {
+      "id": "UI03",
+      "scenario": "未选来源不进入检查，检查按钮禁用且未声称查询成功",
+      "status": "passed",
+      "evidence": "mail-unselected-draft-final-dark.png + .txt"
+    },
+    {
+      "id": "UI04",
+      "scenario": "读取与SMTP均未选仍可生成固定示例草稿",
+      "status": "passed",
+      "evidence": "mail-unselected-draft-final-dark.png + .txt"
+    },
+    {
+      "id": "UI05",
+      "scenario": "缺包修复失败保持不可用与原版本",
+      "status": "passed",
+      "evidence": "package-repair-failed-light.png + .txt"
+    },
+    {
+      "id": "UI06",
+      "scenario": "缺包条件满足模拟修复后仍为固定v1.0.0",
+      "status": "passed",
+      "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+    },
+    {
+      "id": "UI07",
+      "scenario": "损坏显示HASH_MISMATCH与同内容恢复入口",
+      "status": "passed",
+      "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+    },
+    {
+      "id": "UI08",
+      "scenario": "配置不兼容保留原版本与当前配置，最终错误码CONFIG_INCOMPATIBLE",
+      "status": "passed",
+      "evidence": "config-incompatible-final-dark.png + .txt"
+    },
+    {
+      "id": "UI09",
+      "scenario": "名称冲突显示合成冲突项，默认重查失败且不覆盖用户能力",
+      "status": "passed",
+      "evidence": "agent-name-conflict-light.png + .txt"
+    },
+    {
+      "id": "UI10",
+      "scenario": "可恢复桥先失败再模拟恢复，固定版本不变、不重放",
+      "status": "passed",
+      "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+    },
+    {
+      "id": "UI11",
+      "scenario": "需下次启动桥无运行中重连或自动停启",
+      "status": "passed",
+      "evidence": "bridge-next-start-light.png + .txt"
+    },
+    {
+      "id": "UI12",
+      "scenario": "Foxmail格式不支持明确失败，无导入后备",
+      "status": "passed",
+      "evidence": "foxmail-format-unsupported-dark.png + .txt"
+    },
+    {
+      "id": "UI13",
+      "scenario": "部分读取标出两份正文和一份附件缺失",
+      "status": "passed",
+      "evidence": "foxmail-partial-dark.png + .txt"
+    },
+    {
+      "id": "UI14",
+      "scenario": "来源锁定显示有限重试耗尽及明确失败",
+      "status": "passed",
+      "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+    },
+    {
+      "id": "UI15",
+      "scenario": "继续使用Agent关闭弹窗，同preview-u4i9wky仍运行",
+      "status": "passed",
+      "evidence": "continue-agent-same-task-dark.png + .txt"
+    }
+  ],
+  "fixedDefects": [
+    {
+      "problem": "清空最后来源意外停用应用",
+      "fix": "先固化旧数据启用状态，绑定更新不隐式停用",
+      "verification": "模型回归和UI02/UI04"
+    },
+    {
+      "problem": "无读取来源短暂显示检查中",
+      "fix": "未选状态不启动读取计时器、不显示已查询日期或时间",
+      "verification": "模型断言、UI03"
+    },
+    {
+      "problem": "继续使用Agent只提示文字",
+      "fix": "onContinue关闭弹窗，保留原任务及快照",
+      "verification": "源码、构建和UI15"
+    },
+    {
+      "problem": "原型配置错误码与契约不同",
+      "fix": "统一CONFIG_INCOMPATIBLE",
+      "verification": "UI08"
+    }
+  ],
+  "screenshotNotes": {
+    "config-incompatible-light.png": "补修前迭代证据，旧CONFIG_VIEW_UNSUPPORTED已由final-dark替代；不作最终错误码证据",
+    "mail-single-selection-light.png": "邮件控件未完整进入图片视口；AX完整，最终dark图补充可见控件",
+    "mail-empty-slots-draft-available-light.png": "AX验证绑定和启用；最终dark补充实际可见邮件控件"
+  },
+  "boundaries": [
+    "15项针对性合成UI观察，不是72条产品验收",
+    "未完整核对浅深色、悬停、长文本、缩放及像素矩阵",
+    "发件身份变更／草稿新修订以模型验证为主，未跑全部浏览器发送分支",
+    "原型任务内存保存；刷新后消失，配置fixture用localStorage，不等于SQLite持久化",
+    "没有真实Foxmail读取、SMTP发送、真实包修复或终端进程"
+  ],
+  "browserInterruption": "页面被用户切离时暂停；用户再次确认可以核验后完成UI03/UI04/UI08/UI15，不读取其他页面业务内容作为证据"
+}

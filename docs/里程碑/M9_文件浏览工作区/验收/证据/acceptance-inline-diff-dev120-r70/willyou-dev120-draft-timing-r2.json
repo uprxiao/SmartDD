@@ -1,0 +1,85 @@
+{
+  "startedAt": "2026-10-19T03:09:51.072Z",
+  "observations": [
+    {
+      "case": "M9-T-H05",
+      "sample": "499/500 draft vs 2999/3000 save",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 500
+        },
+        {
+          "method": "save",
+          "at": 3000
+        },
+        {
+          "method": "resolveDraft",
+          "at": 3000
+        }
+      ],
+      "checkpointHash": "805acfedfa0d05d3c783174f3be1ef720abec452fa19b17f7c3f7be1da0f246f",
+      "checkpointBaseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+      "initialSourceSha256": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+      "finalSourceSha256": "805acfedfa0d05d3c783174f3be1ef720abec452fa19b17f7c3f7be1da0f246f",
+      "clean": true,
+      "remainingDrafts": 0,
+      "pass": true
+    },
+    {
+      "case": "M9-T-H05",
+      "sample": "clean with redo history -> redo new checkpoint -> explicit reload clean without history",
+      "cleanHistory": {
+        "undo": 0,
+        "redo": 1
+      },
+      "freshHistory": {
+        "undo": 0,
+        "redo": 0
+      },
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 500
+        },
+        {
+          "method": "resolveDraft",
+          "at": 500
+        },
+        {
+          "method": "checkpoint",
+          "at": 4000
+        },
+        {
+          "method": "read",
+          "at": 4000
+        },
+        {
+          "method": "resolveDraft",
+          "at": 4000
+        }
+      ],
+      "sourceSha256": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+      "initialSourceSha256": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+      "remainingDrafts": 0,
+      "historyPersistenceBoundary": "EditorState history retained in memory for compatible content; not serialized to native draft nor claimed across App restart",
+      "pass": true
+    }
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r69-build/mac-arm64/WillYou.app",
+    "asarSha256": "4ee64b38636975dddce540e2958ae66869ae2669d1dbf3ca95743faf2c9edac0",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "finishedAt": "2026-10-19T03:09:52.177Z"
+}

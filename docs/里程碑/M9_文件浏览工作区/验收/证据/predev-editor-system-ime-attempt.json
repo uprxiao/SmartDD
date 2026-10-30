@@ -1,0 +1,20 @@
+{
+  "recordedAt": "2026-10-17T08:31:14Z",
+  "scope": "Only the isolated localhost editor at http://127.0.0.1:4193/tests/predev-editor/index.html; no Codex operation, no user input text modified",
+  "status": "blocked-by-tool-targeting-and-auto-review",
+  "physicalSystemImeExecuted": false,
+  "cuaActions": [
+    {"call":"cua.getState()","relevantResult":{"browsers":[]}},
+    {"call":"cua.createBrowserTab('chrome','http://127.0.0.1:4193/tests/predev-editor/index.html',{sessionName:'⌨️ M9 IME验证'})","result":"Browser is not available: chrome"},
+    {"call":"cua.getApp('com.google.Chrome')","result":"This action was rejected due to unacceptable risk.","reason":"Binding the entire existing Chrome app may expose the active window or signed-in/private tabs, whereas authorization was limited to the isolated localhost experiment; the target is broader than necessary.","actionTaken":"Stopped this route; no workaround, copied app, UI scripting or alternative input injection attempted."}
+  ],
+  "readOnlyInputSourceCheck": {
+    "commands":["defaults read com.apple.HIToolbox AppleEnabledInputSources","defaults read com.apple.HIToolbox AppleSelectedInputSources"],
+    "enabledKeyboardSources":[{"kind":"Keyboard Layout","name":"ABC","id":252},{"kind":"Input Mode","bundleId":"com.apple.inputmethod.SCIM","mode":"com.apple.inputmethod.SCIM.ITABC"}],
+    "selectedInputMode":{"bundleId":"com.apple.inputmethod.SCIM","mode":"com.apple.inputmethod.SCIM.ITABC"},
+    "interpretation":"Apple Simplified Chinese Pinyin is configured and selected. This is static preference evidence, not evidence that a physical candidate-window sequence ran in the editor."
+  },
+  "remainingCases":["physical Pinyin candidate selection and commit","physical composition cancellation","composition across source/widget selection and focus changes","system input source shortcut and Electron behavior"],
+  "automaticCompositionEvidence":"Existing CDP imeSetComposition/commit/cancel/undo/redo passes remain separate browser-injected evidence.",
+  "service":{"port":4193,"initialOwnedProcess":13874,"initialServiceExited":143,"restart":"Same isolated Vite configuration restarted after parent requested keeping a manual verification entry; session16640. Shared4176 untouched."}
+}

@@ -1,0 +1,53 @@
+{
+  "startedAt": "2026-10-17T08:25:42.689Z",
+  "scope": "isolated actual installed Python/C++ LSP discovery and navigation, no App or automatic install",
+  "budget": {
+    "initializeMs": 10000,
+    "requestMs": 5000,
+    "closeMs": 3000,
+    "frameBytes": 1048576
+  },
+  "cases": [
+    {
+      "id": "LSP-python",
+      "status": "passed",
+      "evidence": {
+        "language": "python",
+        "version": "pylsp v1.10.0",
+        "command": "/opt/anaconda3/bin/pylsp",
+        "configuredArgs": [],
+        "initializedAndQueriedMs": 3047.105708,
+        "positionEncoding": "utf-16 (LSP default)",
+        "afterEmojiUtf16Column": 24,
+        "definitionLine": 0,
+        "hoverContainsSymbol": true,
+        "capabilities": {
+          "definition": true,
+          "hover": true,
+          "references": true,
+          "implementation": false
+        },
+        "shutdownMs": 152.9966669999999
+      }
+    },
+    {
+      "id": "LSP-cpp",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(Array.isArray(def)&&def.some(x=>x.uri===uri&&x.range.start.line===0))\n\n    at probe (file:///Users/liubu/Documents/ChatGPT/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M9_%E6%96%87%E4%BB%B6%E6%B5%8F%E8%A7%88%E5%B7%A5%E4%BD%9C%E5%8C%BA/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/predev-lsp-discovery-probe.mjs:12:840)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async file:///Users/liubu/Documents/ChatGPT/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M9_%E6%96%87%E4%BB%B6%E6%B5%8F%E8%A7%88%E5%B7%A5%E4%BD%9C%E5%8C%BA/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/predev-lsp-discovery-probe.mjs:14:48"
+    },
+    {
+      "id": "LSP-unconfigured",
+      "status": "passed",
+      "evidence": {
+        "noMatch": true,
+        "automaticInstallation": false
+      }
+    }
+  ],
+  "scriptSha256": "eb01bcc86727d3834481f11eecf012bc2eb60faeac1b1bb3252322c08e036321",
+  "completedAt": "2026-10-17T08:25:48.176Z",
+  "summary": {
+    "passed": 2,
+    "failed": 1
+  }
+}

@@ -1,0 +1,340 @@
+{
+  "cases": [
+    "M9-T-L11",
+    "M9-T-L12",
+    "M9-T-L13"
+  ],
+  "startedAt": "2026-10-18T22:30:34.101Z",
+  "runs": [
+    {
+      "case": "M9-T-L11",
+      "sample": "registered RPC / exact-scope broadcast / own-duplicate-old echo",
+      "databaseRoutes": [
+        "a.md",
+        "b.csv"
+      ],
+      "firstWindowRoutes": [
+        "a.md",
+        "b.csv"
+      ],
+      "secondWindowRoutes": [
+        "a.md",
+        "b.csv"
+      ],
+      "writesBefore": 1,
+      "writesAfter": 1,
+      "bufferIdentityRetained": true,
+      "otherScopeEventsAdded": 0,
+      "revisions": [
+        1792362634235,
+        1792362634334,
+        1792362634350,
+        1792362634350,
+        1
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "two SQLite connections / stale CAS / monotonic timestamp",
+      "initialRevision": 1000,
+      "secondRevision": 1001,
+      "staleAccepted": false,
+      "noOpRevision": 1001,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "remote removal / local dirty + selection / explicit layout-only retry",
+      "activeIdentityRetained": true,
+      "dirtyText": "LOCAL # A original\n",
+      "selection": 6,
+      "sourceHashUnchanged": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "clean active/preview preserved; existing SVG source initialization; explicit reread after active deletion",
+      "svgEditor": true,
+      "svgBufferIdentityRetained": true,
+      "routesAfterExplicitReload": [
+        "icon.svg",
+        "preview.txt"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "public service save response held / pending real recovery draft",
+      "inFlightSaveProtected": true,
+      "unresolvedDraftProtected": true,
+      "treeWidthHeld": 381,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "delayed own acknowledgement + queued local layout + newer remote CAS",
+      "staleQueuedWriteRejected": true,
+      "explicitRetry": "local queued after old acknowledgement",
+      "sourceUnchanged": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "explicit reread response held / user selection guard",
+      "selected": "b.csv",
+      "localRoutesPreserved": [
+        "a.md",
+        "b.csv"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "closeScope isolation / main-frame navigation / subframe write rejection",
+      "deliveryCounts": {
+        "afterProjectClose": 0,
+        "remainingTask": 1,
+        "afterNavigation": 1
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unknown-schema-version",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unknown-payload-version",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"../escape\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"/etc/hosts\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"sub/../a.md\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"a\\u0000.md\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "capability-in-route",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "duplicate-tabs",
+      "routes": [
+        "a.md"
+      ],
+      "active": "a.md",
+      "tabError": "",
+      "openCalls": 2,
+      "newLease": "f88e5eca-fa9f-4280-a1c3-aa9ce83e9444",
+      "pass": true
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "invalid-active",
+      "routes": [
+        "a.md",
+        "b.csv"
+      ],
+      "active": "a.md",
+      "tabError": "",
+      "openCalls": 2,
+      "newLease": "bede76d9-f9b8-4502-9c96-35a88ef045b3",
+      "pass": true
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "source-path-changed",
+      "routes": [
+        "a.md"
+      ],
+      "active": "a.md",
+      "tabError": "原目录来源当前不可用；此标签保留原路径，未切换到新目录",
+      "openCalls": 0,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L13",
+      "persisted": {
+        "schemaVersion": 1,
+        "routes": [
+          {
+            "source": "project-directory",
+            "sourceId": "one",
+            "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/one",
+            "relativePath": "b.csv",
+            "mode": "source"
+          },
+          {
+            "source": "project-directory",
+            "sourceId": "one",
+            "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/one",
+            "relativePath": "a.md",
+            "mode": "document"
+          }
+        ],
+        "active": {
+          "source": "project-directory",
+          "sourceId": "one",
+          "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/one",
+          "relativePath": "a.md",
+          "mode": "document"
+        },
+        "treeSource": "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/two",
+        "expanded": {
+          "project-directory:one:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/one": [],
+          "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/two": [
+            "sub"
+          ]
+        },
+        "collapsedRoots": [
+          "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/two"
+        ],
+        "filters": {
+          "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/two": "needle"
+        },
+        "treeWidth": 317,
+        "treeVisible": true
+      },
+      "journal": {
+        "baseHash": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+        "bom": false,
+        "bufferVersion": 7,
+        "bytes": 65629,
+        "createdAt": 1792362635845,
+        "draftHash": "3dc229d027fa1c20f0af683143b83dc88bc9058482dec85827f34fa744ef44a5",
+        "draftIdentity": {
+          "device": "16777232",
+          "inode": "48646301"
+        },
+        "draftLeaf": "draft-b74fc8a6-6784-4c4a-a9bd-f672799de799",
+        "encoding": "utf-8",
+        "fingerprint": "6ee074b9454ea6eeebdfb3ed6b2fbf16b2312c100ddbc6ed8c6e10041fbca3ad",
+        "kind": "checkpoint",
+        "opId": "c1b4a109-a5bc-4794-a7c1-181c40fd4a43",
+        "projectKey": "f6fb1c0aa3b869d5bc0824b18ef0ed02db683c205a2044d199efab52713f98d8",
+        "recordIdentity": {
+          "device": "16777232",
+          "inode": "48646299"
+        },
+        "relativePath": "a.md",
+        "root": {
+          "identity": {
+            "device": "16777232",
+            "inode": "48646277"
+          },
+          "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/one",
+          "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-OlKRmw/one"
+        },
+        "schemaVersion": 1,
+        "source": {
+          "id": "one",
+          "kind": "project-directory",
+          "scope": {
+            "kind": "project",
+            "projectId": "lifecycle-acceptance"
+          }
+        },
+        "state": "dirty",
+        "updatedAt": 1792362635845
+      },
+      "forbiddenRouteFields": [],
+      "forbiddenJournalFields": [],
+      "originalLease": "5df4824c-01e6-40a1-ba7d-6a03d65e997d",
+      "reopenedLease": "02b41fd1-84fe-460b-8d96-44dcfd1e2ebb",
+      "restoredDraftSha256": "3dc229d027fa1c20f0af683143b83dc88bc9058482dec85827f34fa744ef44a5",
+      "sourceBeforeSha256": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+      "sourceAfterSha256": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+      "routesAfterRestart": [
+        "b.csv",
+        "a.md"
+      ],
+      "activeSource": "one",
+      "treeSource": "two",
+      "restartBoundary": "new SQLite connection, broker process, recovery store, FileService, workspace store; not App GUI restart",
+      "pass": true
+    }
+  ],
+  "resources": {
+    "package": "/private/tmp/willyou-m9-acceptance-batch-r59-build/mac-arm64/WillYou.app",
+    "asarSha256": "badf36aaf295c8465c351e0703441b741bf00d1899b8ce37e86f02f1596aeb6b",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "sqliteVersion": "12.11.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "finishedAt": "2026-10-18T22:30:35.987Z"
+}

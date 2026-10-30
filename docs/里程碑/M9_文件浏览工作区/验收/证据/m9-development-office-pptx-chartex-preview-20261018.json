@@ -1,0 +1,485 @@
+{
+  "createdAt": "2026-10-18T08:02:25.891413+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4-P1",
+  "scope": "PPTX P09 partial ChartEx source creation/conversion/options and private native preview; full nine-type and App acceptance still open",
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "libreOffice": "26.2.4.2",
+    "libreOfficeBuild": "0229ac93fcf0d7cbc6376066c6f35021cef002dc"
+  },
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-chartex-preview-r1-sources.tar.gz",
+    "sha256": "4328b79e9bb9369689b02157a38023b59b12f96559ba0279defdeda2c2647fdc",
+    "files": 614,
+    "manifest": "/private/tmp/willyou-m9-chartex-preview-r1-sources.json",
+    "currentFilesMatch": true
+  },
+  "production": {
+    "implemented": [
+      "Actual four ChartEx insertions with embedded numeric data and explicit supported display properties",
+      "Basic to modern and modern to modern conversion preserving real references and old dependencies",
+      "Axes/grid/legend options for supported modern sources",
+      "Separate previewSource in editable Worker and prepare in readonly pages Worker; no projection data in saves/checkpoints/history",
+      "Real embedded cells verified against cache; small validation proofs instead of retained parsed workbooks",
+      "Original source hash used for preview identity; table layout applies the same private chart projection",
+      "Cancelled preview preserves editing Worker; later versions reject late projections"
+    ],
+    "limits": [
+      "Modern to basic conversion still unimplemented; all nine options remain in UI and unsupported action reports failure without changing source",
+      "Custom title/style/theme/legend layouts, multi-series/hierarchy, count changes and automatic/bin-size/overflow histogram semantics remain pending",
+      "Full group/rotation/reflection and actual Office fidelity matrices remain pending",
+      "Treemap currently uses full proportional area; approved prototype subtracts 2 logical units per tile for gutters; visual difference is unresolved",
+      "Actual App, themes, keyboard/IME and exact Codex comparison not executed in this batch"
+    ]
+  },
+  "codeTests": [
+    {
+      "path": "/private/tmp/willyou-chartex-preview-all-r1.json",
+      "sha256": "cce45aae15ecc2c382dba3eee8e204056518ec82089ac0868c84234b3fbe9bc5",
+      "passed": 385,
+      "failed": 0,
+      "notExecuted": 58,
+      "scope": "Office plus shared geometry and renderer Office; before final workbook cache change"
+    },
+    {
+      "path": "/private/tmp/willyou-chartex-preview-final-r2.json",
+      "sha256": "2eb75ad6bf74507d2835ed70988f6cfb419957945855147c5e956d2ed4d6154b",
+      "passed": 33,
+      "failed": 0,
+      "notExecuted": 0,
+      "scope": "33 affected tests after memory/cache and mock typing adjustment; overlaps broader regression, do not add"
+    }
+  ],
+  "typecheck": {
+    "path": "/private/tmp/willyou-chartex-preview-typecheck-r6.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "passed": true
+  },
+  "native": {
+    "path": "/private/tmp/willyou-chartex-preview-native-r3.json",
+    "sha256": "acbc55c223563b29b67e580558142b8f591c3c7d29f3c01656725a3a078823f9",
+    "passed": 1,
+    "failed": 0,
+    "notExecuted": 22,
+    "detail": {
+      "path": "/private/tmp/willyou-chartex-preview-native-r3-evidence/modern.json",
+      "sha256": "2923fe526f6cffd31e851ded912859be2021ef58fd1feb8190c0436572bb792c"
+    },
+    "results": {
+      "independent": [
+        {
+          "type": "funnel",
+          "values": [
+            6,
+            3,
+            4
+          ]
+        },
+        {
+          "type": "clusteredColumn",
+          "values": [
+            6,
+            3,
+            4
+          ]
+        },
+        {
+          "type": "waterfall",
+          "values": [
+            6,
+            3,
+            4
+          ]
+        },
+        {
+          "type": "treemap",
+          "values": [
+            6,
+            3,
+            4
+          ]
+        }
+      ],
+      "measured": [
+        {
+          "type": "funnel",
+          "boxes": [
+            {
+              "x": 187,
+              "y": 177,
+              "width": 230,
+              "height": 38
+            },
+            {
+              "x": 245,
+              "y": 218,
+              "width": 115,
+              "height": 38
+            },
+            {
+              "x": 225,
+              "y": 259,
+              "width": 154,
+              "height": 38
+            }
+          ],
+          "maxErrorPixels": 0.4615384615384528
+        },
+        {
+          "type": "histogram",
+          "boxes": [
+            {
+              "x": 180,
+              "y": 190,
+              "width": 80,
+              "height": 109
+            },
+            {
+              "x": 262,
+              "y": 245,
+              "width": 80,
+              "height": 54
+            },
+            {
+              "x": 343,
+              "y": 226,
+              "width": 80,
+              "height": 73
+            }
+          ],
+          "maxErrorPixels": 0.4615384615384599
+        },
+        {
+          "type": "waterfall",
+          "boxes": [
+            {
+              "x": 180,
+              "y": 246,
+              "width": 68,
+              "height": 53
+            },
+            {
+              "x": 262,
+              "y": 219,
+              "width": 68,
+              "height": 26
+            },
+            {
+              "x": 343,
+              "y": 183,
+              "width": 68,
+              "height": 36
+            }
+          ],
+          "maxErrorPixels": 0.6153846153846132
+        },
+        {
+          "type": "treemap",
+          "boxes": [
+            {
+              "x": 180,
+              "y": 177,
+              "width": 112,
+              "height": 122
+            },
+            {
+              "x": 293,
+              "y": 177,
+              "width": 56,
+              "height": 122
+            },
+            {
+              "x": 349,
+              "y": 177,
+              "width": 75,
+              "height": 122
+            }
+          ],
+          "maxErrorPixels": 0.2307692307692264
+        }
+      ],
+      "decorations": [
+        {
+          "type": "funnel",
+          "before": {
+            "axes": 0,
+            "grid": 0
+          },
+          "after": {
+            "axes": 639,
+            "grid": 607
+          }
+        },
+        {
+          "type": "histogram",
+          "before": {
+            "axes": 0,
+            "grid": 0
+          },
+          "after": {
+            "axes": 639,
+            "grid": 371
+          }
+        },
+        {
+          "type": "waterfall",
+          "before": {
+            "axes": 0,
+            "grid": 0
+          },
+          "after": {
+            "axes": 639,
+            "grid": 919
+          }
+        },
+        {
+          "type": "treemap",
+          "before": {
+            "axes": 0,
+            "grid": 0
+          },
+          "after": {
+            "axes": 639,
+            "grid": 45
+          }
+        }
+      ],
+      "sourceHash": "60e531783249549489677eeacf752a74d9940d604cc6bdba5340c16e35952802",
+      "previewHash": "2d1682d20aeb5295d6d35a21103ee0b8e7bb374a79e946662a5f9c2d8d840249",
+      "readonlyPreview": true,
+      "pendingRecovered": true,
+      "undoMutations": 20,
+      "undoAllOriginalParts": true,
+      "uiAcceptance": false
+    },
+    "images": [
+      {
+        "file": "m9-chartex-preview-funnel-20261018.png",
+        "sha256": "90bbbec25f8389fbbd9f8f5786bb0aeae488c1d505af2162d7cc34c44a3d2164",
+        "kind": "production Worker/native synthetic projection, not App UI",
+        "width": 960,
+        "height": 541
+      },
+      {
+        "file": "m9-chartex-preview-histogram-20261018.png",
+        "sha256": "a98c832eca5889afaa993c7761b7aa476b1f4d1ce9c55d784a470e7e146686b2",
+        "kind": "production Worker/native synthetic projection, not App UI",
+        "width": 960,
+        "height": 541
+      },
+      {
+        "file": "m9-chartex-preview-waterfall-20261018.png",
+        "sha256": "c7cf69eba554b34673bbf8a4c4e58bf393a2649421f1fbeebc4dea44085545b1",
+        "kind": "production Worker/native synthetic projection, not App UI",
+        "width": 960,
+        "height": 541
+      },
+      {
+        "file": "m9-chartex-preview-treemap-20261018.png",
+        "sha256": "ef39eeea868b31877a7be226361b6265f3f07eda5f85926223f0db273b74a5a3",
+        "kind": "production Worker/native synthetic projection, not App UI",
+        "width": 960,
+        "height": 541
+      }
+    ],
+    "uiAcceptance": false
+  },
+  "failures": {
+    "nativeR2": {
+      "path": "/private/tmp/willyou-chartex-preview-native-r2.json",
+      "sha256": "bfde8d3c2a51ac6b9e6948705d3f96ba3ff88d111ebdc5e8b997ef193f23d84a",
+      "passed": 0,
+      "failed": 1,
+      "notExecuted": 22,
+      "reason": "New test assumed >100 grid pixels for every chart; treemap covers background grid leaving 45. Compared prototype grid-behind-data order and independently checked visible margins in r3."
+    },
+    "typecheckLogs": [
+      {
+        "path": "/private/tmp/willyou-chartex-preview-typecheck-r1.log",
+        "sha256": "e1b7b112fe42598b6e47af9b527392c041db76322f9571b6889daa4bd6ee0d72"
+      },
+      {
+        "path": "/private/tmp/willyou-chartex-preview-typecheck-r3.log",
+        "sha256": "618a4989af792269805060df536e4733145f698f5b13194ff76f2e57a36f2613"
+      },
+      {
+        "path": "/private/tmp/willyou-chartex-preview-typecheck-r4.log",
+        "sha256": "a47e140afbf487b66c7df2d1baa4893d907c30fd9cdd0bd364a67870214dc25c"
+      }
+    ],
+    "typecheckCorrections": [
+      "Font type narrowing",
+      "Typed render mock tuple and preserved existing no-argument mock calls"
+    ]
+  },
+  "package": {
+    "state": "PASSED",
+    "path": "/private/tmp/willyou-m9-chartex-preview-r1-build/mac-arm64/WillYou.app",
+    "asarSha256": "db0fd208c4fe621306a02fd7ba18aaf040ad67a1de0bd4ed381436fac817c4a3",
+    "log": {
+      "path": "/private/tmp/willyou-m9-chartex-preview-package-r1.log",
+      "sha256": "5ee8a557df3ff8197b25b9eace644bd9b233d419acc99c527a35b6780e73ffe6"
+    },
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "released": false,
+    "uiLaunched": false
+  },
+  "packagedTest": {
+    "state": "PASSED",
+    "report": "/private/tmp/willyou-chartex-preview-packaged-r1.json",
+    "log": "/private/tmp/willyou-chartex-preview-packaged-r1.log",
+    "detailDirectory": "/private/tmp/willyou-chartex-preview-packaged-r1-evidence",
+    "scope": "Shipped PPTX/pages Workers and helper; source FileService orchestration tied to build snapshot. Modern positive flow, unsupported preview protection, data editing and existing basic chart regression. Not App UI.",
+    "passed": 4,
+    "failed": 0,
+    "notSelected": 7,
+    "reportSha256": "615e55ff03a061eccfb4db391cc9607bc61eee1559bebbf62c425b66c95b854b",
+    "logSha256": "30bb085b37937936070c83d27abd5a22741c0ef367b42dad17fb96ee720e194a",
+    "detail": {
+      "path": "/private/tmp/willyou-chartex-preview-packaged-r1-evidence/chartex-preview.json",
+      "sha256": "1069d717ae21ff8d3c80923f3a51ee47954761f7756233d097dd1113db4f1a1e"
+    },
+    "results": {
+      "app": "/private/tmp/willyou-m9-chartex-preview-r1-build/mac-arm64/WillYou.app",
+      "workerSha256": "7987da38b86b69b4f09757fd5c80f607b96a21785634cfa214ac2d67eb2ac42d",
+      "pagesWorkerSha256": "edf1273e0a4db6c880edf043c9af17d93fa91984af767286e449fd9e7b923693",
+      "sourceHash": "a7409ab53f1ed26f9d768f603dee276b6f771228f48cd45db257752c00f01dee",
+      "pdfHash": "f244b332791b087d1bcd4044595881e8e5d15a5bd8f55a20f8bc16ddda43679f",
+      "independent": [
+        {
+          "type": "funnel",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        },
+        {
+          "type": "clusteredColumn",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        },
+        {
+          "type": "waterfall",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        },
+        {
+          "type": "treemap",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        }
+      ],
+      "measured": [
+        {
+          "type": "funnel",
+          "maxErrorPixels": 0.4615384615384528,
+          "axesPixels": 639,
+          "gridPixels": 607
+        },
+        {
+          "type": "histogram",
+          "maxErrorPixels": 0.4615384615384599,
+          "axesPixels": 639,
+          "gridPixels": 371
+        },
+        {
+          "type": "waterfall",
+          "maxErrorPixels": 0.6153846153846132,
+          "axesPixels": 639,
+          "gridPixels": 919
+        },
+        {
+          "type": "treemap",
+          "maxErrorPixels": 0.2307692307692264,
+          "axesPixels": 639,
+          "gridPixels": 45
+        }
+      ],
+      "readonlyPreview": true,
+      "reopened": true,
+      "pendingRecovered": true,
+      "undoMutations": 16,
+      "allOriginalPartsRestored": true,
+      "uiAcceptance": false
+    },
+    "regressions": [
+      {
+        "path": "/private/tmp/willyou-chartex-preview-packaged-r1-evidence/chartex-data.json",
+        "sha256": "94be254d0e1bc882a39c22913812f55889991c7d1d4adf06cd977dbfbac81d69"
+      },
+      {
+        "path": "/private/tmp/willyou-chartex-preview-packaged-r1-evidence/chartex-guard.json",
+        "sha256": "f63e1d5e9db43863c7bc639fdc9c0ad0e12f21d34a8910003a85e1fdb7edcf63"
+      }
+    ]
+  },
+  "appUI": {
+    "state": "BLOCKED",
+    "observation": "CUA getAXState explicitly reported Mac locked; automatic unlock could not unlock it",
+    "runningPackage": "pptx-image-r1",
+    "pendingUserStep": "Previous unlock/image-picker confirmation remains pending; no repeated request or concurrent userdata",
+    "preparedFixtures": {
+      "directory": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/pptx-chartex-preview-ui-r1",
+      "build": "/private/tmp/willyou-m9-chartex-preview-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "db0fd208c4fe621306a02fd7ba18aaf040ad67a1de0bd4ed381436fac817c4a3",
+      "warning": "Synthetic files for the new chartex-preview-r1 package; not yet opened or accepted in App",
+      "files": {
+        "modern-four-types.pptx": "a7409ab53f1ed26f9d768f603dee276b6f771228f48cd45db257752c00f01dee",
+        "modern-edit.pptx": "78d689d77581d44067d234860dc76e527cc4b7774dd181231f1b9698e9bbdac6"
+      }
+    }
+  },
+  "formalAcceptance": {
+    "current": 419,
+    "passed": 3,
+    "remaining": 416,
+    "passPercentage": 0.72,
+    "excludedFuture": 6,
+    "newFormalPasses": 0,
+    "status": "开发中",
+    "passedCaseIds": [
+      "M9-T-S02",
+      "M9-T-T18",
+      "M9-T-T22"
+    ]
+  },
+  "defect": {
+    "id": "M9-DEV-029",
+    "state": "OPEN",
+    "reason": "Private projection works for explicit supported source styles, but full source fidelity/type conversion and App matrix remain incomplete"
+  },
+  "checks": {
+    "caseIndex": "PASS: 425 unique / 419 current / 6 future",
+    "diffCheck": "PASS",
+    "snapshotFilesUnchanged": 614
+  },
+  "updatedAt": "2026-10-18T08:03:48.310445+08:00"
+}

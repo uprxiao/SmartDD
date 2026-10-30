@@ -1,0 +1,464 @@
+{
+  "schema": "m10-development-readiness-closeout-v1",
+  "at": "2026-10-19T08:30:47.288557+00:00",
+  "requirements": "R1.6 / 12.1–12.21 / 2026-10-19",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "worktree": "uncommitted design/prototype only; earlier changes preserved",
+  "aggregationStatus": "passed",
+  "designReadiness": "ready-for-development-review",
+  "failures": [],
+  "results": {
+    "ccAssertions": 18,
+    "codexCases": 11,
+    "includesNegativeNativeBehaviorEvidence": true,
+    "m10Model": 31,
+    "existingPreviewModel": 5,
+    "buildExitCode": 0,
+    "uiPassed": 15,
+    "uiPending": []
+  },
+  "productAcceptance": "72 cases unchanged; preflight and synthetic UI do not count as product acceptance",
+  "productionChanges": [],
+  "ui": {
+    "schema": "m10-closeout-manual-ui-checks-v1",
+    "at": "2026-10-19T08:29:56.593460+00:00",
+    "environment": "macOS arm64 / Google Chrome / http://127.0.0.1:4176/?preview=m10 / synthetic prototype",
+    "method": "Computer Use native AX and screenshots; actions performed manually by agent, not inferred from model tests",
+    "cases": [
+      {
+        "id": "UI01",
+        "scenario": "邮件读取与SMTP分别单选、均可不选",
+        "status": "passed",
+        "evidence": "mail-single-selection-light.png + .txt"
+      },
+      {
+        "id": "UI02",
+        "scenario": "清空最后来源仍启用，刷新后保持空绑定与启用",
+        "status": "passed",
+        "evidence": "mail-empty-slots-draft-available-light.png + .txt"
+      },
+      {
+        "id": "UI03",
+        "scenario": "未选来源不进入检查，检查按钮禁用且未声称查询成功",
+        "status": "passed",
+        "evidence": "mail-unselected-draft-final-dark.png + .txt"
+      },
+      {
+        "id": "UI04",
+        "scenario": "读取与SMTP均未选仍可生成固定示例草稿",
+        "status": "passed",
+        "evidence": "mail-unselected-draft-final-dark.png + .txt"
+      },
+      {
+        "id": "UI05",
+        "scenario": "缺包修复失败保持不可用与原版本",
+        "status": "passed",
+        "evidence": "package-repair-failed-light.png + .txt"
+      },
+      {
+        "id": "UI06",
+        "scenario": "缺包条件满足模拟修复后仍为固定v1.0.0",
+        "status": "passed",
+        "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+      },
+      {
+        "id": "UI07",
+        "scenario": "损坏显示HASH_MISMATCH与同内容恢复入口",
+        "status": "passed",
+        "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+      },
+      {
+        "id": "UI08",
+        "scenario": "配置不兼容保留原版本与当前配置，最终错误码CONFIG_INCOMPATIBLE",
+        "status": "passed",
+        "evidence": "config-incompatible-final-dark.png + .txt"
+      },
+      {
+        "id": "UI09",
+        "scenario": "名称冲突显示合成冲突项，默认重查失败且不覆盖用户能力",
+        "status": "passed",
+        "evidence": "agent-name-conflict-light.png + .txt"
+      },
+      {
+        "id": "UI10",
+        "scenario": "可恢复桥先失败再模拟恢复，固定版本不变、不重放",
+        "status": "passed",
+        "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+      },
+      {
+        "id": "UI11",
+        "scenario": "需下次启动桥无运行中重连或自动停启",
+        "status": "passed",
+        "evidence": "bridge-next-start-light.png + .txt"
+      },
+      {
+        "id": "UI12",
+        "scenario": "Foxmail格式不支持明确失败，无导入后备",
+        "status": "passed",
+        "evidence": "foxmail-format-unsupported-dark.png + .txt"
+      },
+      {
+        "id": "UI13",
+        "scenario": "部分读取标出两份正文和一份附件缺失",
+        "status": "passed",
+        "evidence": "foxmail-partial-dark.png + .txt"
+      },
+      {
+        "id": "UI14",
+        "scenario": "来源锁定显示有限重试耗尽及明确失败",
+        "status": "passed",
+        "evidence": "实际Computer Use观察；未单独归档截图，执行记录保留观察范围"
+      },
+      {
+        "id": "UI15",
+        "scenario": "继续使用Agent关闭弹窗，同preview-u4i9wky仍运行",
+        "status": "passed",
+        "evidence": "continue-agent-same-task-dark.png + .txt"
+      }
+    ],
+    "fixedDefects": [
+      {
+        "problem": "清空最后来源意外停用应用",
+        "fix": "先固化旧数据启用状态，绑定更新不隐式停用",
+        "verification": "模型回归和UI02/UI04"
+      },
+      {
+        "problem": "无读取来源短暂显示检查中",
+        "fix": "未选状态不启动读取计时器、不显示已查询日期或时间",
+        "verification": "模型断言、UI03"
+      },
+      {
+        "problem": "继续使用Agent只提示文字",
+        "fix": "onContinue关闭弹窗，保留原任务及快照",
+        "verification": "源码、构建和UI15"
+      },
+      {
+        "problem": "原型配置错误码与契约不同",
+        "fix": "统一CONFIG_INCOMPATIBLE",
+        "verification": "UI08"
+      }
+    ],
+    "screenshotNotes": {
+      "config-incompatible-light.png": "补修前迭代证据，旧CONFIG_VIEW_UNSUPPORTED已由final-dark替代；不作最终错误码证据",
+      "mail-single-selection-light.png": "邮件控件未完整进入图片视口；AX完整，最终dark图补充可见控件",
+      "mail-empty-slots-draft-available-light.png": "AX验证绑定和启用；最终dark补充实际可见邮件控件"
+    },
+    "boundaries": [
+      "15项针对性合成UI观察，不是72条产品验收",
+      "未完整核对浅深色、悬停、长文本、缩放及像素矩阵",
+      "发件身份变更／草稿新修订以模型验证为主，未跑全部浏览器发送分支",
+      "原型任务内存保存；刷新后消失，配置fixture用localStorage，不等于SQLite持久化",
+      "没有真实Foxmail读取、SMTP发送、真实包修复或终端进程"
+    ],
+    "browserInterruption": "页面被用户切离时暂停；用户再次确认可以核验后完成UI03/UI04/UI08/UI15，不读取其他页面业务内容作为证据"
+  },
+  "prototypeFiles": [
+    {
+      "path": "prototypes/m6-codex/AGENTS.md",
+      "sha256": "fd2a4fed5c3eff8f70c8080ad6598a18e1e7dab21f4aac8c37acca1aa6e9da85",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/AGENTS.md"
+    },
+    {
+      "path": "prototypes/m6-codex/README.md",
+      "sha256": "3ea43c7b8c85f3db9c39c70385461f0fb7de112586d6afb472248dbe4572df41",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/README.md"
+    },
+    {
+      "path": "prototypes/m6-codex/src/integration-model.mjs",
+      "sha256": "5055f0e46255fdf0d48d0715801e3dd2a2ac0b4fdc74d37cf419703e541bd606",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/src/integration-model.mjs"
+    },
+    {
+      "path": "prototypes/m6-codex/src/IntegrationPackageUI.jsx",
+      "sha256": "33304252b5dc7d7dbb407121003f3554318c28567de43fe0b5b1f58910f2f5a8",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/src/IntegrationPackageUI.jsx"
+    },
+    {
+      "path": "prototypes/m6-codex/src/IntegrationWorkspace.jsx",
+      "sha256": "c0c3738d6e062281f0d693e239ec4fad37feff5ff477c72374752e3179bcb5ee",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/src/IntegrationWorkspace.jsx"
+    },
+    {
+      "path": "prototypes/m6-codex/src/integration.css",
+      "sha256": "1667d20438488160f501b857d7c27d651d1fac5f229ad05b576c2adbe5892156",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/src/integration.css"
+    },
+    {
+      "path": "prototypes/m6-codex/src/App.jsx",
+      "sha256": "1192f096a0247280f071c376de6c8a39633605786ee78cd7c632d2b8bf677299",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/src/App.jsx"
+    },
+    {
+      "path": "prototypes/m6-codex/src/ProjectWorkspace.jsx",
+      "sha256": "d6a8c723b4d166d29de769eb7fe9a3835c7ebf2cf1d6cd46b28df57ed0665629",
+      "snapshot": "prototypes/m6-codex/.review/r16-20261019/baseline/src/ProjectWorkspace.jsx"
+    },
+    {
+      "path": "prototypes/m6-codex/src/CapabilitiesPanel.jsx",
+      "sha256": "6a0b0e7f80a4c662bdc37cd15f1af165675bfbb6481d4a11f3605051f751a567",
+      "snapshot": "prototypes/m6-codex/.review/r16-20261019/baseline/src/CapabilitiesPanel.jsx"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/integration-model.test.mjs",
+      "sha256": "8348a08649afaf0bcf0bbfd0d751923dd767a8d034c29630b22de211b5552f5e",
+      "snapshot": "prototypes/m6-codex/.review/r16-closeout-20261019/final/tests/integration-model.test.mjs"
+    },
+    {
+      "path": "prototypes/m6-codex/src/ProjectTransfer.jsx",
+      "sha256": "006b72afb8f8143dccad407c349fee0495b765906a4aec59a03f5c6eb213258e",
+      "snapshot": "prototypes/m6-codex/.review/r16-20261019/baseline/src/ProjectTransfer.jsx"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/agent-name-conflict-light.png",
+      "sha256": "7e4abf37c15064c49a0ff8a486be366924ec43fa57fbbe89cc9fbbca2912028a",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:09:17.812029+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/agent-name-conflict-light.txt",
+        "sha256": "d5fc73b0cc391d6b0ee7efede6a665f03bb2379cf0f33356f8999ef4b3598c58"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/bridge-next-start-light.png",
+      "sha256": "fb6b6cfc9b66c3b754f8bc42d557f3b9cba54a0ab0a018a9a9ca5e8db658c800",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:10:59.300582+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/bridge-next-start-light.txt",
+        "sha256": "8bb66f92168c3e506aa480032547756c4bf85df5878dbaaf07a029208b3c9f18"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/config-incompatible-final-dark.png",
+      "sha256": "9b1e3a47e22183a1232862f8d4711ec6da1ce875977aeb8100d7b7b393cfc51b",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:27:14.460679+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/config-incompatible-final-dark.txt",
+        "sha256": "6ccb640ca8a6ca3b10ca45e5f44472f8922cbd23d0a57bd8240ce632c6085dc9"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/config-incompatible-light.png",
+      "sha256": "5f5051e6033ec8bf7eaad67d5168c0fe10d362244af5592351c74ebdc3c58099",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:07:23.322003+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/config-incompatible-light.txt",
+        "sha256": "259c36af4a3a170a47a75a8ac2fcf333d49872c8786be9f6aa638bac4ab00a4b"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/continue-agent-same-task-dark.png",
+      "sha256": "deae486c5aeb63c7732e8b24f4620d7c4e2b5ff85c80c0121de33a0b41e68645",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:27:35.989130+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/continue-agent-same-task-dark.txt",
+        "sha256": "90b3eab6834a1735e34d887fff3839bc6b493a6ef90004147098d78fbbf9e58e"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/foxmail-format-unsupported-dark.png",
+      "sha256": "c7de620ba496a3014d8bbbf560a8f4a85d09cd0779541493eb295bd99e5a1444",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:19:38.946543+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/foxmail-format-unsupported-dark.txt",
+        "sha256": "f4e779f527f201a0aff6d83f9e733009180cfa8a0ab14edd86c067ecf94a79e6"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/foxmail-partial-dark.png",
+      "sha256": "2dded20fe851cc12ea24de73f3f935008b0586ab412f071de87d7469ba24b507",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:20:08.884035+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/foxmail-partial-dark.txt",
+        "sha256": "c6d511bea7db733cd588f3b7c3b4bc79dc9614871a4854ecc6d58cb2d977489e"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-empty-slots-draft-available-light.png",
+      "sha256": "4ac03688a64a629da965f9bee6a3ae57fb7a052d8f095d6dc2d2673898e42e9c",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:12:25.229397+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-empty-slots-draft-available-light.txt",
+        "sha256": "2732247a1c54c1691606f949810147f64d8844654a2a7a709f5868eba6c815f7"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-empty-slots-final-dark.png",
+      "sha256": "3dd3a59f2654913c3b74b3b7932dd1a3448a645b61fb6277a2531cfe36c8fe3d",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:28:24.864965+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-empty-slots-final-dark.txt",
+        "sha256": "cecb19032baa0f7ef0d62e7ef92d1b3f10c573f54e5fb7c4676f6eecd5f94afd"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-single-selection-light.png",
+      "sha256": "0de600e36010bc86fa6d579ee766731ba88568a5a424043848f22bb87a9de412",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:04:01.988706+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-single-selection-light.txt",
+        "sha256": "b4a962e081951ead6479a6df2546999e7755b64acd3497be1979ae3c6bd78e1f"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-unselected-draft-final-dark.png",
+      "sha256": "75ec1a2dbfef1719b23f1c556ff0dda7661c08b81be95b825374875ccd95dd31",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:28:48.395700+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/mail-unselected-draft-final-dark.txt",
+        "sha256": "485f134d3bb19657ec61f5544507e4923375576e553879b7b2eaaa450107c5dc"
+      }
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/package-repair-failed-light.png",
+      "sha256": "4af36a33a6413c12b33d4001a17a9869eae344486b17e306e25f2c0aca634f00",
+      "width": 4718592,
+      "height": 4292935744,
+      "capturedFileMtime": "2026-10-19T08:06:14.131698+00:00",
+      "source": "Computer Use capture of local synthetic prototype",
+      "ax": {
+        "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/package-repair-failed-light.txt",
+        "sha256": "075eb0af685c413b668ef0cb659717e00b7addbb719f318ac35b8aeeb90db5c8"
+      }
+    }
+  ],
+  "evidenceFiles": [
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/README.md",
+      "sha256": "dcc08eeb2b4a78ce7f65bc9cdbc4012187a26880e361dce2fae6a1051fa27f2b"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/attempt-01-collector-duplicate-name.json",
+      "sha256": "54109aa2983ac5bd99bc0d94f59026d501ba193352ab1a274caf7fd9497f35fe"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/baseline-result.json",
+      "sha256": "1189bf9895e50f5f15c7c6ea6adcccd2e8a07c8764e5aa51a817cceb0b9e8322"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/collect_results.py",
+      "sha256": "fe7fb64aaf734cc1184c160a46404820dc97c017481eab733ac34a3e88c2d97f"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/collision-result.json",
+      "sha256": "70fc70baec91c108fb27590013baf1a25b823a2bb9b2ba7501d786d3bab44ab5"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/inventory-result.json",
+      "sha256": "8ebe6d506717e6b6c146a14c142d0863866a65d78ad69a4d92e1644cbaab0bc2"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/probe-initial.py",
+      "sha256": "2c2512a6da7de903f081aec8ec21dac1de2c6b2d043fb16fb0a040609e7ba25f"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/probe.py",
+      "sha256": "4e93bf90c82f20fb3b2aaf69bc8db1bb48a72d2eafd79b885f95ab93cabe1823"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/real-new-result.json",
+      "sha256": "4e5037c00647f61dd28c009b11e9af078c2e4336b8bcb73b80018a62df71e0d7"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/real-resume-result.json",
+      "sha256": "adccb129dca7ef8a87b7cddad92bb72e0f90798971eb6a37419a182734718d58"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/claude-user-config/result.json",
+      "sha256": "42d53ae2255f63246ab64c321fbf6504d3b57f41565de7133e4a7b28d3cbe708"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/codex-user-config/README.md",
+      "sha256": "5f249554343cbbd158627460a3f5c6b764b96b3e9540f43a49323871ff685d8b"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/codex-user-config/attempt-01-plugin-discovery-async-growth.json",
+      "sha256": "721358f23495d7ed1eb89cf2c91f11bf5254ed85780a373482c8a54a924871cc"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/codex-user-config/attempt-02-quoted-override-key.json",
+      "sha256": "944691ec8f96bc492fa7142d7cb2ffb7cd39e1a51ed2aa6832f402807b3aa5bd"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/codex-user-config/discovery-result.json",
+      "sha256": "721358f23495d7ed1eb89cf2c91f11bf5254ed85780a373482c8a54a924871cc"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/codex-user-config/probe.mjs",
+      "sha256": "29ab983f29957c9695b84442e5c73f82ca68ed8a418b4d865d45814d5bd4db22"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/codex-user-config/rea-evidence.json",
+      "sha256": "36801cda3b4bbc18867b9147c51cf44ecc9417cfcf46e3a39409928bf86546a0"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/codex-user-config/result.json",
+      "sha256": "441203a4da1a324465de1645e548ef47fa582760452c228da4d032cda3547385"
+    },
+    {
+      "path": "prototypes/m6-codex/.review/r16-closeout-20261019/checks.json",
+      "sha256": "1b887d7152086c84cdf808c99b20236c3b4e3e1427a56e11735f7c8d6f204a8d"
+    },
+    {
+      "path": "prototypes/m6-codex/.review/r16-closeout-20261019/final-hashes.json",
+      "sha256": "bed6447b7f12d42abe51c419e4b79f88218bcd887430490da5a4a37d19fd182c"
+    },
+    {
+      "path": "prototypes/m6-codex/.review/r16-closeout-20261019/model-tests.tap",
+      "sha256": "02c0e6c8567fc7768c13edae854659b5d8d3ff60698ca3a644be04d27667ecb6"
+    },
+    {
+      "path": "prototypes/m6-codex/.review/r16-closeout-20261019/build.log",
+      "sha256": "4fc9d1816f4533e7df9e1688b3f843c5bebcb02caef9496f7f29383ba07db114"
+    },
+    {
+      "path": "docs/里程碑/M10_三方应用接入/原型/截图/R1.6-closeout-20261019/checks.json",
+      "sha256": "681ddd801319f47dc3ad25d898729e0a34794da4873dde9185c23b681a9e057f"
+    }
+  ],
+  "collector": {
+    "path": "docs/里程碑/M10_三方应用接入/技研/实验/runtime-preflight-20261019/collect_closeout_evidence.py",
+    "sha256": "7642993befaeef2a578f0f7ba6fcdf557fcc97fe5c3dec605e13c39e03b09578"
+  },
+  "limitations": [
+    "Only current local macOS arm64 CC 2.1.303 / cdsh and Codex 0.162.1 probe configurations",
+    "No production launcher, broker, SQLite migration, real two-build upgrade or full visual matrix acceptance",
+    "Discovery preservation does not prove all user MCP servers healthy; user business tools not called",
+    "Real model probes use owned short native histories; user daily histories were not resumed",
+    "Hook execution and arbitrary profiles/config combinations remain outside evidence scope"
+  ]
+}

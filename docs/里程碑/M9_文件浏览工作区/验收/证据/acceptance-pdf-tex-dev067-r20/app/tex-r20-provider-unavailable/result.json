@@ -1,0 +1,62 @@
+{
+  "caseId": "M9-T-F16",
+  "variant": "provider-unavailable",
+  "at": "2026-10-18T08:45:18.620Z",
+  "app": "/private/tmp/willyou-r20-no-tex-provider/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "c9d7a9a62b8c77680a14cbaf816468daf29eeac61e318932d7d985a3071780ce",
+  "projectPath": "/private/tmp/willyou-tex-acceptance-_5tpof9h/project",
+  "before": {
+    "success.tex": {
+      "sha256": "f780604fe3bce0a7ec4d5de0d16c21a5bca7bcceff161f4dcbd358ae360b9d25",
+      "inode": "45594805",
+      "mtimeNs": "1792312711278216849",
+      "ctimeNs": "1792312711278216849"
+    },
+    "missing-package.tex": {
+      "sha256": "51c9302863efbf77e826c64577c24550cc4a30b4bf65f7e723f2e80250f37391",
+      "inode": "45594806",
+      "mtimeNs": "1792312711278368808",
+      "ctimeNs": "1792312711278368808"
+    },
+    "no-pages.tex": {
+      "sha256": "bd72ce2a1b6e20f1664cad026fa6bba943e1401b15a1c4a1c3abb11bec85023c",
+      "inode": "45594809",
+      "mtimeNs": "1792312711278698766",
+      "ctimeNs": "1792312711278698766"
+    }
+  },
+  "checks": [
+    {
+      "file": "success.tex",
+      "kind": "provider-unavailable",
+      "defaultSource": true,
+      "error": "ENOENT: no such file or directory, realpath '/private/tmp/willyou-r20-no-tex-provider/WillYou.app/Contents/Resources/native/tex'",
+      "providerUnavailableExplicit": true,
+      "exactSourceRoundTrip": true
+    }
+  ],
+  "status": "passed",
+  "after": {
+    "success.tex": {
+      "sha256": "f780604fe3bce0a7ec4d5de0d16c21a5bca7bcceff161f4dcbd358ae360b9d25",
+      "inode": "45594805",
+      "mtimeNs": "1792312711278216849",
+      "ctimeNs": "1792312711278216849"
+    },
+    "missing-package.tex": {
+      "sha256": "51c9302863efbf77e826c64577c24550cc4a30b4bf65f7e723f2e80250f37391",
+      "inode": "45594806",
+      "mtimeNs": "1792312711278368808",
+      "ctimeNs": "1792312711278368808"
+    },
+    "no-pages.tex": {
+      "sha256": "bd72ce2a1b6e20f1664cad026fa6bba943e1401b15a1c4a1c3abb11bec85023c",
+      "inode": "45594809",
+      "mtimeNs": "1792312711278698766",
+      "ctimeNs": "1792312711278698766"
+    }
+  },
+  "boundary": "Actual offline engine/PDF.js in packaged App; ordinary TeX opens as source, explicit compile success/error/no-pages preserve source and expose no arbitrary shell. Unavailable-provider App variant is a private cloned bundle with only TeX resources withheld, identical ASAR/runtime; original verified package remains intact. Native I also tests unconfigured-provider UNSUPPORTED. Not native save, all TeX packages, full TeX resource/timeout or cross-platform acceptance.",
+  "privateJobEntries": [],
+  "finishedAt": "2026-10-18T08:45:24.721Z"
+}

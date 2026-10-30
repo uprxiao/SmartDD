@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-CACHE-DEV083-R33",
+  "at": "2026-10-18T14:46:23.949803+00:00",
+  "status": "passed-one-case",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS arm64",
+  "fullCasesPassed": [
+    "M9-T-B19"
+  ],
+  "productionDefects": [],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r33-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "046f316754ba0aa958e8a3629102ad47a1a195b699a7cd11f256f87115ebaa13",
+    "brokerSha256": "cae73e3859bdf342971ad9bcfcb148b8485064d564546bea7227fb9610b712cb",
+    "nativeChecks": "reused DEV082 r33 package checks; no new build or smoke claimed",
+    "runtimeAssetsVerified": 81
+  },
+  "sourceBaseline": {
+    "previousTestedFiles": 947,
+    "testedFiles": 949,
+    "initialSha256": "7d79902d0ef54b5259851d4f5f200833c553f10fbb7dbf175bb57eb2ecbf8471",
+    "finalTestedSha256": "d25c2ae26ec675a51a67f97c4f4145c28f8ac7a118e0b5e99834997d0b4bb666",
+    "addedFiles": [
+      "scripts/files/tree-cache-ui.mjs",
+      "src/renderer/features/files/tree-cache-acceptance.test.tsx"
+    ],
+    "existingSourcesChanged": [],
+    "productionChangedAfterBuild": 0,
+    "runtimeRebuilt": false
+  },
+  "verification": {
+    "codePassed": 2,
+    "newUniqueCodeTests": 2,
+    "cumulativeCodeUnion": 1705,
+    "externalCliOptInNotSelected": 2,
+    "prototypeScenarios": 8,
+    "actualAppChecks": 4,
+    "actualRefreshStates": [
+      "no terminal",
+      "running input-only CLI receiver",
+      "stopped through actual UI"
+    ],
+    "typecheckExit": 0,
+    "formalPassed": 137,
+    "formalTotal": 419,
+    "formalRemaining": 282,
+    "blocked": 2
+  },
+  "cache": {
+    "basis": "R02.3 preserves confirmed results across collapse. Reference stale5s is not a newly imposed product TTL. Watch/explicit refresh invalidates; errors stay recoverable, not successful empty listings.",
+    "native": [
+      {
+        "scenario": "confirmed cache and explicit refresh",
+        "immediateMs": 16.089708999999857,
+        "afterFiveMs": 5115.265417,
+        "lists": [
+          {
+            "path": "",
+            "at": 1168.7635,
+            "outcome": "ready"
+          },
+          {
+            "path": "cache",
+            "at": 1229.069042,
+            "outcome": "ready"
+          },
+          {
+            "path": "",
+            "at": 6381.010375,
+            "outcome": "ready"
+          },
+          {
+            "path": "cache",
+            "at": 6381.659292,
+            "outcome": "ready"
+          }
+        ],
+        "confirmedCachePreservedAcrossCollapse": true,
+        "staleRowsBeforeRefresh": [
+          "cache/old.txt"
+        ],
+        "refreshedRows": [
+          "cache/new.txt"
+        ],
+        "stableUnchanged": {
+          "sha256": "f131289428c2f0a57475b59eb45b1f16a901ae30513bfffb8714bed3a3c03dc3",
+          "inode": "47048051",
+          "mtimeNs": "1792334508721940288"
+        }
+      },
+      {
+        "scenario": "native error and explicit retry",
+        "failure": {
+          "text": "读取失败重试",
+          "title": "[PERMISSION] open component: Permission denied"
+        },
+        "lists": [
+          {
+            "path": "",
+            "at": 6418.769125,
+            "outcome": "ready"
+          },
+          {
+            "path": "restricted",
+            "at": 6433.600375,
+            "outcome": "FileError: [PERMISSION] open component: Permission denied"
+          },
+          {
+            "path": "restricted",
+            "at": 6450.641042,
+            "outcome": "ready"
+          }
+        ],
+        "state": {
+          "state": "ready",
+          "entries": [
+            {
+              "size": 22,
+              "identity": {
+                "inode": "47048069",
+                "device": "16777232"
+              },
+              "kind": "file",
+              "symbolicLink": false,
+              "name": "child.txt",
+              "relativePath": "restricted/child.txt"
+            }
+          ]
+        }
+      }
+    ],
+    "actualAppReopen": {
+      "scenario": "normal App collapse/reopen before and after five seconds",
+      "immediateMs": 172.943125,
+      "afterFiveMs": 5227.448708,
+      "view": {
+        "rows": [
+          {
+            "title": "/private/tmp/willyou-tree-cache-app-hwlFMK/project/cache",
+            "expanded": "true"
+          },
+          {
+            "title": "/private/tmp/willyou-tree-cache-app-hwlFMK/project/cache/original.txt",
+            "expanded": null
+          },
+          {
+            "title": "/private/tmp/willyou-tree-cache-app-hwlFMK/project/stable.txt",
+            "expanded": null
+          }
+        ],
+        "errors": [],
+        "hasTerminal": false,
+        "resume": false
+      },
+      "normalLiveWatch": true
+    },
+    "normalAppLiveWatchReopen": true,
+    "staleRefreshOwnWatchPause": true,
+    "receiver": {
+      "before": {
+        "pid": 93021,
+        "cwd": "/private/tmp/willyou-tree-cache-app-hwlFMK/project",
+        "terminalColumns": 56,
+        "terminalRows": 53,
+        "heartbeat": 2,
+        "at": 1792334597.822093,
+        "bytes": 0,
+        "text": "",
+        "rawHex": "",
+        "unbracketedNewlines": 0,
+        "inputOnly": true,
+        "executedCommands": 0,
+        "bracketedMode": true
+      },
+      "after": {
+        "pid": 93021,
+        "cwd": "/private/tmp/willyou-tree-cache-app-hwlFMK/project",
+        "terminalColumns": 56,
+        "terminalRows": 53,
+        "heartbeat": 10,
+        "at": 1792334598.657239,
+        "bytes": 0,
+        "text": "",
+        "rawHex": "",
+        "unbracketedNewlines": 0,
+        "inputOnly": true,
+        "executedCommands": 0,
+        "bracketedMode": true
+      }
+    },
+    "stoppedTask": {
+      "id": "8a329cb4-5729-4ec6-8aef-84050f740a95",
+      "projectId": "86b0c1b0-e166-47b3-8067-c861f0075c62",
+      "projectName": "B19 directory cache and terminal independence",
+      "dirId": "9ce778ca-105b-4d94-9f36-cd862c08ec81",
+      "cwd": "/private/tmp/willyou-tree-cache-app-hwlFMK/project",
+      "aiProfileId": "daf349ae-f53a-4103-b00f-59e40516a7ac",
+      "aiProfileName": "B19 isolated input-only CLI",
+      "aiProfileColor": null,
+      "runner": "claude",
+      "nativeSessionId": "8a329cb4-5729-4ec6-8aef-84050f740a95",
+      "title": "B19 isolated input-only CLI 10-18 22:43",
+      "firstMessage": "",
+      "injectedEnvNames": [
+        "CLAUDE_CONFIG_DIR",
+        "HOME",
+        "PROJECT_DB_CONFIG",
+        "REMOTE_SERVERS_CONFIG",
+        "SMARTDD_CONFIG_VERSION",
+        "SMARTDD_PROJECT_CONTEXT",
+        "SMARTDD_PROJECT_ID",
+        "SMARTDD_RESOURCE_AUDIT"
+      ],
+      "runtimeSnapshot": {
+        "runId": "0dfc095c-776b-409a-8987-f342118317b4",
+        "projectId": "86b0c1b0-e166-47b3-8067-c861f0075c62",
+        "configVersion": 1,
+        "configHash": "72bfe59b592cd1ca50f0524216da442f62862fdf5c111980d4771965110412f3",
+        "manifestPath": "/private/tmp/willyou-tree-cache-app-hwlFMK/userdata/capabilities/runs/86b0c1b0-e166-47b3-8067-c861f0075c62/8a329cb4-5729-4ec6-8aef-84050f740a95/0dfc095c-776b-409a-8987-f342118317b4/manifest.json",
+        "auditPath": "/private/tmp/willyou-tree-cache-app-hwlFMK/userdata/capabilities/resource-audit/86b0c1b0-e166-47b3-8067-c861f0075c62/8a329cb4-5729-4ec6-8aef-84050f740a95.jsonl",
+        "skills": [
+          {
+            "skillId": "project-db-diagnostics",
+            "name": "smartdd-project-db-diagnostics",
+            "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+            "version": "1.0.0",
+            "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+            "path": "/private/tmp/willyou-tree-cache-app-hwlFMK/userdata/capabilities/runs/86b0c1b0-e166-47b3-8067-c861f0075c62/8a329cb4-5729-4ec6-8aef-84050f740a95/0dfc095c-776b-409a-8987-f342118317b4/plugin/skills/project-db-diagnostics/SKILL.md",
+            "enabled": true,
+            "loaded": "unverified"
+          },
+          {
+            "skillId": "remote-password-ssh",
+            "name": "smartdd-remote-password-ssh",
+            "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+            "version": "1.0.0",
+            "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+            "path": "/private/tmp/willyou-tree-cache-app-hwlFMK/userdata/capabilities/runs/86b0c1b0-e166-47b3-8067-c861f0075c62/8a329cb4-5729-4ec6-8aef-84050f740a95/0dfc095c-776b-409a-8987-f342118317b4/plugin/skills/remote-password-ssh/SKILL.md",
+            "enabled": true,
+            "loaded": "unverified"
+          }
+        ],
+        "mcp": [
+          {
+            "name": "smartdd_project_0dfc095c776b",
+            "loaded": "unverified"
+          }
+        ],
+        "selfCheck": {
+          "status": "passed",
+          "issues": [],
+          "at": 1792334597586
+        }
+      },
+      "configVersion": 1,
+      "projectConfigVersion": 1,
+      "archivedAt": null,
+      "createdAt": 1792334597360,
+      "updatedAt": 1792334597360,
+      "lastLaunchedAt": 1792334597360,
+      "ptyId": null,
+      "recovery": "fresh",
+      "recoveryReason": "还没有发过消息，Claude 未写会话文件；打开时沿用原 ID 新开"
+    }
+  },
+  "harnessFailuresPreserved": [
+    "Initial native observation included recovery-store root list. Filter to exact project root fixes accounting without changing product behavior or expected source counts. Initial 2 failed assertions preserved.",
+    "Initial App wait returned a DOM element by value and hit CDP object-reference-chain serialization; Boolean readiness fixes the driver. 0 checks complete.",
+    "Second App completed cache/no-terminal/running checks, then incorrectly awaited detached-view resume panel after stop. Actual exited transcript is intentionally retained; persisted PTY null, runtime count0 and real header resume action are the matching state. 3 checks preserved.",
+    "Initial prototype passes six full flows then its isolated shared-tree error fixture omitted required apiRef, leaving that test host blank. Add required ref to fixture, rerun all eight. This is a harness failure, no production defect."
+  ],
+  "boundaries": [
+    "Only own temporary synthetic projects/userData/receiver; no daily resources, AIS, old r4/r6 pending bytes, clipboard, real model, external service or other App actions.",
+    "Exact native query counts are I. Normal A collapse/reopen retains live watches; deterministic explicit-stale A pauses only observed own watch IDs via original public API. No handler/result/native/App substitution.",
+    "Running receiver has a real PTY and advancing heartbeat and receives0 bytes; proves terminal need not complete for file refresh. Does not claim any third-party model/TUI busy indicator or model workflow.",
+    "P is shared full workspace synthetic state, not filesystem. Error component uses existing synthetic provider, fixed isolated region and visible P / only-file-area badge.",
+    "No new production or prototype source changes; reuse r33. Fresh2 code tests and typecheck plus81 runtime identity verification only; historical1705 union and six native smokes are not fresh full-suite/smoke runs."
+  ],
+  "reusedEvidence": [
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-large-tree-dev082-r33-20261018.json",
+      "sha256": "07a975405fc7d229589bbea10cbaa1e13df275e112a393081cbc5983d444089d",
+      "what": "r33 build, six native package smokes, historical code union1703. All947 previous sources unchanged; new files are external test driver and integration test only."
+    }
+  ],
+  "artifacts": {
+    "app/final/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/electron.log",
+      "sha256": "1f9a4252a5c5594ebe8340066f82fcacfb46a82782735975a8723cb63e3aa5bc"
+    },
+    "app/final/no-terminal.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/no-terminal.png",
+      "sha256": "3a64b745516bc93d58c391a16f16712cb5c9234bc87ec74f69bce938d7d6d712"
+    },
+    "app/final/project/cache/stopped.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/project/cache/stopped.txt",
+      "sha256": "bc207906649d2f14165ade2639db860a20f1b0ede3ee20dce9768482d8998a00"
+    },
+    "app/final/project/stable.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/project/stable.txt",
+      "sha256": "b7056c8374a3440d8a42362ee31c3a9ae0038598028cacde2e7e51297535f886"
+    },
+    "app/final/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/receiver/state.json",
+      "sha256": "8281ac2a694dab14831812b420ac8590b069e7e29c51487fe2ecd95aea4dc527"
+    },
+    "app/final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/result.json",
+      "sha256": "5c175ef0d3b3d93ee767ef48188b46924e50975a38c0c00d023bfacb1377feec"
+    },
+    "app/final/running.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/running.png",
+      "sha256": "fc0186a7cf57d4a48fa93e5503c36017bb10280e127da3417e4afdbea95d4cd4"
+    },
+    "app/final/stopped.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/final/stopped.png",
+      "sha256": "0c2f81ccec0c106115ceff5d3e81be891bb6dfd69335a203abc9de1eccb94b06"
+    },
+    "app/initial-serialization-failure/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/initial-serialization-failure/electron.log",
+      "sha256": "1c4c4dea543ba11bf8d5433d27961240e439c34f0f7ab8154e841751ca035ab7"
+    },
+    "app/initial-serialization-failure/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/initial-serialization-failure/failure.png",
+      "sha256": "65d1ec928b101bdf97cbd15280bc4b445d8f1ebf9dc78d158a398e78e30c8395"
+    },
+    "app/initial-serialization-failure/project/cache/original.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/initial-serialization-failure/project/cache/original.txt",
+      "sha256": "8f73af1674fb83cc61d7cf5d562cf4179e2fa14247435b9142048906a0f9220d"
+    },
+    "app/initial-serialization-failure/project/stable.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/initial-serialization-failure/project/stable.txt",
+      "sha256": "b7056c8374a3440d8a42362ee31c3a9ae0038598028cacde2e7e51297535f886"
+    },
+    "app/initial-serialization-failure/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/initial-serialization-failure/result.json",
+      "sha256": "aa6a9bf9621f5201b52d670faafc177a3edebe555a289427e149d6a248807870"
+    },
+    "app/stopped-readiness-failure/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/electron.log",
+      "sha256": "ec5c2f9bf7e7bca64865e2c7e65ac651d427b8ccabcc15b540e96915d1c6a1ad"
+    },
+    "app/stopped-readiness-failure/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/failure.png",
+      "sha256": "8bbff1bdf4e67e0478b2a37b83624ae71f988b5d4701e0740b120d429a3e9013"
+    },
+    "app/stopped-readiness-failure/no-terminal.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/no-terminal.png",
+      "sha256": "910fe1052d17f5ebeb83b172d6b57bc96fa8ae5dcf34e7bcc2d85248529577c0"
+    },
+    "app/stopped-readiness-failure/project/cache/running.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/project/cache/running.txt",
+      "sha256": "d81d58140374e1a3aa3407a78d7233c13fe8ee60e7ef3efcbb1b9608489e0831"
+    },
+    "app/stopped-readiness-failure/project/stable.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/project/stable.txt",
+      "sha256": "b7056c8374a3440d8a42362ee31c3a9ae0038598028cacde2e7e51297535f886"
+    },
+    "app/stopped-readiness-failure/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/receiver/state.json",
+      "sha256": "186eae67a817b5fe05b71a4d6abcac8c2ef80b6708db019979efba2922ebe56c"
+    },
+    "app/stopped-readiness-failure/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/result.json",
+      "sha256": "b2a65da1913038fe2c0a82d4b95d7f64b91e6cfd4b3b5b860d883e9862e17ff3"
+    },
+    "app/stopped-readiness-failure/running.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/app/stopped-readiness-failure/running.png",
+      "sha256": "fc0186a7cf57d4a48fa93e5503c36017bb10280e127da3417e4afdbea95d4cd4"
+    },
+    "prototype/final/B19-dark-none.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-dark-none.png",
+      "sha256": "ebad43f0c4a8f55b892c95cd3e2b8d9d34aa99a10d1752109635ea53882c0eaa"
+    },
+    "prototype/final/B19-dark-refresh.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-dark-refresh.png",
+      "sha256": "ebad43f0c4a8f55b892c95cd3e2b8d9d34aa99a10d1752109635ea53882c0eaa"
+    },
+    "prototype/final/B19-dark-watch.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-dark-watch.png",
+      "sha256": "ebad43f0c4a8f55b892c95cd3e2b8d9d34aa99a10d1752109635ea53882c0eaa"
+    },
+    "prototype/final/B19-error-dark.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-error-dark.png",
+      "sha256": "9d35ff56899d47c0fad2f9c7b87ebdc50d3c2076352316a516cb42c8df37b741"
+    },
+    "prototype/final/B19-error-light.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-error-light.png",
+      "sha256": "98c80feb8d373febc44101a1804816f5437e917803085d977f2e5d2d2a25e427"
+    },
+    "prototype/final/B19-light-none.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-light-none.png",
+      "sha256": "dbb17f45058c8b28f1b4d897c9eb4891a2649bae2275da83d2e31e6f44fc1f93"
+    },
+    "prototype/final/B19-light-refresh.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-light-refresh.png",
+      "sha256": "73035b999ecb1939d9ae18ab0309dca69513d433ef3fabaac655e14d76c35f07"
+    },
+    "prototype/final/B19-light-watch.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/B19-light-watch.png",
+      "sha256": "73035b999ecb1939d9ae18ab0309dca69513d433ef3fabaac655e14d76c35f07"
+    },
+    "prototype/final/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/electron.log",
+      "sha256": "135530f1d93e383308f0ede38c641094d49fb2976294ca77774b9b7c1d2e866a"
+    },
+    "prototype/final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/final/result.json",
+      "sha256": "e9cbb4e6bc92b24f3b0ff98d2e49de453954dfe2d42e4ad41d2f6b8559e9e75e"
+    },
+    "prototype/incomplete-fixture-failure/B19-dark-none.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/B19-dark-none.png",
+      "sha256": "ebad43f0c4a8f55b892c95cd3e2b8d9d34aa99a10d1752109635ea53882c0eaa"
+    },
+    "prototype/incomplete-fixture-failure/B19-dark-refresh.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/B19-dark-refresh.png",
+      "sha256": "ebad43f0c4a8f55b892c95cd3e2b8d9d34aa99a10d1752109635ea53882c0eaa"
+    },
+    "prototype/incomplete-fixture-failure/B19-dark-watch.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/B19-dark-watch.png",
+      "sha256": "ebad43f0c4a8f55b892c95cd3e2b8d9d34aa99a10d1752109635ea53882c0eaa"
+    },
+    "prototype/incomplete-fixture-failure/B19-light-none.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/B19-light-none.png",
+      "sha256": "73035b999ecb1939d9ae18ab0309dca69513d433ef3fabaac655e14d76c35f07"
+    },
+    "prototype/incomplete-fixture-failure/B19-light-refresh.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/B19-light-refresh.png",
+      "sha256": "73035b999ecb1939d9ae18ab0309dca69513d433ef3fabaac655e14d76c35f07"
+    },
+    "prototype/incomplete-fixture-failure/B19-light-watch.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/B19-light-watch.png",
+      "sha256": "73035b999ecb1939d9ae18ab0309dca69513d433ef3fabaac655e14d76c35f07"
+    },
+    "prototype/incomplete-fixture-failure/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/electron.log",
+      "sha256": "51dca60471165ece07af94eacdecb8645013a8330fb307942053f794f0e9041d"
+    },
+    "prototype/incomplete-fixture-failure/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/failure.png",
+      "sha256": "09b18007ef251518c6aa6a361e4c2ced4c7ca2c426296f1c123347e47ab8e92b"
+    },
+    "prototype/incomplete-fixture-failure/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/prototype/incomplete-fixture-failure/result.json",
+      "sha256": "32c027d9ad3d067237e3bf5cf3238d275841d563b22713cec2c956ec69bb76a2"
+    },
+    "sources/r33-dev083-completed-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/sources/r33-dev083-completed-tested-sources.json",
+      "sha256": "b975f3a33b89e7ba1d47fe867d9c1adb7286f7b90979f5e6407e08ae5ec08e86"
+    },
+    "sources/r33-dev083-completed-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/sources/r33-dev083-completed-tested-sources.tar.gz",
+      "sha256": "d25c2ae26ec675a51a67f97c4f4145c28f8ac7a118e0b5e99834997d0b4bb666"
+    },
+    "sources/r33-dev083-initial-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/sources/r33-dev083-initial-sources.json",
+      "sha256": "fa6beb9cc8cb5f119c8ae4b6c66a4f677390af3bb11be0f085a7f42ddd5571c6"
+    },
+    "sources/r33-dev083-initial-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/sources/r33-dev083-initial-sources.tar.gz",
+      "sha256": "7d79902d0ef54b5259851d4f5f200833c553f10fbb7dbf175bb57eb2ecbf8471"
+    },
+    "validation/willyou-dev083-cache-app-before-stop-wait.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-app-before-stop-wait.mjs",
+      "sha256": "db3b133fe3c6e6675878ddc38dcd034664cd67230bd83403e3488ec066148ef7"
+    },
+    "validation/willyou-dev083-cache-app-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-app-final.log",
+      "sha256": "cc7280307140322780bd42b0f08e79e104e63cb256bf743f74d583f8bdb60fc4"
+    },
+    "validation/willyou-dev083-cache-app-initial.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-app-initial.mjs",
+      "sha256": "8b20bc8f31031d9d744ce043e36eb159037e8f5bc87de691a41f222a37335f40"
+    },
+    "validation/willyou-dev083-cache-app-stop-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-app-stop-final.log",
+      "sha256": "7f6a88de89b8d4e7c5a89c0ddb00314ed6492015cfca5c1900dc569c4e74d4ce"
+    },
+    "validation/willyou-dev083-cache-app.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-app.log",
+      "sha256": "1b15056063448abc6806e38cfa096a2c5a4b46ea3c501fb1cf108acc3fcaab54"
+    },
+    "validation/willyou-dev083-cache-native-final-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-native-final-matrix.json",
+      "sha256": "47af60871a51db9ab62a84dc469a8db37fc70c97bbe7e38696dbfbf6dd0c4063"
+    },
+    "validation/willyou-dev083-cache-native-final-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-native-final-tests.json",
+      "sha256": "009c98be295e61345aa81809329e64ec5b9b3d0ae8f0ea854edf551199ea96df"
+    },
+    "validation/willyou-dev083-cache-native-final-tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-native-final-tests.log",
+      "sha256": "6ef5fe8b617dd364ebebf649a2e8efdca15e56c11eb335d87eab97fce98b7a16"
+    },
+    "validation/willyou-dev083-cache-native-initial.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-native-initial.tsx",
+      "sha256": "86352a9abc16b80fcbeb5b1da8820483b1596a09e71b7c43b1f46b92922c7f6b"
+    },
+    "validation/willyou-dev083-cache-native-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-native-matrix.json",
+      "sha256": "477bfa5458efacf0ec8b2a8af1fa5fd126e96d30d867920d348064aaddf27155"
+    },
+    "validation/willyou-dev083-cache-native-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-native-tests.json",
+      "sha256": "69e80669ecfe6a0ef0592c1b06ab78eed6695646f6d929975c5316964a4b0634"
+    },
+    "validation/willyou-dev083-cache-native-tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-native-tests.log",
+      "sha256": "ff670bbd49d3f2d61b3606c611f2e284dea20df9161211d5c0a66b2c7e41918f"
+    },
+    "validation/willyou-dev083-cache-prototype-before-api-ref.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-prototype-before-api-ref.mjs",
+      "sha256": "5ae8ecde82df948c3e9ab993ce1457062fd01ce5bd9ef4f66f14533e56be18e5"
+    },
+    "validation/willyou-dev083-cache-prototype-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-prototype-final.log",
+      "sha256": "fa5a8c5e07495f91af5714bae4214ed728f9171d4c5106b40df9f8a0633c5b75"
+    },
+    "validation/willyou-dev083-cache-prototype.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-prototype.log",
+      "sha256": "157f9cf456c232a33c8eb29ec862fe23d72063f7f4b761dc683fb860205ef1ed"
+    },
+    "validation/willyou-dev083-cache-prototype.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-cache-prototype.mjs",
+      "sha256": "22ac7884256ced8f2ac6c79ea267ecc6f5fd13eff002b9d28318faf908ee4d15"
+    },
+    "validation/willyou-dev083-runtime-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-runtime-verification.json",
+      "sha256": "ae7ed897ce6df0405291d7080ad06a931fa971e14220e29737777939b39d25f5"
+    },
+    "validation/willyou-dev083-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-dev083-typecheck-initial.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-cache-dev083-r33/validation/willyou-dev083-typecheck-initial.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    }
+  }
+}

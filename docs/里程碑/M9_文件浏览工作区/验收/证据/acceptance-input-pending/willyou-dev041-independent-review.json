@@ -1,0 +1,53 @@
+{
+  "kind": "independent read-only implementation review",
+  "defect": "M9-DEV-041",
+  "at": "2026-10-18T02:41:45.367881+00:00",
+  "result": "No remaining blocking issue found in this bounded pending-input/IME save-gate review.",
+  "productionChangesByReviewer": false,
+  "reviewedSources": {
+    "src/renderer/features/files/file-buffer.ts": "150945a0f8413580cfa306b966e135d5a8fca66660ada839254e95b7304eb053",
+    "src/renderer/features/files/text-editor.tsx": "6f64e0d2ccebe331d02f5b6136357e80a031784cfa82c47bf2850b8cdf8a52a4",
+    "src/renderer/features/files/pending-input-acceptance.test.tsx": "1c53610747bf6da78be7d3a1a4bb017a9a5a2c7f072f9b5f8b73a05a615bff5a"
+  },
+  "findings": [
+    {
+      "finding": "Candidate transaction followed by view unmount removed the composition gate but left auto-save timers active.",
+      "actualReproduction": "Author reproduced candidate source write at 3000ms in r5, retained failure.",
+      "resolution": "inputInterrupted retains text/history, stops timers, gates save/checkpoint/close and blocks rescheduling after old acknowledgement; real edit/undo or new confirmed CJK composition may recover."
+    },
+    {
+      "finding": "Explicit useDisk must clear interruption; compositionend tail needs continued protection.",
+      "resolution": "Confirmed install resets interruption and compositionChanged persists until final transaction or 550ms tail settle; author added useDisk/tail tests."
+    },
+    {
+      "finding": "New confirmed CJK composition could remain locked if all docChanged transactions occur before compositionend.",
+      "resolution": "New composition compares final raw against captured compositionBase; commit releases interruption after settled end, cancellation/empty input does not."
+    }
+  ],
+  "verifiedInCode": [
+    "domEventObservers runs pending markers ahead of CodeMirror built-in input handling without changing candidate text.",
+    "Normal synchronous docChanged clears short pending immediately; composing remains separate and never expires at 550ms.",
+    "save/checkpoint wait loops recheck after wakeup; inFlight save remains serialized.",
+    "View owners isolate cleanup; disposed view and buffer wake waiters unsuccessfully rather than leaving them suspended.",
+    "Old loadSequence/refreshAfterLoad H22 guard remains intact.",
+    "Dirty/history remain on the retained EditorState; confirmed disk replacement resets interruption."
+  ],
+  "authorExecutedReports": {
+    "/private/tmp/willyou-pending-input-tests-r5.json": "ad1285e78751bbeee2c3960c42834ee0bce3704b619445f5650b2abd9d9b4345",
+    "/private/tmp/willyou-pending-input-matrix-r5.json": "ea9b38a921bd0049a4dbccd37e91fb3a4946fb063aba19b460c0ea822792d300",
+    "/private/tmp/willyou-pending-input-tests-r7.json": "1c80451aae92c02d46a6e144c5c2f51a697d7f7f0cdf31e57c11527442b098cd",
+    "/private/tmp/willyou-pending-input-matrix-r7.json": "c03c8c0615119ec762066ffb4601d20d3a3cdbba3beee4f9f509e67d6918482e"
+  },
+  "reviewerExecutedCompatibility": {
+    "case": "H15",
+    "testsPassed": 14,
+    "failures": 0,
+    "skipped": 0,
+    "branches": 16,
+    "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-h15-20261018.json"
+  },
+  "limits": [
+    "Reviewer did not repeat author 12-test suite or App GUI/physical IME.",
+    "DOM synthetic composition + actual CodeMirror/IO evidence must remain distinct from system-input-method App acceptance."
+  ]
+}

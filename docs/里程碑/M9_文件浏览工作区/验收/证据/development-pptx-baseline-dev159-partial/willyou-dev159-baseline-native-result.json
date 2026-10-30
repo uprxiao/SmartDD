@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-19T18:13:49.462Z",
+  "caseId": "M9-T-J02",
+  "layer": "U/I only, A pending",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r95-build/mac-arm64/WillYou.app",
+  "rows": [
+    {
+      "scenario": "matching",
+      "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+      "savedHash": "f0c9924bd3e00187ee741f1277e1319d44ee6e6b5ec953e825096ae2fdfef39d",
+      "version": 1,
+      "pass": true
+    },
+    {
+      "scenario": "different-source",
+      "baseHash": "4fc91a6f7937ffabd74d9935f16b1239f0eb5433fa57fc023b3a2cb9205a211e",
+      "actualHash": "8446b15b0602fba29e42815c06153a0c258e3e2eb47185cbf01638c135b1d93b",
+      "error": "FileError: [CHANGED] Resource revision changed",
+      "pass": true
+    },
+    {
+      "scenario": "empty-hash",
+      "rejectedByOriginalSchema": true,
+      "error": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"invalid_format\",\n    \"format\": \"regex\",\n    \"pattern\": \"/^[a-f0-9]{64}$/\",\n    \"path\": [\n      \"baseHash\"\n    ],\n    \"message\": \"Invalid string: must match pattern /^[a-f0-9]{64}$/\"\n  }\n]",
+      "sourceUnchanged": true,
+      "pass": true
+    }
+  ],
+  "boundary": "Actual original schema + native FileService/source revision guard/packaged PPTX Worker. Matching source real edit/save/independent package read; source changed after file open rejects before owner remains; empty baseline schema rejects before Worker creation. Synthetic private fixtures only; no renderer or App interaction claimed."
+}

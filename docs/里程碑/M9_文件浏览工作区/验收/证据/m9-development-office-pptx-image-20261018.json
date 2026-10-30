@@ -1,0 +1,253 @@
+{
+  "createdAt": "2026-10-18T06:37:04+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4-P1",
+  "scope": "P08 PNG/JPEG original-byte insertion/replacement; partial W16/W26/Y10/Y13 coverage; not full formal cases",
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "libreOffice": "26.2.4.2",
+    "buildId": "0229ac93fcf0d7cbc6376066c6f35021cef002dc"
+  },
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-pptx-image-r1-sources.tar.gz",
+    "sha256": "d27f2ad04c1ae2e22f4c36dd3e3ec5c291d19d90273778d0b6d6659561e0b7d8",
+    "files": "594 per-file hashes in /private/tmp/willyou-m9-pptx-image-r1-sources.json"
+  },
+  "implementation": [
+    "Renderer native chooser returns selected bytes; captures document/version/target before read and rejects late or stale results.",
+    "Main native raster-inspect decodes one frame within 20 MiB, 16 Mi pixels and 8192-axis bounds; rejects non-default EXIF orientation. Internal hash/dimensions receipt is not accepted from renderer.",
+    "Worker verifies PNG chunks/CRC/order/deflate/scanlines or JPEG full framing; mutates only after validation. Original media bytes are embedded without reencoding.",
+    "Replacement redirects only target picture relation, preserving old media/other users/crop/transform/effects. Undo restores original package parts."
+  ],
+  "tests": [
+    {
+      "batch": "source-r1",
+      "note": "Initial image source test run: test fixture namespace assertion corrected",
+      "passed": 3,
+      "failed": 2,
+      "notSelectedOrOptIn": 0,
+      "path": "/private/tmp/willyou-m9-pptx-image-source-r1.json",
+      "sha256": "e872bddbc3b1d539e79018d9eddecbe7b4b70148befe1944c532fecc4da2bc79"
+    },
+    {
+      "batch": "source-r2",
+      "note": "Image source/service/model regression",
+      "passed": 52,
+      "failed": 0,
+      "notSelectedOrOptIn": 0,
+      "path": "/private/tmp/willyou-m9-pptx-image-source-r2.json",
+      "sha256": "e7d1dc1ee87e4527948ed31c9b2ebd48ba7e721a43b486909107f49e0a807d40"
+    },
+    {
+      "batch": "source-r3",
+      "note": "Picker and stale-target guard added",
+      "passed": 58,
+      "failed": 0,
+      "notSelectedOrOptIn": 0,
+      "path": "/private/tmp/willyou-m9-pptx-image-source-r3.json",
+      "sha256": "9c777e7b8f720b81d7376acddd4a6d6a66e0c8be4e0efb640149dddbfad2bc00"
+    },
+    {
+      "batch": "source-r4",
+      "note": "Strict container validation after M9-DEV-027",
+      "passed": 46,
+      "failed": 0,
+      "notSelectedOrOptIn": 0,
+      "path": "/private/tmp/willyou-m9-pptx-image-source-r4.json",
+      "sha256": "4c1d76d61ef85847e1df6e41aca8e361ad9f843f953333af4aa5ed9f644a4fe0"
+    },
+    {
+      "batch": "native-r1",
+      "note": "Fixture resolver wiring failed before native operation",
+      "passed": 0,
+      "failed": 1,
+      "notSelectedOrOptIn": 18,
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r1.json",
+      "sha256": "86e76f8efb9aa6eb52d0336a1ea613bdfdf888332ae0d77feb678059af5590c5"
+    },
+    {
+      "batch": "native-r2",
+      "note": "M9-DEV-027 truncated PNG was accepted",
+      "passed": 0,
+      "failed": 1,
+      "notSelectedOrOptIn": 18,
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r2.json",
+      "sha256": "fa91705839e2a6ea6ecb7ebec46b3e1f4dd4da256332ee7fbfe092f2de8c7113"
+    },
+    {
+      "batch": "native-r3",
+      "note": "Truncated negative passed; JPEG fixture generation lacked Pillow",
+      "passed": 0,
+      "failed": 1,
+      "notSelectedOrOptIn": 18,
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r3.json",
+      "sha256": "3c6620f28bb7b53e1cd01d66346e1c8095015cb7b1115e20ff9e6d9d121601a1"
+    },
+    {
+      "batch": "native-r4",
+      "note": "Full native image insert/replace/shared-source/save/render/reopen/undo",
+      "passed": 1,
+      "failed": 0,
+      "notSelectedOrOptIn": 18,
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r4.json",
+      "sha256": "afce904c785d4d017d4fdb6e3c2f0baa94e56d8b5e867184c3c9882df6dd2d16"
+    },
+    {
+      "batch": "regression-r1",
+      "note": "All affected Office/shared regression",
+      "passed": 327,
+      "failed": 0,
+      "notSelectedOrOptIn": 51,
+      "path": "/private/tmp/willyou-m9-pptx-image-regression-r1.json",
+      "sha256": "2c0a1647c8ef35e225d0eb5dd7b65426f5842e5eed6bf0765b20ca43010f1d0a"
+    }
+  ],
+  "typecheck": {
+    "path": "/private/tmp/willyou-m9-pptx-image-typecheck-r3.log",
+    "exit": 0
+  },
+  "prototypeBuild": {
+    "path": "/private/tmp/willyou-m9-pptx-image-prototype-build-r1.log",
+    "exit": 0,
+    "note": "Root Vite 6.4.4; existing chunk size and annotation warnings; no prototype node_modules install claimed."
+  },
+  "nativeArtifacts": [
+    {
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r4-evidence/pptx-image-page-1.png",
+      "sha256": "739f34bf5c26bac198f9bc96cd525a0946f4b2a93f429164b88256aa7bf17470"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r4-evidence/pptx-image-page-2.png",
+      "sha256": "9ce62d82a27f4e1f55a32f9a9dbbb8e61346ef8a86a36f7de557ed90610bfc19"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r4-evidence/pptx-image-page-3.png",
+      "sha256": "eda37bc56d775838fa2d80479b2a61b6c5607fe7908807d495676522fede756e"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r4-evidence/pptx-images.json",
+      "sha256": "da4e0e9c2876e2b0bf1d8adde34cf3ff64ec1d6f1c8c5585f3ff662c17e515ec"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r4-evidence/pptx-images.pdf",
+      "sha256": "fe4491dc6d37e72e7bb63c9d762274634fa29d858d84399385166294675906d1"
+    },
+    {
+      "path": "/private/tmp/willyou-m9-pptx-image-native-r4-evidence/pptx-images.pptx",
+      "sha256": "6c93a81a5071592749d9629c9b6df3819d73197f7fbea558a313b3c23d4c526f"
+    }
+  ],
+  "nativeResult": {
+    "savedHash": "6c93a81a5071592749d9629c9b6df3819d73197f7fbea558a313b3c23d4c526f",
+    "pdfHash": "fe4491dc6d37e72e7bb63c9d762274634fa29d858d84399385166294675906d1",
+    "independent": {
+      "images": [
+        {
+          "part": "ppt/media/willyou-image-2.png",
+          "hash": "0f82cd9d394c698eb0d748f625c449838b68b03cb3aff7cc009dc77027dae138",
+          "transform": "<ns0:spPr xmlns:ns0=\"http://schemas.openxmlformats.org/presentationml/2006/main\" xmlns:ns1=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><ns1:xfrm><ns1:off x=\"6350000\" y=\"3810000\" /><ns1:ext cx=\"1524000\" cy=\"1016000\" /></ns1:xfrm><ns1:prstGeom prst=\"rect\"><ns1:avLst /></ns1:prstGeom></ns0:spPr>"
+        },
+        {
+          "part": "ppt/media/willyou-image-1.png",
+          "hash": "68d8dd3d552dfb9a5b3cba9987b1f997ea52c0b23ab11373b826c9664437442e",
+          "transform": "<ns0:spPr xmlns:ns0=\"http://schemas.openxmlformats.org/presentationml/2006/main\" xmlns:ns1=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><ns1:xfrm><ns1:off x=\"6350000\" y=\"3810000\" /><ns1:ext cx=\"1524000\" cy=\"1016000\" /></ns1:xfrm><ns1:prstGeom prst=\"rect\"><ns1:avLst /></ns1:prstGeom></ns0:spPr>"
+        },
+        {
+          "part": "ppt/media/willyou-image-1.jpg",
+          "hash": "dbd8df2a24882d4e60dbd2cdd5b23100ef90d9aaa6ebce4319d29c7ecfae0b70",
+          "transform": "<ns0:spPr xmlns:ns0=\"http://schemas.openxmlformats.org/presentationml/2006/main\" xmlns:ns1=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><ns1:xfrm><ns1:off x=\"6350000\" y=\"3810000\" /><ns1:ext cx=\"1524000\" cy=\"1016000\" /></ns1:xfrm><ns1:prstGeom prst=\"rect\"><ns1:avLst /></ns1:prstGeom></ns0:spPr>"
+        }
+      ],
+      "changed": [
+        "[Content_Types].xml",
+        "ppt/_rels/presentation.xml.rels",
+        "ppt/presentation.xml",
+        "ppt/slides/_rels/slide1.xml.rels",
+        "ppt/slides/_rels/slide2.xml.rels",
+        "ppt/slides/slide1.xml",
+        "ppt/slides/slide2.xml"
+      ],
+      "originalMediaUnchanged": true
+    },
+    "pixels": [
+      [
+        19,
+        60,
+        230
+      ],
+      [
+        239,
+        60,
+        30
+      ],
+      [
+        30,
+        210,
+        40
+      ]
+    ]
+  },
+  "visualInspection": "Viewed three native-rendered PNG pages: replacement blue, independent duplicate red, JPEG green; these are pipeline renders, not App screenshots.",
+  "defects": [
+    {
+      "id": "M9-DEV-027",
+      "observed": "ImageIO reports complete and accepts truncated PNG; candidate became dirty before fix.",
+      "fix": "Strict container validation in bounded Worker before package mutation.",
+      "retest": "Native r4 rejects same truncated sample with unchanged model, then completes valid PNG/JPEG save/render/reopen and six undos restore all original parts.",
+      "status": "code/native retested; real App failure subflow pending"
+    }
+  ],
+  "build": {
+    "app": "/private/tmp/willyou-m9-pptx-image-r1-build/mac-arm64/WillYou.app",
+    "asarSHA256": "2f4a5d5339762da7c6a1cac83194e6497a3dfaf871f788c6f9f13234f46ebeda",
+    "log": "/private/tmp/willyou-m9-pptx-image-package-r1.log",
+    "exit": 0,
+    "nativeSmoke": [
+      "SQLite",
+      "PTY",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ],
+    "signing": "local ad-hoc test package; not notarized/released"
+  },
+  "actualApp": {
+    "status": "native chooser opened; cancel passed, file selection awaits user because CUA coordinate input failed",
+    "session": 67750,
+    "log": "/private/tmp/willyou-m9-pptx-image-r1-app-r2.log",
+    "initialLaunchAttempt": "Attempted non-existent Contents/MacOS/SmartDD (exit 127); corrected to CFBundleExecutable=WillYou.",
+    "fixtureDirectory": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/pptx-image-ui-r1",
+    "steps": [
+      {
+        "step": "enter edit and cancel chooser",
+        "result": "passed subflow",
+        "observed": "PPTX displays original table/chart; edit toolbar has insert-image. Native chooser opened; Cancel returns to same clean tab with undo/redo disabled."
+      },
+      {
+        "step": "choose truncated PNG then valid red PNG",
+        "result": "inconclusive; waiting user-assisted input",
+        "observed": "Go To path reached synthetic folder; truncated.png then red.png selected and preview visible. Open remains disabled for both. Raise, Return and AX open-item did not advance. Coordinate double-click returned noWindowsAvailable. Asked user to double-click red.png and report whether it opens or remains disabled. No image bytes submitted by App yet."
+      }
+    ],
+    "evidenceBoundary": "AX/screenshots observed in conversation; not separately saved. Native pipeline tests do not prove the chooser subflow."
+  },
+  "formalAcceptance": {
+    "passed": 3,
+    "total": 419,
+    "futureExcluded": 6,
+    "percentage": 0.716,
+    "unchanged": true
+  },
+  "remaining": [
+    "Actual App image chooser/cancel/invalid/replace/undo/reopen",
+    "Complete P08 formats, transformations and UI matrix",
+    "P09 charts, full opacity and inheritance/drag",
+    "Remaining Office and all uncompleted M9 cases"
+  ],
+  "evidenceBoundary": "Synthetic temp fixtures only. No AIS source writes. Source/native/package checks do not substitute for App acceptance; overlapping regression totals are not additive.",
+  "updatedAt": "2026-10-18T06:49:27+08:00"
+}

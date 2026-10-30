@@ -1,0 +1,26 @@
+--- r6 controller
++++ current controller
+@@ -3,7 +3,7 @@
+ import { BrowserWindow, dialog, shell } from 'electron';
+ import { dirname, extname, join } from 'node:path';
+ import { FileError, fileScopeSchema, type FileCheckpointInput, type FileDraftResolution, type FileRef, type FileSaveInput, type FileScope, type PathRequest, type RootRequest, type FileSearchRequest, type FileCloseReply, type FileDiagramRequest } from '@shared/files';
+-import { fileHtmlEvent, fileSearchEvent, fileWatchEvent, fileWorkspaceEvent } from '@shared/events';
++import { fileHtmlEvent, fileViewerUiEvent, fileSearchEvent, fileWatchEvent, fileWorkspaceEvent } from '@shared/events';
+ import { createScopedRPCController } from '@shared/ipc/rpc';
+ import type { FileService } from './file-service';
+ import type { FileRasterRequest } from '@shared/files';
+@@ -64,6 +64,14 @@
+       }
+       return result;
+     },
++    viewerUiOpen: (event: IpcMainInvokeEvent, input: ViewerResourceInput) => {
++      const id = owner(event), win = BrowserWindow.fromWebContents(event.sender);
++      if (!win) throw new FileError('UNTRUSTED', '文件窗口已关闭');
++      return service.viewers.ui.open(id, input, win, value => { if (!event.sender.isDestroyed() && event.senderFrame === event.sender.mainFrame && trusted(event)) event.sender.send(fileViewerUiEvent.name, value); });
++    },
++    viewerUiBounds: (event: IpcMainInvokeEvent, input: HtmlViewBounds) => service.viewers.ui.bounds(owner(event), input),
++    viewerUiSend: (event: IpcMainInvokeEvent, input: ViewerResourceInput, payload: unknown) => service.viewers.ui.send(owner(event), input, payload),
++    viewerUiClose: (event: IpcMainInvokeEvent, id: string) => service.viewers.ui.close(owner(event), id),
+     viewerConfiguration: (event: IpcMainInvokeEvent) => { owner(event); return service.viewers.configuration(); },
+     configureViewers: (event: IpcMainInvokeEvent, value: unknown) => { owner(event); return service.viewers.configure(value); },
+     selectViewer: (event: IpcMainInvokeEvent, ref: FileRef, explicit?: string | null) => service.viewers.select(owner(event), ref, explicit),

@@ -1,0 +1,84 @@
+{
+  "kind": "development-native-ui",
+  "time": "2026-10-17 20:04–20:09",
+  "platform": "macOS 26.6.1 arm64",
+  "branch": "feature/0.0.1",
+  "baseline": "89de9af4b631abdef5673ce8949fb02a32f6fcad + uncommitted M9 work",
+  "build": {
+    "path": "/private/tmp/willyou-m9-code-build/mac-arm64/WillYou.app",
+    "asarSHA256": "024befbd4fc954992f4086da435f2d5f12dad73e9323ca31283f28f8a04d97eb"
+  },
+  "checks": [
+    {
+      "id": "CODE-DEV-01",
+      "state": "passed-with-boundary",
+      "actual": "CUA真实打开合成playwright.config.ts，暗色窗口及文件全屏均显示词法高亮、行号和20px行距；标签已与窗口顶栏同排，代码从工具栏下方开始。并未证明所有颜色/字体与参考逐像素一致。"
+    },
+    {
+      "id": "CODE-DEV-02",
+      "state": "passed",
+      "actual": "通过实际编辑器在末尾粘贴// M9 highlighted edit 中文🙂并Cmd+S，读盘确认；Cmd+Z/Cmd+S后文件哈希恢复。",
+      "originalSHA256": "b966bafc9c45bdce2b34967c87e0d01d2200a0802ae238b222bd42675ca43331",
+      "editedSHA256": "5c152ca2636f34bd2434aadd6741a4856fdc8548d2f416955b05f863f4c98e33",
+      "restoredSHA256": "b966bafc9c45bdce2b34967c87e0d01d2200a0802ae238b222bd42675ca43331"
+    },
+    {
+      "id": "CODE-DEV-03",
+      "state": "failed",
+      "defect": "M9-DEV-004",
+      "actual": "项目页绝对定位的文件入口遮挡右侧工具栏，已改为左侧topbar内部，等待新包复验。"
+    }
+  ],
+  "limits": [
+    "开发阶段真实App操作，不替代419条正式全量验收。",
+    "截图/AX留于会话工具结果，没有伪造本地截图路径。",
+    "字体家族、全部角色色/语言、长路径复制与溢出、hover及完整工具栏（外开/另存）仍待继续。",
+    "单根折叠与挂载切换已验，跨根/重启折叠持久化未在本轮验证。"
+  ],
+  "retestBuild": {
+    "path": "/private/tmp/willyou-m9-visual-build/mac-arm64/WillYou.app",
+    "asarSHA256": "516a56fcf08294812e9b161299c5f68cbdd15d77959d89650f2afcb70f3b607e",
+    "nativeSmoke": [
+      "sqlite",
+      "pty",
+      "voiceBridge",
+      "fileBroker",
+      "fileWatcher"
+    ]
+  },
+  "retests": [
+    {
+      "id": "CODE-DEV-03-R1",
+      "state": "passed",
+      "defect": "M9-DEV-004",
+      "actual": "新包项目页文件入口位于左侧topbar，截图不再遮住右侧工具栏；分栏及文件全屏切换均可用。"
+    },
+    {
+      "id": "CODE-DEV-04",
+      "state": "passed",
+      "actual": "文件末段面包屑打开真实根目录列表，活动文件高亮；Return进入notebook-cases，选择all.ipynb后弹层关闭、路径增加目录段、实际Notebook打开。"
+    },
+    {
+      "id": "CODE-DEV-05",
+      "state": "passed",
+      "actual": "根目录折叠后子项消失，展开后恢复；隐藏目录树后加号恢复目录并聚焦筛选框，未关闭活动文件。"
+    },
+    {
+      "id": "CODE-DEV-06",
+      "state": "passed-with-boundary",
+      "actual": "Notebook Python代码print/字符串/注释实际显示共享角色色；合成syntax-reference.md中的同一段TypeScript显示与代码编辑器一致的角色配色。源映射及HTML转义另由模型测试验证。"
+    },
+    {
+      "id": "CODE-DEV-07",
+      "state": "passed-with-boundary",
+      "actual": "切换浅色，TS和Markdown高亮、路径/标签/目录可读；文件菜单提供换行/保存/刷新/复制/固定及恢复，切换换行后菜单显示关闭自动换行。随后恢复暗色。没有浅色Codex参考截图，未宣称浅色完全一致。"
+    }
+  ],
+  "validation": {
+    "typecheck": "passed; /private/tmp/willyou-m9-visual-typecheck.log",
+    "unit": "23 passed; /private/tmp/willyou-m9-visual-tests.log",
+    "prototypeModel": "14 passed; /private/tmp/willyou-m9-visual-prototype-tests.log",
+    "prototypeBuild": "passed with npm --prefix prototypes/m6-codex run build; /private/tmp/willyou-m9-visual-prototype-build-2.log",
+    "package": "passed; /private/tmp/willyou-m9-visual-package.log"
+  }
+}

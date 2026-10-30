@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T03:12:38Z",
+  "scriptSha256": "7ca60f379dac5780c34290b44d9b18b86cd89b122be53f6b39b1451e19a8ff88",
+  "environment": {
+    "python": "3.12.7",
+    "platform": "darwin",
+    "soffice": "LibreOffice 26.2.4.2 0229ac93fcf0d7cbc6376066c6f35021cef002dc",
+    "pandoc": "pandoc 3.6.4"
+  },
+  "scope": "合成 OOXML；精确补丁原型；不读取用户文件；宏样部件只是不执行的占位字节；渲染只验证 LibreOffice 能打开并出文本，不做版式像素比对",
+  "cases": [
+    {
+      "id": "OP01",
+      "title": "DOCX 普通 run 文本：字节级唯一替换，其余部件逐字节不变",
+      "status": "passed",
+      "ms": 1458,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 20,
+          "partCountAfter": 20,
+          "untouchedParts": 19,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "PLAIN_EDITED": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1437,
+          "stderr": "2026-10-17 11:12:20.445 soffice[904:10847123] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "paragraphs": [
+            "M9_DOC_TITLE",
+            "普通段落 PLAIN_EDITED 保持格式。",
+            "跨 SPLIT_RUN 两个格式不同的 run。",
+            "批注范围内 COMMENTED_TEXT 末尾。",
+            "修订段落："
+          ],
+          "tableCell": "CELL_A"
+        },
+        "editedOnlyTextChange": true
+      }
+    },
+    {
+      "id": "OP02",
+      "title": "DOCX 修订内文本：作者/时间/删除记录保留",
+      "status": "passed",
+      "ms": 1447,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 20,
+          "partCountAfter": 20,
+          "untouchedParts": 19,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "TRACKED_INSERT_EDITED": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1425,
+          "stderr": "2026-10-17 11:12:21.891 soffice[929:10847240] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "paragraphs": [
+            "M9_DOC_TITLE",
+            "普通段落 PLAIN_ONE 保持格式。",
+            "跨 SPLIT_RUN 两个格式不同的 run。",
+            "批注范围内 COMMENTED_TEXT 末尾。",
+            "修订段落："
+          ],
+          "tableCell": "CELL_A"
+        },
+        "trackedChangeMetadata": {
+          "insAuthorKept": true,
+          "delKept": true
+        }
+      }
+    },
+    {
+      "id": "OP03",
+      "title": "DOCX 批注范围内文本：批注锚点与 comments.xml 不变",
+      "status": "passed",
+      "ms": 1475,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 20,
+          "partCountAfter": 20,
+          "untouchedParts": 19,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "COMMENTED_EDITED": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1456,
+          "stderr": "2026-10-17 11:12:23.370 soffice[968:10847331] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "commentAnchorKept": true
+      }
+    },
+    {
+      "id": "OP04",
+      "title": "DOCX 跨 run 编辑：字节级补丁安全拒绝；结构化补丁保留两个 run 的格式",
+      "status": "passed",
+      "ms": 1468,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 20,
+          "partCountAfter": 20,
+          "untouchedParts": 19,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "MERGED_NEW": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1444,
+          "stderr": "2026-10-17 11:12:24.269 soffice[985:10847424] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "paragraphs": [
+            "M9_DOC_TITLE",
+            "普通段落 PLAIN_ONE 保持格式。",
+            "跨 MERGED_NEW 已编辑的剩余文字。",
+            "批注范围内 COMMENTED_TEXT 末尾。",
+            "修订段落："
+          ],
+          "tableCell": "CELL_A"
+        },
+        "byteLevelRefusedAcrossRuns": "word/document.xml: \"SPLIT_RUN\" 匹配 0 次，拒绝补丁",
+        "formattingKept": {
+          "boldRunStillBold": true,
+          "italicRunStillItalic": true
+        }
+      }
+    },
+    {
+      "id": "OP05",
+      "title": "DOCX 表格单元格文本",
+      "status": "passed",
+      "ms": 1461,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 20,
+          "partCountAfter": 20,
+          "untouchedParts": 19,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "CELL_EDITED": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1436,
+          "stderr": "2026-10-17 11:12:26.294 soffice[1009:10847533] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "paragraphs": [
+            "M9_DOC_TITLE",
+            "普通段落 PLAIN_ONE 保持格式。",
+            "跨 SPLIT_RUN 两个格式不同的 run。",
+            "批注范围内 COMMENTED_TEXT 末尾。",
+            "修订段落："
+          ],
+          "tableCell": "CELL_EDITED"
+        }
+      }
+    },
+    {
+      "id": "OP06",
+      "title": "XLSX 仅被一个单元格引用的共享字符串：字节级替换，样式不变",
+      "status": "passed",
+      "ms": 1409,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 13,
+          "partCountAfter": 13,
+          "untouchedParts": 12,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "U_NEW": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1388,
+          "stderr": "2026-10-17 11:12:27.220 soffice[1024:10847642] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "sheets": [
+            "Data",
+            "Second"
+          ],
+          "A1": "U_NEW",
+          "A2": "SHARED_TEXT",
+          "A3": "SHARED_TEXT",
+          "B1": 3,
+          "C1_formula": "=SUM(B1:B2)",
+          "C1_cached": 7,
+          "A1_bold": true,
+          "B1_format": "0.00"
+        },
+        "styleKept": true
+      }
+    },
+    {
+      "id": "OP07",
+      "title": "XLSX 被两个单元格共享的字符串：朴素字节替换会同时改两处（危险已演示）；引用计数拒绝；追加新串只改 A3",
+      "status": "passed",
+      "ms": 1409,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 13,
+          "partCountAfter": 13,
+          "untouchedParts": 11,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "A3_NEW": true,
+          "SHARED_T": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1384,
+          "stderr": "2026-10-17 11:12:28.968 soffice[1069:10847775] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "sheets": [
+            "Data",
+            "Second"
+          ],
+          "A1": "UNIQUE_LABEL",
+          "A2": "SHARED_TEXT",
+          "A3": "A3_NEW",
+          "B1": 3,
+          "C1_formula": "=SUM(B1:B2)",
+          "C1_cached": 7,
+          "A1_bold": true,
+          "B1_format": "0.00"
+        },
+        "naiveByteReplaceHazard": {
+          "A2": "BOTH_X",
+          "A3": "BOTH_X",
+          "bothChanged": true
+        },
+        "referenceCountGuard": "共享字符串被 2 个单元格引用，字节级替换会同时修改它们，拒绝"
+      }
+    },
+    {
+      "id": "OP08",
+      "title": "XLSX 改输入数值：删除依赖公式的旧缓存并要求打开时重算，渲染器得到 14",
+      "status": "passed",
+      "ms": 1435,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 13,
+          "partCountAfter": 13,
+          "untouchedParts": 11,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "14": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1414,
+          "stderr": "2026-10-17 11:12:30.028 soffice[1089:10847888] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "sheets": [
+            "Data",
+            "Second"
+          ],
+          "A1": "UNIQUE_LABEL",
+          "A2": "SHARED_TEXT",
+          "A3": "SHARED_TEXT",
+          "B1": 10,
+          "C1_formula": "=SUM(B1:B2)",
+          "C1_cached": null,
+          "A1_bold": true,
+          "B1_format": "0.00"
+        },
+        "staleCacheHandling": {
+          "cachedValueRemoved": true,
+          "fullCalcOnLoadSet": true,
+          "rendererRecalculatedTo14": true
+        },
+        "limits": "data_only 读取方（如 openpyxl、预览器）在重算前看到空值；不改缓存会让它们显示旧结果 7"
+      }
+    },
+    {
+      "id": "OP09",
+      "title": "PPTX 幻灯片文本：字节级替换，其余部件（含主版/布局/媒体）不变",
+      "status": "passed",
+      "ms": 1557,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 46,
+          "partCountAfter": 46,
+          "untouchedParts": 45,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {
+          "BODY_EDITED": true
+        },
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1537,
+          "stderr": "2026-10-17 11:12:32.099 soffice[1112:10847994] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "independentRead": {
+          "ppt/slides/slide1.xml": "PPT_TITLE_ONE要点 BULLET_ONE",
+          "ppt/slides/slide2.xml": "PPT_TITLE_TWO正文 BODY_EDITED",
+          "ppt/notesSlides/notesSlide1.xml": "NOTES_TEXT1"
+        }
+      }
+    },
+    {
+      "id": "OP10",
+      "title": "PPTX 备注文本",
+      "status": "passed",
+      "ms": 1549,
+      "evidence": {
+        "package": {
+          "orderSame": true,
+          "partCountBefore": 46,
+          "partCountAfter": 46,
+          "untouchedParts": 45,
+          "untouchedChanged": [],
+          "missingParts": [],
+          "newParts": [],
+          "opaquePreserved": true,
+          "vbaPlaceholderPreserved": true
+        },
+        "rendererAccepts": true,
+        "renderedTextFound": {},
+        "libreofficeExit": {
+          "exitCode": 0,
+          "ms": 1531,
+          "stderr": "2026-10-17 11:12:33.651 soffice[1130:10848118] Task policy set failed: 4 ((os/kern) invalid argument)"
+        },
+        "notesRead": true
+      }
+    },
+    {
+      "id": "CT-DOCX",
+      "title": "对照：DOCX 经 LibreOffice 整份重写（未编辑）后的部件保真",
+      "status": "observed-gap",
+      "ms": 1471,
+      "evidence": {
+        "missingParts": [
+          "customXml/m9-opaque.bin",
+          "docProps/thumbnail.jpeg",
+          "word/stylesWithEffects.xml",
+          "word/vbaProject.bin",
+          "word/webSettings.xml"
+        ],
+        "missingCount": 5,
+        "opaqueDropped": true,
+        "vbaPlaceholderDropped": true,
+        "partsRewrittenOrRenamed": 1,
+        "partCountBefore": 20,
+        "partCountAfter": 16,
+        "trackedChangesKept": true,
+        "commentsKept": true
+      }
+    },
+    {
+      "id": "CT-XLSX",
+      "title": "对照：XLSX 经 LibreOffice 整份重写（未编辑）后的部件保真",
+      "status": "observed-gap",
+      "ms": 1404,
+      "evidence": {
+        "missingParts": [
+          "xl/vbaProject.bin"
+        ],
+        "missingCount": 1,
+        "opaqueDropped": false,
+        "vbaPlaceholderDropped": true,
+        "partsRewrittenOrRenamed": 1,
+        "partCountBefore": 13,
+        "partCountAfter": 13
+      }
+    },
+    {
+      "id": "CT-PPTX",
+      "title": "对照：PPTX 经 LibreOffice 整份重写（未编辑）后的部件保真",
+      "status": "observed-gap",
+      "ms": 1564,
+      "evidence": {
+        "missingParts": [
+          "docProps/custom.xml",
+          "ppt/tableStyles.xml",
+          "ppt/theme/theme2.xml",
+          "ppt/vbaProject.bin",
+          "ppt/viewProps.xml"
+        ],
+        "missingCount": 5,
+        "opaqueDropped": false,
+        "vbaPlaceholderDropped": true,
+        "partsRewrittenOrRenamed": 1,
+        "partCountBefore": 46,
+        "partCountAfter": 42
+      }
+    }
+  ],
+  "completedAt": "2026-10-17T03:12:38Z",
+  "summary": {
+    "passed": 10,
+    "observed-gap": 3
+  }
+}

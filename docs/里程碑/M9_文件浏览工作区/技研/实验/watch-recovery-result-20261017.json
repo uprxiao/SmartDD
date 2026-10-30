@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T02:17:05.878Z",
+  "scriptSha256": "b803c4224cb0f60ad676c39e1df82a7c45429bded872c12fa781e904d21752d4",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0",
+    "nativeDirectoryWatchWorks": true
+  },
+  "scope": "Synthetic temporary directories; WatchGuard research prototype; no Electron or production implementation",
+  "cases": [
+    {
+      "id": "WR01",
+      "title": "原子替换后，绑定旧 inode 的文件级 watch 失明；目录级 guard 仍收到后续就地编辑",
+      "status": "passed",
+      "durationMs": 554.03,
+      "evidence": {
+        "fileWatchEventsAfterReplace": 0,
+        "fileWatchEventsAfterEdit": 0,
+        "guardChanges": [
+          "change:f.txt",
+          "change:f.txt"
+        ],
+        "coverage": "native"
+      }
+    },
+    {
+      "id": "WR02",
+      "title": "事件风暴：超过阈值标记 resyncRequired，重扫后最终快照完整（不依赖逐事件账）",
+      "status": "passed",
+      "durationMs": 1430.76,
+      "evidence": {
+        "createdFiles": 3000,
+        "rescanSawFiles": 3000,
+        "eventsDelivered": 2202,
+        "resyncFlagged": true,
+        "coverage": "native"
+      }
+    },
+    {
+      "id": "WR03",
+      "title": "注入原生 watch 创建失败 → 自动退回轮询并检测新增/修改/删除",
+      "status": "passed",
+      "durationMs": 302.78,
+      "evidence": {
+        "coverage": "poll",
+        "error": null,
+        "seen": [
+          "change:a.txt",
+          "add:b.txt",
+          "remove:a.txt"
+        ]
+      }
+    },
+    {
+      "id": "WR04",
+      "title": "目录权限被移除 → 记录错误并保持降级；权限恢复后自动补扫",
+      "status": "passed",
+      "durationMs": 274.15,
+      "evidence": {
+        "states": [
+          {
+            "error": "EACCES",
+            "coverage": "poll"
+          },
+          {
+            "error": null,
+            "coverage": "poll"
+          }
+        ],
+        "seen": [
+          "add:sub/y.txt"
+        ]
+      }
+    },
+    {
+      "id": "WR05",
+      "title": "stop() 释放原生 watcher 与全部定时器；停止后文件变化不再回调",
+      "status": "passed",
+      "durationMs": 307.68,
+      "evidence": {
+        "before": {},
+        "during": {
+          "FSEventWrap": 20
+        },
+        "after": {},
+        "callsAfterStop": 0
+      }
+    },
+    {
+      "id": "WR06",
+      "title": "轮询成本：2000 文件仅 stat 快照的耗时分布（决定生产轮询频率与预算）",
+      "status": "passed",
+      "durationMs": 278.5,
+      "evidence": {
+        "files": 2000,
+        "runs": 20,
+        "p50Ms": 9.1,
+        "p95Ms": 11.6,
+        "maxMs": 11.6,
+        "note": "仅 stat，未读内容/hash；50ms 轮询全项目扫描在此规模已不可接受，生产需只扫已展开目录+已打开文件并退避"
+      }
+    }
+  ],
+  "fixtureCleanup": {
+    "removed": true
+  },
+  "completedAt": "2026-10-17T02:17:09.490Z",
+  "summary": {
+    "passed": 6
+  }
+}

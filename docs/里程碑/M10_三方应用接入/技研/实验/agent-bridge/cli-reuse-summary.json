@@ -1,0 +1,244 @@
+{
+  "schema": "m10-cli-reuse-verification-v1",
+  "platform": "macOS-26.6.1-arm64-arm-64bit",
+  "codex_version": "codex-cli 0.162.1",
+  "claude_version": "2.1.302 (Claude Code)",
+  "reports": [
+    {
+      "label": "existing-project-runtime-and-transfer",
+      "raw_report": "release/m10-research/protocol-v1/reuse-tests.json",
+      "sha256": "566766b5238d19529dd64775a49c5e62dba71a127530904b038d0fad767bf463",
+      "total": 31,
+      "passed": 31,
+      "failed": 0,
+      "pending": 0,
+      "suites": [
+        {
+          "file": "src/main/core/capabilities/capability-service.test.ts",
+          "cases": [
+            {
+              "title": "projects only the selected project, no raw credentials on disk/argv, with a matching config version",
+              "status": "passed",
+              "duration_ms": 38.812791000000004
+            },
+            {
+              "title": "disabled skills do not resolve or inject their resource secrets",
+              "status": "passed",
+              "duration_ms": 15.636666999999989
+            },
+            {
+              "title": "fails before launch for a missing required secret, without falling back to other projects",
+              "status": "passed",
+              "duration_ms": 10.075333999999998
+            },
+            {
+              "title": "maps compatible database vendors to transport, preserving vendor metadata",
+              "status": "passed",
+              "duration_ms": 13.456291000000022
+            },
+            {
+              "title": "uses references for SSH password, key passphrase and separate sudo credentials",
+              "status": "passed",
+              "duration_ms": 13.74354199999999
+            },
+            {
+              "title": "retains skill versions for old tasks across upgrades, but refreshes resource config per run",
+              "status": "passed",
+              "duration_ms": 25.758582999999987
+            },
+            {
+              "title": "projects Codex into its own versioned names and disables inactive versions for each session",
+              "status": "passed",
+              "duration_ms": 18.766750000000002
+            },
+            {
+              "title": "does not overwrite a user directory at the intended Codex projection path",
+              "status": "passed",
+              "duration_ms": 9.800166999999988
+            },
+            {
+              "title": "backs up and reports changed owned projection contents, leaving the change intact",
+              "status": "passed",
+              "duration_ms": 16.887292000000002
+            },
+            {
+              "title": "executes the runner only after checks pass",
+              "status": "passed",
+              "duration_ms": 51.49604199999999
+            },
+            {
+              "title": "blocks runner on missing env",
+              "status": "passed",
+              "duration_ms": 50.094499999999925
+            },
+            {
+              "title": "blocks runner on bad config",
+              "status": "passed",
+              "duration_ms": 52.50695899999994
+            },
+            {
+              "title": "blocks runner on bad manifest",
+              "status": "passed",
+              "duration_ms": 49.70841599999994
+            },
+            {
+              "title": "blocks runner on missing dependency",
+              "status": "passed",
+              "duration_ms": 60.697542
+            },
+            {
+              "title": "actual PTY restores this project after rc files and strips another project’s inherited variables",
+              "status": "passed",
+              "duration_ms": 113.72666700000002
+            },
+            {
+              "title": "answers MCP initialize/tools/list/tools/call using only public current-project context",
+              "status": "passed",
+              "duration_ms": 44.979333
+            }
+          ]
+        },
+        {
+          "file": "src/main/core/capabilities/task-runtime.test.ts",
+          "cases": [
+            {
+              "title": "persists the actual child report and cleans only the exited run, keeping the task’s version pins",
+              "status": "passed",
+              "duration_ms": 278.18825
+            },
+            {
+              "title": "records an injection failure without misclassifying the AI profile as broken",
+              "status": "passed",
+              "duration_ms": 14.539541999999983
+            },
+            {
+              "title": "does not persist arbitrary child error text or credentials as self-check issues",
+              "status": "passed",
+              "duration_ms": 15.70841699999994
+            },
+            {
+              "title": "keeps Claude’s implicit default config unset after shell rc so existing onboarding is reused",
+              "status": "passed",
+              "duration_ms": 44.23241600000006
+            },
+            {
+              "title": "retains an explicit Claude config root including an explicit default-looking path",
+              "status": "passed",
+              "duration_ms": 46.46729200000004
+            },
+            {
+              "title": "resumes an implicit default Claude session under another profile without switching its global state file",
+              "status": "passed",
+              "duration_ms": 48.89650000000006
+            }
+          ]
+        },
+        {
+          "file": "src/main/core/projects/transfer-format.test.ts",
+          "cases": [
+            {
+              "title": "E02 accepts eight characters, preserves whitespace/Chinese, and enforces UTF-8 length",
+              "status": "passed",
+              "duration_ms": 1774.1174999999998
+            },
+            {
+              "title": "I01/S01 authenticates before exposing data and uses a fresh salt and nonce",
+              "status": "passed",
+              "duration_ms": 1282.2235829999997
+            },
+            {
+              "title": "I03 rejects tampered ciphertext, nonce, salt and tag",
+              "status": "passed",
+              "duration_ms": 2125.8985419999995
+            },
+            {
+              "title": "I04/I05 rejects unsupported versions, limits, invalid encoding and expensive KDFs before deriving",
+              "status": "passed",
+              "duration_ms": 434.2167079999999
+            },
+            {
+              "title": "I06 rejects duplicate JSON keys including escaped equivalents and excessive nesting",
+              "status": "passed",
+              "duration_ms": 0.47087499999997817
+            },
+            {
+              "title": "I06 rejects unknown fields, orphan credentials, missing credentials and invalid defaults",
+              "status": "passed",
+              "duration_ms": 2.2987499999999272
+            },
+            {
+              "title": "I05 bounds resource counts and private key size",
+              "status": "passed",
+              "duration_ms": 3.015792000000147
+            },
+            {
+              "title": "I05 rejects ciphertext over the plaintext cap before any password derivation",
+              "status": "passed",
+              "duration_ms": 931.3871669999999
+            },
+            {
+              "title": "I04/I06 rejects authenticated malformed payloads without exposing the values",
+              "status": "passed",
+              "duration_ms": 7790.6486669999995
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "initial-cli-probe",
+      "raw_report": "release/m10-research/protocol-v1/cli-probe.json",
+      "sha256": "88c4fd93e65a4b95ed3cca3ade9a93f342d24e87e87bde894290493216c1b812",
+      "total": 2,
+      "passed": 1,
+      "failed": 1,
+      "pending": 0,
+      "suites": [
+        {
+          "file": "src/main/core/capabilities/cli-smoke.test.ts",
+          "cases": [
+            {
+              "title": "Codex app-server discovers the projected skills and connects to the session MCP",
+              "status": "passed",
+              "duration_ms": 297.17337499999996
+            },
+            {
+              "title": "Claude receives plugin skills and calls the project MCP through a local fake API",
+              "status": "failed",
+              "duration_ms": 30014.911708
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "loopback-permitted-claude-reprobe",
+      "raw_report": "release/m10-research/protocol-v1/claude-cli-reprobe.json",
+      "sha256": "6a51b87b018f4b7e953c662468b5bed60a662b1c6299f6d61d497324240a6b1c",
+      "total": 2,
+      "passed": 1,
+      "failed": 0,
+      "pending": 1,
+      "suites": [
+        {
+          "file": "src/main/core/capabilities/cli-smoke.test.ts",
+          "cases": [
+            {
+              "title": "Codex app-server discovers the projected skills and connects to the session MCP",
+              "status": "skipped",
+              "duration_ms": null
+            },
+            {
+              "title": "Claude receives plugin skills and calls the project MCP through a local fake API",
+              "status": "passed",
+              "duration_ms": 1169.5871670000001
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "initial_cli_failure": "Claude local fake API listener was denied by sandbox (listen EPERM 127.0.0.1), causing 30s timeout. Original report retained. Reprobe allowed local loopback and passed.",
+  "scope": "isolated synthetic projects; fake local API only; no real model, mail, ZenTao account or UI acceptance",
+  "production_modified": false
+}

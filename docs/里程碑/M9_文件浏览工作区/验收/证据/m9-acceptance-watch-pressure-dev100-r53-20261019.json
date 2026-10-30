@@ -1,0 +1,548 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-WATCH-PRESSURE-DEV100-R53",
+  "at": "2026-10-18T20:31:40.417397+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-two-current-local-cases",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS arm64",
+  "fullCasesPassed": [
+    "M9-T-L05",
+    "M9-T-L08"
+  ],
+  "regressionCasesPassed": [
+    "M9-T-L01",
+    "M9-T-L02",
+    "M9-T-L07",
+    "M9-T-L09",
+    "M9-T-L10",
+    "M9-T-L14"
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-100-01",
+      "status": "fixed-and-r53-retested",
+      "problem": "Storm only announced resync under native coverage; R08.10 requires declared polling fallback.",
+      "red": "Original r52 actual10000 mutations failed required poll assertion.",
+      "fix": "Over2000 hints retire original subscription, announce poll/resync, scan snapshots and reconnect after normal backoff."
+    },
+    {
+      "id": "M9-DEV-100-02",
+      "status": "fixed-and-retested",
+      "problem": "An obsolete native callback could degrade a recovered subscription in the same SharedWatch.",
+      "red": "Unit original first callback after new connection changed state and unsubscribed current native.",
+      "fix": "Connection generation guards original callbacks, late success and rejection; obsolete real subscription success is unsubscribed."
+    }
+  ],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r53-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "bd898f5f150850263f70f510f96f346e2300211b985e2980f4fa99bce50c65f9",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 81,
+    "faultHelper": "Private byte-identical copied helper; original spawn delegates only own file broker to it, real execute permission failure. Original packaged helper untouched."
+  },
+  "sourceBaseline": {
+    "files": 1018,
+    "previousFiles": 1014,
+    "previousTestedSha256": "c021a223bdd64556df7728e5245854fa75af227f5a34c42e7792bb5f32f3ed57",
+    "buildSha256": "a472234c5e18263b5456e58073a280575a13402a2befb8af58d6dedaf79272a5",
+    "finalTestedSha256": "b45cbd88e3f889b4651fd2589f31aa3b6c503583c2186947425b62a545898db3",
+    "productionSourceChanges": [
+      "src/main/core/files/watch-service.ts"
+    ],
+    "addedFiles": [
+      "scripts/files/watch-pressure-ui.mjs",
+      "scripts/lib/file-provider-observer.mjs",
+      "src/renderer/features/files/watch-pressure-acceptance.test.ts",
+      "src/renderer/features/files/watch-pressure-unit.test.ts"
+    ],
+    "buildToFinalChanges": [
+      "scripts/files/watch-pressure-ui.mjs"
+    ],
+    "buildToFinalAdded": [],
+    "prototypeSourceChanges": []
+  },
+  "verification": {
+    "codePassedDeduplicated": 75,
+    "newUniqueCodeTests": 5,
+    "newUnitTests": 3,
+    "newNativeIntegrationTests": 2,
+    "cumulativeCodeUnion": 1862,
+    "externalCliOptInNotSelected": 2,
+    "actualNewCaseChecks": 2,
+    "actualRegressionChecks": 7,
+    "typecheckExit": 0,
+    "buildExit": 0,
+    "unhandledErrors": 0,
+    "formalPassed": 192,
+    "formalTotal": 419,
+    "formalRemaining": 227,
+    "unexecuted": 225,
+    "blocked": 2,
+    "appRemaining": 224
+  },
+  "measurements": {
+    "actualMutations": 10000,
+    "actualOsEventsHeld": 3500,
+    "finalRetainedFiles": 500,
+    "nativeAutomaticReconnectAfterPollMs": 31317,
+    "allThreeRealSubscriptionsStoppedOnce": true,
+    "pendingHelperCalls": 0,
+    "sourceSaveOperations": 0,
+    "oldGenerationPackets": 2
+  },
+  "runtimeHashes": {
+    "asar": "bd898f5f150850263f70f510f96f346e2300211b985e2980f4fa99bce50c65f9",
+    "broker": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcher": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "brokerSameAsR52": true,
+    "watcherSameAsR52": true
+  },
+  "boundaries": [
+    "L05 U uses explicit unit hint arrays and fake clock to verify bounded merging, declared poll/resync and one fresh snapshot; it is not OS evidence. I uses original controller/FileService/Store and actual r52 broker/Parcel. It creates3500, rewrites3500, deletes3000 real files, holds original OS callback arrays unchanged until over2000 actual events accumulate, then releases them. Exact500 final entries and open text match real source and Store directory state. A independently performs same10000 actual mutations through own producer and normal packaged UI, observes3500 genuine native events, verifies real native final listing500 plus actually scrolled virtual last row and exact CM text. Counts are producer operations and coalesced native hints, not a promised full event history.",
+    "R08.10 crosscheck prevented premature success: earlier r52 narrow I/A checks of resync/final truth passed, but missed mandatory poll fallback. These partial greens are preserved and not counted as completed formal cases. Strengthened U produced2 failures (poll state and obsolete callback altering new native), original r52 A failed declared polling after actual10000 mutations. r53 now actually unsubscribes old native, emits visible poll/resync, rescans actual final data, then automatically reconnects native after31317ms real elapsed time. No clock modification in actual App. Same-watch late error isolation is explicitly U; old-generation genuine IPC delivery is separately real I/A.",
+    "L08 I uses byte-identical private helper, real chmod execute removal and original authenticated sender lifecycle. Old consumers and roots release, renewed Store roots report genuine EACCES instead of online. Restored permissions and real retry issue fresh lease/generation, actual list/stat/read return new source; genuine old packets transported late preserve hashes and cannot overwrite new root/buffer. A is actual normal packaged renderer/main/RPC/native code with only original spawn routed to identical private executable; Page.reload releases old authority, unavailable UI shows actual EACCES, retry and actual tree/file controls create a new generation. Original unchanged old root notifications deliver after recovery, remain ignored; no synthetic successes, fake IPC errors or private Store changes.",
+    "The copied executable is the only permission-fault target, SHA matches original before/after; packaged helper and ASAR never changed by fault. Original child_process.spawn, Parcel subscribe and WC send wrappers restore by identity, then original watch/stop/send/subscribe restore. All3 actual subscriptions unsubscribe once and all helper requests settle before harness close. Explicit stop observer sets alone do not prove implicit navigation cleanup; native flags, authentication denial and I resourceCounts0 prove it.",
+    "L08 is only the confirmed current local provider/IPC branch. Remote host disconnect/reconnect/watch and polling remain deferred with original scope mapping and are not claimed. P sources0 changes, reuse existing health/unavailable/retry states, no new P execution or Codex visual parity claim. Source snapshots1018; only1 production file changed from DEV099 and4 tests/drivers added. Build-to-final only external driver cleanup wait changed. r52/r53 native/Parcel hashes identical; native59 uses independent TEST helper, other I actual packaged native dependencies.75 final deduplicated code assertions and7 actual normal-path regressions passed; historical1862 is not a fresh full suite;2externalCLI opt-ins not selected.",
+    "Fixture failures preserved separately: first U assumed exact30s reconnect instead of periodic backed-off scan and observed async list too early; first I checked final change before scan completed. A first assumed a transient virtual directory node existed, second waited a root file outside virtual viewport; corrected observation and actual collapse/scroll controls. One earlier narrow A passed but was insufficient after requirement crosscheck. All original red/partial/green and current sources remain traceable, no failure hidden.",
+    "UI input serial; native tests finish before packaging. Own project mutations are explicit and fixture projects are stored as compressed exact trees plus per-file manifests rather than thousands of loose evidence files. Sentinel content/inode/mtime unchanged, no native source save, no tasks/PTY/models/clipboard/daily AIS/r4/r6pending57bytes. Harness shutdown is distinct from normal quit proof. No commit/merge/push/tag/release; milestone remains active."
+  ],
+  "artifacts": {
+    "app/r52-driver-null-node/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-null-node/electron.log",
+      "sha256": "67c1c5d79c92308dd34de13441f6906e99e170932e411802648d8fbebb6f2e4f"
+    },
+    "app/r52-driver-null-node/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-null-node/failure.png",
+      "sha256": "1ff86a331643030dc9161723edde33e9003213e160f658fb724da0896adf43c5"
+    },
+    "app/r52-driver-null-node/fixture-project-manifest.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-null-node/fixture-project-manifest.json",
+      "sha256": "3ecc3a898f4db3afee08862ab175390609c373b5af9893316547ecef822ee5b4"
+    },
+    "app/r52-driver-null-node/fixture-project.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-null-node/fixture-project.tar.gz",
+      "sha256": "137e35922eb88f3cb20e43cc19b27c8f1366054088d3a8454ed898a8d4d159cf"
+    },
+    "app/r52-driver-null-node/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-null-node/result.json",
+      "sha256": "397907230b1979e0205ec7c0ac69ad9a920dd615b93e046f30427751aa367bb1"
+    },
+    "app/r52-driver-null-node/willyou-files": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-null-node/willyou-files",
+      "sha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+    },
+    "app/r52-driver-virtual-row/L05-final-tree-and-content.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/L05-final-tree-and-content.png",
+      "sha256": "415ded93b90069717b54c640fb53102b0f49b57a91139a371029c94bf2bf7bbe"
+    },
+    "app/r52-driver-virtual-row/L08-real-provider-offline.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/L08-real-provider-offline.png",
+      "sha256": "9c7ce59bf1b892bd105f825b3ba942ac8ce9cbd23453ff818064119cfe54eee5"
+    },
+    "app/r52-driver-virtual-row/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/electron.log",
+      "sha256": "aee7d69e280ece9886afe45a04f460600a880b29a976bab9e94c22f4e0007465"
+    },
+    "app/r52-driver-virtual-row/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/failure.png",
+      "sha256": "58d0b3cde185649a102ef81b3e3e7bbc90928616f67d08b15b44ddf56f639f41"
+    },
+    "app/r52-driver-virtual-row/fixture-project-manifest.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/fixture-project-manifest.json",
+      "sha256": "65baca9315118b2cd728ac33ceb36016f76eb9f010d73b4c12fe309807dd47e6"
+    },
+    "app/r52-driver-virtual-row/fixture-project.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/fixture-project.tar.gz",
+      "sha256": "51f07ecc6a8023ba7e03642b3ed5c0542daed31419bd2f46a177c1aa66c92cbe"
+    },
+    "app/r52-driver-virtual-row/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/result.json",
+      "sha256": "13139caa9500afe89f0a02251c2afcbee3c7498c15d9df64f5418b6aae163ee7"
+    },
+    "app/r52-driver-virtual-row/willyou-files": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-driver-virtual-row/willyou-files",
+      "sha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+    },
+    "app/r52-narrow-partial-green/L05-final-tree-and-content.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/L05-final-tree-and-content.png",
+      "sha256": "aab5802396882c5ff75993d6ea3872b006487350ad2a4c75ef40b2a14b91aa4a"
+    },
+    "app/r52-narrow-partial-green/L08-real-provider-offline.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/L08-real-provider-offline.png",
+      "sha256": "0589f4aae1450efe3c8cad998e953ddf113e39bef197ae1de796f78b96d5b6c1"
+    },
+    "app/r52-narrow-partial-green/L08-restored-new-generation.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/L08-restored-new-generation.png",
+      "sha256": "91ee8ec425aa97682691bfded82a998a968dedc4afa4c83e4079cae1517f7893"
+    },
+    "app/r52-narrow-partial-green/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/electron.log",
+      "sha256": "e3bfce8e667d43879d88b4ed69bd4a4418dca4a92862d745be0856f92fcd825b"
+    },
+    "app/r52-narrow-partial-green/fixture-project-manifest.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/fixture-project-manifest.json",
+      "sha256": "65baca9315118b2cd728ac33ceb36016f76eb9f010d73b4c12fe309807dd47e6"
+    },
+    "app/r52-narrow-partial-green/fixture-project.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/fixture-project.tar.gz",
+      "sha256": "59853c0695baafce3a1cffeafbe9ef5d49368c513781f64448b699ffcf68b8be"
+    },
+    "app/r52-narrow-partial-green/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/result.json",
+      "sha256": "bebc196fb3ebbc891141e789320243cac1db58b4ae149dea55fc140a00fd18ab"
+    },
+    "app/r52-narrow-partial-green/willyou-files": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-narrow-partial-green/willyou-files",
+      "sha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+    },
+    "app/r52-requirement-red/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-requirement-red/electron.log",
+      "sha256": "5a6dc2a0abf3fae08e9d45850616343ed214d7937b0be40d153a6724fbb1b6a6"
+    },
+    "app/r52-requirement-red/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-requirement-red/failure.png",
+      "sha256": "cd437ceaa73ac3010e0083df1ac2077f34968c6e29504bd512d4cc34dd33c12e"
+    },
+    "app/r52-requirement-red/fixture-project-manifest.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-requirement-red/fixture-project-manifest.json",
+      "sha256": "f71ccf6d4c4958c5e35e8f554583312d6c1b4c62fb43f0e5e77d552ab1f68313"
+    },
+    "app/r52-requirement-red/fixture-project.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-requirement-red/fixture-project.tar.gz",
+      "sha256": "1ce3a409088d71675ed712e574b1b006c6c42627c3303d6680a6d3696bb7caad"
+    },
+    "app/r52-requirement-red/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-requirement-red/result.json",
+      "sha256": "ef00ffeae5773913552d8be5cf0f7ce781f2d6c53056136d1738331b94f4ec90"
+    },
+    "app/r52-requirement-red/willyou-files": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r52-requirement-red/willyou-files",
+      "sha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+    },
+    "app/r53-final/L05-final-tree-and-content.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/L05-final-tree-and-content.png",
+      "sha256": "479e4a6a5b114085792d0b6cc60dfb25a61ff0b6e231078ba8f4c5703d00f7f7"
+    },
+    "app/r53-final/L08-real-provider-offline.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/L08-real-provider-offline.png",
+      "sha256": "a6a7764aa62cd38f0324491a58a8f8604d30bfa1f0cb93a7a06521ed2a21ef63"
+    },
+    "app/r53-final/L08-restored-new-generation.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/L08-restored-new-generation.png",
+      "sha256": "58d3adc30831d996dc3c2d7612daae1b101072caf7e93664d6d5113faf93668d"
+    },
+    "app/r53-final/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/electron.log",
+      "sha256": "47f8c0bd97af77bac82a0dd2304a028479221cc23869565cc77099311ec3a0fc"
+    },
+    "app/r53-final/fixture-project-manifest.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/fixture-project-manifest.json",
+      "sha256": "65baca9315118b2cd728ac33ceb36016f76eb9f010d73b4c12fe309807dd47e6"
+    },
+    "app/r53-final/fixture-project.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/fixture-project.tar.gz",
+      "sha256": "7c2bceb1e2b7b92a2b5d43a73cce6853fcf2fcf7e833db874c5593a4a09e264a"
+    },
+    "app/r53-final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/result.json",
+      "sha256": "8b7900d73ef3ef46cde323206dde7e004907d660ad59fcc75d6d6f3bed03bd99"
+    },
+    "app/r53-final/willyou-files": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/app/r53-final/willyou-files",
+      "sha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+    },
+    "regression/root/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/root/electron.log",
+      "sha256": "03d069cae801b90c9b4da54a6a2cd43964d365cba6f746a2ad19b1874649fad0"
+    },
+    "regression/root/original-root-restored-saved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/root/original-root-restored-saved.png",
+      "sha256": "1189494bd5da49377b6a3c46a27abef8d2b2912c42fec0be3d21e624c914bca1"
+    },
+    "regression/root/project/.willyou-recovery-0d7c0783-eab4-4480-86e4-bb05ba6f914e-9b9d0de4-31a3-4a0a-a565-573f85225850/candidate": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/root/project/.willyou-recovery-0d7c0783-eab4-4480-86e4-bb05ba6f914e-9b9d0de4-31a3-4a0a-a565-573f85225850/candidate",
+      "sha256": "bb614198ca203d4972aba7225adcad21ac9745de82be580f0268d8f8089205e0"
+    },
+    "regression/root/project/.willyou-recovery-0d7c0783-eab4-4480-86e4-bb05ba6f914e-9b9d0de4-31a3-4a0a-a565-573f85225850/materialized": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/root/project/.willyou-recovery-0d7c0783-eab4-4480-86e4-bb05ba6f914e-9b9d0de4-31a3-4a0a-a565-573f85225850/materialized",
+      "sha256": "e138a81a4b41e6c0b092ace62980dcf5b55d4826a57ea5b38c1a9014b897a1f9"
+    },
+    "regression/root/project/a.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/root/project/a.txt",
+      "sha256": "e138a81a4b41e6c0b092ace62980dcf5b55d4826a57ea5b38c1a9014b897a1f9"
+    },
+    "regression/root/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/root/result.json",
+      "sha256": "176910cb0d3d33f7277fb784e4bfcd26f655e9702f2e8b4cb10a666806439066"
+    },
+    "regression/root/root-loss-save-rejected.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/root/root-loss-save-rejected.png",
+      "sha256": "f83e8e85076b900cf14daff7b86b63ab0cbdbf7c1fc2fd8113be9d7c95fbc60f"
+    },
+    "regression/watch/L01-surviving-window.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/L01-surviving-window.png",
+      "sha256": "b354f7e514ec60bb30e08e3e652ff66d0f4260bf4c9ecf770b2ff92a51d7f521"
+    },
+    "regression/watch/L07-native-ready-resync.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/L07-native-ready-resync.png",
+      "sha256": "fb6a3915ca2742036c19a4b0b4371ed1aa776392fd0a5ae8d5804720182fed3b"
+    },
+    "regression/watch/electron-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/electron-A.log",
+      "sha256": "fd027e5d15b7d87ea3af51c080bfa502dc45740d9a0b57d7ec0b6fe034fed7ba"
+    },
+    "regression/watch/electron-B.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/electron-B.log",
+      "sha256": "02cb34dad06c5700c161184a2bb2c69d56386e86974af745a25b923598851f26"
+    },
+    "regression/watch/project/a.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/project/a.txt",
+      "sha256": "4be4be61bd6dd2988c2ece94bbdea24e550d47ff79f4e3be8ea180553673a42a"
+    },
+    "regression/watch/project/fresh.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/project/fresh.txt",
+      "sha256": "54b882ef254c1087dca23b7a08dc975c5b741df8eb0b900024cd4dd41318497c"
+    },
+    "regression/watch/project/sentinel.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/project/sentinel.txt",
+      "sha256": "4943fd2b446c6e48a21fe3a3e4f1efc46e63cf692fe0a18b433e16b32d5ed369"
+    },
+    "regression/watch/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/watch/result.json",
+      "sha256": "ed75ffe5fbf6aad19572fbb141b2e0392c3a510088edb3c2b8736a1632174f0b"
+    },
+    "regression/window/L10-surviving-window.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/L10-surviving-window.png",
+      "sha256": "4fb2edbe7aef6b002caab6469f4a53aa4d19bf24b4ef2d455c0648d205eb6945"
+    },
+    "regression/window/L14-conflict-private-draft.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/L14-conflict-private-draft.png",
+      "sha256": "a31626dc1a35abb2369ad95fc607ff7079bfff38d36453a9ac51aecef1a33133"
+    },
+    "regression/window/electron-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/electron-A.log",
+      "sha256": "5898f34f393d41fbe12522f9fe90d80a018383e4b72309a2bec195c39080dd91"
+    },
+    "regression/window/electron-B.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/electron-B.log",
+      "sha256": "8ca29a12057b6ee4893e2639c21cac388289dbcb111832d245b245109ff0fd64"
+    },
+    "regression/window/project/.willyou-recovery-c0054041-469f-4d93-9b8a-2fead6782986-1e1048f9-47ba-4a89-86e6-70d635788684/candidate": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/project/.willyou-recovery-c0054041-469f-4d93-9b8a-2fead6782986-1e1048f9-47ba-4a89-86e6-70d635788684/candidate",
+      "sha256": "b6ce1e5143ce0f8b1f855a8568a632f810fa7ebc9524732a2139df9086712321"
+    },
+    "regression/window/project/.willyou-recovery-c0054041-469f-4d93-9b8a-2fead6782986-1e1048f9-47ba-4a89-86e6-70d635788684/materialized": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/project/.willyou-recovery-c0054041-469f-4d93-9b8a-2fead6782986-1e1048f9-47ba-4a89-86e6-70d635788684/materialized",
+      "sha256": "6dc354b0dd9068d9359363a7b0477a9d7a5e5fe8209546f1f0cf77192c774e97"
+    },
+    "regression/window/project/a.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/project/a.txt",
+      "sha256": "6dc354b0dd9068d9359363a7b0477a9d7a5e5fe8209546f1f0cf77192c774e97"
+    },
+    "regression/window/project/sentinel.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/project/sentinel.txt",
+      "sha256": "4943fd2b446c6e48a21fe3a3e4f1efc46e63cf692fe0a18b433e16b32d5ed369"
+    },
+    "regression/window/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/regression/window/result.json",
+      "sha256": "efe2307614417f34d40220773fcc6efb6c82a1ce6c79feb6bc4c727d1bb48cc0"
+    },
+    "sources/build.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/sources/build.json",
+      "sha256": "3f65b1812fc111f20bc81289ac23ddb2f999c49332be680aa5cca5dd40f26f39"
+    },
+    "sources/build.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/sources/build.tar.gz",
+      "sha256": "a472234c5e18263b5456e58073a280575a13402a2befb8af58d6dedaf79272a5"
+    },
+    "sources/completed-tested.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/sources/completed-tested.json",
+      "sha256": "f83d386af6bbd627ddb26d0b6e184b06e2b0901668d57fdb67158348066a264e"
+    },
+    "sources/completed-tested.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/sources/completed-tested.tar.gz",
+      "sha256": "b45cbd88e3f889b4651fd2589f31aa3b6c503583c2186947425b62a545898db3"
+    },
+    "sources/requirement-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/sources/requirement-red.json",
+      "sha256": "f505cac7702abf8f433eef3d0271b45cbcc64bd5f3f54b5e653ef27c87f48586"
+    },
+    "sources/requirement-red.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/sources/requirement-red.tar.gz",
+      "sha256": "38439ede058adb2c2a616a7be08305c5bdaffbacf66bcada56be9e11e2ca1fef"
+    },
+    "validation/willyou-dev100-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-app-r1.log",
+      "sha256": "101e4208aaf86793b1920693100c3b7cd1e3ff736719859444a82d7847d6a504"
+    },
+    "validation/willyou-dev100-app-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-app-r2.log",
+      "sha256": "a3efc445820ebd6f1dcfc89a4c94ca08205cc18ce71e6618134846331ff8825b"
+    },
+    "validation/willyou-dev100-app-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-app-r3.log",
+      "sha256": "3458005c9f71ebda6301e9718679d42e28ecb007de6c0ad2a6e86edf7d8b3782"
+    },
+    "validation/willyou-dev100-app-r52-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-app-r52-red.log",
+      "sha256": "f6e1eaf5fe8d7ec871b2a05792deb2a870cfd106940e598c9a67c1221d7b04db"
+    },
+    "validation/willyou-dev100-app-r53-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-app-r53-r1.log",
+      "sha256": "62845f8bcb92223c0a3166949c6a19a46b724c8cc35b363450f6da2e5293a3b8"
+    },
+    "validation/willyou-dev100-app-regressions.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-app-regressions.json",
+      "sha256": "2bdd843be936cfb62d2148331ba888aeb07fb93bab1d6ebcb5e9eb0e540e36b8"
+    },
+    "validation/willyou-dev100-app-regressions.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-app-regressions.py",
+      "sha256": "7f3f809c40bf666b688a1e2b9a99e5bfbb170bbde0ebb8ed7554e2dc3cb94aa7"
+    },
+    "validation/willyou-dev100-code-completed.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-code-completed.json",
+      "sha256": "6c3e4cf038936958e504a818483f02dc4fda9dccd2ec0b833b0df6ee2f08abb6"
+    },
+    "validation/willyou-dev100-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-code-final.json",
+      "sha256": "03ad7b73e5c737ac6a9b4ea64c9084728600b0a20b28bdc2ff5bf9c5dd0857cb"
+    },
+    "validation/willyou-dev100-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-code-final.log",
+      "sha256": "f87971912c0052bfe6bd3a56bcfa3f41c034aa154aeece3d6fa9331ad77c1b28"
+    },
+    "validation/willyou-dev100-code-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-code-green.json",
+      "sha256": "c04cfd9883c32abe124bd0ebb15fb97135aefd06ce534cf70a0d006177517d61"
+    },
+    "validation/willyou-dev100-code-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-code-green.log",
+      "sha256": "8a09a739c3620f0775043596f16786feec60a525ced5c54fbf3e0cd0f64b32a2"
+    },
+    "validation/willyou-dev100-native-final-evidence.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-final-evidence.json",
+      "sha256": "64979d73ab50ecad95f7154db0eb2e9a0b3de85ede68eef04868bb764ab63aed"
+    },
+    "validation/willyou-dev100-native-green-evidence.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-green-evidence.json",
+      "sha256": "16efbfc95e5f797d45ef251b46c899b7e9381974b93c964acfade5fb0480965f"
+    },
+    "validation/willyou-dev100-native-r1-evidence.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-r1-evidence.json",
+      "sha256": "6171ed60936fb08b90daec41e3aeb0b3bb7cf031eccd7d907bdcdc3c2b9bd77d"
+    },
+    "validation/willyou-dev100-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-r1.json",
+      "sha256": "cb5bfc603b6f04b329f5927622804759d8afbbf12d13d5613d0c6d0e0d87bebb"
+    },
+    "validation/willyou-dev100-native-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-r1.log",
+      "sha256": "b5a898c6df15259ae669b8c577beb10861e47281439b615130ab431ea761a79e"
+    },
+    "validation/willyou-dev100-native-r2-evidence.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-r2-evidence.json",
+      "sha256": "e42b0efc7c68c170980a2e55b15112c8215b2e3fe5c201de5234158c9787beb2"
+    },
+    "validation/willyou-dev100-native-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-r2.json",
+      "sha256": "6a8d2e5ca4bf59476c6071ac700b79365db21c37a478a909b2671e9eab39aaa8"
+    },
+    "validation/willyou-dev100-native-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-native-r2.log",
+      "sha256": "f4f17ea7a2e2d95c11ea923afcfa9c7367ac75228959ffa706b3c731d4b90ce1"
+    },
+    "validation/willyou-dev100-package-r53.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-package-r53.log",
+      "sha256": "b2ab29b6ed7401510a9dbf2656fc6a5939c793868d9dabf2c93f111ad0a714b4"
+    },
+    "validation/willyou-dev100-requirement-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-requirement-red.json",
+      "sha256": "7ac1f5e82659991d3c5ad4eeef0b5a342344185f72aa37b0b5c73c1f49ddd145"
+    },
+    "validation/willyou-dev100-requirement-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-requirement-red.log",
+      "sha256": "4c287f0133aa3ca260806a50744a6ab2c34871c7a7a95b92c79c1e7539aab888"
+    },
+    "validation/willyou-dev100-root-regression-r53.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-root-regression-r53.log",
+      "sha256": "6c9bc1a17cefcff305bbd52fef52ee49d5d6928e532f4899cd14d9073f63ca7b"
+    },
+    "validation/willyou-dev100-runtime-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-runtime-hashes.json",
+      "sha256": "ee596d39317ba7e87bc5efc7927ddebfaf7b5a8b86a7603fce62791c8f8fc5e3"
+    },
+    "validation/willyou-dev100-runtime-r53.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-runtime-r53.json",
+      "sha256": "5494f4be23feded30aae1735fa27e950624b9e3f823205a0340877af9cb5089b"
+    },
+    "validation/willyou-dev100-runtime-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-runtime-verification.json",
+      "sha256": "da88670b7e4f976714ba00412ac74e7840f8618071f97572d7cf04e06eac8ab1"
+    },
+    "validation/willyou-dev100-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-dev100-typecheck-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-typecheck-green.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-dev100-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-typecheck-r1.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-dev100-unit-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-unit-green.json",
+      "sha256": "4df4a18990a708b158ae35fd6cc8551247eea95af96724a2bc78cea0f9fc6fbd"
+    },
+    "validation/willyou-dev100-unit-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-unit-green.log",
+      "sha256": "52d1bed227a38f68b6603966742454d6c7808320030a461894ccc25ed84637af"
+    },
+    "validation/willyou-dev100-unit-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-unit-r1.json",
+      "sha256": "5480ef4daac6a406f5a4d75ddd4e3a57b103c470e321293eb645426afef433ec"
+    },
+    "validation/willyou-dev100-unit-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-unit-r1.log",
+      "sha256": "46786d4f2b0d59c47df3125f34780781e5800e1433f82d5eaa0c259a2c301ee4"
+    },
+    "validation/willyou-dev100-unit-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-unit-r2.json",
+      "sha256": "71fecd7c97980faf72d83ec267e2b0dc4746cbf8128171c1c777994fac79d342"
+    },
+    "validation/willyou-dev100-unit-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-unit-r2.log",
+      "sha256": "4724b121021b17efe92cbeb99a40ad06c7fa440a2031119db8127d67ab481d14"
+    },
+    "validation/willyou-dev100-verify-runtime-r53.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-verify-runtime-r53.cjs",
+      "sha256": "0c0d19d75c43226828ce7328011ae0abceafb3c96bc8d0b88bb1c70dd7081154"
+    },
+    "validation/willyou-dev100-watch-regression-r53.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-watch-regression-r53.log",
+      "sha256": "6c915fdeefabe225e6eb8c10054592bfa7c0f3cf210c8ee8feb8e21323c0832f"
+    },
+    "validation/willyou-dev100-window-regression-r53.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-pressure-dev100-r53/validation/willyou-dev100-window-regression-r53.log",
+      "sha256": "99d75acd9e788f93ec6a736314460e4479e9c4f79bb0e0cb2b0ebfc379b583aa"
+    }
+  }
+}

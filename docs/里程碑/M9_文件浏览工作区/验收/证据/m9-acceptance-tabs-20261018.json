@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "kind": "M9 file-tab P/I/A acceptance batch",
+  "recordedAt": "2026-10-18T02:03:17.714180+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirements": "R3.4 / R3.4-P1",
+  "environment": "macOS 26.6.1 arm64; actual Chrome prototype and separately packaged App; Electron Node/Vitest real native/SQLite integration",
+  "cases": [
+    "M9-T-D01",
+    "M9-T-D02",
+    "M9-T-D03",
+    "M9-T-D08",
+    "M9-T-D09"
+  ],
+  "formalIndexChanged": false,
+  "integration": {
+    "result": "5 passed,0 failed,0 skipped",
+    "command": "SMARTDD_M9_FILE_BROKER='/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files' SMARTDD_M9_TABS_ACCEPTANCE_EVIDENCE=/private/tmp/willyou-tabs-integration-r1-observations.json pnpm test src/renderer/features/files/workspace-tabs-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-tabs-integration-r1.json",
+    "layers": "Actual FileWorkspaceStore→FileService/Roots/Recovery→packaged broker→temporary files, plus FileWorkspacePersistence→real SQLite→independent connection read and store/service recreation. No mocked persistence or filesystem. API adapter is direct, not Electron IPC. DOM focus and PTY execution are not claimed by I.",
+    "sources": {
+      "src/renderer/features/files/workspace-tabs-acceptance.test.ts": "5815bedc35eb2d4f1133f72b148ba249d3d024dd44c9d3a25069a42beb4839b2",
+      "src/renderer/features/files/workspace-store.ts": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+      "src/renderer/features/files/file-buffer.ts": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+      "src/renderer/features/files/editor-source.ts": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+      "src/shared/file-workspace.ts": "38943cbc479ea5a33a993243eeb8a45f9bdd9dbdfb7b575fc8ac43cded741815",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "src/shared/file-text.ts": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+      "src/shared/file-classification.ts": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+      "src/main/core/files/workspace-persistence.ts": "c186ad074f6ff2edb3c7b7d99054bdff66df2b244f121859c799e849b69d14f9",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/main/db/client.ts": "13007a0bdef9cae1a9ab33b8e7bf865a2e90d11972d7a2fabda2aaeb6b4d2b8d",
+      "src/main/db/schema.ts": "0a83e35b4b1c3b2cb40da9e24faf17973d12fd952047cecec1438607c95d3c36",
+      "src/main/db/migrations.ts": "15dc299a75982c256876fc37d07d409cbf760987e31545f48ea07cc9020dd6c1",
+      "native/files/broker.mm": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "native/files/office-measure.inc.mm": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+      "native/files/desktop-actions.inc.mm": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+      "native/files/office-calculate.inc.mm": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+      "native/files/office-render.inc.mm": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+      "native/files/engine-workspaces.inc.mm": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+      "native/files/tex-compile.inc.mm": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+      "native/files/git-metadata.inc.mm": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02"
+    },
+    "sourceSnapshot": {
+      "path": "acceptance-tabs/integration-tested-sources.tar.gz",
+      "sha256": "aaf698d95e9ebfd5512bfbb2d7a0947db1ed046359039321b18861b1cc9ae1be"
+    },
+    "r2SourceComparison": {
+      "manifestPath": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.json",
+      "manifestSha256": "fc4975816ff701c6f8baff64f55ed2edb6a63dd3831cb092b9fb7874f103ef52",
+      "all23ProductFilesMatch": true,
+      "testIsNewAndNotInApp": true
+    },
+    "native": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c"
+    },
+    "testReport": {
+      "path": "acceptance-tabs/integration-tests.json",
+      "sha256": "ccf69e5b5fbfdfd20e59e6a27836656ab4772eda68b4a016232e651a2e6f5701"
+    },
+    "observations": {
+      "path": "acceptance-tabs/integration-observations.json",
+      "sha256": "dfcd6b814cbd195d014cc3024220f9474785becf2c172acd377a0b8aead22833"
+    },
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+      "exitCode": 0,
+      "log": {
+        "path": "acceptance-tabs/integration-typecheck.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "prototype": {
+    "observations": {
+      "path": "acceptance-tabs/prototype-observations.json",
+      "sha256": "ea76222df8652cdd064a7b4827cdf5e64450afeac725d3a572f7561b10db3d25"
+    },
+    "beforeSourceHashes": {
+      "prototypes/m6-codex/src/FileWorkspace.jsx": "48111d87108b14906ecce0df6e3c32a42a83c46a2cf0543ad5f7f0a83a2573b3",
+      "prototypes/m6-codex/src/FileWorkspaceTree.jsx": "4973374ee361d5d97b7f9b841fa8de4aef4f8cc1b1130ae622ac755685813e18",
+      "prototypes/m6-codex/src/file-workspace-model.mjs": "6eb4989b9f8fa86b291dc46a4027310e8785df62f90610b62ee4073a9c089cc5",
+      "prototypes/m6-codex/src/file-workspace.css": "bb909b67a97dbd9e00b7211a900c462ca04921b1e0b5786a59d085af930d23f9",
+      "prototypes/m6-codex/src/App.jsx": "affff6e411a5c5ca6ca275cf616d67e91dea0780a6c0383286a4d797cd79b3ef"
+    },
+    "afterSourceHashes": {
+      "prototypes/m6-codex/src/FileWorkspace.jsx": "401a1e1ba64be99a6d0b63df155d251c3e9fbcb8d7545e68e5964c034cc2660b",
+      "prototypes/m6-codex/src/FileWorkspaceTree.jsx": "4973374ee361d5d97b7f9b841fa8de4aef4f8cc1b1130ae622ac755685813e18",
+      "prototypes/m6-codex/src/file-workspace-model.mjs": "6eb4989b9f8fa86b291dc46a4027310e8785df62f90610b62ee4073a9c089cc5",
+      "prototypes/m6-codex/src/file-workspace.css": "bb909b67a97dbd9e00b7211a900c462ca04921b1e0b5786a59d085af930d23f9",
+      "prototypes/m6-codex/src/App.jsx": "affff6e411a5c5ca6ca275cf616d67e91dea0780a6c0383286a4d797cd79b3ef"
+    },
+    "afterSourceSnapshot": {
+      "path": "acceptance-tabs/prototype-tested-sources.tar.gz",
+      "sha256": "a514536795176e042bedf3fc086bc4d74ac2b367486646c505642845fdf38c85"
+    },
+    "scope": "D01/D02/D03 observed before close-only fix; close/neighbor behavior D08/D09 rechecked after reload of DEV037 fix. No unrelated product parity claim."
+  },
+  "app": {
+    "observations": {
+      "path": "acceptance-tabs/app-observations.json",
+      "sha256": "ccc5d4ce11f44b1a95df2abe4774066985264894ade507f3e55add2c8015e9f4"
+    },
+    "r1SourceSnapshot": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.tar.gz",
+      "sha256": "5ec8a673a2569d2f6a6439a4f22e170b828c254f993e0d951357c2e085a3f008"
+    },
+    "r2SourceSnapshot": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.tar.gz",
+      "sha256": "bd9a87402d2ab0609f26730a1f8158ad99da0eedce16e4231b40ac27f1b09d42"
+    }
+  },
+  "defects": [
+    {
+      "id": "M9-DEV-037",
+      "status": "P and source/component correction verified; corrected packaged A recheck pending",
+      "failure": "Closing non-active tab steals active editor/tab focus and then drops to page root.",
+      "correctionOwner": "/root/area_marker_review",
+      "scope": "Only production workspace-panel.tsx and prototype FileWorkspace.jsx close focus handling; store close ordering and save/discard rules unchanged."
+    }
+  ],
+  "summary": {
+    "passedCases": [
+      "M9-T-D01",
+      "M9-T-D02",
+      "M9-T-D03",
+      "M9-T-D09"
+    ],
+    "pendingCases": {
+      "M9-T-D08": "Corrected packaged App focus and running-terminal validation pending"
+    },
+    "noScopeOrDenominatorChange": true
+  }
+}

@@ -1,0 +1,391 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-MERMAID-GATE-DEV112-R63",
+  "at": "2026-10-18T23:43:45.747183+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-one-case",
+  "revision": "R3.4-20261017 / R3.4-P1; R06.2 unchanged",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "fullCasesPassed": [
+    "M9-T-X09"
+  ],
+  "codeRegressionCases": [
+    "M9-T-X01",
+    "M9-T-X02",
+    "M9-T-X04",
+    "M9-T-X05",
+    "M9-T-X11",
+    "M9-T-H14",
+    "M9-T-H17"
+  ],
+  "productionChanges": [
+    "src/renderer/features/files/markdown/editor.ts"
+  ],
+  "prototypeChanges": [],
+  "defects": [
+    {
+      "id": "M9-DEV-112-01",
+      "state": "fixed-and-r63-retested",
+      "problem": "Absent diagram callback still replaces source or throws; empty fenced code skips the provided callback.",
+      "fix": "Optional host capability, gate decoration on actual function, invoke provided callback for empty code."
+    }
+  ],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r63-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "1691d3d3a768e4eaca05702d969c20ee578c58aebfada4f8080d130f804d3d08",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 81
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-markdown-reference-dev111-r62-20261019.json",
+    "sha256": "adaef1b55c8cc8dca32a0363c10819ab9b01291fd306a66233012bd5415f5707",
+    "all152ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "buildFiles": 1076,
+    "testedFiles": 1076,
+    "buildSha256": "63ddbf312875167cbd12e1322d0879af659bd23af7d88d97f572661dabc37325",
+    "finalTestedSha256": "3bf19616264ba72bcb590cd35621ba293cdcf1159c64009cf4f59946fdb31071",
+    "postBuildProductionChanges": [],
+    "postBuildExternalChanges": [
+      "scripts/files/markdown-mermaid-gate-ui.mjs"
+    ]
+  },
+  "verification": {
+    "codePassedDeduplicated": 87,
+    "newUniqueCodeTests": 19,
+    "newTestsByBoundary": {
+      "U": 15,
+      "I": 4
+    },
+    "cumulativeCodeUnion": 2092,
+    "prototypeSourceChanged": false,
+    "prototypeModelTestsThisBatch": 0,
+    "prototypeModelBaselineRetained": 241,
+    "prototypeBrowserUiExecuted": false,
+    "currentSkipped": 0,
+    "historicalExternalCliOptInNotSelected": 2,
+    "priorUnrelatedPdfFixtureOptInNotSelected": 1,
+    "actualUiChecks": 15,
+    "nativeWorkerInstances": 30,
+    "originalWorkerReplies": 30,
+    "originalFileRpcRows": 45,
+    "originalDiagramRpcRows": 7,
+    "completedBatchNormalQuit": {
+      "pid": 44029,
+      "code": 0,
+      "signal": null
+    },
+    "codeExit": 0,
+    "typecheckExit": 0,
+    "packageExit": 0,
+    "unhandledErrors": 0,
+    "formalPassed": 220,
+    "formalTotal": 419,
+    "formalRemaining": 199,
+    "unexecuted": 197,
+    "blocked": 2,
+    "appRemaining": 196
+  },
+  "boundaries": [
+    "A actual packaged tree/rich/source UI and actual sandboxed Mermaid renderer; original authenticated diagram/File RPC and native Worker observation only. No editor/Store/DOM value injection, substitute diagram output, models, clipboard, Codex or daily files. App capability callback is present; missing host capability is separately real extension I, not a fabricated App setting.",
+    "All fifteen actual grammar/source/native App scenarios. Actual public App callback present; missing capability is I only, no fabricated setting or absent-renderer App success.",
+    "Original Mermaid engine parses authored flow/sequence/state sources in sandboxed child renderer. I recording callbacks are not claimed as parsing evidence.",
+    "Empty complete fence still calls actual renderer; actual result/error and source control captured. No arbitrary Mermaid compatibility or full visual claim.",
+    "Prototype sources unchanged, old P241/build retained and not counted as new run. X06/X08/X10 and giant-block scroll/manual/system/platform cases remain unfinished. Goal419 active."
+  ],
+  "artifacts": {
+    "willyou-dev112-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-red.json",
+      "sha256": "65c9130d2b8ba9faf758b9287de3a317855b237fc07a858fb3fa430bfc975878"
+    },
+    "willyou-dev112-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-red.log",
+      "sha256": "2b2ecac2c3dd9d463c4910b3806633da12de616ad5153b4c9d2e5e682742161a"
+    },
+    "willyou-dev112-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-native-final.json",
+      "sha256": "5e4432f02622aa8dc8c72a4e94f6858d9e92bec43f623789601c6a45d7fbc67d"
+    },
+    "willyou-dev112-native-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-native-red.json",
+      "sha256": "20c555f59539c35716c2d9dbe7ef5241235d737ae0ffac0e30793c11fab57e6a"
+    },
+    "willyou-dev112-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-code-final.json",
+      "sha256": "cf191bb1c3077b56f2329ec64738dd6ca7669a94cc8b9371a5bbb255327abf02"
+    },
+    "willyou-dev112-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-code-final.log",
+      "sha256": "51ff63c3bbe3ae7541f58f1bf8655b70457236ca8f906f080de5419105cb0293"
+    },
+    "willyou-dev112-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev112-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-typecheck.log",
+      "sha256": "439ddef97a53302105b6f33bf02c31467715567b75a643cc0c41cf7532e6ab7c"
+    },
+    "willyou-dev112-package-r63.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-package-r63.log",
+      "sha256": "be2f8fe6c5560cb823bd1a558d942ecb9de224c01ad1c837a6adf932ca1d0e52"
+    },
+    "willyou-dev112-package-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-package-hashes.json",
+      "sha256": "c4fafb4244be7352a56a69cbe077840d2d0ab5976d1bfbed56ae29027fc39ea1"
+    },
+    "willyou-dev112-runtime-r63.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-runtime-r63.json",
+      "sha256": "4449c012f9c474cfef78e3f76fcddc95a71b30da9816a53dc6b3582ebee361bc"
+    },
+    "willyou-dev112-watcher.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-watcher.json",
+      "sha256": "b43f394ade371fece007f54aa6dac13951107ad4937f56ac4442751e8155dbcf"
+    },
+    "willyou-dev112-verify-runtime-r63.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-verify-runtime-r63.cjs",
+      "sha256": "2dfc9a3d5be112a8af9f9149debcaab0528970054e44aa1e18701ed2dd1761a7"
+    },
+    "willyou-dev112-watch-hash-r63.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-watch-hash-r63.cjs",
+      "sha256": "c5e010ee9e0a180e22745f2698305b36ade622bdb5a166ee109b341c1631acda"
+    },
+    "willyou-dev112-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-app-r1.log",
+      "sha256": "be628770328fd8202bcf49cea90b55cec6d88ea2e43e83be3553015c679597af"
+    },
+    "willyou-dev112-app-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-app-r2.log",
+      "sha256": "768090454716d54917d8b968e251eefb209d47568fdae649a17aee9570b2a2ea"
+    },
+    "willyou-dev112-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-process-audit.json",
+      "sha256": "400fe69f1c9bba9f08adb019f28a8ad2aa4c6464c3fb07861a47b3c0ada7c6a6"
+    },
+    "willyou-dev112-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-index-before.json",
+      "sha256": "ba6346b5cc207dc3d3d60906ef52562f338efc1a25bbb72f633c173b54edf017"
+    },
+    "willyou-dev112-build-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-build-snapshot.py",
+      "sha256": "ed19adfc082453b8f9b3c3be6503980f4400490953a508e842761c1740a905b7"
+    },
+    "willyou-dev112-tested-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-dev112-tested-snapshot.py",
+      "sha256": "ddabb1898cd5c0620eb67ec9e466910792a6498253317072cac5a6722f70614f"
+    },
+    "willyou-m9-acceptance-batch-r63-build-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-m9-acceptance-batch-r63-build-sources.json",
+      "sha256": "f684011c5ef9185fca36bb47ab8179bac3da2cd5f15b3a9bb6378f88eb696f83"
+    },
+    "willyou-m9-acceptance-batch-r63-dev112-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-m9-acceptance-batch-r63-dev112-tested-sources.json",
+      "sha256": "9254edc4c6201f068228ee64da0ff3cab12ae06b8d963191a325d210cb6994b7"
+    },
+    "willyou-m9-acceptance-batch-r63-build-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-m9-acceptance-batch-r63-build-sources.tar.gz",
+      "sha256": "63ddbf312875167cbd12e1322d0879af659bd23af7d88d97f572661dabc37325"
+    },
+    "willyou-m9-acceptance-batch-r63-dev112-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/willyou-m9-acceptance-batch-r63-dev112-tested-sources.tar.gz",
+      "sha256": "3bf19616264ba72bcb590cd35621ba293cdcf1159c64009cf4f59946fdb31071"
+    },
+    "app-final/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/electron.log",
+      "sha256": "6ac674471fa566a0340d806182b08f2c998ec7c04bb254d7be12dddee08a0a7f"
+    },
+    "app-final/gate-empty.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/gate-empty.md-rich.png",
+      "sha256": "3f689da838b6d32d5360f741990cc5eac482d623ec6a0eabca12299b96321535"
+    },
+    "app-final/gate-extra-info.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/gate-extra-info.md-rich.png",
+      "sha256": "20cc1010e18d3867c0911715697857d1830d6e27b8aae723bfff3f11aecfb6ef"
+    },
+    "app-final/gate-strict.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/gate-strict.md-rich.png",
+      "sha256": "4f6cf6d05e0847eb41534a9353ba7bbb27d229ac4c23360a020830c70660c555"
+    },
+    "app-final/gate-tilde.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/gate-tilde.md-rich.png",
+      "sha256": "2b94526d05ee246144f01ff07a55cb6fd42be5629c60831efc67acb86b5e2e1a"
+    },
+    "app-final/gate-titlecase.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/gate-titlecase.md-rich.png",
+      "sha256": "9d9b5e0f21cf8d95b7e47a066c183aba84132227c07959d8303ecebdbc6bd8df"
+    },
+    "app-final/project/gate-crlf.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-crlf.md",
+      "sha256": "996400bf5a9ccd5105e238c4170b77841e69100652260b9d268e33235661ef5a"
+    },
+    "app-final/project/gate-empty.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-empty.md",
+      "sha256": "5515d555b68f5045515043253665100e99c2d5abca5661f0cac766c7f3a1cf96"
+    },
+    "app-final/project/gate-extra-info.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-extra-info.md",
+      "sha256": "0a08bf02fe4659a3174101e7f96d5e90b64797da5230fbc99afb021e1a68764b"
+    },
+    "app-final/project/gate-info-spaces.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-info-spaces.md",
+      "sha256": "22a2abbb40723c034b882f110f4cdbc1111046442c22e047ebd4333c84631729"
+    },
+    "app-final/project/gate-long-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-long-close.md",
+      "sha256": "ae533e0f79599a581cb7fcbaced968f1e412288390dc3f395eadfe070a2e3c48"
+    },
+    "app-final/project/gate-no-info.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-no-info.md",
+      "sha256": "c9beee89fa82c10c232df6631438f44fd08a063a7c76b44246298e1acd9bd1bf"
+    },
+    "app-final/project/gate-other.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-other.md",
+      "sha256": "b8e1cad4905b213a31b3f6056e748fbd224e01708c63075a695f3e54463570c1"
+    },
+    "app-final/project/gate-short-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-short-close.md",
+      "sha256": "21dd59af92e741348231ec4fa06e726fc9afcc3b6c34cfb51aefdcb3c79bffcf"
+    },
+    "app-final/project/gate-similar.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-similar.md",
+      "sha256": "4ac79db797331da33b2b64fde9c037c0190b98f0c73dc25dc33cb83876350889"
+    },
+    "app-final/project/gate-strict.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-strict.md",
+      "sha256": "55d30790eb7c0f24990a8abfb6c76110da64ef81318942eb06d88ca5226d450a"
+    },
+    "app-final/project/gate-tilde.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-tilde.md",
+      "sha256": "ef70eec7c7626d2708034b8fa49ca897c2144134450a6e61100e8bfd618711c3"
+    },
+    "app-final/project/gate-titlecase.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-titlecase.md",
+      "sha256": "0e7044dea5deeab1c5de07de1a429ea6a5dc20e526ddfd61a420e41e901138ac"
+    },
+    "app-final/project/gate-unclosed.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-unclosed.md",
+      "sha256": "b104da33ccb0519aba90ccb6e376064d0f23b14f2036576b675242fcf0d6a65e"
+    },
+    "app-final/project/gate-uppercase.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-uppercase.md",
+      "sha256": "7436bc123259103e791a5887b3dc7997c475a561ff57b6e7129bad73b0317ca8"
+    },
+    "app-final/project/gate-wrong-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/project/gate-wrong-close.md",
+      "sha256": "465448eeaee1bddef841cd1120a596902fdbed6b8547766e9903ac95185d8cfd"
+    },
+    "app-final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-final/result.json",
+      "sha256": "8a3a68ab3305693ddd26a312e612bd91a2969b938b47e1809fd0d9f2f7c1fa77"
+    },
+    "app-failure-TF5e3W/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/failure-electron.log",
+      "sha256": "912d3a2ea5400a60a9b71ad80d6c956e9deca2cc628b9e69b72ee92b417ac22f"
+    },
+    "app-failure-TF5e3W/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/failure.png",
+      "sha256": "a6c0f938e0c47f88251d8560ffbcccf0d515d55d283b28d3f4bc95543ab90409"
+    },
+    "app-failure-TF5e3W/gate-extra-info.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/gate-extra-info.md-rich.png",
+      "sha256": "c47da3f69aae5ae26ed697592f1bb6f8a00408425c8a482663fe4363ae0ea024"
+    },
+    "app-failure-TF5e3W/gate-strict.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/gate-strict.md-rich.png",
+      "sha256": "b600161abd0b62e2ce3931c09803e6fbb23027b14748ad66c1daf2910f13ef17"
+    },
+    "app-failure-TF5e3W/gate-tilde.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/gate-tilde.md-rich.png",
+      "sha256": "9a8d2dcf7469ff3e5c8cae1284d94cb8f6732af5dd5665fcdb88fb42b2816397"
+    },
+    "app-failure-TF5e3W/gate-titlecase.md-rich.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/gate-titlecase.md-rich.png",
+      "sha256": "28863b7d2ba24c5e686897f2f5f95fc4532f18f41ca5cac4e04b9ab57372599a"
+    },
+    "app-failure-TF5e3W/project/gate-crlf.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-crlf.md",
+      "sha256": "996400bf5a9ccd5105e238c4170b77841e69100652260b9d268e33235661ef5a"
+    },
+    "app-failure-TF5e3W/project/gate-empty.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-empty.md",
+      "sha256": "5515d555b68f5045515043253665100e99c2d5abca5661f0cac766c7f3a1cf96"
+    },
+    "app-failure-TF5e3W/project/gate-extra-info.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-extra-info.md",
+      "sha256": "0a08bf02fe4659a3174101e7f96d5e90b64797da5230fbc99afb021e1a68764b"
+    },
+    "app-failure-TF5e3W/project/gate-info-spaces.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-info-spaces.md",
+      "sha256": "22a2abbb40723c034b882f110f4cdbc1111046442c22e047ebd4333c84631729"
+    },
+    "app-failure-TF5e3W/project/gate-long-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-long-close.md",
+      "sha256": "ae533e0f79599a581cb7fcbaced968f1e412288390dc3f395eadfe070a2e3c48"
+    },
+    "app-failure-TF5e3W/project/gate-no-info.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-no-info.md",
+      "sha256": "c9beee89fa82c10c232df6631438f44fd08a063a7c76b44246298e1acd9bd1bf"
+    },
+    "app-failure-TF5e3W/project/gate-other.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-other.md",
+      "sha256": "b8e1cad4905b213a31b3f6056e748fbd224e01708c63075a695f3e54463570c1"
+    },
+    "app-failure-TF5e3W/project/gate-short-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-short-close.md",
+      "sha256": "21dd59af92e741348231ec4fa06e726fc9afcc3b6c34cfb51aefdcb3c79bffcf"
+    },
+    "app-failure-TF5e3W/project/gate-similar.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-similar.md",
+      "sha256": "4ac79db797331da33b2b64fde9c037c0190b98f0c73dc25dc33cb83876350889"
+    },
+    "app-failure-TF5e3W/project/gate-strict.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-strict.md",
+      "sha256": "55d30790eb7c0f24990a8abfb6c76110da64ef81318942eb06d88ca5226d450a"
+    },
+    "app-failure-TF5e3W/project/gate-tilde.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-tilde.md",
+      "sha256": "ef70eec7c7626d2708034b8fa49ca897c2144134450a6e61100e8bfd618711c3"
+    },
+    "app-failure-TF5e3W/project/gate-titlecase.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-titlecase.md",
+      "sha256": "0e7044dea5deeab1c5de07de1a429ea6a5dc20e526ddfd61a420e41e901138ac"
+    },
+    "app-failure-TF5e3W/project/gate-unclosed.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-unclosed.md",
+      "sha256": "b104da33ccb0519aba90ccb6e376064d0f23b14f2036576b675242fcf0d6a65e"
+    },
+    "app-failure-TF5e3W/project/gate-uppercase.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-uppercase.md",
+      "sha256": "7436bc123259103e791a5887b3dc7997c475a561ff57b6e7129bad73b0317ca8"
+    },
+    "app-failure-TF5e3W/project/gate-wrong-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/project/gate-wrong-close.md",
+      "sha256": "465448eeaee1bddef841cd1120a596902fdbed6b8547766e9903ac95185d8cfd"
+    },
+    "app-failure-TF5e3W/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/app-failure-TF5e3W/result.json",
+      "sha256": "8b8f5535c92f73a18818a5c16ea32e088179b463ad69ede4a70cd08b610538eb"
+    },
+    "failure-history.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-mermaid-gate-dev112-r63/failure-history.txt",
+      "sha256": "1f9035d09b71914b10d9b9bb79d797ad1f6a9b3fe79864af4a2f2485fb6bb97b"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "electron": "42.11.14",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "PA01",
+      "title": "真实Electron主frame经生产校验送入真实PTY，不追加Enter",
+      "status": "passed",
+      "evidence": {
+        "received": "输入 😀",
+        "appendEnter": false
+      }
+    },
+    {
+      "id": "PA02",
+      "title": "另一个真实窗口即使知道task/PTY也不能输入",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA03",
+      "title": "真实子frame同一webContents仍被拒绝",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA04",
+      "title": "错任务及停止/重开后的旧PTY不能输入",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA05",
+      "title": "真实resize仅接受合法来源/任务和尺寸",
+      "status": "passed",
+      "evidence": {
+        "cols": 100,
+        "rows": 35,
+        "rejectedOther": 2
+      }
+    },
+    {
+      "id": "PA06",
+      "title": "原生invoke的kill校验sender/task，合法调用只结束合成PTY",
+      "status": "passed",
+      "evidence": {
+        "foreignAndWrongTaskRejected": true,
+        "legitimateKill": true
+      }
+    }
+  ],
+  "scope": "Own hidden Electron windows and synthetic raw PTY; not packaged WillYou or third-party CLI acceptance",
+  "startedFromScript": "/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/技研/实验/pty-access-probe.mjs",
+  "scriptSha256": "2b6541837df4f45ec34012666cb71520cf40071f631f8bee792fb31e5c6e2fb5",
+  "summary": {
+    "passed": 6,
+    "failed": 0
+  }
+}

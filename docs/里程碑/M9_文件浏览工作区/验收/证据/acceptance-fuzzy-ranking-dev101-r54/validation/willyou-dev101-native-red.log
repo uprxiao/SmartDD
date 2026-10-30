@@ -1,0 +1,61 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/fuzzy-worker-acceptance.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev101-native-red.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/fuzzy-worker-acceptance.test.ts (6 tests | 6 failed) 454ms
+     × M9-T-U04 real walk candidates retain ranking, fragments and stable membership 63ms
+     × M9-T-U05 real walk candidates retain ranking, fragments and stable membership 35ms
+     × M9-T-U06 real walk candidates retain ranking, fragments and stable membership 52ms
+     × M9-T-U07 real walk candidates retain ranking, fragments and stable membership 121ms
+     × M9-T-U08 real walk candidates retain ranking, fragments and stable membership 44ms
+     × M9-T-U09 real walk candidates retain ranking, fragments and stable membership 137ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U04 real walk candidates retain ranking, fragments and stable membership
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U05 real walk candidates retain ranking, fragments and stable membership
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U06 real walk candidates retain ranking, fragments and stable membership
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U07 real walk candidates retain ranking, fragments and stable membership
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U08 real walk candidates retain ranking, fragments and stable membership
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U09 real walk candidates retain ranking, fragments and stable membership
+AssertionError: expected 'Native fuzzy fixture u08/f b/foobar\n' to be 'Native fuzzy fixture u08/f b/fooBar\n' // Object.is equality
+
+- Expected
++ Received
+
+- Native fuzzy fixture u08/f b/fooBar
++ Native fuzzy fixture u08/f b/foobar
+
+
+ ❯ src/renderer/features/files/fuzzy-worker-acceptance.test.ts:24:324
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U06 real walk candidates retain ranking, fragments and stable membership
+Error: prefix-backslash missing provider candidate u06/src/foo.ts
+ ❯ Module.verifyFuzzyFixture src/renderer/features/files/fuzzy-ranking-fixtures.mjs:45:57
+
+ ❯ src/renderer/features/files/fuzzy-worker-acceptance.test.ts:32:439
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/renderer/features/files/fuzzy-worker-acceptance.test.ts > U04-U09 real native provider and original compiled ranking Worker > M9-T-U08 real walk candidates retain ranking, fragments and stable membership
+Error: short-space missing provider candidate u08/f b/foobar
+ ❯ Module.verifyFuzzyFixture src/renderer/features/files/fuzzy-ranking-fixtures.mjs:45:57
+
+ ❯ src/renderer/features/files/fuzzy-worker-acceptance.test.ts:32:439
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  04:45:19
+   Duration  1.02s (transform 329ms, setup 0ms, import 498ms, tests 454ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev101-native-red.json
+ ELIFECYCLE  Test failed. See above for more details.

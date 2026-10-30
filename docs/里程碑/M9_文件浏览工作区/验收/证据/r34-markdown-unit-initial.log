@@ -1,0 +1,204 @@
+TAP version 13
+# Subtest: Markdown editing retains untouched bytes and line endings
+ok 1 - Markdown editing retains untouched bytes and line endings
+  ---
+  duration_ms: 4.990334
+  type: 'test'
+  ...
+# Subtest: fenced code, table, frontmatter, and math preserve complete source ranges
+ok 2 - fenced code, table, frontmatter, and math preserve complete source ranges
+  ---
+  duration_ms: 1.497292
+  type: 'test'
+  ...
+# Subtest: relative document navigation rejects root escape and executable URLs
+ok 3 - relative document navigation rejects root escape and executable URLs
+  ---
+  duration_ms: 0.388125
+  type: 'test'
+  ...
+# Subtest: local image menu has exact gated order
+ok 4 - local image menu has exact gated order
+  ---
+  duration_ms: 0.186042
+  type: 'test'
+  ...
+# Subtest: animation cannot select or copy, remote cannot reveal
+ok 5 - animation cannot select or copy, remote cannot reveal
+  ---
+  duration_ms: 0.09475
+  type: 'test'
+  ...
+# Subtest: clipboard capability and host mismatch gate independent image controls
+ok 6 - clipboard capability and host mismatch gate independent image controls
+  ---
+  duration_ms: 0.185792
+  type: 'test'
+  ...
+# Subtest: fit does not upscale; stepping inserts nonstandard fit and clamps at endpoints
+ok 7 - fit does not upscale; stepping inserts nonstandard fit and clamps at endpoints
+  ---
+  duration_ms: 0.168167
+  type: 'test'
+  ...
+# Subtest: wheel delta modes and anchor preserve location under zoom
+ok 8 - wheel delta modes and anchor preserve location under zoom
+  ---
+  duration_ms: 0.103
+  type: 'test'
+  ...
+# Subtest: document find uses UTF16 offsets, escaped literal, and guarded regex
+ok 9 - document find uses UTF16 offsets, escaped literal, and guarded regex
+  ---
+  duration_ms: 0.729792
+  type: 'test'
+  ...
+# Subtest: every document round-trips byte-for-byte through block raw ranges
+ok 10 - every document round-trips byte-for-byte through block raw ranges
+  ---
+  duration_ms: 8.905375
+  type: 'test'
+  ...
+# Subtest: fuzzed documents never lose or reorder bytes
+ok 11 - fuzzed documents never lose or reorder bytes
+  ---
+  duration_ms: 43.578834
+  type: 'test'
+  ...
+# Subtest: block classification covers CommonMark structures and gaps
+ok 12 - block classification covers CommonMark structures and gaps
+  ---
+  duration_ms: 1.703417
+  type: 'test'
+  ...
+# Subtest: rendering is escaped and links are non-executable
+ok 13 - rendering is escaped and links are non-executable
+  ---
+  duration_ms: 1.278708
+  type: 'test'
+  ...
+# Subtest: KaTeX renders inline and block math, bad math degrades without throwing
+ok 14 - KaTeX renders inline and block math, bad math degrades without throwing
+  ---
+  duration_ms: 6.726042
+  type: 'test'
+  ...
+# Subtest: task toggles carry the exact absolute source line, including after frontmatter
+ok 15 - task toggles carry the exact absolute source line, including after frontmatter
+  ---
+  duration_ms: 0.494041
+  type: 'test'
+  ...
+# Subtest: editing one block changes only its range; CJK/emoji offsets stay UTF-16 exact
+ok 16 - editing one block changes only its range; CJK/emoji offsets stay UTF-16 exact
+  ---
+  duration_ms: 0.200084
+  type: 'test'
+  ...
+# Subtest: tables keep alignment and inline code containing pipes
+ok 17 - tables keep alignment and inline code containing pipes
+  ---
+  duration_ms: 0.308333
+  type: 'test'
+  ...
+# Subtest: frontmatter parses valid YAML and reports invalid or non-mapping documents
+ok 18 - frontmatter parses valid YAML and reports invalid or non-mapping documents
+  ---
+  duration_ms: 3.242375
+  type: 'test'
+  ...
+# Subtest: standalone image and fallback source policy
+ok 19 - standalone image and fallback source policy
+  ---
+  duration_ms: 0.695334
+  type: 'test'
+  ...
+# Subtest: non-ASCII link and image targets keep the author text for path resolution
+ok 20 - non-ASCII link and image targets keep the author text for path resolution
+  ---
+  duration_ms: 0.35825
+  type: 'test'
+  ...
+# Subtest: inline consumption maps repeated text, emphasis, emoji, escapes and entities to original source
+ok 21 - inline consumption maps repeated text, emphasis, emoji, escapes and entities to original source
+  ---
+  duration_ms: 4.819833
+  type: 'test'
+  ...
+# Subtest: two identical formulas retain distinct source ranges rather than searching rendered math
+ok 22 - two identical formulas retain distinct source ranges rather than searching rendered math
+  ---
+  duration_ms: 1.140709
+  type: 'test'
+  ...
+# Subtest: CRLF quotes and nested list task markers keep source line and character offsets
+ok 23 - CRLF quotes and nested list task markers keep source line and character offsets
+  ---
+  duration_ms: 1.801583
+  type: 'test'
+  ...
+# Subtest: table cells cannot borrow a repeated word from an earlier escaped-pipe cell
+not ok 24 - table cells cannot borrow a repeated word from an earlier escaped-pipe cell
+  ---
+  duration_ms: 1.013833
+  type: 'test'
+  location: '/Users/liubu/Documents/ChatGPT/SmartDD/prototypes/m6-codex/tests/file-markdown-source.test.mjs:25:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    12 !== 5
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 5
+  actual: 12
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD/prototypes/m6-codex/tests/file-markdown-source.test.mjs:29:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: ambiguous or normalized source projection is explicit rather than a guessed offset
+ok 25 - ambiguous or normalized source projection is explicit rather than a guessed offset
+  ---
+  duration_ms: 0.234916
+  type: 'test'
+  ...
+# Subtest: cross-block endpoint range includes source markup and validates document bounds
+ok 26 - cross-block endpoint range includes source markup and validates document bounds
+  ---
+  duration_ms: 0.097
+  type: 'test'
+  ...
+# Subtest: highlighted fences use existing language aliases and escape unknown code safely
+ok 27 - highlighted fences use existing language aliases and escape unknown code safely
+  ---
+  duration_ms: 10.290375
+  type: 'test'
+  ...
+# Subtest: only a complete lowercase mermaid fence becomes a diagram
+ok 28 - only a complete lowercase mermaid fence becomes a diagram
+  ---
+  duration_ms: 0.367084
+  type: 'test'
+  ...
+# Subtest: textarea edits preserve untouched mixed line endings and adopt local EOL for inserted lines
+ok 29 - textarea edits preserve untouched mixed line endings and adopt local EOL for inserted lines
+  ---
+  duration_ms: 0.650084
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 28
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 183.093458

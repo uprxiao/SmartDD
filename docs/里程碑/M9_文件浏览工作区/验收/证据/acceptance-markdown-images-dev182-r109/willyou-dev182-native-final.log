@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/markdown/image-source-native-acceptance.test.ts (1 test | 1 failed) 381ms
+     × reads exact related images, copies selected bytes safely, and opens an independent main-narrowed readonly image tab 379ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/markdown/image-source-native-acceptance.test.ts > Embedded local image native/source lifetime > reads exact related images, copies selected bytes safely, and opens an independent main-narrowed readonly image tab
+FileError: [PERMISSION] 此来源为只读，不能保存原文件
+ ❯ FileService.save src/main/core/files/file-service.ts:446:32
+    444|     const input = fileSaveSchema.parse(raw); await this.recovery.ready…
+    445|     const { record, lease } = this.requireDocument(owner, input.ref);
+    446|     if (record.readOnly) throw new FileError('PERMISSION', '此来源为只读，不能保…
+       |                                ^
+    447|     const bytes = Buffer.from(input.base64, 'base64');
+    448|     if (bytes.length > FILE_LIMITS.asset || bytes.toString('base64') !…
+ ❯ src/renderer/features/files/markdown/image-source-native-acceptance.test.ts:41:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  07:40:44
+   Duration  986ms (transform 367ms, setup 0ms, import 532ms, tests 381ms, environment 0ms)
+

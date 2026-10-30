@@ -1,0 +1,58 @@
+{
+  "time": "2026-10-17T10:46:16.103244+00:00",
+  "scope": "packaged native UI development regression; not all 419 formal M9 cases",
+  "platform": "macOS 26.6.1 arm64",
+  "branch": "feature/0.0.1",
+  "worktreeBase": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "bundle": "/private/tmp/willyou-m9-close-fixed-build/mac-arm64/WillYou.app",
+  "appAsarSha256": "0a30cb95e6acc64d0c3ce4f9cfc32e4384ba3d8b0713706af4e4c8b0a24a312a",
+  "fixture": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+  "userData": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/userdata",
+  "method": "CUA bound exact packaged application; native AX clicks, keyboard Cmd+S/Cmd+Q. No mock file API. Permission and crash faults applied to own isolated fixture/process.",
+  "checks": [
+    {
+      "id": "DEV-QUIT-01",
+      "steps": "Enter marker in actual editor, Cmd+Q, restart and reopen project",
+      "actual": "App exits; marker present in actual reopened editor and disk",
+      "state": "passed",
+      "limitation": "Input-to-quit time not independently recorded; does not alone prove save finished before 3s autosave deadline",
+      "bundleAsar": "16a7fea71b33a814fa64626ed9250d4068d667b5405078520e1bc6196d2f5404"
+    },
+    {
+      "id": "DEV-QUIT-02",
+      "steps": "Make parent directory mode 0500, edit, save, Cmd+Q, choose Continue",
+      "actual": "Native quit dialog blocks exit and offers continue/discard; continue retains exact text",
+      "state": "passed"
+    },
+    {
+      "id": "DEV-RECOVER-01",
+      "steps": "After failed save and durable checkpoint, SIGKILL own old app, start fixed bundle with same userData, reopen, click Restore Draft, save",
+      "actual": "Disk first shows older saved version; recovery banner restores unsaved marker; save succeeds",
+      "state": "passed"
+    },
+    {
+      "id": "DEV-PERM-01",
+      "steps": "On fixed bundle parent 0500, enter retry marker, Cmd+S, Cmd+Q, continue; restore parent 0700; click Save",
+      "actual": "Failure remains retryable with dirty text; no false post-commit conflict; retry reports Saved and exact marker is on disk",
+      "state": "passed"
+    },
+    {
+      "id": "DEV-QUIT-03",
+      "steps": "Cmd+Q after successful retry",
+      "actual": "App exits normally",
+      "state": "passed"
+    }
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-001",
+      "foundIn": "16a7fea71b33a814fa64626ed9250d4068d667b5405078520e1bc6196d2f5404",
+      "problem": "Pre-commit parent permission error falsely marked unknown/recoveryBlocked",
+      "fix": "Native preparation errors produce failed receipt with no post-commit recoveryId; durable preparation phase does not block new save; replay of failed op remains idempotent",
+      "retest": "DEV-PERM-01, real native integration test; fixed bundle above"
+    }
+  ],
+  "evidence": "Current task CUA AX snapshots and screenshot show exact bundle URL, failure, native dialog, recovered marker and Saved state; disk hash below independently read after exit",
+  "fileSha256": "7c34edaf5e2d8d3a39719c07c4cac6e3b7b389b5e16b505974b3ce24cb02dc23",
+  "pending": "Explicit discard branch, true post-commit conflict inspection/resolution, complete crash/volume/quota cases and all other M9 format/interaction coverage remain."
+}

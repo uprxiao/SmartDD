@@ -1,0 +1,592 @@
+{
+  "schemaVersion": 1,
+  "kind": "Current production text-buffer U+I acceptance with real packaged native broker",
+  "recordedAt": "2026-10-18T01:54:25.391450+00:00",
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "macOS": "26.6.1",
+    "arch": "arm64",
+    "data": "Each run creates independent synthetic source.md and userdata in a macOS temp directory, and removes them after assertions. No AIS file or UI fixture is modified."
+  },
+  "executionLayers": {
+    "real": [
+      "Production FileBuffer and CodeMirror state",
+      "Production FileService, FileRootsService and FileRecoveryStore",
+      "Production helper from an already verified app bundle",
+      "Real filesystem atomic replacements, durable journals and restarted service recovery",
+      "Independent Node file bytes/hash/inode observations"
+    ],
+    "controlled": [
+      "Only timer advancement and dispatch/delivery scheduling are controlled.",
+      "A save dispatch can be suspended before invoking the genuine native executable.",
+      "Real refresh/read/checkpoint results can be delayed at the API delivery boundary. Late read errors are explicit injected delivery errors after a real successful read."
+    ],
+    "notClaimed": [
+      "Renderer GUI or real Electron IPC transport acceptance",
+      "Newly packaged app validation for the corrected FileBuffer",
+      "Office behavior or other platforms"
+    ]
+  },
+  "nativeBuild": {
+    "appPath": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+    "appAsarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+    "executable": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "executableSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "boundary": "Only the unchanged native broker is reused. The FileBuffer correction executes from current source in the integration test and is not in this old app ASAR."
+  },
+  "sourceBaseline": {
+    "previousSnapshot": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.tar.gz",
+    "previousSnapshotSha256": "5ec8a673a2569d2f6a6439a4f22e170b828c254f993e0d951357c2e085a3f008",
+    "currentRelevantSources": {
+      "path": "acceptance-text-buffer/tested-relevant-sources-dev035.tar.gz",
+      "sha256": "b210a05a2b70149bcb530eba0aadbf87b30266fa6083cf46494fe02597a4ecfe",
+      "scope": "Relevant text-buffer, file service, broker sources and affected tests only; not a complete app build snapshot.",
+      "files": {
+        "src/renderer/features/files/file-buffer.ts": {
+          "sha256": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+          "previousSourceSha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+          "sameAsPreviousSnapshot": false
+        },
+        "src/renderer/features/files/file-buffer.test.ts": {
+          "sha256": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+          "previousSourceSha256": "80f9798b22bc514a0c41b4278d38df387ad3c647d5b55b011a71ebeff75ff858",
+          "sameAsPreviousSnapshot": false
+        },
+        "src/renderer/features/files/text-buffer-acceptance.test.ts": {
+          "sha256": "c850d06e86d55204ed8b7840029fc964594b19314a73ac1be02071da63cc7a43",
+          "previousSourceSha256": null,
+          "sameAsPreviousSnapshot": null
+        },
+        "src/renderer/features/files/workspace-store.ts": {
+          "sha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+          "previousSourceSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/renderer/features/files/workspace-store.test.ts": {
+          "sha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+          "previousSourceSha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/renderer/features/files/editor-source.ts": {
+          "sha256": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "previousSourceSha256": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/file-text.ts": {
+          "sha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+          "previousSourceSha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/file-classification.ts": {
+          "sha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+          "previousSourceSha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/files.ts": {
+          "sha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+          "previousSourceSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/file-service.ts": {
+          "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+          "previousSourceSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/native-broker.ts": {
+          "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+          "previousSourceSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/roots.ts": {
+          "sha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+          "previousSourceSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/recovery-store.ts": {
+          "sha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+          "previousSourceSha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/broker.mm": {
+          "sha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+          "previousSourceSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/desktop-actions.inc.mm": {
+          "sha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+          "previousSourceSha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/engine-workspaces.inc.mm": {
+          "sha256": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+          "previousSourceSha256": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/git-metadata.inc.mm": {
+          "sha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+          "previousSourceSha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-calculate.inc.mm": {
+          "sha256": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+          "previousSourceSha256": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-measure.inc.mm": {
+          "sha256": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+          "previousSourceSha256": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-render.inc.mm": {
+          "sha256": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+          "previousSourceSha256": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/tex-compile.inc.mm": {
+          "sha256": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+          "previousSourceSha256": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+          "sameAsPreviousSnapshot": true
+        }
+      }
+    }
+  },
+  "runs": [
+    {
+      "id": "r1",
+      "passed": 3,
+      "failed": 1,
+      "unselected": 0,
+      "report": {
+        "path": "acceptance-text-buffer/tests-r1.json",
+        "sha256": "c58189fae711bcde8525c370d5c22c93ee2f7ccd082933437f8bc93ec0d73fbb",
+        "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r1.json"
+      }
+    },
+    {
+      "id": "r2",
+      "passed": 0,
+      "failed": 1,
+      "unselected": 3,
+      "report": {
+        "path": "acceptance-text-buffer/tests-r2.json",
+        "sha256": "2348c41015bb0a55c0f63c0ef020b6cc6b754b7745f25f6cfc88676b45e323f0",
+        "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r2.json"
+      }
+    },
+    {
+      "id": "r3",
+      "passed": 27,
+      "failed": 0,
+      "unselected": 0,
+      "report": {
+        "path": "acceptance-text-buffer/tests-r3.json",
+        "sha256": "d84a07ae6bd6c6a677769ae962f7bf384899aacbdcdff74ea5e51614d329fc09",
+        "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r3.json"
+      }
+    },
+    {
+      "id": "r4",
+      "passed": 6,
+      "failed": 0,
+      "unselected": 0,
+      "report": {
+        "path": "acceptance-text-buffer/tests-r4.json",
+        "sha256": "4817b5d7fded79fde6941aaf271d630c623e21acb0fa7ad826a9f95f9f9424a2",
+        "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r4.json"
+      }
+    },
+    {
+      "id": "r5",
+      "passed": 6,
+      "failed": 0,
+      "unselected": 0,
+      "report": {
+        "path": "acceptance-text-buffer/tests-r5.json",
+        "sha256": "b51432cba0ce6c3f228cd591d81381253d230a6a4001aa4f71bdecfcadf69768",
+        "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r5.json"
+      }
+    },
+    {
+      "id": "dev035-r1",
+      "passed": 0,
+      "failed": 2,
+      "unselected": 6,
+      "report": {
+        "path": "acceptance-text-buffer/tests-dev035-r1.json",
+        "sha256": "f224e6e2adb41f878121d2719398413207e4b829c4714df4bc81691b4a50e411",
+        "originalPath": "/private/tmp/willyou-text-buffer-dev035-r1.json"
+      }
+    },
+    {
+      "id": "dev035-r2",
+      "passed": 31,
+      "failed": 0,
+      "unselected": 0,
+      "report": {
+        "path": "acceptance-text-buffer/tests-dev035-r2.json",
+        "sha256": "905966efa5351d625f3a2c1695487615edc704a55f6e29204acc422b9ffb3c7b",
+        "originalPath": "/private/tmp/willyou-text-buffer-dev035-r2.json"
+      }
+    }
+  ],
+  "runNotes": {
+    "r1": "Initial complete batch: H04 failed, H07 and both H21 parameter tests passed.",
+    "r2": "H04 alone reproduced with explicit IDEMPOTENCY diagnostic; three unrelated tests unselected.",
+    "r3": "After product fix, all6 targeted tests plus15 file-buffer and6 workspace-store regressions passed (27).",
+    "r4": "Targeted6 rerun after adding actual new FileBuffer.restoreDraft from persisted recovery; all passed.",
+    "typecheck-first": "New test fixtures type recursively referred to fixture return type; failed typecheck. Fixed to a cleanup-only structural type; production unaffected.",
+    "r5": "Final exact test source:6/6 passed,0 skipped; full node+web typecheck passed. No repeated compilation or repackaging.",
+    "dev035-r1": "Before product fix: both selected variants failed (6 unselected). With v1 receipt before v3 checkpoint, an obsolete clean cleanup was issued. With v1 receipt after durable v3, a restarted actual service could no longer read v3: [UNTRUSTED] 草稿不属于当前文件与任务. Thus the later recovery draft had actually been resolved/deleted.",
+    "dev035-r2": "After minimal automatic-clean guard: all10 production acceptance tests plus15 FileBuffer and6 workspace-store regressions passed (31 total,0 failed,0 skipped). Includes real CodeMirror undo, v1 receipt delivered before/after new v3 persistence, actual service+buffer restart recovery before autosave, subsequent real native write, ordinary clean cleanup and explicit discard behavior. Full node+web typecheck exit0."
+  },
+  "finalTestCommand": "SMARTDD_M9_FILE_BROKER='/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files' SMARTDD_M9_TEXT_ACCEPTANCE_EVIDENCE=/private/tmp/willyou-text-buffer-dev035-r2-observations.json pnpm test src/renderer/features/files/text-buffer-acceptance.test.ts src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/workspace-store.test.ts --reporter=json --outputFile=/private/tmp/willyou-text-buffer-dev035-r2.json",
+  "artifacts": {
+    "tests-r1": {
+      "path": "acceptance-text-buffer/tests-r1.json",
+      "sha256": "c58189fae711bcde8525c370d5c22c93ee2f7ccd082933437f8bc93ec0d73fbb",
+      "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r1.json"
+    },
+    "tests-r2": {
+      "path": "acceptance-text-buffer/tests-r2.json",
+      "sha256": "2348c41015bb0a55c0f63c0ef020b6cc6b754b7745f25f6cfc88676b45e323f0",
+      "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r2.json"
+    },
+    "tests-r3": {
+      "path": "acceptance-text-buffer/tests-r3.json",
+      "sha256": "d84a07ae6bd6c6a677769ae962f7bf384899aacbdcdff74ea5e51614d329fc09",
+      "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r3.json"
+    },
+    "tests-r4": {
+      "path": "acceptance-text-buffer/tests-r4.json",
+      "sha256": "4817b5d7fded79fde6941aaf271d630c623e21acb0fa7ad826a9f95f9f9424a2",
+      "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r4.json"
+    },
+    "tests-r5": {
+      "path": "acceptance-text-buffer/tests-r5.json",
+      "sha256": "b51432cba0ce6c3f228cd591d81381253d230a6a4001aa4f71bdecfcadf69768",
+      "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r5.json"
+    },
+    "observations-final": {
+      "path": "acceptance-text-buffer/observations-final.json",
+      "sha256": "a4aa21fee5e597c46d23f137097292bdbe0400813cfb312932d235799cbe1d3d",
+      "originalPath": "/private/tmp/willyou-text-buffer-acceptance-r5-observations.json"
+    },
+    "typecheck-failed": {
+      "path": "acceptance-text-buffer/typecheck-failed.log",
+      "sha256": "92a170025dafb6fcb95cf6eafdcb3ab847589e6133993fef5346a4e3ca83719c",
+      "originalPath": "/private/tmp/willyou-text-buffer-typecheck-r1.log"
+    },
+    "typecheck-passed": {
+      "path": "acceptance-text-buffer/typecheck-passed.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "originalPath": "/private/tmp/willyou-text-buffer-typecheck-r2.log"
+    },
+    "tested-relevant-sources": {
+      "path": "acceptance-text-buffer/tested-relevant-sources.tar.gz",
+      "sha256": "06153ad2cd7f65316cd0a3c72fb3fe0ec6f888d526a80876da76547a2405a7a2",
+      "scope": "Relevant text-buffer, file service, broker sources and affected tests only; not a complete app build snapshot.",
+      "files": {
+        "src/renderer/features/files/file-buffer.ts": {
+          "sha256": "137bf399d969f769c6723b07a0bf743fb0b9659c921293d5bbfe22442c581354",
+          "previousSourceSha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+          "sameAsPreviousSnapshot": false
+        },
+        "src/renderer/features/files/file-buffer.test.ts": {
+          "sha256": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+          "previousSourceSha256": "80f9798b22bc514a0c41b4278d38df387ad3c647d5b55b011a71ebeff75ff858",
+          "sameAsPreviousSnapshot": false
+        },
+        "src/renderer/features/files/text-buffer-acceptance.test.ts": {
+          "sha256": "503d15be2942540c849dd9eaeacd57c555e3a45e6009242a206d40af72a2321f",
+          "previousSourceSha256": null,
+          "sameAsPreviousSnapshot": null
+        },
+        "src/renderer/features/files/workspace-store.ts": {
+          "sha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+          "previousSourceSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/renderer/features/files/workspace-store.test.ts": {
+          "sha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+          "previousSourceSha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/renderer/features/files/editor-source.ts": {
+          "sha256": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "previousSourceSha256": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/file-text.ts": {
+          "sha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+          "previousSourceSha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/file-classification.ts": {
+          "sha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+          "previousSourceSha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/files.ts": {
+          "sha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+          "previousSourceSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/file-service.ts": {
+          "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+          "previousSourceSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/native-broker.ts": {
+          "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+          "previousSourceSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/roots.ts": {
+          "sha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+          "previousSourceSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/recovery-store.ts": {
+          "sha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+          "previousSourceSha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/broker.mm": {
+          "sha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+          "previousSourceSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/desktop-actions.inc.mm": {
+          "sha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+          "previousSourceSha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/engine-workspaces.inc.mm": {
+          "sha256": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+          "previousSourceSha256": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/git-metadata.inc.mm": {
+          "sha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+          "previousSourceSha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-calculate.inc.mm": {
+          "sha256": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+          "previousSourceSha256": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-measure.inc.mm": {
+          "sha256": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+          "previousSourceSha256": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-render.inc.mm": {
+          "sha256": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+          "previousSourceSha256": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/tex-compile.inc.mm": {
+          "sha256": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+          "previousSourceSha256": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+          "sameAsPreviousSnapshot": true
+        }
+      }
+    },
+    "tests-dev035-r1": {
+      "path": "acceptance-text-buffer/tests-dev035-r1.json",
+      "sha256": "f224e6e2adb41f878121d2719398413207e4b829c4714df4bc81691b4a50e411",
+      "originalPath": "/private/tmp/willyou-text-buffer-dev035-r1.json"
+    },
+    "tests-dev035-r2": {
+      "path": "acceptance-text-buffer/tests-dev035-r2.json",
+      "sha256": "905966efa5351d625f3a2c1695487615edc704a55f6e29204acc422b9ffb3c7b",
+      "originalPath": "/private/tmp/willyou-text-buffer-dev035-r2.json"
+    },
+    "observations-dev035-final": {
+      "path": "acceptance-text-buffer/observations-dev035-final.json",
+      "sha256": "0741bc70d41dc3bf4c5de4b0a1a9645a1196f04ed15564a97190c170244b0238",
+      "originalPath": "/private/tmp/willyou-text-buffer-dev035-r2-observations.json"
+    },
+    "typecheck-dev035-passed": {
+      "path": "acceptance-text-buffer/typecheck-dev035-passed.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "originalPath": "/private/tmp/willyou-text-buffer-typecheck-r3.log"
+    },
+    "tested-relevant-sources-dev035": {
+      "path": "acceptance-text-buffer/tested-relevant-sources-dev035.tar.gz",
+      "sha256": "b210a05a2b70149bcb530eba0aadbf87b30266fa6083cf46494fe02597a4ecfe",
+      "scope": "Relevant text-buffer, file service, broker sources and affected tests only; not a complete app build snapshot.",
+      "files": {
+        "src/renderer/features/files/file-buffer.ts": {
+          "sha256": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+          "previousSourceSha256": "90b3497438f960f4bc1c7c9bb2843d7ed25c5629a8de617d702625f00abb69bc",
+          "sameAsPreviousSnapshot": false
+        },
+        "src/renderer/features/files/file-buffer.test.ts": {
+          "sha256": "0eeeaa3ca996a16b3fef9e43cd78b600d9f49e19520efaf7baa67115e4ccc54e",
+          "previousSourceSha256": "80f9798b22bc514a0c41b4278d38df387ad3c647d5b55b011a71ebeff75ff858",
+          "sameAsPreviousSnapshot": false
+        },
+        "src/renderer/features/files/text-buffer-acceptance.test.ts": {
+          "sha256": "c850d06e86d55204ed8b7840029fc964594b19314a73ac1be02071da63cc7a43",
+          "previousSourceSha256": null,
+          "sameAsPreviousSnapshot": null
+        },
+        "src/renderer/features/files/workspace-store.ts": {
+          "sha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+          "previousSourceSha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/renderer/features/files/workspace-store.test.ts": {
+          "sha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+          "previousSourceSha256": "b0fb891b945361de6b5a1f04e2b87ed448e1676bed2aac913ae9cb7c3c9b8248",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/renderer/features/files/editor-source.ts": {
+          "sha256": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "previousSourceSha256": "3fb51620f8d14465bc3471ec3eae1d4b528ff4968f0c62f78ec31e959e59dbb2",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/file-text.ts": {
+          "sha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+          "previousSourceSha256": "12062e9e76f31d824ca4dd38741c88e93ed08704a3e5fea613facdbd5dc66d82",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/file-classification.ts": {
+          "sha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+          "previousSourceSha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/shared/files.ts": {
+          "sha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+          "previousSourceSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/file-service.ts": {
+          "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+          "previousSourceSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/native-broker.ts": {
+          "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+          "previousSourceSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/roots.ts": {
+          "sha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+          "previousSourceSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+          "sameAsPreviousSnapshot": true
+        },
+        "src/main/core/files/recovery-store.ts": {
+          "sha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+          "previousSourceSha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/broker.mm": {
+          "sha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+          "previousSourceSha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/desktop-actions.inc.mm": {
+          "sha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+          "previousSourceSha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/engine-workspaces.inc.mm": {
+          "sha256": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+          "previousSourceSha256": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/git-metadata.inc.mm": {
+          "sha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+          "previousSourceSha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-calculate.inc.mm": {
+          "sha256": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+          "previousSourceSha256": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-measure.inc.mm": {
+          "sha256": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+          "previousSourceSha256": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/office-render.inc.mm": {
+          "sha256": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+          "previousSourceSha256": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+          "sameAsPreviousSnapshot": true
+        },
+        "native/files/tex-compile.inc.mm": {
+          "sha256": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+          "previousSourceSha256": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+          "sameAsPreviousSnapshot": true
+        }
+      }
+    }
+  },
+  "observationsNote": "Numeric at fields in the harness identify the end of the requested fake-clock advancement step, not the instant every intermediate callback fired. Exact2999/3000 and500ms conditions are asserted before/after advancing the clock.",
+  "formalIndexChanged": false,
+  "previousEvidenceBeforeDev035": {
+    "path": "acceptance-text-buffer/evidence-before-dev035.json",
+    "sha256": "0fb12d41228a85bad276b15e5dab8a459f1c957d77e6962ef833730281b79f38",
+    "originalPath": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-text-buffer-20261018.json"
+  },
+  "finalObservations": {
+    "path": "acceptance-text-buffer/observations-dev035-final.json",
+    "sha256": "0741bc70d41dc3bf4c5de4b0a1a9645a1196f04ed15564a97190c170244b0238",
+    "originalPath": "/private/tmp/willyou-text-buffer-dev035-r2-observations.json"
+  },
+  "finalTypecheck": {
+    "command": "pnpm typecheck",
+    "exitCode": 0,
+    "artifact": {
+      "path": "acceptance-text-buffer/typecheck-dev035-passed.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "originalPath": "/private/tmp/willyou-text-buffer-typecheck-r3.log"
+    }
+  },
+  "finalExecutionPermission": "Run through approved require_escalated execution to avoid previously established outer tool sandbox interference with native macOS integration. Only synthetic temporary fixtures were mutated; no application or native compile was run.",
+  "defects": [
+    {
+      "id": "M9-DEV-034",
+      "title": "A saved older buffer rebases newer already-durable draft without advancing its version",
+      "reproduction": "Suspend first native save; make newer edits and let their500ms checkpoints persist; deliver old save success; next checkpoint/autosave uses identical draft version with a new baseHash.",
+      "failure": "Native correctly rejects [IDEMPOTENCY] Draft version was reused with different content; current dirty input then never reaches the second save.",
+      "repair": "file-buffer.ts increments current dirty draft-state version after acknowledging an older snapshot and adopting its new baseHash. Native idempotency checks remain unchanged.",
+      "productionFilesChanged": [
+        "src/renderer/features/files/file-buffer.ts"
+      ],
+      "testChanges": [
+        "New text-buffer-acceptance.test.ts",
+        "Existing file-buffer.test.ts changes one expected version2→3 because a rebase is an additional draft state."
+      ],
+      "codeAndNativeRecheck": "passed",
+      "packagedAppRecheck": "pending root combined build and affected H02/D14 regressions",
+      "scope": "Text saving only; no Office or FileService production change."
+    },
+    {
+      "id": "M9-DEV-035",
+      "title": "Stale undo-to-clean cleanup can resolve a newer durable recovery draft",
+      "reproduction": "Persist v1 but withhold its actual checkpoint receipt; real CodeMirror undo returns to BASE and starts automatic cleanup; edit v3 and persist its checkpoint; release v1. Old discardDraft then selected mutable lastDurableCheckpoint=v3 and resolved the newer draft. Restarted service recovery failed before next autosave.",
+      "repair": "Separate automatic clean cleanup captures draftId/checkpoint/receipt at initiation and rechecks editor version, clean state, disposal and draft identity after waiting. Native resolution uses only that captured receipt. Obsolete cleanup is cancelled; stale cleanup errors do not replace current state. Explicit discardDraft behavior is unchanged.",
+      "productionFilesChanged": [
+        "src/renderer/features/files/file-buffer.ts"
+      ],
+      "testChanges": [
+        "Four new parameter instances in text-buffer-acceptance.test.ts: old receipt before/after v3 checkpoint; normal automatic cleanup and explicit discard."
+      ],
+      "codeAndNativeRecheck": "passed",
+      "independentReview": {
+        "agent": "/root/area_marker_review",
+        "result": "No remaining blocker in current small diff; captured receipt and version/dirty/draftId/disposed guard address the reproduced race; explicit discard preserved.",
+        "boundary": "Source review; did not independently rerun test suite."
+      },
+      "packagedAppRecheck": "pending root combined r2 build and affected H02/D14 regressions",
+      "scope": "Text buffer only; no Office or FileService production change."
+    }
+  ]
+}

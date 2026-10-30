@@ -1,0 +1,51 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/file-buffer.test.ts -t 'before a save receipt' --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev059-red-tests.json
+
+[1018/135331.060280:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/135331.191136:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/file-buffer.test.ts (17 tests | 2 failed | 15 skipped) 8ms
+     ↓ loads SVG source on mode entry, saves before returning to the image and retains source on a save conflict
+     ↓ does not create an editor or read the complete bytes for non-text metadata
+     ↓ drops a clean text view when the same local path becomes binary, then can recover to text
+     ↓ preserves CSV BOM, quoting, separators and mixed EOLs through preview and a targeted source save
+     ↓ uses separate 500ms checkpoints and 3s autosaves
+     ↓ M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines
+     ↓ keeps new edits dirty when an older save completes
+     ↓ reloads clean external edits and retains all dirty conflict versions
+     × rechecks external events received before a save receipt without losing newer input (false) 6ms
+     × rechecks external events received before a save receipt without losing newer input (true) 1ms
+     ↓ does not retry an unknown commit or remove recovery material after using disk
+     ↓ resolves a superseded checkpoint when undo returns the buffer to disk content
+     ↓ discards late success/error after disposal and releases the backend reference
+     ↓ leaves the in-memory buffer intact if checkpoint storage fails
+     ↓ flushes the latest edit after awaiting an older save during close
+     ↓ can explicitly discard a durable older draft when its latest checkpoint failed
+     ↓ keeps an updated draft if the discard receipt refuses an older version
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/file-buffer.test.ts > real editor buffer lifecycle (API boundary isolated) > rechecks external events received before a save receipt without losing newer input (false)
+ FAIL  src/renderer/features/files/file-buffer.test.ts > real editor buffer lifecycle (API boundary isolated) > rechecks external events received before a save receipt without losing newer input (true)
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/renderer/features/files/file-buffer.test.ts:155:25
+    153|     await buffer.refresh(); await buffer.refresh(); await buffer.refre…
+    154|     expect(api.refresh).not.toHaveBeenCalled(); receipt.resolve(); awa…
+    155|     expect(api.refresh).toHaveBeenCalledTimes(1); expect(buffer.raw).t…
+       |                         ^
+    156|     expect(buffer.conflict).toBe(newerInput); expect(buffer.dirty).toB…
+    157|     await vi.advanceTimersByTimeAsync(6000); expect(api.save).toHaveBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 skipped (17)
+   Start at  13:53:31
+   Duration  254ms (transform 118ms, setup 0ms, import 177ms, tests 8ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev059-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

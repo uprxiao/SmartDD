@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-17T20:06:50.539876+00:00",
+  "baseline": "M9 R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "state": "production preview development; complete PPTX editing and real App acceptance unfinished",
+  "requirements": [
+    "R06.9",
+    "R06.10",
+    "R07.5",
+    "R07.18",
+    "R08.7"
+  ],
+  "implementation": [
+    "source FileRef/owner/revision scoped DOCX/PPTX open and chunk service",
+    "complete XML/relationship preflight in isolated bounded Worker",
+    "shared Worker lifecycle for workbook/page parsers",
+    "fixed native layout with hidden slides included, note pages excluded",
+    "DOCX default read-only host with Zoom/Fit, no page rail",
+    "PPTX actual thumbnails/grid/single page, original speaker notes and keyboard/IME guards",
+    "PDF canvas budgets, virtualized body/rail/grid, hash-checked chunks, cancellation and source switch cleanup"
+  ],
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-office-pages-r1-sources.tar.gz",
+    "sha256": "8044d42c5aefd8b0b6a435f39c4a036ec9387a205efe2a2049fdb4a949c03512",
+    "files": {
+      "src/shared/file-office-pages.ts": "8fc682d2c26315fca186a5165e0dd835bfde8dd5ced0c2b64438b3c20cc8c5da",
+      "src/main/core/files/office/pages-model.ts": "19c58c25eb0a6da257ec0e2bd8ec676e3bed3e21520644420db5ad833db54d17",
+      "src/main/core/files/office/pages-worker.ts": "fca8b2ef200530ea98e26f3877a07f9785250e73a5bcdeb2b67911cb60cd413d",
+      "src/main/core/files/office/pages-parser.ts": "88b0c01970a5bc5cb22647979a125f08a99e639469fec6fa7e667b9ff5bb192e",
+      "src/main/core/files/office/worker-client.ts": "3c4eb8468637af38f5c5b27cda3a1517bf417b331975243866a088f031b9bf32",
+      "src/main/core/files/office/parser.ts": "cc08cb8e14fe5b4c00fcb318303fd880052b7d2f0a517eabac56462175fb6312",
+      "src/main/core/files/office/pages-service.ts": "b16578b71d7d0f9ce8f5447e6f974f3c8fb8570a6fc11da1a0cc266f3643ce24",
+      "src/main/core/files/file-service.ts": "5c4b669dedc760a346310fbab6f918de72bb5abf1e4218b1068000d30e919cd7",
+      "src/main/core/files/controller.ts": "a463c1ead37a6f592ef472842d160b87da816a388cf47b9dc73162c3017defea",
+      "src/main/index.ts": "21431ad937ed06be3306e3760441e62241ef3702c51f503da833bf07a5f58f6a",
+      "src/renderer/features/files/office/pages-preview.tsx": "70a55b4cc57256493be4c4a5cae3a8f37a2d693c75a10885adfc35a4299ce009",
+      "src/renderer/features/files/office/pages-style.css": "8eb46e6cbf7eda4455c134893a15343882919cc9de14ecfc9e1a094df6bc460f",
+      "src/renderer/features/files/pdf/page.tsx": "84d75921a9e45452ca5daba4c4d3b8a706b873f113036015b8b455a2ebcbb0fa",
+      "src/renderer/features/files/workspace-panel.tsx": "0444b0bed47e59bfb3ba114a639787442658214651f716ae68f4e3f1f45d77bd",
+      "native/files/office-render.inc.mm": "b21ca5d3cfcdb9ae44cad928d0b8a9fb77bfe7584fd71349bc676e021ddcf0e7",
+      "electron.vite.config.ts": "cb1d125cd2587e040d4a020f96a08fe080200476a25327a824b0b3d06be9bd35"
+    }
+  },
+  "prototypeReference": {
+    "prototypes/m6-codex/src/FileOfficePreview.jsx": "8e550f158088d2be7b6656f9625aaaf94cbdc111f505d329c9fa1ac32733a684",
+    "prototypes/m6-codex/src/file-office.css": "41807fb72f90d7f78453b5a95133750cb037b9f24cde514402748c3da261d76b"
+  },
+  "tests": [
+    {
+      "layer": "code regression, native opt-in tests not run",
+      "passed": 184,
+      "skipped": 34,
+      "log": "/private/tmp/willyou-m9-office-pages-r4-regression.log",
+      "json": "/private/tmp/willyou-m9-office-pages-r4-regression.json"
+    },
+    {
+      "layer": "latest component interactions after navigation adjustment; PDF/native mocked",
+      "passed": 5,
+      "log": "/private/tmp/willyou-m9-office-pages-r5-ui.log",
+      "json": "/private/tmp/willyou-m9-office-pages-r5-ui.json"
+    },
+    {
+      "layer": "typecheck",
+      "state": "passed",
+      "log": "/private/tmp/willyou-m9-office-pages-r5-typecheck.log"
+    },
+    {
+      "layer": "actual hidden-slide native layout",
+      "passed": 1,
+      "skipped": 6,
+      "log": "/private/tmp/willyou-m9-office-pages-hidden-native-r1.log",
+      "json": "/private/tmp/willyou-m9-office-pages-hidden-native-r1.json"
+    },
+    {
+      "layer": "real FileService/Worker/native DOCX+PPTX scoped chunks, originals unchanged",
+      "passed": 1,
+      "skipped": 7,
+      "log": "/private/tmp/willyou-m9-office-pages-service-native-r1.log",
+      "json": "/private/tmp/willyou-m9-office-pages-service-native-r1.json",
+      "boundary": "Before subsequent final source-read probe; packaged verification of final probe pending"
+    },
+    {
+      "layer": "Office/TeX orphan cleanup regression; real native",
+      "passed": 3,
+      "skipped": 29,
+      "log": "/private/tmp/willyou-m9-office-pages-cleanup-regression.log",
+      "json": "/private/tmp/willyou-m9-office-pages-cleanup-regression.json"
+    },
+    {
+      "layer": "actual packaged Worker and native helper, real FileService hidden-slide/source-recheck/notes/chunks",
+      "passed": 1,
+      "skipped": 1,
+      "log": "/private/tmp/willyou-m9-office-pages-packaged-r1.log",
+      "json": "/private/tmp/willyou-m9-office-pages-packaged-r1.json",
+      "pdfHash": "f51121323b6b19bf88c0371062030da4c4958092f7946a1d35fbc1569428c8e3",
+      "pages": 2,
+      "elapsedMs": 2753
+    },
+    {
+      "layer": "W11/W12 correction component tests, native/PDF mocked",
+      "passed": 6,
+      "log": "/private/tmp/willyou-m9-office-pages-r6-ui.log",
+      "json": "/private/tmp/willyou-m9-office-pages-r6-ui.json"
+    },
+    {
+      "layer": "corrected renderer typecheck",
+      "state": "passed",
+      "log": "/private/tmp/willyou-m9-office-pages-r6-typecheck.log"
+    },
+    {
+      "layer": "pages-r2 actual packaged Worker/native helper plus FileService; independent pdftotext page identities and note exclusion",
+      "passed": 1,
+      "skipped": 1,
+      "log": "/private/tmp/willyou-m9-office-pages-packaged-r2.log",
+      "json": "/private/tmp/willyou-m9-office-pages-packaged-r2.json",
+      "pdfHash": "3e9eac37db16f2e1798e5bd9ad7bd3d8a36138d5cdcc4bb57993c779515aac00",
+      "pages": 2,
+      "elapsedMs": 2843,
+      "sourceUnchanged": true
+    }
+  ],
+  "failuresRetained": [
+    {
+      "log": "/private/tmp/willyou-m9-office-pages-r1-unit.log",
+      "cause": "New service test fixture used the wrong FileRef shape; corrected to existing UUID id/lease/generation contract. Subsequent 19/19 passed."
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-pages-r2-typecheck.log",
+      "cause": "Nullable preview-state narrowing corrected; subsequent typecheck passed."
+    },
+    {
+      "id": "M9-DEV-019",
+      "discovered": "code/test-contract review, not actual App",
+      "cause": "Initial production page shortcuts used 25-point steps and accepted missing/dual/repeat modifiers; approved prototype requires single primary modifier, 10-point steps, 25..500 clamp and explicit W11/W12 guards.",
+      "fix": "Ported reviewed presentationShortcut; component tests now exercise valid/invalid modifiers, repeat, IME, focused input and focus restoration. Actual App remains unexecuted."
+    }
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-office-pages-r1-build/mac-arm64/WillYou.app",
+    "state": "directory build, native smoke and shipped Worker/service conversion passed; renderer shortcut correction requires r2",
+    "log": "/private/tmp/willyou-m9-office-pages-r1-package.log",
+    "asarSha256": "68280024af4455a86a3ece5ab0ddcff583004ee7a01a66af96d40740c5eedf95"
+  },
+  "ui": {
+    "state": "blocked",
+    "reason": "CUA still explicitly reports Mac locked; latest connection retry confirmed. No DOCX/PPTX App UI or pixels verified."
+  },
+  "remaining": [
+    "PPTX writable document state, editing adapters, save/draft/conflict/history",
+    "conditional legacy DOCX redlines/request context route",
+    "signed Office workflow and full fidelity/action matrix",
+    "actual App navigation/notes/zoom/cancel/theme/focus/long-text validation"
+  ],
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "unchanged": true
+  },
+  "references": [
+    "https://help.libreoffice.org/latest/en-US/text/shared/guide/pdf_params.html"
+  ],
+  "followupPackage": {
+    "path": "/private/tmp/willyou-m9-office-pages-r2-build/mac-arm64/WillYou.app",
+    "asarSha256": "dcc477fc7382ceed8037dcde512389c9c7ac8192ba5d19c8d8b55be7cbe6c7ae",
+    "sourceSnapshot": "/private/tmp/willyou-m9-office-pages-r2-sources.tar.gz",
+    "sourceSha256": "cc68a0b9a26210e377bbffa42aca1a19c0b58c582afeb9982b1c7f61fc2b2ef5",
+    "state": "build/native smoke and shipped Worker/helper plus real FileService and independent PDF text verification passed; App UI unexecuted",
+    "log": "/private/tmp/willyou-m9-office-pages-r2-package.log"
+  }
+}

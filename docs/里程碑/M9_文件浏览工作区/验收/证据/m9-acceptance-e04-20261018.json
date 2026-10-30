@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-E04",
+  "recordedAt": "2026-10-18T02:08:44.121654+00:00",
+  "status": "partial-P-clipboard-discrepancy-unresolved",
+  "formalCasePassed": false,
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "expectations": {
+    "requiredLayers": [
+      "P",
+      "I",
+      "A"
+    ],
+    "samples": "Chinese, space, emoji filenames; absolute and relative paths when the corresponding entry exists. Exact clipboard text, no extra quotes/encoding, correct local root and host."
+  },
+  "sourceBaseline": {
+    "archive": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-path-copy/tested-sources.tar.gz",
+    "sha256": "b86290b4add710c9f1e519de0d24d871d517c53343a3c5eeace592cda5700424",
+    "files": {
+      "src/renderer/features/files/path-copy-acceptance.test.tsx": "ce87c285106fb6d22ac18ec4c53e8dcc000eba5f9223b46ae43041a828651c84",
+      "src/renderer/features/files/file-actions.tsx": "09a2855d986b64048cd0ee4be862711235d97c0b88e11214817884e8c3224c19",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "prototypes/m6-codex/src/FileWorkspace.jsx": "8af90d5d4f116b13ecafd1f3688cb3492b30930792613d3c84b5e52bc85e340a",
+      "prototypes/m6-codex/src/file-workspace-model.mjs": "146fe987fa62afe6df8a8fdb00214276197bbafafec3350c5fae1d34298a9fab"
+    },
+    "r2Matches": {
+      "src/renderer/features/files/file-actions.tsx": true,
+      "src/main/core/files/file-service.ts": true,
+      "src/main/core/files/roots.ts": true,
+      "src/main/core/files/native-broker.ts": true,
+      "src/main/core/files/recovery-store.ts": true,
+      "src/shared/files.ts": true
+    },
+    "boundary": "Source check taken after the E04 actions; unrelated DEV036/DEV037 changes in prototype FileWorkspace are present and tracked separately. No claim that the whole working tree still matches r2."
+  },
+  "layers": {
+    "I": {
+      "status": "passed",
+      "command": "SMARTDD_M9_FILE_BROKER=/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files SMARTDD_M9_PATH_COPY_EVIDENCE=/private/tmp/willyou-e04-service-observations-r3.json pnpm test src/renderer/features/files/path-copy-acceptance.test.tsx --reporter=json --outputFile=/private/tmp/willyou-e04-service-tests-r3.json",
+      "exitCode": 0,
+      "testsPassed": 4,
+      "testsFailed": 0,
+      "testsSkipped": 0,
+      "clipboardValuesVerified": 16,
+      "scope": "Real packaged native broker + production FileRootsService/FileService + production FileContextActions/Base UI menu in jsdom. user-event clipboard boundary, not OS clipboard. Four filenames, two independent roots, absolute+relative each. Read-only file bytes/mtime/inode unchanged.",
+      "reports": {
+        "willyou-e04-service-tests.json": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-path-copy/willyou-e04-service-tests.json",
+          "sha256": "4185a6514af1a850630c8e3d036fe36b2719f559b83f34c86a78503833fb777d"
+        },
+        "willyou-e04-service-tests-r2.json": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-path-copy/willyou-e04-service-tests-r2.json",
+          "sha256": "a63aad389fbb859ef579f28daf526b2b7b169b0bf63343b946199696d62984eb"
+        },
+        "willyou-e04-service-tests-r3.json": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-path-copy/willyou-e04-service-tests-r3.json",
+          "sha256": "ca3d1457d1db9dfe983114c25d56a325d52259fdfbf0e50cdfc841753b460edd"
+        },
+        "willyou-e04-service-observations-r3.json": {
+          "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-path-copy/willyou-e04-service-observations-r3.json",
+          "sha256": "72db2091ee3185920ee8199355355a87fc614b7271d2b42f76962952c96705f0"
+        }
+      },
+      "initialFailures": {
+        "attempt1": "0/4: test userdata directory not initialized, recovery store inspect-root raised MISSING. Fixed only fixture setup.",
+        "attempt2": "1/4: all values correct but test spy calls accumulated across cases (8/12/16 instead of 4). Fixed only restoreAllMocks cleanup."
+      },
+      "typecheck": {
+        "command": "pnpm typecheck",
+        "exitCode": 0,
+        "runner": "acceptance_f10",
+        "log": "/private/tmp/willyou-lifecycle-persistence-typecheck-r4.log",
+        "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+        "basis": "Final test file mtime 2026-10-18 10:07:32 Asia/Shanghai predates full typecheck at 10:07:39; no subsequent test edits."
+      }
+    },
+    "P": {
+      "status": "unverified-exact-system-clipboard",
+      "browser": "Chrome extension browser 1, independent tab 531330457",
+      "url": "http://127.0.0.1:4176/?preview=m9",
+      "actions": [
+        {
+          "sample": "docs/拖放 空格示例.txt",
+          "action": "Documented DOM treeitem right-click then Copy path button",
+          "observed": "Status 已复制路径; tab.clipboard.readText empty, read empty list; locator Meta+V explicitly rejected virtual clipboard empty.",
+          "conclusion": "UI copy action executed; exact OS clipboard not proven by this connector."
+        },
+        {
+          "sample": "docs/路径 中文 space 🙂.txt",
+          "action": "Append root-authorized static synthetic fixture; reload; filter path; right-click exact treeitem; Copy path button",
+          "observed": "Status 已复制路径; handed off immediately to root for system TextEdit paste without further clipboard operations.",
+          "expected": "/workspace/SmartDD/docs/路径 中文 space 🙂.txt"
+        }
+      ],
+      "relativePathEntry": "Prototype currently exposes absolute Copy path only; relative-path entry absent and conditional expectation is recorded, not fabricated.",
+      "screenshotsArchived": false,
+      "rawAccessibilityDumpArchived": false,
+      "boundary": "Actual actions observed in CUA; transcribed agent record, no fabricated screenshot/raw AX. Prototype uses synthetic files.",
+      "systemCheckAttempts": [
+        {
+          "observer": "Root",
+          "result": "Delayed TextEdit paste contained unrelated unexpected user text, so expected path was not established. No private clipboard content was retained."
+        },
+        {
+          "observer": "area_marker_review",
+          "action": "Acquire com.apple.TextEdit to identify the dedicated temporary checker window before an atomic copy/paste flow.",
+          "result": "CUA getApp call was interrupted by user after approximately 261 seconds; no app state returned, no clipboard paste, save or close action executed. Native control released to root."
+        },
+        {
+          "observer": "area_marker_review + Root",
+          "action": "Agent clicked exact combined filename Copy path and immediately signalled Root to paste with its existing TextEdit binding.",
+          "result": "UI reported 已复制路径, but immediate system paste still contained previous unrelated content, not the expected path. No unrelated private text retained.",
+          "conclusion": "Exact P system clipboard value remains unverified; cannot distinguish browser permission, automation bridge, or prototype clipboard handling defect. Stop retries per root."
+        }
+      ],
+      "copyCodeReview": {
+        "file": "prototypes/m6-codex/src/FileWorkspace.jsx",
+        "function": "copy(value)",
+        "behavior": "await navigator.clipboard.writeText(value); success message only in fulfilled branch. catch sets context value and explicit copy permission unavailable feedback; finally-like code closes menu.",
+        "finding": "No unconditional success toast found; no production/prototype change made from this unresolved tool observation."
+      }
+    },
+    "A": {
+      "status": "passed",
+      "observer": "Root agent /root",
+      "package": "/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app",
+      "appAsarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6",
+      "actions": "Packaged menu Copy full/relative path; system TextEdit new document Cmd+V; actual system clipboard read through visible UI.",
+      "absoluteValue": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/git-new 中文🙂.txt",
+      "relativeValue": "git-new 中文🙂.txt",
+      "actual": "Both system-pasted values exact with no extra quoting or encoding; independent source bytes/size/mtime/inode check matches the pre-existing S01 initial manifest.",
+      "rawAccessibilityDumpArchived": false,
+      "screenshotsArchived": false,
+      "sourceIntegrity": {
+        "checkedAt": "2026-10-18T02:09:30.519369+00:00",
+        "sha256": "603bfe3cb7574a3c6ee0a6a4b07a5d6bd7c89b0df7f17f5c25935e8c0f961d4c",
+        "size": 19,
+        "mtimeNs": "1792243972937972383",
+        "inode": "42645462",
+        "initialManifest": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-s01/before.json",
+        "initialManifestSha256": "b97bf2315dff937c5a97f14f439a8924622bd4739277d672a8cbe919f7a4342f",
+        "matches": true
+      }
+    }
+  },
+  "limits": [
+    "Test cases are supporting checks and not four separately completed formal acceptance cases.",
+    "No production behavior changed for E04; only independent test and one authorized synthetic prototype filename were added.",
+    "No index/README/execution record updated by this agent."
+  ],
+  "completionAudit": {
+    "allRequiredLayersComplete": false,
+    "remainingRequiredSteps": [
+      "Prove exact system clipboard text from prototype copy for combined Chinese/space/emoji sample; current UI success plus conflicting clipboard reads cannot establish pass."
+    ],
+    "completedLayers": [
+      "I",
+      "A"
+    ]
+  }
+}

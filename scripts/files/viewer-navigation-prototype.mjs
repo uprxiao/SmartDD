@@ -1,0 +1,29 @@
+// P only: synthetic shared prototype. No actual provider, filesystem or IPC proof.
+import assert from 'node:assert/strict';
+import {mkdtemp,readFile,writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {openElectron} from '../lib/electron-harness.mjs';
+const scratch=await mkdtemp('/private/tmp/willyou-viewer-navigation-P-');
+const metadata=JSON.parse(await readFile(process.env.WILLYOU_NAVIGATION_P_SERVER,'utf8'));
+const result={at:new Date().toISOString(),layer:'P',scratch,url:metadata.url,status:'running',checks:[],boundary:'Actual pointer/key interaction with shared synthetic FileWorkspace/FileMcpViewer. Fixture localStorage contains declared synthetic data only. No real provider/native search/file write/physicalIME/clipboard/focus or full F01/F03/F29 completion claim.'};
+let app,stage='start';
+const source="document.querySelector('.fw-content textarea:not([aria-label=\"扩展资源内容（原型）\"])')";
+async function click(selector,text){await app.waitFor(`!![...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`})`);const p=await app.evaluate(`(async()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`});if(!e)throw Error('P control missing');e.scrollIntoView({block:'nearest',inline:'nearest'});await new Promise(requestAnimationFrame);const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(!e.contains(document.elementFromPoint(x,y)))throw Error('P control occluded');return{x,y}})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
+async function extension(){await click('[aria-label=文件查看选项]');await app.waitFor("!!document.querySelector('.fw-menu')");await click('.fw-menu button','自动选择查看器（原型）');await app.waitFor("!!document.querySelector('[aria-label=\"扩展资源内容（原型）\"]')");}
+const snap=()=>app.evaluate(`(()=>{const e=${source};return{extension:!!document.querySelector('[aria-label="扩展资源内容（原型）"]'),source:!!e,value:e?.value,selected:e?.value.slice(e.selectionStart,e.selectionEnd),from:e?.selectionStart,to:e?.selectionEnd,tabs:[...document.querySelectorAll('.fw-tab [role=tab]')].map(x=>x.title),text:document.querySelector('.fw-content')?.innerText}})()`);
+try{
+ app=await openElectron({executable:process.env.WILLYOU_FILES_APP,userData:join(scratch,'userdata')});result.pid=app.processId;await app.cdp('Emulation.setDeviceMetricsOverride',{width:1400,height:1050,deviceScaleFactor:1,mobile:false});await app.cdp('Page.navigate',{url:metadata.url});await app.waitFor("!!document.querySelector('.navigation-harness>.file-workspace')",20000);
+ for(const theme of ['light','dark']){
+  if(theme==='dark'){await click('[data-testid=navigation-theme]');await app.waitFor("document.documentElement.dataset.theme==='dark'&&document.querySelectorAll('.fw-tab').length===0");}
+  for(const kind of ['md','html']){
+   stage=`${theme}:${kind}:search-through-extension`;await click(`[role=treeitem][data-path="route.${kind}"]`);await app.waitFor(`document.querySelector('.fw-tab [role=tab][aria-selected=true]')?.getAttribute('title')?.endsWith('/route.${kind}')`);await extension();const before=await snap();
+   await click('[aria-label=在文件中搜索]');await app.waitFor("document.activeElement?.getAttribute('aria-label')==='搜索文件内容'");
+   for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key:'a',code:'KeyA',modifiers:4,commands:['selectAll']});
+   const needle=kind==='md'?'NEEDLE_P_NAV':'NEEDLE_P_HTML';await app.cdp('Input.insertText',{text:needle});await app.waitFor("document.querySelectorAll('.fw-search-results [role=option]').length===1");await click('.fw-search-results [role=option]');await app.waitFor("!document.querySelector('.fw-search-dialog')");
+   await app.waitFor(`!!${source}&&${source}.value.slice(${source}.selectionStart,${source}.selectionEnd)===${JSON.stringify(needle)}`,10000);const navigation=await snap();navigation.selectionPaint=await app.evaluate(`(()=>{const e=${source},s=getComputedStyle(e,'::selection');return{color:s.color,fill:s.webkitTextFillColor,background:s.backgroundColor}})()`);assert(!/transparent|rgba\([^)]*,\s*0\)/.test(navigation.selectionPaint.fill),'Selected prototype source text must remain visible');assert.equal(navigation.extension,false);assert.equal(navigation.tabs.length,before.tabs.length);assert.equal(navigation.selected,needle);await app.screenshot(join(scratch,`${theme}-${kind}-source.png`));
+   stage=`${theme}:${kind}:mode-through-extension`;await extension();await click('[aria-label=查看文档]');await app.waitFor("!document.querySelector('[aria-label=\"扩展资源内容（原型）\"]')&&!!document.querySelector('[aria-label=查看源码]')");const rendered=await snap();await extension();await click('[aria-label=查看源码]');await app.waitFor(`!!${source}&&!document.querySelector('[aria-label=\"扩展资源内容（原型）\"]')`);const returned=await snap();assert.equal(returned.value,navigation.value);result.checks.push({theme,kind,before,navigation,rendered,returned,pass:true});
+  }
+ }
+ assert.deepEqual(app.rendererErrors,[]);result.status='passed';result.normalExitClaimed=false;
+}catch(error){result.status='failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=1;if(app)try{result.last=await snap();result.dom=await app.evaluate('document.body.innerText');await app.screenshot(join(scratch,'failure.png'))}catch{}}
+finally{if(app){await writeFile(join(scratch,'electron.log'),app.logs());await app.close()}result.finishedAt=new Date().toISOString();await writeFile(join(scratch,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,checks:result.checks.length,scratch,stage:result.failedStage,error:result.error}));}

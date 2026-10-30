@@ -1,0 +1,208 @@
+{
+  "startedAt": "2026-10-17T08:19:37Z",
+  "environment": "macOS-26.6.1-arm64-arm-64bit",
+  "scope": "real child SIGKILL, read-only recovery, injected ENOSPC/fsync; NOT physical full disk, power loss or production App",
+  "cases": [
+    {
+      "id": "SC-prepared",
+      "title": "真实SIGKILL于prepared阶段，启动恢复保留全部可见版本",
+      "status": "passed",
+      "evidence": {
+        "childSignal": 9,
+        "recovered": [
+          {
+            "opId": "d0e35c1f-ae15-40f9-94c5-e62719a840dd",
+            "state": "prepared-uncommitted",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250439303
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250439305
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "staging": {
+                "identity": [
+                  16777233,
+                  250439306
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "recoveryIsIdempotentAndReadOnly": true
+      }
+    },
+    {
+      "id": "SC-swapped",
+      "title": "真实SIGKILL于swapped阶段，启动恢复保留全部可见版本",
+      "status": "passed",
+      "evidence": {
+        "childSignal": 9,
+        "recovered": [
+          {
+            "opId": "d5127d05-b1e1-414d-914a-ddb94076625f",
+            "state": "postcommit-review",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250439312
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250439311
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "staging": {
+                "identity": [
+                  16777233,
+                  250439309
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "recoveryIsIdempotentAndReadOnly": true
+      }
+    },
+    {
+      "id": "SC-returned",
+      "title": "真实SIGKILL于returned阶段，启动恢复保留全部可见版本",
+      "status": "passed",
+      "evidence": {
+        "childSignal": 9,
+        "recovered": [
+          {
+            "opId": "73c85c1d-cd85-42cb-9567-2c0ca86783da",
+            "state": "postcommit-review",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250439318
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250439317
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "displaced": {
+                "identity": [
+                  16777233,
+                  250439315
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "recoveryIsIdempotentAndReadOnly": true
+      }
+    },
+    {
+      "id": "SC-enospc",
+      "title": "提交前草稿写失败不修改原件",
+      "status": "passed",
+      "evidence": {
+        "targetUnchanged": true,
+        "fault": "injected ENOSPC before commit",
+        "physicalDiskFilled": false,
+        "memoryDraftMustRemain": true
+      }
+    },
+    {
+      "id": "SC-fsync",
+      "title": "提交后fsync失败保留冲突版本，不能谎报未写入或已保存",
+      "status": "passed",
+      "evidence": {
+        "recovered": [
+          {
+            "opId": "ca5bd32d-be7a-4d2f-ab58-eb4683289d0a",
+            "state": "postcommit-review",
+            "versions": {
+              "current": {
+                "identity": [
+                  16777233,
+                  250439328
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "draft": {
+                "identity": [
+                  16777233,
+                  250439327
+                ],
+                "sha256": "53dd5f4b25e5f226916dff10264af7da41c3fdc8ac9162ca6fae61e734e19d26",
+                "bytes": 5
+              },
+              "displaced": {
+                "identity": [
+                  16777233,
+                  250439325
+                ],
+                "sha256": "cbf36a964ba8c0894fcc9ec491b4d1dd94d221a7dc88308e9c6b892445a8574b",
+                "bytes": 4
+              }
+            },
+            "automaticMutation": false
+          }
+        ],
+        "mayNotReportSaved": true,
+        "fault": "injected fsync EIO after exchange"
+      }
+    },
+    {
+      "id": "SC-journal",
+      "title": "启动重核日志字段，不按篡改路径读取或清理",
+      "status": "passed",
+      "evidence": {
+        "untrustedPathRejected": true,
+        "noRecoveryMutation": true
+      }
+    },
+    {
+      "id": "SC-metadata",
+      "title": "本机权限和自有xattr可在提交前复制并回读",
+      "status": "failed",
+      "evidence": {
+        "error": "AttributeError(\"module 'os' has no attribute 'setxattr'\")"
+      }
+    }
+  ],
+  "scriptSha256": "ea0086d13f5233ff969a086b2810da7a40cdb293264bb01e8ead8ec4f3378e1b",
+  "summary": {
+    "passed": 6,
+    "failed": 1
+  }
+}

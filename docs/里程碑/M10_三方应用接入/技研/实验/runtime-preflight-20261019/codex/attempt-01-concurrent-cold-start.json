@@ -1,0 +1,55 @@
+{
+  "schema": "m10-codex-runtime-preflight-v1",
+  "startedAt": "2026-10-19T07:29:02.741Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "cliVersion": "codex-cli 0.162.1"
+  },
+  "isolation": {
+    "temporaryHome": true,
+    "temporaryCodexHome": true,
+    "userGlobalFilesModified": false,
+    "realAccount": false,
+    "realModel": false,
+    "syntheticMcpOnly": true
+  },
+  "cases": [],
+  "limitations": [
+    "Uses isolated HOME and CODEX_HOME; does not prove production global-root/profile merging or packaged WillYou behavior.",
+    "Direct app-server tool call is real Codex MCP execution, not model selection/read evidence.",
+    "Synthetic immutable versions and projects only; no actual mail, ZenTao, credentials, or business writes.",
+    "Native resume without model turn is attempted separately and reported truthfully."
+  ],
+  "status": "failed",
+  "error": "file-v2 initialize timeout",
+  "clients": [
+    {
+      "name": "file-v1",
+      "methods": [
+        "initialize"
+      ],
+      "unexpectedRequests": [],
+      "notifications": [
+        "remoteControl/status/changed"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "file-v2",
+      "methods": [
+        "initialize"
+      ],
+      "unexpectedRequests": [],
+      "notifications": [],
+      "stderrTail": "Error: failed to initialize sqlite state runtime under <fixture>/codex: failed to initialize state runtime at <fixture>/codex\n"
+    }
+  ],
+  "sourceHash": "5e4b14974dc96ed95edd901f87fac3e3f7ea1c0f6793f35b414433dd48d52ec3",
+  "cleanup": {
+    "allChildrenExited": true,
+    "fixtureRemoved": true
+  },
+  "finishedAt": "2026-10-19T07:29:17.802Z"
+}

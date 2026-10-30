@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-18T10:22:20.421Z",
+  "helper": "/private/tmp/willyou-test-file-broker-DgQIfD/willyou-files-test",
+  "helperSha256": "f0306c9dad2f033fbfb7bb829e2daacc17f0ff1844a605f02b939103224c52e9",
+  "boundary": "I: real store, FileService, watcher, independent drafts and native save receipts. Only IO delivery/timers controlled; no mocked successful writes. Normal App quit is verified separately.",
+  "rows": [
+    {
+      "scenario": "last detach delayed native write",
+      "independentDisk": "LATEST 中文🙂\n",
+      "saveCalls": 1,
+      "watchesAfter": {
+        "roots": 0,
+        "consumers": 0,
+        "timers": 0,
+        "stopping": 0
+      },
+      "timersAfter": 0
+    },
+    {
+      "scenario": "reattach while older write pending; newer input autosaves",
+      "independentDisk": "NEWER\n",
+      "saveCalls": 2
+    },
+    {
+      "scenario": "clean source is not rewritten",
+      "saveCalls": 0
+    }
+  ]
+}

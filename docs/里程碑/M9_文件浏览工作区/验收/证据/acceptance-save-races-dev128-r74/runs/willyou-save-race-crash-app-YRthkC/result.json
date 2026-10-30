@@ -1,0 +1,4226 @@
+{
+  "at": "2026-10-19T06:14:51.554Z",
+  "caseId": "M9-T-Y02",
+  "sourceApp": "/private/tmp/willyou-m9-acceptance-batch-r74-build/mac-arm64/WillYou.app",
+  "scratch": "/private/tmp/willyou-save-race-crash-app-YRthkC",
+  "status": "passed",
+  "checks": [
+    {
+      "theme": "light",
+      "phase": "prepared",
+      "name": "light-prepared.txt",
+      "stop": {
+        "command": "/usr/bin/sandbox-exec",
+        "args": [
+          "-D",
+          "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+          "-D",
+          "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+          "-p",
+          "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+          "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+        ],
+        "pid": 4655,
+        "frames": [
+          {
+            "event": "transaction",
+            "identity": {
+              "inode": "49846896",
+              "device": "16777232"
+            },
+            "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5"
+          },
+          {
+            "event": "test-stop",
+            "phase": "prepared"
+          }
+        ],
+        "closed": false
+      },
+      "first": {
+        "method": "save",
+        "args": [
+          {
+            "ref": {
+              "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1
+            },
+            "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+            "bufferVersion": 1,
+            "baseHash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+            "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1wcmVwYXJlZC50eHQNCg=="
+          }
+        ],
+        "inputHash": "9d6af6ce33654ea0b646b8940051ac2abbea97dbfe426397ee06d95c00f73060",
+        "at": 1792390502783,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+          "bufferVersion": 1,
+          "state": "unknown",
+          "recoveryId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+          "message": "[IO] 文件 broker 意外退出"
+        },
+        "before": "ab98b9543e0fd87bc2ab955aa6d0b265c22866b1fa0e0ac45e0050f05a5d1140",
+        "currentFrame": true,
+        "after": "ab98b9543e0fd87bc2ab955aa6d0b265c22866b1fa0e0ac45e0050f05a5d1140",
+        "delivered": true
+      },
+      "before": {
+        "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/3b88a7ca-a18b-4463-8dff-966579a486e5/journal.json",
+        "journal": {
+          "baseRevision": {
+            "changedNs": "1792390491553976566",
+            "device": "16777232",
+            "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+            "inode": "49826784",
+            "modifiedNs": "1792390491553976566",
+            "size": 51
+          },
+          "bufferVersion": 1,
+          "bytes": 65691,
+          "candidateHash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+          "candidateIdentity": {
+            "device": "16777232",
+            "inode": "49846898"
+          },
+          "createdAt": 1792390502805,
+          "draftHash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "49846895"
+          },
+          "draftLeaf": "draft",
+          "fingerprint": "ab6f2510aa852615074463d09f5b8f5827904bb4d2b140a21dcfa88ed870e235",
+          "materializedLeaf": "materialized",
+          "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+          "projectKey": "8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72",
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "49846893"
+          },
+          "relativePath": "light-prepared.txt",
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "49826783"
+            },
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+            "sourcePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "fb6905e0-b57b-4244-87a1-529fc67da910",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "b3a63a51-678a-4834-a6ca-8c47b20be99f"
+            }
+          },
+          "stagingLeaf": "candidate",
+          "state": "prepared",
+          "targetParentIdentity": {
+            "device": "16777232",
+            "inode": "49826783"
+          },
+          "transactionIdentity": {
+            "device": "16777232",
+            "inode": "49846896"
+          },
+          "transactionLeaf": ".willyou-recovery-010ff783-3767-4b97-8275-31c9a7da6ee0-3b88a7ca-a18b-4463-8dff-966579a486e5",
+          "volumeId": "16777232"
+        },
+        "materials": {
+          "current": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-prepared.txt",
+            "identity": {
+              "device": "16777232",
+              "inode": "49826784"
+            },
+            "mtimeNs": "1792390491553976566",
+            "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+            "text": "BASE race recovery 中文🙂\r\nlight-prepared.txt\r\n"
+          },
+          "displaced": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-010ff783-3767-4b97-8275-31c9a7da6ee0-3b88a7ca-a18b-4463-8dff-966579a486e5/candidate",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846898"
+            },
+            "mtimeNs": "1792390502824273000",
+            "hash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+            "text": "LOCAL race recovery 中文🙂\r\nlight-prepared.txt\r\n"
+          },
+          "materialized": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-010ff783-3767-4b97-8275-31c9a7da6ee0-3b88a7ca-a18b-4463-8dff-966579a486e5/materialized",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846898"
+            },
+            "mtimeNs": "1792390502824273000",
+            "hash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+            "text": "LOCAL race recovery 中文🙂\r\nlight-prepared.txt\r\n"
+          },
+          "draft": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/3b88a7ca-a18b-4463-8dff-966579a486e5/draft",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846895"
+            },
+            "mtimeNs": "1792390502812353108",
+            "hash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+            "text": "LOCAL race recovery 中文🙂\r\nlight-prepared.txt\r\n"
+          },
+          "journal": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/3b88a7ca-a18b-4463-8dff-966579a486e5/journal.json",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846901"
+            },
+            "mtimeNs": "1792390502828899173",
+            "hash": "8ab9d26e37df60c5430b06f6f8bb5f5037e08878988862cc14c1f7a4771e2485",
+            "text": "{\"baseRevision\":{\"changedNs\":\"1792390491553976566\",\"device\":\"16777232\",\"hash\":\"4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06\",\"inode\":\"49826784\",\"modifiedNs\":\"1792390491553976566\",\"size\":51},\"bufferVersion\":1,\"bytes\":65691,\"candidateHash\":\"03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"49846898\"},\"createdAt\":1792390502805,\"draftHash\":\"03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"49846895\"},\"draftLeaf\":\"draft\",\"fingerprint\":\"ab6f2510aa852615074463d09f5b8f5827904bb4d2b140a21dcfa88ed870e235\",\"materializedLeaf\":\"materialized\",\"opId\":\"3b88a7ca-a18b-4463-8dff-966579a486e5\",\"projectKey\":\"8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72\",\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"49846893\"},\"relativePath\":\"light-prepared.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"path\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\",\"sourcePath\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"fb6905e0-b57b-4244-87a1-529fc67da910\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"b3a63a51-678a-4834-a6ca-8c47b20be99f\"}},\"stagingLeaf\":\"candidate\",\"state\":\"prepared\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"49846896\"},\"transactionLeaf\":\".willyou-recovery-010ff783-3767-4b97-8275-31c9a7da6ee0-3b88a7ca-a18b-4463-8dff-966579a486e5\",\"volumeId\":\"16777232\"}"
+          }
+        }
+      },
+      "hotReplay": {
+        "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+        "message": "[IO] 文件 broker 意外退出"
+      },
+      "ui": {
+        "state": "保存中断 · 只读",
+        "materials": [
+          {
+            "kind": "current",
+            "preview": "BASE race recovery 中文🙂\r\nlight-prepared.txt\r\n",
+            "summary": "当前磁盘版本51 字节",
+            "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+            "changed": true
+          },
+          {
+            "kind": "displaced",
+            "preview": null,
+            "summary": "交换前的磁盘版本暂不可读",
+            "changed": false
+          },
+          {
+            "kind": "draft",
+            "preview": "LOCAL race recovery 中文🙂\r\nlight-prepared.txt\r\n",
+            "summary": "独立保存的本地草稿52 字节",
+            "hash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "preview": "LOCAL race recovery 中文🙂\r\nlight-prepared.txt\r\n",
+            "summary": "本次保存的候选版本52 字节",
+            "hash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+            "changed": false
+          }
+        ],
+        "editable": 0
+      },
+      "coldReplay": {
+        "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+        "message": "此前操作尚未完成恢复核对，不能重新提交"
+      },
+      "changedPayloadError": "Error: Error: Error invoking remote method 'files.save': FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容",
+      "readOnlyMaterialsUnchanged": true,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "phase": "swapped",
+      "name": "light-swapped.txt",
+      "stop": {
+        "command": "/usr/bin/sandbox-exec",
+        "args": [
+          "-D",
+          "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+          "-D",
+          "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+          "-p",
+          "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+          "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+        ],
+        "pid": 4789,
+        "frames": [
+          {
+            "event": "transaction",
+            "identity": {
+              "inode": "49846958",
+              "device": "16777232"
+            },
+            "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e"
+          },
+          {
+            "event": "test-stop",
+            "phase": "swapped"
+          }
+        ],
+        "closed": false
+      },
+      "first": {
+        "method": "save",
+        "args": [
+          {
+            "ref": {
+              "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1
+            },
+            "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+            "bufferVersion": 1,
+            "baseHash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+            "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K"
+          }
+        ],
+        "inputHash": "f657fd59a1cc2eae6e6c8fec076eee54077017e878b323491cd55036b6db562f",
+        "at": 1792390506159,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+          "bufferVersion": 1,
+          "state": "unknown",
+          "recoveryId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+          "message": "[IO] 文件 broker 意外退出"
+        },
+        "before": "7fd5e79cb9112ff38b04ed82c2db28e41a01d7b3a85a91f10a0daea80969e0d6",
+        "currentFrame": true,
+        "after": "7fd5e79cb9112ff38b04ed82c2db28e41a01d7b3a85a91f10a0daea80969e0d6",
+        "delivered": true
+      },
+      "before": {
+        "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/43dd0885-3615-4df7-a711-f4920d9ebd1e/journal.json",
+        "journal": {
+          "baseRevision": {
+            "changedNs": "1792390491554150067",
+            "device": "16777232",
+            "hash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+            "inode": "49826785",
+            "modifiedNs": "1792390491554150067",
+            "size": 50
+          },
+          "bufferVersion": 1,
+          "bytes": 65688,
+          "candidateHash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+          "candidateIdentity": {
+            "device": "16777232",
+            "inode": "49846960"
+          },
+          "createdAt": 1792390506176,
+          "draftHash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "49846957"
+          },
+          "draftLeaf": "draft",
+          "fingerprint": "4d770fe2cc45064992593afcf06b59cff9835a3b03eae25419da4c67ea18406c",
+          "materializedLeaf": "materialized",
+          "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+          "projectKey": "8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72",
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "49846955"
+          },
+          "relativePath": "light-swapped.txt",
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "49826783"
+            },
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+            "sourcePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "fb6905e0-b57b-4244-87a1-529fc67da910",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "b3a63a51-678a-4834-a6ca-8c47b20be99f"
+            }
+          },
+          "stagingLeaf": "candidate",
+          "state": "prepared",
+          "targetParentIdentity": {
+            "device": "16777232",
+            "inode": "49826783"
+          },
+          "transactionIdentity": {
+            "device": "16777232",
+            "inode": "49846958"
+          },
+          "transactionLeaf": ".willyou-recovery-11160e4e-2ea3-4e93-9a28-a5fdc53bdc80-43dd0885-3615-4df7-a711-f4920d9ebd1e",
+          "volumeId": "16777232"
+        },
+        "materials": {
+          "current": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846960"
+            },
+            "mtimeNs": "1792390506198372000",
+            "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+            "text": "LOCAL race recovery 中文🙂\r\nlight-swapped.txt\r\n"
+          },
+          "displaced": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-11160e4e-2ea3-4e93-9a28-a5fdc53bdc80-43dd0885-3615-4df7-a711-f4920d9ebd1e/candidate",
+            "identity": {
+              "device": "16777232",
+              "inode": "49826785"
+            },
+            "mtimeNs": "1792390491554150067",
+            "hash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+            "text": "BASE race recovery 中文🙂\r\nlight-swapped.txt\r\n"
+          },
+          "materialized": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-11160e4e-2ea3-4e93-9a28-a5fdc53bdc80-43dd0885-3615-4df7-a711-f4920d9ebd1e/materialized",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846960"
+            },
+            "mtimeNs": "1792390506198372000",
+            "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+            "text": "LOCAL race recovery 中文🙂\r\nlight-swapped.txt\r\n"
+          },
+          "draft": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/43dd0885-3615-4df7-a711-f4920d9ebd1e/draft",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846957"
+            },
+            "mtimeNs": "1792390506183358288",
+            "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+            "text": "LOCAL race recovery 中文🙂\r\nlight-swapped.txt\r\n"
+          },
+          "journal": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/43dd0885-3615-4df7-a711-f4920d9ebd1e/journal.json",
+            "identity": {
+              "device": "16777232",
+              "inode": "49846963"
+            },
+            "mtimeNs": "1792390506202945900",
+            "hash": "085c41a41f8084e608df316af2a9b294c86f7f84b59afd308ee48e97f94bb5bc",
+            "text": "{\"baseRevision\":{\"changedNs\":\"1792390491554150067\",\"device\":\"16777232\",\"hash\":\"3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207\",\"inode\":\"49826785\",\"modifiedNs\":\"1792390491554150067\",\"size\":50},\"bufferVersion\":1,\"bytes\":65688,\"candidateHash\":\"50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"49846960\"},\"createdAt\":1792390506176,\"draftHash\":\"50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"49846957\"},\"draftLeaf\":\"draft\",\"fingerprint\":\"4d770fe2cc45064992593afcf06b59cff9835a3b03eae25419da4c67ea18406c\",\"materializedLeaf\":\"materialized\",\"opId\":\"43dd0885-3615-4df7-a711-f4920d9ebd1e\",\"projectKey\":\"8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72\",\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"49846955\"},\"relativePath\":\"light-swapped.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"path\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\",\"sourcePath\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"fb6905e0-b57b-4244-87a1-529fc67da910\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"b3a63a51-678a-4834-a6ca-8c47b20be99f\"}},\"stagingLeaf\":\"candidate\",\"state\":\"prepared\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"49846958\"},\"transactionLeaf\":\".willyou-recovery-11160e4e-2ea3-4e93-9a28-a5fdc53bdc80-43dd0885-3615-4df7-a711-f4920d9ebd1e\",\"volumeId\":\"16777232\"}"
+          }
+        }
+      },
+      "hotReplay": {
+        "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+        "message": "[IO] 文件 broker 意外退出"
+      },
+      "ui": {
+        "state": "保存中断 · 只读",
+        "materials": [
+          {
+            "kind": "current",
+            "preview": "LOCAL race recovery 中文🙂\r\nlight-swapped.txt\r\n",
+            "summary": "当前磁盘版本51 字节",
+            "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+            "changed": false
+          },
+          {
+            "kind": "displaced",
+            "preview": "BASE race recovery 中文🙂\r\nlight-swapped.txt\r\n",
+            "summary": "交换前的磁盘版本50 字节",
+            "hash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+            "changed": false
+          },
+          {
+            "kind": "draft",
+            "preview": "LOCAL race recovery 中文🙂\r\nlight-swapped.txt\r\n",
+            "summary": "独立保存的本地草稿51 字节",
+            "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "preview": "LOCAL race recovery 中文🙂\r\nlight-swapped.txt\r\n",
+            "summary": "本次保存的候选版本51 字节",
+            "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+            "changed": false
+          }
+        ],
+        "editable": 0
+      },
+      "coldReplay": {
+        "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+        "message": "此前操作尚未完成恢复核对，不能重新提交"
+      },
+      "changedPayloadError": "Error: Error: Error invoking remote method 'files.save': FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容",
+      "readOnlyMaterialsUnchanged": true,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "phase": "prepared",
+      "name": "dark-prepared.txt",
+      "stop": {
+        "command": "/usr/bin/sandbox-exec",
+        "args": [
+          "-D",
+          "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+          "-D",
+          "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+          "-p",
+          "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+          "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+        ],
+        "pid": 4973,
+        "frames": [
+          {
+            "event": "transaction",
+            "identity": {
+              "inode": "49847016",
+              "device": "16777232"
+            },
+            "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896"
+          },
+          {
+            "event": "test-stop",
+            "phase": "prepared"
+          }
+        ],
+        "closed": false
+      },
+      "first": {
+        "method": "save",
+        "args": [
+          {
+            "ref": {
+              "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1
+            },
+            "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+            "bufferVersion": 1,
+            "baseHash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+            "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXByZXBhcmVkLnR4dA0K"
+          }
+        ],
+        "inputHash": "6bb56673b127814fcf2518c0787fb130511e3b88ae1a70416bd633b263fda253",
+        "at": 1792390509537,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+          "bufferVersion": 1,
+          "state": "unknown",
+          "recoveryId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+          "message": "[IO] 文件 broker 意外退出"
+        },
+        "before": "fca37d434099b0994d9d51f1cace547e978a9e301d680aad2958a9941abb471d",
+        "currentFrame": true,
+        "after": "fca37d434099b0994d9d51f1cace547e978a9e301d680aad2958a9941abb471d",
+        "delivered": true
+      },
+      "before": {
+        "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/dda91f39-f5fc-4966-a937-4b8bbf310896/journal.json",
+        "journal": {
+          "baseRevision": {
+            "changedNs": "1792390491554264692",
+            "device": "16777232",
+            "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+            "inode": "49826786",
+            "modifiedNs": "1792390491554264692",
+            "size": 50
+          },
+          "bufferVersion": 1,
+          "bytes": 65688,
+          "candidateHash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+          "candidateIdentity": {
+            "device": "16777232",
+            "inode": "49847018"
+          },
+          "createdAt": 1792390509559,
+          "draftHash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "49847015"
+          },
+          "draftLeaf": "draft",
+          "fingerprint": "4158aef86ad8eb500606f7b47834ca5a5647a6376787df198fa472fab487699d",
+          "materializedLeaf": "materialized",
+          "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+          "projectKey": "8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72",
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "49847013"
+          },
+          "relativePath": "dark-prepared.txt",
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "49826783"
+            },
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+            "sourcePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "fb6905e0-b57b-4244-87a1-529fc67da910",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "b3a63a51-678a-4834-a6ca-8c47b20be99f"
+            }
+          },
+          "stagingLeaf": "candidate",
+          "state": "prepared",
+          "targetParentIdentity": {
+            "device": "16777232",
+            "inode": "49826783"
+          },
+          "transactionIdentity": {
+            "device": "16777232",
+            "inode": "49847016"
+          },
+          "transactionLeaf": ".willyou-recovery-6b4ac4a2-a1fd-46ac-98c8-c6f737c4b1fa-dda91f39-f5fc-4966-a937-4b8bbf310896",
+          "volumeId": "16777232"
+        },
+        "materials": {
+          "current": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-prepared.txt",
+            "identity": {
+              "device": "16777232",
+              "inode": "49826786"
+            },
+            "mtimeNs": "1792390491554264692",
+            "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+            "text": "BASE race recovery 中文🙂\r\ndark-prepared.txt\r\n"
+          },
+          "displaced": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-6b4ac4a2-a1fd-46ac-98c8-c6f737c4b1fa-dda91f39-f5fc-4966-a937-4b8bbf310896/candidate",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847018"
+            },
+            "mtimeNs": "1792390509578291000",
+            "hash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+            "text": "LOCAL race recovery 中文🙂\r\ndark-prepared.txt\r\n"
+          },
+          "materialized": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-6b4ac4a2-a1fd-46ac-98c8-c6f737c4b1fa-dda91f39-f5fc-4966-a937-4b8bbf310896/materialized",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847018"
+            },
+            "mtimeNs": "1792390509578291000",
+            "hash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+            "text": "LOCAL race recovery 中文🙂\r\ndark-prepared.txt\r\n"
+          },
+          "draft": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/dda91f39-f5fc-4966-a937-4b8bbf310896/draft",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847015"
+            },
+            "mtimeNs": "1792390509565917887",
+            "hash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+            "text": "LOCAL race recovery 中文🙂\r\ndark-prepared.txt\r\n"
+          },
+          "journal": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/dda91f39-f5fc-4966-a937-4b8bbf310896/journal.json",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847021"
+            },
+            "mtimeNs": "1792390509582478412",
+            "hash": "bf848fc3deafbb48687560d35da6eb900f7e807e89717d9a3b10f288c0d1d206",
+            "text": "{\"baseRevision\":{\"changedNs\":\"1792390491554264692\",\"device\":\"16777232\",\"hash\":\"7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef\",\"inode\":\"49826786\",\"modifiedNs\":\"1792390491554264692\",\"size\":50},\"bufferVersion\":1,\"bytes\":65688,\"candidateHash\":\"daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"49847018\"},\"createdAt\":1792390509559,\"draftHash\":\"daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"49847015\"},\"draftLeaf\":\"draft\",\"fingerprint\":\"4158aef86ad8eb500606f7b47834ca5a5647a6376787df198fa472fab487699d\",\"materializedLeaf\":\"materialized\",\"opId\":\"dda91f39-f5fc-4966-a937-4b8bbf310896\",\"projectKey\":\"8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72\",\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"49847013\"},\"relativePath\":\"dark-prepared.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"path\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\",\"sourcePath\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"fb6905e0-b57b-4244-87a1-529fc67da910\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"b3a63a51-678a-4834-a6ca-8c47b20be99f\"}},\"stagingLeaf\":\"candidate\",\"state\":\"prepared\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"49847016\"},\"transactionLeaf\":\".willyou-recovery-6b4ac4a2-a1fd-46ac-98c8-c6f737c4b1fa-dda91f39-f5fc-4966-a937-4b8bbf310896\",\"volumeId\":\"16777232\"}"
+          }
+        }
+      },
+      "hotReplay": {
+        "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+        "message": "[IO] 文件 broker 意外退出"
+      },
+      "ui": {
+        "state": "保存中断 · 只读",
+        "materials": [
+          {
+            "kind": "current",
+            "preview": "BASE race recovery 中文🙂\r\ndark-prepared.txt\r\n",
+            "summary": "当前磁盘版本50 字节",
+            "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+            "changed": true
+          },
+          {
+            "kind": "displaced",
+            "preview": null,
+            "summary": "交换前的磁盘版本暂不可读",
+            "changed": false
+          },
+          {
+            "kind": "draft",
+            "preview": "LOCAL race recovery 中文🙂\r\ndark-prepared.txt\r\n",
+            "summary": "独立保存的本地草稿51 字节",
+            "hash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "preview": "LOCAL race recovery 中文🙂\r\ndark-prepared.txt\r\n",
+            "summary": "本次保存的候选版本51 字节",
+            "hash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+            "changed": false
+          }
+        ],
+        "editable": 0
+      },
+      "coldReplay": {
+        "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+        "message": "此前操作尚未完成恢复核对，不能重新提交"
+      },
+      "changedPayloadError": "Error: Error: Error invoking remote method 'files.save': FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容",
+      "readOnlyMaterialsUnchanged": true,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "phase": "swapped",
+      "name": "dark-swapped.txt",
+      "stop": {
+        "command": "/usr/bin/sandbox-exec",
+        "args": [
+          "-D",
+          "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+          "-D",
+          "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+          "-p",
+          "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+          "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+        ],
+        "pid": 5133,
+        "frames": [
+          {
+            "event": "transaction",
+            "identity": {
+              "inode": "49847065",
+              "device": "16777232"
+            },
+            "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff"
+          },
+          {
+            "event": "test-stop",
+            "phase": "swapped"
+          }
+        ],
+        "closed": false
+      },
+      "first": {
+        "method": "save",
+        "args": [
+          {
+            "ref": {
+              "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1
+            },
+            "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+            "bufferVersion": 1,
+            "baseHash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+            "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo="
+          }
+        ],
+        "inputHash": "8a8d3e93f53043944c09d4dcc5e6fdf62a3f78bfea873bc743d99e346e072072",
+        "at": 1792390512868,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+          "bufferVersion": 1,
+          "state": "unknown",
+          "recoveryId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+          "message": "[IO] 文件 broker 意外退出"
+        },
+        "before": "c3a9e449601bf72dcf80fac58eecf617eb3e1b6156963bbeafbec4b2692294be",
+        "currentFrame": true,
+        "after": "c3a9e449601bf72dcf80fac58eecf617eb3e1b6156963bbeafbec4b2692294be",
+        "delivered": true
+      },
+      "before": {
+        "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/a2c54827-1b30-4d39-a20e-8488149fb4ff/journal.json",
+        "journal": {
+          "baseRevision": {
+            "changedNs": "1792390491554440192",
+            "device": "16777232",
+            "hash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+            "inode": "49826787",
+            "modifiedNs": "1792390491554440192",
+            "size": 49
+          },
+          "bufferVersion": 1,
+          "bytes": 65685,
+          "candidateHash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+          "candidateIdentity": {
+            "device": "16777232",
+            "inode": "49847067"
+          },
+          "createdAt": 1792390512883,
+          "draftHash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+          "draftIdentity": {
+            "device": "16777232",
+            "inode": "49847064"
+          },
+          "draftLeaf": "draft",
+          "fingerprint": "77f1b695a02fa25cc334864b0c5ea9a170a967ae769fa02aa8b366618df09369",
+          "materializedLeaf": "materialized",
+          "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+          "projectKey": "8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72",
+          "recordIdentity": {
+            "device": "16777232",
+            "inode": "49847062"
+          },
+          "relativePath": "dark-swapped.txt",
+          "root": {
+            "identity": {
+              "device": "16777232",
+              "inode": "49826783"
+            },
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+            "sourcePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project"
+          },
+          "schemaVersion": 1,
+          "source": {
+            "id": "fb6905e0-b57b-4244-87a1-529fc67da910",
+            "kind": "project-directory",
+            "scope": {
+              "kind": "project",
+              "projectId": "b3a63a51-678a-4834-a6ca-8c47b20be99f"
+            }
+          },
+          "stagingLeaf": "candidate",
+          "state": "prepared",
+          "targetParentIdentity": {
+            "device": "16777232",
+            "inode": "49826783"
+          },
+          "transactionIdentity": {
+            "device": "16777232",
+            "inode": "49847065"
+          },
+          "transactionLeaf": ".willyou-recovery-8ae8cfa3-0452-4ce8-afb0-a3bd4f6774db-a2c54827-1b30-4d39-a20e-8488149fb4ff",
+          "volumeId": "16777232"
+        },
+        "materials": {
+          "current": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847067"
+            },
+            "mtimeNs": "1792390512901049000",
+            "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+            "text": "LOCAL race recovery 中文🙂\r\ndark-swapped.txt\r\n"
+          },
+          "displaced": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-8ae8cfa3-0452-4ce8-afb0-a3bd4f6774db-a2c54827-1b30-4d39-a20e-8488149fb4ff/candidate",
+            "identity": {
+              "device": "16777232",
+              "inode": "49826787"
+            },
+            "mtimeNs": "1792390491554440192",
+            "hash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+            "text": "BASE race recovery 中文🙂\r\ndark-swapped.txt\r\n"
+          },
+          "materialized": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/.willyou-recovery-8ae8cfa3-0452-4ce8-afb0-a3bd4f6774db-a2c54827-1b30-4d39-a20e-8488149fb4ff/materialized",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847067"
+            },
+            "mtimeNs": "1792390512901049000",
+            "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+            "text": "LOCAL race recovery 中文🙂\r\ndark-swapped.txt\r\n"
+          },
+          "draft": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/a2c54827-1b30-4d39-a20e-8488149fb4ff/draft",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847064"
+            },
+            "mtimeNs": "1792390512889118274",
+            "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+            "text": "LOCAL race recovery 中文🙂\r\ndark-swapped.txt\r\n"
+          },
+          "journal": {
+            "path": "/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1/8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72/a2c54827-1b30-4d39-a20e-8488149fb4ff/journal.json",
+            "identity": {
+              "device": "16777232",
+              "inode": "49847070"
+            },
+            "mtimeNs": "1792390512905232132",
+            "hash": "7e2c502ab4aeda3c03dec043a1bd80c5cc9e0c2273da61870a5f8fb3f48f902d",
+            "text": "{\"baseRevision\":{\"changedNs\":\"1792390491554440192\",\"device\":\"16777232\",\"hash\":\"619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1\",\"inode\":\"49826787\",\"modifiedNs\":\"1792390491554440192\",\"size\":49},\"bufferVersion\":1,\"bytes\":65685,\"candidateHash\":\"b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285\",\"candidateIdentity\":{\"device\":\"16777232\",\"inode\":\"49847067\"},\"createdAt\":1792390512883,\"draftHash\":\"b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285\",\"draftIdentity\":{\"device\":\"16777232\",\"inode\":\"49847064\"},\"draftLeaf\":\"draft\",\"fingerprint\":\"77f1b695a02fa25cc334864b0c5ea9a170a967ae769fa02aa8b366618df09369\",\"materializedLeaf\":\"materialized\",\"opId\":\"a2c54827-1b30-4d39-a20e-8488149fb4ff\",\"projectKey\":\"8ae13db02eaadb96e7fd6de1b24783995f066f6c3ae459f0cee24c419ebc7d72\",\"recordIdentity\":{\"device\":\"16777232\",\"inode\":\"49847062\"},\"relativePath\":\"dark-swapped.txt\",\"root\":{\"identity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"path\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\",\"sourcePath\":\"\\/private\\/tmp\\/willyou-save-race-crash-app-YRthkC\\/project\"},\"schemaVersion\":1,\"source\":{\"id\":\"fb6905e0-b57b-4244-87a1-529fc67da910\",\"kind\":\"project-directory\",\"scope\":{\"kind\":\"project\",\"projectId\":\"b3a63a51-678a-4834-a6ca-8c47b20be99f\"}},\"stagingLeaf\":\"candidate\",\"state\":\"prepared\",\"targetParentIdentity\":{\"device\":\"16777232\",\"inode\":\"49826783\"},\"transactionIdentity\":{\"device\":\"16777232\",\"inode\":\"49847065\"},\"transactionLeaf\":\".willyou-recovery-8ae8cfa3-0452-4ce8-afb0-a3bd4f6774db-a2c54827-1b30-4d39-a20e-8488149fb4ff\",\"volumeId\":\"16777232\"}"
+          }
+        }
+      },
+      "hotReplay": {
+        "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+        "message": "[IO] 文件 broker 意外退出"
+      },
+      "ui": {
+        "state": "保存中断 · 只读",
+        "materials": [
+          {
+            "kind": "current",
+            "preview": "LOCAL race recovery 中文🙂\r\ndark-swapped.txt\r\n",
+            "summary": "当前磁盘版本50 字节",
+            "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+            "changed": false
+          },
+          {
+            "kind": "displaced",
+            "preview": "BASE race recovery 中文🙂\r\ndark-swapped.txt\r\n",
+            "summary": "交换前的磁盘版本49 字节",
+            "hash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+            "changed": false
+          },
+          {
+            "kind": "draft",
+            "preview": "LOCAL race recovery 中文🙂\r\ndark-swapped.txt\r\n",
+            "summary": "独立保存的本地草稿50 字节",
+            "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+            "changed": false
+          },
+          {
+            "kind": "materialized",
+            "preview": "LOCAL race recovery 中文🙂\r\ndark-swapped.txt\r\n",
+            "summary": "本次保存的候选版本50 字节",
+            "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+            "changed": false
+          }
+        ],
+        "editable": 0
+      },
+      "coldReplay": {
+        "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+        "bufferVersion": 1,
+        "state": "unknown",
+        "recoveryId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+        "message": "此前操作尚未完成恢复核对，不能重新提交"
+      },
+      "changedPayloadError": "Error: Error: Error invoking remote method 'files.save': FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容",
+      "readOnlyMaterialsUnchanged": true,
+      "pass": true
+    }
+  ],
+  "runs": [
+    {
+      "tag": "light-prepared.txt-fault",
+      "pid": 4562,
+      "isFault": true,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                "generation": 1,
+                "relativePath": "light-prepared.txt"
+              }
+            ],
+            "inputHash": "48e5c8c8aff5d161035f0734e6953825aecc8adc2e7032ad08a437d9a76d7980",
+            "at": 1792390502531,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49826784",
+              "name": "light-prepared.txt",
+              "relativePath": "light-prepared.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-prepared.txt",
+              "revision": {
+                "size": 51,
+                "inode": "49826784",
+                "device": "16777232",
+                "changedNs": "1792390491553976566",
+                "modifiedNs": "1792390491553976566",
+                "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "9ce8470a4805a7da8be930d213bdd39e42eca2396edc80e157819aadfe2fb6d8",
+            "currentFrame": true,
+            "after": "9ce8470a4805a7da8be930d213bdd39e42eca2396edc80e157819aadfe2fb6d8",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                "generation": 1
+              }
+            ],
+            "inputHash": "046fd19fdc52751b4a2a56b3cf7e78ded444269b7bbf7a48bbcc94b66569c669",
+            "at": 1792390502554,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                  "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826784",
+                "name": "light-prepared.txt",
+                "relativePath": "light-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-prepared.txt",
+                "revision": {
+                  "size": 51,
+                  "inode": "49826784",
+                  "device": "16777232",
+                  "changedNs": "1792390491553976566",
+                  "modifiedNs": "1792390491553976566",
+                  "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmxpZ2h0LXByZXBhcmVkLnR4dA0K"
+            },
+            "before": "d9c16e14c9bfface6d15902b9a068a0aba6a80adeeadfea8951b7895161da63e",
+            "currentFrame": true,
+            "after": "d9c16e14c9bfface6d15902b9a068a0aba6a80adeeadfea8951b7895161da63e",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                "generation": 1
+              }
+            ],
+            "inputHash": "046fd19fdc52751b4a2a56b3cf7e78ded444269b7bbf7a48bbcc94b66569c669",
+            "at": 1792390502569,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                  "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826784",
+                "name": "light-prepared.txt",
+                "relativePath": "light-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-prepared.txt",
+                "revision": {
+                  "size": 51,
+                  "inode": "49826784",
+                  "device": "16777232",
+                  "changedNs": "1792390491553976566",
+                  "modifiedNs": "1792390491553976566",
+                  "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmxpZ2h0LXByZXBhcmVkLnR4dA0K"
+            },
+            "before": "d9c16e14c9bfface6d15902b9a068a0aba6a80adeeadfea8951b7895161da63e",
+            "currentFrame": true,
+            "after": "d9c16e14c9bfface6d15902b9a068a0aba6a80adeeadfea8951b7895161da63e",
+            "delivered": true
+          },
+          {
+            "method": "checkpoint",
+            "args": [
+              {
+                "ref": {
+                  "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                  "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                  "generation": 1
+                },
+                "draftId": "3acbaa7e-6e7e-4268-925c-7f807f4cff5a",
+                "bufferVersion": 1,
+                "baseHash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1wcmVwYXJlZC50eHQNCg==",
+                "encoding": "utf-8",
+                "bom": false
+              }
+            ],
+            "inputHash": "21075896804492e462486c6cdc022add993968150a082fa6ef007204fc7f354b",
+            "at": 1792390502721,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "draftId": "3acbaa7e-6e7e-4268-925c-7f807f4cff5a",
+              "hash": "03dcb4406973544f567f48cfe2a3afcdecaace95549af2cec595864aa32a89b5",
+              "bufferVersion": 1
+            },
+            "before": "05e23e5d8445f2a1722ef04fc553128dfb56c143fad44bcfecb8e4fcf50277f3",
+            "currentFrame": true,
+            "after": "05e23e5d8445f2a1722ef04fc553128dfb56c143fad44bcfecb8e4fcf50277f3",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                  "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                  "generation": 1
+                },
+                "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+                "bufferVersion": 1,
+                "baseHash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1wcmVwYXJlZC50eHQNCg=="
+              }
+            ],
+            "inputHash": "9d6af6ce33654ea0b646b8940051ac2abbea97dbfe426397ee06d95c00f73060",
+            "at": 1792390502783,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "ab98b9543e0fd87bc2ab955aa6d0b265c22866b1fa0e0ac45e0050f05a5d1140",
+            "currentFrame": true,
+            "after": "ab98b9543e0fd87bc2ab955aa6d0b265c22866b1fa0e0ac45e0050f05a5d1140",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "ba7bacef-57d6-4ff8-8723-2f262f84d856",
+                  "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+                  "generation": 1
+                },
+                "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+                "bufferVersion": 1,
+                "baseHash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1wcmVwYXJlZC50eHQNCg=="
+              }
+            ],
+            "inputHash": "9d6af6ce33654ea0b646b8940051ac2abbea97dbfe426397ee06d95c00f73060",
+            "at": 1792390502876,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "ab98b9543e0fd87bc2ab955aa6d0b265c22866b1fa0e0ac45e0050f05a5d1140",
+            "currentFrame": true,
+            "after": "ab98b9543e0fd87bc2ab955aa6d0b265c22866b1fa0e0ac45e0050f05a5d1140",
+            "delivered": true
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390502448,
+            "channel": "files:watch",
+            "value": {
+              "id": "06b5b5cf-e8c8-43a8-8a69-22062a2438d4",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "b2ad52f76ee17f219180fcfb7444e02cf72b5c6b5211e32abb55d34a5fce7935",
+            "waiting": false,
+            "delivered": true,
+            "after": "b2ad52f76ee17f219180fcfb7444e02cf72b5c6b5211e32abb55d34a5fce7935"
+          },
+          {
+            "at": 1792390502464,
+            "channel": "files:watch",
+            "value": {
+              "id": "06b5b5cf-e8c8-43a8-8a69-22062a2438d4",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "23920dfa940c42879d909ae35ab72e52af7c65c218a19be9da5b2752f4869c7d",
+            "waiting": false,
+            "delivered": true,
+            "after": "23920dfa940c42879d909ae35ab72e52af7c65c218a19be9da5b2752f4869c7d"
+          },
+          {
+            "at": 1792390502554,
+            "channel": "files:watch",
+            "value": {
+              "id": "06b5b5cf-e8c8-43a8-8a69-22062a2438d4",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "60f31256d3e471c4ab5558a9f0fd2e1802c4d2c3f2dd9842cf4d48d102f6bbcc",
+            "waiting": false,
+            "delivered": true,
+            "after": "60f31256d3e471c4ab5558a9f0fd2e1802c4d2c3f2dd9842cf4d48d102f6bbcc"
+          },
+          {
+            "at": 1792390502576,
+            "channel": "files:watch",
+            "value": {
+              "id": "06b5b5cf-e8c8-43a8-8a69-22062a2438d4",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "c332e535ba81201059cc4e1112e74717181301dec08731d87d86dc903e74c4c6",
+            "waiting": false,
+            "delivered": true,
+            "after": "c332e535ba81201059cc4e1112e74717181301dec08731d87d86dc903e74c4c6"
+          },
+          {
+            "at": 1792390502924,
+            "channel": "files:watch",
+            "value": {
+              "id": "06b5b5cf-e8c8-43a8-8a69-22062a2438d4",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "8ac06130995f33a151e4443cec60d806d14d1d4e94eaf8bfdf46d18d2fe7753a",
+            "waiting": false,
+            "delivered": true,
+            "after": "8ac06130995f33a151e4443cec60d806d14d1d4e94eaf8bfdf46d18d2fe7753a"
+          },
+          {
+            "at": 1792390502988,
+            "channel": "files:watch",
+            "value": {
+              "id": "06b5b5cf-e8c8-43a8-8a69-22062a2438d4",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1,
+              "sequence": 7,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "131bc8cf1a15c468a7c35282de66a1c33c6fd0b8860f271258c0233d9d84a970",
+            "waiting": false,
+            "delivered": true,
+            "after": "131bc8cf1a15c468a7c35282de66a1c33c6fd0b8860f271258c0233d9d84a970"
+          },
+          {
+            "at": 1792390502996,
+            "channel": "files:watch",
+            "value": {
+              "id": "06b5b5cf-e8c8-43a8-8a69-22062a2438d4",
+              "lease": "51e67148-994b-466d-a635-bf3b1d1ab15c",
+              "generation": 1,
+              "sequence": 8,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "7e83b3c2f4d8027ad812aafa2f93fd7252ce2d863a6a011117fc338306a49858",
+            "waiting": false,
+            "delivered": true,
+            "after": "7e83b3c2f4d8027ad812aafa2f93fd7252ce2d863a6a011117fc338306a49858"
+          }
+        ]
+      },
+      "native": {
+        "restored": true,
+        "rows": [
+          {
+            "command": "/usr/bin/sandbox-exec",
+            "args": [
+              "-D",
+              "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+              "-D",
+              "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+              "-p",
+              "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+              "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+            ],
+            "pid": 4655,
+            "frames": [
+              {
+                "event": "transaction",
+                "identity": {
+                  "inode": "49846896",
+                  "device": "16777232"
+                },
+                "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5"
+              },
+              {
+                "event": "test-stop",
+                "phase": "prepared"
+              }
+            ],
+            "closed": true,
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 4562,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "tag": "light-prepared.txt-restart",
+      "pid": 4666,
+      "isFault": false,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                "generation": 1,
+                "relativePath": "light-prepared.txt"
+              }
+            ],
+            "inputHash": "8563397c90eaa8454401a58adb1406d83baad66d6375a908865131669f57c602",
+            "at": 1792390504755,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "ab82a50b-e8fa-40ee-9a25-a30f5fb1dfe0",
+                "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49826784",
+              "name": "light-prepared.txt",
+              "relativePath": "light-prepared.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-prepared.txt",
+              "revision": {
+                "size": 51,
+                "inode": "49826784",
+                "device": "16777232",
+                "changedNs": "1792390491553976566",
+                "modifiedNs": "1792390491553976566",
+                "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "021c4c8d74c5304e5dc0a53cedf8d827783538f07d92b43a29a84a9cb1ccc74d",
+            "currentFrame": true,
+            "after": "021c4c8d74c5304e5dc0a53cedf8d827783538f07d92b43a29a84a9cb1ccc74d",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "ab82a50b-e8fa-40ee-9a25-a30f5fb1dfe0",
+                "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                "generation": 1
+              }
+            ],
+            "inputHash": "67dfa3aae07ab66de5c80883fe9c1792a50ea67cbb1bf11ab115fd63f818d13a",
+            "at": 1792390504766,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "ab82a50b-e8fa-40ee-9a25-a30f5fb1dfe0",
+                  "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826784",
+                "name": "light-prepared.txt",
+                "relativePath": "light-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-prepared.txt",
+                "revision": {
+                  "size": 51,
+                  "inode": "49826784",
+                  "device": "16777232",
+                  "changedNs": "1792390491553976566",
+                  "modifiedNs": "1792390491553976566",
+                  "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmxpZ2h0LXByZXBhcmVkLnR4dA0K"
+            },
+            "before": "81945fbb96534a507f154b12ac703aee1cf7aeee31a57bf6ec33b1e9b08a5874",
+            "currentFrame": true,
+            "after": "81945fbb96534a507f154b12ac703aee1cf7aeee31a57bf6ec33b1e9b08a5874",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "ab82a50b-e8fa-40ee-9a25-a30f5fb1dfe0",
+                "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                "generation": 1
+              }
+            ],
+            "inputHash": "67dfa3aae07ab66de5c80883fe9c1792a50ea67cbb1bf11ab115fd63f818d13a",
+            "at": 1792390504776,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "ab82a50b-e8fa-40ee-9a25-a30f5fb1dfe0",
+                  "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826784",
+                "name": "light-prepared.txt",
+                "relativePath": "light-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-prepared.txt",
+                "revision": {
+                  "size": 51,
+                  "inode": "49826784",
+                  "device": "16777232",
+                  "changedNs": "1792390491553976566",
+                  "modifiedNs": "1792390491553976566",
+                  "hash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmxpZ2h0LXByZXBhcmVkLnR4dA0K"
+            },
+            "before": "81945fbb96534a507f154b12ac703aee1cf7aeee31a57bf6ec33b1e9b08a5874",
+            "currentFrame": true,
+            "after": "81945fbb96534a507f154b12ac703aee1cf7aeee31a57bf6ec33b1e9b08a5874",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "ab82a50b-e8fa-40ee-9a25-a30f5fb1dfe0",
+                  "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                  "generation": 1
+                },
+                "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+                "bufferVersion": 1,
+                "baseHash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1wcmVwYXJlZC50eHQNCg=="
+              }
+            ],
+            "inputHash": "0256122e15ab14e3071cd2ac6d59da425590fba8c8bed1b5e410dcf67f0c25d7",
+            "at": 1792390504865,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+              "message": "此前操作尚未完成恢复核对，不能重新提交"
+            },
+            "before": "afa9584f65459b21b9cbac184a79cf9e070f4c7822982bdf84cb207c0cceafe5",
+            "currentFrame": true,
+            "after": "afa9584f65459b21b9cbac184a79cf9e070f4c7822982bdf84cb207c0cceafe5",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "ab82a50b-e8fa-40ee-9a25-a30f5fb1dfe0",
+                  "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+                  "generation": 1
+                },
+                "opId": "3b88a7ca-a18b-4463-8dff-966579a486e5",
+                "bufferVersion": 1,
+                "baseHash": "4049746a0067c982d66ab25676e8a27cd04cdf96fd45b5fec70aa491f58b9f06",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1wcmVwYXJlZC50eHQNCmRpZmZlcmVudCBwYXlsb2Fk"
+              }
+            ],
+            "inputHash": "555f4d7bc41af24c13cdb6652b05e1d4d5c215f098a0b6db807d58f59984743d",
+            "at": 1792390504866,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "error": "FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容"
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390504439,
+            "channel": "files:watch",
+            "value": {
+              "id": "ee05816a-b589-44bb-bfba-80a9a1918b6c",
+              "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "af41b0bec0b649155e84635d34cd096ead906d193293d5fe33edc5fcd8a72715",
+            "waiting": false,
+            "delivered": true,
+            "after": "af41b0bec0b649155e84635d34cd096ead906d193293d5fe33edc5fcd8a72715"
+          },
+          {
+            "at": 1792390504448,
+            "channel": "files:watch",
+            "value": {
+              "id": "ee05816a-b589-44bb-bfba-80a9a1918b6c",
+              "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "956475f391a820f287692e06faa2efe777cb026368ba77d88260bf3cfd1625e6",
+            "waiting": false,
+            "delivered": true,
+            "after": "956475f391a820f287692e06faa2efe777cb026368ba77d88260bf3cfd1625e6"
+          },
+          {
+            "at": 1792390504555,
+            "channel": "files:watch",
+            "value": {
+              "id": "ee05816a-b589-44bb-bfba-80a9a1918b6c",
+              "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "a2a210dd73e979f0960dbeacf62870322d26976dc711b42ca00f1505daa973cc",
+            "waiting": false,
+            "delivered": true,
+            "after": "a2a210dd73e979f0960dbeacf62870322d26976dc711b42ca00f1505daa973cc"
+          },
+          {
+            "at": 1792390504766,
+            "channel": "files:watch",
+            "value": {
+              "id": "ee05816a-b589-44bb-bfba-80a9a1918b6c",
+              "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "8066524d871001b4280b36e074c5cfa8f40bf643977045953200452122cd74b8",
+            "waiting": false,
+            "delivered": true,
+            "after": "8066524d871001b4280b36e074c5cfa8f40bf643977045953200452122cd74b8"
+          },
+          {
+            "at": 1792390504783,
+            "channel": "files:watch",
+            "value": {
+              "id": "ee05816a-b589-44bb-bfba-80a9a1918b6c",
+              "lease": "c5425111-e49f-497b-a9cd-c8b52184e04c",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "20015702379fd076e0af9c48651712bdc81b07b4695228a505cfb36cd6e63b97",
+            "waiting": false,
+            "delivered": true,
+            "after": "20015702379fd076e0af9c48651712bdc81b07b4695228a505cfb36cd6e63b97"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 4666,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "tag": "light-swapped.txt-fault",
+      "pid": 4730,
+      "isFault": true,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                "generation": 1,
+                "relativePath": "light-swapped.txt"
+              }
+            ],
+            "inputHash": "b2b8fffd978984aeccc652be1744ebe06209d7da8e9c2cb07735d831e73363aa",
+            "at": 1792390505955,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49826785",
+              "name": "light-swapped.txt",
+              "relativePath": "light-swapped.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+              "revision": {
+                "size": 50,
+                "inode": "49826785",
+                "device": "16777232",
+                "changedNs": "1792390491554150067",
+                "modifiedNs": "1792390491554150067",
+                "hash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "4d4ed4d8b45ba36ae07fe668b0f816546699323d47d425bb9efbad91d7780b0a",
+            "currentFrame": true,
+            "after": "4d4ed4d8b45ba36ae07fe668b0f816546699323d47d425bb9efbad91d7780b0a",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                "generation": 1
+              }
+            ],
+            "inputHash": "3f92dca7e3c2b8c79d52be8f7a1f29144525b15fc7b79230261af3db4e0a1f2d",
+            "at": 1792390505965,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                  "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826785",
+                "name": "light-swapped.txt",
+                "relativePath": "light-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49826785",
+                  "device": "16777232",
+                  "changedNs": "1792390491554150067",
+                  "modifiedNs": "1792390491554150067",
+                  "hash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmxpZ2h0LXN3YXBwZWQudHh0DQo="
+            },
+            "before": "deb6b17048b014a86eb58c67387e7cf1a5bdcbfd933422b380753964aa1c0708",
+            "currentFrame": true,
+            "after": "deb6b17048b014a86eb58c67387e7cf1a5bdcbfd933422b380753964aa1c0708",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                "generation": 1
+              }
+            ],
+            "inputHash": "3f92dca7e3c2b8c79d52be8f7a1f29144525b15fc7b79230261af3db4e0a1f2d",
+            "at": 1792390505974,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                  "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826785",
+                "name": "light-swapped.txt",
+                "relativePath": "light-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49826785",
+                  "device": "16777232",
+                  "changedNs": "1792390491554150067",
+                  "modifiedNs": "1792390491554150067",
+                  "hash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmxpZ2h0LXN3YXBwZWQudHh0DQo="
+            },
+            "before": "deb6b17048b014a86eb58c67387e7cf1a5bdcbfd933422b380753964aa1c0708",
+            "currentFrame": true,
+            "after": "deb6b17048b014a86eb58c67387e7cf1a5bdcbfd933422b380753964aa1c0708",
+            "delivered": true
+          },
+          {
+            "method": "checkpoint",
+            "args": [
+              {
+                "ref": {
+                  "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                  "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                  "generation": 1
+                },
+                "draftId": "aad5cf58-9a3b-46c6-bd91-7ef4609ff02b",
+                "bufferVersion": 1,
+                "baseHash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K",
+                "encoding": "utf-8",
+                "bom": false
+              }
+            ],
+            "inputHash": "d064cb51c3e38b808a030fb7a8e1e24ba64e82685c442f905c9885f4983daeb4",
+            "at": 1792390506111,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "draftId": "aad5cf58-9a3b-46c6-bd91-7ef4609ff02b",
+              "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f",
+              "bufferVersion": 1
+            },
+            "before": "7c8659192e807b4522a9cb40da109a440a6cedbea479955e459b353d3c0b7373",
+            "currentFrame": true,
+            "after": "7c8659192e807b4522a9cb40da109a440a6cedbea479955e459b353d3c0b7373",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                  "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                  "generation": 1
+                },
+                "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+                "bufferVersion": 1,
+                "baseHash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K"
+              }
+            ],
+            "inputHash": "f657fd59a1cc2eae6e6c8fec076eee54077017e878b323491cd55036b6db562f",
+            "at": 1792390506159,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "7fd5e79cb9112ff38b04ed82c2db28e41a01d7b3a85a91f10a0daea80969e0d6",
+            "currentFrame": true,
+            "after": "7fd5e79cb9112ff38b04ed82c2db28e41a01d7b3a85a91f10a0daea80969e0d6",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                  "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                  "generation": 1
+                },
+                "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+                "bufferVersion": 1,
+                "baseHash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K"
+              }
+            ],
+            "inputHash": "f657fd59a1cc2eae6e6c8fec076eee54077017e878b323491cd55036b6db562f",
+            "at": 1792390506255,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "7fd5e79cb9112ff38b04ed82c2db28e41a01d7b3a85a91f10a0daea80969e0d6",
+            "currentFrame": true,
+            "after": "7fd5e79cb9112ff38b04ed82c2db28e41a01d7b3a85a91f10a0daea80969e0d6",
+            "delivered": true
+          },
+          {
+            "method": "refresh",
+            "args": [
+              {
+                "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                "generation": 1
+              }
+            ],
+            "inputHash": "3f92dca7e3c2b8c79d52be8f7a1f29144525b15fc7b79230261af3db4e0a1f2d",
+            "at": 1792390506298,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49846960",
+              "name": "light-swapped.txt",
+              "relativePath": "light-swapped.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+              "revision": {
+                "size": 51,
+                "inode": "49846960",
+                "device": "16777232",
+                "changedNs": "1792390506207555407",
+                "modifiedNs": "1792390506198372000",
+                "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "5c4f75d571ebe80f9857ce96b0a1ce9e4024eddef151f6a603489e129b46ee0d",
+            "currentFrame": true,
+            "after": "5c4f75d571ebe80f9857ce96b0a1ce9e4024eddef151f6a603489e129b46ee0d",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                "generation": 1
+              }
+            ],
+            "inputHash": "3f92dca7e3c2b8c79d52be8f7a1f29144525b15fc7b79230261af3db4e0a1f2d",
+            "at": 1792390506316,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "b54689d9-1580-4029-bebf-58e7a47ee4e0",
+                  "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49846960",
+                "name": "light-swapped.txt",
+                "relativePath": "light-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+                "revision": {
+                  "size": 51,
+                  "inode": "49846960",
+                  "device": "16777232",
+                  "changedNs": "1792390506207555407",
+                  "modifiedNs": "1792390506198372000",
+                  "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K"
+            },
+            "before": "c49e6d48c81c380178652df1e2d46c947a1ee5ce9b68354b09d1fabadae4e29b",
+            "currentFrame": true,
+            "after": "c49e6d48c81c380178652df1e2d46c947a1ee5ce9b68354b09d1fabadae4e29b",
+            "delivered": true
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390505900,
+            "channel": "files:watch",
+            "value": {
+              "id": "37858e4c-70a5-422e-a7bb-b2a5e1f695b9",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "430cc3e37aa768f8822c6f192adeccbfbe4af5f3e5d49cd522870b44e71b85d5",
+            "waiting": false,
+            "delivered": true,
+            "after": "430cc3e37aa768f8822c6f192adeccbfbe4af5f3e5d49cd522870b44e71b85d5"
+          },
+          {
+            "at": 1792390505909,
+            "channel": "files:watch",
+            "value": {
+              "id": "37858e4c-70a5-422e-a7bb-b2a5e1f695b9",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "a6af0797e9dd3f7ad0d9672825505c23f04844892fb2daeba51b07ccd7ae77c1",
+            "waiting": false,
+            "delivered": true,
+            "after": "a6af0797e9dd3f7ad0d9672825505c23f04844892fb2daeba51b07ccd7ae77c1"
+          },
+          {
+            "at": 1792390505964,
+            "channel": "files:watch",
+            "value": {
+              "id": "37858e4c-70a5-422e-a7bb-b2a5e1f695b9",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "8ef23f53888a90bd7de99a8abcca5cbb3a78648ccae4b207866631dfd827a4ce",
+            "waiting": false,
+            "delivered": true,
+            "after": "8ef23f53888a90bd7de99a8abcca5cbb3a78648ccae4b207866631dfd827a4ce"
+          },
+          {
+            "at": 1792390505975,
+            "channel": "files:watch",
+            "value": {
+              "id": "37858e4c-70a5-422e-a7bb-b2a5e1f695b9",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "11aca8ba241c6f16cd3638680b12d1ae41d8f7ad83b693d769f5773ec72b6103",
+            "waiting": false,
+            "delivered": true,
+            "after": "11aca8ba241c6f16cd3638680b12d1ae41d8f7ad83b693d769f5773ec72b6103"
+          },
+          {
+            "at": 1792390506297,
+            "channel": "files:watch",
+            "value": {
+              "id": "37858e4c-70a5-422e-a7bb-b2a5e1f695b9",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": true
+            },
+            "args": [],
+            "before": "2282a7143eb1320517765993388f7cf4d191440dfd4eb2da37d5e2ca1962749e",
+            "waiting": false,
+            "delivered": true,
+            "after": "2282a7143eb1320517765993388f7cf4d191440dfd4eb2da37d5e2ca1962749e"
+          },
+          {
+            "at": 1792390506375,
+            "channel": "files:watch",
+            "value": {
+              "id": "37858e4c-70a5-422e-a7bb-b2a5e1f695b9",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1,
+              "sequence": 7,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "e2d5fda969e572726b565a761f9b7a264249964f060f0c98068771532d4fb000",
+            "waiting": false,
+            "delivered": true,
+            "after": "e2d5fda969e572726b565a761f9b7a264249964f060f0c98068771532d4fb000"
+          },
+          {
+            "at": 1792390506386,
+            "channel": "files:watch",
+            "value": {
+              "id": "37858e4c-70a5-422e-a7bb-b2a5e1f695b9",
+              "lease": "881f3d55-837c-4ed1-93fd-0b5c3025944a",
+              "generation": 1,
+              "sequence": 8,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "15cdf987e1a586746407c5dee85f39c73695cd92098607b622275d2f6b41774b",
+            "waiting": false,
+            "delivered": true,
+            "after": "15cdf987e1a586746407c5dee85f39c73695cd92098607b622275d2f6b41774b"
+          }
+        ]
+      },
+      "native": {
+        "restored": true,
+        "rows": [
+          {
+            "command": "/usr/bin/sandbox-exec",
+            "args": [
+              "-D",
+              "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+              "-D",
+              "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+              "-p",
+              "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+              "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+            ],
+            "pid": 4789,
+            "frames": [
+              {
+                "event": "transaction",
+                "identity": {
+                  "inode": "49846958",
+                  "device": "16777232"
+                },
+                "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e"
+              },
+              {
+                "event": "test-stop",
+                "phase": "swapped"
+              }
+            ],
+            "closed": true,
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 4730,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "tag": "light-swapped.txt-restart",
+      "pid": 4807,
+      "isFault": false,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                "generation": 1,
+                "relativePath": "light-swapped.txt"
+              }
+            ],
+            "inputHash": "4db90f62f209234b90f093ee6a2bd8facfdba01ca8c469f8c82193b68cfe9010",
+            "at": 1792390507918,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "6eb49285-0dc7-48ca-a335-ab673c417020",
+                "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49846960",
+              "name": "light-swapped.txt",
+              "relativePath": "light-swapped.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+              "revision": {
+                "size": 51,
+                "inode": "49846960",
+                "device": "16777232",
+                "changedNs": "1792390506207555407",
+                "modifiedNs": "1792390506198372000",
+                "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "4b05fa21890ca78a4c1736ceabbc382ab80463ba02e71d3ef50acfe40656f80b",
+            "currentFrame": true,
+            "after": "4b05fa21890ca78a4c1736ceabbc382ab80463ba02e71d3ef50acfe40656f80b",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "6eb49285-0dc7-48ca-a335-ab673c417020",
+                "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                "generation": 1
+              }
+            ],
+            "inputHash": "c4f1357216da633c18f8019c502fa3cb7538b60531b5bd1c4cb1a32291e10ad9",
+            "at": 1792390507926,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "6eb49285-0dc7-48ca-a335-ab673c417020",
+                  "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49846960",
+                "name": "light-swapped.txt",
+                "relativePath": "light-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+                "revision": {
+                  "size": 51,
+                  "inode": "49846960",
+                  "device": "16777232",
+                  "changedNs": "1792390506207555407",
+                  "modifiedNs": "1792390506198372000",
+                  "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K"
+            },
+            "before": "026689b38eb52b6db28a295e46b143a683ccdbcec748423ffcdbafb590444e53",
+            "currentFrame": true,
+            "after": "026689b38eb52b6db28a295e46b143a683ccdbcec748423ffcdbafb590444e53",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "6eb49285-0dc7-48ca-a335-ab673c417020",
+                "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                "generation": 1
+              }
+            ],
+            "inputHash": "c4f1357216da633c18f8019c502fa3cb7538b60531b5bd1c4cb1a32291e10ad9",
+            "at": 1792390507942,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "6eb49285-0dc7-48ca-a335-ab673c417020",
+                  "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49846960",
+                "name": "light-swapped.txt",
+                "relativePath": "light-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/light-swapped.txt",
+                "revision": {
+                  "size": 51,
+                  "inode": "49846960",
+                  "device": "16777232",
+                  "changedNs": "1792390506207555407",
+                  "modifiedNs": "1792390506198372000",
+                  "hash": "50358864b7fb7a96fd02c3d0b406ad3f11dbcef02d76290c08cf04049cb0c23f"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K"
+            },
+            "before": "026689b38eb52b6db28a295e46b143a683ccdbcec748423ffcdbafb590444e53",
+            "currentFrame": true,
+            "after": "026689b38eb52b6db28a295e46b143a683ccdbcec748423ffcdbafb590444e53",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "6eb49285-0dc7-48ca-a335-ab673c417020",
+                  "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                  "generation": 1
+                },
+                "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+                "bufferVersion": 1,
+                "baseHash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0K"
+              }
+            ],
+            "inputHash": "ef280b7d8ff8f7b280c6274bbaf97b38d4a6da17ae37664e3950d0eb5fb35e99",
+            "at": 1792390508026,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+              "message": "此前操作尚未完成恢复核对，不能重新提交"
+            },
+            "before": "978f5181d510f354f82f1126e5a29a06f38bda72fd89c6f098f1ec34f2ed7f94",
+            "currentFrame": true,
+            "after": "978f5181d510f354f82f1126e5a29a06f38bda72fd89c6f098f1ec34f2ed7f94",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "6eb49285-0dc7-48ca-a335-ab673c417020",
+                  "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+                  "generation": 1
+                },
+                "opId": "43dd0885-3615-4df7-a711-f4920d9ebd1e",
+                "bufferVersion": 1,
+                "baseHash": "3abce7a0765f368a4d0de76f7878bcb9a33d3e062c6d6174b808adeacd22f207",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpsaWdodC1zd2FwcGVkLnR4dA0KZGlmZmVyZW50IHBheWxvYWQ="
+              }
+            ],
+            "inputHash": "a4db8e618816ca4b29c99f31adb17c56ee1e34d484de3e2e6228f5c98efe833c",
+            "at": 1792390508028,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "error": "FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容"
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390507597,
+            "channel": "files:watch",
+            "value": {
+              "id": "95df0eda-1e40-42b8-9fc3-0bc62a869d7d",
+              "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "68b3e1c36261b9d646e447fb49815217b59cb22f523fbc4184831c8e8708b34c",
+            "waiting": false,
+            "delivered": true,
+            "after": "68b3e1c36261b9d646e447fb49815217b59cb22f523fbc4184831c8e8708b34c"
+          },
+          {
+            "at": 1792390507605,
+            "channel": "files:watch",
+            "value": {
+              "id": "95df0eda-1e40-42b8-9fc3-0bc62a869d7d",
+              "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "fcb05232332c9fb387a3ff43fb096f9aa28303325939a6932cc07300e57596f6",
+            "waiting": false,
+            "delivered": true,
+            "after": "fcb05232332c9fb387a3ff43fb096f9aa28303325939a6932cc07300e57596f6"
+          },
+          {
+            "at": 1792390507717,
+            "channel": "files:watch",
+            "value": {
+              "id": "95df0eda-1e40-42b8-9fc3-0bc62a869d7d",
+              "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "45b0bca599aab4bc17c9717939bcd51aaefc77160887d46565695e362cc16cf4",
+            "waiting": false,
+            "delivered": true,
+            "after": "45b0bca599aab4bc17c9717939bcd51aaefc77160887d46565695e362cc16cf4"
+          },
+          {
+            "at": 1792390507926,
+            "channel": "files:watch",
+            "value": {
+              "id": "95df0eda-1e40-42b8-9fc3-0bc62a869d7d",
+              "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "1ebf3a5ac7914463f2f618ecb7ebf606bd46abd94a08a49813144f55de83366d",
+            "waiting": false,
+            "delivered": true,
+            "after": "1ebf3a5ac7914463f2f618ecb7ebf606bd46abd94a08a49813144f55de83366d"
+          },
+          {
+            "at": 1792390507949,
+            "channel": "files:watch",
+            "value": {
+              "id": "95df0eda-1e40-42b8-9fc3-0bc62a869d7d",
+              "lease": "d400f55b-3adf-40e3-8223-80c5b5d1bc21",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "b907b2cf30952ea1a30b444b95c604733f1804bcca56ce520e4d063767859f17",
+            "waiting": false,
+            "delivered": true,
+            "after": "b907b2cf30952ea1a30b444b95c604733f1804bcca56ce520e4d063767859f17"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 4807,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "tag": "dark-prepared.txt-fault",
+      "pid": 4887,
+      "isFault": true,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                "generation": 1,
+                "relativePath": "dark-prepared.txt"
+              }
+            ],
+            "inputHash": "396b1ac04d0738f05aae09653e4ec0ee6e554151ee68a3a958eda96f36d7581a",
+            "at": 1792390509322,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49826786",
+              "name": "dark-prepared.txt",
+              "relativePath": "dark-prepared.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-prepared.txt",
+              "revision": {
+                "size": 50,
+                "inode": "49826786",
+                "device": "16777232",
+                "changedNs": "1792390491554264692",
+                "modifiedNs": "1792390491554264692",
+                "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "e327668f03c3cc36079581defe2199e65a3e46b97ceec8ceb50bf28ebf9a5632",
+            "currentFrame": true,
+            "after": "e327668f03c3cc36079581defe2199e65a3e46b97ceec8ceb50bf28ebf9a5632",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                "generation": 1
+              }
+            ],
+            "inputHash": "3937f75d91e12a84b85fd4341e8ed62b05b90857e641384d6b641f05c22a2b64",
+            "at": 1792390509331,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                  "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826786",
+                "name": "dark-prepared.txt",
+                "relativePath": "dark-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-prepared.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49826786",
+                  "device": "16777232",
+                  "changedNs": "1792390491554264692",
+                  "modifiedNs": "1792390491554264692",
+                  "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmRhcmstcHJlcGFyZWQudHh0DQo="
+            },
+            "before": "6a60b97f5188351cca921a70a9d95e4c3f8d01c88b5307974ae50bfd54dd6a3a",
+            "currentFrame": true,
+            "after": "6a60b97f5188351cca921a70a9d95e4c3f8d01c88b5307974ae50bfd54dd6a3a",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                "generation": 1
+              }
+            ],
+            "inputHash": "3937f75d91e12a84b85fd4341e8ed62b05b90857e641384d6b641f05c22a2b64",
+            "at": 1792390509340,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                  "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826786",
+                "name": "dark-prepared.txt",
+                "relativePath": "dark-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-prepared.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49826786",
+                  "device": "16777232",
+                  "changedNs": "1792390491554264692",
+                  "modifiedNs": "1792390491554264692",
+                  "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmRhcmstcHJlcGFyZWQudHh0DQo="
+            },
+            "before": "6a60b97f5188351cca921a70a9d95e4c3f8d01c88b5307974ae50bfd54dd6a3a",
+            "currentFrame": true,
+            "after": "6a60b97f5188351cca921a70a9d95e4c3f8d01c88b5307974ae50bfd54dd6a3a",
+            "delivered": true
+          },
+          {
+            "method": "checkpoint",
+            "args": [
+              {
+                "ref": {
+                  "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                  "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                  "generation": 1
+                },
+                "draftId": "8daf9a04-3c7b-46f7-822a-33c370691cd4",
+                "bufferVersion": 1,
+                "baseHash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXByZXBhcmVkLnR4dA0K",
+                "encoding": "utf-8",
+                "bom": false
+              }
+            ],
+            "inputHash": "2e53b65b36c0b9be6cf2142e2a04c6421d1b388a27b8be57a1d039b6303e5ced",
+            "at": 1792390509477,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "draftId": "8daf9a04-3c7b-46f7-822a-33c370691cd4",
+              "hash": "daa94219b847609692417b8852a11767fa840e907cfd22724df6bdbd19892959",
+              "bufferVersion": 1
+            },
+            "before": "8ab6f49945ecd474e7dd98aeb86d32f10f66c3ea88071680f80f0ef87dea14fd",
+            "currentFrame": true,
+            "after": "8ab6f49945ecd474e7dd98aeb86d32f10f66c3ea88071680f80f0ef87dea14fd",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                  "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                  "generation": 1
+                },
+                "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+                "bufferVersion": 1,
+                "baseHash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXByZXBhcmVkLnR4dA0K"
+              }
+            ],
+            "inputHash": "6bb56673b127814fcf2518c0787fb130511e3b88ae1a70416bd633b263fda253",
+            "at": 1792390509537,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "fca37d434099b0994d9d51f1cace547e978a9e301d680aad2958a9941abb471d",
+            "currentFrame": true,
+            "after": "fca37d434099b0994d9d51f1cace547e978a9e301d680aad2958a9941abb471d",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "c4c71f58-166e-46a3-86ba-cf4ed63784c9",
+                  "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+                  "generation": 1
+                },
+                "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+                "bufferVersion": 1,
+                "baseHash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXByZXBhcmVkLnR4dA0K"
+              }
+            ],
+            "inputHash": "6bb56673b127814fcf2518c0787fb130511e3b88ae1a70416bd633b263fda253",
+            "at": 1792390509624,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "fca37d434099b0994d9d51f1cace547e978a9e301d680aad2958a9941abb471d",
+            "currentFrame": true,
+            "after": "fca37d434099b0994d9d51f1cace547e978a9e301d680aad2958a9941abb471d",
+            "delivered": true
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390509137,
+            "channel": "files:watch",
+            "value": {
+              "id": "4cc7e677-20de-447f-9299-fd35660fc99e",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "7dd48eadca06d1d04f1aa3656a0623b5ab92080cad4c658c5910e52d3cc16d13",
+            "waiting": false,
+            "delivered": true,
+            "after": "7dd48eadca06d1d04f1aa3656a0623b5ab92080cad4c658c5910e52d3cc16d13"
+          },
+          {
+            "at": 1792390509146,
+            "channel": "files:watch",
+            "value": {
+              "id": "4cc7e677-20de-447f-9299-fd35660fc99e",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "01be2a6a2fbade643992354f9ba3c4560165b256185ee17f296df49fb0752be0",
+            "waiting": false,
+            "delivered": true,
+            "after": "01be2a6a2fbade643992354f9ba3c4560165b256185ee17f296df49fb0752be0"
+          },
+          {
+            "at": 1792390509331,
+            "channel": "files:watch",
+            "value": {
+              "id": "4cc7e677-20de-447f-9299-fd35660fc99e",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "778764f74353a1c3cbc81514d09ef3d27e24a83561b16f34de5e1e1374af1dea",
+            "waiting": false,
+            "delivered": true,
+            "after": "778764f74353a1c3cbc81514d09ef3d27e24a83561b16f34de5e1e1374af1dea"
+          },
+          {
+            "at": 1792390509341,
+            "channel": "files:watch",
+            "value": {
+              "id": "4cc7e677-20de-447f-9299-fd35660fc99e",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "5ba62ff6fc92da151fa0f748fa703f26258b4de583d109673984761bd57f49d1",
+            "waiting": false,
+            "delivered": true,
+            "after": "5ba62ff6fc92da151fa0f748fa703f26258b4de583d109673984761bd57f49d1"
+          },
+          {
+            "at": 1792390509682,
+            "channel": "files:watch",
+            "value": {
+              "id": "4cc7e677-20de-447f-9299-fd35660fc99e",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "eff4a778148b6f59b184aa28a22ef93d94a4503c89ce41437197edf1df8cdfd4",
+            "waiting": false,
+            "delivered": true,
+            "after": "eff4a778148b6f59b184aa28a22ef93d94a4503c89ce41437197edf1df8cdfd4"
+          },
+          {
+            "at": 1792390509722,
+            "channel": "files:watch",
+            "value": {
+              "id": "4cc7e677-20de-447f-9299-fd35660fc99e",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1,
+              "sequence": 7,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "844cec874b2a9a51383b67ae6d93e4fb4a94035f8f296da381e01f32d861d536",
+            "waiting": false,
+            "delivered": true,
+            "after": "844cec874b2a9a51383b67ae6d93e4fb4a94035f8f296da381e01f32d861d536"
+          },
+          {
+            "at": 1792390509732,
+            "channel": "files:watch",
+            "value": {
+              "id": "4cc7e677-20de-447f-9299-fd35660fc99e",
+              "lease": "6b7b761d-dc93-4ea6-a99b-c2170b654458",
+              "generation": 1,
+              "sequence": 8,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "51cb25187db5afcd8e813788cddff02c379b292345346a86f253cbc3fb59cd60",
+            "waiting": false,
+            "delivered": true,
+            "after": "51cb25187db5afcd8e813788cddff02c379b292345346a86f253cbc3fb59cd60"
+          }
+        ]
+      },
+      "native": {
+        "restored": true,
+        "rows": [
+          {
+            "command": "/usr/bin/sandbox-exec",
+            "args": [
+              "-D",
+              "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+              "-D",
+              "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+              "-p",
+              "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+              "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+            ],
+            "pid": 4973,
+            "frames": [
+              {
+                "event": "transaction",
+                "identity": {
+                  "inode": "49847016",
+                  "device": "16777232"
+                },
+                "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896"
+              },
+              {
+                "event": "test-stop",
+                "phase": "prepared"
+              }
+            ],
+            "closed": true,
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 4887,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "tag": "dark-prepared.txt-restart",
+      "pid": 4985,
+      "isFault": false,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                "generation": 1,
+                "relativePath": "dark-prepared.txt"
+              }
+            ],
+            "inputHash": "dbe3cb7410d6dbf905171d4b6ed05981bb79ca421aaf9b1003a9ce752b3902e8",
+            "at": 1792390511360,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "4b9bfa40-ae6e-46f8-9cc7-7376dd67767e",
+                "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49826786",
+              "name": "dark-prepared.txt",
+              "relativePath": "dark-prepared.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-prepared.txt",
+              "revision": {
+                "size": 50,
+                "inode": "49826786",
+                "device": "16777232",
+                "changedNs": "1792390491554264692",
+                "modifiedNs": "1792390491554264692",
+                "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "001f1554a5b2865303b15cda9a7c32b449013a220ac5531928585d561a5800ee",
+            "currentFrame": true,
+            "after": "001f1554a5b2865303b15cda9a7c32b449013a220ac5531928585d561a5800ee",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "4b9bfa40-ae6e-46f8-9cc7-7376dd67767e",
+                "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                "generation": 1
+              }
+            ],
+            "inputHash": "d5fbd8084de24f23a9460d991da6fe771b701c920339271f28aa4ad5696d6e52",
+            "at": 1792390511371,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "4b9bfa40-ae6e-46f8-9cc7-7376dd67767e",
+                  "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826786",
+                "name": "dark-prepared.txt",
+                "relativePath": "dark-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-prepared.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49826786",
+                  "device": "16777232",
+                  "changedNs": "1792390491554264692",
+                  "modifiedNs": "1792390491554264692",
+                  "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmRhcmstcHJlcGFyZWQudHh0DQo="
+            },
+            "before": "0648f059ad2d6ffe7c4b321071d94ead7209d4accfa318c6040c9aaad44663e8",
+            "currentFrame": true,
+            "after": "0648f059ad2d6ffe7c4b321071d94ead7209d4accfa318c6040c9aaad44663e8",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "4b9bfa40-ae6e-46f8-9cc7-7376dd67767e",
+                "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                "generation": 1
+              }
+            ],
+            "inputHash": "d5fbd8084de24f23a9460d991da6fe771b701c920339271f28aa4ad5696d6e52",
+            "at": 1792390511383,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "4b9bfa40-ae6e-46f8-9cc7-7376dd67767e",
+                  "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826786",
+                "name": "dark-prepared.txt",
+                "relativePath": "dark-prepared.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-prepared.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49826786",
+                  "device": "16777232",
+                  "changedNs": "1792390491554264692",
+                  "modifiedNs": "1792390491554264692",
+                  "hash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmRhcmstcHJlcGFyZWQudHh0DQo="
+            },
+            "before": "0648f059ad2d6ffe7c4b321071d94ead7209d4accfa318c6040c9aaad44663e8",
+            "currentFrame": true,
+            "after": "0648f059ad2d6ffe7c4b321071d94ead7209d4accfa318c6040c9aaad44663e8",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "4b9bfa40-ae6e-46f8-9cc7-7376dd67767e",
+                  "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                  "generation": 1
+                },
+                "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+                "bufferVersion": 1,
+                "baseHash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXByZXBhcmVkLnR4dA0K"
+              }
+            ],
+            "inputHash": "551fa07723a42b2c08948d70f30929c7e9c91800db8d6f43fdf4feccb2abb139",
+            "at": 1792390511472,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+              "message": "此前操作尚未完成恢复核对，不能重新提交"
+            },
+            "before": "30b6a25ead2dcff8276195d91e62af63c32778c82c9fe756e73cfdea164a5574",
+            "currentFrame": true,
+            "after": "30b6a25ead2dcff8276195d91e62af63c32778c82c9fe756e73cfdea164a5574",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "4b9bfa40-ae6e-46f8-9cc7-7376dd67767e",
+                  "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+                  "generation": 1
+                },
+                "opId": "dda91f39-f5fc-4966-a937-4b8bbf310896",
+                "bufferVersion": 1,
+                "baseHash": "7b5f336bb0353b7c788ce8a483e18d190d048087e18840d2618cac3b60a4a9ef",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXByZXBhcmVkLnR4dA0KZGlmZmVyZW50IHBheWxvYWQ="
+              }
+            ],
+            "inputHash": "abe41fa3b4ba6b9b86346ea3982576c15e784d8e60e37066bc800074ca326152",
+            "at": 1792390511473,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "error": "FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容"
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390510960,
+            "channel": "files:watch",
+            "value": {
+              "id": "cac58e7b-3f5b-450e-a414-3e41ae6e0bf8",
+              "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "03fa769cf3a54dd2c59997b3f6458d21accba5f196b67a5267ba31233158d302",
+            "waiting": false,
+            "delivered": true,
+            "after": "03fa769cf3a54dd2c59997b3f6458d21accba5f196b67a5267ba31233158d302"
+          },
+          {
+            "at": 1792390510970,
+            "channel": "files:watch",
+            "value": {
+              "id": "cac58e7b-3f5b-450e-a414-3e41ae6e0bf8",
+              "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "8c1652815b61b913d1367f49b6aa7097a161128bd966a96796a63bd3965cef32",
+            "waiting": false,
+            "delivered": true,
+            "after": "8c1652815b61b913d1367f49b6aa7097a161128bd966a96796a63bd3965cef32"
+          },
+          {
+            "at": 1792390511078,
+            "channel": "files:watch",
+            "value": {
+              "id": "cac58e7b-3f5b-450e-a414-3e41ae6e0bf8",
+              "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "e7891f7531f5138164f4f5835fc174665f1820965bda63a7d12d47e9ee88dae5",
+            "waiting": false,
+            "delivered": true,
+            "after": "e7891f7531f5138164f4f5835fc174665f1820965bda63a7d12d47e9ee88dae5"
+          },
+          {
+            "at": 1792390511371,
+            "channel": "files:watch",
+            "value": {
+              "id": "cac58e7b-3f5b-450e-a414-3e41ae6e0bf8",
+              "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "56ac769b760df74a91e6c25481c5509f63d486a797aa2a9ef2abf8a0b3797a6c",
+            "waiting": false,
+            "delivered": true,
+            "after": "56ac769b760df74a91e6c25481c5509f63d486a797aa2a9ef2abf8a0b3797a6c"
+          },
+          {
+            "at": 1792390511383,
+            "channel": "files:watch",
+            "value": {
+              "id": "cac58e7b-3f5b-450e-a414-3e41ae6e0bf8",
+              "lease": "a5654830-1267-46c6-aa34-2367e933c393",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "3c39488ca3080dbd236c2d3c5143f7ee84e1ec78dee568161f753dced77232a7",
+            "waiting": false,
+            "delivered": true,
+            "after": "3c39488ca3080dbd236c2d3c5143f7ee84e1ec78dee568161f753dced77232a7"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 4985,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "tag": "dark-swapped.txt-fault",
+      "pid": 5070,
+      "isFault": true,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                "generation": 1,
+                "relativePath": "dark-swapped.txt"
+              }
+            ],
+            "inputHash": "dfcf155a64fa27a666863598a8e617088d1c2151f23e251078f15387229a50ac",
+            "at": 1792390512663,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49826787",
+              "name": "dark-swapped.txt",
+              "relativePath": "dark-swapped.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+              "revision": {
+                "size": 49,
+                "inode": "49826787",
+                "device": "16777232",
+                "changedNs": "1792390491554440192",
+                "modifiedNs": "1792390491554440192",
+                "hash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "028c28fdff330306418f3d0d9dbfb9f85543e501f038afd9beaeda9d45286b00",
+            "currentFrame": true,
+            "after": "028c28fdff330306418f3d0d9dbfb9f85543e501f038afd9beaeda9d45286b00",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                "generation": 1
+              }
+            ],
+            "inputHash": "ac239273b8c4d19f5a14291ad656b4ef0e8b8098c19a5b7b20499fd55edd4dc8",
+            "at": 1792390512672,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                  "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826787",
+                "name": "dark-swapped.txt",
+                "relativePath": "dark-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+                "revision": {
+                  "size": 49,
+                  "inode": "49826787",
+                  "device": "16777232",
+                  "changedNs": "1792390491554440192",
+                  "modifiedNs": "1792390491554440192",
+                  "hash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmRhcmstc3dhcHBlZC50eHQNCg=="
+            },
+            "before": "693e0fb46087241947dec692c61e05cf1fbbfd70c4194bed971d3e239b4ecb68",
+            "currentFrame": true,
+            "after": "693e0fb46087241947dec692c61e05cf1fbbfd70c4194bed971d3e239b4ecb68",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                "generation": 1
+              }
+            ],
+            "inputHash": "ac239273b8c4d19f5a14291ad656b4ef0e8b8098c19a5b7b20499fd55edd4dc8",
+            "at": 1792390512683,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                  "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49826787",
+                "name": "dark-swapped.txt",
+                "relativePath": "dark-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+                "revision": {
+                  "size": 49,
+                  "inode": "49826787",
+                  "device": "16777232",
+                  "changedNs": "1792390491554440192",
+                  "modifiedNs": "1792390491554440192",
+                  "hash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "QkFTRSByYWNlIHJlY292ZXJ5IOS4reaWh/CfmYINCmRhcmstc3dhcHBlZC50eHQNCg=="
+            },
+            "before": "693e0fb46087241947dec692c61e05cf1fbbfd70c4194bed971d3e239b4ecb68",
+            "currentFrame": true,
+            "after": "693e0fb46087241947dec692c61e05cf1fbbfd70c4194bed971d3e239b4ecb68",
+            "delivered": true
+          },
+          {
+            "method": "checkpoint",
+            "args": [
+              {
+                "ref": {
+                  "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                  "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                  "generation": 1
+                },
+                "draftId": "f7643102-0cf4-4cfb-b8e7-7d6ea5e2e00c",
+                "bufferVersion": 1,
+                "baseHash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo=",
+                "encoding": "utf-8",
+                "bom": false
+              }
+            ],
+            "inputHash": "5af3c20ae3819e4fa969e0e64119a96529a3602c33d4c47c851805667b0c370c",
+            "at": 1792390512811,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "draftId": "f7643102-0cf4-4cfb-b8e7-7d6ea5e2e00c",
+              "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285",
+              "bufferVersion": 1
+            },
+            "before": "5478adaf4e2ef506cb30c7e30adf08715d222940351d128836e4c36d7cb3a21a",
+            "currentFrame": true,
+            "after": "5478adaf4e2ef506cb30c7e30adf08715d222940351d128836e4c36d7cb3a21a",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                  "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                  "generation": 1
+                },
+                "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+                "bufferVersion": 1,
+                "baseHash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo="
+              }
+            ],
+            "inputHash": "8a8d3e93f53043944c09d4dcc5e6fdf62a3f78bfea873bc743d99e346e072072",
+            "at": 1792390512868,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "c3a9e449601bf72dcf80fac58eecf617eb3e1b6156963bbeafbec4b2692294be",
+            "currentFrame": true,
+            "after": "c3a9e449601bf72dcf80fac58eecf617eb3e1b6156963bbeafbec4b2692294be",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                  "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                  "generation": 1
+                },
+                "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+                "bufferVersion": 1,
+                "baseHash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo="
+              }
+            ],
+            "inputHash": "8a8d3e93f53043944c09d4dcc5e6fdf62a3f78bfea873bc743d99e346e072072",
+            "at": 1792390512956,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+              "message": "[IO] 文件 broker 意外退出"
+            },
+            "before": "c3a9e449601bf72dcf80fac58eecf617eb3e1b6156963bbeafbec4b2692294be",
+            "currentFrame": true,
+            "after": "c3a9e449601bf72dcf80fac58eecf617eb3e1b6156963bbeafbec4b2692294be",
+            "delivered": true
+          },
+          {
+            "method": "refresh",
+            "args": [
+              {
+                "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                "generation": 1
+              }
+            ],
+            "inputHash": "ac239273b8c4d19f5a14291ad656b4ef0e8b8098c19a5b7b20499fd55edd4dc8",
+            "at": 1792390513009,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49847067",
+              "name": "dark-swapped.txt",
+              "relativePath": "dark-swapped.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+              "revision": {
+                "size": 50,
+                "inode": "49847067",
+                "device": "16777232",
+                "changedNs": "1792390512909569597",
+                "modifiedNs": "1792390512901049000",
+                "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "259960163ec7597f9e7b2fe5b6c0d8ab0cb6ebc3cb4dfedabbc628fc8de57ba3",
+            "currentFrame": true,
+            "after": "259960163ec7597f9e7b2fe5b6c0d8ab0cb6ebc3cb4dfedabbc628fc8de57ba3",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                "generation": 1
+              }
+            ],
+            "inputHash": "ac239273b8c4d19f5a14291ad656b4ef0e8b8098c19a5b7b20499fd55edd4dc8",
+            "at": 1792390513023,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "904b2591-c975-4c50-8f9c-fd127fdedecb",
+                  "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49847067",
+                "name": "dark-swapped.txt",
+                "relativePath": "dark-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49847067",
+                  "device": "16777232",
+                  "changedNs": "1792390512909569597",
+                  "modifiedNs": "1792390512901049000",
+                  "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo="
+            },
+            "before": "7b75c69a40b017d80b1dccba840a656d345724c261e5555206238daf3bf9268c",
+            "currentFrame": true,
+            "after": "7b75c69a40b017d80b1dccba840a656d345724c261e5555206238daf3bf9268c",
+            "delivered": true
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390512596,
+            "channel": "files:watch",
+            "value": {
+              "id": "9c6189da-ecbe-4be4-8063-bdd517c9b709",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "add6130439840581ddb67e16d23155fb7d541069a511ea0b443d9bce39016ac1",
+            "waiting": false,
+            "delivered": true,
+            "after": "add6130439840581ddb67e16d23155fb7d541069a511ea0b443d9bce39016ac1"
+          },
+          {
+            "at": 1792390512602,
+            "channel": "files:watch",
+            "value": {
+              "id": "9c6189da-ecbe-4be4-8063-bdd517c9b709",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "014b17b4e6ff5b3310d49b2d235cbcda95e36a839e085d5bd9deab95547292fc",
+            "waiting": false,
+            "delivered": true,
+            "after": "014b17b4e6ff5b3310d49b2d235cbcda95e36a839e085d5bd9deab95547292fc"
+          },
+          {
+            "at": 1792390512672,
+            "channel": "files:watch",
+            "value": {
+              "id": "9c6189da-ecbe-4be4-8063-bdd517c9b709",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "3c4dd5de3ab6d105b73000a773529ec541a84b4b91a570cf9fd106ae55099eb3",
+            "waiting": false,
+            "delivered": true,
+            "after": "3c4dd5de3ab6d105b73000a773529ec541a84b4b91a570cf9fd106ae55099eb3"
+          },
+          {
+            "at": 1792390512683,
+            "channel": "files:watch",
+            "value": {
+              "id": "9c6189da-ecbe-4be4-8063-bdd517c9b709",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "f4b8c2215e01c13040fb1e0c8381b8695abb955d918531780cf9c2716a5fdba9",
+            "waiting": false,
+            "delivered": true,
+            "after": "f4b8c2215e01c13040fb1e0c8381b8695abb955d918531780cf9c2716a5fdba9"
+          },
+          {
+            "at": 1792390513005,
+            "channel": "files:watch",
+            "value": {
+              "id": "9c6189da-ecbe-4be4-8063-bdd517c9b709",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": true
+            },
+            "args": [],
+            "before": "32ea3ee967479c2b0a81511e24670b2ad41118db7d7517634544b43b6068defe",
+            "waiting": false,
+            "delivered": true,
+            "after": "32ea3ee967479c2b0a81511e24670b2ad41118db7d7517634544b43b6068defe"
+          },
+          {
+            "at": 1792390513063,
+            "channel": "files:watch",
+            "value": {
+              "id": "9c6189da-ecbe-4be4-8063-bdd517c9b709",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1,
+              "sequence": 7,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "5fee51d5cbf2dd91997559982e4be0c59a1aefdda8f324db3b0bc54f2f08e847",
+            "waiting": false,
+            "delivered": true,
+            "after": "5fee51d5cbf2dd91997559982e4be0c59a1aefdda8f324db3b0bc54f2f08e847"
+          },
+          {
+            "at": 1792390513071,
+            "channel": "files:watch",
+            "value": {
+              "id": "9c6189da-ecbe-4be4-8063-bdd517c9b709",
+              "lease": "834e7db1-d44d-4e4e-8aac-571074d1df6f",
+              "generation": 1,
+              "sequence": 8,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "4be675fc926edc6fcce909b5e2c470993ca15abe17cd37ddfb3025446b091235",
+            "waiting": false,
+            "delivered": true,
+            "after": "4be675fc926edc6fcce909b5e2c470993ca15abe17cd37ddfb3025446b091235"
+          }
+        ]
+      },
+      "native": {
+        "restored": true,
+        "rows": [
+          {
+            "command": "/usr/bin/sandbox-exec",
+            "args": [
+              "-D",
+              "PROJECT_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/project",
+              "-D",
+              "RECOVERY_ROOT=/private/tmp/willyou-save-race-crash-app-YRthkC/userdata/file-recovery/v1",
+              "-p",
+              "(version 1)\n(allow default)\n(deny file-write* (require-all (require-not (subpath (param \"PROJECT_ROOT\"))) (require-not (subpath (param \"RECOVERY_ROOT\")))))\n",
+              "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app/Contents/Resources/native/willyou-files"
+            ],
+            "pid": 5133,
+            "frames": [
+              {
+                "event": "transaction",
+                "identity": {
+                  "inode": "49847065",
+                  "device": "16777232"
+                },
+                "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff"
+              },
+              {
+                "event": "test-stop",
+                "phase": "swapped"
+              }
+            ],
+            "closed": true,
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 5070,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "tag": "dark-swapped.txt-restart",
+      "pid": 5150,
+      "isFault": false,
+      "rpc": {
+        "rows": [
+          {
+            "method": "open",
+            "args": [
+              {
+                "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                "generation": 1,
+                "relativePath": "dark-swapped.txt"
+              }
+            ],
+            "inputHash": "79a23e96b7daa6829cad048740874b9f13d0e2255995256a35a262e6c8fade4e",
+            "at": 1792390514789,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "ref": {
+                "id": "e007c3e6-89e4-414a-b88d-50dfdc3f7c4e",
+                "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                "generation": 1
+              },
+              "documentKey": "local:16777232:49847067",
+              "name": "dark-swapped.txt",
+              "relativePath": "dark-swapped.txt",
+              "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+              "revision": {
+                "size": 50,
+                "inode": "49847067",
+                "device": "16777232",
+                "changedNs": "1792390512909569597",
+                "modifiedNs": "1792390512901049000",
+                "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285"
+              },
+              "writable": true,
+              "content": {
+                "kind": "text",
+                "format": "txt",
+                "basis": "sample"
+              }
+            },
+            "before": "9445376f9b9dae227a8961420406283d27c191091de87a204af0e2a0f125ab12",
+            "currentFrame": true,
+            "after": "9445376f9b9dae227a8961420406283d27c191091de87a204af0e2a0f125ab12",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "e007c3e6-89e4-414a-b88d-50dfdc3f7c4e",
+                "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                "generation": 1
+              }
+            ],
+            "inputHash": "7b8b027f573d5290be61e76d7b5bc1e4654b60464c2b93719626f152657d71e9",
+            "at": 1792390514800,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "e007c3e6-89e4-414a-b88d-50dfdc3f7c4e",
+                  "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49847067",
+                "name": "dark-swapped.txt",
+                "relativePath": "dark-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49847067",
+                  "device": "16777232",
+                  "changedNs": "1792390512909569597",
+                  "modifiedNs": "1792390512901049000",
+                  "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo="
+            },
+            "before": "6f996a03d6f058519e1297095ff91c00b78c3bc43916c25d3590ebaf5acaf4bc",
+            "currentFrame": true,
+            "after": "6f996a03d6f058519e1297095ff91c00b78c3bc43916c25d3590ebaf5acaf4bc",
+            "delivered": true
+          },
+          {
+            "method": "read",
+            "args": [
+              {
+                "id": "e007c3e6-89e4-414a-b88d-50dfdc3f7c4e",
+                "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                "generation": 1
+              }
+            ],
+            "inputHash": "7b8b027f573d5290be61e76d7b5bc1e4654b60464c2b93719626f152657d71e9",
+            "at": 1792390514811,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "document": {
+                "ref": {
+                  "id": "e007c3e6-89e4-414a-b88d-50dfdc3f7c4e",
+                  "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                  "generation": 1
+                },
+                "documentKey": "local:16777232:49847067",
+                "name": "dark-swapped.txt",
+                "relativePath": "dark-swapped.txt",
+                "absolutePath": "/private/tmp/willyou-save-race-crash-app-YRthkC/project/dark-swapped.txt",
+                "revision": {
+                  "size": 50,
+                  "inode": "49847067",
+                  "device": "16777232",
+                  "changedNs": "1792390512909569597",
+                  "modifiedNs": "1792390512901049000",
+                  "hash": "b5b90230656bcc4bd42de8c76c87403e094c0d423fb6427e30dd27e186450285"
+                },
+                "writable": true,
+                "content": {
+                  "kind": "text",
+                  "format": "txt",
+                  "basis": "sample"
+                }
+              },
+              "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo="
+            },
+            "before": "6f996a03d6f058519e1297095ff91c00b78c3bc43916c25d3590ebaf5acaf4bc",
+            "currentFrame": true,
+            "after": "6f996a03d6f058519e1297095ff91c00b78c3bc43916c25d3590ebaf5acaf4bc",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "e007c3e6-89e4-414a-b88d-50dfdc3f7c4e",
+                  "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                  "generation": 1
+                },
+                "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+                "bufferVersion": 1,
+                "baseHash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQo="
+              }
+            ],
+            "inputHash": "7777e5f86f8dcb845529aec01f97659ac9d9591237ae566ed6412ba13d2d4eb8",
+            "at": 1792390514899,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "originalReturned": true,
+            "output": {
+              "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+              "bufferVersion": 1,
+              "state": "unknown",
+              "recoveryId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+              "message": "此前操作尚未完成恢复核对，不能重新提交"
+            },
+            "before": "f864fff740759b427cf2a086d2d2b813f0cb52f59ca6b29b734324ad77e7a92a",
+            "currentFrame": true,
+            "after": "f864fff740759b427cf2a086d2d2b813f0cb52f59ca6b29b734324ad77e7a92a",
+            "delivered": true
+          },
+          {
+            "method": "save",
+            "args": [
+              {
+                "ref": {
+                  "id": "e007c3e6-89e4-414a-b88d-50dfdc3f7c4e",
+                  "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+                  "generation": 1
+                },
+                "opId": "a2c54827-1b30-4d39-a20e-8488149fb4ff",
+                "bufferVersion": 1,
+                "baseHash": "619dbecc253d970d5a5f408e4d74a0b2d8625f31dca96cf10f00f0bc3c2713d1",
+                "base64": "TE9DQUwgcmFjZSByZWNvdmVyeSDkuK3mlofwn5mCDQpkYXJrLXN3YXBwZWQudHh0DQpkaWZmZXJlbnQgcGF5bG9hZA=="
+              }
+            ],
+            "inputHash": "5930a6a7af5560adc630ee2ec2721fa57724e94d67f02978c12ee2a6241ea66b",
+            "at": 1792390514900,
+            "frame": {
+              "processId": 4,
+              "routingId": 8
+            },
+            "error": "FileError: [IDEMPOTENCY] 此保存编号已用于另一份内容"
+          }
+        ],
+        "reads": [],
+        "opens": [],
+        "readErrors": [],
+        "saves": []
+      },
+      "rpcRestored": {
+        "files.open": true,
+        "files.read": true,
+        "files.refresh": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "watch": {
+        "restored": true,
+        "rows": [
+          {
+            "at": 1792390514384,
+            "channel": "files:watch",
+            "value": {
+              "id": "67c544ff-56bf-4b41-9db2-881972425743",
+              "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+              "generation": 1,
+              "sequence": 2,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "661ffca46ee154422ad91790a52f0d93c1f2f9f0c6c40ac2580c3da27da7bc5d",
+            "waiting": false,
+            "delivered": true,
+            "after": "661ffca46ee154422ad91790a52f0d93c1f2f9f0c6c40ac2580c3da27da7bc5d"
+          },
+          {
+            "at": 1792390514395,
+            "channel": "files:watch",
+            "value": {
+              "id": "67c544ff-56bf-4b41-9db2-881972425743",
+              "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+              "generation": 1,
+              "sequence": 3,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "a63f0eda01ff5dd086b7886f52b1163ac7bc8892ced43088cdb80f894d369f3e",
+            "waiting": false,
+            "delivered": true,
+            "after": "a63f0eda01ff5dd086b7886f52b1163ac7bc8892ced43088cdb80f894d369f3e"
+          },
+          {
+            "at": 1792390514503,
+            "channel": "files:watch",
+            "value": {
+              "id": "67c544ff-56bf-4b41-9db2-881972425743",
+              "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+              "generation": 1,
+              "sequence": 4,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "912f4fbc08e3cd763b073fc671e325b7552739e09f59a0a2f2c84fc911444d21",
+            "waiting": false,
+            "delivered": true,
+            "after": "912f4fbc08e3cd763b073fc671e325b7552739e09f59a0a2f2c84fc911444d21"
+          },
+          {
+            "at": 1792390514800,
+            "channel": "files:watch",
+            "value": {
+              "id": "67c544ff-56bf-4b41-9db2-881972425743",
+              "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+              "generation": 1,
+              "sequence": 5,
+              "coverage": "native",
+              "resyncRequired": true,
+              "changed": false
+            },
+            "args": [],
+            "before": "64bb9485a3bba96d989ff64a1cde9d8585d8fb5e68e0f88d9808e22ec3fea43e",
+            "waiting": false,
+            "delivered": true,
+            "after": "64bb9485a3bba96d989ff64a1cde9d8585d8fb5e68e0f88d9808e22ec3fea43e"
+          },
+          {
+            "at": 1792390514810,
+            "channel": "files:watch",
+            "value": {
+              "id": "67c544ff-56bf-4b41-9db2-881972425743",
+              "lease": "d09ac9bf-daf4-43fc-af3e-7609d8490871",
+              "generation": 1,
+              "sequence": 6,
+              "coverage": "native",
+              "resyncRequired": false,
+              "changed": false
+            },
+            "args": [],
+            "before": "cf54977b92285064f7b364ff058316e90c6103326b0fe93b492a4dd3dfcf6fa3",
+            "waiting": false,
+            "delivered": true,
+            "after": "cf54977b92285064f7b364ff058316e90c6103326b0fe93b492a4dd3dfcf6fa3"
+          }
+        ]
+      },
+      "exit": {
+        "pid": 5150,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "pids": [
+    4562,
+    4666,
+    4730,
+    4807,
+    4887,
+    4985,
+    5070,
+    5150
+  ],
+  "sourceHashes": {
+    "asarSha256": "d59b5e997ff7f31dc49b3373131dbfa4094f4e2abe2e506eecd6032500b23483",
+    "brokerSha256": "c4176b6b72465e048cfefce014c8f4e52b32083763fd2d9f9270f51230f234d9"
+  },
+  "boundary": "A actual packaged input/save and normal full-process quit/restart with same own userData. First phase private COW original ASAR/auth/requests/results, same native source existing TEST marker only; SIGKILL only own stopped native at prepared/swapped. Restart uses normal original packaged native. Original watch events held/released unchanged before first quit. Actual menu recovery preview is verified against independent material identities/hashes. Hot/cold opId replay and wrong-payload denial are explicit verification substeps, not substitutes for UI save. No Store/editor/DOM-value injection, daily data, clipboard, model, external App/service, live Codex, physicalIME or full-pixel/platform claim.",
+  "fault": {
+    "app": "/private/tmp/willyou-save-race-crash-app-YRthkC/WillYou-Save-Fault.app",
+    "marker": "/private/tmp/willyou-save-race-crash-app-YRthkC/native-save-stop",
+    "testSource": "/private/tmp/willyou-save-race-crash-app-YRthkC/broker-test.mm",
+    "helper": "/private/tmp/willyou-save-race-crash-app-YRthkC/willyou-files-test",
+    "asarSha256": "d59b5e997ff7f31dc49b3373131dbfa4094f4e2abe2e506eecd6032500b23483",
+    "sourceSha256": "ea5dbd774d84a4b48a411fcaffb50fe8a34701cedd5d9ab8fe6690df100c345a",
+    "testSourceSha256": "942022bbfdb4e3dd1935863197d521314ead69bb647d4a0433e29f478a435959",
+    "helperSha256": "254953cd3232be569c03acf2f32b8b9a8ea9624b3d9c29030ee5da7ba5e5b79c",
+    "compile": [
+      "xcrun",
+      "clang++",
+      "-std=c++17",
+      "-fobjc-arc",
+      "-O1",
+      "-Wno-deprecated-declarations",
+      "-DWILLYOU_FILE_BROKER_TEST=1",
+      "-I",
+      "/Users/hx/hx/hxWork/SmartDD/native/files",
+      "-framework",
+      "Foundation",
+      "-framework",
+      "AppKit",
+      "-framework",
+      "ImageIO",
+      "-framework",
+      "CoreGraphics",
+      "-framework",
+      "CoreText",
+      "/private/tmp/willyou-save-race-crash-app-YRthkC/broker-test.mm",
+      "-o",
+      "/private/tmp/willyou-save-race-crash-app-YRthkC/willyou-files-test"
+    ],
+    "boundary": "Private COW clone, original ASAR/auth/requests/results. Same native source with existing TEST stop condition augmented only by own read-only marker. Current production launch/write policy unchanged."
+  },
+  "sourceHashesAfter": {
+    "asarSha256": "d59b5e997ff7f31dc49b3373131dbfa4094f4e2abe2e506eecd6032500b23483",
+    "brokerSha256": "c4176b6b72465e048cfefce014c8f4e52b32083763fd2d9f9270f51230f234d9"
+  },
+  "finishedAt": "2026-10-19T06:15:15.138Z"
+}

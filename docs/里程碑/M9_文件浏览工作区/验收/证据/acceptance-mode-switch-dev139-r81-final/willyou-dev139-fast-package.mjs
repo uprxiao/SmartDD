@@ -1,0 +1,15 @@
+import{readFileSync,writeFileSync,openSync,closeSync,mkdirSync,existsSync}from'node:fs';
+import{createRequire}from'node:module';
+import{join}from'node:path';
+import{spawn}from'node:child_process';
+const root=process.cwd(),require=createRequire(join(root,'package.json')),pkg=require('./package.json'),electron=require('electron'),version=require('electron/package.json').version,out='/private/tmp/willyou-m9-acceptance-batch-r80-build',record={at:new Date().toISOString(),method:'Reuse same verified Electron-ABI native modules; full electron-vite build + identical electron-builder configuration/afterPack + original six native-smoke checks. No installer/publish.',steps:[]};
+if(existsSync(out))throw Error('Output already exists; inspect prior operation before retry');
+const env={...process.env,SMARTDD_SIGN:'0'};for(const key of Object.keys(env))if(/^(CSC_|WIN_CSC_|APPLE_)/.test(key))delete env[key];env.CSC_IDENTITY_AUTO_DISCOVERY='false';
+async function run(command,args,file,extra={}){const fd=openSync(file,'w'),started=Date.now();try{await new Promise((resolve,reject)=>{const child=spawn(command,args,{cwd:root,env:{...env,...extra},stdio:['ignore',fd,fd]});child.once('error',reject);child.once('exit',(code,signal)=>{record.steps.push({command,args,log:file,code,signal,ms:Date.now()-started});code===0&&!signal?resolve():reject(Error('Step failed: '+file));});});}finally{closeSync(fd);}}
+try{
+ const probe='/private/tmp/willyou-dev139-native-abi-before-fast-package.json';
+ await run(electron,['-e',`const req=require('node:module').createRequire(${JSON.stringify(join(root,'package.json'))}),Db=req('better-sqlite3'),db=new Db(':memory:'),pty=req('node-pty');if(process.platform!=='darwin'||process.arch!=='arm64'||process.versions.electron!==${JSON.stringify(version)})throw Error('Target mismatch');if(db.prepare('select 1 as value').get().value!==1||typeof pty.spawn!=='function')throw Error('Native ABI mismatch');db.close();console.log(JSON.stringify({platform:process.platform,arch:process.arch,versions:process.versions,sqlite:'passed',ptyModule:'loaded'}));`],probe,{ELECTRON_RUN_AS_NODE:'1'});
+ await run('pnpm',['build'],'/private/tmp/willyou-dev139-r80-compile.log');
+ await run('pnpm',['exec','electron-builder','--mac','--dir','--arm64','--publish','never','--config','electron-builder.config.cjs','--config.directories.output='+out,'--config.electronDist='+join(root,'node_modules/electron/dist')],'/private/tmp/willyou-dev139-r80-package.log');
+ const app=join(out,'mac-arm64/WillYou.app');await run(join(app,'Contents/MacOS/WillYou'),[join(root,'scripts/release/native-smoke.cjs'),join(app,'Contents/Resources'),pkg.version,'arm64'],'/private/tmp/willyou-dev139-r80-native-smoke.log',{ELECTRON_RUN_AS_NODE:'1'});record.status='passed';record.app=app;
+}catch(error){record.status='failed';record.error=String(error);process.exitCode=1;}finally{record.finishedAt=new Date().toISOString();writeFileSync('/private/tmp/willyou-dev139-fast-package-result.json',JSON.stringify(record,null,2)+'\n');console.log(JSON.stringify({status:record.status,error:record.error,steps:record.steps.length,app:record.app}));}

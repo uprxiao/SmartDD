@@ -1,0 +1,593 @@
+{
+  "at": "2026-10-19T17:31:34.675466+00:00",
+  "localDate": "2026-10-20",
+  "caseId": "M9-T-J10",
+  "status": "passed U/I/A",
+  "revision": "R3.4/R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "electron": "42.11.14"
+  },
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r94-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "79bc7b0c1fd13cadf399fd939a15d95b7be926ca039536d7853368d83676161c",
+    "brokerSha256": "803d456fd8b8853dde15fef6b543126b995bf56505fba5e6e2e50fe0f73fe0bf",
+    "newBuild": true,
+    "installer": false,
+    "release": false
+  },
+  "sourceSnapshot": {
+    "at": "2026-10-19T17:31:34.542784+00:00",
+    "parent": "/private/tmp/willyou-dev156-source-delta.json",
+    "parentSha256": "c0f8756c31c077c03f85b7a992288c77a37c21d0ab333904b38938f072c4c743",
+    "fileCount": 1335,
+    "changedParentFiles": {
+      "docs/真实App自动验收流程.md": "72d0b5a1daf721c832c79a146f7226c6af0b40ac09e4feb569377fbeba279b54",
+      "src/renderer/features/files/office/buffer.ts": "227bffc428013cfaa8e7d86893730280b654b1aba7ad7dc288ba822a3503f90c",
+      "src/renderer/features/files/workspace-store.ts": "1ad7acc28f66d0cd1696778ab9a9ea55b7fbcbb15eb90731f3aa343604836315"
+    },
+    "newFiles": {
+      "scripts/files/office-close-queue-ui.mjs": "e5d7c569ae1a4dfe2ee733ca8e27f50404a38926546043473f56bd85af6731ae",
+      "scripts/files/verify-office-close.py": "0eca100ce72e440b7dfff8584f741f9e86c1585238bd496b0b07a8bd3c7f5fd9",
+      "scripts/lib/office-close-observer.mjs": "7c3fd5d07d3332e672d601aff08d4c0f613f2294879b799ca8571b3a5df9c4cf",
+      "src/renderer/features/files/office/close-native-acceptance.test.ts": "c3ce7e5b80fc2d1ec985ae1e0c199815445124cd5a4a5f2ed6a10d92639907a0",
+      "src/renderer/features/files/office/close-queue.test.ts": "a25f7d74b43cfb76a87ed821c9ab57e2ee6186ff4c84f6ef3156696d7aa8f667"
+    },
+    "postBuildChanges": {
+      "docs/真实App自动验收流程.md": "72d0b5a1daf721c832c79a146f7226c6af0b40ac09e4feb569377fbeba279b54",
+      "scripts/files/office-close-queue-ui.mjs": "e5d7c569ae1a4dfe2ee733ca8e27f50404a38926546043473f56bd85af6731ae"
+    },
+    "tar": "/private/tmp/willyou-dev157-source-delta.tar.gz",
+    "tarSha256": "8ac8e3bda5f0860ba0700cb65b52e18d2a869568db9245a05aa23badb80c8113",
+    "fullPrebuild": "/private/tmp/willyou-dev157-prebuild-source.tar.gz",
+    "fullPrebuildSha256": "06ca7d5e67cb94801a7688eb712b802b7e7c2bcbdd5f33dc11c8c0af476ab384",
+    "boundary": "Full source captured BEFORE r94. Only external driver focus step and common guide changed after build; production/native/build/deps/P/version match prebuild exactly."
+  },
+  "results": {
+    "formalPassed": 265,
+    "formalTotal": 419,
+    "unexecuted": 151,
+    "blocked": 3,
+    "appRemaining": 151,
+    "codeTests": 111,
+    "newCodeTests": 10,
+    "existingRegressionTests": 101,
+    "historicalProductionCodeTestUnion": 2298,
+    "nativeCloseScenarios": 7,
+    "appChecks": 14,
+    "originalPayloads": 174,
+    "originalErrors": 6,
+    "originalReplyGates": 14,
+    "realPermissionFaults": 6,
+    "passiveWatchFrames": 130,
+    "ownedOfficeThreadsExited": 28,
+    "rpcHandlersRestored": 9,
+    "allOwnedAppParentsGone": 3,
+    "nativeSmokeChecks": 6,
+    "runtimeFilesVerified": 82,
+    "sourceRecoveryInputs": 1335,
+    "deltaFiles": 8
+  },
+  "defect": {
+    "id": "DEV157-OBS01",
+    "status": "fixed r94",
+    "fact": "Workspace close only called prepareClose for dirty/recovery state. An actual control-format edit could still await original Worker acknowledgement while accepted model was clean, so close disposed its client immediately. Original U2red/1readonlycontrolpass and r93 actual clean-range held reply/closed tab prove gap. Office close now always performs Office preparation; serialized operations counted from enqueue through finally, close drains all outstanding operations even when not started/clean, rejected current operation blocks with original saveError while preserving editing view; clean readonly can close without any save. Explicit discard remains deliberate. Only OfficeBuffer and WorkspaceStore production changes."
+  },
+  "coverage": {
+    "U": "Three new real Store/FileBuffer queue cases: held accepted/rejected edit while model clean, no close before callback; accepted saves once/closes, rejected keeps client/view and explicit discard closes. Clean readonly zero writes. Final23buffer+30workspace+27preview and newU3 included. Early unit error assertion later refined from tab.error to original buffer.saveError so failure retains preview; first red occurred earlier at unchanged premature-close assertion.",
+    "I": "Seven new actual WorkspaceStore/FileBuffer/FileService/r94Worker/native scenarios: pending checkpoint, append/edit and final save/materialize each success/failure, plus clean in-flight real format. Native error/output object delayed unchanged; checkpoint failure actual private recovery root permission guard, append invalid formula, materialize actual parent write denial. During gate no dispose, failures keep source exact original/client alive, explicit retry saves latest and target format. Public pauseAutosave isolates close queue (real App normalautosave separate). Final111 all selected0skip includes existing J09/session/J07/W27 and preview/store regressions. No calculation engine in I, actual cached fallback.",
+    "A": "Normalr94, light/dark seven scenarios each14. Actual formula active MetaS or format Bold, hold one original successful/error callback, titlebarclose while waiting retains tab/client. Release success closes only after native saved; failure dialog preserves dirty current document, Continue View then faultclear/explicit refocused MetaS retry closes/reopens exactlatest. Clean format begins dirtyfalse; final bold via independent ZIP/XML and actual reopened format state. Independent reader preserves merges/columns/format/rawunrelatedparts, saved receipt matches exact sourcehash. Six failure branches never modify original source before explicit retry. All14close/reopen paths have exactlyonegenuine savedsnapshot beforefirstclose; second cleanclose noextra write.",
+    "proof": "Independent originalV8outputs/errors digest+decode, all original auth frames/args hashes stable, held callback before clientclose, real savedrevision equals finaldisk, everytemporarymode restored. Original watch alwayspassive/unchanged; no replay/fake results/model/Store mutation. All retained threads exit, nine original handlers restore, zero rendererexception, finalnormal0/null. Allthree ownApp parentPIDs and userData/projecttokensgone; notclaim everytransientnativechildsampled.",
+    "prototype": "Existing P12/P09 buttons and geometry unchanged; J10 requiresU/I/A. Only functional screenshots, no new P/V/Codex-perfect result. CurrentmacOSarm64 only. J02 baseline empty/current-source branches and full W28 four activeinputhosts/MetaCtrl/readonly/conflict/failure matrix remain unexecuted until full evidence."
+  },
+  "failureHistory": {
+    "unitRed": "2 premature-close reds plus clean-readonly control pass against old production. Before production snapshots retained. Finalnew3pass. Downstream error assertion refined after first red; no exact first entire test-source snapshot claim.",
+    "oldApp": "Normalr93 genuine editOfficeRange successful result held after actual format mutation while renderer stillclean; clicking titlebarclose removedtab/closedclient before delivery. Expected still-open assertion red; originalclient/native outputs unchanged, failure retained.",
+    "driver": "Firstnewr94 App completedcheckpointsuccess, then checkpointfailure correctlyblocked/preserved and originalsuccessful recoverycheckpoint laterreturned; retrywaitexpired with no saveOffice. Driver sentMetaS immediately afterdialogContinue without explicitfocus readiness; finalendfocusTrue does not provekeypress-timefocus. Added actual formulaclick/focus wait, finalcomplete14pass. Missingfocus step is verified driver deficiency; exact original key target not recorded, so no narrower rootcauseclaim. Productionpackage unchanged, no timeout relaxation.",
+    "observations": "No failed run discarded; originalr93 red, initialr94 insufficient and finalr94 all archived. No special known defect reclassification to green."
+  },
+  "remaining": "OnlyJ10advances;151unexecuted+3blockedT32/T34/Y29. J02/W28 and other original host/system/reference/platform scopes retained. No entireM9completion, mainmerge/push/tag/installer/release.",
+  "artifacts": {
+    "willyou-office-close-A-1O8QeH-dark-append-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-append-failure-blocked.png",
+      "sha256": "5197c09bd2cb7b476e43c031fec72fb2e7cc5e33a38e7a1cc4b2d1c300918de3",
+      "bytes": 202014
+    },
+    "willyou-office-close-A-1O8QeH-dark-append-failure-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-append-failure-close-waits.png",
+      "sha256": "45b8aee05ac21b6588dae28733411094262e44bc59b163658e9d2439ac96bbd7",
+      "bytes": 101554
+    },
+    "willyou-office-close-A-1O8QeH-dark-append-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-append-failure-reopened.png",
+      "sha256": "5a5f6f7bc47c5f8a31c9134b944f775c2801aeca0f28f900ff9cc13953e49f6b",
+      "bytes": 102315
+    },
+    "willyou-office-close-A-1O8QeH-dark-append-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-append-success-close-waits.png",
+      "sha256": "40ca65b12890253af054936291f925f3ebfd22e6e1283a08f02922bf4c3bdff9",
+      "bytes": 104112
+    },
+    "willyou-office-close-A-1O8QeH-dark-append-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-append-success-reopened.png",
+      "sha256": "06cc8ae3920f47737a01d9470aa6dec43f5796dec46c48357a1ec2059d4e5086",
+      "bytes": 102575
+    },
+    "willyou-office-close-A-1O8QeH-dark-checkpoint-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-checkpoint-failure-blocked.png",
+      "sha256": "89137885dca7caa5502db7fdee90bc616c0a66d524d96e5c5530516579937ac4",
+      "bytes": 122374
+    },
+    "willyou-office-close-A-1O8QeH-dark-checkpoint-failure-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-checkpoint-failure-close-waits.png",
+      "sha256": "44bcce5c32bbcbed2bbdee9eb17d44a056bc11ba1eef06a11f8b60deb0deabf8",
+      "bytes": 104330
+    },
+    "willyou-office-close-A-1O8QeH-dark-checkpoint-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-checkpoint-failure-reopened.png",
+      "sha256": "4743de80915d94cd201d02c408d9c6eeb4a62874a896bc5934d6d25d4d98046c",
+      "bytes": 102710
+    },
+    "willyou-office-close-A-1O8QeH-dark-checkpoint-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-checkpoint-success-close-waits.png",
+      "sha256": "c7c323167bddd694537126076f8682215b21702792db7436fbad25641eea8872",
+      "bytes": 104418
+    },
+    "willyou-office-close-A-1O8QeH-dark-checkpoint-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-checkpoint-success-reopened.png",
+      "sha256": "5073c7ea3439eaaae359637d89dce5c86073869d6e3ab8557a51d8dcf4fce515",
+      "bytes": 102921
+    },
+    "willyou-office-close-A-1O8QeH-dark-clean-range-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-clean-range-success-close-waits.png",
+      "sha256": "445defe1884b7d68dcdb69c70045de3baae6d672ae923a8b7a4cf82f577779be",
+      "bytes": 119960
+    },
+    "willyou-office-close-A-1O8QeH-dark-clean-range-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-clean-range-success-reopened.png",
+      "sha256": "c1998d81b3668ca0418760d1adec3bd1bd99e9ddfda526ad0db8732caafad326",
+      "bytes": 99788
+    },
+    "willyou-office-close-A-1O8QeH-dark-materialize-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-materialize-failure-blocked.png",
+      "sha256": "5266828a3965fa1ee9949ff79ba2b9d9f52c257da6ad3f68800b517e1a4eca96",
+      "bytes": 120566
+    },
+    "willyou-office-close-A-1O8QeH-dark-materialize-failure-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-materialize-failure-close-waits.png",
+      "sha256": "46704cb89b2f7e0ede1c82b935bd369926da8852cf3fb69c54f69350ac962b9c",
+      "bytes": 103355
+    },
+    "willyou-office-close-A-1O8QeH-dark-materialize-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-materialize-failure-reopened.png",
+      "sha256": "e22104a35f86e776427bb7a8a4ccf9cd7ab39b475d6982573043adf591b70c2f",
+      "bytes": 102315
+    },
+    "willyou-office-close-A-1O8QeH-dark-materialize-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-materialize-success-close-waits.png",
+      "sha256": "c7a493d101d89a25bbd528822a5ceea50b9c528425d0e10cad50ec3ef4cc96cf",
+      "bytes": 103692
+    },
+    "willyou-office-close-A-1O8QeH-dark-materialize-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-dark-materialize-success-reopened.png",
+      "sha256": "c7983480e7dd90eb817450e639eab90c909a40caecf359a9ff07e042b4a334c4",
+      "bytes": 102940
+    },
+    "willyou-office-close-A-1O8QeH-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-electron.log",
+      "sha256": "cc7deae95f740ec12c180c35afa2e3180789090aa3e42eae2c496f03b453a2bd",
+      "bytes": 82935
+    },
+    "willyou-office-close-A-1O8QeH-light-append-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-append-failure-blocked.png",
+      "sha256": "6b4031a61d736cf95bcb78624afbb43bc4c9b6185c724f274bf39ce8902b5e1b",
+      "bytes": 203035
+    },
+    "willyou-office-close-A-1O8QeH-light-append-failure-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-append-failure-close-waits.png",
+      "sha256": "6d066faf8c29a9efd6726cfe7037ae7d726f58b49b3b3b6b2cf8d0a8cb93ec95",
+      "bytes": 103159
+    },
+    "willyou-office-close-A-1O8QeH-light-append-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-append-failure-reopened.png",
+      "sha256": "466c78265f12410a84265c3f7adee04457de24d7419b6612377e7e317aa518e4",
+      "bytes": 103973
+    },
+    "willyou-office-close-A-1O8QeH-light-append-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-append-success-close-waits.png",
+      "sha256": "a9a8b43ad5aafb9a6704341a24ba0b65cd02764a50262f398663e1f8bc272962",
+      "bytes": 105826
+    },
+    "willyou-office-close-A-1O8QeH-light-append-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-append-success-reopened.png",
+      "sha256": "3e342de77ad8cf6aa981597542c92c4d14f82b85f863f518ad9f6510ffd26361",
+      "bytes": 104366
+    },
+    "willyou-office-close-A-1O8QeH-light-checkpoint-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-checkpoint-failure-blocked.png",
+      "sha256": "270ea2ec782823d42770d4f3774cf6c95054c748595108d595ec9f6215209fc4",
+      "bytes": 122763
+    },
+    "willyou-office-close-A-1O8QeH-light-checkpoint-failure-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-checkpoint-failure-close-waits.png",
+      "sha256": "2f87d2bf444b1b9f420edc61d31d0380ae6ca456e74b744937d0ec5f9e318635",
+      "bytes": 105418
+    },
+    "willyou-office-close-A-1O8QeH-light-checkpoint-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-checkpoint-failure-reopened.png",
+      "sha256": "1af227eeda8fe6e5fcace1690b3b887066e666ae01251192a9b206d72d9e90b8",
+      "bytes": 103989
+    },
+    "willyou-office-close-A-1O8QeH-light-checkpoint-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-checkpoint-success-close-waits.png",
+      "sha256": "c0333344763d851b9c0985a35ee9aa0c61dc4a652e2c60c6132d917a20bb7444",
+      "bytes": 105666
+    },
+    "willyou-office-close-A-1O8QeH-light-checkpoint-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-checkpoint-success-reopened.png",
+      "sha256": "ae7832e6ee6d8c6b672c42523edc8034c7f57c27c44410d258bd6f7242b1a635",
+      "bytes": 104427
+    },
+    "willyou-office-close-A-1O8QeH-light-clean-range-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-clean-range-success-close-waits.png",
+      "sha256": "841229d491922dbda76af8eeb73d17ef8f52095ecab8162347bed914dbd07fe2",
+      "bytes": 121363
+    },
+    "willyou-office-close-A-1O8QeH-light-clean-range-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-clean-range-success-reopened.png",
+      "sha256": "6ec4815ac62a86affb58df4f1d2ac75b8110bc6f09eccb200161ab7bbd76abc9",
+      "bytes": 101259
+    },
+    "willyou-office-close-A-1O8QeH-light-materialize-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-materialize-failure-blocked.png",
+      "sha256": "7cee90b4ebd544a33242cf437b68db6d6850118890717a3a008d9e91ede93e3a",
+      "bytes": 120558
+    },
+    "willyou-office-close-A-1O8QeH-light-materialize-failure-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-materialize-failure-close-waits.png",
+      "sha256": "573dc0824e7d58fa1c994f6f89c073a0ca8117b2bb247141d6142a1d7f92de00",
+      "bytes": 104771
+    },
+    "willyou-office-close-A-1O8QeH-light-materialize-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-materialize-failure-reopened.png",
+      "sha256": "69205a7238aa8065bd45e95bafaa81fc4cb9554720c5243255c686f68f995135",
+      "bytes": 103817
+    },
+    "willyou-office-close-A-1O8QeH-light-materialize-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-materialize-success-close-waits.png",
+      "sha256": "d2cac7cea007b116534de995f1564abc2552dd17424db89444be1efcce782e76",
+      "bytes": 104933
+    },
+    "willyou-office-close-A-1O8QeH-light-materialize-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-light-materialize-success-reopened.png",
+      "sha256": "0bc6c7c8165c62e5235ef89c44aa1db685aa15430596a645ced4f74f11d494e8",
+      "bytes": 104213
+    },
+    "willyou-office-close-A-1O8QeH-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-progress.json",
+      "sha256": "2e28942db44191b48bbc887580cbd0566d7394203d6d469f7dda20f10059d045",
+      "bytes": 75
+    },
+    "willyou-office-close-A-1O8QeH-result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-1O8QeH-result.json.gz",
+      "sha256": "35fdc681eb1ffd88c97a317050a6dd7e49bd46f09f170e080f751bb923be6a53",
+      "bytes": 168963,
+      "compression": "gzip",
+      "originalSha256": "f4733a45fdf1f7799b4bf780ff9da012cd53e56e001341c96e70613cdbe8dbde",
+      "originalBytes": 1585528
+    },
+    "willyou-office-close-A-YPBS5V-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-YPBS5V-failure-electron.log",
+      "sha256": "9cb0052ca19713ba534958d2d06c2c29969d571c1fd415230e894189db84c07c",
+      "bytes": 4890
+    },
+    "willyou-office-close-A-YPBS5V-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-YPBS5V-failure.png",
+      "sha256": "394d04c4bba0b92afda9194f20c2233c2b05f0f52d24d0a805fdafb69a6aa043",
+      "bytes": 39247
+    },
+    "willyou-office-close-A-YPBS5V-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-YPBS5V-progress.json",
+      "sha256": "1613654fc6fd81351c6a3126fde0a863404989b99f84901d4d44f540074c1c5b",
+      "bytes": 86
+    },
+    "willyou-office-close-A-YPBS5V-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-YPBS5V-result.json",
+      "sha256": "d4ffbab026a0b07028b7034edb5491d550e90499c1bd25cd3e6ca8a690ebab28",
+      "bytes": 30039
+    },
+    "willyou-office-close-A-tHHRGS-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-failure-electron.log",
+      "sha256": "713ae44eb69b6584feed22fab20b28a4ef11b2953b36af7aca802ed8d601bc2b",
+      "bytes": 9313
+    },
+    "willyou-office-close-A-tHHRGS-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-failure.png",
+      "sha256": "591bde96788e8c6001ad705161cf047d8647441d44bb0acad8bbf1eabefd2652",
+      "bytes": 109491
+    },
+    "willyou-office-close-A-tHHRGS-light-checkpoint-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-light-checkpoint-failure-blocked.png",
+      "sha256": "270ea2ec782823d42770d4f3774cf6c95054c748595108d595ec9f6215209fc4",
+      "bytes": 122763
+    },
+    "willyou-office-close-A-tHHRGS-light-checkpoint-failure-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-light-checkpoint-failure-close-waits.png",
+      "sha256": "2f87d2bf444b1b9f420edc61d31d0380ae6ca456e74b744937d0ec5f9e318635",
+      "bytes": 105418
+    },
+    "willyou-office-close-A-tHHRGS-light-checkpoint-success-close-waits.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-light-checkpoint-success-close-waits.png",
+      "sha256": "c0333344763d851b9c0985a35ee9aa0c61dc4a652e2c60c6132d917a20bb7444",
+      "bytes": 105666
+    },
+    "willyou-office-close-A-tHHRGS-light-checkpoint-success-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-light-checkpoint-success-reopened.png",
+      "sha256": "ae7832e6ee6d8c6b672c42523edc8034c7f57c27c44410d258bd6f7242b1a635",
+      "bytes": 104427
+    },
+    "willyou-office-close-A-tHHRGS-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-progress.json",
+      "sha256": "e7fee825328ccbedd44750023d715e403dd78b09530c620aaea74d2875b806be",
+      "bytes": 89
+    },
+    "willyou-office-close-A-tHHRGS-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-office-close-A-tHHRGS-result.json",
+      "sha256": "c28fdbca245d1ec504aecde9662eb5d0b548764e7cb08741e4f6f514d2fc4514",
+      "bytes": 107593
+    },
+    "willyou-dev157-ack-r94-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-ack-r94-I.json",
+      "sha256": "45f677d6e87b3beffa2384617b31529ad3f9d27c80e6f5115a481dbf6823b694",
+      "bytes": 1645
+    },
+    "willyou-dev157-cases-before.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-cases-before.json.gz",
+      "sha256": "ede124293284163d07088cf4166a8b36557d6a6156770f31a3b04f695966fa49",
+      "bytes": 198077,
+      "compression": "gzip",
+      "originalSha256": "21cb06a8a9792a8e80f0f4009f1cf107413547824f80e588284fa8de1378baf2",
+      "originalBytes": 1069462
+    },
+    "willyou-dev157-close-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-close-green.json",
+      "sha256": "c4ff1c88dc0e8bd315c493e85cc09b6e5a9e47827f28f0e1756cc26646a9e469",
+      "bytes": 23509
+    },
+    "willyou-dev157-close-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-close-red.json",
+      "sha256": "c2e59a7efce4b07463c0a680e058b5592c9606b6cb26e80124f35c8d87c78c95",
+      "bytes": 2465
+    },
+    "willyou-dev157-code-current.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-code-current.json",
+      "sha256": "33588cca99c489ac1521f6f56d38c1f1779260bf0517dad1d7121d6f62b44295",
+      "bytes": 26182
+    },
+    "willyou-dev157-code-r94-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-code-r94-final.json",
+      "sha256": "256b8f156b290cacb2b2577ae63cde49077ab4cba1cc348fec7add40b105ce60",
+      "bytes": 47906
+    },
+    "willyou-dev157-materialization-r94-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-materialization-r94-I.json",
+      "sha256": "63c5ca12be843dae28fcb679cbc9db721322b215c72a7ce3108e041ddf4a44d3",
+      "bytes": 674
+    },
+    "willyou-dev157-native-current.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-native-current.json",
+      "sha256": "5092b6291f29d636633c7fa83e744b56c18b8520275701fe414c685644c3cf68",
+      "bytes": 9661
+    },
+    "willyou-dev157-native-first-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-native-first-tests.json",
+      "sha256": "ec6c096751486c68dbbc599da1d357d8ffa20441cf1a6775da520a27212dc67f",
+      "bytes": 3167
+    },
+    "willyou-dev157-native-first.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-native-first.json",
+      "sha256": "5712888d4f5344c208a8829dcfb8af22261b5b0977efbf1ec9b8afe34af774b6",
+      "bytes": 9661
+    },
+    "willyou-dev157-native-r94-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-native-r94-I.json",
+      "sha256": "15e9bd3d37762be9b4c447fa00b607401414883fd81f5740aa5f516fba85bd3d",
+      "bytes": 9661
+    },
+    "willyou-dev157-original-reader.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-original-reader.json",
+      "sha256": "9117602fda1f9355de7d4ca2c395efc9f7b060141376806a701c068e1e49134d",
+      "bytes": 2781
+    },
+    "willyou-dev157-prebuild-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-prebuild-source.json",
+      "sha256": "16dae95842094138256a5a85a938e50500e376d7f1a0728e330e81e9b2486886",
+      "bytes": 158852
+    },
+    "willyou-dev157-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-process-audit.json",
+      "sha256": "1fd296fd5f52ebc7338f3696d80ff10e44ca9c870f69489a98b980c687d95981",
+      "bytes": 1354
+    },
+    "willyou-dev157-r94-fast-package-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-fast-package-result.json",
+      "sha256": "494af56a832f812ae1eff3f8f4535d3b9bd5ae879eafe0df5fcb9caf0aff2bcf",
+      "bytes": 2540
+    },
+    "willyou-dev157-r94-native-abi-before-fast-package.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-native-abi-before-fast-package.json",
+      "sha256": "84c614bf8a16a881f47a5bfaad18f5534e41e8183a804a5c82b83ec0f7753f44",
+      "bytes": 624
+    },
+    "willyou-dev157-refresh-r94-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-refresh-r94-I.json",
+      "sha256": "de81f660e4ae944ffc3cc62579e532ea4edf0c28c4c78310553011c886605584",
+      "bytes": 4663
+    },
+    "willyou-dev157-session-r94-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-session-r94-I.json",
+      "sha256": "548025aff1132c10c049561967fbf1745e03daf31f69c801f4c3a9288c9c2e75",
+      "bytes": 147058
+    },
+    "willyou-dev157-source-delta.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-source-delta.json",
+      "sha256": "859eb7d5483215596b82a536191755bcc7c71bbc0637de07fffe7d0ca9e01330",
+      "bytes": 160273
+    },
+    "willyou-dev157-v8-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-v8-audit.json",
+      "sha256": "524abab7304b8cdf6b658fcd4ec03a5e83ed1cfae62efa365d81802ca461f3d3",
+      "bytes": 6301
+    },
+    "willyou-dev157-close-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-close-green.log",
+      "sha256": "ee60e8bfac043e84a41e5ce727038440d9be089f74fb0c12c409cd4bdafd6a1e",
+      "bytes": 68
+    },
+    "willyou-dev157-close-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-close-red.log",
+      "sha256": "726d5e56ac36d0ddfab044b5ec96409d2d74cb744a6097592a829a880bedae14",
+      "bytes": 66
+    },
+    "willyou-dev157-code-current.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-code-current.log",
+      "sha256": "06ec8bd46fa47f5e644cb5187e20495a19d02194a8c919f2fa29349257413124",
+      "bytes": 69
+    },
+    "willyou-dev157-code-r94-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-code-r94-final.log",
+      "sha256": "766b7592843d672d27d3f3ee3f05332f9cf32feb0bf1f7c1b6ba82df5d9ac3c4",
+      "bytes": 71
+    },
+    "willyou-dev157-native-first.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-native-first.log",
+      "sha256": "0928e8679842f3393da5639d7346b8580f25cd4727805d773c2f674bb282f92a",
+      "bytes": 75
+    },
+    "willyou-dev157-old-r93-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-old-r93-A.log",
+      "sha256": "9e486eed38bc0a3a4a1d1388d81b2dd94b38bebb0bb1fc460baac115972b0108",
+      "bytes": 501
+    },
+    "willyou-dev157-r94-A-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-A-final.log",
+      "sha256": "b74830aae855c8cdbe74e82120ab37f9551d3291d15d50b09acd1862e9f59583",
+      "bytes": 5274
+    },
+    "willyou-dev157-r94-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-A.log",
+      "sha256": "9d3c7012397f4397794f6bfffc60ce7e2c2d78430ae73411e28ff90878cbb45b",
+      "bytes": 887
+    },
+    "willyou-dev157-r94-compile.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-compile.log",
+      "sha256": "2f63c0145de0b5cc83b529f4e54ce6d1daf5a997e940590f0d7d8d890a46b70b",
+      "bytes": 16110
+    },
+    "willyou-dev157-r94-fast-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-fast-package.log",
+      "sha256": "8e84e14bef9045bdb3fb3612fcc5b43402b33e7edef21f2378c93396fef38f31",
+      "bytes": 111
+    },
+    "willyou-dev157-r94-native-smoke.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-native-smoke.log",
+      "sha256": "96572e052da16ca4746a35e68beb4ad23bbf960ad662db95c067c626d4137c8b",
+      "bytes": 182
+    },
+    "willyou-dev157-r94-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-package.log",
+      "sha256": "20feb559e44ed36151a9154e980a30d08e1fa238c6ecbc07a64be1bc07f0deef",
+      "bytes": 2729
+    },
+    "willyou-dev157-runtime-r94.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-runtime-r94.log",
+      "sha256": "027cb6ff863c985251dad2ab298f43d1a445df68f949e10ac759cc78d6177c3f",
+      "bytes": 13049
+    },
+    "willyou-dev157-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-dev157-r94-fast-package.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-r94-fast-package.mjs",
+      "sha256": "afac369a2bc1f4bc6ab1f8c63de718128f98dc0f953b79307422bf71e1a1d492",
+      "bytes": 3145
+    },
+    "willyou-dev157-v8-audit.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-v8-audit.cjs",
+      "sha256": "b20bd0bfb2899df7f170cbe5f6cd1312c9d4a523bcc24d15f76c60f9d2947cac",
+      "bytes": 3879
+    },
+    "willyou-dev157-verify-runtime-r94.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-verify-runtime-r94.cjs",
+      "sha256": "68ff0c8f7916393c61f17ce0e265480250198e901d6eda2e6ca20437321c23b4",
+      "bytes": 890
+    },
+    "willyou-dev157-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-archive.py",
+      "sha256": "d2311948478a37e59ec5a2adc28cd9df26cf9958eac4f9bb082fc1316e5c7e31",
+      "bytes": 10406
+    },
+    "before-buffer.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/before-buffer.ts",
+      "sha256": "08eec1ad402f9f18e463de4d8d6f2953ae28a90be8bd78e9786b19dfa997051e",
+      "bytes": 19139
+    },
+    "before-workspace-store.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/before-workspace-store.ts",
+      "sha256": "e1300f6a1dc80a1285b7e5cfd05506476e734f486130be934a58ea3db76501be",
+      "bytes": 50018
+    },
+    "initial-driver-office-close-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/initial-driver-office-close-observer.mjs",
+      "sha256": "7c3fd5d07d3332e672d601aff08d4c0f613f2294879b799ca8571b3a5df9c4cf",
+      "bytes": 5423
+    },
+    "initial-driver-verify-office-close.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/initial-driver-verify-office-close.py",
+      "sha256": "0eca100ce72e440b7dfff8584f741f9e86c1585238bd496b0b07a8bd3c7f5fd9",
+      "bytes": 830
+    },
+    "initial-driver-office-close-queue-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/initial-driver-office-close-queue-ui.mjs",
+      "sha256": "259c297219bd78932b1346da3af94c41f21865b67267f08818a671f73e508e23",
+      "bytes": 11270
+    },
+    "final-driver-office-close-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/final-driver-office-close-observer.mjs",
+      "sha256": "7c3fd5d07d3332e672d601aff08d4c0f613f2294879b799ca8571b3a5df9c4cf",
+      "bytes": 5423
+    },
+    "final-driver-verify-office-close.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/final-driver-verify-office-close.py",
+      "sha256": "0eca100ce72e440b7dfff8584f741f9e86c1585238bd496b0b07a8bd3c7f5fd9",
+      "bytes": 830
+    },
+    "final-driver-office-close-queue-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/final-driver-office-close-queue-ui.mjs",
+      "sha256": "e5d7c569ae1a4dfe2ee733ca8e27f50404a38926546043473f56bd85af6731ae",
+      "bytes": 11378
+    },
+    "willyou-dev157-source-delta.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-source-delta.tar.gz",
+      "sha256": "8ac8e3bda5f0860ba0700cb65b52e18d2a869568db9245a05aa23badb80c8113",
+      "bytes": 64049
+    },
+    "willyou-dev157-prebuild-source.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-prebuild-source.tar.gz",
+      "sha256": "06ca7d5e67cb94801a7688eb712b802b7e7c2bcbdd5f33dc11c8c0af476ab384",
+      "bytes": 12297592
+    },
+    "willyou-dev157-fixtures.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-xlsx-close-dev157-r94-final/willyou-dev157-fixtures.tar.gz",
+      "sha256": "77f5d3ea93205e439f1be8fcdfb0cf582782bf3c9233b827fa45eae399b9a56f",
+      "bytes": 39658
+    }
+  },
+  "releasePerformed": false
+}

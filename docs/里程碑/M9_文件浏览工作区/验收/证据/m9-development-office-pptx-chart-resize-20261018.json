@@ -1,0 +1,921 @@
+{
+  "createdAt": "2026-10-18T00:46:12.735745+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4-P1",
+  "scope": "Office action P09 known single-series chart source count 1–8, line marker defect, area marker isolated research; not formal M9-T-P09",
+  "relatedRequirements": [
+    "M9-R06.10",
+    "M9-R07.11",
+    "M9-R07.16"
+  ],
+  "relatedFormalCases": [
+    "M9-T-F20",
+    "M9-T-W16",
+    "M9-T-J02",
+    "M9-T-J03",
+    "M9-T-J04",
+    "M9-T-W28"
+  ],
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "libreOffice": "26.2.4.2",
+    "libreOfficeBuild": "0229ac93fcf0d7cbc6376066c6f35021cef002dc"
+  },
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-chart-resize-r1-sources.tar.gz",
+    "sha256": "703ba5102105a2cd339ba585f92ca108e31720668c8aa7dce4c113ba192e56a9",
+    "fileCount": 620,
+    "manifest": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-sources.json",
+      "sha256": "4e8b9b58e0669928df12ed8aebe0ee982a8fe9a20296d40a2024e37d215334d7"
+    },
+    "allCurrentFilesMatch": true
+  },
+  "production": {
+    "newFiles": [
+      "src/main/core/files/office/pptx-chart-resize.ts",
+      "src/main/core/files/office/pptx-chart-resize.test.ts"
+    ],
+    "behavior": [
+      "Known basic five/modern four single series resize between 1–8 actual values, formulas, cache, point count and colors",
+      "New dataset worksheet in forked embedded workbook; preserve original worksheets and adjacent occupied cells exactly; selected chart fork prevents changing other shared users",
+      "Retain existing categories; continue numeric positive uniform step or add one above maximum; A/B letter sequence continues; other text extends with unused ordinal strings; numeric text remains text",
+      "Old points retained, out-of-range point labels/styles removed when shrinking, complete point styles extended; known four-color palette cycles",
+      "Real Worker pending raw input, save/reopen, version checks, full undo/redo source recovery",
+      "Line markers circle/6; series none when full explicit markers permit pinned importer colors. Single-point line now visible"
+    ],
+    "limitations": [
+      "Complex source/multiple series/title/theme and complete prototype fidelity pending",
+      "Resizing formula-dependent, protected/signed, source-cell-validation, error-bars or incompatible source/cache profile not adapted; reject preserving source, still outstanding confirmed scope",
+      "Numeric binning/category aggregation changing point count not adapted",
+      "One-point area still invisible in production; only research combination displays marker",
+      "Basic Value legend/category labels/axis ticks/line-area styles and treemap two-unit gaps differ from prototype",
+      "Actual App matrix and other target platforms unverified"
+    ]
+  },
+  "codeTests": {
+    "reports": [
+      {
+        "path": "/private/tmp/willyou-chart-resize-unit-r1.json",
+        "sha256": "841f9a498c154bcd0b0522f0e192f9854424157de8d696d8b542e0511d423496",
+        "counts": {
+          "passed": 59
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-resize-unit-r2.json",
+        "sha256": "8e01295497b502e49b4795e4047371b4c1c58e8296245a00d32265cca67b2332",
+        "counts": {
+          "passed": 58
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-resize-unit-r3.json",
+        "sha256": "13abc678c6ec0c1ba58bf542a7279e0a60bdf2ce6fe41f9d637aa9525227f009",
+        "counts": {
+          "passed": 71
+        },
+        "failedCases": []
+      }
+    ],
+    "note": "Overlapping runs, final 71 affected passes include final production line fix. Counts are not formal acceptance."
+  },
+  "typecheck": {
+    "final": {
+      "path": "/private/tmp/willyou-chart-resize-typecheck-r6.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "exitCode": 0
+    },
+    "failure": {
+      "path": "/private/tmp/willyou-chart-resize-typecheck-r3.log",
+      "sha256": "0f8ba9d9535b047a3680002e31377ea8440dfb51a30bf63ecc872ee3d418dc3a",
+      "reason": "Test array implicit any inside closure; explicit type added, later typechecks passed."
+    }
+  },
+  "native": {
+    "reports": [
+      {
+        "path": "/private/tmp/willyou-chart-resize-native-r1.json",
+        "sha256": "3128a1173d81a431a2f5fe2e20fa4ed6b54c02477a488c6d6f5346fadfd49482",
+        "counts": {
+          "skipped": 24,
+          "passed": 1
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-resize-native-r2.json",
+        "sha256": "34b1d356ea639068f47dcce25df16f94840f806025aff92e335879a71eceb5fc",
+        "counts": {
+          "skipped": 23,
+          "passed": 2
+        },
+        "failedCases": []
+      }
+    ],
+    "finalDetails": {
+      "single": [
+        {
+          "type": "bar",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "line",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "pie",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "area",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "scatter",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "histogram",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "waterfall",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "funnel",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "treemap",
+          "count": 1,
+          "sheet": "Sheet2",
+          "values": [
+            7
+          ],
+          "oldWorksheetsPreserved": true
+        }
+      ],
+      "expanded": [
+        {
+          "type": "bar",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "line",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "pie",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "area",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "scatter",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "histogram",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "waterfall",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "funnel",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        },
+        {
+          "type": "treemap",
+          "count": 8,
+          "sheet": "Sheet3",
+          "values": [
+            1,
+            8,
+            2,
+            7,
+            3,
+            6,
+            4,
+            5
+          ],
+          "oldWorksheetsPreserved": true
+        }
+      ],
+      "renders": [
+        {
+          "type": "bar",
+          "nonWhitePixels": 5624,
+          "scatterComponents": [],
+          "ppmHash": "efb1568d529526d922c704cc3933743935a9470e5764d5ff8c0690f9fc06f4bb"
+        },
+        {
+          "type": "line",
+          "nonWhitePixels": 2905,
+          "scatterComponents": [],
+          "ppmHash": "b533b16d7252461e14672bf369edb7968e7f75b7422656f9eef8ebc7333fd84a"
+        },
+        {
+          "type": "pie",
+          "nonWhitePixels": 10634,
+          "scatterComponents": [],
+          "ppmHash": "f1d57d1aaee81ad4d662664b63dcddcef80580f81d4c246fbf0108a9b0fab6eb"
+        },
+        {
+          "type": "area",
+          "nonWhitePixels": 12831,
+          "scatterComponents": [],
+          "ppmHash": "57b5982a4764862ef7b4e9c476baed3e736aeb322032ba1b725a27f2959c3d97"
+        },
+        {
+          "type": "scatter",
+          "nonWhitePixels": 2121,
+          "scatterComponents": [
+            [
+              67,
+              69
+            ],
+            [
+              69,
+              66
+            ],
+            [
+              65,
+              67
+            ],
+            [
+              65,
+              69
+            ]
+          ],
+          "ppmHash": "c259d3539a44c5acaac0000102bab71801bb86ead2db0a5cc9c2417a9c5e554b"
+        },
+        {
+          "type": "histogram",
+          "nonWhitePixels": 15970,
+          "scatterComponents": [],
+          "ppmHash": "94943023080040b2d856a539d3a00073b861a1dbcc0048c14c453720fcb08d8e"
+        },
+        {
+          "type": "waterfall",
+          "nonWhitePixels": 3803,
+          "scatterComponents": [],
+          "ppmHash": "a742e5c2048b1aa268ca459f5d2a135922cde20132237b4dc745e433b8ecc985"
+        },
+        {
+          "type": "funnel",
+          "nonWhitePixels": 15929,
+          "scatterComponents": [],
+          "ppmHash": "a1a3015f7be76c882fda5f953b0ffcd9d9bd904e3bec43883c6e532d251c7d62"
+        },
+        {
+          "type": "treemap",
+          "nonWhitePixels": 30877,
+          "scatterComponents": [],
+          "ppmHash": "ef4de19ba08870033740ee41e011cb9b5bdf79ad1170eb7263b605fd409cdc7c"
+        }
+      ],
+      "singleLinePixels": 68,
+      "baselineHash": "d5ec2de3f177d5036efaabfd96e7a44adf8bd93e50f9d9e23ec99c901995e8c2",
+      "sourceHash": "b01923fe9c2367c07249e88173e08810bb8bc0ae9c2d3731da31162e020e9f16",
+      "pdfHash": "06228cac89f4ff89b533f2e8bdf7224222080a5b79d1fc4b8ed5686ea9238f70",
+      "reopened": true,
+      "pendingRecovered": true,
+      "undoMutations": 18,
+      "allBaselinePartsRestored": true,
+      "uiAcceptance": false,
+      "pixelParity": false,
+      "singlePointVisualReview": "line marker checked; one-point area marker remains missing and is not accepted"
+    },
+    "detailReport": {
+      "path": "/private/tmp/willyou-chart-resize-native-r2-evidence/resize.json",
+      "sha256": "3755d02eb904f6fc56a588d852e2e3f6a40d8ecd74e8c1c7dce8ca2cf72ff5b2"
+    },
+    "note": "r1 source/native test passed but subsequent visual inspection found missing one-point line and area. r2 checks fixed line pixel and five basic chart regression; area remains open. 23 unselected tests not treated as passes."
+  },
+  "areaResearch": {
+    "script": {
+      "path": "docs/里程碑/M9_文件浏览工作区/技研/实验/pptx-area-marker-probe.py",
+      "sha256": "3b8850e6eca11dbb8a6f45ffaaa71165b06044d3cb630d0e67190784289fe140"
+    },
+    "productionIntegrated": false,
+    "fixtures": {
+      "path": "/private/tmp/willyou-area-marker-probe-r1-input/fixtures.json",
+      "sha256": "81b25e4ac1cd662a3bac2077471aeb8420372b76ba8c3b257e13eb457f10f44f"
+    },
+    "renderReport": {
+      "path": "/private/tmp/willyou-area-marker-probe-r1-output/render.json",
+      "sha256": "b80c5ef0d55427107ebfc7ebb21d573d31d884c9eabd207c9d12aedaf7b14d97"
+    },
+    "measurement": {
+      "areaPage": 6,
+      "results": [
+        {
+          "name": "single",
+          "ppm": "/private/tmp/willyou-area-marker-probe-r1-output/single-area-page6.ppm",
+          "ppmSha256": "76ed2f48cb819f1873ad58fb6a530e3bd997b9c18ebcef727948b277de2ec6b9",
+          "colors": [
+            {
+              "rgb": [
+                20,
+                128,
+                110
+              ],
+              "pixels": 68,
+              "components": [
+                {
+                  "pixels": 68,
+                  "bbox": [
+                    178,
+                    176,
+                    186,
+                    184
+                  ]
+                }
+              ]
+            },
+            {
+              "rgb": [
+                195,
+                91,
+                85
+              ],
+              "pixels": 0,
+              "components": []
+            },
+            {
+              "rgb": [
+                87,
+                121,
+                168
+              ],
+              "pixels": 0,
+              "components": []
+            },
+            {
+              "rgb": [
+                182,
+                133,
+                56
+              ],
+              "pixels": 0,
+              "components": []
+            }
+          ]
+        },
+        {
+          "name": "eight",
+          "ppm": "/private/tmp/willyou-area-marker-probe-r1-output/eight-area-page6.ppm",
+          "ppmSha256": "a4b315472596e9213d8bd6d29c4c2c2d2b37bcb9e131f871138e01f90aa87398",
+          "colors": [
+            {
+              "rgb": [
+                20,
+                128,
+                110
+              ],
+              "pixels": 136,
+              "components": [
+                {
+                  "pixels": 69,
+                  "bbox": [
+                    185,
+                    255,
+                    193,
+                    263
+                  ]
+                },
+                {
+                  "pixels": 67,
+                  "bbox": [
+                    325,
+                    235,
+                    333,
+                    243
+                  ]
+                }
+              ]
+            },
+            {
+              "rgb": [
+                195,
+                91,
+                85
+              ],
+              "pixels": 132,
+              "components": [
+                {
+                  "pixels": 66,
+                  "bbox": [
+                    220,
+                    183,
+                    228,
+                    191
+                  ]
+                },
+                {
+                  "pixels": 66,
+                  "bbox": [
+                    360,
+                    204,
+                    368,
+                    212
+                  ]
+                }
+              ]
+            },
+            {
+              "rgb": [
+                87,
+                121,
+                168
+              ],
+              "pixels": 134,
+              "components": [
+                {
+                  "pixels": 67,
+                  "bbox": [
+                    255,
+                    245,
+                    263,
+                    253
+                  ]
+                },
+                {
+                  "pixels": 67,
+                  "bbox": [
+                    395,
+                    224,
+                    403,
+                    232
+                  ]
+                }
+              ]
+            },
+            {
+              "rgb": [
+                182,
+                133,
+                56
+              ],
+              "pixels": 133,
+              "components": [
+                {
+                  "pixels": 66,
+                  "bbox": [
+                    290,
+                    194,
+                    298,
+                    202
+                  ]
+                },
+                {
+                  "pixels": 67,
+                  "bbox": [
+                    430,
+                    214,
+                    438,
+                    222
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualReview": "Single point visible; eight point markers visible on filled area; one Value legend. Category legend/fill/axis parity not complete. Research only, no production integration.",
+      "uiAcceptance": false,
+      "priorMeasurementFailure": {
+        "reason": "Measurement script guessed gold RGB 185,136,50 instead of actual source palette 182,133,56, yielding zero gold pixels. Re-read exact source palette and remeasured same PDF without rerendering or product changes.",
+        "actualPalette": [
+          [
+            20,
+            128,
+            110
+          ],
+          [
+            195,
+            91,
+            85
+          ],
+          [
+            87,
+            121,
+            168
+          ],
+          [
+            182,
+            133,
+            56
+          ]
+        ]
+      }
+    },
+    "method": "Synthetic real area + marker-only line combination, same category/value sources and axes; hide duplicate legend; only selected chart part changes. Current production parser rejects combination, no product workaround implemented.",
+    "failureHistory": [
+      "Initial generator reused input ZipInfo objects mutated by writestr, causing CRC validation failure; fixed copy.copy(info), input files unchanged.",
+      "Initial pixel script guessed gold RGB; corrected from actual source constant and remeasured the same rendered PDF."
+    ],
+    "scope": "Only area page 6 in eleven-page synthetic sources examined; direct renderer other modern pages not validated by this experiment."
+  },
+  "images": [
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/before-single-line.png",
+      "sha256": "e8ef0e818eae85584286009effb5ab391cac6b6a696bc77c6e8586bf0b7532aa",
+      "source": "/private/tmp/willyou-chart-resize-native-r1-evidence/single-line.png",
+      "kind": "development native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/before-single-area.png",
+      "sha256": "03fe6195d12a1765eaa962ea8149acfb9845d9fdc5c2bfa6e5606f07f5145d73",
+      "source": "/private/tmp/willyou-chart-resize-native-r1-evidence/single-area.png",
+      "kind": "development native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/native-single-line.png",
+      "sha256": "77890e8c7347d0f1fc876e479cda485f362262da8df2e4fb3a1dfd38160972f3",
+      "source": "/private/tmp/willyou-chart-resize-native-r2-evidence/single-line.png",
+      "kind": "development native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/native-eight-scatter.png",
+      "sha256": "232b936f7b3dd4418383ce48bfa3081e95d5aca509c68a14c7c2ae2d274208b6",
+      "source": "/private/tmp/willyou-chart-resize-native-r2-evidence/scatter.png",
+      "kind": "development native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/native-eight-funnel.png",
+      "sha256": "0592f2c7556e640813f3e722c8a4daa4d28b1a3ee50fbaa40bb7007f46015be8",
+      "source": "/private/tmp/willyou-chart-resize-native-r2-evidence/funnel.png",
+      "kind": "development native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/research-single-area.png",
+      "sha256": "7cdb407a3c0ac69f52382bdbea8bcf491f4f4ed0b089659aa17aaf20c1bd7066",
+      "source": "/private/tmp/willyou-area-marker-probe-r1-output/single-area-page6.png",
+      "kind": "research native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/research-eight-area.png",
+      "sha256": "0b10429a1c5e90eb45cf55eb5980f5691aad35b5a2dad414f8ff185afff79d11",
+      "source": "/private/tmp/willyou-area-marker-probe-r1-output/eight-area-page6.png",
+      "kind": "research native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/packaged-single-line.png",
+      "sha256": "77890e8c7347d0f1fc876e479cda485f362262da8df2e4fb3a1dfd38160972f3",
+      "source": "/private/tmp/willyou-chart-resize-packaged-r1-evidence/single-line.png",
+      "kind": "packaged native synthetic output",
+      "appScreenshot": false
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-pptx-chart-resize/packaged-scatter.png",
+      "sha256": "c55abda2ab0a2dd2b743c32db9d8f750a3e62fb5ad6f1840166facb96ed2452d",
+      "source": "/private/tmp/willyou-chart-resize-packaged-r1-evidence/scatter.png",
+      "kind": "packaged native synthetic output",
+      "appScreenshot": false
+    }
+  ],
+  "package": {
+    "app": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+    "asar": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/app.asar",
+      "sha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110"
+    },
+    "log": {
+      "path": "/private/tmp/willyou-m9-chart-resize-package-r1.log",
+      "sha256": "05cd39f3a145a2bd26b933afc493ac58f0dbab8b9e5bf753f2a7b920fe54ac3d"
+    },
+    "exitCode": 0,
+    "nativeChecks": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    }
+  },
+  "packagedTest": {
+    "status": "completed",
+    "exitCode": 0,
+    "report": {
+      "path": "/private/tmp/willyou-chart-resize-packaged-r1.json",
+      "sha256": "d83080f8d2eb0fee40ff5022ae82fb01a0133feac3d8807b456c96667c5c7b29",
+      "counts": {
+        "passed": 4,
+        "skipped": 7
+      }
+    },
+    "log": {
+      "path": "/private/tmp/willyou-chart-resize-packaged-r1.log",
+      "sha256": "df4ece5d39bb0158511dc263974554163928215428586e1d4b178c4986f7bdfd"
+    },
+    "details": {
+      "app": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+      "workerSha256": "2dfd1af2d72b2ea80518ac0c23e788c5be099e073928db1d8511ede00bce47d9",
+      "pagesWorkerSha256": "5aa0e2fc2365a5a29e3590c959285d9eecc1651ea07974b7d3529a9778af91b6",
+      "sourceHash": "6fad28c12c8da8f847a4b0b83574d7c35a6a36f9000f8135d648dc46fba9f9fd",
+      "pdfHash": "fb2b6af34affba032ec1664859c39aebd0b6ce9aa3c8909c5ca3133b2f640ef5",
+      "independent": [
+        {
+          "type": "funnel",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        },
+        {
+          "type": "clusteredColumn",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        },
+        {
+          "type": "waterfall",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        },
+        {
+          "type": "treemap",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "options": true
+        }
+      ],
+      "measured": [
+        {
+          "type": "funnel",
+          "maxErrorPixels": 0.4615384615384528,
+          "axesPixels": 639,
+          "gridPixels": 607
+        },
+        {
+          "type": "histogram",
+          "maxErrorPixels": 0.4615384615384599,
+          "axesPixels": 639,
+          "gridPixels": 371
+        },
+        {
+          "type": "waterfall",
+          "maxErrorPixels": 0.6153846153846132,
+          "axesPixels": 639,
+          "gridPixels": 919
+        },
+        {
+          "type": "treemap",
+          "maxErrorPixels": 0.2307692307692264,
+          "axesPixels": 639,
+          "gridPixels": 45
+        }
+      ],
+      "scatterMarkerColors": [
+        66,
+        66,
+        68
+      ],
+      "singleLinePixels": 68,
+      "resizedData": {
+        "count": 8,
+        "values": [
+          1,
+          8,
+          2,
+          7,
+          3,
+          6,
+          4,
+          5
+        ],
+        "actualReferencedSheet": "Sheet3",
+        "categories": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "resizedCounts": [
+        1,
+        8,
+        3
+      ],
+      "modernBasicRoundTrip": true,
+      "readonlyPreview": true,
+      "reopened": true,
+      "pendingRecovered": true,
+      "undoMutations": 22,
+      "allOriginalPartsRestored": true,
+      "uiAcceptance": false
+    },
+    "evidenceDirectory": "/private/tmp/willyou-chart-resize-packaged-r1-evidence",
+    "scope": "Package ASAR PPTX and pages Workers with packaged native helpers; real values/counts/source history and rendering, not App UI. Seven unselected cases are not passes."
+  },
+  "appUI": {
+    "status": "blocked",
+    "toolObservation": "The Mac is locked and automatic unlock could not unlock it.",
+    "runningPackage": "pptx-image-r1",
+    "newPackageLaunched": false,
+    "pendingUserRequestAlreadySent": true,
+    "note": "No repeated unlock question; no new UI evidence. Package/native tests are not actual App interaction.",
+    "fixtures": {
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/pptx-chart-resize-ui-r1",
+      "manifestSha256": "90b653cabc681133d1add3f3af084abc798f312e81112da36e7a2c7f1e09ebad",
+      "opened": false
+    }
+  },
+  "formalAcceptance": {
+    "total": 425,
+    "current": 419,
+    "futureOnly": 6,
+    "passed": 3,
+    "passedIds": [
+      "M9-T-S02",
+      "M9-T-T18",
+      "M9-T-T22"
+    ],
+    "incomplete": 416,
+    "newPasses": 0
+  },
+  "defects": {
+    "M9-DEV-031": "open: single-point line fixed with native verification; area production missing marker, research only; both App checks pending",
+    "M9-DEV-029": "open: complex modern source and full visual/App matrix pending",
+    "M9-DEV-030": "previous scatter color fix regression passed, App pending"
+  },
+  "updatedAt": "2026-10-18T00:47:38.483958+00:00",
+  "checks": {
+    "sourceSnapshotFiles": 620,
+    "sourceSnapshotMismatches": [],
+    "localMarkdownLinks": 387,
+    "missingLocalLinks": []
+  }
+}

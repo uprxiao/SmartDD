@@ -1,0 +1,898 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-viewport-acceptance.test.tsx src/renderer/features/files/workspace-tree-native-acceptance.test.tsx src/renderer/features/files/tree-failure-native-acceptance.test.tsx
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests | 4 failed) 4137ms
+     × B12 restores independent selection, focus, expanded paths, filter and scroll for each real root 170ms
+     × B11 cancels old-root focus callbacks and restores scroll after a delayed remount without stealing new-root focus 49ms
+     × B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position 1847ms
+     × B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position 1688ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B12 restores independent selection, focus, expanded paths, filter and scroll for each real root
+AssertionError: expected +0 to be 56 // Object.is equality
+
+- Expected
++ Received
+
+- 56
++ 0
+
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:71:142
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B11 cancels old-root focus callbacks and restores scroll after a delayed remount without stealing new-root focus
+AssertionError: expected +0 to be 28 // Object.is equality
+
+- Expected
++ Received
+
+- 28
++ 0
+
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:84:117
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "item-09999.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many"[39m
+  [36m/>[39m
+
+  Name "item-00000.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00000.txt"[39m
+  [36m/>[39m
+
+  Name "item-00001.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00001.txt"[39m
+  [36m/>[39m
+
+  Name "item-00002.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00002.txt"[39m
+  [36m/>[39m
+
+  Name "item-00003.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 112px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00003.txt"[39m
+  [36m/>[39m
+
+  Name "item-00004.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 140px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00004.txt"[39m
+  [36m/>[39m
+
+  Name "item-00005.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 168px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00005.txt"[39m
+  [36m/>[39m
+
+  Name "item-00006.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 196px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00006.txt"[39m
+  [36m/>[39m
+
+  Name "item-00007.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 224px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00007.txt"[39m
+  [36m/>[39m
+
+  Name "item-00008.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 252px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00008.txt"[39m
+  [36m/>[39m
+
+  Name "item-00009.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 280px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00009.txt"[39m
+  [36m/>[39m
+
+  Name "item-00010.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 308px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00010.txt"[39m
+  [36m/>[39m
+
+  Name "item-00011.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 336px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00011.txt"[39m
+  [36m/>[39m
+
+  Name "item-00012.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 364px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00012.txt"[39m
+  [36m/>[39m
+
+  Name "item-00013.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 392px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00013.txt"[39m
+  [36m/>[39m
+
+  Name "item-00014.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 420px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00014.txt"[39m
+  [36m/>[39m
+
+  Name "item-00015.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 448px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00015.txt"[39m
+  [36m/>[39m
+
+  Name "item-00016.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 476px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00016.txt"[39m
+  [36m/>[39m
+
+  Name "item-00017.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 504px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00017.txt"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 280196px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00000.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00000.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00001.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00001.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-iOZLhV/project/many/item-00002.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<u...
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:95:86
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "item-10000.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many"[39m
+  [36m/>[39m
+
+  Name "item-00000.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00000.txt"[39m
+  [36m/>[39m
+
+  Name "item-00001.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00001.txt"[39m
+  [36m/>[39m
+
+  Name "item-00002.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00002.txt"[39m
+  [36m/>[39m
+
+  Name "item-00003.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 112px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00003.txt"[39m
+  [36m/>[39m
+
+  Name "item-00004.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 140px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00004.txt"[39m
+  [36m/>[39m
+
+  Name "item-00005.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 168px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00005.txt"[39m
+  [36m/>[39m
+
+  Name "item-00006.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 196px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00006.txt"[39m
+  [36m/>[39m
+
+  Name "item-00007.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 224px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00007.txt"[39m
+  [36m/>[39m
+
+  Name "item-00008.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 252px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00008.txt"[39m
+  [36m/>[39m
+
+  Name "item-00009.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 280px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00009.txt"[39m
+  [36m/>[39m
+
+  Name "item-00010.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 308px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00010.txt"[39m
+  [36m/>[39m
+
+  Name "item-00011.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 336px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00011.txt"[39m
+  [36m/>[39m
+
+  Name "item-00012.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 364px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00012.txt"[39m
+  [36m/>[39m
+
+  Name "item-00013.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 392px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00013.txt"[39m
+  [36m/>[39m
+
+  Name "item-00014.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 420px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00014.txt"[39m
+  [36m/>[39m
+
+  Name "item-00015.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 448px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00015.txt"[39m
+  [36m/>[39m
+
+  Name "item-00016.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 476px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00016.txt"[39m
+  [36m/>[39m
+
+  Name "item-00017.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 504px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00017.txt"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 280224px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00000.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00000.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00001.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00001.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-Tqm1D2/project/many/item-00002.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<u...
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:95:86
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 1 passed | 1 skipped (3)
+      Tests  4 failed | 11 passed | 4 skipped (19)
+   Start at  21:10:38
+   Duration  5.11s (transform 1.15s, setup 0ms, import 2.08s, tests 5.45s, environment 601ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

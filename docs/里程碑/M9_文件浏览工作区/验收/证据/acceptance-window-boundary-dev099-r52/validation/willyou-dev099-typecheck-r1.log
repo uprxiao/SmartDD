@@ -1,0 +1,20 @@
+
+> smartdd@0.0.5 typecheck /Users/hx/hx/hxWork/SmartDD
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/files/window-boundary-acceptance.test.ts(18,40): error TS2307: Cannot find module '@renderer/features/files/file-buffer' or its corresponding type declarations.
+src/main/core/files/window-boundary-acceptance.test.ts(29,886): error TS2345: Argument of type '{ sources: (scope: { projectId?: string; }) => { kind: "project-directory"; id: string; path: string; label: string; projectId: string; }[]; }' is not assignable to parameter of type 'SourceResolver'.
+  Types of property 'sources' are incompatible.
+    Type '(scope: { projectId?: string; }) => { kind: "project-directory"; id: string; path: string; label: string; projectId: string; }[]' is not assignable to type '(scope: { kind: "project"; projectId: string; } | { kind: "task"; taskId: string; }) => RootSource[]'.
+      Types of parameters 'scope' and 'scope' are incompatible.
+        Type '{ kind: "project"; projectId: string; } | { kind: "task"; taskId: string; }' is not assignable to type '{ projectId?: string | undefined; }'.
+          Type '{ kind: "task"; taskId: string; }' has no properties in common with type '{ projectId?: string | undefined; }'.
+src/main/core/files/window-boundary-acceptance.test.ts(29,961): error TS2345: Argument of type '{ sources: (scope: { projectId?: string; }) => { kind: "project-directory"; id: string; path: string; label: string; projectId: string; }[]; }' is not assignable to parameter of type 'SourceResolver'.
+  Types of property 'sources' are incompatible.
+    Type '(scope: { projectId?: string; }) => { kind: "project-directory"; id: string; path: string; label: string; projectId: string; }[]' is not assignable to type '(scope: { kind: "project"; projectId: string; } | { kind: "task"; taskId: string; }) => RootSource[]'.
+      Types of parameters 'scope' and 'scope' are incompatible.
+        Type '{ kind: "project"; projectId: string; } | { kind: "task"; taskId: string; }' is not assignable to type '{ projectId?: string | undefined; }'.
+          Type '{ kind: "task"; taskId: string; }' has no properties in common with type '{ projectId?: string | undefined; }'.
+src/main/core/files/window-boundary-acceptance.test.ts(42,590): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/main/core/files/window-boundary-acceptance.test.ts(42,618): error TS7006: Parameter 'error' implicitly has an 'any' type.
+ ELIFECYCLE  Command failed with exit code 2.

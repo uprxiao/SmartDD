@@ -1,0 +1,76 @@
+{
+  "caseId": "M9-T-R07",
+  "defectId": "M9-DEV-039",
+  "recordedAt": "2026-10-18T02:26:52.734591+00:00",
+  "kind": "prototype support; formal required layers are U+I and assigned to production evidence",
+  "status": "passed-with-scope-boundary",
+  "sources": {
+    "prototypes/m6-codex/src/FileWorkspace.jsx": "b95877734d05bed5ab449ed70bea6634f14e4ea2df8ae9f181af31ed0d5d4329",
+    "prototypes/m6-codex/src/file-search-history-model.mjs": "5003df88c158d07530b7e89594085a33e6d6cc91ccca873c2ed977291cbe6d14",
+    "prototypes/m6-codex/tests/file-search-history-model.test.mjs": "7be0de4192613619015c57efb0e91a24d3ee6efb2165a4bedddcf1ec8655c1c6"
+  },
+  "archive": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-history-prototype/tested-sources.tar.gz",
+    "sha256": "d21b082fee3a9a441d7f40560fc15a490745b1b9f6e4e8aed2f41d4976b8dfd6"
+  },
+  "modelTests": {
+    "command": "node --test tests/file-search-history-model.test.mjs",
+    "cwd": "prototypes/m6-codex",
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "exitCode": 0,
+    "log": "model-tests.log",
+    "sha256": "279f3deabad1ca9fea4fadc147f389b1ecc169af921ff49539a68965cd671781",
+    "coverage": [
+      "legacy mask trim before deduplication and 30/20 capacities",
+      "malformed JSON and malformed entry recovery followed by successful new save/read",
+      "21 scopes evict least recently remembered; reading does not promote MRU",
+      "invalid/duplicate scopes preserve newest valid record",
+      "storage write failure propagates to existing visible error state"
+    ]
+  },
+  "build": {
+    "command": "node ../../node_modules/vite/bin/vite.js build",
+    "cwd": "prototypes/m6-codex",
+    "exitCode": 0,
+    "log": "build.log",
+    "sha256": "48f12bbcc161a641fd4f10065a30454b249a72a334a1c9fdd894a23d185a39fa"
+  },
+  "browser": {
+    "tool": "mcp__cua_repl documented Playwright DOM API",
+    "tab": "531330461",
+    "url": "http://127.0.0.1:4176/?preview=m9#task/build",
+    "syntheticDataOnly": true,
+    "checks": [
+      {
+        "steps": "Open content search; enter mask with leading/trailing spaces and press Enter; enter the normalized same mask and press Enter",
+        "actualOptionValues": [
+          "*.ts"
+        ],
+        "passed": true
+      },
+      {
+        "steps": "Search WillYou with empty mask; select real visible package.json match; reopen content search; type R07 unsent draft; ArrowUp",
+        "actualQuery": "WillYou",
+        "passed": true
+      },
+      {
+        "steps": "ArrowDown after the historical query",
+        "actualQuery": "R07 unsent draft",
+        "passed": true
+      },
+      {
+        "steps": "Close search; switch workspace from /workspace/SmartDD to /workspace/shared-docs; reopen and ArrowUp/ArrowDown",
+        "actualQuery": "",
+        "actualScopeLabel": "共享文档",
+        "passed": true
+      }
+    ],
+    "boundaries": [
+      "No evaluate/CDP/localStorage injection used. Browser checks cover normal history persistence, mask normalization/deduplication and cross-root isolation. Corruption and 21-scope capacity were verified by the prototype model tests, not by this DOM run.",
+      "No screenshot file was saved; exact outcomes above summarize actual tool-returned DOM snapshots and option attributes, not invented screenshot evidence.",
+      "This prototype uses only synthetic files and does not exercise real App/native filesystem."
+    ]
+  }
+}

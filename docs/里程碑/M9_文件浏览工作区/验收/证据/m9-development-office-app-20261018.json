@@ -1,0 +1,317 @@
+{
+  "createdAt": "2026-10-18T03:21:44.700106+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "workingTree": "uncommitted M9 implementation; unrelated changes preserved",
+  "environment": {
+    "os": "macOS 26.6.1",
+    "build": "25G76",
+    "arch": "arm64"
+  },
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "scope": "Office packaged App development verification; not complete W24 or full M9 acceptance",
+  "builds": [
+    {
+      "id": "checkbox-r1",
+      "app": "/private/tmp/willyou-m9-office-checkbox-r1-build/mac-arm64/WillYou.app",
+      "asarSHA256": "3d46a9ddbc9dd416e5b0f5ba969262a92ad3d5ce6f04a3a72bc3d8f5175418d5"
+    },
+    {
+      "id": "ui-r2",
+      "app": "/private/tmp/willyou-m9-office-ui-r2-build/mac-arm64/WillYou.app",
+      "asarSHA256": "6fb9a0c7c8ac3177fe01be090606ab268c97d5888308783348ba084efaaf79bb",
+      "packageLog": "/private/tmp/willyou-m9-office-ui-r2-package.log",
+      "packageExit": 0,
+      "nativeSmoke": [
+        "SQLite",
+        "PTY",
+        "voiceBridge",
+        "fileBroker",
+        "fileWatcher"
+      ],
+      "snapshot": "/private/tmp/willyou-m9-office-ui-r2-sources.tar.gz",
+      "snapshotSHA256": "2a3016eef1b387bd7b12bed9ebe1aa0a5835442d2a23a7a212e54926f46eecc3"
+    },
+    {
+      "id": "ui-r3",
+      "app": "/private/tmp/willyou-m9-office-ui-r3-build/mac-arm64/WillYou.app",
+      "asarSHA256": "4a591ef9f82e4ef57fb3e6172eec6a15fd754233c0cc43829569d1402de21966",
+      "packageExit": 0,
+      "nativeSmoke": [
+        "SQLite",
+        "PTY",
+        "voiceBridge",
+        "fileBroker",
+        "fileWatcher"
+      ],
+      "packageLog": "/private/tmp/willyou-m9-office-ui-r3-package.log",
+      "snapshot": "/private/tmp/willyou-m9-office-ui-r3-sources.tar.gz",
+      "snapshotSHA256": "c61eb4e4870763ba81d86d1ede1d587a831d26279bbc6959c3373797cd0acb51"
+    },
+    {
+      "id": "ui-r4",
+      "app": "/private/tmp/willyou-m9-office-ui-r4-build/mac-arm64/WillYou.app",
+      "asarSHA256": "4e4454e8352bcb533322e379c25f0794bf5e90c40efa281d9b38d39b3f8006ae",
+      "packageExit": 0,
+      "nativeSmoke": [
+        "SQLite",
+        "PTY",
+        "voiceBridge",
+        "fileBroker",
+        "fileWatcher"
+      ],
+      "packageLog": "/private/tmp/willyou-m9-office-ui-r4-package.log",
+      "snapshot": "/private/tmp/willyou-m9-office-ui-r4-sources.tar.gz",
+      "snapshotSHA256": "b3a72df3d980cec6d0f3f0a993ccc8136cca17968213e1521d6653dcdb22b983",
+      "actualApp": "not launched; CUA lock interrupted ui-r3 row-fit test"
+    },
+    {
+      "id": "pptx-table-measured-r1",
+      "app": "/private/tmp/willyou-m9-pptx-table-measured-r1-build/mac-arm64/WillYou.app",
+      "asarSHA256": "7dc3617457c28354c6a5841fcc6ce030138ff2cf500adcf8f40432bdb144e4d7",
+      "sourceEvidence": "m9-development-office-pptx-table-measured-20261018.json",
+      "actualApp": "Launched with prior isolated userdata; RGB, row fit and user-assisted sheet drag tested."
+    }
+  ],
+  "tests": {
+    "targetedCode": {
+      "passed": 34,
+      "files": 2,
+      "log": "/private/tmp/willyou-m9-office-ui-r1-tests.log",
+      "json": "/private/tmp/willyou-m9-office-ui-r1-tests.json"
+    },
+    "typecheck": {
+      "exit": 0,
+      "log": "/private/tmp/willyou-m9-office-ui-r1-typecheck.log"
+    }
+  },
+  "actualApp": [
+    {
+      "step": "finish earlier raw formula draft",
+      "build": "routes-r1 then checkbox-r1",
+      "result": "passed",
+      "observed": "Existing = raw draft present; UI entered =2+3, saved, grid 5; after quitting and launching checkbox-r1, route and formula =2+3/grid 5 restored.",
+      "file": "office-cases/route-draft.xlsx",
+      "savedSHA256": "69e5858f3764e60da6e942476eb5cd7af2c263abb8fecd92a9b1b39b234bca43"
+    },
+    {
+      "step": "existing checkbox toggle/save/undo/redo/close/reopen",
+      "build": "checkbox-r1",
+      "result": "passed",
+      "observed": "M9 checkbox starts unchecked / B2 FALSE; click -> checked / TRUE; save, undo -> FALSE/unchecked, redo -> TRUE/checked; save and close/reopen retains TRUE and checked."
+    },
+    {
+      "step": "insert two form controls and restart",
+      "build": "checkbox-r1 then ui-r2",
+      "result": "passed",
+      "observed": "Select C2:D2 using click and Shift+Right; Format -> insert checkboxes; both false; click C2 -> true, D2 remains false; automatic save; quit and launch ui-r2, all three controls and B2/C2/D2 TRUE/TRUE/FALSE retained.",
+      "file": "office-cases/checkbox-existing-ui.xlsx",
+      "savedSHA256": "7f61b06ea864db3fe5d60335f20667898e84d91aab6914d9a0782d1bc294c192",
+      "diskReadback": {
+        "B2": {
+          "t": "b",
+          "v": "1"
+        },
+        "C2": {
+          "t": "b",
+          "v": "1"
+        },
+        "D2": {
+          "t": "b",
+          "v": "0"
+        },
+        "controls": 3
+      }
+    },
+    {
+      "step": "fifth-workbook quota failure and recovery",
+      "build": "ui-r2",
+      "result": "passed",
+      "observed": "With four restored workbook sessions, open checkbox-inserted-ui.xlsx -> explicit Office 活动文档数量已达上限 and 重新加载; activating same tab refreshes metadata but retains error; close clean office-conflict.xlsx and click 重新加载 -> editable grid and B2/C2/B3/C3 unchecked controls appear."
+    },
+    {
+      "step": "worksheet add/rename/delete/undo",
+      "build": "ui-r2",
+      "result": "passed for executed substeps",
+      "observed": "Added Sheet1; duplicate Data rejected with input retained; pasted 验收 O'Brien and renamed; context menu deleted the new sheet; Undo restored its name and active view. Initial native typeText omitted the Chinese characters, so Unicode test used paste and does not prove IME composition."
+    },
+    {
+      "step": "worksheet drag reorder",
+      "build": "ui-r2",
+      "result": "inconclusive",
+      "observed": "Two CUA drags from 验收 O'Brien to Data/Calc left order unchanged; coordinate click on Calc selected it correctly. Physical drag question pending to distinguish tool input from App defect; not passed."
+    },
+    {
+      "step": "missing font fit refusal",
+      "build": "ui-r2",
+      "result": "passed for failure substep",
+      "observed": "Data!B2 fit column on Calibri workbook displays 本机缺少字体：Calibri；原尺寸保留; no pretend successful fit. Positive installed-font flow pending."
+    },
+    {
+      "step": "numeric validation rejects then corrects input",
+      "build": "ui-r2",
+      "result": "passed for executed substeps",
+      "observed": "Data!B2 select 数字或公式; paste 不允许的文本 -> explicit rejection, formula-bar input preserved; replace with 12, Enter commits and selects B3."
+    },
+    {
+      "step": "conditional threshold responds to edit",
+      "build": "ui-r2",
+      "result": "passed for executed substeps",
+      "observed": "Set B2 threshold 5 while value 12; actual screenshot shows yellow fill. Change value to 2 -> fill disappears. Rule persistence/full variants pending."
+    },
+    {
+      "step": "bold/font size/number format",
+      "build": "ui-r3",
+      "result": "passed for executed substeps",
+      "observed": "B2 bold enabled, size field 18 applied, number format displays 12.00; disk styles show bold and 13.5 pt. Color picker discovered DEV-018, not passed.",
+      "readback": "/private/tmp/willyou-m9-office-ui-r3-disk-readback.json"
+    },
+    {
+      "step": "installed-font column fit",
+      "build": "ui-r3",
+      "result": "passed for executed substep; persistence reopen pending",
+      "observed": "Arial fixture: paste 列宽验收 WWW iii 中文 😀 in A1; select A1 -> 适应列宽; actual screenshot shows widened A and full string including emoji. Then paste three lines in A1 to prepare row fit; CUA reported locked when clicking wrap, so wrap/row fit/reopen not yet confirmed.",
+      "readback": {
+        "sha256": "03b445cfc0d843160cd06fe681a45d7ce9d96086c1fb98c6aba18bf7f02f1521",
+        "columns": [
+          {
+            "min": "1",
+            "max": "1",
+            "width": "23.6875",
+            "customWidth": "1",
+            "bestFit": "1"
+          }
+        ],
+        "row1": {
+          "r": "1"
+        }
+      }
+    },
+    {
+      "step": "native RGB multi-digit input and save/reopen",
+      "build": "pptx-table-measured-r1",
+      "result": "passed for original defect subflow",
+      "observed": "Opened native color well, selected Red channel and entered 128; popup remained visible with 128. Confirmed and saved. Independent XLSX readback font color FF800000; later close/reopen retains dark red text. Initial attempt using stale AX popup index failed before any typing, retained as tool observation.",
+      "file": "office-cases/office-font-ui.xlsx",
+      "afterColorSHA256": "28af8dd3af9e49ea3215f7897a57f6df9b669149694d0dd0276ed5ddcebcda62"
+    },
+    {
+      "step": "worksheet drag, save, undo, redo, close and reopen",
+      "build": "pptx-table-measured-r1",
+      "result": "passed for executed user-assisted real App subflow",
+      "userEvidence": "User replied 已拖动，顺序已改变 to the current physical drag request.",
+      "toolBoundary": "Two CUA drags returned noWindowsAvailable. Physical drag was done by user; AX, undo/redo, close/reopen and disk verification were done by agent.",
+      "before": [
+        "Data",
+        "Calc",
+        "Spare",
+        "验收 O'Brien"
+      ],
+      "after": [
+        "验收 O'Brien",
+        "Data",
+        "Calc",
+        "Spare"
+      ],
+      "observed": "Fresh AX and disk both place 验收 O'Brien first. Undo restores original order in UI and disk, redo restores first position. Closing/reopening retains new order and resets undo history.",
+      "file": "office-cases/office-actions-ui.xlsx",
+      "savedSHA256": "f9c542baafb64ae69ddad88dbd968b7037bca02c8a34b15c14a0d9693f6a55af",
+      "undoSHA256": "1d1198a25f076f04770c0519ce49b3ec1854c6d0a92e0f7e179c5c69b94b0146",
+      "redoSHA256": "f9c542baafb64ae69ddad88dbd968b7037bca02c8a34b15c14a0d9693f6a55af"
+    },
+    {
+      "step": "installed-font multiline fit row and reopen",
+      "build": "pptx-table-measured-r1",
+      "result": "passed for executed subflow",
+      "file": "office-cases/office-font-ui.xlsx",
+      "observed": "Pasted Line one/Line two/Line three into Data!A1 formula area, submitted, reselected A1, enabled wrap, clicked 适应行高, saved. Real screenshot shows all three lines. Closed and reopened; text, height and red color remain.",
+      "independentReadback": {
+        "row1HeightPt": 53.25,
+        "customHeight": 1,
+        "wrapText": 1,
+        "fontFamily": "Arial",
+        "fontSizePt": 11,
+        "color": "FF800000",
+        "text": "Line one\nLine two\nLine three"
+      },
+      "savedSHA256": "7de43d34e30a251ecd9d6b54cd8d78479aacd3702d06bd36396b19bd1a7a1240"
+    }
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-016",
+      "foundIn": "checkbox-r1 actual App",
+      "symptom": "Fifth workbook stays 正在读取工作簿… after openOffice TOO_LARGE; no visible retry",
+      "cause": "Successful unchanged-file refresh cleared model-open failure",
+      "fix": "Preserve Office open error separately; successful metadata refresh restores it, explicit successful reload clears it.",
+      "tests": "buffer failure/stat failure/recovery + React error/reload flow, both passed",
+      "retest": "ui-r2 original quota/refresh/close/reload sequence passed",
+      "status": "fixed and actual App retested"
+    },
+    {
+      "id": "M9-DEV-017",
+      "foundIn": "ui-r2 actual App",
+      "symptom": "B2=2, B3=4; Up then F2 from B3 displayed 编辑 B2 with value 4. Escape cancelled and B2 remained 2.",
+      "fix": "Bind selected-cell text to client/sheet/row/column/model version; F2 fetches target text while formula-bar read is pending; inline input must match exact row/column.",
+      "tests": {
+        "negative": "/private/tmp/willyou-m9-office-ui-r3-negative.log",
+        "negativeResult": "1 expected failure: F2 ignored while target read delayed, 24 not selected",
+        "after": "/private/tmp/willyou-m9-office-ui-r3-tests.json",
+        "passed": 35,
+        "typecheckExit": 0
+      },
+      "status": "fixed and actual App retested",
+      "retest": "ui-r3: from B3=4 press Up then F2 -> 编辑 B2 value 2; enter 12, Enter -> B2=12 and B3=4; repeat Up/F2 -> 编辑 B2 value 12; Escape preserves 12. Saved/restarted validation and threshold also present."
+    },
+    {
+      "id": "M9-DEV-018",
+      "foundIn": "ui-r3 actual App",
+      "symptom": "Typing red channel 180 in native color picker committed after first digit, closed popup and saved #010000 instead of #b40000.",
+      "fix": "Keep intermediate input local; commit on native change or blur, deduplicate normalized colors; preserve standard inspector save blur.",
+      "reference": "https://html.spec.whatwg.org/multipage/input.html#common-input-element-events",
+      "tests": {
+        "first": "/private/tmp/willyou-m9-office-ui-r4-tests.json",
+        "firstResult": "35 passed, 1 failed: asserted unrelated style index",
+        "second": "/private/tmp/willyou-m9-office-ui-r5-tests.json",
+        "secondResult": "35 passed, 1 failed: hexadecimal letter case; normalized stored/editor color equality",
+        "final": "/private/tmp/willyou-m9-office-ui-r6-tests.json",
+        "finalResult": "36 passed, 2 files",
+        "typecheck": "/private/tmp/willyou-m9-office-ui-r5-typecheck.log",
+        "typecheckExit": 0
+      },
+      "status": "fixed and actual packaged App original multi-digit color subflow retested",
+      "retest": "pptx-table-measured-r1: red channel 128 remains open during typing, saved FF800000; close/reopen retains color. Full color/theme/IME matrix remains pending."
+    }
+  ],
+  "evidenceBoundary": "CUA accessibility and screenshot observations in conversation; screenshots were not separately saved to repository. Read-only ZIP validation supplements UI, does not replace it. AIS directory not modified.",
+  "formalAcceptance": {
+    "passed": 3,
+    "total": 419,
+    "unchanged": true
+  },
+  "remaining": [
+    "full checkbox geometry/fonts/focus/IME/theme matrix",
+    "W24 remaining actions",
+    "Office signed documents and objects",
+    "DOCX/PPTX production",
+    "all other pending M9 cases"
+  ],
+  "fixtures": [
+    {
+      "path": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/office-cases/office-font-ui.xlsx",
+      "sha256": "7495e993d7c489de0bfb9e3b5e277de2900050175496d644c4bc16d3db30e572",
+      "preparation": "Synthetic rich-source.xlsx fixture; styles.xml font family Calibri changed to installed Arial before any App open; other entry bytes preserved."
+    }
+  ],
+  "currentApp": {
+    "app": "/private/tmp/willyou-m9-pptx-table-measured-r1-build/mac-arm64/WillYou.app",
+    "session": 28040,
+    "userdata": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/userdata",
+    "file": "office-cases/office-font-ui.xlsx",
+    "selection": "Data!A1",
+    "lastKnown": "Reopened; all three lines visible, row height and red color retained.",
+    "status": "Exited normally via Cmd+Q before image-r1 launch; this historical app is not current.",
+    "supersededBy": "m9-development-office-pptx-image-20261018.json"
+  },
+  "updatedAt": "2026-10-18T06:35:04+08:00"
+}

@@ -1,0 +1,640 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-MATH-LAZY-DEV114-R65",
+  "at": "2026-10-19T00:40:19.758046+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-two-cases",
+  "revision": "R3.4-20261017 / R3.4-P1; R06.2/R08.2/R08.7 unchanged",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "fullCasesPassed": [
+    "M9-T-X06",
+    "M9-T-X08"
+  ],
+  "regressionCases": [
+    "M9-T-G09",
+    "M9-T-X01",
+    "M9-T-X02",
+    "M9-T-X04",
+    "M9-T-X05",
+    "M9-T-X09",
+    "M9-T-X10",
+    "M9-T-X11",
+    "M9-T-H14",
+    "M9-T-H17",
+    "Notebook readonly math"
+  ],
+  "newCodeByFile": {
+    "markdown-dollar-math.test.ts": 35,
+    "markdown-math-engine.test.ts": 8,
+    "markdown-math-hydration.test.ts": 7,
+    "markdown-math-session.test.ts": 8,
+    "math-isolation.test.ts": 2
+  },
+  "productionChanges": [
+    "src/renderer/features/files/markdown-refresh-acceptance.test.tsx",
+    "src/renderer/features/files/markdown/editor.ts",
+    "src/renderer/features/files/markdown/file-markdown-model.d.mts",
+    "src/renderer/features/files/markdown/file-markdown-model.mjs",
+    "src/renderer/features/files/markdown/model.test.ts",
+    "src/renderer/features/files/notebook/model.ts",
+    "src/renderer/features/files/static-viewers-acceptance.test.ts",
+    "src/renderer/features/files/markdown/math-isolation.test.ts",
+    "src/renderer/features/files/markdown/readonly.d.mts",
+    "src/renderer/features/files/markdown/readonly.mjs",
+    "src/shared/markdown-dollar-math.d.mts",
+    "src/shared/markdown-dollar-math.mjs",
+    "src/shared/markdown-dollar-math.test.ts",
+    "src/shared/markdown-it.d.ts",
+    "src/shared/markdown-math-engine.d.mts",
+    "src/shared/markdown-math-engine.mjs",
+    "src/shared/markdown-math-engine.test.ts",
+    "src/shared/markdown-math-hydration.test.ts",
+    "src/shared/markdown-math-session.d.mts",
+    "src/shared/markdown-math-session.mjs",
+    "src/shared/markdown-math-session.test.ts",
+    "src/shared/markdown-math-worker.mjs"
+  ],
+  "prototypeChanges": [
+    "prototypes/m6-codex/src/file-markdown-model.mjs",
+    "prototypes/m6-codex/src/FileMarkdown.jsx",
+    "prototypes/m6-codex/src/FileNotebookPreview.jsx",
+    "prototypes/m6-codex/vite.config.mjs"
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-114-01",
+      "state": "fixed-and-r65-retested",
+      "problem": "Ordinary Markdown source Worker eagerly included KaTeX via both model and texmath fallback.",
+      "fix": "Engine-free compatible matcher, lazy per-editor native math Worker, separate synchronous Notebook-only adapter."
+    },
+    {
+      "id": "M9-DEV-114-02",
+      "state": "fixed-and-r65-retested",
+      "problem": "Math lifecycle, loading failure and actual engine output budgets lacked an independently cancellable asynchronous phase.",
+      "fix": "Per-DOM owners/abort, lazy Worker recovery, exact budgets/full source fallback and native measured success with detached completion guards."
+    }
+  ],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r65-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "asarSha256": "2797a14e48b6e7eb50fe213dfce28fe1e126d34e6d2d14e4e862c98376efe293",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 82
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-diagram-lifecycle-dev113-r64-20261019.json",
+    "sha256": "e9d9564e84a876c9134227a778732d17e320da8805442d35d071cc18a8e965fe",
+    "all35ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "buildFiles": 1097,
+    "testedFiles": 1100,
+    "buildSha256": "5c76f1ee3a609684b4879af542c671fee9ee5a0986c674c1419ccb3f6027dbb1",
+    "finalTestedSha256": "0d2b7b68b6f41518656fcb890eedb7bd618b0acf0b07743b4a8b8cc72794fc7a",
+    "postBuildProductionChanges": [],
+    "postBuildExternalChanges": [
+      "scripts/files/markdown-math-prototype.mjs",
+      "scripts/lib/markdown-worker-observer.mjs"
+    ],
+    "postBuildNewFiles": [
+      "prototypes/m6-codex/vite.config.mjs",
+      "scripts/files/markdown-math-lazy-ui.mjs",
+      "scripts/lib/math-resource-observer.mjs"
+    ]
+  },
+  "verification": {
+    "codePassedDeduplicated": 170,
+    "newUniqueCodeTests": 64,
+    "newTestsByBoundary": {
+      "U": 60,
+      "I": 4
+    },
+    "cumulativeCodeUnion": 2165,
+    "currentSkipped": 0,
+    "prototypeModelsPassed": 241,
+    "prototypeSitesPassed": 4,
+    "prototypeActualUiChecks": 8,
+    "actualUiChecks": 13,
+    "nativeWorkerInstances": 33,
+    "nativeMathWorkers": 11,
+    "moduleInitializationPauses": 2,
+    "originalMathSuccessGates": 2,
+    "originalNativeErrorGates": 2,
+    "actualNativeLoadErrors": 3,
+    "nongatedNativeLoadErrors": 1,
+    "intentionalPrivateFixtureSaves": 0,
+    "completedBatchNormalQuits": [
+      {
+        "pid": 90347,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 90572,
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "prototypeNormalQuit": {
+      "pid": 90900,
+      "code": 0,
+      "signal": null
+    },
+    "codeExit": 0,
+    "typecheckExit": 0,
+    "prototypeBuildExit": 0,
+    "packageExit": 0,
+    "unhandledErrors": 0,
+    "formalPassed": 223,
+    "formalTotal": 419,
+    "formalRemaining": 196,
+    "unexecuted": 194,
+    "blocked": 2,
+    "appRemaining": 193
+  },
+  "boundaries": [
+    "A actual packaged App and native file service, real KaTeX module/Worker/errors/results and real UI input. Test-only Chromium debugger-start pauses real Worker module initialization without changing bytes; original webRequest/protocol handlers unchanged. Explicit missing-module constructor URL faults produce real trusted Worker errors, not synthetic errors. Native ErrorEvent gates prevent default solely to avoid gate-induced unhandled reporting, then forward the original unchanged core event. Passive Worker/file RPC/requestMeasure observation. No fake engine results, editor/Store/DOM value injection, clipboard, daily files, models, external apps or Codex. X07 fine-grained formula selection remains unaccepted.",
+    "P only: synthetic standalone shared FileMarkdown/Notebook React StrictMode harness, real browser and original KaTeX Worker. No actual file service, native App business, physical IME or full Codex visual claim.",
+    "U-only controlled transports/timers separately labelled; I real native broker/file service/current compiled two Workers/actual EditorView, not packaged renderer UI. Native dependencies reused r64 are byte-identical to r65.",
+    "Final original module initialization pauses are Chromium debugger-start handshakes, not protocol/Fetch interceptions; cancelled Workers never claimed to render after termination. Success/error late delivery uses separately captured actual native events. Explicit missing resource URL faults alter only selected constructor URL, not fabricated output.",
+    "3 actual native errors, one nongated and two gated with disclosed synchronous preventDefault; original core type/error fields and real native message data unchanged. Existing security/webRequest and protocol untouched.",
+    "P synthetic harness uses real engine but not native file business, full Codex pixel/IME proof or other platform. X03/X07/X12, manual/system/reference and whole419 remain pending. No release."
+  ],
+  "artifacts": {
+    "willyou-dev114-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-app-r1.log",
+      "sha256": "4e95d1eadbeaab14b494921dce0a8e8e1d620154eaf39c1ec25b8537bdb2c53b"
+    },
+    "willyou-dev114-app-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-app-r2.log",
+      "sha256": "95a0c879b67b34b3bbd838fcec53fe64bbd5889eda6884517018a69a9443399b"
+    },
+    "willyou-dev114-app-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-app-r3.log",
+      "sha256": "c673c21f9208f25daa29d6989e840d31aeacd7934c2991f41ab2ee632b5c02af"
+    },
+    "willyou-dev114-app-r4.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-app-r4.log",
+      "sha256": "d1874ae4808676fb07a80ef76fe91e8e49c181d37356e1863ba55a1a4b85668f"
+    },
+    "willyou-dev114-app-r5.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-app-r5.log",
+      "sha256": "19356f6f876e803b27ba7cb1de919dfbeefebee77e1195c4ea14b6587c19ffc0"
+    },
+    "willyou-dev114-app-r6.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-app-r6.log",
+      "sha256": "6449b35634d2d12ae9bb881639300a3acbac9093a411c5228b76fe7ca959897b"
+    },
+    "willyou-dev114-build-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-build-snapshot.py",
+      "sha256": "e8f5e4afbc95c67de9865d605125bc56f710d7a439520eaac179e58aef71cd04"
+    },
+    "willyou-dev114-close-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-close-r2.json",
+      "sha256": "26568be1b9a82da76660dffad32c8d2f379eca13a206f8f612609f5cbe81e69a"
+    },
+    "willyou-dev114-close-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-close-r2.log",
+      "sha256": "a57c18ef33c037ca11d58a1e3539595f6ae3e89f289facef41d3e0d004cab923"
+    },
+    "willyou-dev114-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-code-final.json",
+      "sha256": "2dc7d69ebddf7cb77217a9b859503ffa7129034663659fbc47f69fdc29380e91"
+    },
+    "willyou-dev114-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-code-final.log",
+      "sha256": "211b0fcdbc6e512d212542d82ef45ce8d88a048ebd8d245689bc4e65ddde2a92"
+    },
+    "willyou-dev114-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-code-r1.json",
+      "sha256": "9bfe68b7490b54b779e599553525fe4054987b5bcfc9c087d04350460a167e93"
+    },
+    "willyou-dev114-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-code-r1.log",
+      "sha256": "df73ebfb9dc47e7f882808364c82fd9297403975040f5f404d763f69e339a158"
+    },
+    "willyou-dev114-fetch-resource-observer-r4.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-fetch-resource-observer-r4.mjs",
+      "sha256": "4132a1f412a58fae05cd2f89918f55e2423be349973951c361666534beefc1eb"
+    },
+    "willyou-dev114-foundation-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-foundation-r1.json",
+      "sha256": "1776b74aad98aab8cf64b7b6120bcc9dea2d2ff6bfcc1fc21a605790cee43c2b"
+    },
+    "willyou-dev114-foundation-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-foundation-r1.log",
+      "sha256": "4d5ca412923682f0d5c88466c3e7c9f8cd2cb41e27901182d55edf55c760529c"
+    },
+    "willyou-dev114-foundation-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-foundation-r2.json",
+      "sha256": "3335ed14f184d8b77e707bc1c04de337db5a118074d93d8b3233a80bfe74a15f"
+    },
+    "willyou-dev114-foundation-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-foundation-r2.log",
+      "sha256": "aaab200604412242811f40c7869442b0f3543f6ad46e63aca2e8c1399969dbf0"
+    },
+    "willyou-dev114-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-index-before.json",
+      "sha256": "852e65f25f797f831fc93e32cfe594be4787652c90813dad39bf89e7d6d810ef"
+    },
+    "willyou-dev114-isolation-graph.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-isolation-graph.json",
+      "sha256": "2a73a3a76443427507ed6d7426524afdb3a9a74814fa40488d3b7786bd9bf7ed"
+    },
+    "willyou-dev114-native-close-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-native-close-r2.json",
+      "sha256": "056d8d36ccd2a4c92ca0c4a5b3a23a99ba19ab6624b72c6190b00a533693cfba"
+    },
+    "willyou-dev114-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-native-final.json",
+      "sha256": "9905db0aad9833523877244d3791e65464d145b867e3240aa7ae017ce39efdbc"
+    },
+    "willyou-dev114-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-native-r1.json",
+      "sha256": "fa9284b712d3c3705329b84f8ccd6e734ad0d0aa58a859e9c536eb80068be389"
+    },
+    "willyou-dev114-original-md-graph.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-original-md-graph.json",
+      "sha256": "a5cc535e7371b02f8806d906564310d1a2d5757de99413d3c1f54115747f5f4c"
+    },
+    "willyou-dev114-package-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-package-hashes.json",
+      "sha256": "b3b53020d698dbe55db80e80299b485302e10fc5b204452b776383478d3bee2f"
+    },
+    "willyou-dev114-package-r65.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-package-r65.log",
+      "sha256": "1f65ccbe24da66680e4549c08696fceee2593bfd077d4b28138ac0611df5a194"
+    },
+    "willyou-dev114-parser-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-parser-r1.json",
+      "sha256": "3c76455f34b84d5ab156c810734f8bac8ceadb2ccf4d12fe1c7c0509a42f41cb"
+    },
+    "willyou-dev114-parser-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-parser-r1.log",
+      "sha256": "20b72a24cd269e0545aebad0afc09ef778b7b4d9bc8a18e73205925b8bb56145"
+    },
+    "willyou-dev114-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-process-audit.json",
+      "sha256": "7e0755c9b4ba683650774050521c6ea8f1de6900d504cd488244d4d3a364ad7e"
+    },
+    "willyou-dev114-protocol-resource-observer-r2.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-protocol-resource-observer-r2.mjs",
+      "sha256": "5e9db90b789c1c2f741d96975bf578ece1dda1982b45a326f51d1cf86629b2be"
+    },
+    "willyou-dev114-prototype-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-build.log",
+      "sha256": "68c3f5d4fd96bf64be91a5e16445a339092777f6952dfb60315ece8316963b7f"
+    },
+    "willyou-dev114-prototype-models-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-models-final.log",
+      "sha256": "53b6a46308562c61a7092de1200eaa0ff22bfda043f508b6496bcc58d9986c9a"
+    },
+    "willyou-dev114-prototype-models.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-models.log",
+      "sha256": "95f33c3880618454c8a7c0ab5af097e0e9b76fc286321b440b306b4ccdb1f1e4"
+    },
+    "willyou-dev114-prototype-server-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-server-final.log",
+      "sha256": "a599f98a4285f9a8c3bb69361e5fae34c307c233840369cce09b9fdb348ff8f5"
+    },
+    "willyou-dev114-prototype-server.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-server.log",
+      "sha256": "e72fc08782071fc346dca1a1d69431f1da2415116e71ad8a7ac77bdb1dc27650"
+    },
+    "willyou-dev114-prototype-ui-final-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-ui-final-r2.log",
+      "sha256": "e61a80dd8efd438dbee1c984ac21f13b52fc0cd4d41b2777a5780e1a5f7fe685"
+    },
+    "willyou-dev114-prototype-ui-final-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-ui-final-r3.log",
+      "sha256": "e068961821ef95cac2b5958f796c5bd8930e2176fe64f9c087df5f55a6cad377"
+    },
+    "willyou-dev114-prototype-ui-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-ui-final.log",
+      "sha256": "543f047de02f02ca51d9d474310f91d4afa3621c48d83a204f83e9478075bd18"
+    },
+    "willyou-dev114-prototype-ui-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-ui-r1.log",
+      "sha256": "5d448f64b558efbaba30cd70b38965fff4222fadf8c023c51a849185adca6fba"
+    },
+    "willyou-dev114-prototype-ui-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-prototype-ui-r2.log",
+      "sha256": "75d631cf76c1cf442239d8f9ae362b4bc36808847b8b71315c351acdf01f60d0"
+    },
+    "willyou-dev114-runtime-r65.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-runtime-r65.json",
+      "sha256": "191575b83f33b6129dbd088a85ef20885f0f159212d8ad7ab96ff14389a8f733"
+    },
+    "willyou-dev114-sites-prepare.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-sites-prepare.log",
+      "sha256": "b20a681cac5bceaeaf037571701267999bfc75ce61e60510f556c2656fafc5ba"
+    },
+    "willyou-dev114-sites-test.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-sites-test.log",
+      "sha256": "f41fe00c0c6154685eaa248cca0030613a3be0fed036e45b3fbb2357d2bdc8fe"
+    },
+    "willyou-dev114-source-final-summary.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-source-final-summary.json",
+      "sha256": "e87dd391f2752639ef6134ee1ef30b44b14c2087014b55f4881871c34315229d"
+    },
+    "willyou-dev114-tested-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-tested-snapshot.py",
+      "sha256": "20ac67d60305e34f94cf54945ad82a3011f3048dd1ba994424970ebd4c9ca4b7"
+    },
+    "willyou-dev114-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev114-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-typecheck-r1.log",
+      "sha256": "c509c186eef857bc8b74a557dd3c3069e5b1ece1891dd838353c24da4fb79ef7"
+    },
+    "willyou-dev114-verify-runtime-r65.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-verify-runtime-r65.cjs",
+      "sha256": "964eaaa67ba38de001934ed3843fbd7ccf3c44dec728e275c7f74526207b25bf"
+    },
+    "willyou-dev114-watch-hash-r65.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-watch-hash-r65.cjs",
+      "sha256": "23f763b9a9954311d6fddd6373b9bb1d054cfcc6a34e8844e5330c65e0b672db"
+    },
+    "willyou-dev114-watcher-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-watcher-final.json",
+      "sha256": "758b0a5099c305aa94eb3b6185231bca132c482d9b4d85da5ee12379d19e5c0e"
+    },
+    "willyou-dev114-watcher-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-watcher-final.log",
+      "sha256": "0d6884b0131a819b4e26a5b9bb341f6ed41ca191cdc2b706bedeaf557a5c7e0c"
+    },
+    "willyou-dev114-watcher.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-dev114-watcher.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-m9-acceptance-batch-r65-build-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-m9-acceptance-batch-r65-build-sources.json",
+      "sha256": "d88116b3d75a4e62c4f97c34d5ca8de561d1dbd65010c493c807e7221163227e"
+    },
+    "willyou-m9-acceptance-batch-r65-build-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-m9-acceptance-batch-r65-build-sources.tar.gz",
+      "sha256": "5c76f1ee3a609684b4879af542c671fee9ee5a0986c674c1419ccb3f6027dbb1"
+    },
+    "willyou-m9-acceptance-batch-r65-dev114-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-m9-acceptance-batch-r65-dev114-tested-sources.json",
+      "sha256": "ed731315fa8acf8aa61c3ee9affdd0248e5e2d6a03cfc52fd9dc8a399cb836e5"
+    },
+    "willyou-m9-acceptance-batch-r65-dev114-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/willyou-m9-acceptance-batch-r65-dev114-tested-sources.tar.gz",
+      "sha256": "0d2b7b68b6f41518656fcb890eedb7bd618b0acf0b07743b4a8b8cc72794fc7a"
+    },
+    "app-attempts/willyou-math-lazy-app-1cAn4T/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-1cAn4T/failure-electron.log",
+      "sha256": "312a264017f17cd953668c8cc6e4a2b75ee063568a002690f1095b4d31310fcf"
+    },
+    "app-attempts/willyou-math-lazy-app-1cAn4T/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-1cAn4T/failure.png",
+      "sha256": "d9760addcf62e0c4ffa7f417d9632d8682aa8e3fe43a2566bfd7906bb093932b"
+    },
+    "app-attempts/willyou-math-lazy-app-1cAn4T/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-1cAn4T/result.json",
+      "sha256": "e761b4870f2a630ca135dfada745f210cde485492de28d2e314d999ec198cf26"
+    },
+    "app-attempts/willyou-math-lazy-app-9Tsf8H/actual-math-recovery.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-9Tsf8H/actual-math-recovery.png",
+      "sha256": "9b8c98ece3b89fd529972e3d23ac8e425cf5fc6c0b355effc2c33d856a808df9"
+    },
+    "app-attempts/willyou-math-lazy-app-9Tsf8H/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-9Tsf8H/failure-electron.log",
+      "sha256": "2cc98bd9ea1d7fc83695556a9d0c3a81ecd2b79d384e7064b693fd6f62da3c07"
+    },
+    "app-attempts/willyou-math-lazy-app-9Tsf8H/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-9Tsf8H/failure.png",
+      "sha256": "ffd73a341cbdb2ac9fec154956f196cc948e623245fa31cd60338cefb96f3915"
+    },
+    "app-attempts/willyou-math-lazy-app-9Tsf8H/native-error-readable.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-9Tsf8H/native-error-readable.png",
+      "sha256": "175344c0c1e044c7e2631e57171a0c31d5b6f24c0c3b3f862b19f2df81d88043"
+    },
+    "app-attempts/willyou-math-lazy-app-9Tsf8H/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-9Tsf8H/result.json",
+      "sha256": "a147ab524743984d5dcaf087a8f01dcc2e0a2d48d158266171811e98fa066185"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/actual-math-recovery.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/actual-math-recovery.png",
+      "sha256": "088811b9185cdac0be291ea6d4a5a73c12a46a53350fd67e740695244d70118e"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/budget-full-source.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/budget-full-source.png",
+      "sha256": "2c14f84876f27687b9909a42b2e93e34eb00b533a6a9b02077f53c638b293670"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/cold-errors-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/cold-errors-electron.log",
+      "sha256": "865c8406944529836fb42b732086c66b7122484aad80e05b8ba453eafa573490"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/native-error-readable.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/native-error-readable.png",
+      "sha256": "ec118213e731c23f26d2899a6a3f2570d20cb9a51a19455792dc48bef2e27e7c"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/normal-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/normal-electron.log",
+      "sha256": "0f9103dc1f11d21af45278975ef0eaaaa0080a4a3f7ac80d2dc21a0e1addfdfb"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/notebook-real-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/notebook-real-math.png",
+      "sha256": "b60cbfd81f45b27b7b230ea7802552db92ea4c9671c351c7986c1f15f915c1cd"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/budget.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/budget.md",
+      "sha256": "e1fe974f528d22a9ea43e5a0cfd805ce55b453abaa9453059d46b88423368fd0"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/error-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/error-close.md",
+      "sha256": "d64bc9045be15c35c7c08781ac0595a2b701514f552133f54787e3ce22439b83"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/error-switch.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/error-switch.md",
+      "sha256": "3003deac2d67e9ea5da6ca780ea460a2c3ab55b2e24b24f5fd722952bd8a6d18"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/math.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/math.md",
+      "sha256": "b31a03e4ed0682ae6de957fdfc672668e478d5d7b361aed06ca14375872415c5"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/notebook.ipynb",
+      "sha256": "de176986947e794abf82f744bb7e2e2299300480ec753dc06c5549cc3529366a"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/other.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/other.txt",
+      "sha256": "ce9e4976dd6f3ee04176a60f734846043ffb0737da11fb0e28c159f16e195717"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/plain.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/plain.md",
+      "sha256": "42c1a8a233011bf54ef9be5cb8b267e6393b8d0a7ac4b32075143d9869adc756"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/resource-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/resource-close.md",
+      "sha256": "77ec2923a1e53f553ab4839ba84844c811faf43fc449233a37f50b3e95aff91f"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/resource-switch.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/resource-switch.md",
+      "sha256": "3c315a0738d0fadbcf82acef96e7bc8882b6edc2f54410e7cfc65e6a6996ab67"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/result-close.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/result-close.md",
+      "sha256": "eeee86b19d48f200b3c814f1a6dd9d48ea4c31c3c0d03a2209d9a59c41239836"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/project/result-switch.md": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/project/result-switch.md",
+      "sha256": "4d2eca0d395fa7ba92f74e9d9d2bc596e698a0786b8c238214337933cca6c2ea"
+    },
+    "app-attempts/willyou-math-lazy-app-CkRqgp/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-CkRqgp/result.json",
+      "sha256": "d17b695c04fab64669bafe335eaa7fb0dcecd76c6669abae1a905c336966f18d"
+    },
+    "app-attempts/willyou-math-lazy-app-V8J2dw/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-V8J2dw/failure-electron.log",
+      "sha256": "fcc69b38f5bbda21d8633c68e5225ba0bba6f2f54b1b3b34563ec093de156bf0"
+    },
+    "app-attempts/willyou-math-lazy-app-V8J2dw/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-V8J2dw/failure.png",
+      "sha256": "a895a57aab4735b6457b628eb7bc38f856ff23678b663077b5f3716fdb0faba6"
+    },
+    "app-attempts/willyou-math-lazy-app-V8J2dw/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-V8J2dw/result.json",
+      "sha256": "5e86f6bd1ce171840ef89fe5f9cbedcf00543f66864041f870687eae52807049"
+    },
+    "app-attempts/willyou-math-lazy-app-ipFnSF/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-ipFnSF/failure-electron.log",
+      "sha256": "7ce9850adea4d432c761f8e314555ef016f37abd4fe1226e806b3a2c9e27f1a1"
+    },
+    "app-attempts/willyou-math-lazy-app-ipFnSF/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-ipFnSF/failure.png",
+      "sha256": "aad2236783dd999d8e85ceee53e477d8bde6e6bb710fc6b7c7c2687ea0f8e5f2"
+    },
+    "app-attempts/willyou-math-lazy-app-ipFnSF/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-ipFnSF/result.json",
+      "sha256": "5d0d32427a952b1d07ada703740e39c990ebfeb2c86d0961583f7e3c075b486f"
+    },
+    "app-attempts/willyou-math-lazy-app-vQvg6O/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-vQvg6O/failure-electron.log",
+      "sha256": "c454973df9a328b0c70c54333402bacb5ac4322bd94f4e5dabf25939841dafab"
+    },
+    "app-attempts/willyou-math-lazy-app-vQvg6O/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-vQvg6O/failure.png",
+      "sha256": "5209df36c6be1ca5e89cc0b03cc80ac86ea6ea1c708e95faaab7f2fe49921c07"
+    },
+    "app-attempts/willyou-math-lazy-app-vQvg6O/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/app-attempts/willyou-math-lazy-app-vQvg6O/result.json",
+      "sha256": "7fe10ef30d0b52c00140f0700d16c8236788495be794ec91614951dbee7a4a81"
+    },
+    "prototype-attempts/willyou-math-prototype-X6070u/dark-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-X6070u/dark-math.png",
+      "sha256": "4caf16a4d5a658423e2726d5952f02694ada953f12725f637a8b769f385270d6"
+    },
+    "prototype-attempts/willyou-math-prototype-X6070u/dark-notebook.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-X6070u/dark-notebook.png",
+      "sha256": "45e69e7d7d6c804ba817df9cd1172710a1b8eddbd29ccbd925e3ecbdc553322d"
+    },
+    "prototype-attempts/willyou-math-prototype-X6070u/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-X6070u/electron.log",
+      "sha256": "4f151ac63533888353e88303486bcc7642813a831ab08f0e2792a333a95fab59"
+    },
+    "prototype-attempts/willyou-math-prototype-X6070u/light-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-X6070u/light-math.png",
+      "sha256": "8b3a289cf37eb4514a7905a83be785f88e838abc82c3e708e68ac0b056f04ec5"
+    },
+    "prototype-attempts/willyou-math-prototype-X6070u/light-notebook.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-X6070u/light-notebook.png",
+      "sha256": "345a812aa0b5c9772ac60abf107c7d9a8afab5b75d1b8b7869074e25f23087da"
+    },
+    "prototype-attempts/willyou-math-prototype-X6070u/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-X6070u/result.json",
+      "sha256": "89520b5aee225398ae220af0a3730ca12b3528863d7d75efef1a7afdddf3137a"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/dark-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/dark-math.png",
+      "sha256": "4caf16a4d5a658423e2726d5952f02694ada953f12725f637a8b769f385270d6"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/dark-notebook.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/dark-notebook.png",
+      "sha256": "45e69e7d7d6c804ba817df9cd1172710a1b8eddbd29ccbd925e3ecbdc553322d"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/electron.log",
+      "sha256": "5d56634f20ee13f4bace068161cd6ed3b54bfce083d03a370435614afb4ff2e2"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/failure-electron.log",
+      "sha256": "78d0cfe37e7b3966bad5c78f0b02e79a5acecb9ed094520f1a7ee1862fc9edec"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/failure.png",
+      "sha256": "e3800ce1bbe13e1b8244621f9613a1f1aee9a25ec61b5b61402cbd31b33d90b8"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/light-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/light-math.png",
+      "sha256": "8b3a289cf37eb4514a7905a83be785f88e838abc82c3e708e68ac0b056f04ec5"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/light-notebook.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/light-notebook.png",
+      "sha256": "345a812aa0b5c9772ac60abf107c7d9a8afab5b75d1b8b7869074e25f23087da"
+    },
+    "prototype-attempts/willyou-math-prototype-f2ehM7/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-f2ehM7/result.json",
+      "sha256": "a37f6a6f47289c9f4ba17619f2283ae20cdaf75263e561e03e86c26703cb5a31"
+    },
+    "prototype-attempts/willyou-math-prototype-fqn5hS/dark-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-fqn5hS/dark-math.png",
+      "sha256": "4caf16a4d5a658423e2726d5952f02694ada953f12725f637a8b769f385270d6"
+    },
+    "prototype-attempts/willyou-math-prototype-fqn5hS/dark-notebook.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-fqn5hS/dark-notebook.png",
+      "sha256": "45e69e7d7d6c804ba817df9cd1172710a1b8eddbd29ccbd925e3ecbdc553322d"
+    },
+    "prototype-attempts/willyou-math-prototype-fqn5hS/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-fqn5hS/electron.log",
+      "sha256": "0fe16011e31bbc73e250d9ec02c7b3b23feae9bcdd5503e71b10b8227e535f84"
+    },
+    "prototype-attempts/willyou-math-prototype-fqn5hS/light-math.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-fqn5hS/light-math.png",
+      "sha256": "8b3a289cf37eb4514a7905a83be785f88e838abc82c3e708e68ac0b056f04ec5"
+    },
+    "prototype-attempts/willyou-math-prototype-fqn5hS/light-notebook.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-fqn5hS/light-notebook.png",
+      "sha256": "345a812aa0b5c9772ac60abf107c7d9a8afab5b75d1b8b7869074e25f23087da"
+    },
+    "prototype-attempts/willyou-math-prototype-fqn5hS/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-fqn5hS/result.json",
+      "sha256": "3a44da9b3b759f3ad22848ccb03bb6cff218ce58cf52e71feb6e59a6726188dc"
+    },
+    "prototype-attempts/willyou-math-prototype-txs7Hp/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-txs7Hp/failure-electron.log",
+      "sha256": "7faf87443b013a17e4ac606b29ac3b26fb2f28d523a7c27e7af13777ace64970"
+    },
+    "prototype-attempts/willyou-math-prototype-txs7Hp/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-txs7Hp/failure.png",
+      "sha256": "3aaf843dcebd3d45d3879b6cec937f373d3a1aab3bd205c20aa177a0ec4a4997"
+    },
+    "prototype-attempts/willyou-math-prototype-txs7Hp/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/prototype-attempts/willyou-math-prototype-txs7Hp/result.json",
+      "sha256": "2563dfd6afeb0feba0aa53a1a8add0ad897f37a00896d1cf95ac3dd5a109da84"
+    },
+    "failure-history.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-math-lazy-dev114-r65/failure-history.txt",
+      "sha256": "44f9e114581a3a67887a8dfbe0d9b87d76f3e7202e6b7bebe6615f181e7c0a04"
+    }
+  }
+}

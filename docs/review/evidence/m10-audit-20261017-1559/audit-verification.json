@@ -1,0 +1,115 @@
+{
+  "schema": "m10-readiness-audit-v1",
+  "at": "2026-10-17T08:01:24.556344+00:00",
+  "branch": "feature/0.0.1",
+  "baseline": "R1.3-20261017; design V2",
+  "previousStageManifestFiles": 120,
+  "previousStageHashDifferences": [],
+  "previousBrowserEvidence": "docs/里程碑/M10_三方应用接入/验收/证据/m10-prototype-final.json",
+  "previousBrowserSourceHashDifferences": [],
+  "sharedPrototypeSnapshotDifferences": [
+    "prototypes/m6-codex/README.md",
+    "prototypes/m6-codex/design-qa.md",
+    "prototypes/m6-codex/src/FileOfficePreview.jsx",
+    "prototypes/m6-codex/src/FileWorkspace.jsx"
+  ],
+  "sharedPrototypeDifferencesAreM10Owned": false,
+  "archiveBeforeAudit": "release/m10-research/v2-archive-before-audit-20261017-1559",
+  "currentRechecks": {
+    "mail": {
+      "report": "docs/review/evidence/m10-audit-20261017-1559/mail/synthetic-parser-report.json",
+      "checks": 12,
+      "passed": true,
+      "scope": "synthetic RFC MIME/MBOX only"
+    },
+    "providers": {
+      "report": "docs/review/evidence/m10-audit-20261017-1559/providers/report.json",
+      "passed": 14,
+      "failed": 0,
+      "scope": "synthetic contracts"
+    },
+    "broker": {
+      "report": "docs/review/evidence/m10-audit-20261017-1559/broker/report.json",
+      "passed": 15,
+      "failed": 0,
+      "scope": "real local Unix socket with synthetic owner/children, not Electron"
+    },
+    "storage": {
+      "report": "docs/review/evidence/m10-audit-20261017-1559/storage.json",
+      "checks": 8,
+      "status": "passed",
+      "scope": "candidate temporary SQLite",
+      "assertionsMet": 8
+    },
+    "existingMcp": {
+      "report": "docs/review/evidence/m10-audit-20261017-1559/existing-mcp.json",
+      "checks": 9,
+      "limitations": 3,
+      "scope": "6 basic behaviors + 3 observed design limits; not 9 business passes"
+    },
+    "codex": {
+      "report": "docs/review/evidence/m10-audit-20261017-1559/codex-mcp-result.json",
+      "status": "passed",
+      "toolsCalled": [
+        "project_context"
+      ],
+      "modelTurnStarted": false,
+      "realThirdParty": false
+    },
+    "anonymousZentao": {
+      "report": "docs/review/evidence/m10-audit-20261017-1559/zentao-anonymous-result.json",
+      "checks": [
+        {
+          "path": "/biz/",
+          "method": "GET",
+          "authenticated": false,
+          "httpStatus": 302,
+          "contentType": "text/html",
+          "loginHtmlObserved": false,
+          "jsonParsed": false,
+          "elapsedSeconds": 0.21
+        },
+        {
+          "path": "/biz/api.php/v1/user",
+          "method": "GET",
+          "authenticated": false,
+          "httpStatus": 401,
+          "contentType": "application/json",
+          "loginHtmlObserved": false,
+          "jsonParsed": true,
+          "jsonTopLevelType": "dict",
+          "businessDataRecorded": false,
+          "errorShapePresent": true,
+          "elapsedSeconds": 0.299
+        },
+        {
+          "path": "/biz/api.php/v2/products",
+          "method": "GET",
+          "authenticated": false,
+          "transportErrorType": "TimeoutError",
+          "reasonType": "NoneType",
+          "elapsedSeconds": 6.05
+        }
+      ],
+      "authenticated": false,
+      "scope": "reachability only"
+    },
+    "prototypeModels": {
+      "tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "evidence": "docs/review/evidence/m10-audit-20261017-1559/prototype-tests.tap"
+    }
+  },
+  "productionM10ImplementationFound": false,
+  "noRealBusinessClaims": [
+    "Anonymous target check is not authenticated API validation",
+    "Three historical mail samples are structure-only, not mailbox mapping or content fidelity",
+    "Synthetic checks do not prove live service or packaged app support"
+  ],
+  "previousBrowserSummary": {
+    "total": 27,
+    "passed": 27,
+    "failed": 0
+  }
+}

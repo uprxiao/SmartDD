@@ -37,6 +37,7 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
     await new Promise((resolve, reject) => { ws.addEventListener('open', resolve, { once: true }); ws.addEventListener('error', reject, { once: true }); });
     let seq = 0;
     const pending = new Map();
+    const cdpListeners = new Map();
     const rendererErrors = [];
     ws.addEventListener('message', ({ data }) => {
       const message = JSON.parse(data);
@@ -47,8 +48,14 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
         message.error ? request.reject(new Error(message.error.message)) : request.resolve(message.result);
       }
       if (message.method === 'Runtime.exceptionThrown') rendererErrors.push(message.params.exceptionDetails.text);
+      for (const listener of cdpListeners.get(message.method) ?? []) listener(message.params);
+    });
+    ws.addEventListener('close', () => {
+      for (const request of pending.values()) { clearTimeout(request.timer); request.reject(new Error('Isolated Electron target closed')); }
+      pending.clear();
     });
     const cdp = (method, params = {}, timeoutMs = 25_000) => new Promise((resolve, reject) => {
+      if (ws.readyState !== WebSocket.OPEN) { reject(new Error('Isolated Electron target is closed')); return; }
       const id = ++seq;
       const timer = setTimeout(() => { pending.delete(id); reject(new Error(`Electron ${method} timed out`)); }, timeoutMs);
       pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params }));
@@ -72,26 +79,71 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
     const invoke = (channel, ...args) => evaluate(`window.electronAPI.invoke(${JSON.stringify(channel)}, ...${JSON.stringify(args)})`, 70_000);
     // Test-only main-process evaluation. Enabled solely by the local launch flag above.
     // Used to compare decrypted credentials with artifacts without returning the credentials.
-    const mainEvaluate = async (expression) => {
+    let mainEvaluationSequence = 0;
+    const mainEvaluate = async (expression, { synchronous = false } = {}) => {
       assert(inspectMain, 'Main inspection was not enabled for this test instance');
       const url = /Debugger listening on (ws:\/\/127\.0\.0\.1:[^\s]+)/.exec(logs)?.[1];
       assert(url, 'Main inspector unavailable');
       const socket = new WebSocket(url);
       await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }); });
+      // The inspector keeps only a weak handle to an awaited promise. Keep the
+      // actual promise reachable in this isolated test main until the response
+      // arrives, then release it even after an exception or observation timeout.
+      const evaluationKey = `${process.pid}:${++mainEvaluationSequence}`;
+      const rootedExpression = `(() => { const key = Symbol.for('willyou.test.main-evaluation'); const pending = globalThis[key] ??= new Map(); const promise = Promise.resolve((0, eval)(${JSON.stringify(expression)})); pending.set(${JSON.stringify(evaluationKey)}, promise); return promise; })()`;
       try {
         return await new Promise((resolve, reject) => {
           const timer = setTimeout(() => reject(new Error('Main inspection timed out')), 25_000);
           socket.addEventListener('message', ({ data }) => {
             const m = JSON.parse(data); if (m.id !== 1) return; clearTimeout(timer);
-            if (m.error || m.result.exceptionDetails) reject(new Error('Credential audit could not complete inside the main process'));
+            if (m.error || m.result.exceptionDetails) {
+              // This helper also observes non-credential tests. Report only
+              // the protocol code/exception class, never the evaluated data.
+              const kind = m.error ? `protocol ${Number(m.error.code)}` : String(m.result.exceptionDetails.exception?.className ?? 'evaluation').replace(/[^a-zA-Z0-9_.]/g, '').slice(0, 64);
+              const failure = new Error(`Main inspection failed (${kind})`);
+              // Keep protocol metadata available to an explicitly diagnostic
+              // caller. Exception objects/evaluated values are never copied or
+              // echoed by this helper's ordinary error string.
+              if (m.error) failure.inspectorProtocol = { code: Number(m.error.code), message: String(m.error.message ?? '').slice(0, 512) };
+              reject(failure);
+            }
+            else if (synchronous && m.result.result.subtype === 'promise') reject(new Error('Synchronous main inspection returned a promise'));
             else resolve(m.result.result.value);
           });
-          socket.send(JSON.stringify({ id: 1, method: 'Runtime.evaluate', params: { expression, awaitPromise: true, returnByValue: true } }));
+          socket.send(JSON.stringify({ id: 1, method: 'Runtime.evaluate', params: { expression: synchronous ? expression : rootedExpression, awaitPromise: !synchronous, returnByValue: true } }));
         });
-      } finally { socket.close(); }
+      } finally {
+        if (!synchronous) try {
+          await new Promise((done) => {
+            const timer = setTimeout(done, 1000);
+            socket.addEventListener('message', ({ data }) => { const m = JSON.parse(data); if (m.id === 2) { clearTimeout(timer); done(); } });
+            socket.send(JSON.stringify({ id: 2, method: 'Runtime.evaluate', params: { expression: `(() => { const key = Symbol.for('willyou.test.main-evaluation'), pending = globalThis[key]; pending?.delete(${JSON.stringify(evaluationKey)}); if (pending?.size === 0) delete globalThis[key]; return true; })()`, returnByValue: true } }));
+          });
+        } catch { /* A terminated own main has already released its heap. */ }
+        socket.close();
+      }
     };
     return {
       cdp, evaluate, mainEvaluate, waitFor, invoke, rendererErrors,
+      onCDP: (method, listener) => {
+        const listeners = cdpListeners.get(method) ?? new Set();
+        listeners.add(listener); cdpListeners.set(method, listeners);
+        return () => { listeners.delete(listener); if (!listeners.size) cdpListeners.delete(method); };
+      },
+      processId: child.pid,
+      waitForExit: (timeoutMs = 15_000) => new Promise((resolve, reject) => {
+        const result = () => ({ pid: child.pid, code: child.exitCode, signal: child.signalCode });
+        if (child.exitCode !== null || child.signalCode !== null) { resolve(result()); return; }
+        const onExit = () => { clearTimeout(timer); resolve(result()); };
+        const timer = setTimeout(() => { child.off('exit', onExit); reject(new Error('Isolated App did not finish its normal exit')); }, timeoutMs);
+        child.once('exit', onExit);
+      }),
+      crash: async () => {
+        assert(child.exitCode === null && child.signalCode === null, 'Test App is already stopped');
+        const exited = new Promise(resolve => child.once('exit', (code, signal) => resolve({ pid: child.pid, code, signal })));
+        assert(child.kill('SIGKILL'), 'Could not stop this isolated test App');
+        return await Promise.race([exited, pause(3000).then(() => { throw new Error('Test App crash did not finish'); })]);
+      },
       output: (ptyId) => evaluate(`window.__m5.output[${JSON.stringify(ptyId)}] || ''`),
       input: (ptyId, data) => evaluate(`window.electronAPI.eventSend('pty:input', ${JSON.stringify({ ptyId, data })})`),
       screenshot: async (path) => { const { data } = await cdp('Page.captureScreenshot', { format: 'png' }); await writeFile(path, Buffer.from(data, 'base64'), { mode: 0o600 }); },
@@ -99,11 +151,12 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
       close: async () => {
         for (const item of pending.values()) { clearTimeout(item.timer); item.reject(new Error('Electron test closed')); }
         pending.clear(); ws.close();
-        if (child.exitCode === null) {
+        cdpListeners.clear();
+        if (child.exitCode === null && child.signalCode === null) {
           const done = new Promise((r) => child.once('exit', r));
           child.kill('SIGTERM');
           await Promise.race([done, pause(3000)]);
-          if (child.exitCode === null) child.kill('SIGKILL');
+          if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
         }
       },
     };

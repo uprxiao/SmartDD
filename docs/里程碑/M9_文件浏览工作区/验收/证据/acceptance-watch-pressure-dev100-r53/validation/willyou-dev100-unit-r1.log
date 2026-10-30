@@ -1,0 +1,55 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/watch-pressure-unit.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev100-unit-r1.json
+
+[1019/041823.664573:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/041823.963649:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/watch-pressure-unit.test.ts (3 tests | 2 failed) 8ms
+     ✓ L05 coalesces ten thousand invalidation hints into one bounded fresh snapshot and declares resync 3ms
+     × L08 advertises polling after a callback error, preserves snapshot truth and retries native only after backoff 3ms
+     × L08 a fresh store ignores old lease/watch delivery but accepts a genuine current membership refresh 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/watch-pressure-unit.test.ts > L05/L08 invalidation pressure and reconnect guards > L08 advertises polling after a callback error, preserves snapshot truth and retries native only after backoff
+AssertionError: expected [ [Function] ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ src/renderer/features/files/watch-pressure-unit.test.ts:38:142
+     36|     expect(f.updates.at(-1)).toMatchObject({ coverage: 'poll', resyncR…
+     37|     await vi.advanceTimersByTimeAsync(0); expect(f.updates.some(update…
+     38|     await vi.advanceTimersByTimeAsync(29999); expect(f.callbacks).toHa…
+       |                                                                                                                                              ^
+     39|     expect(f.updates.some(update => update.coverage === 'native' && up…
+     40|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/files/watch-pressure-unit.test.ts > L05/L08 invalidation pressure and reconnect guards > L08 a fresh store ignores old lease/watch delivery but accepts a genuine current membership refresh
+AssertionError: expected 2 to be greater than 2
+ ❯ src/renderer/features/files/watch-pressure-unit.test.ts:48:40
+     46|     expect(api.list).toHaveBeenCalledTimes(before); expect(store.watch…
+     47|     for (const fn of listeners) fn({ id, lease: root.lease, generation…
+     48|     expect(api.list.mock.calls.length).toBeGreaterThan(before); leave(…
+       |                                        ^
+     49|   });
+     50| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  04:18:23
+   Duration  255ms (transform 98ms, setup 0ms, import 175ms, tests 8ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-dev100-unit-r1.json
+ ELIFECYCLE  Test failed. See above for more details.

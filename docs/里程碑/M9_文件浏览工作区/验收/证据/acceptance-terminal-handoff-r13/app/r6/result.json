@@ -1,0 +1,214 @@
+{
+  "startedAt": "2026-10-18T06:26:48.834Z",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r13-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "b44a3ac8385aa5d78c43be3d3b34506e2ae76a88d30dbac54efc485d0cd41be9",
+  "brokerSha256": "81205d4eb75670835a23652a936a3cdd07fcf3e8e8d2f65eb7afa2c546af4676",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-terminal-handoff-ui-0t0W08",
+  "projectPath": "/private/tmp/willyou-terminal-handoff-ui-0t0W08/project",
+  "before": {
+    "context.ts": {
+      "hash": "461c1c9be3680949265998dc98fbbb6e267081d9ed9d4fc42dfad613c5e754da",
+      "inode": "45253581",
+      "size": "75",
+      "mtimeNs": "1792304808833701801",
+      "ctimeNs": "1792304808833701801"
+    },
+    "notes.md": {
+      "hash": "fd980f1f5cc8670f71e1fc4b3d249172a7e5939b5135862b80c790abbadf41fc",
+      "inode": "45253582",
+      "size": "52",
+      "mtimeNs": "1792304808833894717",
+      "ctimeNs": "1792304808833894717"
+    },
+    "A.txt": {
+      "hash": "cb24d7948e326ac3ce4d57a6cdf73ebc767f75009800dff143c708f732179c5c",
+      "inode": "45253583",
+      "size": "15",
+      "mtimeNs": "1792304808834028592",
+      "ctimeNs": "1792304808834028592"
+    },
+    "B.txt": {
+      "hash": "e4b4739ba58ec982682cc4c6a8d878b21179a4caf09cfe1911e5346ca90ba7eb",
+      "inode": "45253584",
+      "size": "15",
+      "mtimeNs": "1792304808834143758",
+      "ctimeNs": "1792304808834143758"
+    },
+    "C.txt": {
+      "hash": "45aab5d3578c3aa65377b82ac237ed59f73744ea7c22e64c9b8012c4aa6fb76a",
+      "inode": "45253585",
+      "size": "15",
+      "mtimeNs": "1792304808834247466",
+      "ctimeNs": "1792304808834247466"
+    },
+    "路径 中文 空格🙂'\"();`$().txt": {
+      "hash": "78dca83b474031b968b3378a8ef641aa7555e4a0ce0eb2620e32cef55bf0a6c4",
+      "inode": "45253586",
+      "size": "30",
+      "mtimeNs": "1792304808834352507",
+      "ctimeNs": "1792304808834352507"
+    }
+  },
+  "status": "passed",
+  "checks": [
+    {
+      "caseId": "M9-T-E12",
+      "path": "context.ts",
+      "selectedText": "const greeting = \"中文🙂 selected\";",
+      "instructionCancelLeavesNoReference": true,
+      "noTerminalExplained": true,
+      "insertionDisabled": true,
+      "previewAndRemoveWithoutTaskOrDiskWrite": true
+    },
+    {
+      "caseId": "M9-T-E12",
+      "path": "notes.md",
+      "selectedText": "Selected 中文🙂 markdown",
+      "instructionCancelLeavesNoReference": true,
+      "noTerminalExplained": true,
+      "insertionDisabled": true,
+      "previewAndRemoveWithoutTaskOrDiskWrite": true
+    },
+    {
+      "caseId": "M9-T-E16",
+      "branch": "tree reference preview and clear",
+      "receiverBytesUnchanged": true
+    },
+    {
+      "caseIds": [
+        "M9-T-E12",
+        "M9-T-E16"
+      ],
+      "defect": "M9-DEV-050",
+      "branch": "captured selection survives menu/dialog focus; explicit instruction handoff",
+      "preview": "context.ts:L2\n> Explain this greeting.\n    const greeting = \"中文🙂 selected\";",
+      "receiver": {
+        "pid": 81631,
+        "heartbeat": 8,
+        "at": 1792304811.735681,
+        "bytes": 101,
+        "text": "prefix context.ts:L2\r> Explain this greeting.\r    const greeting = \"中文🙂 selected\";",
+        "rawHex": "707265666978201b5b3230307e636f6e746578742e74733a4c320d3e204578706c61696e2074686973206772656574696e672e0d20202020636f6e7374206772656574696e67203d2022e4b8ade69687f09f99822073656c6563746564223b1b5b3230317e",
+        "unbracketedNewlines": 0,
+        "inputOnly": true,
+        "executedCommands": 0,
+        "bracketedMode": true
+      }
+    },
+    {
+      "caseId": "M9-T-E16",
+      "branch": "Markdown selection handoff",
+      "preview": "notes.md:L2\n    Selected 中文🙂 markdown",
+      "receiver": {
+        "pid": 81631,
+        "heartbeat": 12,
+        "at": 1792304812.127906,
+        "bytes": 157,
+        "text": "prefix context.ts:L2\r> Explain this greeting.\r    const greeting = \"中文🙂 selected\";notes.md:L2\r    Selected 中文🙂 markdown",
+        "rawHex": "707265666978201b5b3230307e636f6e746578742e74733a4c320d3e204578706c61696e2074686973206772656574696e672e0d20202020636f6e7374206772656574696e67203d2022e4b8ade69687f09f99822073656c6563746564223b1b5b3230317e1b5b3230307e6e6f7465732e6d643a4c320d2020202053656c656374656420e4b8ade69687f09f9982206d61726b646f776e1b5b3230317e",
+        "unbracketedNewlines": 0,
+        "inputOnly": true,
+        "executedCommands": 0,
+        "bracketedMode": true
+      }
+    },
+    {
+      "caseId": "M9-T-E16",
+      "branch": "literal Unicode/metacharacter file reference",
+      "preview": "路径 中文 空格🙂'\"();`$().txt",
+      "receiver": {
+        "pid": 81631,
+        "heartbeat": 15,
+        "at": 1792304812.385993,
+        "bytes": 206,
+        "text": "prefix context.ts:L2\r> Explain this greeting.\r    const greeting = \"中文🙂 selected\";notes.md:L2\r    Selected 中文🙂 markdown路径 中文 空格🙂'\"();`$().txt",
+        "rawHex": "707265666978201b5b3230307e636f6e746578742e74733a4c320d3e204578706c61696e2074686973206772656574696e672e0d20202020636f6e7374206772656574696e67203d2022e4b8ade69687f09f99822073656c6563746564223b1b5b3230317e1b5b3230307e6e6f7465732e6d643a4c320d2020202053656c656374656420e4b8ade69687f09f9982206d61726b646f776e1b5b3230317e1b5b3230307ee8b7afe5be8420e4b8ade6968720e7a9bae6a0bcf09f9982272228293b602428292e7478741b5b3230317e",
+        "unbracketedNewlines": 0,
+        "inputOnly": true,
+        "executedCommands": 0,
+        "bracketedMode": true
+      }
+    },
+    {
+      "caseId": "M9-T-D08",
+      "active": "B.txt",
+      "closed": "C.txt",
+      "editorFocusPreserved": true,
+      "typingWithoutRefocusReachedB": true,
+      "undoRestoredOriginal": true,
+      "ptyIdUnchanged": true,
+      "heartbeatBefore": 18,
+      "heartbeatAfter": 20,
+      "terminalBytesUnchanged": true
+    }
+  ],
+  "input": "Actual packaged renderer CDP pointer/keyboard input. Public IPC seeds/tears down an isolated project/task only; tested file/reference/dialog/terminal interactions use the real UI. Receiver is input-only, not a real model/CLI acceptance claim.",
+  "projectId": "a3a352b1-b526-43d0-a487-4c2964d5cca0",
+  "task": {
+    "id": "8da29364-0ef6-402d-b69e-a1337b5e52af",
+    "ptyId": "49ae323d-b61d-4665-a8f3-bf8aecc2c9e6",
+    "receiver": "scripts/files/context-receiver.py"
+  },
+  "finalReceiver": {
+    "pid": 81631,
+    "heartbeat": 21,
+    "at": 1792304813.0220642,
+    "bytes": 218,
+    "text": "prefix context.ts:L2\r> Explain this greeting.\r    const greeting = \"中文🙂 selected\";notes.md:L2\r    Selected 中文🙂 markdown路径 中文 空格🙂'\"();`$().txt still-alive",
+    "rawHex": "707265666978201b5b3230307e636f6e746578742e74733a4c320d3e204578706c61696e2074686973206772656574696e672e0d20202020636f6e7374206772656574696e67203d2022e4b8ade69687f09f99822073656c6563746564223b1b5b3230317e1b5b3230307e6e6f7465732e6d643a4c320d2020202053656c656374656420e4b8ade69687f09f9982206d61726b646f776e1b5b3230317e1b5b3230307ee8b7afe5be8420e4b8ade6968720e7a9bae6a0bcf09f9982272228293b602428292e7478741b5b3230317e207374696c6c2d616c697665",
+    "unbracketedNewlines": 0,
+    "inputOnly": true,
+    "executedCommands": 0,
+    "bracketedMode": true
+  },
+  "after": {
+    "context.ts": {
+      "hash": "461c1c9be3680949265998dc98fbbb6e267081d9ed9d4fc42dfad613c5e754da",
+      "inode": "45253581",
+      "size": "75",
+      "mtimeNs": "1792304808833701801",
+      "ctimeNs": "1792304808833701801"
+    },
+    "notes.md": {
+      "hash": "fd980f1f5cc8670f71e1fc4b3d249172a7e5939b5135862b80c790abbadf41fc",
+      "inode": "45253582",
+      "size": "52",
+      "mtimeNs": "1792304808833894717",
+      "ctimeNs": "1792304808833894717"
+    },
+    "A.txt": {
+      "hash": "cb24d7948e326ac3ce4d57a6cdf73ebc767f75009800dff143c708f732179c5c",
+      "inode": "45253583",
+      "size": "15",
+      "mtimeNs": "1792304808834028592",
+      "ctimeNs": "1792304808834028592"
+    },
+    "B.txt": {
+      "hash": "e4b4739ba58ec982682cc4c6a8d878b21179a4caf09cfe1911e5346ca90ba7eb",
+      "inode": "45253584",
+      "size": "15",
+      "mtimeNs": "1792304808834143758",
+      "ctimeNs": "1792304808834143758"
+    },
+    "C.txt": {
+      "hash": "45aab5d3578c3aa65377b82ac237ed59f73744ea7c22e64c9b8012c4aa6fb76a",
+      "inode": "45253585",
+      "size": "15",
+      "mtimeNs": "1792304808834247466",
+      "ctimeNs": "1792304808834247466"
+    },
+    "路径 中文 空格🙂'\"();`$().txt": {
+      "hash": "78dca83b474031b968b3378a8ef641aa7555e4a0ce0eb2620e32cef55bf0a6c4",
+      "inode": "45253586",
+      "size": "30",
+      "mtimeNs": "1792304808834352507",
+      "ctimeNs": "1792304808834352507"
+    }
+  },
+  "finishedAt": "2026-10-18T06:26:53.201Z"
+}

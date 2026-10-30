@@ -1,0 +1,201 @@
+{
+  "caseIds": [
+    "M9-T-F14",
+    "M9-T-F15"
+  ],
+  "at": "2026-10-18T08:26:55.640Z",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r19-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "29734a400ef7b0aec2f234e77f83a9feef27baf23fb8cbbaa3fc7a8695074ecb",
+  "projectPath": "/private/tmp/willyou-pdf-formats-8fihi0tn/project",
+  "before": {
+    "normal.pdf": {
+      "sha256": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+      "inode": "45527329",
+      "mtimeNs": "1792311883585283828",
+      "ctimeNs": "1792311883585283828"
+    },
+    "encrypted.pdf": {
+      "sha256": "c412661ad81258c5110672fe6d2f5be6ab780c22cf58aef95e1abb3e9daef73b",
+      "inode": "45527330",
+      "mtimeNs": "1792311883585391620",
+      "ctimeNs": "1792311883585391620"
+    },
+    "garbage.pdf": {
+      "sha256": "de7ef6753f04ce592af55b7c15e1f03cf28d454d4e82a3b7537a9b3d13eeeaac",
+      "inode": "45527331",
+      "mtimeNs": "1792311883585459703",
+      "ctimeNs": "1792311883585459703"
+    },
+    "truncated.pdf": {
+      "sha256": "9ffb22240a4a4f96e9850b632d5186c36723d473e5beca98a0c7245622ea8ee4",
+      "inode": "45527332",
+      "mtimeNs": "1792311883585552287",
+      "ctimeNs": "1792311883585552287"
+    },
+    "invalid.pdf": {
+      "sha256": "c6b7375f3b4a2cffb0025329ca4cd63f5f303fcd0fd32668a5b6ce2c62335d55",
+      "inode": "45527333",
+      "mtimeNs": "1792311883585631829",
+      "ctimeNs": "1792311883585631829"
+    },
+    "cjk-missing-font.pdf": {
+      "sha256": "f207815b5822d29cf7bbfd1d2f3259c9e168f8514844090f33afe56e03eca920",
+      "inode": "45527334",
+      "mtimeNs": "1792311883585714871",
+      "ctimeNs": "1792311883585714871"
+    },
+    "rotated.pdf": {
+      "sha256": "ff2afde88842a2ac022a38b49e2a390706c78915e65505a613459e7e184c4568",
+      "inode": "45527335",
+      "mtimeNs": "1792311883585775580",
+      "ctimeNs": "1792311883585775580"
+    },
+    "forms.pdf": {
+      "sha256": "d7d27b05a1847382e5464caf24f93e6ef11772220d9ff4529d82151d972f7919",
+      "inode": "45527336",
+      "mtimeNs": "1792311883585845496",
+      "ctimeNs": "1792311883585845496"
+    },
+    "scripts.pdf": {
+      "sha256": "ea2eaa95c2c64519c59e0585282ba7966aa3932499e5d9f98741daa578cc85e3",
+      "inode": "45527337",
+      "mtimeNs": "1792311883585928288",
+      "ctimeNs": "1792311883585928288"
+    },
+    "missing-mixed-fonts.pdf": {
+      "sha256": "48d5d9c8632b5572e66490b8f8423abfd5771a4304c3a1e57a3c43310f85673d",
+      "inode": "45527338",
+      "mtimeNs": "1792311883587114001",
+      "ctimeNs": "1792311883587114001"
+    }
+  },
+  "checks": [
+    {
+      "file": "encrypted.pdf",
+      "kind": "password",
+      "missingPassword": true,
+      "cancel": "已取消输入密码。需要密码才能打开此 PDF。重试",
+      "wrongPassword": true,
+      "render": {
+        "canvas": [
+          285,
+          369
+        ],
+        "inkPixels": 2335,
+        "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "garbage.pdf",
+      "kind": "invalid",
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试"
+    },
+    {
+      "file": "truncated.pdf",
+      "kind": "invalid",
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试"
+    },
+    {
+      "file": "invalid.pdf",
+      "kind": "invalid",
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试"
+    },
+    {
+      "file": "cjk-missing-font.pdf",
+      "kind": "cjk",
+      "render": {
+        "canvas": [
+          309,
+          437
+        ],
+        "inkPixels": 456,
+        "text": "文件工作区 中文测试",
+        "fonts": [
+          "monospace"
+        ]
+      }
+    },
+    {
+      "file": "rotated.pdf",
+      "kind": "rotated",
+      "render": {
+        "canvas": [
+          316,
+          244
+        ],
+        "inkPixels": 476,
+        "text": "WillYou complex PDF fixture",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "forms.pdf",
+      "kind": "forms",
+      "render": {
+        "canvas": [
+          310,
+          401
+        ],
+        "inkPixels": 936,
+        "text": "WillYou complex PDF fixture",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "scripts.pdf",
+      "kind": "scripts",
+      "render": {
+        "canvas": [
+          310,
+          401
+        ],
+        "inkPixels": 724,
+        "text": "WillYou complex PDF fixture",
+        "fonts": [
+          "sans-serif"
+        ]
+      }
+    },
+    {
+      "file": "missing-mixed-fonts.pdf",
+      "kind": "missing-mixed",
+      "render": {
+        "canvas": [
+          309,
+          437
+        ],
+        "inkPixels": 17472,
+        "text": "文件工作区 缺失字体混排验收WillYou MISSING_FONT Latin 12345不同字号与中文回退",
+        "fonts": [
+          "monospace",
+          "serif"
+        ]
+      },
+      "fontBoundary": "Font substitution is measured on this Mac only; no signature/form editing or cross-platform glyph-equivalence claim."
+    }
+  ],
+  "caseResults": {
+    "F15": "passed"
+  },
+  "status": "failed",
+  "navigation": {
+    "page": "第 3 / 3 页",
+    "zoom": "150% ",
+    "selectedText": "文件浏览工作区"
+  },
+  "restored": {
+    "page": "第 1 / 3 页",
+    "zoom": "35% "
+  },
+  "error": "AssertionError [ERR_ASSERTION]: Closed PDF page position was lost",
+  "failedStage": "normal-restore",
+  "failureDom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nPDF native viewer acceptance\n设置\n首页\n›\nPDF native viewer acceptance\n文件\nPDF native viewer acceptance\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nPDF native viewer acceptance\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/18/2026, 4:26:56 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nnormal.pdf\nSynthetic static viewers\n›\nnormal.pdf\n打开\n35%\n1\n2\n3\n文件浏览工作区\n \nOverview\n\n\n项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与\n\n\nEnglish mixed text 12345\n。\n\n\nPAGE_ONE_MARKER\n \n第一页的结尾，下一页开始是交互。\n交互与状态\n\n\nPAGE_TWO_MARKER\n \n单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付\n\n\nPAGE_THREE_MARKER\n \n全部用例通过才算开发完成。\n\n第 1 / 3 页\n\nproject\ncjk-missing-font.pdf\nencrypted.pdf\nforms.pdf\ngarbage.pdf\ninvalid.pdf\nmissing-mixed-fonts.pdf\nnormal.pdf\nrotated.pdf\nscripts.pdf\ntruncated.pdf\n55.2 KiB\n刷新文件和目录\n查看变化文件\n另存副本…\n在 Finder 中显示\n复制完整路径\n复制相对路径\n固定标签\n语言服务设置…\n自动选择查看器\n内置文件查看器\n管理扩展文件查看器…\n重新打开关闭的文件\n隐藏目录树",
+  "finishedAt": "2026-10-18T08:26:59.553Z"
+}

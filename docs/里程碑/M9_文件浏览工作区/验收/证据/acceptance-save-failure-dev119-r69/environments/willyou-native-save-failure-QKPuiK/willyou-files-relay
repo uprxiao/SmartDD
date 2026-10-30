@@ -1,0 +1,24 @@
+#!/usr/bin/python3
+import hashlib,json,os,resource,signal,subprocess,sys,time
+payload=sys.stdin.buffer.read()
+request=json.loads(payload)
+fault=open("/private/tmp/willyou-native-save-failure-QKPuiK/fault-mode").read().strip()=='generic' and request.get('operation')=='save'
+def limit():
+ signal.signal(signal.SIGXFSZ,signal.SIG_IGN)
+ resource.setrlimit(resource.RLIMIT_FSIZE,(4096,4096))
+p=subprocess.Popen(["/private/tmp/willyou-native-save-failure-QKPuiK/original-willyou-files"]+sys.argv[1:],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=sys.stderr.buffer,preexec_fn=limit if fault else None)
+p.stdin.write(payload);p.stdin.close()
+frames=[]
+for line in p.stdout:
+ sys.stdout.buffer.write(line);sys.stdout.buffer.flush()
+ frame={'sha256':hashlib.sha256(line).hexdigest(),'bytes':len(line)}
+ try:
+  value=json.loads(line)
+  if 'error' in value:frame['nativeError']=value['error']
+  if isinstance(value.get('result'),dict) and 'state' in value['result']:frame['nativeReceipt']={k:value['result'][k] for k in ['state','message','opId','recoveryId'] if k in value['result']}
+ except Exception:pass
+ frames.append(frame)
+code=p.wait()
+with open("/private/tmp/willyou-native-save-failure-QKPuiK/native-relay.jsonl",'a') as log:
+ log.write(json.dumps({'at':time.time(),'operation':request.get('operation'),'relativePath':request.get('relativePath'),'requestSha256':hashlib.sha256(payload).hexdigest(),'saveFsizeLimit':4096 if fault else None,'nativeExit':code,'frames':frames})+'\n')
+sys.exit(code)

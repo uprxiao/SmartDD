@@ -1,0 +1,23 @@
+{
+  "id": "M9-DEV085-TERMINAL-LAYOUT-E1",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "frozenAt": "2026-10-18T15:21:33.182667+00:00",
+  "caseIds": [
+    "M9-T-P03",
+    "M9-T-P04",
+    "M9-T-P07"
+  ],
+  "minDragDurationMs": 5000,
+  "minPointerMoves": 120,
+  "maxAdjacentDuplicateSizes": 0,
+  "maxResizeCountOverObservedFrames": 2,
+  "mainHeartbeatIntervalMs": 25,
+  "maxMainEventLoopLagMs": 250,
+  "minMainHeartbeatSamples": 100,
+  "basis": [
+    "P04 requires five actual seconds of dragging, frame coalescing, unchanged-size suppression, correct final geometry and no sustained main-process blocking.",
+    "Duplicate size suppression and nonzero dimensions are direct behavioral requirements. Frame count is an aggregate App bound with two boundary messages; exact coalescing is additionally verified with a deterministic scheduler, not inferred from aggregate timing alone.",
+    "250ms maximum event-loop lag and 100 samples at 25ms are pre-execution engineering gates for this local fixture, not observed Codex performance or a general all-device SLA. No minimum display refresh rate is invented."
+  ],
+  "changePolicy": "Preserve E1 and failures. Do not loosen a gate to count the current execution as passed."
+}

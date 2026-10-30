@@ -1,0 +1,39 @@
+import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {mkdirSync,mkdtempSync,readFileSync,renameSync,rmSync,writeFileSync} from 'node:fs';
+import {join} from 'node:path';
+import type {AsyncSubscription,SubscribeCallback} from '@parcel/watcher';
+import {afterAll,afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+import type {FileWatchUpdate} from '@shared/files';
+import {NativeFileBroker} from './native-broker';
+import {FileRootsService} from './roots';
+import {FileRecoveryStore} from './recovery-store';
+import {FileService} from './file-service';
+const bridge=vi.hoisted(()=>({subscribe:null as null|((path:string,callback:SubscribeCallback)=>Promise<AsyncSubscription>)}));
+vi.mock('@parcel/watcher',()=>({subscribe:(path:string,callback:SubscribeCallback)=>bridge.subscribe!(path,callback)}));
+const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
+const evidence:{at:string;runs:unknown[];resources?:unknown}={at:new Date().toISOString(),runs:[]};
+const until=async(fn:()=>boolean)=>{const end=Date.now()+7000;while(!fn()){if(Date.now()>end)throw Error('Original native watcher did not settle');await new Promise(r=>setTimeout(r,10))}};
+describe.skipIf(process.platform!=='darwin'||!process.env.SMARTDD_WATCH_LIFECYCLE_APP)('L01/L02/L07 real shared watcher, delayed subscribe and initial snapshot',()=>{
+ let base:string,root:string,broker:NativeFileBroker,service:FileService,nativeSubscribe:(p:string,c:SubscribeCallback,o:{backend:'fs-events'})=>Promise<AsyncSubscription>,started:number,stopped:number,release:(()=>void)|undefined,osEvents:unknown[];
+ const zero={roots:0,consumers:0,timers:0,stopping:0};
+ beforeEach(()=>{
+  const resources=join(process.env.SMARTDD_WATCH_LIFECYCLE_APP!,'Contents/Resources'),require=createRequire(join(resources,'app.asar/package.json')),originalFs=require('original-fs')as typeof import('node:fs');nativeSubscribe=require('@parcel/watcher').subscribe;
+  evidence.resources={app:process.env.SMARTDD_WATCH_LIFECYCLE_APP,asarSha256:sha(originalFs.readFileSync(join(resources,'app.asar'))),brokerSha256:sha(readFileSync(join(resources,'native/willyou-files'))),watcherBindings:Object.keys(require.cache).filter(p=>p.includes('watcher')&&p.endsWith('.node')).map(p=>({path:p,sha256:sha(readFileSync(p))}))};
+  base=mkdtempSync('/private/tmp/willyou-watch-lifecycle-native-');root=join(base,'project');mkdirSync(root);mkdirSync(join(base,'userdata'));writeFileSync(join(root,'a.txt'),'BASE\n');writeFileSync(join(root,'sentinel.txt'),'UNCHANGED\n');broker=new NativeFileBroker(join(resources,'native/willyou-files'));const resolver={sources:()=>[{kind:'project-directory'as const,id:'root',path:root,label:'Own native watch source',projectId:'watch'}]};service=new FileService(new FileRootsService(resolver,broker),broker,new FileRecoveryStore(broker,join(base,'userdata'),resolver));started=stopped=0;osEvents=[];release=undefined;bridge.subscribe=connect;
+ });
+ async function connect(path:string,callback:SubscribeCallback){started++;const sub=await nativeSubscribe(path,(error,events)=>{osEvents.push({error:error?.message,events});callback(error,events)},{backend:'fs-events'});return{unsubscribe:async()=>{stopped++;await sub.unsubscribe()}}}
+ async function source(owner:string){const scope=await service.openScope(owner,{kind:'project',projectId:'watch'}),root=scope.roots[0],doc=await service.open(owner,{lease:root.lease,generation:root.generation,relativePath:'a.txt'});return{root,doc}}
+ afterEach(async()=>{release?.();await service?.watcher.dispose();service?.closeOwner('one');service?.closeOwner('two');await until(()=>!broker.activeProcesses);broker.dispose();expect(readFileSync(join(root,'sentinel.txt'),'utf8')).toBe('UNCHANGED\n');rmSync(base,{recursive:true,force:true})});
+ it('L01 two owners share one actual OS subscription and either consumer can leave without stopping the survivor',async()=>{
+  const one=await source('one'),two=await source('two'),a:FileWatchUpdate[]=[],b:FileWatchUpdate[]=[];const wa=await service.watch('one',one.root,[''],[one.doc.ref],u=>a.push(u)),wb=await service.watch('two',two.root,[''],[two.doc.ref],u=>b.push(u));await until(()=>a.some(x=>x.coverage==='native'&&!x.resyncRequired)&&b.some(x=>x.coverage==='native'&&!x.resyncRequired));expect(started).toBe(1);expect(service.watcher.resourceCounts).toMatchObject({roots:1,consumers:2});
+  writeFileSync(join(root,'.replacement'),'REPLACEMENT\n');renameSync(join(root,'.replacement'),join(root,'a.txt'));await until(()=>a.some(x=>x.changed)&&b.some(x=>x.changed));service.watcher.stop('one',wa!.id);const marker=b.length,old=a.length;writeFileSync(join(root,'a.txt'),'SURVIVOR\n');await until(()=>b.slice(marker).some(x=>x.changed));expect(a).toHaveLength(old);expect(stopped).toBe(0);expect(b.every(x=>x.id===wb!.id&&x.lease===two.root.lease)).toBe(true);service.watcher.stop('two',wb!.id);service.watcher.stop('two',wb!.id);await service.watcher.dispose();expect(stopped).toBe(1);expect(service.watcher.resourceCounts).toEqual(zero);evidence.runs.push({caseId:'M9-T-L01',started,stopped,a,b,osEvents,finalResources:service.watcher.resourceCounts});
+ });
+ it('L02 a real subscribe success created after consumer stop is immediately unsubscribed exactly once',async()=>{
+  const one=await source('one'),updates:FileWatchUpdate[]=[];bridge.subscribe=async(p,c)=>{await new Promise<void>(done=>release=done);return connect(p,c)};const watch=await service.watch('one',one.root,[''],[one.doc.ref],u=>updates.push(u));expect(started).toBe(0);service.watcher.stop('one',watch!.id);service.watcher.stop('one',watch!.id);const before=updates.length;release!();await service.watcher.dispose();expect(started).toBe(1);expect(stopped).toBe(1);expect(updates).toHaveLength(before);expect(service.watcher.resourceCounts).toEqual(zero);evidence.runs.push({caseId:'M9-T-L02',started,stopped,updates,finalResources:service.watcher.resourceCounts,boundary:'Native subscribe execution delayed before original API call; real subscription success and unsubscribe execute after consumer close, no fake subscription.'});
+ });
+ it('L07 changes after the initial list/stat snapshot and before OS registration are caught by the ready rescan',async()=>{
+  const one=await source('one'),updates:FileWatchUpdate[]=[];bridge.subscribe=async(p,c)=>{await new Promise<void>(done=>release=done);return connect(p,c)};const watch=await service.watch('one',one.root,[''],[one.doc.ref],u=>updates.push(u));await until(()=>updates.some(x=>x.coverage==='none'&&!x.resyncRequired));expect(started).toBe(0);const initial=structuredClone(updates);expect(readFileSync(join(root,'a.txt'),'utf8')).toBe('BASE\n');writeFileSync(join(root,'a.txt'),'CHANGED BEFORE NATIVE SUBSCRIBE\n');writeFileSync(join(root,'fresh.txt'),'FRESH BEFORE NATIVE SUBSCRIBE\n');release!();await until(()=>updates.some(x=>x.coverage==='native'&&x.changed&&!x.resyncRequired));expect(started).toBe(1);expect(updates.some(x=>x.coverage==='native'&&x.resyncRequired)).toBe(true);const listed=await service.list('one',{lease:one.root.lease,generation:one.root.generation,relativePath:''});expect(listed.map(x=>x.name)).toContain('fresh.txt');expect(readFileSync(join(root,'a.txt'),'utf8')).toBe('CHANGED BEFORE NATIVE SUBSCRIBE\n');service.watcher.stop('one',watch!.id);await service.watcher.dispose();expect(service.watcher.resourceCounts).toEqual(zero);evidence.runs.push({caseId:'M9-T-L07',initial,updates,started,stopped,listed,osEvents,finalResources:service.watcher.resourceCounts,boundary:'Original OS registration intentionally occurs after real list/stat baseline and file mutation; ready resync, not an invented watch event, recovers final state.'});
+ });
+});
+afterAll(()=>{if(process.env.SMARTDD_WATCH_LIFECYCLE_EVIDENCE)writeFileSync(process.env.SMARTDD_WATCH_LIFECYCLE_EVIDENCE,JSON.stringify({...evidence,finishedAt:new Date().toISOString()},null,2)+'\n')});

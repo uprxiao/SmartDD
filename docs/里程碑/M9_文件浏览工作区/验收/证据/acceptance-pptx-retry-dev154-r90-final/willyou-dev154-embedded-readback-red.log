@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/private/tmp/willyou-dev154-embedded-readback-first.py", line 21, in <module>
+    workbook='xl/workbook.xml';sheet=next(n for n in E.fromstring(w.read(workbook)).findall('x:sheets/x:sheet',ns)if n.attrib['name']==match[1].strip("'"));part=relation(w,workbook,sheet.attrib[rid]);cells={n.attrib['r']:n.find('x:v',ns).text for n in E.fromstring(w.read(part)).findall('.//x:sheetData/x:row/x:c',ns)if n.find('x:v',ns)is not None};values=[cells[a]for a in addresses]
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/zipfile.py", line 1463, in read
+    with self.open(name, "r", pwd) as fp:
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/zipfile.py", line 1502, in open
+    zinfo = self.getinfo(name)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/zipfile.py", line 1429, in getinfo
+    raise KeyError(
+KeyError: "There is no item named 'xl/xl/worksheets/sheet1.xml' in the archive"

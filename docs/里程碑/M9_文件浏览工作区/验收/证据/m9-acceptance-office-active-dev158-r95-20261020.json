@@ -1,0 +1,1018 @@
+{
+  "at": "2026-10-19T18:32:51.974133+00:00",
+  "localDate": "2026-10-20",
+  "caseId": "M9-T-W28",
+  "status": "passed I/A with related U regression",
+  "revision": "R3.4/R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "electron": "42.11.14"
+  },
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r95-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "e45afd09753971d5b60ee9a6a3b2b345892f11095e7e83907e1d0c377b0edebb",
+    "brokerSha256": "803d456fd8b8853dde15fef6b543126b995bf56505fba5e6e2e50fe0f73fe0bf",
+    "newBuild": true,
+    "installer": false,
+    "release": false
+  },
+  "sourceSnapshot": {
+    "at": "2026-10-19T18:27:49.836325+00:00",
+    "parent": "/private/tmp/willyou-dev157-source-delta.json",
+    "parentSha256": "859eb7d5483215596b82a536191755bcc7c71bbc0637de07fffe7d0ca9e01330",
+    "fileCount": 1340,
+    "changedParentFiles": {
+      "docs/真实App自动验收流程.md": "1b8d28909af50adf96b7bcb5456f67cd0c3c0227ae0e7c63903a508798b490aa",
+      "src/renderer/features/files/office/pptx-buffer.test.ts": "1b997d9415fe474b456db244d1b02410ec4c6df4946d1cf762f2d35344909688",
+      "src/renderer/features/files/office/pptx-buffer.ts": "c55c884bc7c58db45ef375168f13af4724f0608a671dfe31779cfd5c9d02dcd5"
+    },
+    "newFiles": {
+      "scripts/files/office-active-input-ui.mjs": "9f12fae086621981b671a04f9c1a451c0d1b13d015262f6b2af82d0238dea6c5",
+      "scripts/files/verify-office-active.py": "33c74e768226704cc7cf3c6690abcd823426c3168fa3b7f8c56ebef5cd37b670",
+      "scripts/files/write-office-active.py": "839ff7fbda0efdfe35d19b6f2e400c9baa33d42b1f5a16a3ce6f3cff2422c3e7",
+      "scripts/lib/office-active-observer.mjs": "0de6f33ccd879625d8d334f548828cbe08e1ceb0d479d4932b3e769ad5ffe771",
+      "src/renderer/features/files/office/active-input-native-acceptance.test.ts": "d62e15a65beda0219291b084fa7996a5822c6c5ba67e9cd38ce87775bd7aec8a"
+    },
+    "postBuildChanges": {},
+    "tar": "/private/tmp/willyou-dev158-source-delta.tar.gz",
+    "tarSha256": "5b0d46b0e8fbe85e041ef9425bc96b340c8f1acedaa11b80de735082f10d675e",
+    "fullPrebuild": "/private/tmp/willyou-dev158-r95-prebuild-source.tar.gz",
+    "fullPrebuildSha256": "5166a5fbf60e755550ea4af702a7dfa4e726c41203be7b0d4a94e8268e8f3251",
+    "boundary": "All1340 engineering inputs exactly match BEFORE r95 build, full snapshot independently extracted/hashed; 8-file delta from DEV157 includes PPT buffer production+5 race tests, common guide and five verification files. DEV159 private probes/evidence outside engineering inputs; not production changes. No release."
+  },
+  "results": {
+    "formalPassed": 267,
+    "formalTotal": 419,
+    "unexecuted": 149,
+    "blocked": 3,
+    "percentage": 63.72,
+    "appRemaining": 149,
+    "distinctCodeTests": 174,
+    "newCodeTests": 21,
+    "existingRegressionTests": 153,
+    "historicalProductionCodeTestUnion": 2319,
+    "nativeActiveInputScenarios": 16,
+    "appChecks": 32,
+    "originalPayloads": 562,
+    "originalErrors": 1,
+    "permissionFaults": 16,
+    "trustedFocusedHandledKeys": 46,
+    "passiveWatchFrames": 552,
+    "officeThreadsExited": 64,
+    "allOwnedAppRunsGone": 6,
+    "nativeSmokeChecks": 6,
+    "runtimeFilesVerified": 82,
+    "sourceRecoveryInputs": 1340,
+    "deltaFiles": 8
+  },
+  "defect": {
+    "id": "DEV158-OBS01",
+    "status": "fixed and r95 full matrix passed",
+    "fact": "PPT refresh formerly skipped busy/saving work. Actual source permission restore changed-watch arrived during checkpoint and no later stat was requested, leaving real UI readonly. Original close button/prompt worked; timeout stack was at restored-editability wait, corrected after passive click/watch analysis. Source bytes stayed exact original and durable latest input was retained. New refresh drains queued work before/after stat, coalesces refresh request, guards owner/version/baseHash and rescans changed owner/baseline, preserves unresolved conflict/raw edited-revert. Sole production file pptx-buffer.ts; 5 strict race tests all red before fix and pass after."
+  },
+  "coverage": {
+    "I": "Actual Store/FileBuffer/FileService/r95 packaged Worker/native16: four hosts x normal/write-failure/conflict/readonly. Real parent0555 IO denial, actual independent source change and source0444, pending/OOXML durable latest, explicit retry/keepLocal and source receipt/reopen. Public pauseAutosave isolates model path; actual two DOM input hosts separately covered in A. No fake native write success or model mutation. Cached genuine Office branch without I calculation engine recorded.",
+    "A": "Same final r95 package: notes-readonly2 + otherPPT14 + XLSX16 =32 unique light/dark x inline/formula/body/notes x normal/write-failure/conflict/readonly. Actual light MetaS/dark CtrlS with trusted focus/prevented capture; normal V1 saved then active V2 immediately titlebarclose, final file/reopen latest. Real IO/CAS conflict retains current dirty tab and durable latest checkpoint on refused close, Continue/faultclear/explicit refocused retry or KeepLocal then reopen exact latest. Source readonly naturalwatch, Save menu disabled, original key when existing host blocked without native save; body editor actually removed and recorded separately. Close protection and source bytes/draft retained, restoring mode naturally refreshes editable then explicit CAS-safe retry.",
+    "proof": "All original auth/input/results/errors unchanged and actual V8 decoded/digest verified. Initial independent source SHA equals actual open baseHash/sourceHash; final real native saved revision before client disposal equals independent sourcehash, two actual owner opens/closes per check. Unrelated OOXML parts/formats/merges/objects and exact latest target re-read independently, original formula cache/format normalizations inherited controlled reader boundaries. All permission modes restored, passive watch unchanged/released, original15handlers/Worker constructor restored, all ownedOffice threads exit, three final normal0/null; full6ownApp runs process disappearance separately. No fullvisual/system/nativepicker/IME/clipboard/otherplatform result.",
+    "Uregression": "174 distinct0skip allpass:111DEV157-related regression+24PPTbuffer+23PPTpreview+16newnativeActive. 21new=5raceU+16nativeI;153existing. Source/r95 runtime match final tests, typecheck/sixsmokes pass. Original stage scope unchanged."
+  },
+  "failureHistory": {
+    "r94first": "7 completed then formula readonly Save-menu assertion ran without visible menu readiness. Actual product menu state not captured at first query; add visible item and menu-close wait. Not a proven production defect or exact transient claim.",
+    "r94resume": "8 completed then notes readonly restored-editability timeout. Another focused readonly run repeated; passive trusted close clicks and prompt show close guard already correct; stack/watch order proves refresh defect.15old parameter successes retained as history, all32 final package rerun completed.",
+    "auditReader": "First independent V8 audit assumed sourceHash for both Office kinds; actual XLSX open returns hash and PPTX sourceHash. Preserved initial audit code/failure, selected original kind-specific field and retained exact source SHA comparison; final562 payloads passed without any production/App rerun or relaxed assertion.",
+    "profiling": "Read-only own Inspector showed most slow materialize wait before Worker dispatch; PptxDocument already caches materialization by version. Shared single heavy job queue with preview conversions explains waits; no production scheduling/cache/performance change made. Request overlap boundary retained in raw timing; do not attribute entire delay to Worker.",
+    "code": "5newU red on original19existingfiltered, final24PPTbuffer+16nativegreen and174selectedregressiongreen. All before sources and driver versions retained. No deadline relaxation, dropped branch or fabricated native success."
+  },
+  "remaining": "OnlyW28advances at this report after J02 completed separately.149unexecuted+3blockedT32/T34/Y29 remain; M9 incomplete, no mainmerge/push/tag/installer/release.",
+  "artifacts": {
+    "willyou-dev158-ack-r95-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-ack-r95-I.json",
+      "sha256": "3fdbce35f9e415b126b419b5cdc2b3518a8fdd445c22bac728bd4190c68fe6be",
+      "bytes": 1645
+    },
+    "willyou-dev158-cases-before.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-cases-before.json.gz",
+      "sha256": "ada983103512cef19c99134d7ade5546a1d77b15fbfd4a0c00a72ba844debb19",
+      "bytes": 198886,
+      "compression": "gzip",
+      "originalSha256": "63860acbef332f4b3703d93abd307451e15108dfd17e1f56a64037d58c611962",
+      "originalBytes": 1071224
+    },
+    "willyou-dev158-close-r95-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-close-r95-I.json",
+      "sha256": "37bd7eafd363bcd9e26095da90c597b30f9ef9f3cb76ca3d07c0f58b9e452e00",
+      "bytes": 9661
+    },
+    "willyou-dev158-code-r95-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-code-r95-final.json",
+      "sha256": "16d3b1db366f5cd21a1db341d9850b936f533fecd6c8245b4cc360918e66d120",
+      "bytes": 75581
+    },
+    "willyou-dev158-live-app.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-live-app.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "willyou-dev158-live-queue-timing.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-live-queue-timing.json",
+      "sha256": "a754f6266deed0b1f74bbba2a6771386efb12abb4f5b96051243f6f761645f51",
+      "bytes": 74565
+    },
+    "willyou-dev158-live-rpc-timing.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-live-rpc-timing.json",
+      "sha256": "960b53c64cbad40c07654399b9ed55c5d06d16da83ee89b7cd34fd1c8acc1438",
+      "bytes": 15599
+    },
+    "willyou-dev158-materialization-r95-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-materialization-r95-I.json",
+      "sha256": "4bc065246cdfdb1242d597d4b2b63d5e76bd896d585608ed74a8c15476700e66",
+      "bytes": 674
+    },
+    "willyou-dev158-native-first-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-native-first-I.json",
+      "sha256": "ffd5c7d593a6f8a36e015d40b431f0e524db294fc764abed7945afaf1b407144",
+      "bytes": 10475
+    },
+    "willyou-dev158-native-first-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-native-first-tests.json",
+      "sha256": "5d6ecd67e72f2681e598a20e957c93164d5814f56677bc692f680a0b19fd9fee",
+      "bytes": 7193
+    },
+    "willyou-dev158-native-fixed-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-native-fixed-I.json",
+      "sha256": "b504623cc718200971d4aa5ce4ea3ee968beba388538fd3289d1d150cb6eb15e",
+      "bytes": 10475
+    },
+    "willyou-dev158-native-r95-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-native-r95-I.json",
+      "sha256": "ea1b3a5d4e7045d2622b33f77bba9ff1cda9a2dc0887079da459eb813a75a144",
+      "bytes": 10475
+    },
+    "willyou-dev158-notes-readonly-after.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-notes-readonly-after.json",
+      "sha256": "f400ca3a542ab4d7de6e3614bc9fc09c62a5d0ce78149ba1919598960baf3024",
+      "bytes": 7328
+    },
+    "willyou-dev158-partial-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-partial-source.json",
+      "sha256": "f70b8f4b361e1142b24172085f91981aee9cd3db844b2d595829caffcbfeb18f",
+      "bytes": 160276
+    },
+    "willyou-dev158-pptx-refresh-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-pptx-refresh-green.json",
+      "sha256": "1693222d252c4bf2d309f0291b33a00bc2ea8f8a756b964a48be31e89fd258ac",
+      "bytes": 17984
+    },
+    "willyou-dev158-pptx-refresh-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-pptx-refresh-red.json",
+      "sha256": "7e8934985402e6b415bef8a11fc5e15aef3ffe8b9cc5e0bd175c2a0fea529061",
+      "bytes": 12378
+    },
+    "willyou-dev158-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-process-audit.json",
+      "sha256": "235c15911dda8629b127d885f39a192324537c15b4538adbb6afb428aa9ceff2",
+      "bytes": 1758
+    },
+    "willyou-dev158-r95-fast-package-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-fast-package-result.json",
+      "sha256": "6065bb8227275c9cf604b32d5f2e48673f5c96a29058273299eb78bd74ce7cbd",
+      "bytes": 2539
+    },
+    "willyou-dev158-r95-native-abi-before-fast-package.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-native-abi-before-fast-package.json",
+      "sha256": "84c614bf8a16a881f47a5bfaad18f5534e41e8183a804a5c82b83ec0f7753f44",
+      "bytes": 624
+    },
+    "willyou-dev158-r95-prebuild-source.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-prebuild-source.json",
+      "sha256": "cce8ec6d083f218e960879f590403dc285c67d489b7432b1d3cbd360b1c617ad",
+      "bytes": 159481
+    },
+    "willyou-dev158-refresh-r95-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-refresh-r95-I.json",
+      "sha256": "8055341af8ab7e6b8408af0f682f8c6bac2e75554608c8d9ff79688d6eda129c",
+      "bytes": 4663
+    },
+    "willyou-dev158-session-r95-I.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-session-r95-I.json",
+      "sha256": "008a3df219160a168923c026d0d3df98d55042a908f23d9df58cb62efc5df52c",
+      "bytes": 147058
+    },
+    "willyou-dev158-source-delta.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-source-delta.json",
+      "sha256": "df933d1094127e85453cebaa8d716a28ed3fa7140091412f963752ee5acf8d60",
+      "bytes": 160804
+    },
+    "willyou-dev158-v8-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-v8-audit.json",
+      "sha256": "d910c5d3cf4404f72b78f07231f5d41c0fbccda6927249705156d09be3d2a78c",
+      "bytes": 14585
+    },
+    "willyou-dev158-v8-first-failure.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-v8-first-failure.json",
+      "sha256": "937484372f204c8cf9e15e0b385aa970912c30e11424308c257f6d20f8672f9e",
+      "bytes": 695
+    },
+    "willyou-dev158-code-r95-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-code-r95-final.log",
+      "sha256": "eedbf3debf858b2c8bff6f154d6e99e5f5feabbbbe216425d7298a01f2763981",
+      "bytes": 71
+    },
+    "willyou-dev158-native-first.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-native-first.log",
+      "sha256": "a963df67cb7434c29ba9188a6dbb64db77a2cdfcba5f1f68534afd439faa4880",
+      "bytes": 75
+    },
+    "willyou-dev158-pptx-refresh-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-pptx-refresh-green.log",
+      "sha256": "9e8ff9d2706755aa34641cfad93b274f1c3c4b8595b606c0f7c5d9f6752c8ca3",
+      "bytes": 75
+    },
+    "willyou-dev158-pptx-refresh-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-pptx-refresh-red.log",
+      "sha256": "e3aa2b8824693d5ef859204ac7005431d2d9ece9025abe28ffb842baa41396d6",
+      "bytes": 73
+    },
+    "willyou-dev158-r94-A-readonly-keys.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r94-A-readonly-keys.log",
+      "sha256": "0ef66980b558ca57128ccddd14c4821a9439bf9bcc23b70850dc4e6bdfb5eb69",
+      "bytes": 350
+    },
+    "willyou-dev158-r94-A-resume.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r94-A-resume.log",
+      "sha256": "ebe35acb9d14f77f0b1cd0fce4470dce0c2860788fa9fb2e490582852d716074",
+      "bytes": 2707
+    },
+    "willyou-dev158-r94-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r94-A.log",
+      "sha256": "e2d951534fa66daafb0ea5803d64dd51b8991ec7debbab4b9609af4260bd2229",
+      "bytes": 2541
+    },
+    "willyou-dev158-r95-compile.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-compile.log",
+      "sha256": "fe4930c51c788cf425f47c101e2f40d4d57adc020a9a7e0387a28091eb04226f",
+      "bytes": 16111
+    },
+    "willyou-dev158-r95-fast-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-fast-package.log",
+      "sha256": "286b03be3ab3e058f7b463bc5640d39b089abc6ef2f96e64b626faab46663687",
+      "bytes": 111
+    },
+    "willyou-dev158-r95-native-smoke.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-native-smoke.log",
+      "sha256": "96572e052da16ca4746a35e68beb4ad23bbf960ad662db95c067c626d4137c8b",
+      "bytes": 182
+    },
+    "willyou-dev158-r95-notes-readonly-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-notes-readonly-A.log",
+      "sha256": "7d97b677e4ed871ed4423e25081327ca58124199c94348c93978082f17ba281b",
+      "bytes": 550
+    },
+    "willyou-dev158-r95-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-package.log",
+      "sha256": "4e9fbbbf37d543647cf985594989c8ed43975c5791fa8b69be1167e4769f8d86",
+      "bytes": 2729
+    },
+    "willyou-dev158-r95-pptx-rest-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-pptx-rest-A.log",
+      "sha256": "f3d2164969a49ab562de876fbadf19c8a2a1591d4e9f415454ac25a1e879b436",
+      "bytes": 4301
+    },
+    "willyou-dev158-r95-xlsx-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-xlsx-A.log",
+      "sha256": "ce5999cb61451ae7cdd992d2fb32ab5335fd464009831e3f8a7580b395adf5c8",
+      "bytes": 4882
+    },
+    "willyou-dev158-runtime-r94.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-runtime-r94.log",
+      "sha256": "7fef18a206e4f2daa5b0d86da008896d49010bd0cabd65d3b36712ec92233a74",
+      "bytes": 13049
+    },
+    "willyou-dev158-runtime-r95.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-runtime-r95.log",
+      "sha256": "27b8b7cad92aab70359064a389285f4139ce76c9e8783c548e59dcc233c42bd2",
+      "bytes": 13049
+    },
+    "willyou-dev158-typecheck-fixed.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-typecheck-fixed.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-dev158-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "willyou-dev158-v8-audit.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-v8-audit.log",
+      "sha256": "fcfc334767aae389bc47b9b4f76ba85a62592564a06bcda15f0c5f817396dcfb",
+      "bytes": 731
+    },
+    "willyou-dev158-observe-live.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-observe-live.mjs",
+      "sha256": "90759472cbc82dd2ed5e4781e9a7e5695963ffb19c4e416b961f3f06e2bb6aa1",
+      "bytes": 1537
+    },
+    "willyou-dev158-observe-queue.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-observe-queue.mjs",
+      "sha256": "8b7724491e51f1f8caf5ef9c1d991922e87871f754ed17d8e616bc1cf6c43364",
+      "bytes": 2367
+    },
+    "willyou-dev158-r95-fast-package.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-fast-package.mjs",
+      "sha256": "87862fe35563a999e7faa9976977eb27806c0fc6725ae8f1b3a54fc84e382bd9",
+      "bytes": 3145
+    },
+    "willyou-dev158-v8-audit-initial.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-v8-audit-initial.cjs",
+      "sha256": "2e41dd89f01adee027a12d71a4db37b6b257b6dcd5ca7b0288dde70fdc6a2d01",
+      "bytes": 5034
+    },
+    "willyou-dev158-v8-audit.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-v8-audit.cjs",
+      "sha256": "8cd5343b560891fac45d92f5a5e707d733303aafbfe56e07491b74c861d7c03c",
+      "bytes": 5106
+    },
+    "willyou-dev158-verify-runtime-r95.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-verify-runtime-r95.cjs",
+      "sha256": "3e919e1685e6613fc26b50f827748dca3f30dcb232efb9b38bfdc03deee546b3",
+      "bytes": 890
+    },
+    "willyou-dev158-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-archive.py",
+      "sha256": "3ce3ea92dbc6065028c5ba2ab0fce0ec35f3784248bdf365bf62019157553d3d",
+      "bytes": 9349
+    },
+    "willyou-dev158-source-final.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-source-final.py",
+      "sha256": "546e85a6970d0c95fdcaceb4e2df84287259d8c7d71bd45063022417c3374746",
+      "bytes": 1815
+    },
+    "willyou-dev158-partial-source.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-partial-source.tar.gz",
+      "sha256": "8c642275ea800d0c741c572f86712cc3495994d4a3ca71e35ccc4c014b0280b5",
+      "bytes": 49414
+    },
+    "willyou-dev158-r95-prebuild-source.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-r95-prebuild-source.tar.gz",
+      "sha256": "5166a5fbf60e755550ea4af702a7dfa4e726c41203be7b0d4a94e8268e8f3251",
+      "bytes": 12307723
+    },
+    "willyou-dev158-source-delta.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-source-delta.tar.gz",
+      "sha256": "5b0d46b0e8fbe85e041ef9425bc96b340c8f1acedaa11b80de735082f10d675e",
+      "bytes": 59587
+    },
+    "willyou-office-active-A-DY4D4F-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-failure-electron.log",
+      "sha256": "3a34b5cb14ed5565a319a313de98c58117be3df07d0c70a8989c886e0b8b5938",
+      "bytes": 26614
+    },
+    "willyou-office-active-A-DY4D4F-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-failure.png",
+      "sha256": "041373d91b6ed9acb62bccf7b92b3940cf8093c92762c3578d6640a7e2af7013",
+      "bytes": 159883
+    },
+    "willyou-office-active-A-DY4D4F-light-formula-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-formula-conflict-blocked.png",
+      "sha256": "1ac03a4f3251f9bb9ad2a1067cb3d9507b61ba7bd45c7f428dcdb3bd5d68e573",
+      "bytes": 151578
+    },
+    "willyou-office-active-A-DY4D4F-light-formula-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-formula-conflict-reopened.png",
+      "sha256": "a8bef77e7167bc1be2873d3853e3ed69fda1f824c5fd1fe607ae22a18c86e452",
+      "bytes": 127472
+    },
+    "willyou-office-active-A-DY4D4F-light-formula-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-formula-normal-reopened.png",
+      "sha256": "d45e76a9a83ed70295d03ebbdca8c2db11bdccb738e78c0a61867571580e0092",
+      "bytes": 127200
+    },
+    "willyou-office-active-A-DY4D4F-light-formula-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-formula-write-failure-blocked.png",
+      "sha256": "6cdda0f049c4df29f64132976bf76478fbb8d426a426dd26b8ac8cb1f3001d46",
+      "bytes": 144829
+    },
+    "willyou-office-active-A-DY4D4F-light-formula-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-formula-write-failure-reopened.png",
+      "sha256": "258ae83a53537e9ea18bf8d62c52750c6e5130aa89828c679428ff3ad0bc7e40",
+      "bytes": 127499
+    },
+    "willyou-office-active-A-DY4D4F-light-inline-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-inline-conflict-blocked.png",
+      "sha256": "0676dfd80553a81fc569cc271cedc1a89837c0729cc931e1203c40e53dbe2c35",
+      "bytes": 150894
+    },
+    "willyou-office-active-A-DY4D4F-light-inline-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-inline-conflict-reopened.png",
+      "sha256": "d353925fd994bf0271c5d21a384060a9b927b6672fbb10de6df7c0db16a1c829",
+      "bytes": 126772
+    },
+    "willyou-office-active-A-DY4D4F-light-inline-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-inline-normal-reopened.png",
+      "sha256": "d7b757a99fbf61627d2e9b02814771a21213c4f376deee45c5c5714cd8ddb307",
+      "bytes": 126610
+    },
+    "willyou-office-active-A-DY4D4F-light-inline-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-inline-readonly-blocked.png",
+      "sha256": "ee9d5b6ae8d61e2e2d04a2bab4b2784c0f766d63205944be26489db33950e7cf",
+      "bytes": 143034
+    },
+    "willyou-office-active-A-DY4D4F-light-inline-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-inline-readonly-reopened.png",
+      "sha256": "ef2b0ce825e9f3b0543ee4a5ccac029e4591c4addb77940db1e31f4e08b4ca31",
+      "bytes": 126785
+    },
+    "willyou-office-active-A-DY4D4F-light-inline-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-inline-write-failure-blocked.png",
+      "sha256": "c5b93a858d305263f33ef66bd8615e891fbc2de52f6047dea8eb9e10cbf1bc84",
+      "bytes": 144757
+    },
+    "willyou-office-active-A-DY4D4F-light-inline-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-light-inline-write-failure-reopened.png",
+      "sha256": "503cbb513e8b53724480da78ab5a5b9de6397ae6d1f579f9088a8d3396b43353",
+      "bytes": 127195
+    },
+    "willyou-office-active-A-DY4D4F-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-progress.json",
+      "sha256": "64d4ae1ac4294b38d5a1a531e328091649e7780ff0e4a448694fc2277c5659d4",
+      "bytes": 71
+    },
+    "willyou-office-active-A-DY4D4F-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-DY4D4F-result.json",
+      "sha256": "e9028f8c95c9827dcfbaac1eb973b327a393b7f620b7cc356ee0594de0347a0f",
+      "bytes": 541421
+    },
+    "willyou-office-active-A-K1ZuUo-dark-formula-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-formula-conflict-blocked.png",
+      "sha256": "eb524b0378cb4bfab28ac45843de24d1fa818f8d8b18077ba6a1ccce80615bbd",
+      "bytes": 126616
+    },
+    "willyou-office-active-A-K1ZuUo-dark-formula-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-formula-conflict-reopened.png",
+      "sha256": "e609f6a146787db86f479920c1ad93521688eb49d8e49ac44b1070ffeb65b851",
+      "bytes": 102705
+    },
+    "willyou-office-active-A-K1ZuUo-dark-formula-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-formula-normal-reopened.png",
+      "sha256": "ea69deefa67289d795da95c12983f8151c47f315185547b4b7770b86eaf81983",
+      "bytes": 102165
+    },
+    "willyou-office-active-A-K1ZuUo-dark-formula-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-formula-readonly-blocked.png",
+      "sha256": "b08e34547a7fcc4b41cd7ac46c577296bd6774bd86ccff47bcb3d3bc619f7600",
+      "bytes": 121611
+    },
+    "willyou-office-active-A-K1ZuUo-dark-formula-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-formula-readonly-reopened.png",
+      "sha256": "e2f58ea4b95bc98c06a74c220a7649e9aff0a71458361402b7d36bec3dc9e664",
+      "bytes": 102460
+    },
+    "willyou-office-active-A-K1ZuUo-dark-formula-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-formula-write-failure-blocked.png",
+      "sha256": "a39543d6be46da7802e7a2d5d20a08e694c80035775105d9da350e5f9709ce51",
+      "bytes": 120282
+    },
+    "willyou-office-active-A-K1ZuUo-dark-formula-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-formula-write-failure-reopened.png",
+      "sha256": "54c257b6ad728697a3651a18bce0633266198a759dc785f2f507a331b2f68ec6",
+      "bytes": 102620
+    },
+    "willyou-office-active-A-K1ZuUo-dark-inline-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-inline-conflict-blocked.png",
+      "sha256": "e50c3b9a9c322e5b70d3901d32fb1a68d3f47bc90ae934a43abb96be53f70ef2",
+      "bytes": 126174
+    },
+    "willyou-office-active-A-K1ZuUo-dark-inline-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-inline-conflict-reopened.png",
+      "sha256": "4d84f3eb2a0c6c65946b2ac55f318941a18e15c23dabfac3c12c56af340f6a83",
+      "bytes": 102076
+    },
+    "willyou-office-active-A-K1ZuUo-dark-inline-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-inline-normal-reopened.png",
+      "sha256": "4880c5ae7110424e4fd9b6a974177bc9e573d5674e800d8778327a5a0318823b",
+      "bytes": 101702
+    },
+    "willyou-office-active-A-K1ZuUo-dark-inline-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-inline-readonly-blocked.png",
+      "sha256": "4a6606065ddbad2017cb014f9e50ef719eeb72a64a2dd24e6ef169a76d688851",
+      "bytes": 120990
+    },
+    "willyou-office-active-A-K1ZuUo-dark-inline-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-inline-readonly-reopened.png",
+      "sha256": "8908544bd31bb58b320a656705d9194d8049c2055eae26d64a90299b3c4ab57a",
+      "bytes": 101833
+    },
+    "willyou-office-active-A-K1ZuUo-dark-inline-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-inline-write-failure-blocked.png",
+      "sha256": "812608bc6299f227bdcdab93e4e1213598aaf179c7701e95ebb8824ac06248de",
+      "bytes": 120472
+    },
+    "willyou-office-active-A-K1ZuUo-dark-inline-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-dark-inline-write-failure-reopened.png",
+      "sha256": "913fbce5eaa9fb86fa26b9f9a48a3c15b4aa1a64ddea3b5b77c94175b4fa237a",
+      "bytes": 102454
+    },
+    "willyou-office-active-A-K1ZuUo-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-electron.log",
+      "sha256": "51af80b6116cbab6836d5c73fc94d1edaef36fbd77409f6bd38d1feaa6d3eef8",
+      "bytes": 52227
+    },
+    "willyou-office-active-A-K1ZuUo-light-formula-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-formula-conflict-blocked.png",
+      "sha256": "99ffd1b316a79bf5042b51ddb3d00cc0d5d64f82c2dcab041223efb0c71e6fc6",
+      "bytes": 127842
+    },
+    "willyou-office-active-A-K1ZuUo-light-formula-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-formula-conflict-reopened.png",
+      "sha256": "ae0ab190f28a9402bc8d0a064e30a4c2c41547f85c91cc2c43c123c0f255a588",
+      "bytes": 104428
+    },
+    "willyou-office-active-A-K1ZuUo-light-formula-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-formula-normal-reopened.png",
+      "sha256": "4e0e72fdaafaf87afa608714643c7a0ec4bcef17f15d101e16b1c6e40a090ef7",
+      "bytes": 104089
+    },
+    "willyou-office-active-A-K1ZuUo-light-formula-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-formula-readonly-blocked.png",
+      "sha256": "09477b1c6a53ea95874e397c24564177bf87c2e68cc5040d6d7f267102b87e21",
+      "bytes": 122294
+    },
+    "willyou-office-active-A-K1ZuUo-light-formula-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-formula-readonly-reopened.png",
+      "sha256": "b1947a9e0f68d9c2898fbdaaf92534c2cdc524964260da8e9ebbb643392c16c1",
+      "bytes": 104316
+    },
+    "willyou-office-active-A-K1ZuUo-light-formula-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-formula-write-failure-blocked.png",
+      "sha256": "3663bf48a84ddf9973af262af450fd603db8718de5b537b17485076ca0fb9809",
+      "bytes": 121928
+    },
+    "willyou-office-active-A-K1ZuUo-light-formula-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-formula-write-failure-reopened.png",
+      "sha256": "a499a3d7566215209b5b1e6413ec6f408c63237c653b19b4be1071e8a793cd39",
+      "bytes": 104566
+    },
+    "willyou-office-active-A-K1ZuUo-light-inline-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-inline-conflict-blocked.png",
+      "sha256": "d44a551622a33cd1bd201bb051d61edf4723a46435f2d4c8bb5a0f0366fbda0f",
+      "bytes": 127239
+    },
+    "willyou-office-active-A-K1ZuUo-light-inline-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-inline-conflict-reopened.png",
+      "sha256": "9d658f22d592dbc979a1ea83fd1d6629272d67d3715e35b252feaba881257ac4",
+      "bytes": 103836
+    },
+    "willyou-office-active-A-K1ZuUo-light-inline-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-inline-normal-reopened.png",
+      "sha256": "7f44263946672c5830601e520303810afba1ed7ddda7a86b2cc83323c40d7a5e",
+      "bytes": 103751
+    },
+    "willyou-office-active-A-K1ZuUo-light-inline-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-inline-readonly-blocked.png",
+      "sha256": "ee25063476c7914091af4eb9c40ad27544526cd67e065fa8a81f8e91034f3478",
+      "bytes": 122033
+    },
+    "willyou-office-active-A-K1ZuUo-light-inline-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-inline-readonly-reopened.png",
+      "sha256": "494a491f52881f74dc29150ab043e0adbe3a5e95996a94470a936a7f437d855d",
+      "bytes": 103807
+    },
+    "willyou-office-active-A-K1ZuUo-light-inline-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-inline-write-failure-blocked.png",
+      "sha256": "affe1e03e9d26570b2513c8be717e07e32cbed9e62f1311cd286abaea07fff09",
+      "bytes": 121738
+    },
+    "willyou-office-active-A-K1ZuUo-light-inline-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-light-inline-write-failure-reopened.png",
+      "sha256": "66511be4653216d98b8366cef5639072cdca04b99a37d7e14b8afe664d8a83eb",
+      "bytes": 104305
+    },
+    "willyou-office-active-A-K1ZuUo-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-progress.json",
+      "sha256": "f2fa2efe10649ad2930d4f8be0a61127336acac4bc1cf694143381b3f3fabde8",
+      "bytes": 72
+    },
+    "willyou-office-active-A-K1ZuUo-result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-K1ZuUo-result.json.gz",
+      "sha256": "97ced7bc33a3a303326a1cd5e36708fdbf513178933f7df83017f6b82a9e19c6",
+      "bytes": 234584,
+      "compression": "gzip",
+      "originalSha256": "aa4d72acc88342383e8ad2b765819c4aaaef3cc39d24db8400d701ec82c8d974",
+      "originalBytes": 2086816
+    },
+    "willyou-office-active-A-gxQlYr-dark-notes-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-gxQlYr-dark-notes-readonly-blocked.png",
+      "sha256": "712be8305c434a4e45a47443aa121fdd6e04620498202bdc2d224255c2d1b375",
+      "bytes": 73767
+    },
+    "willyou-office-active-A-gxQlYr-dark-notes-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-gxQlYr-dark-notes-readonly-reopened.png",
+      "sha256": "2241a75fbb26d9b589ce9a46f310d826a153a900c6137457327426c8dcabc2b6",
+      "bytes": 68613
+    },
+    "willyou-office-active-A-gxQlYr-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-gxQlYr-electron.log",
+      "sha256": "7c74d93f4993e7f3102fd8a02c1e17ff63d5364fff16df072ea6fd61771d18ef",
+      "bytes": 8498
+    },
+    "willyou-office-active-A-gxQlYr-light-notes-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-gxQlYr-light-notes-readonly-blocked.png",
+      "sha256": "02ec79e980adec95eed24c34e837ca3eaeb22681a2c1dfc2fd93b39aac20c413",
+      "bytes": 73703
+    },
+    "willyou-office-active-A-gxQlYr-light-notes-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-gxQlYr-light-notes-readonly-reopened.png",
+      "sha256": "7bb87e7fde5d943d74a2573d52073c72057bd55a2292337cd58c6f993c86a159",
+      "bytes": 70776
+    },
+    "willyou-office-active-A-gxQlYr-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-gxQlYr-progress.json",
+      "sha256": "b16109a5f8375446c83339cf77387b5dd0c702d0a9253254526306b4d0b1a8e2",
+      "bytes": 70
+    },
+    "willyou-office-active-A-gxQlYr-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-gxQlYr-result.json",
+      "sha256": "48c833c43377ba0b30fcbe4222b68e9c106ccc8dab44a1e0779ca73326c4a0af",
+      "bytes": 257100
+    },
+    "willyou-office-active-A-iMUmE0-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-failure-electron.log",
+      "sha256": "70d75257a392a71e03f402b58891fde6de62119664c0e34000457085a8c1c18f",
+      "bytes": 86682
+    },
+    "willyou-office-active-A-iMUmE0-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-failure.png",
+      "sha256": "271f985e3fbdd31a24a88fd9a97c6c8bf66a47cb508b7d4f4e19f3c2e284b5ef",
+      "bytes": 114673
+    },
+    "willyou-office-active-A-iMUmE0-light-body-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-body-conflict-blocked.png",
+      "sha256": "d09de161c18f42ab5dcd7656a534029f370e36e7f0fed05feebaea0452984cfa",
+      "bytes": 136597
+    },
+    "willyou-office-active-A-iMUmE0-light-body-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-body-conflict-reopened.png",
+      "sha256": "6281cd75c0684730b93c4ac070c96e423b533295868f4703be43e462549ffed9",
+      "bytes": 119050
+    },
+    "willyou-office-active-A-iMUmE0-light-body-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-body-normal-reopened.png",
+      "sha256": "f80e84e81349eb799b56b9e49dbb1d8c083baf29876a8d6ee544c8b4ca817a7f",
+      "bytes": 119260
+    },
+    "willyou-office-active-A-iMUmE0-light-body-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-body-readonly-blocked.png",
+      "sha256": "dcaa6c8235ed06e2b937af23dfded0ac730e4c3c137509e5fb8a9008e047e59c",
+      "bytes": 132317
+    },
+    "willyou-office-active-A-iMUmE0-light-body-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-body-readonly-reopened.png",
+      "sha256": "be5a5663857ab05a292aa294101c65ef63c5ab109d31e445a451a2ce3f4d0015",
+      "bytes": 119727
+    },
+    "willyou-office-active-A-iMUmE0-light-body-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-body-write-failure-blocked.png",
+      "sha256": "5c1e590646c1205167738df936633070723e784524346264da70874af2884db4",
+      "bytes": 136013
+    },
+    "willyou-office-active-A-iMUmE0-light-body-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-body-write-failure-reopened.png",
+      "sha256": "86e9fa7c53e97764f0597221c2a6515f17bb6a3a65a5b9cb06497fb2055da517",
+      "bytes": 119331
+    },
+    "willyou-office-active-A-iMUmE0-light-formula-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-formula-readonly-blocked.png",
+      "sha256": "e57956d6f1bcb9b1a031090036e9a0a883e48731865b6adbcbdd40b26bbf9305",
+      "bytes": 144761
+    },
+    "willyou-office-active-A-iMUmE0-light-formula-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-formula-readonly-reopened.png",
+      "sha256": "5b84fb61ed0e460bf8e97ffa66db1464ce1daed7c5d7932f0874d4ecc51321b6",
+      "bytes": 127496
+    },
+    "willyou-office-active-A-iMUmE0-light-notes-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-notes-conflict-blocked.png",
+      "sha256": "bcab4b16bef3a129cdcd7e393c4bd768026b164ce9322cbc08835a4a1bdd26c4",
+      "bytes": 138513
+    },
+    "willyou-office-active-A-iMUmE0-light-notes-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-notes-conflict-reopened.png",
+      "sha256": "994c39f44e8668666aca6ad198bbac67643122183261a798ca42778c4d26b6a2",
+      "bytes": 126571
+    },
+    "willyou-office-active-A-iMUmE0-light-notes-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-notes-normal-reopened.png",
+      "sha256": "dae0ceeb296396e25d06610bd76073c99d1e22d69d745306f8d26e7045874c1b",
+      "bytes": 125396
+    },
+    "willyou-office-active-A-iMUmE0-light-notes-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-notes-readonly-blocked.png",
+      "sha256": "1daa39d4b7f1c24a7dff55e862aa36814a3df29411da48b74ea01abb07c3921e",
+      "bytes": 130861
+    },
+    "willyou-office-active-A-iMUmE0-light-notes-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-notes-write-failure-blocked.png",
+      "sha256": "9f9a35356ffa4c47b379a4ee18aeba974c8bd7ea436dc120e56ad09f2f028650",
+      "bytes": 140937
+    },
+    "willyou-office-active-A-iMUmE0-light-notes-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-light-notes-write-failure-reopened.png",
+      "sha256": "45900d732227c7c6e2342e40f18975124268bc7ec5d50b2ebdaeb170b9e9291e",
+      "bytes": 126725
+    },
+    "willyou-office-active-A-iMUmE0-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-progress.json",
+      "sha256": "1aa8333033679492d2586572c4f0de1dbf377736189b3a31177769904100dacd",
+      "bytes": 80
+    },
+    "willyou-office-active-A-iMUmE0-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-iMUmE0-result.json",
+      "sha256": "92fbac7c23bd8819a215709a5f14c3c478ad98abf62d09137a3d6e165f4f9545",
+      "bytes": 651068
+    },
+    "willyou-office-active-A-v2YFBE-failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-v2YFBE-failure-electron.log",
+      "sha256": "abf8dd5e8bdb69d917c4a3c00ecea5ff19bff4d55582cd4dca2fe088b5c1d271",
+      "bytes": 4728
+    },
+    "willyou-office-active-A-v2YFBE-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-v2YFBE-failure.png",
+      "sha256": "8e9761f02a0441975bcbf1913935303c7f56c7f09ae5426e436fdb6523253deb",
+      "bytes": 73308
+    },
+    "willyou-office-active-A-v2YFBE-light-notes-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-v2YFBE-light-notes-readonly-blocked.png",
+      "sha256": "f34d0d3582fa5301840d066fc8b8c1eb05f45402ed952b30f6c751a155f5268a",
+      "bytes": 89253
+    },
+    "willyou-office-active-A-v2YFBE-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-v2YFBE-progress.json",
+      "sha256": "def5622d3649ae59346d09a99b9d8548136e7e6d57b72bc747aca8343391900a",
+      "bytes": 80
+    },
+    "willyou-office-active-A-v2YFBE-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-v2YFBE-result.json",
+      "sha256": "d4e868bfe88188cca4072ce75b04d9b9be85ed7276dfaa717ad460908b07a95a",
+      "bytes": 36572
+    },
+    "willyou-office-active-A-yi9Atz-dark-body-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-body-conflict-blocked.png",
+      "sha256": "79e6b34e4bed5f62eba47b45c75c981f7cf12013f272663b7aa34ba0970e4435",
+      "bytes": 110737
+    },
+    "willyou-office-active-A-yi9Atz-dark-body-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-body-conflict-reopened.png",
+      "sha256": "107521fb4296dad7f2b015d9e3313b735a1d847e8352c3fa37245c735bd98e77",
+      "bytes": 94353
+    },
+    "willyou-office-active-A-yi9Atz-dark-body-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-body-normal-reopened.png",
+      "sha256": "884b3be7cb9b4ba65f67629be62943052cc152fa1d110cad0871d3344ee93839",
+      "bytes": 94132
+    },
+    "willyou-office-active-A-yi9Atz-dark-body-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-body-readonly-blocked.png",
+      "sha256": "6aad75154f47ae83a6d34a29b65cce2e8879a46b1bfb14ffbfae58cf00a50af4",
+      "bytes": 106420
+    },
+    "willyou-office-active-A-yi9Atz-dark-body-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-body-readonly-reopened.png",
+      "sha256": "66821fb5695ff4d2ad754f896568e9e80fad4090a90091f325279ae1c2f15021",
+      "bytes": 95073
+    },
+    "willyou-office-active-A-yi9Atz-dark-body-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-body-write-failure-blocked.png",
+      "sha256": "7503870fef509a842fc1b3bfc6edadef54d3c48b935e1b611a0ae2444b4a8e79",
+      "bytes": 111262
+    },
+    "willyou-office-active-A-yi9Atz-dark-body-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-body-write-failure-reopened.png",
+      "sha256": "209603023e8ddcb90ce8cc181c343f34ef6f536c8d074c8e779bb3557793d248",
+      "bytes": 94566
+    },
+    "willyou-office-active-A-yi9Atz-dark-notes-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-notes-conflict-blocked.png",
+      "sha256": "4bb6da8c422caa4a1c93642e2dd3aafa6a9eb19af2ce9ac392f3030367167f0f",
+      "bytes": 114212
+    },
+    "willyou-office-active-A-yi9Atz-dark-notes-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-notes-conflict-reopened.png",
+      "sha256": "c7397aa31ab3ff495f5c6a6a555659cda774eca4075f19114321514e7cc4e0ee",
+      "bytes": 101741
+    },
+    "willyou-office-active-A-yi9Atz-dark-notes-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-notes-normal-reopened.png",
+      "sha256": "7df542f1a4fc87040812f12a26237583d0aba00661c1141526b97e897eb99db9",
+      "bytes": 101513
+    },
+    "willyou-office-active-A-yi9Atz-dark-notes-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-notes-write-failure-blocked.png",
+      "sha256": "8d0aa9f007c9b2f6d22d1bf9afe2e6eece0e58c573a9becba937e4ce1e8d2e8a",
+      "bytes": 116765
+    },
+    "willyou-office-active-A-yi9Atz-dark-notes-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-dark-notes-write-failure-reopened.png",
+      "sha256": "1c248916f3d6087a96b2bac2d9e932c9f461e44b3365b0f99c9b8f47218569fe",
+      "bytes": 102055
+    },
+    "willyou-office-active-A-yi9Atz-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-electron.log",
+      "sha256": "d7c4d73d78332f53c2ba324fbf6cb4cd0144ece2d3e1c669e869c78440ee1fb1",
+      "bytes": 176876
+    },
+    "willyou-office-active-A-yi9Atz-light-body-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-body-conflict-blocked.png",
+      "sha256": "740d4daaf13e58911dc2cb99d00c6573f35e8039480c0c32bb18b0f6690bd38c",
+      "bytes": 112558
+    },
+    "willyou-office-active-A-yi9Atz-light-body-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-body-conflict-reopened.png",
+      "sha256": "89f0cccac77f4619bb562f94b4bbf5acad3d0fd4aaa8eb81e38e586008c521c4",
+      "bytes": 96577
+    },
+    "willyou-office-active-A-yi9Atz-light-body-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-body-normal-reopened.png",
+      "sha256": "ef3e32bd44db26909c48d7f041f00d7daf103cce5684be28bd4ef30e95edd337",
+      "bytes": 96790
+    },
+    "willyou-office-active-A-yi9Atz-light-body-readonly-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-body-readonly-blocked.png",
+      "sha256": "acd8bbb1c054b765581d4b7e4a3a91b41517b4f818dc350b28dc4bd37084d2f9",
+      "bytes": 107940
+    },
+    "willyou-office-active-A-yi9Atz-light-body-readonly-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-body-readonly-reopened.png",
+      "sha256": "956be7cda5c541d810ddbd3005557bb289dd6450ab2a2a5bdc40dfbcd3bbc1cf",
+      "bytes": 97232
+    },
+    "willyou-office-active-A-yi9Atz-light-body-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-body-write-failure-blocked.png",
+      "sha256": "31bd7e451c3fb73ce6bf67ff77612b84aa66e9a4fc503706a39822f925395a77",
+      "bytes": 112698
+    },
+    "willyou-office-active-A-yi9Atz-light-body-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-body-write-failure-reopened.png",
+      "sha256": "c83d013da4311d0acf6ae0f3e747bf31d8d0d695bd3b83522238635db5ccd540",
+      "bytes": 96852
+    },
+    "willyou-office-active-A-yi9Atz-light-notes-conflict-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-notes-conflict-blocked.png",
+      "sha256": "3bfeb1dc7fd72a6aea05c27cdaaa7ff79c175cb8c1dccdc94a78e69410ee5ead",
+      "bytes": 115681
+    },
+    "willyou-office-active-A-yi9Atz-light-notes-conflict-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-notes-conflict-reopened.png",
+      "sha256": "410246358ecadde357ed1bb95bc7eeda91553ebedf48b429ad3402b8c407e111",
+      "bytes": 104135
+    },
+    "willyou-office-active-A-yi9Atz-light-notes-normal-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-notes-normal-reopened.png",
+      "sha256": "1f3deb6811203da0aaf9aebc24f79f9e8c746f46f0fb6611b944a57e29a4e9e4",
+      "bytes": 103893
+    },
+    "willyou-office-active-A-yi9Atz-light-notes-write-failure-blocked.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-notes-write-failure-blocked.png",
+      "sha256": "0eaacceb3011a25e748e7f659300cae2763e36dd7046811531ecf05a786c8a9e",
+      "bytes": 118274
+    },
+    "willyou-office-active-A-yi9Atz-light-notes-write-failure-reopened.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-light-notes-write-failure-reopened.png",
+      "sha256": "8c94400d5bfc14238be6cc781f70f3e9dc5bcd0bfd0473193304ed5e9ec35410",
+      "bytes": 104434
+    },
+    "willyou-office-active-A-yi9Atz-progress.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-progress.json",
+      "sha256": "e20887c12f3bbf7573a1a5d426b66925b093c771cdf06fc3cc75da380f9f3c2a",
+      "bytes": 70
+    },
+    "willyou-office-active-A-yi9Atz-result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-office-active-A-yi9Atz-result.json.gz",
+      "sha256": "0eb2ec3d3699a84399e6550c058d07f64c98e8c17ab90a03bc596939f88696bf",
+      "bytes": 202831,
+      "compression": "gzip",
+      "originalSha256": "4ff605ea08b78bf8dd1613145176ac7cb7b7dac2970c1c168c613657be262d3d",
+      "originalBytes": 2045969
+    },
+    "before-pptx-buffer.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/before-pptx-buffer.test.ts",
+      "sha256": "1382b38098c3a064cf52f925aeefa5f5f437bdbf81c32ab9b9527e406673bd2b",
+      "bytes": 19983
+    },
+    "before-pptx-buffer.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/before-pptx-buffer.ts",
+      "sha256": "700e5f9ada5f121b8f76ada6b835e2abc52fcd2164cd06fafaa0cdbf9f0888b5",
+      "bytes": 20926
+    },
+    "initial-driver-input-office-active-input-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/initial-driver-input-office-active-input-ui.mjs",
+      "sha256": "3ae95633a5f3e52603045f2da3e6fda9556fa312b08fa30cc1e06a84d5e906da",
+      "bytes": 16751
+    },
+    "initial-driver-input-office-active-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/initial-driver-input-office-active-observer.mjs",
+      "sha256": "0de6f33ccd879625d8d334f548828cbe08e1ceb0d479d4932b3e769ad5ffe771",
+      "bytes": 5595
+    },
+    "initial-driver-input-verify-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/initial-driver-input-verify-office-active.py",
+      "sha256": "33c74e768226704cc7cf3c6690abcd823426c3168fa3b7f8c56ebef5cd37b670",
+      "bytes": 1855
+    },
+    "initial-driver-input-write-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/initial-driver-input-write-office-active.py",
+      "sha256": "839ff7fbda0efdfe35d19b6f2e400c9baa33d42b1f5a16a3ce6f3cff2422c3e7",
+      "bytes": 1883
+    },
+    "menu-ready-driver-input-office-active-input-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/menu-ready-driver-input-office-active-input-ui.mjs",
+      "sha256": "29de4ea062e13c7da49dee0d6f5da4142588ceac0625b5db42340d5980c49f9d",
+      "bytes": 17270
+    },
+    "menu-ready-driver-input-office-active-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/menu-ready-driver-input-office-active-observer.mjs",
+      "sha256": "0de6f33ccd879625d8d334f548828cbe08e1ceb0d479d4932b3e769ad5ffe771",
+      "bytes": 5595
+    },
+    "menu-ready-driver-input-verify-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/menu-ready-driver-input-verify-office-active.py",
+      "sha256": "33c74e768226704cc7cf3c6690abcd823426c3168fa3b7f8c56ebef5cd37b670",
+      "bytes": 1855
+    },
+    "menu-ready-driver-input-write-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/menu-ready-driver-input-write-office-active.py",
+      "sha256": "839ff7fbda0efdfe35d19b6f2e400c9baa33d42b1f5a16a3ce6f3cff2422c3e7",
+      "bytes": 1883
+    },
+    "readonly-key-driver-input-office-active-input-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/readonly-key-driver-input-office-active-input-ui.mjs",
+      "sha256": "d830e48c6e73f2d2a8226254f464d837e39e594e9fe1f64fa49e3c9a26d2102d",
+      "bytes": 17555
+    },
+    "readonly-key-driver-input-office-active-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/readonly-key-driver-input-office-active-observer.mjs",
+      "sha256": "0de6f33ccd879625d8d334f548828cbe08e1ceb0d479d4932b3e769ad5ffe771",
+      "bytes": 5595
+    },
+    "readonly-key-driver-input-verify-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/readonly-key-driver-input-verify-office-active.py",
+      "sha256": "33c74e768226704cc7cf3c6690abcd823426c3168fa3b7f8c56ebef5cd37b670",
+      "bytes": 1855
+    },
+    "readonly-key-driver-input-write-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/readonly-key-driver-input-write-office-active.py",
+      "sha256": "839ff7fbda0efdfe35d19b6f2e400c9baa33d42b1f5a16a3ce6f3cff2422c3e7",
+      "bytes": 1883
+    },
+    "close-ready-driver-input-office-active-input-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/close-ready-driver-input-office-active-input-ui.mjs",
+      "sha256": "3a036b133544ceb7c65d806e6a805218c29599977bee993d93316b02c2a3c716",
+      "bytes": 18677
+    },
+    "close-ready-driver-input-office-active-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/close-ready-driver-input-office-active-observer.mjs",
+      "sha256": "0de6f33ccd879625d8d334f548828cbe08e1ceb0d479d4932b3e769ad5ffe771",
+      "bytes": 5595
+    },
+    "close-ready-driver-input-verify-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/close-ready-driver-input-verify-office-active.py",
+      "sha256": "33c74e768226704cc7cf3c6690abcd823426c3168fa3b7f8c56ebef5cd37b670",
+      "bytes": 1855
+    },
+    "close-ready-driver-input-write-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/close-ready-driver-input-write-office-active.py",
+      "sha256": "839ff7fbda0efdfe35d19b6f2e400c9baa33d42b1f5a16a3ce6f3cff2422c3e7",
+      "bytes": 1883
+    },
+    "r95-driver-input-office-active-input-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/r95-driver-input-office-active-input-ui.mjs",
+      "sha256": "9f12fae086621981b671a04f9c1a451c0d1b13d015262f6b2af82d0238dea6c5",
+      "bytes": 19325
+    },
+    "r95-driver-input-office-active-observer.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/r95-driver-input-office-active-observer.mjs",
+      "sha256": "0de6f33ccd879625d8d334f548828cbe08e1ceb0d479d4932b3e769ad5ffe771",
+      "bytes": 5595
+    },
+    "r95-driver-input-verify-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/r95-driver-input-verify-office-active.py",
+      "sha256": "33c74e768226704cc7cf3c6690abcd823426c3168fa3b7f8c56ebef5cd37b670",
+      "bytes": 1855
+    },
+    "r95-driver-input-write-office-active.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/r95-driver-input-write-office-active.py",
+      "sha256": "839ff7fbda0efdfe35d19b6f2e400c9baa33d42b1f5a16a3ce6f3cff2422c3e7",
+      "bytes": 1883
+    },
+    "willyou-dev158-fixtures.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-office-active-dev158-r95-final/willyou-dev158-fixtures.tar.gz",
+      "sha256": "8e6304d7bcc48abd1d294ee635baa320e0463b5ae94672a24e293e64e089b584",
+      "bytes": 1782987
+    }
+  },
+  "releasePerformed": false
+}

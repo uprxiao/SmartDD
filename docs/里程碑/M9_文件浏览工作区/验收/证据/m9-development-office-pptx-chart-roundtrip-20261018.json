@@ -1,0 +1,856 @@
+{
+  "createdAt": "2026-10-18T00:26:00.627195+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirementBaseline": "R3.4-P1",
+  "scope": "PPTX Office action P09: known-profile nine-type bidirectional source conversion; formal M9-T-P09 is unrelated CLI/voice regression",
+  "relatedRequirements": [
+    "M9-R06.10",
+    "M9-R07.11",
+    "M9-R07.16"
+  ],
+  "relatedFormalCases": [
+    "M9-T-F20",
+    "M9-T-W16",
+    "M9-T-J02",
+    "M9-T-J03",
+    "M9-T-J04",
+    "M9-T-W28"
+  ],
+  "environment": {
+    "platform": "macOS",
+    "version": "26.6.1",
+    "arch": "arm64",
+    "libreOffice": "26.2.4.2",
+    "libreOfficeBuild": "0229ac93fcf0d7cbc6376066c6f35021cef002dc"
+  },
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-chart-roundtrip-r4-sources.tar.gz",
+    "sha256": "d4f8fc64db68aca1a7b03bd931fb80d187b33aaa94d0333bf2cc8876429eaa55",
+    "fileCount": 617,
+    "manifest": {
+      "path": "/private/tmp/willyou-m9-chart-roundtrip-r4-sources.json",
+      "sha256": "684612c56702c59e6165e90dd0e4393137aa313c09131e2500c2c4dddc0218d2"
+    },
+    "allCurrentFilesMatch": true,
+    "prebuild": {
+      "path": "/private/tmp/willyou-m9-chart-roundtrip-r3-sources.tar.gz",
+      "sha256": "880bb75f86c847a8e8dc9f05d34936e5c64efaaacf0df7501306dff3965b4f4d",
+      "onlyChangedFiles": [
+        "src/main/core/files/office/libreoffice-packaged.test.ts"
+      ],
+      "productionBuildFilesUnchanged": true
+    }
+  },
+  "production": {
+    "newFiles": [
+      "src/main/core/files/office/pptx-chart-convert.ts",
+      "src/main/core/files/office/pptx-chart-workbook.ts",
+      "src/main/core/files/office/pptx-chart-roundtrip.test.ts"
+    ],
+    "behavior": [
+      "Actual chart relationship family, graphicData and content type change for the selected chart; embedded data and untouched/shared original parts preserved",
+      "Actual embedded numeric cells required for scatter x; numeric-looking text rejected",
+      "Explicit per-point colors, font, bottom legend enablement and compatible axis/grid styles preserved",
+      "Strict/transitional namespace adaptation covered by model tests",
+      "Real Worker chart-type route uses async workbook validation; old/late versions rejected",
+      "Per-point scatter marker circle/6 with default series marker none enables exact fixed-engine point colors"
+    ],
+    "limitations": [
+      "Known single-series profiles only; unknown titles/themes/series/custom plot and axis layouts remain unsupported and preserved",
+      "Same-length values only; changing 1–8 count pending",
+      "Pie roundtrip cannot restore former axes/grid settings",
+      "Numeric binning or category aggregation that changes point count unsupported for conversion",
+      "Horizontal-axis grids/custom axis positions rejected for basic-to-modern",
+      "Basic Value legend differs from prototype category legend; scatter legend marker, line/area styles and axis ticks differ",
+      "Treemap 2-unit gaps and full prototype/App visual matrix pending"
+    ]
+  },
+  "codeTests": {
+    "reports": [
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-regression-r1.json",
+        "sha256": "f246fadc5772507e45c5e8264f86b6a114d3c65bd9fb300ef8b357f6479729a8",
+        "counts": {
+          "passed": 57
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-all-r1.json",
+        "sha256": "ecd4690de9269d38261a0e11ba8b881b1ceaa5326edadcba7b759dafa24fcaa8",
+        "counts": {
+          "passed": 400,
+          "skipped": 60
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-strict-r2.json",
+        "sha256": "e38dd4346b82842a708f9c767ac1e9d6b7329d6797c47b47244b4a1e7fe723ee",
+        "counts": {
+          "failed": 1,
+          "passed": 15
+        },
+        "failedCases": [
+          {
+            "name": "nine chart types source conversion keeps strict slide and DrawingML namespaces valid across both chart families",
+            "messages": [
+              "FileError: [INVALID_INPUT] Office 候选包含未声明的修改或缺少预期修改，原件未改变\n    at fail (/Users/hx/hx/hxWork/SmartDD/src/main/core/files/office/package.ts:12:50)\n    at OfficePackage.patch (/Users/hx/hx/hxWork/SmartDD/src/main/core/files/office/package.ts:112:107)\n    at /Users/hx/hx/hxWork/SmartDD/src/main/core/files/office/pptx-chart-roundtrip.test.ts:23:23\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-strict-r3.json",
+        "sha256": "2726bf31d20c6cf93cdd574b9e0e2c34fa328489ec418829141229568dfe7d3f",
+        "counts": {
+          "passed": 16
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-worker-r2.json",
+        "sha256": "dc23b765300a8a65aec5ec5be3ed1c5d93ec7f8877a36a4af727393ac4f27260",
+        "counts": {
+          "passed": 37
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-colors-r3.json",
+        "sha256": "3f6a66406b02bf418cc1f4028144ec9ab989cb41baeef7f76b4971bd08a3952f",
+        "counts": {
+          "passed": 65
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-boundaries-r4.json",
+        "sha256": "5986939492840dccb615dc33c05faa28cf062a64c5bbefc4664485c2538be7be",
+        "counts": {
+          "passed": 17
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-marker-r5.json",
+        "sha256": "527a3b59be50582c0c2516c08e1fd142fe976fbd4ae7d8430cf8197404eadf5a",
+        "counts": {
+          "passed": 53
+        },
+        "failedCases": []
+      }
+    ],
+    "note": "Overlapping reports; 400 broad passes preceded later fixes, final 53 affected passes cover final production source. Not formal acceptance."
+  },
+  "typecheck": {
+    "path": "/private/tmp/willyou-chart-roundtrip-typecheck-r9.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "exitCode": 0,
+    "note": "r8 completion handle already closed after output truncation; r9 gives directly observed final exit 0"
+  },
+  "native": {
+    "reports": [
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r1.json",
+        "sha256": "e76dd06e0326714efcc48d6d8b48b09746bdb96b0ac8be1d39747ac1bbd22559",
+        "counts": {
+          "skipped": 22,
+          "failed": 1,
+          "passed": 1
+        },
+        "failedCases": [
+          {
+            "name": "fixed LibreOffice through the real native rendering boundary round trips nine chart source types through the real Worker save and native renderer",
+            "messages": [
+              "FileError: [UNSUPPORTED] 散点图需要真实数值横坐标，原图表保留\n    at Worker.<anonymous> (/Users/hx/hx/hxWork/SmartDD/src/main/core/files/office/worker-client.ts:20:41)\n    at Worker.emit (node:events:509:28)\n    at MessagePort.<anonymous> (node:internal/worker:350:14)\n    at MessagePort.[nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r2.json",
+        "sha256": "2da357d18cafc5c1c5772bd91520ffe24cfbeb885918c494a52f6fa5aa8e47a3",
+        "counts": {
+          "skipped": 20,
+          "failed": 1,
+          "passed": 3
+        },
+        "failedCases": [
+          {
+            "name": "fixed LibreOffice through the real native rendering boundary round trips nine chart source types through the real Worker save and native renderer",
+            "messages": [
+              "Error: Command failed: python3 -c import sys,zipfile,io,posixpath,json,xml.etree.ElementTree as E\nz=zipfile.ZipFile(sys.argv[1]);o=zipfile.ZipFile(sys.argv[2]);cx='{http://schemas.microsoft.com/office/drawing/2014/chartex}';c='{http://schemas.openxmlformats.org/drawingml/2006/chart}';a='{http://schemas.openxmlformats.org/drawingml/2006/main}';r='{http://schemas.openxmlformats.org/officeDocument/2006/relationships}';s='{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'\ndef rels(part):return {n.attrib['Id']:posixpath.normpath(posixpath.join(posixpath.dirname(part),n.attrib['Target'])) for n in E.fromstring(z.read(posixpath.join(posixpath.dirname(part),'_rels',posixpath.basename(part)+'.rels')))}\nout=[]\nfor item in json.loads(sys.argv[3]):\n part='ppt/slides/slide'+str(item['page'])+'.xml';slide=E.fromstring(z.read(part));ref=next(n for n in slide.iter() if n.tag in [cx+'chart',c+'chart']);cp=rels(part)[ref.attrib[r+'id']];chart=E.fromstring(z.read(cp));modern=ref.tag==cx+'chart';ns=cx if modern else c\n if modern:\n  series=chart.find('.//'+cx+'series');kind=series.attrib['layoutId'];kind='histogram' if kind=='clusteredColumn' else kind;values=[float(n.text) for n in chart.findall(cx+'chartData/'+cx+'data/'+cx+'numDim/'+cx+'lvl/'+cx+'pt')];points=series.findall(cx+'dataPt');ed=chart.find(cx+'chartData/'+cx+'externalData')\n else:\n  plot=chart.find(c+'chart/'+c+'plotArea');typed=next(n for n in plot if n.tag.endswith('Chart'));kind=typed.tag.split('}')[1][:-5];series=typed.find(c+'ser');values=[float(n.text) for n in series.findall(c+('yVal' if kind=='scatter' else 'val')+'/'+c+'numRef/'+c+'numCache/'+c+'pt/'+c+'v')];points=series.findall(c+'dPt');ed=chart.find(c+'externalData')\n  if kind=='scatter':assert [float(n.text) for n in series.findall(c+'xVal/'+c+'numRef/'+c+'numCache/'+c+'pt/'+c+'v')]==[1,2,3]\n assert kind==item['type'] and values==[6,3,4],(kind,values);assert [n.find(ns+'spPr/'+a+'solidFill/'+a+'srgbClr').attrib['val'] for n in points]==['14806E','C35B55','5779A8'];assert chart.find('.//'+a+'latin').attrib['typeface']=='Arial';assert chart.find('.//'+ns+'legend') is not None\n bp=rels(cp)[ed.attrib[r+'id']];book=zipfile.ZipFile(io.BytesIO(z.read(bp)));cells={n.attrib['r']:float(n.find(s+'v').text) for n in E.fromstring(book.read('xl/worksheets/sheet1.xml')).iter(s+'c') if n.find(s+'v') is not None};assert [cells['B2'],cells['B3'],cells['B4']]==values;out.append({'type':kind,'values':values,'pointColorsRetained':True,'fontRetained':True,'realWorkbook':True})\nassert all(z.read(n)==o.read(n) for n in o.namelist() if n not in ['ppt/presentation.xml','ppt/_rels/presentation.xml.rels','[Content_Types].xml']);print(json.dumps(out)) /private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lo-native-TE5t4X/project/nine.pptx /Users/hx/hx/hxWork/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/predev-office/final/rich-edited.pptx [{\"type\":\"bar\",\"slideId\":\"258\",\"elementId\":\"4\",\"page\":3},{\"type\":\"line\",\"slideId\":\"259\",\"elementId\":\"4\",\"page\":4},{\"type\":\"pie\",\"slideId\":\"260\",\"elementId\":\"4\",\"page\":5},{\"type\":\"area\",\"slideId\":\"261\",\"elementId\":\"4\",\"page\":6},{\"type\":\"scatter\",\"slideId\":\"262\",\"elementId\":\"4\",\"page\":7},{\"type\":\"histogram\",\"slideId\":\"263\",\"elementId\":\"4\",\"page\":8},{\"type\":\"waterfall\",\"slideId\":\"264\",\"elementId\":\"4\",\"page\":9},{\"type\":\"funnel\",\"slideId\":\"265\",\"elementId\":\"4\",\"page\":10},{\"type\":\"treemap\",\"slideId\":\"266\",\"elementId\":\"4\",\"page\":11}]\nTraceback (most recent call last):\n  File \"<string>\", line 6, in <module>\n    part='ppt/slides/slide'+str(item['page'])+'.xml';slide=E.fromstring(z.read(part));ref=next(n for n in slide.iter() if n.tag in [cx+'chart',c+'chart']);cp=rels(part)[ref.attrib[r+'id']];chart=E.fromstring(z.read(cp));modern=ref.tag==cx+'chart';ns=cx if modern else c\n                                                                        ~~~~~~^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/zipfile/__init__.py\", line 1715, in read\n    with self.open(name, \"r\", pwd) as fp:\n         ~~~~~~~~~^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/zipfile/__init__.py\", line 1752, in open\n    zinfo = self.getinfo(name)\n  File \"/opt/homebrew/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/zipfile/__init__.py\", line 1680, in getinfo\n    raise KeyError(\n        'There is no item named %r in the archive' % name)\nKeyError: \"There is no item named 'ppt/slides/slide3.xml' in the archive\"\n\n    at genericNodeError (node:internal/errors:985:15)\n    at wrappedFn (node:internal/errors:539:14)\n    at checkExecSyncError (node:child_process:956:11)\n    at execFileSync (node:child_process:992:15)\n    at /Users/hx/hx/hxWork/SmartDD/src/main/core/files/office/libreoffice-native.test.ts:84:36\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r3.json",
+        "sha256": "4c34fd61aa3ea8171e245a3391f48edf00aed184e3f0a1b0513fc826ac424776",
+        "counts": {
+          "skipped": 23,
+          "passed": 1
+        },
+        "failedCases": []
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r4.json",
+        "sha256": "260060ae0050e7f725f7b148fb0b03c2588407260b5d3bf2dbb84a3651de463d",
+        "counts": {
+          "skipped": 23,
+          "failed": 1
+        },
+        "failedCases": [
+          {
+            "name": "fixed LibreOffice through the real native rendering boundary round trips nine chart source types through the real Worker save and native renderer",
+            "messages": [
+              "Error: Command failed: python3 -c import sys,pathlib\nh,s,m,d=pathlib.Path(sys.argv[1]).read_bytes().split(b'\\n',3);assert h==b'P6' and m==b'255';pixels=list(zip(d[::3],d[1::3],d[2::3]));n=sum(min(rgb)<180 for rgb in pixels);assert n>300\nif sys.argv[2]=='scatter':\n counts=[pixels.count(color) for color in [(20,128,110),(195,91,85),(87,121,168)]];assert min(counts)>5,counts\nprint(n) /private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lo-native-FUQw4a/scatter.ppm scatter\nTraceback (most recent call last):\n  File \"<string>\", line 4, in <module>\n    counts=[pixels.count(color) for color in [(20,128,110),(195,91,85),(87,121,168)]];assert min(counts)>5,counts\n                                                                                             ^^^^^^^^^^^^^\nAssertionError: [0, 0, 0]\n\n    at genericNodeError (node:internal/errors:985:15)\n    at wrappedFn (node:internal/errors:539:14)\n    at checkExecSyncError (node:child_process:956:11)\n    at execFileSync (node:child_process:992:15)\n    at /Users/hx/hx/hxWork/SmartDD/src/main/core/files/office/libreoffice-native.test.ts:100:208\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r5.json",
+        "sha256": "8e8040e40d85cd3a7a249f8ce07b5e6ee4b5c912d0399c7c1978baf8bf16e0f8",
+        "counts": {
+          "skipped": 23,
+          "passed": 1
+        },
+        "failedCases": []
+      }
+    ],
+    "finalDetails": {
+      "independent": [
+        {
+          "type": "bar",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "line",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "pie",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "area",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "scatter",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "histogram",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "waterfall",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "funnel",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        },
+        {
+          "type": "treemap",
+          "values": [
+            6,
+            3,
+            4
+          ],
+          "pointColorsRetained": true,
+          "fontRetained": true,
+          "realWorkbook": true
+        }
+      ],
+      "renders": [
+        {
+          "type": "bar",
+          "nonWhitePixels": 7576,
+          "ppmHash": "a2ae309fdf55683bd80c0143574dce4a2cb958f1b0a200cf9d6d0b87f85b1bd8"
+        },
+        {
+          "type": "line",
+          "nonWhitePixels": 1814,
+          "ppmHash": "8a4150d64fce7ff3a6dd9545692be6c17844d467af47f54005bf6e8da6e157c0"
+        },
+        {
+          "type": "pie",
+          "nonWhitePixels": 10263,
+          "ppmHash": "582a5ed5243c99038fe07ce0581da8e94b25c5b8114f16e8103c126551787675"
+        },
+        {
+          "type": "area",
+          "nonWhitePixels": 15466,
+          "ppmHash": "c3a9eaa9308f2e46dadde0427b7bad369bbd0acf3157337893384c0ea0e6184a"
+        },
+        {
+          "type": "scatter",
+          "nonWhitePixels": 1581,
+          "ppmHash": "eac809ff7f8f78b3842c0ad67bd5dbd3eea496cc96c259f1028c88210c982e7b"
+        },
+        {
+          "type": "histogram",
+          "nonWhitePixels": 20144,
+          "ppmHash": "ee7a4882018b557d88090fc30c40fa612aaeb8231546693b40e402445ecea78f"
+        },
+        {
+          "type": "waterfall",
+          "nonWhitePixels": 8801,
+          "ppmHash": "c7971c7ddd00f9d63d261eeb605cc56dc3271b60bde58dd4e3e7b3bdfb2093fc"
+        },
+        {
+          "type": "funnel",
+          "nonWhitePixels": 20502,
+          "ppmHash": "2effe771c1f9bb46e2285dccda12d2c438d3edc3a0803eb03fc9f2d55f187c74"
+        },
+        {
+          "type": "treemap",
+          "nonWhitePixels": 30821,
+          "ppmHash": "5dddc556f13ef86cc636f114968219d01f4809f20396aab08bbfb85f112d2203"
+        }
+      ],
+      "sourceHash": "a106346bf730ad59c17a49829ccaa2fd20a6e27e6dccebbccf9c55ce4b24047e",
+      "pdfHash": "332b3d6eae0a8c3c7800c985157291e78a47ee6baac280e72e0f80a7e179b49b",
+      "reopened": true,
+      "undoMutations": 44,
+      "allOriginalPartsRestored": true,
+      "uiAcceptance": false,
+      "pixelParity": false
+    },
+    "artifacts": [
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r5-evidence/nine.pptx",
+        "sha256": "a106346bf730ad59c17a49829ccaa2fd20a6e27e6dccebbccf9c55ce4b24047e"
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r5-evidence/nine.pdf",
+        "sha256": "332b3d6eae0a8c3c7800c985157291e78a47ee6baac280e72e0f80a7e179b49b"
+      },
+      {
+        "path": "/private/tmp/willyou-chart-roundtrip-native-r5-evidence/nine.json",
+        "sha256": "60660a6d8acee6cf607ae28e3c0e5b61f130b249160dda6eab36d4b36b4a8f58"
+      }
+    ],
+    "images": [
+      {
+        "type": "bar",
+        "path": "development-pptx-chart-roundtrip/bar-native-r5.png",
+        "sha256": "0cdfb19537259cdadb8dd6a9a877ee96a6f884801d2ef91e25f5770227ee3649",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "line",
+        "path": "development-pptx-chart-roundtrip/line-native-r5.png",
+        "sha256": "9e3720b2647f03d6a256bab2162433f9061327304843d6319a55a4fea927a289",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "pie",
+        "path": "development-pptx-chart-roundtrip/pie-native-r5.png",
+        "sha256": "7f0d6aa1148d7ad1d2e98dc0b2e261d49bb08368f5ed4c6d1b789b641d8afc94",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "area",
+        "path": "development-pptx-chart-roundtrip/area-native-r5.png",
+        "sha256": "435a9cc49ac34a707b1871b4f5a5aa497d37101926eccff8d63ca65d3654a620",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "scatter",
+        "path": "development-pptx-chart-roundtrip/scatter-native-r5.png",
+        "sha256": "c55abda2ab0a2dd2b743c32db9d8f750a3e62fb5ad6f1840166facb96ed2452d",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "histogram",
+        "path": "development-pptx-chart-roundtrip/histogram-native-r5.png",
+        "sha256": "a98c832eca5889afaa993c7761b7aa476b1f4d1ce9c55d784a470e7e146686b2",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "waterfall",
+        "path": "development-pptx-chart-roundtrip/waterfall-native-r5.png",
+        "sha256": "c7cf69eba554b34673bbf8a4c4e58bf393a2649421f1fbeebc4dea44085545b1",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "funnel",
+        "path": "development-pptx-chart-roundtrip/funnel-native-r5.png",
+        "sha256": "90bbbec25f8389fbbd9f8f5786bb0aeae488c1d505af2162d7cc34c44a3d2164",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      },
+      {
+        "type": "treemap",
+        "path": "development-pptx-chart-roundtrip/treemap-native-r5.png",
+        "sha256": "ef39eeea868b31877a7be226361b6265f3f07eda5f85926223f0db273b74a5a3",
+        "kind": "synthetic native PDF raster, not App screenshot"
+      }
+    ],
+    "scatterBefore": {
+      "path": "development-pptx-chart-roundtrip/scatter-native-r3-before.png",
+      "sha256": "9ae3d2e36e2cb668e0de3293ffde83c82f2c583c3fc27ea91414d7e01f59fc8e"
+    },
+    "scatterPixelComparison": {
+      "before": {
+        "path": "/private/tmp/willyou-chart-scatter-before-r3.ppm",
+        "sha256": "6f14904f772093e36836712af000b02fab0ce283698ce55c3df33f5fd6fe50a5",
+        "rgbPixels": [
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "path": "/private/tmp/willyou-chart-scatter-after-r5.ppm",
+        "sha256": "eac809ff7f8f78b3842c0ad67bd5dbd3eea496cc96c259f1028c88210c982e7b",
+        "rgbPixels": [
+          66,
+          66,
+          68
+        ]
+      }
+    },
+    "r3ToR5ChangedRenderTypes": [
+      "scatter"
+    ],
+    "imagesAreAppScreenshots": false,
+    "pixelParity": false
+  },
+  "failures": [
+    {
+      "round": "native-r1",
+      "cause": "Real Worker omitted chart-type from async route; modern-to-scatter rejected; exact branch fixed and Worker regression added"
+    },
+    {
+      "round": "native-r2",
+      "cause": "Independent script assumed slide3.xml; fixed to follow actual presentation relationships"
+    },
+    {
+      "round": "strict-r2",
+      "cause": "Fixture patch plan marked unchanged XML parts as changed; fixed and Strict roundtrip rechecked"
+    },
+    {
+      "round": "native-r3",
+      "cause": "Structural/nonempty checks passed but visual inspection found all-blue scatter; not accepted as color pass"
+    },
+    {
+      "round": "native-r4",
+      "cause": "Explicit per-point circle/6 equal to series default still ignored; strict RGB assertion failed [0,0,0]"
+    }
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-chart-roundtrip-r1-build/mac-arm64/WillYou.app",
+    "asar": {
+      "path": "/private/tmp/willyou-m9-chart-roundtrip-r1-build/mac-arm64/WillYou.app/Contents/Resources/app.asar",
+      "sha256": "51cfc9b47e76da600e67436bc93e1932433e02ea30fe0b3c0826a4e649423474"
+    },
+    "buildLog": {
+      "path": "/private/tmp/willyou-m9-chart-roundtrip-package-r1.log",
+      "sha256": "4441cb0eb0c9e329960aba634fa28f9882d461ee130230d25d4723dcab4cac47"
+    },
+    "status": "built",
+    "nativeSmoke": {
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "platformBoundary": "macOS arm64 only; not Windows/Linux acceptance"
+  },
+  "packagedTest": {
+    "report": {
+      "path": "/private/tmp/willyou-chart-roundtrip-packaged-r1.json",
+      "sha256": "6cd711f697fda4fb72a4b0f14cf7cdf5d0a73646d5b4b0b3bcdcc5609767624d",
+      "counts": {
+        "passed": 4,
+        "skipped": 7
+      },
+      "failedCases": []
+    },
+    "exitCode": 0,
+    "log": {
+      "path": "/private/tmp/willyou-chart-roundtrip-packaged-r1.log",
+      "sha256": "b04593f4dbc6b0811e078578f2b24e84f29e87885684806464661da4c0ede654"
+    },
+    "details": {
+      "chartex-preview": {
+        "app": "/private/tmp/willyou-m9-chart-roundtrip-r1-build/mac-arm64/WillYou.app",
+        "workerSha256": "71ecfacf0ef669a9641eba9c116487053d98e4c212f68eca18c8407a7ccea8e9",
+        "pagesWorkerSha256": "4fd3ca1cb7baa7c561bdf723bbdbb09382da52fc48bc08455886ff1ddb660eb1",
+        "sourceHash": "13398048238e6718eccc19039a6497c221fb743ad5fab6004f053a9c05c3f656",
+        "pdfHash": "b94ecaa90ac42a0eb6996cb69e645da4f9e54741b7c3b95e52b52c09683c5478",
+        "independent": [
+          {
+            "type": "funnel",
+            "values": [
+              6,
+              3,
+              4
+            ],
+            "options": true
+          },
+          {
+            "type": "clusteredColumn",
+            "values": [
+              6,
+              3,
+              4
+            ],
+            "options": true
+          },
+          {
+            "type": "waterfall",
+            "values": [
+              6,
+              3,
+              4
+            ],
+            "options": true
+          },
+          {
+            "type": "treemap",
+            "values": [
+              6,
+              3,
+              4
+            ],
+            "options": true
+          }
+        ],
+        "measured": [
+          {
+            "type": "funnel",
+            "maxErrorPixels": 0.4615384615384528,
+            "axesPixels": 639,
+            "gridPixels": 607
+          },
+          {
+            "type": "histogram",
+            "maxErrorPixels": 0.4615384615384599,
+            "axesPixels": 639,
+            "gridPixels": 371
+          },
+          {
+            "type": "waterfall",
+            "maxErrorPixels": 0.6153846153846132,
+            "axesPixels": 639,
+            "gridPixels": 919
+          },
+          {
+            "type": "treemap",
+            "maxErrorPixels": 0.2307692307692264,
+            "axesPixels": 639,
+            "gridPixels": 45
+          }
+        ],
+        "scatterMarkerColors": [
+          66,
+          66,
+          68
+        ],
+        "modernBasicRoundTrip": true,
+        "readonlyPreview": true,
+        "reopened": true,
+        "pendingRecovered": true,
+        "undoMutations": 18,
+        "allOriginalPartsRestored": true,
+        "uiAcceptance": false
+      },
+      "chartex-data": {
+        "app": "/private/tmp/willyou-m9-chart-roundtrip-r1-build/mac-arm64/WillYou.app",
+        "results": [
+          {
+            "type": "funnel",
+            "sourceHash": "78f1e64e2f14ed3fdd2d219a88e577bc20f1d499b7334b70bc343b81872e5186",
+            "savedHash": "4e74bdd2c1edeb698b317a026c79d04c2101a226a0547667aec52bf0e2e3343d",
+            "independent": {
+              "values": [
+                15,
+                6
+              ],
+              "embeddedValues": [
+                "15",
+                "6"
+              ],
+              "changed": [
+                "ppt/slides/slide1.xml",
+                "ppt/slides/_rels/slide1.xml.rels",
+                "[Content_Types].xml"
+              ],
+              "oldChartAndWorkbookPreserved": true,
+              "otherEmbeddedPartsPreserved": true
+            },
+            "previewRefused": true,
+            "pendingRecovered": true,
+            "reopened": true,
+            "undoAllOriginalParts": true
+          },
+          {
+            "type": "histogram",
+            "sourceHash": "3953ad1d99e158f2a80436836b5bfd9e50000833180e58263bb5c799b854c06a",
+            "savedHash": "2d125e6c68ba1601dc78a5cb495046198aef194cb3012cae2bb3280ea683cfc9",
+            "independent": {
+              "values": [
+                15,
+                6
+              ],
+              "embeddedValues": [
+                "15",
+                "6"
+              ],
+              "changed": [
+                "ppt/slides/slide1.xml",
+                "ppt/slides/_rels/slide1.xml.rels",
+                "[Content_Types].xml"
+              ],
+              "oldChartAndWorkbookPreserved": true,
+              "otherEmbeddedPartsPreserved": true
+            },
+            "previewRefused": true,
+            "pendingRecovered": true,
+            "reopened": true,
+            "undoAllOriginalParts": true
+          },
+          {
+            "type": "waterfall",
+            "sourceHash": "f7fd0ad7d3f5760e4ccc162bcd73d1640d37506a9601481b570e8e93f571ae17",
+            "savedHash": "eb0b4cd0a15c09a4265a8dd9ae52f97ff8087e942830a22c02200e52627a9d84",
+            "independent": {
+              "values": [
+                15,
+                6
+              ],
+              "embeddedValues": [
+                "15",
+                "6"
+              ],
+              "changed": [
+                "ppt/slides/slide1.xml",
+                "ppt/slides/_rels/slide1.xml.rels",
+                "[Content_Types].xml"
+              ],
+              "oldChartAndWorkbookPreserved": true,
+              "otherEmbeddedPartsPreserved": true
+            },
+            "previewRefused": true,
+            "pendingRecovered": true,
+            "reopened": true,
+            "undoAllOriginalParts": true
+          },
+          {
+            "type": "treemap",
+            "sourceHash": "ff59156a5ce60e7ae32c3877210b497bdefb8171e0d1f040420637e4c672d538",
+            "savedHash": "4737894641140f6fb142d86bde4952afb295699a2c5e7d11a1e104fa3d713b36",
+            "independent": {
+              "values": [
+                15,
+                6
+              ],
+              "embeddedValues": [
+                "15",
+                "6"
+              ],
+              "changed": [
+                "ppt/slides/slide1.xml",
+                "ppt/slides/_rels/slide1.xml.rels",
+                "[Content_Types].xml"
+              ],
+              "oldChartAndWorkbookPreserved": true,
+              "otherEmbeddedPartsPreserved": true
+            },
+            "previewRefused": true,
+            "pendingRecovered": true,
+            "reopened": true,
+            "undoAllOriginalParts": true
+          }
+        ],
+        "uiAcceptance": false
+      },
+      "chartex-guard": {
+        "app": "/private/tmp/willyou-m9-chart-roundtrip-r1-build/mac-arm64/WillYou.app",
+        "results": [
+          {
+            "type": "funnel",
+            "sourceHash": "78f1e64e2f14ed3fdd2d219a88e577bc20f1d499b7334b70bc343b81872e5186",
+            "savedHash": "c4f06f33ef266266dbaf49f8c34caf7334345b754d859218b23d1fe0661c3e04",
+            "unsupportedCharts": [
+              "漏斗图"
+            ],
+            "previewRefused": true,
+            "chartAndWorkbookPreserved": true,
+            "reopened": true
+          },
+          {
+            "type": "histogram",
+            "sourceHash": "3953ad1d99e158f2a80436836b5bfd9e50000833180e58263bb5c799b854c06a",
+            "savedHash": "0cb7c59aade9b3c0b9f84d2c181285f59c483e48cc4a3c3d8738bff70a6a46e0",
+            "unsupportedCharts": [
+              "直方图"
+            ],
+            "previewRefused": true,
+            "chartAndWorkbookPreserved": true,
+            "reopened": true
+          },
+          {
+            "type": "waterfall",
+            "sourceHash": "f7fd0ad7d3f5760e4ccc162bcd73d1640d37506a9601481b570e8e93f571ae17",
+            "savedHash": "bbd272fd0b2e3ff5fc01253c3e8d61e6a92e899c5c42558b67a6a7307b832f9b",
+            "unsupportedCharts": [
+              "瀑布图"
+            ],
+            "previewRefused": true,
+            "chartAndWorkbookPreserved": true,
+            "reopened": true
+          },
+          {
+            "type": "treemap",
+            "sourceHash": "ff59156a5ce60e7ae32c3877210b497bdefb8171e0d1f040420637e4c672d538",
+            "savedHash": "10b6fc682d83219d518cb91039cbc4efcf31c59610ed77995b376714519deab6",
+            "unsupportedCharts": [
+              "矩形树图"
+            ],
+            "previewRefused": true,
+            "chartAndWorkbookPreserved": true,
+            "reopened": true
+          }
+        ],
+        "uiAcceptance": false
+      }
+    },
+    "scatterImage": {
+      "path": "development-pptx-chart-roundtrip/scatter-packaged-r1.png",
+      "sha256": "c55abda2ab0a2dd2b743c32db9d8f750a3e62fb5ad6f1840166facb96ed2452d"
+    },
+    "boundary": "Shipped ASAR PPTX/pages Workers and native helpers; source FileService orchestration matches build production baseline; not App UI acceptance"
+  },
+  "upstreamObservation": {
+    "version": "26.2.4.2",
+    "commit": "0229ac93fcf0d7cbc6376066c6f35021cef002dc",
+    "url": "https://raw.githubusercontent.com/LibreOffice/core/0229ac93fcf0d7cbc6376066c6f35021cef002dc/oox/source/drawingml/chart/seriesconverter.cxx",
+    "localArtifact": {
+      "path": "/private/tmp/willyou-lo-seriesconverter.cxx",
+      "sha256": "f42306096a9b6f1a5cf6a00832c539f19a4233424c54bf8a6f56399e44fd9dc1"
+    },
+    "finding": "DataPointConverter::convertFromModel calls convertMarker only when point symbol/size differ from series defaults; source observation, no implementation copied"
+  },
+  "appUI": {
+    "state": "BLOCKED",
+    "observation": "Rechecked CUA getAXState after package verification: Mac is locked and automatic unlock could not unlock it",
+    "runningPackage": "pptx-image-r1",
+    "pendingUserStep": "Existing unlock and image-picker confirmation pending; no repeated request or concurrent userdata",
+    "preparedFixtures": {
+      "directory": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/pptx-chart-roundtrip-ui-r1",
+      "build": "/private/tmp/willyou-m9-chart-roundtrip-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "51cfc9b47e76da600e67436bc93e1932433e02ea30fe0b3c0826a4e649423474",
+      "kind": "synthetic test files; not opened or accepted in App",
+      "files": {
+        "nine-types.pptx": "a106346bf730ad59c17a49829ccaa2fd20a6e27e6dccebbccf9c55ce4b24047e",
+        "chart-edit.pptx": "78d689d77581d44067d234860dc76e527cc4b7774dd181231f1b9698e9bbdac6"
+      }
+    },
+    "newFormalAppEvidence": false
+  },
+  "formalAcceptance": {
+    "current": 419,
+    "passed": 3,
+    "remaining": 416,
+    "passPercentage": 0.72,
+    "excludedFuture": 6,
+    "newFormalPasses": 0,
+    "status": "开发中",
+    "passedCaseIds": [
+      "M9-T-S02",
+      "M9-T-T18",
+      "M9-T-T22"
+    ]
+  },
+  "defects": [
+    {
+      "id": "M9-DEV-029",
+      "status": "OPEN",
+      "reason": "Full source styles, quantities and App/visual matrix incomplete"
+    },
+    {
+      "id": "M9-DEV-030",
+      "status": "code/native/packaged checks passed; App pending",
+      "reason": "Scatter point colors fixed; full legend and prototype appearance pending"
+    }
+  ],
+  "checks": {
+    "sourceManifest": {
+      "files": 617,
+      "mismatch": []
+    },
+    "caseIndex": "PASS: 425 unique / 23 groups; 419 current / 6 future, Markdown/JSON/scope mapping consistent",
+    "localLinks": {
+      "checked": 336,
+      "missing": []
+    },
+    "diffWhitespace": "passed"
+  },
+  "updatedAt": "2026-10-18T00:27:05.546240+00:00"
+}

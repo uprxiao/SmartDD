@@ -1,6 +1,6 @@
 // Task details and runtime bar adapted from Yoda (Apache-2.0).
 // The single window title follows the approved Codex reference; the sidebar switches sessions.
-import { Ellipsis, Folder, Moon, Play, SlidersHorizontal, Square, SquarePlus, Sun, TriangleAlert } from 'lucide-react';
+import { Ellipsis, Folder, FolderOpen, Moon, Play, SlidersHorizontal, Square, SquarePlus, Sun, TriangleAlert, X } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import openaiLogo from '@renderer/assets/runners/openai.svg?no-inline';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
+import { useProject } from '@renderer/lib/hooks/useProjects';
 import { HealthDot, ProfileHealthMark } from '@renderer/lib/profile-health';
 import { rpc } from '@renderer/lib/ipc';
 import { Button } from '@renderer/lib/ui/button';
@@ -23,6 +24,7 @@ import { cn } from '@renderer/utils/utils';
 import { useTheme } from '@renderer/lib/theme';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import { RuntimeCapabilities } from './capabilities';
+import { useTaskClose } from './task-close';
 
 const RUNNER_LOGOS: Record<Runner, string> = { claude: claudeLogo, codex: openaiLogo };
 
@@ -34,6 +36,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
   const { t } = useTranslation();
   const { effectiveTheme, setTheme } = useTheme();
   const [busy, setBusy] = useState(false);
+  const { requestClose, closeDialog, busy: closing } = useTaskClose(task);
   const dark = effectiveTheme === 'ydark';
   const running = Boolean(task.ptyId);
   const restart = canRestartInPlace(task) && Boolean(task.aiProfileId);
@@ -45,20 +48,25 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
     } catch (e) { toast.error(rpcErrorMessage(e)); }
     finally { setBusy(false); }
   };
-  return <header className="task-window-header app-drag" data-testid="task-header">
+  return <><header className="task-window-header app-drag" data-testid="task-header">
     <div className="task-window-title" title={`${task.projectName ?? t('task.noProject')} / ${task.title}`}>
       <Folder size={17} aria-hidden="true" /><span>{task.title}</span>
     </div>
     <div className="task-window-actions app-no-drag">
+      <button type="button" className="m9-file-entry" data-testid="task-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button>
       <DropdownMenu>
         <DropdownMenuTrigger className="icon-button" data-testid="task-actions" aria-label={t('m6.more')} title={t('m6.more')}><Ellipsis size={18} /></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {(running || restart) && <>
-            <DropdownMenuItem data-testid={running ? 'task-kill' : 'task-header-resume'} disabled={busy || tasksStore.resuming.has(task.id)} onClick={() => void changeSession()}>
+            <DropdownMenuItem data-testid={running ? 'task-kill' : 'task-header-resume'} disabled={busy || closing || tasksStore.resuming.has(task.id) || tasksStore.closing.has(task.id)} onClick={() => void changeSession()}>
               {running ? <Square /> : <Play />}{running ? t('task.kill') : task.recovery === 'resumable' ? t('task.resume') : t('task.start')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>}
+          <DropdownMenuItem data-testid="task-close-session" disabled={busy || closing || tasksStore.closing.has(task.id)} onClick={requestClose}>
+            <X />{t('tasks.closeSession')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setTheme(dark ? 'ylight' : 'ydark')}>
             {dark ? <Sun /> : <Moon />}{t('settings.theme')}
           </DropdownMenuItem>
@@ -68,7 +76,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
       <span className="task-window-divider" />
       <button type="button" className="icon-button" title={t('nav.newTask')} aria-label={t('nav.newTask')} onClick={() => navigation.newTask(task.projectId ?? undefined)}><SquarePlus size={17} /></button>
     </div>
-  </header>;
+  </header>{closeDialog}</>;
 });
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
@@ -84,10 +92,16 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { data: profiles = [] } = useAiProfiles();
+  const { data: project } = useProject(task.projectId);
   const profile = profiles.find((p) => p.id === task.aiProfileId);
   const model = profile ? profileModel(profile) : null;
   const running = Boolean(task.ptyId);
-  const changed = task.configVersion !== null && task.projectConfigVersion !== null && task.configVersion !== task.projectConfigVersion;
+  // Project writes refresh this query independently of the task-list cache.
+  // Config revisions only increase; an older query cache must not suppress a
+  // change already observed in the task metadata while its refetch completes.
+  const projectVersion = project?.configVersion === undefined ? task.projectConfigVersion
+    : task.projectConfigVersion === null ? project.configVersion : Math.max(project.configVersion, task.projectConfigVersion);
+  const changed = task.configVersion !== null && projectVersion !== null && task.configVersion !== projectVersion;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -139,7 +153,7 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
         {changed && (
           <div className="flex items-start gap-1 text-foreground-muted">
             <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-            {t('task.configChanged', { from: task.configVersion, to: task.projectConfigVersion })}
+            {t('task.configChanged', { from: task.configVersion, to: projectVersion })}
           </div>
         )}
         {canRestartInPlace(task) && (

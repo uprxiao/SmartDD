@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-18T09:43:34.967Z",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r22-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "brokerSha256": "81205d4eb75670835a23652a936a3cdd07fcf3e8e8d2f65eb7afa2c546af4676",
+  "boundary": "Production FileBuffer/FileService/recovery and packaged broker, real private on-disk journal/draft, fresh service/broker sessions and independent bytes. Timers controlled. A real App process crash is covered separately, not claimed by service recreation.",
+  "rows": [
+    {
+      "caseId": "M9-T-H29",
+      "scenario": "dirty same base",
+      "oldRef": {
+        "id": "6c9b0d7b-c632-47a1-bc6c-73c4cb53908d",
+        "lease": "907b26ed-c350-424e-a78f-447161062f63",
+        "generation": 1
+      },
+      "newRef": {
+        "id": "45e101dc-2df4-41e3-bd59-d977ab77541f",
+        "lease": "2f642a79-5986-4693-99b4-fac59e77513d",
+        "generation": 1
+      },
+      "restored": "Recovered local 中文🙂\r\n",
+      "dirty": true,
+      "conflict": false,
+      "baseHash": "ef451536dc4d510ba61acde5e400ac2ae859db253e1b54f94edebcb14419fa46",
+      "sourceSha256": "ef451536dc4d510ba61acde5e400ac2ae859db253e1b54f94edebcb14419fa46",
+      "calls": [
+        "read",
+        "readDraft"
+      ],
+      "historyPersistedAcrossProcess": false
+    },
+    {
+      "caseId": "M9-T-H29",
+      "scenario": "dirty changed disk",
+      "oldRef": {
+        "id": "580f3bfa-92e0-4655-ad06-d9ae9c8b0261",
+        "lease": "79e85f88-6b67-4740-92af-af9b5da21b5d",
+        "generation": 1
+      },
+      "newRef": {
+        "id": "17534ac5-bb5b-45b6-8415-58b857ec9ef0",
+        "lease": "5748c495-0e7a-47f5-aa53-a167861255c1",
+        "generation": 1
+      },
+      "restored": "Recovered local 中文🙂\r\n",
+      "dirty": true,
+      "conflict": true,
+      "baseHash": "ef451536dc4d510ba61acde5e400ac2ae859db253e1b54f94edebcb14419fa46",
+      "sourceSha256": "e69d227b2f0114555fe95511d636e6db306bb55946828054c827bcd1168756bf",
+      "calls": [
+        "read",
+        "readDraft",
+        "read"
+      ],
+      "historyPersistedAcrossProcess": false
+    },
+    {
+      "caseId": "M9-T-H30",
+      "scenario": "real private-root permission guard failure preserves older durable version",
+      "id": "d15e6794-6716-45a0-ae1c-55f869f89673",
+      "error": "[UNTRUSTED] Recovery root permissions changed",
+      "persisted": "Recovered local 中文🙂\r\n",
+      "restored": "Recovered local 中文🙂\r\n",
+      "disk": "Disk base 中文🙂\r\n"
+    }
+  ]
+}

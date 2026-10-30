@@ -1,0 +1,57 @@
+{
+  "schema": "smartdd-m9-acceptance-evidence-v1",
+  "recordedAt": "2026-10-18T10:01:14.035422+08:00",
+  "branch": "feature/0.0.1",
+  "requirementRevision": "R3.4-P1",
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app",
+    "asarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6",
+    "buildEvidence": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r2-package.json",
+      "sha256": "9a7def4dd1c821e76e37e24391b6c0a8c258b97c52a083c5f8d198cc0ff82999"
+    }
+  },
+  "method": "真实打包App，cua_repl本机UI操作；SQLite与文件哈希只读核对",
+  "H02": {
+    "status": "passed",
+    "steps": [
+      "初始撤销/重做均禁用",
+      "输入X：dirty，撤销启用/重做禁用",
+      "按钮撤销：clean，撤销禁用/重做启用",
+      "按钮重做：dirty，撤销启用/重做禁用",
+      "再次按钮撤销：clean，撤销禁用/重做启用"
+    ],
+    "focus": "每次按钮操作后AX焦点均为accept-undo.txt编辑器",
+    "fileAfter": {
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-batch-r1/accept-undo.txt",
+      "sha256": "36ff791b24610d68dac8f14d1a506496ceb1e4f1bc00b3a9fae2acf7869d3259",
+      "mtime_ns": 1792287026683996243,
+      "text": "Undo baseline\n"
+    },
+    "unchangedFromR1": true
+  },
+  "D14AffectedRegression": {
+    "status": "passed",
+    "fixture": "acceptance-tabs-r2/tab-C.txt",
+    "steps": [
+      "关闭B后C为clean preview，独立SQLite routes不含C",
+      "在C输入R2 retained edit，AX显示未保存；C自动进入持久routes",
+      "独立磁盘读取实际保存内容Tab C baseline\\nR2 retained edit",
+      "正常Cmd+Q并重新启动同一r2包，进入项目，C为活动标签，内容含R2 retained edit"
+    ],
+    "before": {
+      "path": "/private/tmp/willyou-r2-tabs-after-clean-and-preview.json",
+      "sha256": "c040c82593108e0e39707ddefd4a2ead51d1aef3f00647349bc9c6cbc98b9c2f"
+    },
+    "saved": {
+      "path": "/private/tmp/willyou-r2-d14-dirty-pinned.json",
+      "sha256": "80fd468b77f60c867eb41496f02439fc832d96a690befcf177b32a329b465933"
+    },
+    "restoredText": "Tab C baseline\nR2 retained edit"
+  },
+  "boundaries": [
+    "这里只是DEV034/035影响范围的真实界面回归；精确竞态与断点恢复由text-buffer U/I证据证明。",
+    "正常退出重启，不冒称崩溃/断电测试；原clean preview排除完整验收保留D14早前记录。",
+    "无截图文件归档；AX观察来自本轮工具输出。"
+  ]
+}

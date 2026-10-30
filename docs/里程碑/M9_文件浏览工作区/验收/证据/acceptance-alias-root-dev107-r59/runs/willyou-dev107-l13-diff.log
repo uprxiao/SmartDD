@@ -1,0 +1,52 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/lifecycle-persistence-acceptance.test.ts -t L13: --reporter=verbose
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: a committed second-window snapshot reaches the already open first window without echo writes
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: stale CAS returns the latest snapshot, does not write, and keeps revisions monotonic in the same millisecond
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: a remote layout cannot remove local dirty data or selection; explicit retry uses CAS without saving the file
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: keeps a chosen active file and preview while applying order and initializes an existing SVG source buffer
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: protects a real in-flight file save and a separately checkpointed unresolved recovery draft
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: a delayed own commit acknowledgement cannot authorize a stale queued layout over a newer writer
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: explicit reread cannot replace a user selection made while the reply is in flight
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L11: closeScope only removes that subscription and main-frame navigation removes the remaining subscriptions
+ ↓ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L12: rejects unknown/unsafe snapshots intact and restores safe duplicate/active/unavailable routes
+ × src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L13: persists only approved ordered routes/layout and independently recovers private draft bytes with fresh capabilities 96ms
+   → expected { schemaVersion: 1, …(8) } to deeply equal { schemaVersion: 1, …(8) }
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/lifecycle-persistence-acceptance.test.ts > M9 lifecycle persistence production SQLite/store/broker integration > L13: persists only approved ordered routes/layout and independently recovers private draft bytes with fresh capabilities
+AssertionError: expected { schemaVersion: 1, …(8) } to deeply equal { schemaVersion: 1, …(8) }
+
+- Expected
++ Received
+
+@@ -8,10 +8,11 @@
+    },
+    "collapsedRoots": [
+      "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-s2y8yV/two",
+    ],
+    "expanded": {
++     "project-directory:one:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-s2y8yV/one": [],
+      "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-s2y8yV/two": [
+        "sub",
+      ],
+    },
+    "filters": {
+
+ ❯ src/renderer/features/files/lifecycle-persistence-acceptance.test.ts:314:23
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 skipped (10)
+   Start at  06:29:58
+   Duration  663ms (transform 333ms, setup 0ms, import 500ms, tests 97ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,241 @@
+{
+  "schema": "m10-codex-runtime-preflight-v1",
+  "startedAt": "2026-10-19T07:33:20.203Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "cliVersion": "codex-cli 0.162.1"
+  },
+  "isolation": {
+    "temporaryHome": true,
+    "temporaryCodexHome": true,
+    "userGlobalFilesModified": false,
+    "realAccount": false,
+    "realModel": false,
+    "syntheticMcpOnly": true
+  },
+  "cases": [
+    {
+      "name": "file-path-v1-concurrent",
+      "status": "passed",
+      "level": "discovered-enabled-state",
+      "expected": "v1",
+      "skills": [
+        {
+          "name": "user-owned-fixture",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/user-owned-fixture/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v1",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v1/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v2",
+          "enabled": false,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v2/SKILL.md",
+          "scope": "user"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "file-path-v2-concurrent",
+      "status": "passed",
+      "level": "discovered-enabled-state",
+      "expected": "v2",
+      "skills": [
+        {
+          "name": "user-owned-fixture",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/user-owned-fixture/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v1",
+          "enabled": false,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v1/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v2",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v2/SKILL.md",
+          "scope": "user"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "directory-path-v1",
+      "status": "failed",
+      "level": "discovered-enabled-state",
+      "expected": "v1",
+      "skills": [
+        {
+          "name": "user-owned-fixture",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/user-owned-fixture/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v1",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v1/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v2",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v2/SKILL.md",
+          "scope": "user"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "project-b-no-application",
+      "status": "passed",
+      "level": "discovered-enabled-state",
+      "expected": "none",
+      "skills": [
+        {
+          "name": "user-owned-fixture",
+          "enabled": true,
+          "path": "<fixture>/home/.agents/skills/user-owned-fixture/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v1",
+          "enabled": false,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v1/SKILL.md",
+          "scope": "user"
+        },
+        {
+          "name": "willyou-fixture-v2",
+          "enabled": false,
+          "path": "<fixture>/home/.agents/skills/willyou-fixture-v2/SKILL.md",
+          "scope": "user"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "native-thread-start-and-direct-mcp-v1",
+      "status": "passed",
+      "level": "direct-tool-called-no-model",
+      "threadId": "01a15314-47c3-7491-ab3a-4f0553213dcd",
+      "ephemeral": false,
+      "value": {
+        "project": "project-a",
+        "version": "v1",
+        "marker": "M10_TOOL_v1"
+      }
+    },
+    {
+      "name": "native-thread-start-and-direct-mcp-v2",
+      "status": "passed",
+      "level": "direct-tool-called-no-model",
+      "threadId": "01a15314-47e0-7e23-bd85-47efb8c6247a",
+      "ephemeral": false,
+      "value": {
+        "project": "project-a",
+        "version": "v2",
+        "marker": "M10_TOOL_v2"
+      }
+    },
+    {
+      "name": "native-resume-fixed-v1-after-process-restart",
+      "status": "blocked",
+      "reason": "{\"code\":-32600,\"message\":\"no rollout found for thread id 01a15314-47c3-7491-ab3a-4f0553213dcd\"}"
+    }
+  ],
+  "limitations": [
+    "Uses isolated HOME and CODEX_HOME; does not prove production global-root/profile merging or packaged WillYou behavior.",
+    "Direct app-server tool call is real Codex MCP execution, not model selection/read evidence.",
+    "Synthetic immutable versions and projects only; no actual mail, ZenTao, credentials, or business writes.",
+    "Native resume without model turn is attempted separately and reported truthfully."
+  ],
+  "resumeThreadId": "01a15314-47c3-7491-ab3a-4f0553213dcd",
+  "status": "has-failures",
+  "clients": [
+    {
+      "name": "file-v1",
+      "methods": [
+        "initialize",
+        "skills/list",
+        "thread/start",
+        "mcpServer/tool/call"
+      ],
+      "unexpectedRequests": [],
+      "notifications": [
+        "remoteControl/status/changed",
+        "thread/started",
+        "mcpServer/startupStatus/updated"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "file-v2",
+      "methods": [
+        "initialize",
+        "skills/list",
+        "thread/start",
+        "mcpServer/tool/call"
+      ],
+      "unexpectedRequests": [],
+      "notifications": [
+        "remoteControl/status/changed",
+        "thread/started",
+        "mcpServer/startupStatus/updated"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "directory-v1",
+      "methods": [
+        "initialize",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "notifications": [
+        "remoteControl/status/changed"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "project-b-none",
+      "methods": [
+        "initialize",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "notifications": [
+        "remoteControl/status/changed"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "resume-v1",
+      "methods": [
+        "initialize",
+        "thread/resume"
+      ],
+      "unexpectedRequests": [],
+      "notifications": [
+        "remoteControl/status/changed"
+      ],
+      "stderrTail": ""
+    }
+  ],
+  "sourceHash": "81dd4b6cb148b4e5d1300f7004eb99a9371d5bb81d6941b30e2057e877f8df78",
+  "cleanup": {
+    "allChildrenExited": true,
+    "fixtureRemoved": true
+  },
+  "finishedAt": "2026-10-19T07:33:20.573Z"
+}

@@ -1,0 +1,182 @@
+{
+  "at": "2026-10-19T04:44:46.724Z",
+  "sourceApp": "/private/tmp/willyou-m9-acceptance-batch-r71-build/mac-arm64/WillYou.app",
+  "sourceHashes": {
+    "asarSha256": "bc780a776e2eaddbd90f9ed6bcb0f0bdb3d16a1edb1224670e2479d2ef67d204",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+  },
+  "scratch": "/private/tmp/willyou-symlink-race-app-lZQu8E",
+  "late": false,
+  "status": "failed",
+  "checks": [],
+  "boundary": "A normal packaged App/native binary. Original successful open metadata delivery or original save invocation held unchanged to create the actual path substitution after metadata verification and before IO. No auth/result substitution.",
+  "limitations": "Own temporary userData/projects and outside canaries only. Real UI tree navigation/input/Ctrl-S/retry; read-only CM/disk/draft checks. No store/editor/DOM-value injection, clipboard, model, external service/App, live Codex, physical IME or system-wide CAS claim.",
+  "pid": 78015,
+  "canaryBefore": {
+    "hash": "8d2d1b18bf23d376f8f666bfa60b452de6b065fe6a778d75dd3c5666ebb43ee7",
+    "inode": "49427285",
+    "mtimeNs": "1792385086685608980"
+  },
+  "failedStage": "light-read-target:read-denied",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(denied.loadError||denied.alerts.length)\n",
+  "stack": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(denied.loadError||denied.alerts.length)\n\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/files/symlink-race-ui.mjs:45:231",
+  "state": {
+    "footer": "",
+    "alerts": [
+      "[OUTSIDE_ROOT] Symlink escapes its root"
+    ],
+    "loadError": "[OUTSIDE_ROOT] Symlink escapes its root",
+    "conflict": false
+  },
+  "rpc": {
+    "rows": [
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "61509ed4-dcbb-40da-9010-de04954667cf",
+            "generation": 1,
+            "relativePath": "light-read-target/value.txt"
+          }
+        ],
+        "inputHash": "2aeb0dece9532c08f67e89d2c1548b895936f82c3c8153881f0bdff842079492",
+        "at": 1792385087941,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "b02da1ba-22a5-4194-8a0b-788557bd2297",
+            "lease": "61509ed4-dcbb-40da-9010-de04954667cf",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:49427287",
+          "name": "value.txt",
+          "relativePath": "light-read-target/value.txt",
+          "absolutePath": "/private/tmp/willyou-symlink-race-app-lZQu8E/project/light-read-target/value.txt",
+          "revision": {
+            "size": 35,
+            "inode": "49427287",
+            "device": "16777232",
+            "changedNs": "1792385086723115687",
+            "modifiedNs": "1792385086723115687",
+            "hash": "356ee41927c941c07ed924ee94e0d311a6f45d5c7244a26bc25ed28c54029185"
+          },
+          "writable": true,
+          "content": {
+            "kind": "text",
+            "format": "txt",
+            "basis": "sample"
+          }
+        },
+        "before": "3fff76fa841bb4337e786bc391ca0ac6f91ee8dec0dfea410091020f9a4b079f",
+        "currentFrame": true,
+        "after": "3fff76fa841bb4337e786bc391ca0ac6f91ee8dec0dfea410091020f9a4b079f",
+        "delivered": true
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "b02da1ba-22a5-4194-8a0b-788557bd2297",
+            "lease": "61509ed4-dcbb-40da-9010-de04954667cf",
+            "generation": 1
+          }
+        ],
+        "inputHash": "189b4a1ea19357879169a61b72de1860b3bb6d1721cc3aab2df31d5ca79592ec",
+        "at": 1792385087958,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "error": "FileError: [OUTSIDE_ROOT] Symlink escapes its root"
+      },
+      {
+        "method": "read",
+        "args": [
+          {
+            "id": "b02da1ba-22a5-4194-8a0b-788557bd2297",
+            "lease": "61509ed4-dcbb-40da-9010-de04954667cf",
+            "generation": 1
+          }
+        ],
+        "inputHash": "189b4a1ea19357879169a61b72de1860b3bb6d1721cc3aab2df31d5ca79592ec",
+        "at": 1792385087971,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "error": "FileError: [OUTSIDE_ROOT] Symlink escapes its root"
+      }
+    ],
+    "reads": [],
+    "opens": [
+      {
+        "row": {
+          "method": "open",
+          "args": [
+            {
+              "lease": "61509ed4-dcbb-40da-9010-de04954667cf",
+              "generation": 1,
+              "relativePath": "light-read-target/value.txt"
+            }
+          ],
+          "inputHash": "2aeb0dece9532c08f67e89d2c1548b895936f82c3c8153881f0bdff842079492",
+          "at": 1792385087941,
+          "frame": {
+            "processId": 4,
+            "routingId": 8
+          },
+          "originalReturned": true,
+          "output": {
+            "ref": {
+              "id": "b02da1ba-22a5-4194-8a0b-788557bd2297",
+              "lease": "61509ed4-dcbb-40da-9010-de04954667cf",
+              "generation": 1
+            },
+            "documentKey": "local:16777232:49427287",
+            "name": "value.txt",
+            "relativePath": "light-read-target/value.txt",
+            "absolutePath": "/private/tmp/willyou-symlink-race-app-lZQu8E/project/light-read-target/value.txt",
+            "revision": {
+              "size": 35,
+              "inode": "49427287",
+              "device": "16777232",
+              "changedNs": "1792385086723115687",
+              "modifiedNs": "1792385086723115687",
+              "hash": "356ee41927c941c07ed924ee94e0d311a6f45d5c7244a26bc25ed28c54029185"
+            },
+            "writable": true,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "3fff76fa841bb4337e786bc391ca0ac6f91ee8dec0dfea410091020f9a4b079f",
+          "currentFrame": true,
+          "after": "3fff76fa841bb4337e786bc391ca0ac6f91ee8dec0dfea410091020f9a4b079f",
+          "delivered": true
+        },
+        "waiting": false
+      }
+    ],
+    "readErrors": [],
+    "saves": []
+  },
+  "rpcRestored": {
+    "files.open": true,
+    "files.read": true,
+    "files.refresh": true,
+    "files.save": true,
+    "files.checkpoint": true
+  },
+  "fixturePathRestored": true,
+  "sourceHashesAfter": {
+    "asarSha256": "bc780a776e2eaddbd90f9ed6bcb0f0bdb3d16a1edb1224670e2479d2ef67d204",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61"
+  },
+  "finishedAt": "2026-10-19T04:44:48.255Z"
+}

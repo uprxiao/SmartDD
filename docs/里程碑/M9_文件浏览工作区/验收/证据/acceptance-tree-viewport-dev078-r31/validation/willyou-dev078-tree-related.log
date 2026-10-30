@@ -1,0 +1,2508 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-viewport-acceptance.test.tsx src/renderer/features/files/tree-reveal-acceptance.test.tsx src/renderer/features/files/tree-failure-native-acceptance.test.tsx src/renderer/features/files/workspace-tree-native-acceptance.test.tsx src/renderer/features/files/workspace-tree-acceptance.test.tsx src/renderer/features/files/name-filter-view.test.tsx src/renderer/features/files/directory-race-acceptance.test.tsx src/renderer/features/files/nested-root-acceptance.test.tsx
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx (4 tests | 4 failed) 1271ms
+     × B01 lists only root then levels one/two; pending requests and collapsed cache are reused 1146ms
+     × B04 ordinary native tree includes dotfiles, hidden child and node_modules child 36ms
+     × B05 real empty directory resolves to an explicit collapsible empty state 56ms
+     × B18 real first single A preview, first double B pinned once, directory only toggles 33ms
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests | 6 failed) 4049ms
+     × B06 confines a real permission failure to its node and retries once without duplicating children 135ms
+     × B07 deletes the selected file before the real read and never displays the previous buffer 52ms
+     × B12 restores independent selection, focus, expanded paths, filter and scroll for each real root 55ms
+     × B11 cancels old-root focus callbacks and restores scroll after a delayed remount without stealing new-root focus 47ms
+     × B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position 2028ms
+     × B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position 1732ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B06 confines a real permission failure to its node and retries once without duplicating children
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "A.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "重试":
+  [36m<button />[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project/many"[39m
+  [36m/>[39m
+
+  Name "one":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project/one"[39m
+  [36m/>[39m
+
+  Name "restricted":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project/restricted"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  alert:
+
+  Name "[PERMISSION] open component: Permission denied":
+  [36m<div[39m
+    [33mclass[39m=[32m"fw-tree-status error"[39m
+    [33mrole[39m=[32m"alert"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+    [33mtitle[39m=[32m"[PERMISSION] open component: Permission denied"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 224px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project/one"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mone[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-5nYZdP/project/restricted"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mrestricted[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"fw-tree-status error"[39m
+            [33mrole[39m=[32m"alert"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+            [33mtitle[39m=[32m"[PERMISSION] open component: Permission denied"[39m
+          [36m>[39m
+            [0m读取失败[0m
+            [36m<button>[39m
+              [0m重试[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:44:29
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B07 deletes the selected file before the real read and never displays the previous buffer
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "A.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/many"[39m
+  [36m/>[39m
+
+  Name "one":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/one"[39m
+  [36m/>[39m
+
+  Name "restricted":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/restricted"[39m
+  [36m/>[39m
+
+  Name "three":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/three"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 196px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/one"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mone[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/restricted"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mrestricted[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-x7TSbU/project/three"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mthree[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:50:58
+     48|   });
+     49|   it('B07 deletes the selected file before the real read and never dis…
+     50|     const user=userEvent.setup();await user.click(screen.getByRole('tr…
+       |                                                          ^
+     51|     let entered=false;const gate=new Promise<void>(done=>{release=done…
+     52|     await user.click(screen.getByRole('treeitem',{name:'B.txt'}));awai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B12 restores independent selection, focus, expanded paths, filter and scroll for each real root
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "two"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project/many"[39m
+  [36m/>[39m
+
+  Name "one":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project/one"[39m
+  [36m/>[39m
+
+  Name "restricted":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project/restricted"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"fw-tree-status loading"[39m
+    [33mrole[39m=[32m"status"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 224px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project/one"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mone[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"fw-tree-status loading"[39m
+            [33mrole[39m=[32m"status"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+          [36m>[39m
+            [0m正在读取…[0m
+          [36m</div>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-ny8iLp/project/restricted"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mrestricted[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:62:69
+     60|   it('B12 restores independent selection, focus, expanded paths, filte…
+     61|     const [a,b]=store.roots.roots,user=userEvent.setup();
+     62|     for(const name of ['one','two','three'])await user.click(screen.ge…
+       |                                                                     ^
+     63|     await waitFor(()=>expect(screen.getAllByRole('treeitem',{name:'chi…
+     64|     fireEvent.click(screen.getByRole('treeitem',{name:'A.txt'}));fireE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B11 cancels old-root focus callbacks and restores scroll after a delayed remount without stealing new-root focus
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "A.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/many"[39m
+  [36m/>[39m
+
+  Name "one":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/one"[39m
+  [36m/>[39m
+
+  Name "restricted":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/restricted"[39m
+  [36m/>[39m
+
+  Name "three":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/three"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 196px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/one"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mone[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/restricted"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mrestricted[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-OfiGFf/project/three"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mthree[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:80:22
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "item-09999.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many"[39m
+  [36m/>[39m
+
+  Name "item-00000.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many/item-00000.txt"[39m
+  [36m/>[39m
+
+  Name "item-00001.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many/item-00001.txt"[39m
+  [36m/>[39m
+
+  Name "item-00002.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many/item-00002.txt"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 280196px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many/item-00000.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00000.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many/item-00001.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00001.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-smBemV/project/many/item-00002.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00002.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:95:86
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  src/renderer/features/files/tree-failure-native-acceptance.test.tsx > B06/B07/B13 real filesystem failure and large-directory integration > B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "item-10000.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "project":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "many":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many"[39m
+  [36m/>[39m
+
+  Name "item-00000.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many/item-00000.txt"[39m
+  [36m/>[39m
+
+  Name "item-00001.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many/item-00001.txt"[39m
+  [36m/>[39m
+
+  Name "item-00002.txt":
+  [36m<button[39m
+    [33maria-level[39m=[32m"2"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+    [33mdraggable[39m=[32m"true"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many/item-00002.txt"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mproject[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 280224px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mmany[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many/item-00000.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00000.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many/item-00001.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00001.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row  select-none"[39m
+            [33mdraggable[39m=[32m"true"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-tree-failures-802A4q/project/many/item-00002.txt"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"fw-tree-spacer"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"fw-file-icon"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstyle[39m=[32m"--file-light: #84848a; --file-dark: #adadb1;"[39m
+              [33mviewBox[39m=[32m"0 0 16 16"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<use[39m
+                [33mhref[39m=[32m"/src/renderer/features/files/assets/tree-icons/icons.svg?no-inline#file-tree-builtin-text"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mitem-00002.txt[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/tree-failure-native-acceptance.test.tsx:95:86
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  src/renderer/features/files/workspace-tree-native-acceptance.test.tsx > B01/B04/B05/B18 production tree, store, FileService and packaged native broker > B01 lists only root then levels one/two; pending requests and collapsed cache are reused
+TestingLibraryElementError: Unable to find role="treeitem" and name "level3"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mwillyou-dev075-tree-u1q5y72y[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 280px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/.hidden"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0m.hidden[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/empty"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mempty[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mlevel1[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1/level2"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mlevel2[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mwillyou-dev075-tree-u1q5y72y[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 280px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/.hidden"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0m.hidden[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/empty"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mempty[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mlevel1[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-level[39m=[32m"2"[39m
+            [33maria-selected[39m=[32m"true"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 19px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1/level2"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mlevel2[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx:75:18
+     73|     await act(async () => { gate!.resolve(); await first; });
+     74|     await user.click(screen.getByRole('treeitem', { name: 'level2' }));
+     75|     await screen.findByRole('treeitem', { name: 'level3' });
+       |                  ^
+     76|     expect(lists()).toEqual(['', 'level1', 'level1/level2']); expect(s…
+     77|     await user.click(screen.getByRole('treeitem', { name: 'level1' }))…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  src/renderer/features/files/workspace-tree-native-acceptance.test.tsx > B01/B04/B05/B18 production tree, store, FileService and packaged native broker > B04 ordinary native tree includes dotfiles, hidden child and node_modules child
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name ".env"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "willyou-dev075-tree-u1q5y72y":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name ".hidden":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/.hidden"[39m
+  [36m/>[39m
+
+  Name "empty":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/empty"[39m
+  [36m/>[39m
+
+  Name "level1":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1"[39m
+  [36m/>[39m
+
+  Name "node_modules":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/node_modules"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mwillyou-dev075-tree-u1q5y72y[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 224px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/.hidden"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0m.hidden[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/empty"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mempty[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mlevel1[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/node_modules"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mnode_modules[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx:83:89
+     81|   });
+     82|   it('B04 ordinary native tree includes dotfiles, hidden child and nod…
+     83|     for (const name of ['.env', '.gitignore', '.hidden', 'node_modules…
+       |                                                                                         ^
+     84|     const user = userEvent.setup();
+     85|     for (const directory of ['.hidden', 'node_modules']) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  src/renderer/features/files/workspace-tree-native-acceptance.test.tsx > B01/B04/B05/B18 production tree, store, FileService and packaged native broker > B05 real empty directory resolves to an explicit collapsible empty state
+AssertionError: expected [ <button …(9)>…(2)</button>, …(2) ] to have a length of 4 but got 3
+
+- Expected
++ Received
+
+- 4
++ 3
+
+ ❯ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx:98:93
+     96|     await user.click(directory); await screen.findByText('空目录', { exac…
+     97|     expect(directory.getAttribute('aria-expanded')).toBe('true');
+     98|     expect(screen.queryByText('正在读取…')).toBeNull(); expect(screen.getA…
+       |                                                                                             ^
+     99|     expect(store.directories.get(store.directoryKey(store.treeRoot!, '…
+    100|     await user.click(directory); expect(directory.getAttribute('aria-e…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  src/renderer/features/files/workspace-tree-native-acceptance.test.tsx > B01/B04/B05/B18 production tree, store, FileService and packaged native broker > B18 real first single A preview, first double B pinned once, directory only toggles
+TestingLibraryElementError: Unable to find an accessible element with the role "treeitem" and name "A.txt"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "willyou-dev075-tree-u1q5y72y":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "文件目录":
+  [36m<div[39m
+    [33maria-label[39m=[32m"文件目录"[39m
+    [33maria-multiselectable[39m=[32m"true"[39m
+    [33mclass[39m=[32m"fw-tree-scroll"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name ".hidden":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/.hidden"[39m
+  [36m/>[39m
+
+  Name "empty":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/empty"[39m
+  [36m/>[39m
+
+  Name "level1":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1"[39m
+  [36m/>[39m
+
+  Name "node_modules":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-level[39m=[32m"1"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+    [33mdraggable[39m=[32m"false"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/node_modules"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fw-tree-region"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-row fw-root-folder"[39m
+        [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"13"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"13"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mwillyou-dev075-tree-u1q5y72y[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"文件目录"[39m
+        [33maria-multiselectable[39m=[32m"true"[39m
+        [33mclass[39m=[32m"fw-tree-scroll"[39m
+        [33mrole[39m=[32m"tree"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"fw-tree-virtual"[39m
+          [33mstyle[39m=[32m"height: 224px;"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 0px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/.hidden"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0m.hidden[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 28px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/empty"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mempty[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 56px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/level1"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mlevel1[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33maria-level[39m=[32m"1"[39m
+            [33maria-selected[39m=[32m"false"[39m
+            [33mclass[39m=[32m"fw-tree-row fw-tree-virtual-row "[39m
+            [33mdraggable[39m=[32m"false"[39m
+            [33mrole[39m=[32m"treeitem"[39m
+            [33mstyle[39m=[32m"top: 84px; padding-left: 3px;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+            [33mtitle[39m=[32m"/private/tmp/willyou-dev075-tree-u1q5y72y/node_modules"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"13"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"13"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [0mnode_modules[0m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx:105:29
+    103|   it('B18 real first single A preview, first double B pinned once, dir…
+    104|     const user = userEvent.setup();
+    105|     await user.click(screen.getByRole('treeitem', { name: 'A.txt' }));…
+       |                             ^
+    106|     expect(store.active?.pinned).toBe(false); expect(store.active?.buf…
+    107|     gate = deferred(); hold = { operation: 'stat', relativePath: 'B.tx…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  2 failed | 4 passed (6)
+      Tests  10 failed | 20 passed (30)
+   Start at  21:08:47
+   Duration  5.47s (transform 1.84s, setup 0ms, import 4.08s, tests 7.78s, environment 2.14s)
+
+ ELIFECYCLE  Test failed. See above for more details.

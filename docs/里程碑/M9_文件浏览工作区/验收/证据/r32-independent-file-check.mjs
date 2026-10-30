@@ -1,0 +1,95 @@
+// R3.2 focused browser check: isolated synthetic prototype only, no real CLI/disk/Codex access.
+// NODE_PATH=/tmp/m9-qa/node_modules node r32-independent-file-check.mjs <output directory>
+import { createRequire } from 'node:module';
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+const { chromium }=createRequire(import.meta.url)('playwright-core');
+const out=process.argv[2]||path.dirname(new URL(import.meta.url).pathname);
+const checks=[],errors=[],shots=[];
+const check=(id,title,ok,detail={})=>checks.push({id,title,status:ok?'passed':'failed',detail});
+const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+const context=await browser.newContext({viewport:{width:1512,height:949},deviceScaleFactor:1,locale:'zh-CN'});
+const p=await context.newPage();
+p.on('pageerror',e=>errors.push(e.message));
+const ed=()=>p.getByRole('textbox',{name:'文件编辑器',exact:true});
+const term=async()=> (await p.locator('.terminal-mount .xterm-rows').innerText()).replace(/ /g,' ');
+const snapshot=async name=>{const file=path.join(out,name);await p.screenshot({path:file});shots.push({file:name,sha256:crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')});};
+const open=async(query,name)=>{await p.getByLabel('筛选文件',{exact:true}).fill(query);await p.getByRole('treeitem').filter({hasText:name}).first().dblclick();await p.getByLabel('筛选文件',{exact:true}).fill('');await ed().waitFor();};
+const dialog=()=>p.getByRole('dialog',{name:'请 CLI 修改所选文本',exact:true});
+const instruction=async()=>{await ed().evaluate(el=>{el.focus();el.setSelectionRange(0,Math.min(30,el.value.length));el.dispatchEvent(new Event('select',{bubbles:true}));});await ed().dispatchEvent('contextmenu',{bubbles:true,cancelable:true});await p.getByRole('button',{name:'请 CLI 修改所选文本…',exact:true}).click();await dialog().getByLabel('修改指令',{exact:true}).fill('请把所选文字整理得更清楚');};
+try {
+ await p.goto('http://127.0.0.1:4176/?preview=m9');await p.evaluate(()=>{localStorage.clear();sessionStorage.clear();});await p.reload();await p.getByRole('button',{name:/M9 交互样例/}).waitFor();
+ await open('main','main.ts');await p.getByRole('button',{name:/M9 交互样例/}).click();await p.getByLabel('自动保存（3秒）',{exact:true}).uncheck();
+ const original=await ed().inputValue();await p.getByRole('button',{name:'模拟外部修改当前文件',exact:true}).click();
+ await p.waitForFunction(()=>document.querySelector('textarea[aria-label="文件编辑器"]')?.value.includes('独立外部更新示例'));
+ const updated=await ed().inputValue();
+ check('R32-01','停止的终端不妨碍独立文件刷新；干净文件直接显示最新示例内容',updated!==original&&await p.locator('.terminal-paused').count()===1&&await p.locator('.fw-save-strip').count()===0,{updated:updated.slice(-70)});
+ check('R32-02','外改没有 CLI 归因、审阅、保留或还原审批条',await p.locator('.fw-selection-edit').count()===0&&await p.getByRole('button',{name:'保留修改',exact:true}).count()===0&&await p.getByRole('button',{name:'还原',exact:true}).count()===0);
+ await p.getByRole('button',{name:'模拟外部新增文件',exact:true}).click();
+ check('R32-03','合成外部新增在目录刷新前不冒充已读取',await p.getByRole('treeitem').filter({hasText:'external-update-1.md'}).count()===0);
+ await p.getByRole('button',{name:'刷新示例目录',exact:true}).click();await p.getByRole('treeitem').filter({hasText:'external-update-1.md'}).waitFor();
+ check('R32-04','刷新示例目录后新增文件可见，终端仍停止',await p.getByRole('treeitem').filter({hasText:'external-update-1.md'}).count()===1&&await p.locator('.terminal-paused').count()===1);
+ await instruction();check('R32-05','停止终端仅禁用指令投递，未形成文件审批',await dialog().getByRole('button',{name:'放入终端输入（不发送）',exact:true}).isDisabled());await dialog().getByRole('button',{name:'取消',exact:true}).click();
+ await p.getByRole('button',{name:'更多',exact:true}).click();await p.getByText('恢复',{exact:true}).first().click();await p.locator('dialog[aria-label="恢复任务"]').getByRole('button',{name:'恢复任务',exact:true}).click();await p.waitForFunction(()=>!document.querySelector('.terminal-paused'));
+ const before=await ed().inputValue();await instruction();await dialog().getByRole('button',{name:'放入终端输入（不发送）',exact:true}).click();await dialog().waitFor({state:'hidden'});await p.waitForTimeout(250);
+ check('R32-06','指令投递即结束交接，只放入终端不回车，文件没有被修改', (await term()).replace(/\s/g,'').includes('请把所选文字整理得更清楚')&&!(await term()).includes('已收到演示输入')&&await ed().inputValue()===before&&await p.locator('.fw-selection-edit').count()===0);
+ await p.locator('.terminal-mount .xterm-helper-textarea').focus();await p.keyboard.press('Enter');await p.waitForTimeout(200);
+ check('R32-07','用户 Enter 后只有演示终端回显，不自动归因或跟踪修改', (await term()).includes('已收到演示输入')&&await p.locator('.fw-selection-edit').count()===0&&await ed().inputValue()===before);
+ const terminalBeforeCancel=await term();await instruction();await dialog().getByRole('button',{name:'取消',exact:true}).click();
+ check('R32-08','取消指令草稿不发送停止命令、不终止会话、不改文件',await term()===terminalBeforeCancel&&await p.locator('.terminal-paused').count()===0&&await ed().inputValue()===before);
+ await snapshot('r32-terminal-handoff.png');
+ const local=before+'\n手工未保存草稿';await ed().fill(local);await p.getByRole('button',{name:'模拟外部修改当前文件',exact:true}).click();
+ check('R32-09','存在手工未保存草稿时，普通外改冲突保留草稿与磁盘两方',await ed().inputValue()===local&&(await p.locator('.fw-save-strip').innerText()).includes('文件已被外部修改'));
+ await p.locator('.fw-save-strip').getByRole('button',{name:'保存',exact:true}).click();const conflict=p.getByRole('dialog',{name:'文件修改冲突',exact:true});await conflict.waitFor();
+ const conflictText=await conflict.innerText();check('R32-10','普通冲突展示磁盘版本和手工草稿，未归因给 CLI',conflictText.includes('独立外部更新示例')&&conflictText.includes('手工未保存草稿')&&!conflictText.includes('CLI'));
+ await snapshot('r32-manual-conflict.png');await conflict.getByRole('button',{name:'采用磁盘版本',exact:true}).click();await conflict.waitFor({state:'hidden'});
+ check('R32-11','明确采用磁盘版本后清除手工草稿并显示最新内容',!(await ed().inputValue()).includes('手工未保存草稿')&&await p.locator('.fw-save-strip').count()===0);
+ // Actual HTML drag gestures in this isolated browser; no native files or speech service.
+ const terminal=p.locator('.terminal-stage'), terminalInput=p.locator('.terminal-mount .xterm-helper-textarea');
+ await terminalInput.focus();await p.keyboard.press('Control+c');await p.keyboard.type('查看');
+ await p.getByLabel('筛选文件',{exact:true}).fill('拖放');const textFile=p.getByRole('treeitem').filter({hasText:'拖放 空格示例.txt'}).first();await textFile.dragTo(terminal);await p.waitForTimeout(200);
+ const afterTextDrop=await term();
+ check('R32-13','实际树拖放保留既有输入，直接插完整中文空格路径且未回车',afterTextDrop.replace(/\s/g,'').includes('查看/workspace/SmartDD/docs/拖放空格示例.txt')&&afterTextDrop.includes('拖放 空格')&&(await p.locator('.terminal-drop-notice').innerText()).includes('未发送'),{terminalTail:afterTextDrop.slice(-180)});
+ check('R32-14','拖放后焦点回终端，可直接接续键入且尾空格保留',await terminalInput.evaluate(el=>el===document.activeElement));
+ await p.keyboard.type('请说明');await p.waitForTimeout(100);const afterTyping=await term();
+ check('R32-15','路径与随后键入内容实际显示为空格分隔',afterTyping.replace(/\n/g,'').includes('.txt 请说明'),{terminalTail:afterTyping.slice(-180)});
+ await p.getByLabel('筛选文件',{exact:true}).fill('app-icon');const imageFile=p.getByRole('treeitem').filter({hasText:'app-icon.png'}).first();await imageFile.dragTo(terminal);await p.waitForTimeout(150);
+ check('R32-16','图片连续拖入同一输入，只插磁盘路径，不插资源 URL 或附件', (await term()).replace(/\s/g,'').includes('请说明/workspace/SmartDD/resources/app-icon.png')&&!(await term()).includes('data:image'));
+ await imageFile.dblclick();await p.locator('.fw-image img').dragTo(terminal);await p.waitForTimeout(150);
+ check('R32-17','图片预览拖放沿用文件身份和完整路径', (await term()).replace(/\s/g,'').split('/workspace/SmartDD/resources/app-icon.png').length===3);
+ await p.getByLabel('筛选文件',{exact:true}).fill('');
+ const textTab=p.locator('.fw-tab').filter({has:p.getByRole('tab',{name:'main.ts',exact:true})});await textTab.dragTo(terminal);await p.waitForTimeout(150);
+ check('R32-18','已打开文件标签也可向终端拖完整路径',(await term()).replace(/\s/g,'').includes('/workspace/SmartDD/src/main.ts'));
+ const tabsBefore=await p.getByRole('tablist',{name:'文件标签'}).getByRole('tab').allTextContents(), inputBeforeReorder=await term();
+ await textTab.dragTo(p.locator('.fw-tab').filter({has:p.getByRole('tab',{name:'AGENTS.md',exact:true})}));
+ const tabsAfter=await p.getByRole('tablist',{name:'文件标签'}).getByRole('tab').allTextContents();
+ check('R32-19','文件标签之间拖放仍重排，不向终端追加输入',JSON.stringify(tabsBefore)!==JSON.stringify(tabsAfter)&&await term()===inputBeforeReorder,{tabsBefore,tabsAfter});
+ await snapshot('r32-file-path-drop.png');
+ await p.getByLabel('筛选文件',{exact:true}).fill('拖放');
+ const duplicateSource=p.getByRole('treeitem').filter({hasText:'拖放 空格示例.txt'}).first();
+ const transfer=await p.evaluateHandle(()=>new DataTransfer());await duplicateSource.dispatchEvent('dragstart',{dataTransfer:transfer});
+ await terminal.dispatchEvent('drop',{dataTransfer:transfer});await p.waitForTimeout(100);const once=await term();
+ await terminal.dispatchEvent('drop',{dataTransfer:transfer});await p.waitForTimeout(100);
+ check('R32-21','同次拖放的重复 drop 不重复插入路径',await term()===once);await duplicateSource.dispatchEvent('dragend',{dataTransfer:transfer});
+ const changedRootTransfer=await p.evaluateHandle(()=>new DataTransfer());await duplicateSource.dispatchEvent('dragstart',{dataTransfer:changedRootTransfer});
+ const beforeRootChange=await term();await p.getByLabel('工作目录场景',{exact:true}).selectOption('single');await terminal.dispatchEvent('drop',{dataTransfer:changedRootTransfer});await p.waitForTimeout(100);
+ check('R32-22','拖动开始后根范围变化会取消旧文件身份，不转投',await term()===beforeRootChange&&(await p.locator('.terminal-drop-notice').innerText()).includes('已失效'));
+
+ await p.getByLabel('筛选文件',{exact:true}).fill('已删除');const missingBefore=await term();
+ await p.getByRole('treeitem').filter({hasText:'已删除.md'}).first().dragTo(terminal);await p.waitForTimeout(100);
+ check('R32-23','合成已删除文件不能发起路径拖放，保留终端输入并提示',await term()===missingBefore&&(await p.locator('.fw-footer [role=status]').innerText()).includes('文件已删除'));
+ await p.getByRole('treeitem').filter({hasText:'已删除.md'}).first().dblclick();
+ const missingTabsBefore=await p.getByRole('tablist',{name:'文件标签'}).getByRole('tab').allTextContents();
+ await p.locator('.fw-tab').filter({has:p.getByRole('tab',{name:'已删除.md',exact:true})}).dragTo(p.locator('.fw-tab').filter({has:p.getByRole('tab',{name:'AGENTS.md',exact:true})}));
+ const missingTabsAfter=await p.getByRole('tablist',{name:'文件标签'}).getByRole('tab').allTextContents();
+ check('R32-24','不能投递路径的已删除文件标签仍可在标签内排序',JSON.stringify(missingTabsBefore)!==JSON.stringify(missingTabsAfter)&&await term()===missingBefore,{missingTabsBefore,missingTabsAfter});
+ await p.reload();await p.locator('.terminal-paused').waitFor();await p.getByLabel('筛选文件',{exact:true}).fill('拖放');const stoppedBefore=await term();
+ await p.getByRole('treeitem').filter({hasText:'拖放 空格示例.txt'}).first().dragTo(p.locator('.terminal-stage'));await p.waitForTimeout(150);
+ check('R32-20','停止终端拒绝拖放并提示，不隐式启动或改变输入',await term()===stoppedBefore&&await p.locator('.terminal-paused').count()===1&&(await p.locator('.terminal-drop-notice').innerText()).includes('任务未运行'));
+ check('R32-12','浏览器运行没有未处理页面异常',errors.length===0,{errors});
+} catch(error){check('R32-RUN','Focused browser execution',false,{error:String(error),stack:error.stack});}
+finally {
+ const report={revision:'R3.2-20261017',timestamp:new Date().toISOString(),environment:{url:'http://127.0.0.1:4176/?preview=m9',browser:await browser.version(),viewport:{width:1512,height:949},mode:'isolated headless Chromium; synthetic fixtures only'},boundary:'No real disk, CLI, native watcher, Codex, packaged app, visual parity or cross-platform acceptance. Existing service reused; no user browser session accessed.',checks,shots,errors,summary:{passed:checks.filter(x=>x.status==='passed').length,failed:checks.filter(x=>x.status==='failed').length}};
+ fs.writeFileSync(path.join(out,'r32-independent-file-report.json'),JSON.stringify(report,null,2)+'\n');await browser.close();console.log(JSON.stringify(report.summary));if(report.summary.failed)process.exitCode=1;
+}

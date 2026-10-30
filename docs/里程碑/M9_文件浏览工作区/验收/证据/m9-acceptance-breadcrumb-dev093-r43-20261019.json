@@ -1,0 +1,429 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-BREADCRUMB-DEV093-R43",
+  "at": "2026-10-18T17:57:47.474962+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-two-cases",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS arm64",
+  "fullCasesPassed": [
+    "M9-T-E01",
+    "M9-T-E02"
+  ],
+  "regressionCasesPassed": [
+    "M9-T-D10",
+    "M9-T-D11",
+    "M9-T-D18"
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-093-01",
+      "layer": "prototype-state-gap",
+      "status": "implemented-and-retested",
+      "problem": "Shared prototype breadcrumb rendered only an immediate list/empty state; approved loading/error/retry scenes were missing.",
+      "fix": "Scoped synthetic directory component with key-bound display state, cancelled timers, explicit slow/permission-recovery demo inputs and real retry UI. No production runtime change."
+    }
+  ],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r43-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "a5dd6207cdf995d3ef939b217a546ce18c8908e163d455bc72de928d0a1e5300",
+    "brokerSha256": "cae73e3859bdf342971ad9bcfcb148b8485064d564546bea7227fb9610b712cb",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 81,
+    "nativeChecksReusedFrom": "m9-acceptance-task-files-dev092-r43-20261019.json",
+    "nativeChecksFreshThisBatch": false,
+    "runtimeAssetsVerifiedFresh": 81
+  },
+  "sourceBaseline": {
+    "files": 983,
+    "previousFiles": 980,
+    "previousTestedSha256": "b680d89590ce072e4a8d4f1d34d921f6dbd3f2d8682915175d1f6b43d382fc95",
+    "buildSha256": "500c94a45c39929266fdf9461f5f3f499945f89bbe4e4947725fcebe1cd2f6e2",
+    "finalTestedSha256": "673648d29770ba2e64d5de1808d550731e1a0b2a534d76a60f7eda3d4eb7214c",
+    "addedFiles": [
+      "scripts/files/breadcrumb-acceptance-prototype.mjs",
+      "scripts/files/breadcrumb-acceptance-ui.mjs",
+      "src/renderer/features/files/breadcrumb-acceptance.test.tsx"
+    ],
+    "existingFilesChanged": [
+      "prototypes/m6-codex/src/FileWorkspace.jsx"
+    ],
+    "productionSourceChanges": [],
+    "prototypeSourceChanges": [
+      "prototypes/m6-codex/src/FileWorkspace.jsx"
+    ],
+    "runtimeRebuilt": false
+  },
+  "verification": {
+    "codePassedDeduplicated": 11,
+    "newUniqueCodeTests": 3,
+    "cumulativeCodeUnion": 1776,
+    "externalCliOptInNotSelected": 2,
+    "prototypeNewFullScenarios": 4,
+    "prototypeRegressionScenarios": 6,
+    "actualNewCaseChecks": 2,
+    "typecheckExit": 0,
+    "prototypeBuildExit": 0,
+    "formalPassed": 171,
+    "formalTotal": 419,
+    "formalRemaining": 248,
+    "blocked": 2
+  },
+  "breadcrumb": {
+    "ancestorLevels": 5,
+    "repeatedSameNameLevels": [
+      2,
+      3,
+      5
+    ],
+    "sourceFilesFingerprintsUnchanged": 7,
+    "originalListHandlerRestored": true,
+    "nativeListObservationCount": 43,
+    "heldOriginalEmptySuccessSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "realPosixPermissionFailureAndRetry": true
+  },
+  "boundaries": [
+    "E01 A actual five-level CJK/same/same/CJK/same ancestors; each popup full location, exact marker and child paths checked. Initial tree populated actual-native caches; popup cache reuse is not falsely described as five fresh IPC calls. I mounts real Breadcrumb→Store→registered original controller→native with a trusted own static source resolver and faithful sender/frame. It additionally opens level3 marker and verifies real bytes.",
+    "E02 A genuine original files.list empty success held after authenticated native IO, no former leaf painted in loading, close popup/open another ancestor then release unchanged result; new ancestor unchanged. Return empty shows explicit empty. Actual own denied directory chmod000 yields original PERMISSION; chmod700 + actual retry yields permission-child.txt, no lingering error. No OS permission dialog or clipboard.",
+    "I three tests cover five ancestors/exact open, delayed original-success delivery and real empty/permission/retry; original outputs compared by SHA. OS application-discovery listing is an unrelated empty-app fixture only, not an applications test. Actual file list/open/read/permission is original RPC/native. Existing nested-root2 and directory-race6 regressions yield final11pass0skips. Initial premature buffer assertion (2pass/1fail) fixed by waiting actual loaded bytes; first broad run omitted old SMARTDD_FILES_NATIVE_PATH opt-in (5pass/6not-selected), rerun with both actual paths11pass.",
+    "P complete shared FileWorkspace file region, synthetic data and explicit slow600ms / one permission failure then retry recovery. Four light/dark scenes plus six task-close/scope regressions. Scenario selector is explicit DOM select/change fixture configuration after keyboard selection was unconfirmed; actual breadcrumb/file-directory/retry controls use pointer and menu dismissal keys. Timers cancel on directory/unmount, state keyed by directory/scenario/attempt/entries so old rows never paint a different prefix. No native/OS/pixel claim.",
+    "P red scene control absent after E01light passed; old prototype immediate ready/empty did not implement loading/error/retry design states. Added only approved states/demo controls, no production bug invented. First external A driver omitted a scoped require; setup failed before original list wrapper installation, corrected. Initial prototype pnpm build lacked local vite command; repository root Vite6.4.4 binary built successfully6.45s and prepared Sites assets. Failures/logs retained, no dependency installation or network use.",
+    "No production source change. Reuse exact r43 ASAR/broker and six prior package-native smokes;81out/ASAR files freshly equal.983source final differs from980onlyP FileWorkspace and3new external test files. Two new source archives retain P state-gap baseline and tested final. Native self-owned7file hashes/inodes/mtime unchanged; chmod directory metadata change intentional.",
+    "Original list handler function identity restored; held success released with unchanged hash. CANCELLED list observations from ordinary lazy-tree requests are preserved, not fabricated errors or case failures. No tasks, models, oldr4/r6pending57bytes, AIS/daily resources, clipboard or OS permissions touched. Historical1776not a fresh full suite; old2externalCLIopt-ins not selected. Stage active, no commit/push/merge/tag/release."
+  ],
+  "artifacts": {
+    "app/final/E01-five-level-parent.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/E01-five-level-parent.png",
+      "sha256": "d5205ca94943eef4646e47b458356b22a3c2e494739b73c73fe58a96acc17128"
+    },
+    "app/final/E02-empty.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/E02-empty.png",
+      "sha256": "c3465e24601fee6ddd25d5e8449c049831d613bde2fdd1189bbb9ba3ed06724b"
+    },
+    "app/final/E02-loading-without-old-entries.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/E02-loading-without-old-entries.png",
+      "sha256": "4ada0749f7e39f8e078c02b9f1109e54222e49916b2be33bdfb4750173c3179b"
+    },
+    "app/final/E02-permission.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/E02-permission.png",
+      "sha256": "5eb252dc87b2c09d09ec36fc4acf827628b31927ce30ce6e9a8098a45b2013d2"
+    },
+    "app/final/E02-retry-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/E02-retry-recovered.png",
+      "sha256": "bae2768f86bfcb3c0749d63822e621021044de9c0f581f7bdf924af3cb2e30a6"
+    },
+    "app/final/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/electron.log",
+      "sha256": "c805924979664b1fbf1f8cf29ee2036ffdac5f8179339f3f108f6ae1bef75783"
+    },
+    "app/final/project/层级01/level-1.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/project/层级01/level-1.txt",
+      "sha256": "cd4a011b3ffe5acec9a267978d5a487cee1ca7d69bd3ff5917b554813580c49b"
+    },
+    "app/final/project/层级01/same/level-2.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/project/层级01/same/level-2.txt",
+      "sha256": "113fc97691ed71aa073114c709030434d8587d6873becbe518aba0db7fff7802"
+    },
+    "app/final/project/层级01/same/same/level-3.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/project/层级01/same/same/level-3.txt",
+      "sha256": "8d43db6350ab8e8fa1cd5266d8680cc5aa505768a1a414852bf51506900f3f8c"
+    },
+    "app/final/project/层级01/same/same/层级04/level-4.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/project/层级01/same/same/层级04/level-4.txt",
+      "sha256": "2f5054382a2cf7b7dce7105d86b36d901aff9359c265d66eb13317c68f43991e"
+    },
+    "app/final/project/层级01/same/same/层级04/same/denied/permission-child.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/project/层级01/same/same/层级04/same/denied/permission-child.txt",
+      "sha256": "99e5f9b21b07b3060ca88db3b6b44b8d3e0537b40ce2793d9d11945956cf307a"
+    },
+    "app/final/project/层级01/same/same/层级04/same/leaf.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/project/层级01/same/same/层级04/same/leaf.txt",
+      "sha256": "12e1ea3143c6f56931e1967ea0277f987632f8e3dfbf97f3883207f4c30f9276"
+    },
+    "app/final/project/层级01/same/same/层级04/same/level-5.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/project/层级01/same/same/层级04/same/level-5.txt",
+      "sha256": "5644d8c1842fa2da805ab901a347e1bc9e118b466d9d3b20b703cf1819ff1d37"
+    },
+    "app/final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/final/result.json",
+      "sha256": "b3ef94b348556ad52d1aaa34f61c062ed421c5e2819f2b2a8cb7c2abd4d10bae"
+    },
+    "app/initial-driver-require-setup-failure/project/层级01/level-1.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/project/层级01/level-1.txt",
+      "sha256": "cd4a011b3ffe5acec9a267978d5a487cee1ca7d69bd3ff5917b554813580c49b"
+    },
+    "app/initial-driver-require-setup-failure/project/层级01/same/level-2.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/project/层级01/same/level-2.txt",
+      "sha256": "113fc97691ed71aa073114c709030434d8587d6873becbe518aba0db7fff7802"
+    },
+    "app/initial-driver-require-setup-failure/project/层级01/same/same/level-3.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/project/层级01/same/same/level-3.txt",
+      "sha256": "8d43db6350ab8e8fa1cd5266d8680cc5aa505768a1a414852bf51506900f3f8c"
+    },
+    "app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/level-4.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/level-4.txt",
+      "sha256": "2f5054382a2cf7b7dce7105d86b36d901aff9359c265d66eb13317c68f43991e"
+    },
+    "app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/same/denied/permission-child.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/same/denied/permission-child.txt",
+      "sha256": "99e5f9b21b07b3060ca88db3b6b44b8d3e0537b40ce2793d9d11945956cf307a"
+    },
+    "app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/same/leaf.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/same/leaf.txt",
+      "sha256": "12e1ea3143c6f56931e1967ea0277f987632f8e3dfbf97f3883207f4c30f9276"
+    },
+    "app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/same/level-5.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/project/层级01/same/same/层级04/same/level-5.txt",
+      "sha256": "5644d8c1842fa2da805ab901a347e1bc9e118b466d9d3b20b703cf1819ff1d37"
+    },
+    "app/initial-driver-require-setup-failure/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/app/initial-driver-require-setup-failure/result.json",
+      "sha256": "24fbb76890440fae8f579149fc198847c19143b16aebaf70b8a958d918a5cb66"
+    },
+    "prototype/full-shared-light-dark/dark-empty.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/dark-empty.png",
+      "sha256": "199c510e7b7cd7b691c20c70b71c31d3a1365741f3daf718fe1c3830cb1a1ed5"
+    },
+    "prototype/full-shared-light-dark/dark-level-1.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/dark-level-1.png",
+      "sha256": "b16ad1590ff8eb85c9b6bf50f3a1233429f746943f94b87b3f34fe7c6523e30b"
+    },
+    "prototype/full-shared-light-dark/dark-level-2.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/dark-level-2.png",
+      "sha256": "e184959759468c194e3793a69b981e8bb8896ea81d9dd7a0bf65cea8cc9e072f"
+    },
+    "prototype/full-shared-light-dark/dark-level-3.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/dark-level-3.png",
+      "sha256": "35a32c92195326f6958b8c971f37169739e41e2a8188811a4cf004352bfc9284"
+    },
+    "prototype/full-shared-light-dark/dark-level-4.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/dark-level-4.png",
+      "sha256": "8593316315f3a9d4f4121068879b3f934c84187289c711e63fbcb87a83b4ad60"
+    },
+    "prototype/full-shared-light-dark/dark-level-5.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/dark-level-5.png",
+      "sha256": "54d5c220d2d67abc1fcea051a9af3944d1d87402499bc14748aaab50b2308d5c"
+    },
+    "prototype/full-shared-light-dark/dark-permission-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/dark-permission-recovered.png",
+      "sha256": "e3c257ab4b59479636e8035e99d103e22b481ae17eb2dafb808916330bd13172"
+    },
+    "prototype/full-shared-light-dark/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/electron.log",
+      "sha256": "0009108fde1540950bebe350097537fee020b0eb7f5edc1fc38be6f9770b0f1a"
+    },
+    "prototype/full-shared-light-dark/light-empty.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/light-empty.png",
+      "sha256": "408c985d3a98251ddc775f058e7ffd8cc481211e593891111edf2c3ba39cb683"
+    },
+    "prototype/full-shared-light-dark/light-level-1.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/light-level-1.png",
+      "sha256": "16ba9ba5e0f723f3e1a63b8e451175bc7fdfe708ac027002d370df6d1aa2e3d6"
+    },
+    "prototype/full-shared-light-dark/light-level-2.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/light-level-2.png",
+      "sha256": "e0d654c03c5e133106a9fa7c3a0b01ea3cc676d8857f4390e73c0d28c7c69805"
+    },
+    "prototype/full-shared-light-dark/light-level-3.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/light-level-3.png",
+      "sha256": "2a429636b5bbaa2bd5f25eef99c645e2ad5edb7c037237554309d6f9191a95c7"
+    },
+    "prototype/full-shared-light-dark/light-level-4.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/light-level-4.png",
+      "sha256": "ed495f803b08e8975ef2ed41b66e1b12e5c409159c250e3663c4f92e0582e336"
+    },
+    "prototype/full-shared-light-dark/light-level-5.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/light-level-5.png",
+      "sha256": "5389f813b8249be4002724cb4a0b6c8bb268e11bcae95377127ead104c8e6ea1"
+    },
+    "prototype/full-shared-light-dark/light-permission-recovered.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/light-permission-recovered.png",
+      "sha256": "892b20d5de610b065bc890abde4a048c0e33d9f1c865dd955cb6b9760682ab28"
+    },
+    "prototype/full-shared-light-dark/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/full-shared-light-dark/result.json",
+      "sha256": "dc40d738e7f76401a04f5f1f49fbb37e352ff386d9c6a2e5502cb5396cc9c491"
+    },
+    "prototype/missing-directory-scenarios-red/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/electron.log",
+      "sha256": "f706fb6ad875199e21edd273295cfdc81617ec6d25f19c5a474285e686f35804"
+    },
+    "prototype/missing-directory-scenarios-red/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/failure.png",
+      "sha256": "d3b270569b9741b4750c0a7c358f8b50ad03b1b4e2f60483380ef70ac32a53c8"
+    },
+    "prototype/missing-directory-scenarios-red/light-level-1.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/light-level-1.png",
+      "sha256": "16ba9ba5e0f723f3e1a63b8e451175bc7fdfe708ac027002d370df6d1aa2e3d6"
+    },
+    "prototype/missing-directory-scenarios-red/light-level-2.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/light-level-2.png",
+      "sha256": "e0d654c03c5e133106a9fa7c3a0b01ea3cc676d8857f4390e73c0d28c7c69805"
+    },
+    "prototype/missing-directory-scenarios-red/light-level-3.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/light-level-3.png",
+      "sha256": "2a429636b5bbaa2bd5f25eef99c645e2ad5edb7c037237554309d6f9191a95c7"
+    },
+    "prototype/missing-directory-scenarios-red/light-level-4.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/light-level-4.png",
+      "sha256": "ed495f803b08e8975ef2ed41b66e1b12e5c409159c250e3663c4f92e0582e336"
+    },
+    "prototype/missing-directory-scenarios-red/light-level-5.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/light-level-5.png",
+      "sha256": "5389f813b8249be4002724cb4a0b6c8bb268e11bcae95377127ead104c8e6ea1"
+    },
+    "prototype/missing-directory-scenarios-red/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/missing-directory-scenarios-red/result.json",
+      "sha256": "9094b2bda436c83bcdafc5e3db1effb277e78300d8567d06c40452fff3c5b8f0"
+    },
+    "prototype/unconfirmed-select-key-driver/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/electron.log",
+      "sha256": "193bf781bdbc0140cf5adfbad6e1e5fdad44966b43887811f6f874e789acc5d8"
+    },
+    "prototype/unconfirmed-select-key-driver/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/failure.png",
+      "sha256": "c6a9fe48db67ff2ca2c456f8040b407a876cf36c736e18d0099eaab7687da44f"
+    },
+    "prototype/unconfirmed-select-key-driver/light-level-1.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/light-level-1.png",
+      "sha256": "16ba9ba5e0f723f3e1a63b8e451175bc7fdfe708ac027002d370df6d1aa2e3d6"
+    },
+    "prototype/unconfirmed-select-key-driver/light-level-2.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/light-level-2.png",
+      "sha256": "e0d654c03c5e133106a9fa7c3a0b01ea3cc676d8857f4390e73c0d28c7c69805"
+    },
+    "prototype/unconfirmed-select-key-driver/light-level-3.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/light-level-3.png",
+      "sha256": "2a429636b5bbaa2bd5f25eef99c645e2ad5edb7c037237554309d6f9191a95c7"
+    },
+    "prototype/unconfirmed-select-key-driver/light-level-4.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/light-level-4.png",
+      "sha256": "ed495f803b08e8975ef2ed41b66e1b12e5c409159c250e3663c4f92e0582e336"
+    },
+    "prototype/unconfirmed-select-key-driver/light-level-5.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/light-level-5.png",
+      "sha256": "5389f813b8249be4002724cb4a0b6c8bb268e11bcae95377127ead104c8e6ea1"
+    },
+    "prototype/unconfirmed-select-key-driver/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/prototype/unconfirmed-select-key-driver/result.json",
+      "sha256": "3db601f9173471ed7ee24c0696e887ebe2731cf007140258da7d6510db080481"
+    },
+    "regression/prototype-task-lifecycle/dark-task-state.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/regression/prototype-task-lifecycle/dark-task-state.png",
+      "sha256": "1988115c2a135064275a0e95b750b2f5271cd7bf371bcd99d131fc2f332f7d9d"
+    },
+    "regression/prototype-task-lifecycle/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/regression/prototype-task-lifecycle/electron.log",
+      "sha256": "84101d870aad5738a9c30a78fbd2440cac56a5cee2af7d35a7060d306b151ec2"
+    },
+    "regression/prototype-task-lifecycle/light-task-state.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/regression/prototype-task-lifecycle/light-task-state.png",
+      "sha256": "001744ea6644f87259477407b911c22505792b6e9971dfc43402b5571fd6e8d0"
+    },
+    "regression/prototype-task-lifecycle/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/regression/prototype-task-lifecycle/result.json",
+      "sha256": "87de640b4f0825ed9d6914fe7ae1209b6940f9484d40065d0ed9af3be76619ad"
+    },
+    "sources/r43-dev093-completed-tested.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/sources/r43-dev093-completed-tested.json",
+      "sha256": "4671fb6c5eef113c41e7e0d0900442d06c41a4875b45f7f7036e0542e26d3c9c"
+    },
+    "sources/r43-dev093-completed-tested.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/sources/r43-dev093-completed-tested.tar.gz",
+      "sha256": "673648d29770ba2e64d5de1808d550731e1a0b2a534d76a60f7eda3d4eb7214c"
+    },
+    "sources/r43-dev093-prototype-state-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/sources/r43-dev093-prototype-state-red.json",
+      "sha256": "7645d4135e5e23293ebc854f2013831dff40acef01c7d6f24799a25bfde0cdda"
+    },
+    "sources/r43-dev093-prototype-state-red.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/sources/r43-dev093-prototype-state-red.tar.gz",
+      "sha256": "a5ce4522a919a1901180829406ee8628b20c834f53163d7cf894fa79118eb94d"
+    },
+    "validation/willyou-dev093-breadcrumb-app-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-breadcrumb-app-r1.log",
+      "sha256": "c6557edbdda4719fc6d6108e4f2fe5ef91092398e38b071cfe78833de4e339fb"
+    },
+    "validation/willyou-dev093-breadcrumb-app-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-breadcrumb-app-r2.log",
+      "sha256": "63d6a7ccb7a381699442eef42e93ec3ca9c2f442f1f4f82548b0578d3b68ec9b"
+    },
+    "validation/willyou-dev093-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-final.json",
+      "sha256": "f415598386903c7223a65bffc585fd7b43969118a7044e42875a03b9f7168d0b"
+    },
+    "validation/willyou-dev093-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-final.log",
+      "sha256": "b5f79233b7d59b6e91d466e25acbdbaf4a250ebe21973dae2a644eaa4e673266"
+    },
+    "validation/willyou-dev093-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-r1.json",
+      "sha256": "a222361d5067f4f7d9a84af2fb69be8e4d95c7b1dcefa34d4090e226b940bc6a"
+    },
+    "validation/willyou-dev093-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-r1.log",
+      "sha256": "14e6d65e9f010dc3dbc0f82447336a77eb2a8fa096b4324220e5429208610e9c"
+    },
+    "validation/willyou-dev093-code-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-r2.json",
+      "sha256": "9e168edebc07551ab6024c7d50246ae4d2b9c2759e1d76b0c3ad0c9764653d8f"
+    },
+    "validation/willyou-dev093-code-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-r2.log",
+      "sha256": "49988518546f902b4184e348c2cda33a3e23874c196c095438a14c13a6c922dc"
+    },
+    "validation/willyou-dev093-code-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-tests.json",
+      "sha256": "e345e8a8090a819c67a8f5b2b8b27896f89e7dff82d0f33d03fc6a577ea302d4"
+    },
+    "validation/willyou-dev093-code-tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-code-tests.log",
+      "sha256": "fc01635d7f4a645c4451b91f95c2e6c5ccd88d7f2b63209549a9f4cec5605cf2"
+    },
+    "validation/willyou-dev093-prototype-build-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-prototype-build-r2.log",
+      "sha256": "8244a96f213fb6c8d5ab3d474856d7d7d0fed1bd43c3a83322d5899a483e6e93"
+    },
+    "validation/willyou-dev093-prototype-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-prototype-build.log",
+      "sha256": "d6ee6adac17867c14a2afddf57faffacbaf367851f02219ced704588e55ede3c"
+    },
+    "validation/willyou-dev093-prototype-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-prototype-r1.log",
+      "sha256": "155e4153bdac5bcbe7ac96681ae1d2d628e87f56f9240acebc76c39f9d66a71b"
+    },
+    "validation/willyou-dev093-prototype-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-prototype-r2.log",
+      "sha256": "e901b1d2312cf490683b7a44520fc81959394dccca5d77081d86db03b6146298"
+    },
+    "validation/willyou-dev093-prototype-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-prototype-red.log",
+      "sha256": "ddd2ad3cfd3547db4162f3f68e59a49fea571b91efb6f400650f7a68f2f169ea"
+    },
+    "validation/willyou-dev093-prototype-task-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-prototype-task-regression.log",
+      "sha256": "77d825c713821e07dbabd447358cc3cb783604ed5eb0fbda7ea8baf5f27f6292"
+    },
+    "validation/willyou-dev093-runtime-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-runtime-verification.json",
+      "sha256": "aa365e49a566471e4f4d1c1e98bcd4639c272b7890278426f361cf11472a5911"
+    },
+    "validation/willyou-dev093-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-breadcrumb-dev093-r43/validation/willyou-dev093-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    }
+  }
+}

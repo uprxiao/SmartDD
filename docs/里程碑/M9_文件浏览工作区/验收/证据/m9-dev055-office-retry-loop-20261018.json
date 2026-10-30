@@ -1,0 +1,133 @@
+{
+  "schema": "m9-development-fix/v1",
+  "id": "M9-DEV-055",
+  "completedAt": "2026-10-18T05:22:24.131360+00:00",
+  "baseline": "R3.4-P1 / R07.4 / R07.12",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "relatedCase": "M9-T-J08",
+  "formalCasePassed": false,
+  "problem": "A cached/fallback calculation increments bufferVersion during each save. A permanently failed save therefore re-scheduled itself every 3 seconds; red test observed 10 save attempts in 30 seconds.",
+  "fix": "Reuse existing PPTX failure-stop behavior: distinguish automatic and explicit saves, pause automatic source writes after a failed receipt/exception, preserve visible error across new text/cell/sheet/range edits, keep draft checkpointing, and allow explicit save or clean reload to resume. Queued automatic saves also respect the stop flag.",
+  "validation": {
+    "red": {
+      "passed": 10,
+      "failed": 1,
+      "report": "willyou-office-retry-loop-red.json"
+    },
+    "affectedComponents": {
+      "passed": 56,
+      "failed": 0,
+      "report": "willyou-office-retry-loop-green.json"
+    },
+    "finalNativeAndBuffer": {
+      "passed": 19,
+      "failed": 0,
+      "report": "willyou-office-retry-loop-native-r3.json"
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "log": "willyou-m9-dev055-final-typecheck.log"
+    },
+    "build": {
+      "exitCode": 0,
+      "log": "willyou-m9-dev055-build.log"
+    }
+  },
+  "realIntegration": "Open actual XLSX with production Worker/FileService and r8 broker; remove source write bits. First autosave fails as readonly; across 60 seconds plus new input no further source-save attempts, disk original unchanged and checkpoints retained. Restore write bits; explicit save writes once and independently reopens new local value. No fabricated success receipt.",
+  "harnessFailures": [
+    "Native r1/r2 each failed because a 30-second fake timer jump timed out a still-running real Worker checkpoint. Corrected by awaiting each 500ms checkpoint before advancing the remaining 29500ms; product timeout policy unchanged. Failures retained."
+  ],
+  "aggregateLatestCodeResults": {
+    "uniqueTests": 1499,
+    "passed": 1497,
+    "skipped": 2,
+    "basis": "Prior r8 audit plus affected re-runs, deduplicated by file + full test name; no current code-test failures, two existing external CLI probes remain opt-in."
+  },
+  "boundaries": [
+    "J08 full append/materialize stale/too-large/conflict/disconnection and permitted 1000ms retry matrix still incomplete; this fix does not mark the whole case passed.",
+    "r8 package predates DEV055; current source build/typecheck and integration passed, next consolidated App package and GUI revalidation required.",
+    "No UI layout/prototype page change. Existing failure/error/retry states retained, faulty repeated writes corrected; full visual/IME claims not made."
+  ],
+  "sourceFiles": {
+    "src/renderer/features/files/office/buffer.ts": "0c8ebeed75321cdd6829c3af4ae2683928ded34b3e9276c2526babcf41e39ab1",
+    "src/renderer/features/files/office/buffer.test.ts": "5046c518c201a1125b200a959b81bc2346191fd495f894fc2d7d6fd25cdfc71a",
+    "src/renderer/features/files/office/session-state-acceptance.test.tsx": "f5e4943b92b5895e8de1675f1e58699243a5dd9a619e0ab024c909f2b2e38362",
+    "src/renderer/features/files/office/xlsx-materialization-acceptance.test.ts": "7814486500ffb5e2e0409dd93e79e2c6829ecd70abe9e8948b72efb0679c2b66",
+    "src/renderer/features/files/office/pptx-buffer.ts": "50b66104b0d8a3b67e8376edcd7354147cbef7965ce1a52593357bfe495d1473"
+  },
+  "artifacts": {
+    "willyou-office-retry-loop-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-red.log",
+      "sha256": "c2a717574f6702f31fe9be09918161c0f142b8f0c2ae1df6a2a4b715b0cea87c"
+    },
+    "willyou-office-retry-loop-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-red.json",
+      "sha256": "425b03bc712c70e2ce35764411680baf80d818e44129f0e4cd5c7a1a0695d2f2"
+    },
+    "willyou-office-retry-loop-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-green.json",
+      "sha256": "cfbd42f269d8bf4fde6872350df44d2372fc5c52a6212af3e23e9f549d107183"
+    },
+    "willyou-office-retry-loop-native-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native-r3.json",
+      "sha256": "98920b5e8e7ef58c37b3efec9c84a973c5150a350f36b670db9f807165ca6e2f"
+    },
+    "willyou-office-retry-loop-native-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native-r2.json",
+      "sha256": "aadaf4c57bc08a812289dafd6b2fe5690635744fde4ae0063db1b4d71866300b"
+    },
+    "willyou-office-retry-loop-native-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native-matrix.json",
+      "sha256": "30ebb00ed120b414774b270abfbc08c0e399eadf808f0eb1181b59b85670937d"
+    },
+    "willyou-office-retry-loop-native-matrix-r3.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native-matrix-r3.json",
+      "sha256": "ef489868a442b3775a3c8c063b94fe399ec49bdab5b426578b3c7aa132a22a25"
+    },
+    "willyou-office-retry-loop-native-matrix-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native-matrix-r2.json",
+      "sha256": "c9fd71d94d4d176f6a97d1d84e0326bc0e6a99008a97ee4e65d9221395127258"
+    },
+    "willyou-office-retry-loop-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-green.log",
+      "sha256": "b86c6d600ae5bd701fa9f71581adc9a75dfb3505f1c4e5b3ab62f513ec7c6dc1"
+    },
+    "willyou-office-retry-loop-native.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native.log",
+      "sha256": "558e19ef5aae5e37ae780d1df176fb2cdea864951f64a9eb98d36b9d3c5e384b"
+    },
+    "willyou-office-retry-loop-native-r3.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native-r3.log",
+      "sha256": "14e9bf0d4a14d312494de91dd2b875a47de043ffb76c0e311f8d8521b252dfb6"
+    },
+    "willyou-office-retry-loop-native-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native-r2.log",
+      "sha256": "82cbe7b665f2491a1f92d0e662c6e7be346efea5a701b619540a8c26104510d2"
+    },
+    "willyou-office-retry-loop-native.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-office-retry-loop-native.json",
+      "sha256": "e1e83a7589c4df0f55aa0a72343af8c6d19f54f15ad9da919a76cdd35da5eceb"
+    },
+    "willyou-m9-dev055-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-m9-dev055-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-m9-dev055-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-m9-dev055-build.log",
+      "sha256": "918d74cc544634bdb7fd77e3a172518042401ba928f16dea996ecaa2be220e8e"
+    },
+    "willyou-m9-dev055-final-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/willyou-m9-dev055-final-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/sources.tar.gz",
+      "sha256": "b7fddbc3312d0ac7dc373c5e9b5af735780c1c3958ff9320a0b2f97993e83bb7"
+    },
+    "sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-office-retry-loop/sources.json",
+      "sha256": "af0e1520b8480e4361458a43077e6f774b27d23f6bf1cfe64902fe356f81a712"
+    }
+  }
+}

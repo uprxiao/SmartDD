@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-C10",
+  "requirements": [
+    "M9-R03.4"
+  ],
+  "requiredLayers": [
+    "I"
+  ],
+  "status": "passed",
+  "formalCasePassed": true,
+  "at": "2026-10-18T11:06:20.939732+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "defect": "M9-DEV-046",
+  "actual": {
+    "chain": "Production renderer hook -> registered scoped RPC -> FileSearchService -> byte-identical r5 broker -> real temporary files. Legacy transport omits only files.startSearchSession registration and returns Electron missing-handler wording.",
+    "C10": {
+      "tests": 8,
+      "branches": [
+        "New host uses actual session endpoint twice for two queries and never one-shot.",
+        "Legacy host probes absence once, executes exactly one actual one-shot per query, reuses only capability, and preserves request ID/root.",
+        "Actual permission and executable IO faults, on both new and legacy hosts, stay errors with one native attempt and no retry loop.",
+        "Clear/unmount while unsupported reply is pending prevents any fallback or leaked listener/process."
+      ]
+    },
+    "regression": {
+      "C11": 8,
+      "R03_R07": 10,
+      "totalDistinct": 26,
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0
+    },
+    "independentReview": "area_marker_review read the protocol helper, renderer integration, owner-gated controller and 16-case main matrix; no blocker found. No duplicate test run claimed.",
+    "typecheck": "Full pnpm typecheck exit0 after correcting parallel terminal-context test types."
+  },
+  "artifacts": {
+    "r1-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r1-tests.json",
+      "sha256": "a7fdbe5f8a4607c10361cb36269504c4a9b4835d06d50930bf1324906438863f"
+    },
+    "r1-observations.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r1-observations.json",
+      "sha256": "817f235b736e8cae91e07949201c6f03bcbbf1d4167a2dd83d015b86b277e329"
+    },
+    "r1-log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r1-log",
+      "sha256": "674f874140fe3d3868fdd8e6ab4a9691b10b164028ef02bfc438b0eacf18d71d"
+    },
+    "r2-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r2-tests.json",
+      "sha256": "bca95f73cc4361758ea7c3cfd5d366bf8bc7409c7a9c998c90dcdb62f55f953f"
+    },
+    "r2-observations.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r2-observations.json",
+      "sha256": "c4e4623bfa383e8720808ade8524372d51f1c9720d6fa2dbc3599c98c3b07936"
+    },
+    "r2-log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r2-log",
+      "sha256": "e4ab08929fb9ef975781ac1ecb4f125e07ea506f3309b3ee1d31c52e0580a17a"
+    },
+    "r3-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r3-tests.json",
+      "sha256": "5db9239f975d9429d7737db6c27ed6cd06341696f71cc466c6d3435b1c8c9d26"
+    },
+    "r3-observations.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r3-observations.json",
+      "sha256": "8e30d131cf6b45a12205541127317ebf8f15b254bc83f2076a66ec303504612f"
+    },
+    "r3-log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/r3-log",
+      "sha256": "989a4876911966b2f24f00fc46adfebbe6888b4606509db334f6a45ba6fc6a52"
+    },
+    "tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/tested-sources.json",
+      "sha256": "1a640f01134ffa5948e16bd3cc09e2abc5b93f072b70b4d5b7c79f1ece3098e6"
+    },
+    "tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/tested-sources.tar.gz",
+      "sha256": "951eb28601eb570a1880e2b68085fc303fbcacff70f9d04014ab7966aba9aebc"
+    },
+    "sources-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/sources-r2.json",
+      "sha256": "ebe9a8d3afb8582fbd04ddbef4657e3034ee516db58cc4a316a5879393cabdcd"
+    },
+    "sources-r2.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/sources-r2.tar.gz",
+      "sha256": "5ea3fd9aeb42c8edff7c3aff6550d4b3c7ce92683ee0bef27b6cabbfd4df7d64"
+    },
+    "typecheck-wip-failure.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/typecheck-wip-failure.log",
+      "sha256": "d514f11e6bb34719a29fd7416d79079687ac09a6ca0284645df9fe31f910bfc6"
+    },
+    "typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-search-protocol/typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    }
+  },
+  "sourceVerification": "233 files unchanged through final 26/26 test run, checked before subsequent parallel edits",
+  "boundaries": [
+    "C10 requires I only. No actual App result is claimed for this new protocol in r5; it provides unchanged native broker only.",
+    "The previous no-protocol partial evidence is preserved in m9-acceptance-search-session-20261018.json.",
+    "R2 regression run: 24 passed/2 failed because its request-count/delayed-response gates still named the old endpoint; corrected to actual session endpoint, final 26/26. Original failed report remains.",
+    "No prototype layout or business interaction changed; rationale in DEV046_搜索协议回退.md.",
+    "Current IPC methods serialize errors to text; fallback recognizes only the exact absent session method, never general UNSUPPORTED or arbitrary IO errors."
+  ]
+}

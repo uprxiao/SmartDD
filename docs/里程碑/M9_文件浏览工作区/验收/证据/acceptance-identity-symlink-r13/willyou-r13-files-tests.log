@@ -1,0 +1,36 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/external-tree-refresh-acceptance.test.tsx src/renderer/features/files/workspace-tree-native-acceptance.test.tsx src/renderer/features/files/workspace-tree-acceptance.test.tsx src/main/core/files/symlink-acceptance.test.ts src/renderer/features/files/markdown-refresh-acceptance.test.tsx src/main/core/files/watch-ownership-acceptance.test.ts src/renderer/features/files/tree-failure-native-acceptance.test.tsx --no-file-parallelism --reporter=default --reporter=json --outputFile=/private/tmp/willyou-r13-files-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/renderer/features/files/markdown-refresh-acceptance.test.tsx (8 tests) 6824ms
+     ✓ 'ordinary writer' / 'native watch' updates source and real rich widgets twice without writeback  1155ms
+     ✓ 'ordinary writer' / 'reactivation' updates source and real rich widgets twice without writeback  856ms
+     ✓ 'ordinary writer' / 'explicit refresh' updates source and real rich widgets twice without writeback  844ms
+     ✓ 'CLI process' / 'native watch' updates source and real rich widgets twice without writeback  1170ms
+     ✓ 'CLI process' / 'reactivation' updates source and real rich widgets twice without writeback  990ms
+     ✓ 'CLI process' / 'explicit refresh' updates source and real rich widgets twice without writeback  932ms
+     ✓ reports actual missing-file read error and recovers fresh Markdown without writes  375ms
+     ✓ only a later actual local edit plus differing disk bytes becomes an ordinary conflict  321ms
+ ✓ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests) 4421ms
+     ✓ B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position  1793ms
+     ✓ B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position  2065ms
+ ✓ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (22 tests) 4261ms
+     ✓ L06 retains native invalidation while the real save receipt is delayed (newer input=false)  307ms
+     ✓ L06 retains native invalidation while the real save receipt is delayed (newer input=true)  449ms
+ ✓ src/main/core/files/watch-ownership-acceptance.test.ts (3 tests) 1050ms
+     ✓ L03: the replacement survives late subscribe rejection and receives a real filesystem event  303ms
+     ✓ L04: real native changes stay with the authenticated IPC owner, and forged IDs cannot read/reconfigure/stop another watch  497ms
+ ✓ src/renderer/features/files/workspace-tree-native-acceptance.test.tsx (4 tests) 447ms
+ ✓ src/renderer/features/files/workspace-tree-acceptance.test.tsx (3 tests) 175ms
+ ✓ src/main/core/files/symlink-acceptance.test.ts (2 tests) 92ms
+ ✓ src/renderer/features/files/file-buffer.test.ts (19 tests) 17ms
+
+ Test Files  8 passed (8)
+      Tests  67 passed (67)
+   Start at  14:09:19
+   Duration  21.07s (transform 721ms, setup 0ms, import 2.24s, tests 17.29s, environment 981ms)
+
+JSON report written to /private/tmp/willyou-r13-files-tests.json

@@ -1,0 +1,70 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/core/file-panel-preference.test.ts
+
+[1018/193111.709144:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/193112.068088:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/core/file-panel-preference.test.ts (4 tests | 4 failed) 15ms
+     × migrates legacy pixels against the real measured area and reloads as a proportional width 13ms
+     × retains the requested ratio while a narrow window temporarily clamps the panel 0ms
+     × uses a finite default for malformed preferences and ignores invalid drag measurements 0ms
+     × writes only the outer preference without changing visibility, sidebar or scoped layout 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/core/file-panel-preference.test.ts > global outer panel preference independently of scoped tree layout > migrates legacy pixels against the real measured area and reloads as a proportional width
+TypeError: Cannot read properties of undefined (reading 'unit')
+ ❯ resolveFilePanelWidth src/shared/file-panel-layout.mjs:18:30
+     16|   if (!Number.isFinite(available) || available <= 0) return 0;
+     17|   const { minimum, maximum } = filePanelBounds(available);
+     18|   const desired = preference.unit === 'ratio' ? preference.value * ava…
+       |                              ^
+     19|   return Math.min(maximum, Math.max(minimum, Number.isFinite(desired) …
+     20| }
+ ❯ src/renderer/core/file-panel-preference.test.ts:8:190
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/core/file-panel-preference.test.ts > global outer panel preference independently of scoped tree layout > retains the requested ratio while a narrow window temporarily clamps the panel
+TypeError: Cannot read properties of undefined (reading 'unit')
+ ❯ resolveFilePanelWidth src/shared/file-panel-layout.mjs:18:30
+     16|   if (!Number.isFinite(available) || available <= 0) return 0;
+     17|   const { minimum, maximum } = filePanelBounds(available);
+     18|   const desired = preference.unit === 'ratio' ? preference.value * ava…
+       |                              ^
+     19|   return Math.min(maximum, Math.max(minimum, Number.isFinite(desired) …
+     20| }
+ ❯ src/renderer/core/file-panel-preference.test.ts:9:180
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/renderer/core/file-panel-preference.test.ts > global outer panel preference independently of scoped tree layout > uses a finite default for malformed preferences and ignores invalid drag measurements
+TypeError: Cannot read properties of undefined (reading 'unit')
+ ❯ resolveFilePanelWidth src/shared/file-panel-layout.mjs:18:30
+     16|   if (!Number.isFinite(available) || available <= 0) return 0;
+     17|   const { minimum, maximum } = filePanelBounds(available);
+     18|   const desired = preference.unit === 'ratio' ? preference.value * ava…
+       |                              ^
+     19|   return Math.min(maximum, Math.max(minimum, Number.isFinite(desired) …
+     20| }
+ ❯ src/renderer/core/file-panel-preference.test.ts:10:232
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/renderer/core/file-panel-preference.test.ts > global outer panel preference independently of scoped tree layout > writes only the outer preference without changing visibility, sidebar or scoped layout
+AssertionError: expected 654 to be close to 0.5902527075812274, received difference is 653.4097472924187, but expected 0.005
+ ❯ src/renderer/core/file-panel-preference.test.ts:11:561
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  19:31:12
+   Duration  474ms (transform 20ms, setup 0ms, import 19ms, tests 15ms, environment 361ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

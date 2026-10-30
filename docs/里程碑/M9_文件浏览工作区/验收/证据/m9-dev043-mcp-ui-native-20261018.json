@@ -1,0 +1,316 @@
+{
+  "schemaVersion": 1,
+  "defectId": "M9-DEV-043",
+  "phase": "independent-native-MCP-Apps-host",
+  "recordedAt": "2026-10-18T03:31:26.956464+00:00",
+  "status": "implemented-and-targeted-U-I-passed; packaged-App-A-pending",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "architecture": "arm64",
+  "acceptedRequirementBaseline": "M9 R3.4 R06.15/R06.18/R07.13; S06/S07/Y30 retain A pending; F28/J12 historical U/I passes are not expanded",
+  "packageBoundary": {
+    "builtNewPackage": false,
+    "previousPackage": "r6",
+    "previousAsar": "b4210c34e41672c1b18a9998aba20f0e886fcdf9651dc0ab417729ea12540903",
+    "note": "r6 contains old Apps renderer; the new host requires next package. No visual/App claim."
+  },
+  "implementation": [
+    "Independent nonpersistent Electron session + WebContentsView; main App CSP unchanged; trusted outer narrow preload and opaque untrusted child",
+    "Fixed unavailable HTTP/HTTPS/SOCKS proxy with no DIRECT or implicit loopback bypass set before load, plus disable_non_proxied_udp",
+    "Source/owner/id/URI/generation and IPC sender/mainFrame checks; AppBridge null raw client, only exact resource and readonly app-only tools",
+    "Serial storage/cache/connection cleanup barrier, bounded idle session reuse, close-before-open tombstone",
+    "15s initialized deadline; 2s subtree heartbeat with 5s no-response deadline and per-subtree 512MiB memory threshold; 200 UI messages/s, 256KiB inbound frame, eight resource/tool calls in flight",
+    "Native file chooser interception plus child file input/picker/drag/file-paste guards with captured intrinsics; ordinary text paste preserved",
+    "Renderer native geometry/occlusion observers and cleanup, explicit error/retry/builtin fallback; original FileBuffer/draft/save chain unchanged"
+  ],
+  "tests": {
+    "nativeSdkLifecycle": {
+      "report": "development-mcp-ui/r4/result.json",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "boundary": "Real Electron42.11.14/Chromium148, production FileService and prior verified native broker, registered actual sandboxed stdio provider, official App SDK, actual production AppBridge and native UI. Does not operate an installed App UI.",
+      "sourceSnapshots": [
+        "development-mcp-ui/r4/source-before.json",
+        "development-mcp-ui/r4/source-after.json"
+      ],
+      "sameHashes": 11
+    },
+    "inputGuardAffectedRetest": {
+      "report": "development-mcp-ui/input-r2/result.json",
+      "selectedCases": 1,
+      "passed": 1,
+      "skippedBySelection": [
+        "other six native lifecycle groups already passed r4; no product changes to ui-view afterward"
+      ],
+      "sourceSnapshots": [
+        "development-mcp-ui/input-r2/source-before.json",
+        "development-mcp-ui/input-r2/source-after.json"
+      ],
+      "sameHashes": 11,
+      "observed": [
+        "file click and label forwarded click blocked before untrusted handler",
+        "showPicker file rejected, method and three global pickers nonconfigurable",
+        "file paste blocked; text paste allowed",
+        "captured path/type/prevent intrinsics survive malicious prototype overrides",
+        "actual SDK/resource/tool/forbidden capability chain still passes"
+      ]
+    },
+    "regression": {
+      "report": "development-mcp-ui/regression-r1.json",
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "11 actual native host matrix, 1 actual SQLite setting restart, 4 prior scoped controller, 7 actual panel with MCP slot mocked at unrelated boundary, 3 React native-view RPC-seam lifecycle, 1 official SDK bridge concurrency unit"
+    },
+    "reactRetryRetest": {
+      "report": "development-mcp-ui/apps-r2.json",
+      "passed": 3,
+      "note": "Affected repeat of the same three tests, not additional unique tests"
+    },
+    "scopedUiSender": {
+      "report": "development-mcp-ui/controller-r1.json",
+      "passed": 1,
+      "note": "Controller U with mocked service: foreign frame/untrusted sender all four UI routes refused, callback trust/frame rechecked and navigation revocation"
+    },
+    "typecheck": {
+      "report": "development-mcp-ui/types-final.log",
+      "exitCode": 0,
+      "laterRun": "development-mcp-ui/types-input-final.log",
+      "laterRunExitCode": 2,
+      "laterFailure": "Only concurrent F10 LSP service.ts(32,15) TS2339; reported and fixed by owner, waiting for his single final shared typecheck. MCP modules had no reported errors."
+    }
+  },
+  "network": {
+    "control": "development-mcp-ui/network-control.json",
+    "production": "development-mcp-ui/network-production.json",
+    "sameElectron": "42.11.14",
+    "sameChromium": "148.0.7778.280",
+    "positive": {
+      "stunUdp": 5,
+      "turnTcp": 1,
+      "turnTlsTcpConnections": 2
+    },
+    "isolatedControl": {
+      "stunUdp": 0,
+      "turnTcp": 0,
+      "turnTlsTcpConnections": 0
+    },
+    "actualProductionView": {
+      "stunUdp": 0,
+      "turnTcp": 0,
+      "turnTlsTcpConnections": 0
+    },
+    "resolveProxy": "PROXY 127.0.0.1:0",
+    "boundary": "All three owned loopback receivers. TLS target counted TCP connections and closed sockets, no TLS handshake assertion. Separate private userData. No external network or credentials. Production UI built from input-r2 source snapshot."
+  },
+  "failuresRetained": [
+    {
+      "artifact": "development-mcp-ui/r1-startup-failure.log",
+      "kind": "harness",
+      "reason": "esbuild inlined native @parcel/watcher package without native asset resolution; externalized to installed package, no source permissiveness change"
+    },
+    {
+      "artifact": "development-mcp-ui/r2/result.json",
+      "kind": "product and harness",
+      "reason": "Product outer-only heartbeat missed infinite opaque child in a different renderer; fixed to framesInSubtree and verified actual termination ~7s. Other failures were fixture syntax, out-of-schema geometry input and optional-error assertion."
+    },
+    {
+      "artifact": "development-mcp-ui/r3/result.json",
+      "kind": "harness",
+      "reason": "Bundler generated a local require shim, so typeof require was not a test of global Node exposure; corrected to globalThis.require. Independent raw browser probe already had undefined require."
+    },
+    {
+      "artifact": "development-mcp-ui/independent-review.json",
+      "kind": "static-review finding",
+      "reason": "P1 cleanup could be overwritten by P2; both chained to previous slot.ready before real controlled-delay regression. This finding was static, not claimed to be a captured failing runtime test."
+    }
+  ],
+  "independentReview": "development-mcp-ui/independent-review.json",
+  "remaining": [
+    "Next packaged App A for S06/S07/Y30: discovery success/failure/builtin fallback, actual display/light/dark, click/scroll/focus/menu occlusion and tab switching",
+    "Physical/system file chooser/drop behavior is not claimed by synthetic events; child guard events are I-layer only",
+    "Main-process IPC bridge exercised through production scoped controller unit and actual native-view IPC; installed full IPC/window UI remains A",
+    "Final full typecheck from concurrent LSP owner before combined package",
+    "Native file chooser interception for opaque OOPIF has only implementation review here; synthetic child guards are additive and do not prove every system chooser route (fresh realms/type mutation). Verify native coverage in isolated A/security acceptance before marking S07 complete."
+  ],
+  "screenshots": "No screenshots or AX dumps saved for this hidden integration; no historical screenshots fabricated.",
+  "sourceHashesAtArchive": {
+    "electron.vite.config.ts": "a80ecf30ab48473eed63f2905271497d016dba7187f4afc9c4a05f7766a61284",
+    "prototypes/m6-codex/src/FileMcpViewer.jsx": "5a0e139c649eec98b7ac7b13892a4a648235cfe97fa95e23a0bd44af7c336e55",
+    "scripts/files/mcp-ui/app-fixture.js": "661a157516e8ee3a88cbb4c322b048b037412202bd2f29558e730cc6a15e0bbb",
+    "scripts/files/mcp-ui/launch.mjs": "6233c4819d01491dea8d5c1fef9378ee7fcb5438794d91ddadd54329f9e0f594",
+    "scripts/files/mcp-ui/manual-app-fixture.js": "2b69cdf0fbae6d7dcc983e6fd882c563952cbd4f7da32ded8fac0f69956442a8",
+    "scripts/files/mcp-ui/network-control.cjs": "6e3154722d5e0fd0c6abd56995b17e55ef3ffeec81004053fde2046f174c2644",
+    "scripts/files/mcp-ui/network-preload.cjs": "1b3845329463305b2d6cb7fb0778dc21a1f651d4dbf8b026dea31b180f75df47",
+    "scripts/files/mcp-ui/network-runtime.cjs": "13dfd4a7e6d77538e2350dedc6d063ac499ed54a8c56aac022d7a71b5424cfbb",
+    "scripts/files/mcp-ui/provider.mjs": "bd345c838c367a7ac62d1c88858559d1d717a18527c80a7d8f51d287095c06b4",
+    "scripts/files/mcp-ui/run.cjs": "4c668b5b94cc9860478d78e04268a048603b4e726b070dc1e014e3d22668ce12",
+    "src/main/core/files/controller.ts": "98c97e0fd9f7001b910e858227b5b2dbd89065361e5e3aff1aa3f541b4f19be7",
+    "src/main/core/files/mcp/controller-ui.test.ts": "6d3aea8e1f6a3913cb6f3971e79da1b1414999d9b15f474ca863b762da8418af",
+    "src/main/core/files/mcp/fixtures/provider.mjs": "f9181d0c54b743f592e48fdab0d680957ef4ffef563d374b319e7d99ecac7cd0",
+    "src/main/core/files/mcp/local-provider.ts": "1e9a876e4b903ded8100b06a9c889d1441279f81c50ed4d52d58500c1c0cabca",
+    "src/main/core/files/mcp/policy.ts": "1a72b9eb06ec818994af14b14010ae6457d438b90cecfaba72ff192b68a9a1a8",
+    "src/main/core/files/mcp/service.ts": "83042141e7d75532e1fdf288a988d2c5c271aa0ad3db6021bdbde5c792e730e3",
+    "src/main/core/files/mcp/settings.test.ts": "7aed8d1f513aba2e8ebdb2dc009070fb01404c05e741a0c6c49ec22ff35492f6",
+    "src/main/core/files/mcp/stdio-provider.ts": "2ee8ad480156e3a0e2060851178701381e67b997a4a1897c53caeab283b79798",
+    "src/main/core/files/mcp/ui-document.ts": "83881a51451c2af35ed854767e99c85e9c9e1c1a109fb55d994d7d4ccff93bce",
+    "src/main/core/files/mcp/ui-view.ts": "1a55e2085e54ef0007638a1f9b59a1fcbeb17c834198f604ba22589794b45914",
+    "src/preload/m9-mcp-ui.ts": "63473825e1cc09bffcb4d43609b1cb7c24f5dbe061c7ce76593aa6152e42f569",
+    "src/renderer/features/files/mcp/apps.test.tsx": "681ee67d9a8563e58a741573db5e8c892ca31891964c4a3c8051884a11cd16e4",
+    "src/renderer/features/files/mcp/apps.tsx": "baec209f945b2b347f3c3937730beb4dff5e2bda983096dc0f76fda59fa6146f",
+    "src/renderer/features/files/mcp/bridge.test.ts": "76e1f06dd399b9d56b06a98e0b75d11209f47fcbfc764292087585e5c0eb3262",
+    "src/renderer/features/files/mcp/bridge.ts": "0c1fffd88c0487b2913e89a5b416453f1b2f7f1e19204d09f5a85f3c04399d79",
+    "src/renderer/features/files/mcp/host-acceptance.test.ts": "8639f7a7826ee550e7e30f11ad189d6ad6345498e15db267adab5927511a685c",
+    "src/renderer/features/files/mcp/viewer.tsx": "f706ab4219ee52552043becd74c3ded8f4cbb26dc7de2f06bb9deaef68e98eee",
+    "src/shared/events.ts": "e3cf8b8f7ec144c94d68d567af20f3c64dffc20352c373cd8876f28c36e0fb2a",
+    "src/shared/file-viewer.ts": "e90fd98f39e9a1eede6939cd6aefbeb71287b3d3c975e753907cbc8d277bb6f0"
+  },
+  "sourceBoundary": "11 selected production inputs match before/after each actual native run. Whole workspace is shared and not frozen; root must snapshot all inputs for package. Final source hash list is an archive inventory, not a claim all listed files were immutable during every test.",
+  "manualAppFixture": {
+    "configuration": "/private/tmp/willyou-dev043-manual-app/configuration.json",
+    "html": "/private/tmp/willyou-dev043-manual-app/viewer.html",
+    "source": "scripts/files/mcp-ui/manual-app-fixture.js",
+    "suffix": ".mcpview",
+    "boundary": "Prepared for root to register in isolated App through actual settings; not yet executed in packaged App."
+  },
+  "artifacts": {
+    "r2/result.json": {
+      "sha256": "6c7cf35f3fbdbae2b2df77997816a7255bb19add53f36be44a14387aea706cf9",
+      "bytes": 5891
+    },
+    "r2/source-before.json": {
+      "sha256": "99f52c1ebebfcb1bec76e1169568fccc38c1ffc65d79c7ced5ff46b2a03206a9",
+      "bytes": 1185
+    },
+    "r2/source-after.json": {
+      "sha256": "99f52c1ebebfcb1bec76e1169568fccc38c1ffc65d79c7ced5ff46b2a03206a9",
+      "bytes": 1185
+    },
+    "r2/execution.log": {
+      "sha256": "0eb22eaae5aba96a824d393c2823e78c1f30b4c02c9ee1a805db6000cbe94179",
+      "bytes": 193
+    },
+    "r3/result.json": {
+      "sha256": "0dbe5cb37b296a72c1915bb5ccf304b90c2a8a0240272c6060eb14644dd93794",
+      "bytes": 4170
+    },
+    "r3/source-before.json": {
+      "sha256": "92c6ac51988356de84338aeaf690fc6b1ab4135f8ef0ed3d18d7221c27d025b4",
+      "bytes": 1185
+    },
+    "r3/source-after.json": {
+      "sha256": "85f50d368a032597ca54d37e90a45001d0f3dca9d3ef47a6b9c440d1089ff053",
+      "bytes": 1185
+    },
+    "r3/execution.log": {
+      "sha256": "32528bbbff8c1ab974ee0418124c43bd09278b1990ff1d992388454db5e94ed2",
+      "bytes": 326
+    },
+    "r4/result.json": {
+      "sha256": "53a785be90347c1a84cd3d491e5e492e38710910a3e53b00b79b3ed212b2a0ea",
+      "bytes": 9913
+    },
+    "r4/source-before.json": {
+      "sha256": "85f50d368a032597ca54d37e90a45001d0f3dca9d3ef47a6b9c440d1089ff053",
+      "bytes": 1185
+    },
+    "r4/source-after.json": {
+      "sha256": "85f50d368a032597ca54d37e90a45001d0f3dca9d3ef47a6b9c440d1089ff053",
+      "bytes": 1185
+    },
+    "r4/execution.log": {
+      "sha256": "2bb82c8fb7d07564e7138bfec07f968d5ce578d5968099e00cc038b940888659",
+      "bytes": 57
+    },
+    "r1-startup-failure.log": {
+      "sha256": "9ac1245de10379083f8b919811b1448c277ca6962839af47b0adc62c0a253368",
+      "bytes": 1122
+    },
+    "input-r1/result.json": {
+      "sha256": "428b7aaf2bb47d1f56b369587c9a94a5d8ce4835420d613032ce0e9b814fb48f",
+      "bytes": 8091
+    },
+    "input-r1/source-before.json": {
+      "sha256": "47fce68324a3503acaa316c621cb65baea1b47ad6dc42dfdd79c2e5486b718e2",
+      "bytes": 1185
+    },
+    "input-r1/source-after.json": {
+      "sha256": "47fce68324a3503acaa316c621cb65baea1b47ad6dc42dfdd79c2e5486b718e2",
+      "bytes": 1185
+    },
+    "input-r1/execution.log": {
+      "sha256": "3089d040549baec8754d78ab36487b260f9e442df78c3d44b2b24c4e3de9f57b",
+      "bytes": 63
+    },
+    "input-r2/result.json": {
+      "sha256": "4916fd0b8ea7befcda73eecb0f551382b673146e224048a7910179428ee3185f",
+      "bytes": 8183
+    },
+    "input-r2/source-before.json": {
+      "sha256": "47fce68324a3503acaa316c621cb65baea1b47ad6dc42dfdd79c2e5486b718e2",
+      "bytes": 1185
+    },
+    "input-r2/source-after.json": {
+      "sha256": "47fce68324a3503acaa316c621cb65baea1b47ad6dc42dfdd79c2e5486b718e2",
+      "bytes": 1185
+    },
+    "input-r2/execution.log": {
+      "sha256": "2fdbcbdc75603b7977d9e3f9737b7f7fa1e0ce6da8ff11d41a0a72d86ca3a258",
+      "bytes": 63
+    },
+    "regression-r1.json": {
+      "sha256": "02864aa4f46d7e3d30a3ec57a8112bd3586cd777eff30bdd9d7411cbd65b8724",
+      "bytes": 12887
+    },
+    "regression-r1.log": {
+      "sha256": "11676dfdab442312043180168fbff0b9c601bd480b347cd05b51cfc58a715e5e",
+      "bytes": 673
+    },
+    "apps-r2.json": {
+      "sha256": "be8b8fb7305745c2a874ff2d1a79942a3706ddf298d6191b8985bee0516f8031",
+      "bytes": 1909
+    },
+    "apps-r2.log": {
+      "sha256": "515b6ab6606f9c256723a0a49e8acec53091af87adcc560b9577ee535c843997",
+      "bytes": 494
+    },
+    "controller-r1.json": {
+      "sha256": "27c830467bf0642a4e504de1fb546292d9da08478258d99d339174a13b96b44e",
+      "bytes": 1067
+    },
+    "controller-r1.log": {
+      "sha256": "3b53a920c5ba5e3d9fa83d9445f2acbe1f985b2c832a43f329be8f5597b8b4fa",
+      "bytes": 506
+    },
+    "types-final.log": {
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "bytes": 130
+    },
+    "types-input-final.log": {
+      "sha256": "4e4c313b6f5b59a4d91b3428a1a3a868bfc4495d3caebebefd5273682a651ff2",
+      "bytes": 286
+    },
+    "network-control.json": {
+      "sha256": "07944d180ec4703e8aa98fab747af6ffbb02c52e1fee3cdd7fde85541b833d91",
+      "bytes": 1578
+    },
+    "network-control.log": {
+      "sha256": "4665aeffb77365e677c722285e28816e9e4fb889bee2958ac72380721dc98302",
+      "bytes": 510
+    },
+    "network-production.json": {
+      "sha256": "17ec1cdf8162cb3b3e4d5184b53409cf820e706f98d5d2d44e272a0e0f9c162e",
+      "bytes": 1405
+    },
+    "network-production.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "independent-review.json": {
+      "sha256": "3a2ba1e98e372c44b51a5da5dec8c198bf81a361e602726c2399fb2ad85d47f9",
+      "bytes": 3260
+    }
+  }
+}

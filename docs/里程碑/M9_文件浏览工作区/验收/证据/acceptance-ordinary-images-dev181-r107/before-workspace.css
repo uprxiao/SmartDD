@@ -1,0 +1,127 @@
+/* Production layout uses the same reviewed M9 baseline; lifecycle/editor
+   adjustments below connect it to real files and the existing terminal shell. */
+.m9-workspace-split { display:flex; flex:1; min-width:0; min-height:0; position:relative; }
+.m9-workspace-split>.m6-main-body { flex:1; min-width:0; }
+.file-workspace.fw-production { flex:0 0 var(--file-panel-width,57%); min-width:0; width:var(--file-panel-width,57%); margin-top:0; height:100%; border-radius:0; }
+.file-workspace.fw-production.fw-full { position:absolute; inset:0; width:auto; height:auto; z-index:12; }
+.fw-production button:disabled { opacity:.45; cursor:default; }
+.fw-production .fw-tabs { min-height:40px; }
+.fw-production .fw-tab { min-width:100px; }
+.fw-production .fw-tab [role=tab] { outline-offset:-2px; }
+.fw-production .fw-tab [role=tab] svg { flex-shrink:0; }
+.fw-production .fw-tab .fw-dirty { display:block; }
+.fw-production .fw-breadcrumb { overflow:auto; }
+.fw-production .fw-breadcrumb span { user-select:text; }
+.fw-production .fw-content { overflow:hidden; }
+.fw-production .fw-tree { min-width:0; padding:0 4px; }
+.fw-production .fw-file-icon { color:var(--file-light); flex-shrink:0; }
+.fw-tree-scroll .fw-tree-virtual-row { min-width:max-content; }
+.fw-tree-scroll .fw-tree-virtual-row>.fw-tree-name { min-width:max-content; flex-shrink:0; overflow:visible; text-overflow:clip; }
+.ydark .fw-production .fw-file-icon { color:var(--file-dark); }
+.fw-production .fw-save-strip { flex-shrink:0; align-items:flex-start; overflow-wrap:anywhere; }
+.fw-editor-host { display:flex; flex-direction:column; flex:1; min-width:0; min-height:0; overflow:hidden; }
+.fw-codemirror { flex:1; min-width:0; min-height:0; overflow:hidden; }
+.fw-conflict-strip { padding:8px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; border-bottom:1px solid var(--border); background:var(--surface); font-size:12px; }
+.fw-conflict-strip>span { flex-basis:100%; }
+.fw-conflict-strip button { text-decoration:underline; }
+.fw-disk-preview { padding:6px 12px; font-size:12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.fw-disk-preview pre { max-height:180px; overflow:auto; white-space:pre-wrap; font:12px/1.6 var(--font-mono); }
+.fw-ordinary-image { min-height:0; overflow:hidden; justify-content:center; }
+.fw-ordinary-image img { width:100%; height:100%; min-height:0; max-width:100%; max-height:100%; object-fit:contain; }
+.fw-source-action { align-self:flex-end; display:flex; align-items:center; gap:5px; padding:5px 10px; font-size:12px; }
+.fw-production .fw-find { flex-shrink:0; }
+.fw-production .fw-find input { min-width:0; }
+.fw-production .fw-find button { display:grid; place-items:center; }
+.fw-production .fw-footer { min-width:0; overflow:hidden; }
+.m9-file-entry { display:flex; align-items:center; gap:5px; padding:4px 7px; border-radius:6px; font-size:12px; }
+.m9-file-entry:hover,.m9-file-entry[aria-pressed=true] { background:var(--hover); }
+.m9-panel-resizer { flex:0 0 4px; cursor:col-resize; touch-action:none; position:relative; z-index:7; margin-right:-4px; }
+.m9-panel-resizer:hover,.m9-panel-resizer:focus-visible { background:var(--accent); outline:none; }
+.m9-active>.m9-project-scope>.topbar { width:calc(100% - var(--m9-panel-measured,57%));min-width:0; }
+.m9-project-scope>.topbar .breadcrumbs { min-width:0;overflow:hidden;white-space:nowrap; }
+.m9-project-scope>.topbar .topbar-actions { flex-shrink:0; }
+.fw-root-trigger { display:flex; align-items:center; gap:6px; width:100%; text-align:left; }
+.fw-root-trigger>span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fw-name-results { flex:1; min-height:0; overflow:auto; position:relative; }
+.fw-name-result { position:absolute; left:0; right:0; height:42px; display:flex; align-items:center; text-align:left; gap:5px; padding:2px 5px; border-radius:6px; }
+.fw-name-result:hover,.fw-name-result[aria-selected=true] { background:var(--selected); }
+.fw-name-result>span { display:flex; flex-direction:column; min-width:0; }
+.fw-name-result span>span,.fw-name-result small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fw-name-result small { color:var(--muted); font-size:10px; }
+.fw-production mark,.fw-search-dialog mark { background:transparent; color:var(--accent); font-weight:600; }
+.fw-search-status { display:flex; flex-wrap:wrap; gap:5px; padding:10px 5px; font-size:12px; color:var(--secondary); }
+.fw-search-status button { color:var(--accent); text-decoration:underline; }
+.fw-name-limit { flex-shrink:0; }
+.fw-search-dialog { background:var(--bg); color:var(--text); width:min(680px,calc(100vw - 40px)); }
+.fw-search-dialog .fw-search-results { border-block:1px solid var(--border); }
+.fw-search-dialog .fw-find input { flex:1; min-width:0; }
+.fw-search-issues { max-height:140px; overflow:auto; font-size:11px; overflow-wrap:anywhere; }
+.fw-closing-overlay { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; background:color-mix(in srgb,var(--bg) 85%,transparent); color:var(--text); font-size:14px; }
+.workspace { position:relative; }
+@media (max-width:1200px) { .m9-active>.sidebar,.m9-active>.sidebar-resizer { display:none; } .m9-active>.workspace { border-radius:12px; } .m9-active .task-window-header { left:115px; } }
+@media (prefers-reduced-motion:reduce) { .fw-production .animate-spin { animation:none; } }
+
+/* The user's 2026-10-17 reference places file tabs beside the task title in
+   the window strip, with the breadcrumb immediately below that strip. */
+.m9-active>.workspace { overflow:visible; }
+.m9-task-scope { --m9-title-offset:44px; }
+.m9-project-scope { --m9-title-offset:100px; }
+.m9-active .task-window-header { right:calc(var(--m9-panel-measured,57%) + 4px); }
+.file-workspace.fw-production { margin-top:calc(-1 * var(--m9-title-offset,0px));height:calc(100% + var(--m9-title-offset,0px));border-radius:0 0 10px 0; }
+.file-workspace.fw-production.fw-full { top:calc(-1 * var(--m9-title-offset,0px));margin-top:0;height:auto; }
+.fw-production .fw-tabs { height:40px;min-height:40px;-webkit-app-region:drag; }
+.fw-production .fw-tabs button { -webkit-app-region:no-drag; }
+.fw-production .fw-tab { height:30px;border:1px solid transparent;border-radius:7px; }
+.fw-production .fw-tab>button:first-child { font-size:12px;gap:6px; }
+.fw-production .fw-toolbar { min-height:44px;height:44px;padding:6px 8px; }
+.fw-production .fw-breadcrumb { border-color:transparent;box-shadow:none;background:var(--surface);font-size:12px;height:30px; }
+.ydark .fw-production .fw-tabs { background:#282828; }
+.ydark .fw-production .fw-tab.selected { background:#353535;border-color:#494949; }
+.ydark .fw-production .fw-breadcrumb { background:#2d2d2d; }
+
+/* Root row and breadcrumb dimensions shared with the current reference. */
+.fw-tree-region:has(>.fw-root-folder){display:flex;flex-direction:column}
+.fw-tree-region:has(>.fw-root-folder)>.fw-tree-scroll{height:auto;flex:1;min-height:0}
+.fw-tree-region:has(>.fw-root-folder)>.fw-sticky-folders{top:28px}
+.fw-root-folder{flex-shrink:0;padding-left:3px;border-radius:0;font-size:12px}
+.fw-tree-scroll[hidden]{display:none!important}
+.fw-breadcrumb>span{gap:2px;flex-shrink:0}
+.fw-crumb-chevron{font-size:16px;line-height:16px;color:var(--muted);padding:0 3px}
+
+.fw-breadcrumb-popup{width:320px;max-width:calc(100vw - 24px);padding:4px;gap:0;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow)}
+.fw-breadcrumb-popup>p{display:flex;gap:6px;padding:10px;font-size:12px;overflow-wrap:anywhere;white-space:normal}
+.fw-breadcrumb-location{display:flex;align-items:center;gap:4px;padding:4px 6px;font-size:11px;color:var(--muted);min-height:28px}
+.fw-breadcrumb-location>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fw-breadcrumb-location>button{padding:3px;border-radius:4px}
+.fw-breadcrumb-list{height:320px;overflow:auto;overscroll-behavior:contain}
+.fw-breadcrumb-list .fw-tree-row{position:absolute;left:0;right:0;padding:0 6px;border-radius:4px;gap:6px}
+.fw-breadcrumb-list .fw-tree-row>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.fw-breadcrumb-list .fw-tree-row[aria-current]{background:var(--selected)}
+.ydark .fw-breadcrumb-popup .fw-file-icon{color:var(--file-dark)!important}
+.ydark .fw-production .fw-icon.active{background:#1e2938;color:#93b8e8}
+.fw-production .fw-open-button{height:32px;border-radius:18px;display:flex;align-items:center;flex-shrink:0;background:var(--surface);border:1px solid var(--border);font-size:12px;line-height:18px;color:var(--text)}
+.fw-open-button>button{display:flex;align-items:center;gap:6px;height:30px;padding:0 2px 0 10px;border-radius:18px 0 0 18px;white-space:nowrap}
+.fw-open-button>button:last-child{padding:0 7px 0 3px;border-radius:0 18px 18px 0}
+.fw-open-button>button:hover{background:var(--hover)}
+.fw-open-button>button:disabled{opacity:.55}
+.fw-app-icon{width:16px;height:16px;flex-shrink:0;object-fit:contain}
+.fw-file-menu{min-width:210px;max-width:min(380px,calc(100vw - 24px));font-size:12px}
+:root .fw-file-menu[role="menu"]{background:#fff}
+:root.ydark .fw-file-menu[role="menu"]{background:#1d1d1d}
+.fw-file-menu [role=menuitem],.fw-menu-checkbox,.fw-menu-submenu{display:flex;align-items:center;gap:8px;min-height:30px;padding:6px 8px;border-radius:6px;font-size:12px;line-height:18px;outline:none;cursor:default}
+.fw-menu-submenu>span,.fw-menu-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fw-menu-checkbox:focus,.fw-menu-submenu:focus,.fw-menu-checkbox[data-highlighted],.fw-menu-submenu[data-highlighted]{background:var(--color-background-quaternary-1)}
+.fw-menu-check{width:14px;height:14px;border:1px solid currentColor;border-radius:3px;display:flex;align-items:center;justify-content:center}
+.fw-menu-message{padding:7px 9px;max-width:320px;font-size:12px;overflow-wrap:anywhere;opacity:.8}
+.fw-changes-title{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 3px;font-size:12px}
+.fw-changes-title>span:first-of-type{flex:1}.fw-changes-title>button{padding:4px;border-radius:4px}.fw-changes-title>button:hover{background:var(--hover)}
+.fw-changes-list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.fw-changes-list .fw-tree-row{right:0;padding:0 3px;gap:5px}
+.fw-git-message{padding:6px;font-size:11px;overflow-wrap:anywhere;display:flex;gap:6px;flex-wrap:wrap}.fw-git-message>button{color:var(--accent);text-decoration:underline}
+.fw-production .fw-tree-row>.fw-git-state{flex:0 0 20px;width:20px;padding:0;margin-left:auto;font:500 11px var(--mono);text-align:center}
+.fw-production .fw-git-added,.fw-production .fw-git-untracked{color:#299347}.fw-production .fw-git-modified,.fw-production .fw-git-renamed{color:#b27a22}.fw-production .fw-git-deleted,.fw-production .fw-git-conflict{color:#ca4b4b}.fw-production .fw-git-ignored{color:var(--muted)}
+.ydark .fw-production .fw-git-added,.ydark .fw-production .fw-git-untracked{color:#7ed273}.ydark .fw-production .fw-git-modified,.ydark .fw-production .fw-git-renamed{color:#d9ac67}.ydark .fw-production .fw-git-deleted,.ydark .fw-production .fw-git-conflict{color:#fa7878}
+.fw-blame-author{display:block;width:10ch;max-width:10ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;color:var(--muted);font:inherit;line-height:inherit;cursor:pointer}
+.fw-blame-author:hover,.fw-blame-author:focus-visible{color:var(--text);text-decoration:underline}
+.fw-blame-card{position:fixed;z-index:70;width:32ch;max-width:42vw;padding:12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);box-shadow:var(--shadow);font:12px/1.5 -apple-system,BlinkMacSystemFont,sans-serif;overflow-wrap:anywhere}
+:root.ydark .fw-blame-card{background:#1d1d1d}.fw-blame-card>div{display:flex;justify-content:space-between;gap:8px}.fw-blame-card p{margin:6px 0}.fw-blame-card small{display:block;color:var(--muted);font-size:11px}.fw-blame-link{display:block;margin-top:6px;color:var(--accent);text-decoration:underline}
+.fw-unsupported{padding:24px;text-align:center;gap:10px}.fw-unsupported p{max-width:420px}.fw-unsupported-path{max-width:100%;overflow-wrap:anywhere;font-size:11px;color:var(--secondary)}

@@ -1,0 +1,82 @@
+{
+  "at": "2026-10-18T11:17:50.928336+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "layer": "A packaged native GUI via cua_repl, independent filesystem readback",
+  "package": {
+    "at": "2026-10-18T10:49:32.392670+08:00",
+    "command": "pnpm package --output-dir /private/tmp/willyou-m9-acceptance-batch-r5-build",
+    "exitCode": 0,
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app",
+    "asarSha256": "4ed97c8632b87fcd9e2b351b5e11412a0a6feb46bfd1298cd7f2e118e0f01468",
+    "asarSize": 80870439,
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "sourceArchive": "/private/tmp/willyou-m9-acceptance-batch-r5-sources.tar.gz",
+    "sourceArchiveSha256": "ae451c5a878b5570d9a386510f9aa893f3e23bff2d0012de2696aacd111314c3",
+    "manifest": "/private/tmp/willyou-m9-acceptance-batch-r5-sources.json",
+    "manifestSha256": "57841d6ad7912897af103dc683eb511446117ac6a0e24dae94bb13d27836de61",
+    "fileCount": 1208,
+    "changedAfterBuild": [],
+    "log": "/private/tmp/willyou-m9-acceptance-batch-r5-build.log",
+    "logSha256": "9a76e4f72ba9337cfa773fd25a326344d1efd6577d678180b2857d944d4325e4",
+    "nativeSmoke": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    }
+  },
+  "cases": {
+    "H14": {
+      "status": "passed",
+      "steps": [
+        "Opened clean h14-clean.md in packaged r5; separate CLI wrote heading plus strong Markdown. Rich view updated; source toggle displayed exact latest Markdown.",
+        "Used actual 使用 TextEdit 打开 action; verified TextEdit window h14-clean.md; changed heading/strong paragraph and Cmd-S. WillYou source updated automatically.",
+        "Pinned file, switched to sample.ts, CLI wrote third version, returned to rich view; third heading/content visible. Invoked 文件菜单→刷新文件和目录; newest content remained clean.",
+        "Changed only test fixture permission to 000; actual App displayed [PERMISSION] open component: Permission denied and preserved previous text. Restored original 0644 and wrote final latest version; watcher updated rich view and cleared error."
+      ],
+      "actual": "CLI and actual ordinary editor changes visible without approval/restore action or false conflict; source and rich content reflect newest disk; real read-error display and recovery verified.",
+      "boundary": "Writer × all trigger combinations and later manual-dirty transition covered in I. A covers CLI watch/reactivation/refresh, TextEdit watch, source/rich transitions, and native permission error. No screenshot exported; AX/actions retained in session."
+    },
+    "H17": {
+      "status": "passed",
+      "steps": [
+        "Opened clean h17-clean.txt; CLI wrote H17 CLI first newline; App showed it without dirty/conflict.",
+        "Switched to sample.ts and clicked actual Terminal input (owned test task already stopped, 0 running). Independent readback remained first version.",
+        "CLI wrote H17 CLI second newline; returned to file and explicitly refreshed via file menu. Actual editor showed second version and remained clean; terminal still 0 running."
+      ],
+      "actual": "Both revisions remained on disk and appeared in order; no CLI-specific approve/tracking/restore controls or implied task completion. Independent readback confirms no rollback.",
+      "boundary": "No App save-call instrumentation in A; production save/checkpoint/native-write absence verified by complete I matrix. A terminal focus is actual native AX click, not PTY lifecycle proof."
+    }
+  },
+  "finalReadback": {
+    "h14-clean.md": {
+      "text": "# H14 restored\n\n**Latest** after permission recovery.\n",
+      "sha256": "29d10de9d4547c1255dbdb1d7d84efed1fd3aae7cbf4ae5cd9d4ded33ad02622",
+      "mtimeNs": 1792293058013563915,
+      "mode": "0o644"
+    },
+    "h17-clean.txt": {
+      "text": "H17 CLI second\n",
+      "sha256": "991420ff2cfed1ddf6422f14dad4938dbe266c7819b254e73b449b8199cde53c",
+      "mtimeNs": 1792292996512299741,
+      "mode": "0o644"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-h17-app.json",
+      "sha256": "04d8f1b60a4e8a114cde7f4cc9e11e2a3d39964c7de701b5764afc3810b8e79c"
+    },
+    {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-h14-before-permission.json",
+      "sha256": "b32b50a1892de0678bb01cbae6966ee7b5e80c9d8389943d4639fcd634d65505"
+    }
+  ],
+  "sourceBoundary": "Actual A executed r5. Later r6 restart independently displayed H14 restored rich content; not used to assert original r5 contained later patches."
+}

@@ -1,0 +1,83 @@
+{
+  "electron": "42.11.14",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "PA01",
+      "title": "真实Electron主frame经生产校验送入真实PTY，不追加Enter",
+      "status": "failed",
+      "error": "Error: timeout\n    at until (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:206:9)\n    at async /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:274:5\n    at async check (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:214:22)\n    at async /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:272:3",
+      "debug": {
+        "bytes": "[eval]:1\r\nprocess.stdin.setRawMode(true);process.stdout.write('READY\r\n                                                    ^^^^^^\r\nExpected ',', got 'string literal'\r\n\r\nSyntaxError: Invalid or unexpected token\r\n    at makeContextifyScript (node:internal/vm:185:14)\r\n    at compileScript (node:internal/process/execution:383:10)\r\n    at evalTypeScript (node:internal/process/execution:256:22)\r\n    at node:internal/main/eval_string:74:3\r\n\r\nNode.js v22.23.1\r\n",
+        "written": 1,
+        "resized": 0,
+        "exited": {
+          "exitCode": 1,
+          "signal": 0
+        },
+        "nativeError": null,
+        "cols": 80,
+        "rows": 24
+      }
+    },
+    {
+      "id": "PA02",
+      "title": "另一个真实窗口即使知道task/PTY也不能输入",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA03",
+      "title": "真实子frame同一webContents仍被拒绝",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA04",
+      "title": "错任务及停止/重开后的旧PTY不能输入",
+      "status": "passed",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "id": "PA05",
+      "title": "真实resize仅接受合法来源/任务和尺寸",
+      "status": "failed",
+      "error": "Error: resize leak\n    at assert (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:221:17)\n    at /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:309:5\n    at async check (/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:214:22)\n    at async /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m9-native-pty-access-P8QIqQ/probe.cjs:304:3",
+      "debug": {
+        "bytes": "[eval]:1\r\nprocess.stdin.setRawMode(true);process.stdout.write('READY\r\n                                                    ^^^^^^\r\nExpected ',', got 'string literal'\r\n\r\nSyntaxError: Invalid or unexpected token\r\n    at makeContextifyScript (node:internal/vm:185:14)\r\n    at compileScript (node:internal/process/execution:383:10)\r\n    at evalTypeScript (node:internal/process/execution:256:22)\r\n    at node:internal/main/eval_string:74:3\r\n\r\nNode.js v22.23.1\r\n",
+        "written": 1,
+        "resized": 1,
+        "exited": {
+          "exitCode": 1,
+          "signal": 0
+        },
+        "nativeError": "Error: ioctl(2) failed, ENOTTY",
+        "cols": 80,
+        "rows": 24
+      }
+    },
+    {
+      "id": "PA06",
+      "title": "原生invoke的kill校验sender/task，合法调用只结束合成PTY",
+      "status": "passed",
+      "evidence": {
+        "foreignAndWrongTaskRejected": true,
+        "legitimateKill": true
+      }
+    }
+  ],
+  "scope": "Own hidden Electron windows and synthetic raw PTY; not packaged WillYou or third-party CLI acceptance",
+  "startedFromScript": "/Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/技研/实验/pty-access-probe.mjs",
+  "scriptSha256": "6764e79f5f178b379210363b27b43c7e32c895ace1052b88f5d90c2ba23226cc",
+  "summary": {
+    "passed": 4,
+    "failed": 2
+  }
+}

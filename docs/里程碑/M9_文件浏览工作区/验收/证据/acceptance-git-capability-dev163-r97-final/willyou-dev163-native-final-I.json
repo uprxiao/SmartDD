@@ -1,0 +1,85 @@
+{
+  "at": "2026-10-19T19:20:20.447Z",
+  "caseId": "M9-T-S03",
+  "rows": [
+    {
+      "scenario": "authorized source",
+      "status": {
+        "state": "ready",
+        "repository": {
+          "id": "394645ef92fd676017374e6bb32ee882751c1899ce0f99eca836e64936a5751d",
+          "head": "8aefca70638f36f857e7e1ab1f7025fb9dd47900",
+          "webBase": null,
+          "prefix": ""
+        },
+        "entries": [],
+        "truncated": false,
+        "attributesAvailable": true
+      },
+      "blame": {
+        "state": "ready",
+        "repository": {
+          "id": "394645ef92fd676017374e6bb32ee882751c1899ce0f99eca836e64936a5751d",
+          "head": "8aefca70638f36f857e7e1ab1f7025fb9dd47900",
+          "webBase": null,
+          "prefix": ""
+        },
+        "baseHash": "41aaab44d103e96690a4b8ed31b58cc457bb68dc37651e6b3b98bb774a814044",
+        "lines": [
+          {
+            "line": 1100,
+            "commitId": "8aefca70638f36f857e7e1ab1f7025fb9dd47900",
+            "author": "Lin Buffer",
+            "at": 1792454460,
+            "summary": "Synthetic B middle block"
+          },
+          {
+            "line": 1101,
+            "commitId": "8aefca70638f36f857e7e1ab1f7025fb9dd47900",
+            "author": "Lin Buffer",
+            "at": 1792454460,
+            "summary": "Synthetic B middle block"
+          },
+          {
+            "line": 1102,
+            "commitId": "8aefca70638f36f857e7e1ab1f7025fb9dd47900",
+            "author": "Lin Buffer",
+            "at": 1792454460,
+            "summary": "Synthetic B middle block"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "scenario": "nonGit explicit unavailable",
+      "status": {
+        "state": "unavailable",
+        "reason": "当前目录不在 Git 工作树中"
+      },
+      "blame": {
+        "state": "unavailable",
+        "reason": "当前目录不在 Git 工作树中"
+      },
+      "pass": true
+    },
+    {
+      "scenario": "denied metadata, source still browsable",
+      "fileName": "history.txt",
+      "pass": true
+    },
+    {
+      "scenario": "missing taskcwd no fallback",
+      "result": {
+        "roots": [],
+        "unavailable": []
+      },
+      "pass": true
+    },
+    {
+      "scenario": "revoked root forbids old ref",
+      "pass": true
+    }
+  ],
+  "boundary": "Actual current FileService/root capability and packaged native broker; own Git fixture or plain/denied synthetic sources. No stub Git results, remote, UI or Git write claim."
+}

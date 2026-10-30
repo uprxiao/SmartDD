@@ -1,0 +1,48 @@
+{
+  "schema": "m10-smtp-transport-poc-v1",
+  "at": "2026-10-17T08:17:36.767687+00:00",
+  "host": "mail.ultrapower.com.cn",
+  "port": 25,
+  "credentialsUsed": false,
+  "messagesSent": 0,
+  "commandsPermitted": [
+    "EHLO",
+    "STARTTLS if offered",
+    "QUIT"
+  ],
+  "steps": [
+    {
+      "stage": "dns",
+      "addressCount": 1
+    },
+    {
+      "stage": "connect",
+      "smtpCode": 220
+    },
+    {
+      "stage": "ehlo",
+      "smtpCode": 250,
+      "extensionNames": [
+        "8bitmime",
+        "auth",
+        "help",
+        "pipelining",
+        "size"
+      ],
+      "authenticationMethods": [
+        "PLAIN",
+        "LOGIN",
+        "PLAIN",
+        "LOGIN"
+      ]
+    }
+  ],
+  "tlsStatus": "STARTTLS_not_advertised",
+  "transportStatus": "connected",
+  "elapsedSeconds": 0.467,
+  "limitations": [
+    "No credentials or authentication attempt; no mail transaction.",
+    "Reachability/capabilities do not prove account permission or delivery.",
+    "TLS certificate validation was not disabled."
+  ]
+}

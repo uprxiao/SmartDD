@@ -1,0 +1,71 @@
+{
+  "schema": "m10-existing-mcp-research-v1",
+  "time": "2026-10-17T07:59:15.587918+00:00",
+  "environment": {
+    "platform": "macOS-26.6.1-arm64-arm-64bit",
+    "python": "3.11.9"
+  },
+  "source": {
+    "path": "/Users/liubu/Documents/ChatGPT/SmartDD/resources/runtime/context_mcp.py",
+    "sha256": "df2179a45beb9a06bd9e86bf4764be4133a3db3889e4f9756aa585446c6f6e86"
+  },
+  "fixture": "synthetic-only; no real project database, account, mail or external request",
+  "checks": [
+    {
+      "id": "MCP-01",
+      "observation": "initialize returns server metadata",
+      "assertion_met": true,
+      "classification": "verified"
+    },
+    {
+      "id": "MCP-02",
+      "observation": "tool discovery exposes only current read-only context",
+      "assertion_met": true,
+      "classification": "verified"
+    },
+    {
+      "id": "MCP-03",
+      "observation": "tool output equals synthetic public projection",
+      "assertion_met": true,
+      "classification": "verified"
+    },
+    {
+      "id": "MCP-04",
+      "observation": "unknown tool rejected",
+      "assertion_met": true,
+      "classification": "verified"
+    },
+    {
+      "id": "MCP-05",
+      "observation": "malformed JSON gets parse error and following ping survives",
+      "assertion_met": true,
+      "classification": "verified"
+    },
+    {
+      "id": "MCP-06",
+      "observation": "caller cannot select a different project through arguments",
+      "assertion_met": true,
+      "classification": "verified"
+    },
+    {
+      "id": "MCP-07",
+      "observation": "pre-initialize call currently accepted; no handshake gate",
+      "assertion_met": true,
+      "classification": "observed_limitation"
+    },
+    {
+      "id": "MCP-08",
+      "observation": "unsupported version currently echoed; no negotiation validation",
+      "assertion_met": true,
+      "classification": "observed_limitation"
+    },
+    {
+      "id": "MCP-09",
+      "observation": "source context is reflected wholesale; public projection must stay explicit",
+      "assertion_met": true,
+      "classification": "observed_limitation"
+    }
+  ],
+  "scope": "existing context_mcp.py subprocess protocol only; no real CLI or model call",
+  "interpretation": "Observed limitations are research findings, not M10 acceptance results."
+}

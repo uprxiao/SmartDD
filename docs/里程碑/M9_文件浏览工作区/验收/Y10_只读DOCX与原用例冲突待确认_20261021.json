@@ -1,0 +1,92 @@
+{
+  "status": "user-approved-applied-awaiting-complete-evidence-review",
+  "basis": "M9 R3.4/P1 R06.9 and R07.18; original419 scope kept pending",
+  "originalCase": {
+    "id": "M9-T-Y10",
+    "group": "Y",
+    "title": "Office 精确补丁：未编辑部件零丢失",
+    "requirements": [
+      "M9-R07.18"
+    ],
+    "level": "单元／集成／安装端到端",
+    "environments": [
+      "U",
+      "I",
+      "A"
+    ],
+    "data": [
+      "D07",
+      "D11"
+    ],
+    "steps": "对含批注、修订、未知部件、占位宏部件的 DOCX/XLSX/PPTX 各做一次文本编辑并保存；比较保存前后每个 ZIP 部件的解压 SHA-256、条目顺序与名称；用不同读取器读回。",
+    "expected": "除被编辑部件外全部部件逐字节一致、条目顺序与名称不变；批注锚点、修订作者/时间、未知部件、宏部件保留且宏不被执行；独立读取器读到新文本；编辑后文件能被 LibreOffice 打开并渲染出新文本。",
+    "source": "技研实验 OP01–OP05、OP09–OP10",
+    "prototype": "PS-r3-gap",
+    "basis": "R3 隔离实验事实＋迁移设计；正式运行未执行",
+    "status": "未执行",
+    "evidence": [],
+    "actual_result": null,
+    "defects": [],
+    "legacy_parent_requirements": [
+      "M9-R06",
+      "M9-R07"
+    ],
+    "prototype_pages": [
+      "P11",
+      "P12",
+      "P13"
+    ],
+    "prototype_status": "Office 隔离实验已有；真实写回 UI 未实现",
+    "prototype_note": "只有合成文本/数值补丁与引擎对照实验，尚不证明复杂编辑/原格式保真。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [
+      "D02"
+    ],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R07.18"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "originalCaseSha256": "e0f931e22ce0c80abdc92afce023afc754b3c865dd3d8c130baa2bbacf0cfdb8",
+  "proposedChanges": {
+    "steps": "对已允许编辑的XLSX/PPTX各做一次可见文本编辑并保存；按本次动作声明的允许部件/语义变化比较所有ZIP部件的解压SHA-256、顺序和名称，并用独立读取器及LibreOffice打开渲染新文本。DOCX按R06.9验证只读预览/禁止手工保存、真实批注锚点与修订作者/时间、未知及宏占位部件在打开/关闭/渲染后保持原字节；不新增DOCX编辑能力。",
+    "expected": "XLSX/PPTX除被编辑部件及R07.18规定的合法公式缓存/计算属性变化外，全部未编辑部件字节、条目顺序与名称不变，批注/关系/样式/未知及宏占位保留；独立读取器读到新文本，LibreOffice能打开并渲染新文本。DOCX保持已批准的只读边界，批注锚点、修订作者/时间及全部源字节/stat保持；不因该用例引入手工DOCX编辑。惰性宏占位不执行，不以此宣称真实VBA宏安全认证。"
+  },
+  "unchanged": [
+    "id",
+    "requirements",
+    "environments U/I/A",
+    "data D07/D11",
+    "scope m9-local",
+    "419 denominator",
+    "no automatic pass after approval; verify all accepted branches first"
+  ],
+  "userDecision": {
+    "at": "2026-10-22T02:12:36.340290+00:00",
+    "source": "Current user reply to async question call_ce65e33fff5b4a4ca4bfe6eabb7f581c",
+    "answer": "同意按已确认需求修正这两条（推荐）",
+    "noAutomaticPass": true
+  },
+  "originalContractSha256": "e458e0b85281c8ded28181a16acd90aaa4b8f8960a87519c782737dbbcf88952",
+  "readyIndependentEvidence": "证据/m9-acceptance-office-preservation-partial-r137-20261021-9de5.json",
+  "at": "2026-10-20T20:57:10.873176+00:00",
+  "appliedContract": {
+    "id": "M9-T-Y10",
+    "steps": "对已允许编辑的XLSX/PPTX各做一次可见文本编辑并保存；按本次动作声明的允许部件/语义变化比较所有ZIP部件的解压SHA-256、顺序和名称，并用独立读取器及LibreOffice打开渲染新文本。DOCX按R06.9验证只读预览/禁止手工保存、真实批注锚点与修订作者/时间、未知及宏占位部件在打开/关闭/渲染后保持原字节；不新增DOCX编辑能力。",
+    "expected": "XLSX/PPTX除被编辑部件及R07.18规定的合法公式缓存/计算属性变化外，全部未编辑部件字节、条目顺序与名称不变，批注/关系/样式/未知及宏占位保留；独立读取器读到新文本，LibreOffice能打开并渲染新文本。DOCX保持已批准的只读边界，批注锚点、修订作者/时间及全部源字节/stat保持；不因该用例引入手工DOCX编辑。惰性宏占位不执行，不以此宣称真实VBA宏安全认证。",
+    "environments": [
+      "U",
+      "I",
+      "A"
+    ],
+    "scope": "m9-local"
+  }
+}

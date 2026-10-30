@@ -4,24 +4,27 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { detectRunner, parseDetectOutput } from './runner-detect';
 
-let home: string;
+let fixtureDir: string;
 let bin: string;
 
 beforeEach(() => {
-  home = mkdtempSync(join(tmpdir(), 'smartdd-detect-'));
-  bin = join(home, 'bin');
+  fixtureDir = mkdtempSync(join(tmpdir(), 'smartdd-detect-'));
+  bin = join(fixtureDir, 'bin');
   mkdirSync(bin);
-  const noisyRc = `echo "welcome from rc"\nexport PATH="${bin}:$PATH"\nalias claude='echo hijacked'\n`;
-  writeFileSync(join(home, '.zshrc'), noisyRc);
-  writeFileSync(join(home, '.bashrc'), noisyRc);
-  writeFileSync(join(home, '.bash_profile'), `. "${home}/.bashrc"\n`);
+  // macOS's system login profile runs path_helper before this fixture. Replace
+  // that PATH, so a user's installed codex cannot turn the missing-command case
+  // into a success. Keep system utilities needed by the detection script.
+  const noisyRc = `echo "welcome from rc"\nexport PATH="${bin}:/usr/bin:/bin"\nalias claude='echo hijacked'\n`;
+  writeFileSync(join(fixtureDir, '.zshrc'), noisyRc);
+  writeFileSync(join(fixtureDir, '.bashrc'), noisyRc);
+  writeFileSync(join(fixtureDir, '.bash_profile'), `. "${fixtureDir}/.bashrc"\n`);
   const fake = join(bin, 'claude');
   writeFileSync(fake, '#!/bin/sh\necho "9.9.9 (Claude Code)"\n');
   chmodSync(fake, 0o755);
 });
-afterEach(() => rmSync(home, { recursive: true, force: true }));
+afterEach(() => rmSync(fixtureDir, { recursive: true, force: true }));
 
-const env = () => ({ HOME: home, ZDOTDIR: home, PATH: '/usr/bin:/bin', TERM: 'dumb' });
+const env = () => ({ HOME: fixtureDir, ZDOTDIR: fixtureDir, PATH: '/usr/bin:/bin', TERM: 'dumb' });
 
 describe.each(['/bin/zsh', '/bin/bash'])('detectRunner via %s', (shell) => {
   it('finds the command on the rc PATH, ignoring aliases and rc noise', async () => {

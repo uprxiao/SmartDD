@@ -1,0 +1,42 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/content-search-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev097-mask-red.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx (10 tests | 1 failed) 1892ms
+     ✓ R05 real 99 rows have exact UI/native cap and no101st streamed row 174ms
+     ✓ R05 real 100 rows have exact UI/native cap and no101st streamed row 108ms
+     ✓ R05 real 101 rows have exact UI/native cap and no101st streamed row 104ms
+     ✓ R06 same basenames in unexpanded CJK directories open by click/Enter at exact emoji/BOM/CRLF-aware source range 259ms
+     ✓ R12 native permission issues and outside symlinks are bounded; changed/deleted hits are revalidated instead of locating obsolete bytes  350ms
+     ✓ R12 real files changed/deleted/replaced by an outside symlink after native enumeration are read afresh or reported, never searched through the alias 103ms
+     ✓ R05 a genuine current-session row delivered after the authoritative native result never duplicates its completed UI rows 109ms
+     ✓ R04 actual native match/done/error states mark busy and wait exactly500ms before the loading indicator 60ms
+     ✓ R09 plain arrows traverse results then history and restore the unsent draft before Enter opens; Escape closes  353ms
+     × R10 mask history arrows stay outside result navigation and Enter remembers only the chosen mask then focuses query 271ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/content-search-acceptance.test.tsx > R05/R06/R12 content dialog→registered RPC→native filesystem > R10 mask history arrows stay outside result navigation and Enter remembers only the chosen mask then focuses query
+AssertionError: expected '' to be '*.txt' // Object.is equality
+
+- Expected
++ Received
+
+- *.txt
+
+ ❯ src/renderer/features/files/content-search-acceptance.test.tsx:94:152
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  03:27:16
+   Duration  3.14s (transform 410ms, setup 0ms, import 852ms, tests 1.89s, environment 316ms)
+
+JSON report written to /private/tmp/willyou-dev097-mask-red.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,83 @@
+✖ C15 stale delete result revalidates against pending external data without refreshing the visible tree (0.898834ms)
+✖ C15 stale rename result revalidates against pending external data without refreshing the visible tree (0.104584ms)
+✖ C12 synthetic permission remains a distinct rejected search instead of empty success (8.048416ms)
+✖ C12 synthetic timeout remains a distinct rejected search instead of empty success (1.975042ms)
+✔ C12 genuine empty synthetic candidate list completes successfully (0.58475ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 53.98525
+
+✖ failing tests:
+
+test at prototypes/m6-codex/tests/file-search-failure.test.mjs:7:41
+✖ C15 stale delete result revalidates against pending external data without refreshing the visible tree (0.898834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'ready' !== 'missing'
+  
+      at TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/file-search-failure.test.mjs:14:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ready',
+    expected: 'missing',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at prototypes/m6-codex/tests/file-search-failure.test.mjs:7:41
+✖ C15 stale rename result revalidates against pending external data without refreshing the visible tree (0.104584ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'ready' !== 'missing'
+  
+      at TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/file-search-failure.test.mjs:14:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ready',
+    expected: 'missing',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at prototypes/m6-codex/tests/file-search-failure.test.mjs:19:44
+✖ C12 synthetic permission remains a distinct rejected search instead of empty success (8.048416ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/file-search-failure.test.mjs:21:2)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /权限|PERMISSION/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at prototypes/m6-codex/tests/file-search-failure.test.mjs:19:44
+✖ C12 synthetic timeout remains a distinct rejected search instead of empty success (1.975042ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/file-search-failure.test.mjs:21:2)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /超时|TIMEOUT/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

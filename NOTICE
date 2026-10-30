@@ -34,9 +34,98 @@ Yoda 的版权与 Apache-2.0 许可全文保存在 licenses/Yoda-Apache-2.0.txt�
 
 SmartDD 蚂蚁举重应用图标由本项目根据用户提供的主题生成，非 Yoda 或运行器品牌图标。
 
+User interface icons:
+- Toolbar and other interface icons use lucide-react 0.564.0 (ISC), including
+  Feather-derived portions under MIT, by Lucide Contributors and Cole Bemis.
+  Upstream: https://github.com/lucide-icons/lucide/tree/0.564.0/packages/lucide-react
+  The complete upstream copyright and license text is retained in
+  licenses/M9/lucide-react@0.564.0__LICENSE.txt; its hash and installed package
+  metadata are recorded in licenses/M9/manifest.json.
+
 M7 Typeless integration references Yoda (LovStudio, Apache-2.0):
 - src/main/core/app/voice-input.ts and voice-input-shortcut.ts
 - src/renderer/features/tasks/home-composer/composer-prompt-input.tsx
 SmartDD adapts the macOS key-code map and local Typeless settings detection.
 The CoreGraphics key bridge, transactional global shortcut service, and M7 UI
 are SmartDD implementations. No Yoda audio service or Typeless private API is used.
+
+M9 file workspace:
+- The file tree symbols are from @pierre/trees 1.0.0-beta.6, Apache-2.0,
+  commit 548416a7ec3ff3ff553636af60a31d1b21eca873. The unmodified sprite,
+  source manifest and upstream notices are copied from the reviewed prototype.
+  See licenses/M9-tree-icons/ for the license and provenance.
+- CodeMirror, Markdown, math/diagram and PDF engines and their installed runtime
+  dependencies are recorded in licenses/M9/manifest.json with upstream notices.
+- Text conflict inline diff reuses @codemirror/merge 6.12.1 (MIT), with its
+  original license and dependencies retained in licenses/M9/. Its decorations
+  never choose the persisted file version; the workspace owns those decisions.
+- The dollar-math token matcher in src/shared/markdown-dollar-math.mjs adapts
+  markdown-it-texmath 1.0.0 (Stefan Goessner, MIT) without its eager CJS engine
+  dependency. Its full license is retained in
+  licenses/M9/markdown-it-texmath@1.0.0__license.txt.txt.
+- The production PDF text-layer styling adapts pdfjs-dist 5.4.296 (Apache-2.0).
+- Notebook HTML and SVG parsing uses parse5 8.0.1 (MIT) and saxes 6.0.0 (ISC), with
+  entities/xmlchars dependencies; licenses and hashes are in licenses/M9/.
+  Its CMaps, standard fonts and image decoder assets are bundled unchanged under
+  out/renderer/pdf-assets, including their embedded licenses and notices.
+- CSV/TSV field decoding uses Papa Parse 5.5.3 (MIT); its upstream license is
+  retained in licenses/M9/. Source editing does not serialize through the parser.
+- HTML document resource discovery uses parse5-sax-parser 8.0.0, PostCSS 8.5.30,
+  postcss-value-parser 4.2.0 and es-module-lexer 2.3.2 (MIT), without evaluating
+  project scripts. Upstream notices and dependency hashes are in licenses/M9/.
+- TeX compilation uses Tectonic 0.17.0 and the pinned WillYou TeX v33 resource
+  selection. Original resources are unchanged; selection and ZIP packaging are
+  WillYou's work. The engine, original source archive, font/macro notices and
+  per-file provenance accompany the offline bundle in native/tex/licenses/.
+  This collection has multiple licenses; it is not uniformly MIT.
+- pdf-lib 1.17.1 (MIT) is used in an isolated worker solely to add an empty content
+  stream to blank PDF image pages in private TeX snapshots. Original project
+  files are not rewritten. Its runtime notices are retained in licenses/M9/.
+- Office ZIP processing uses yauzl 3.4.0 (MIT) and yazl 3.3.1 (MIT); their notices
+  and dependency hashes are retained in licenses/M9/. Calculation uses the fixed
+  Eclipse Temurin JRE 21.0.12.1+1 and Apache POI 5.5.1 with its 13 dependency JARs.
+  Original JRE legal texts accompany native/office/jre/legal; POI notices, POMs,
+  source URLs and checksums accompany native/office/licenses. These components
+  retain their respective licenses. The WillYou Java helper is project code.
+  Eclipse ECJ 3.43.0 is a build-only compiler and is not shipped in the runtime.
+- Spreadsheet display number formats use SheetJS SSF 0.11.2 (Apache-2.0).
+  Original cell storage is retained; the formatter is not a workbook writer or
+  formula evaluator. Its upstream notice is retained in licenses/M9/.
+- DOCX/PPTX layout uses the complete, unmodified LibreOffice 26.2.4.2 bundle
+  (build 0229ac93fcf0d7cbc6376066c6f35021cef002dc), retaining its vendor signatures,
+  component licenses and notices in native/libreoffice/LibreOffice.app/Contents/Resources/.
+  The official download URLs and per-file checksums accompany resources.json.
+  LibreOffice and its components retain their respective licenses, including
+  MPL-2.0; corresponding source is available at
+  https://downloadarchive.documentfoundation.org/libreoffice/old/26.2.4.2/src/.
+  WillYou's private-profile rendering boundary is project code. No LibreOffice
+  source or binary is modified, and rendered PDFs do not replace source files.
+- File identity/authorization, native macOS save/recovery broker, source/EOL
+  mapping and production state/lifecycle code are WillYou implementations.
+  They reuse this repository's reviewed M9 prototype and P1 experiments.
+  No private Codex implementation, font or toolbar icon is distributed.
+
+- Code syntax highlighting uses Shiki 3.20.0 (MIT) with its public JavaScript
+  regex engine and unmodified TextMate grammars from tm-grammars 1.26.0. Individual
+  grammars retain their respective upstream licenses; the complete pinned
+  grammar NOTICE and dependency licenses are in licenses/M9/code-highlighting/.
+  Shared code, Markdown and Notebook token colors adapt @pierre/theme 2.0.0
+  (Apache-2.0, including its retained Primer MIT notice): three decorator rules
+  are omitted and the remaining palette is independently adjusted to observed
+  reference color facts. No private Codex code or grammar asset is distributed.
+
+M9 local MCP file viewer host (DEV043, implementation in progress)
+- Official @modelcontextprotocol/client 2.0.0, server 2.0.0, ext-apps 2.0.3 (MIT), and their runtime dependencies.
+- Sources: https://github.com/modelcontextprotocol/typescript-sdk ; https://github.com/modelcontextprotocol/ext-apps
+- Exact installed package metadata, licenses and hashes: licenses/M9/mcp-viewer/sources.json.
+
+M9 DEV048 language-service host:
+- vscode-jsonrpc 8.2.0 and vscode-languageserver-protocol 3.17.5, Microsoft Corporation,
+  MIT licensed, https://github.com/microsoft/vscode-languageserver-node .
+  Existing locked packages are used directly for JSON-RPC transport/protocol types.
+  Language servers are user-configured local executables and are not bundled or downloaded.
+
+M9 legacy DOCX rendering uses docx-preview 0.3.7 by Volodymyr Baydalka (Apache-2.0).
+Upstream: https://github.com/VolodymyrBaydalka/docxjs; license retained at
+licenses/M9/docx-preview@0.3.7__LICENSE. It is used in a scriptless frame with
+external resources and HTML altChunks disabled; no Office file write API.

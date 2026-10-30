@@ -1,0 +1,1 @@
+document.body.dataset.classic='CLASSIC_LOCAL_中文';

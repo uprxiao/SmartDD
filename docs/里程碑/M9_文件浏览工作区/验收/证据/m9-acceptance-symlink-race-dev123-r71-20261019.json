@@ -1,0 +1,734 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-SYMLINK-RACE-DEV123-R71",
+  "at": "2026-10-19T04:49:50.093817+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-one-case",
+  "revision": "R3.4 / R3.4-P1; M04 original scope/steps/expected unchanged",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "architecture": "arm64",
+  "fullCasesPassed": [
+    "M9-T-M04"
+  ],
+  "productionChanges": [
+    "src/main/core/files/native-broker.ts",
+    "src/main/core/files/write-confinement.ts"
+  ],
+  "prototypeChanges": [],
+  "defects": [
+    {
+      "id": "M9-DEV123-OUTSIDE-WRITE",
+      "status": "fixed-and-retested",
+      "finding": "Old descriptor exchange could update authorized inode moved outside after final path guard.",
+      "fix": "Kernel-scoped save/copy writes, no unsafe fallback.",
+      "limits": "Current macOS only; custom system policy compatibility can change, fail closed."
+    }
+  ],
+  "app": {
+    "at": "2026-10-19",
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r71-build/mac-arm64/WillYou.app",
+    "asarSha256": "bc780a776e2eaddbd90f9ed6bcb0f0bdb3d16a1edb1224670e2479d2ef67d204",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "watcherReadVerified": true,
+    "watcherPath": "/private/tmp/willyou-m9-acceptance-batch-r71-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/node_modules/@parcel/watcher-darwin-arm64/watcher.node",
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r71-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "published": false,
+    "runtimeAssetsVerified": 82,
+    "nativeChecksCurrent": [
+      "sqlite",
+      "pty",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ]
+  },
+  "previousReport": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-cross-owner-dev122-r70-20261019.json",
+    "sha256": "91fac351e2c11b476b1aa80e0b384219691eedd646af858208c2a85bb5af75e7",
+    "all29ArtifactsUnchanged": true
+  },
+  "sourceBaseline": {
+    "previousTestedFiles": 1156,
+    "buildFiles": 1162,
+    "testedFiles": 1163,
+    "buildSha256": "5232066bcadf1edb07458bb4807d9675ead24953760f6576378f187cad7fa910",
+    "finalTestedSha256": "bb9e06d3a25f81799f4a214aa14524d0a54cd746b074cd2b24fec70225df70fb",
+    "priorSourceFilesUnchanged": 1154,
+    "changedFromPrior": [
+      "scripts/files/text-save-failure-fixture.mjs",
+      "src/main/core/files/native-broker.ts"
+    ],
+    "addedAtBuild": [
+      "scripts/files/symlink-race-fixtures.d.mts",
+      "scripts/files/symlink-race-fixtures.mjs",
+      "src/main/core/files/symlink-race-acceptance.test.ts",
+      "src/main/core/files/write-confinement.test.ts",
+      "src/main/core/files/write-confinement.ts",
+      "src/main/core/files/write-process.test.ts"
+    ],
+    "postBuildChanges": [],
+    "postBuildAddedFiles": [
+      "scripts/files/symlink-race-ui.mjs"
+    ]
+  },
+  "verification": {
+    "currentCodePassedUnique": 140,
+    "newUniqueCodeTests": 37,
+    "newTestsByBoundary": {
+      "U": 24,
+      "I": 13
+    },
+    "currentSkipped": 0,
+    "unhandledErrors": 0,
+    "currentTypecheckExit": 0,
+    "nativeRaceRows": 13,
+    "nativeBrokerRegressionPassed": 59,
+    "saveIntegrationRegressionPassed": 27,
+    "newActualAppChecks": 14,
+    "actualAppRegressionChecks": 42,
+    "actualAppChecksTotal": 56,
+    "normalQuitRuns": [
+      {
+        "pid": 78331,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 79829,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 80216,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 81625,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "pid": 85049,
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "knownAppPidsClosed": 6,
+    "formalPassed": 232,
+    "formalTotal": 419,
+    "formalRemaining": 187,
+    "unexecuted": 185,
+    "blocked": 2,
+    "appRemaining": 184
+  },
+  "boundaries": [
+    "I actual source FileService/NativeFileBroker write confinement/recovery and packaged native binary. Exact native save races compile the same native source with the pre-existing WILLYOU_FILE_BROKER_TEST suspension macro only, then SIGSTOP/SIGCONT at prepared/before-swap; current production launch policy is used. No fabricated native response or GUI claim. Source resolver fixed to the own synthetic root; no credentials/models/external apps. Cleanup removes only complete own fixtures after evidence, not business recovery.",
+    "M04 original I/A scope/steps/expected unchanged. Formal232/41955.37%,185unexecuted2blocked,184remaining with A. No release.\nProduct red: last userspace guard followed by parent moved outside allowed old descriptor exchange to update the moved-out authorized inode; outside new-link canary stayed unchanged, receiptunknown did not satisfy M04. Literal outside-inode B assertion retained. Kernel file-write policy experiment13green, then production save/copy invoke sandbox-exec with static profile and opaque root/recovery parameters, shellfalse, selected copy destination only. Native identity/revision/recovery retained, missing/failed launcher or policy fails closed with no unconfined retry. Current macOS26.6.1arm64 only; system launcher/custom Seatbelt policy is not a durable supported third-party API, SDK deprecated, future compatibility limited. No other-platform or system CAS claim.\nNative I13: three layouts(target,parent-inside,parent-outside) x read/save after metadata6; exact same native source/existing macro prepared/before-swap6; valid control1. Parent-outside inode B/canary unchanged after fix, B/L materials retained. Other late races still unknown, no blind rollback/delete. Prepared transaction moved outside by adversary is not a new App write outside after the move. Current140 unique code pass:24newU+13newI, prior17 authority/controller/owner, ordinary native59, real-save integration27. Initial12(11pass1fail), experiment13, stale receipt assertion33/1, and fake cancellation fixture53/1 preserved. Receipt expectation updated only for kernel-blocked parent-outside failed vs oldunknown; formal no-outside-write expected unchanged. Fake cancellation corrected with synthetic pid/mocked process.kill, no real OS signal from unit.\nr71 source main changed, package rebuilt; native broker/watcher source+binary unchanged.1162build,1163tested sources; only external A driver added after build. Prior1156:1154 unchanged, two changed are NativeBroker and explicit H09 relay test telemetry. Six current native smokes,82runtime assets,three bundle hashes,typecheck0. Prototype code/styles zerochange; prior P243/sharedcore16/build/Sites4 not a fresh fullpixel run.\nActual App56: normal packaged original metadata/save timing gates12; precise late parent-outside2 in own COW clone originalASAR plus existing macro stop guard augmented only by private read-only marker; conflict20,diff16,real OS save failures6. Original auth/request/results unchanged, original spawn/stdout passively delegated and restored. Native lastguard->host rename outside/link->SIGCONT gives genuine EPERMfailed. Held original inode and outsidecanary unchanged; dirtyL/exactB-base draft retained, actual pathrestore and actualCtrlS retry rawCRLF/Chinese/emoji exact. Actual tree/input/save/retry; no store/editor/DOM-value injection, fabricated replies, externalApp/clipboard/models/dailycredentials/physicalIME claim. H09 transparent relay only telemetry relocated to original authorized recoveryroot, no policy widening. Own64MiBAPFS detached, five successful normal exits0/null, failed cleanup separately recorded, six known App PIDs plus native PIDs/prefixes closed; markers removed/observers restored.\nFirst normal A driver asserted before error UI painted; explicit visible condition added, rejection assertion not changed. First late compile lacked -I native include, corrected only compiler path. Initial node syntax typo corrected before execution, no nonexistent historical syntax artifact claimed. Failures preserved. Viewed late dark denial screenshot only, no full Codex/reference/pixel/Windows claim. M11,H20,X03/system/manual/reference/platform still open, all419 remain required.\n"
+  ],
+  "artifacts": {
+    "willyou-dev123-app-conflict-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-app-conflict-r1.log",
+      "sha256": "5de96645916512a4986f50ce8cca7a2684d38d53f3a66c912f6866f6a0f02ec1"
+    },
+    "willyou-dev123-app-diff-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-app-diff-r1.log",
+      "sha256": "4066bee9f88d75fe399fd01f97aeb852529d47abfe47d08a7dc27bb0ab3f695f"
+    },
+    "willyou-dev123-app-late-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-app-late-r1.log",
+      "sha256": "38326133c2bde7b8c12556e771d32d026eded3e15802305fd318cee780ab3d21"
+    },
+    "willyou-dev123-app-late-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-app-late-r2.log",
+      "sha256": "cfbc7d9cf9007d154582a09dc8a43fa4d1d578c3ba56ae6cd79ca0a23da5a95f"
+    },
+    "willyou-dev123-app-normal-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-app-normal-r1.log",
+      "sha256": "5f05041cdb3388a58272281896d38bd135d580069669866e6d8621090db929c4"
+    },
+    "willyou-dev123-app-normal-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-app-normal-r2.log",
+      "sha256": "f95a92969a3c07b1eccb5575146ee62308b6b3963e1d981e3d35e7f6e747735e"
+    },
+    "willyou-dev123-app-save-failure-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-app-save-failure-r1.log",
+      "sha256": "32d86d114455b2393fe7ff2cbb2ad5ff97f03233235d7b6db0ab75c653c195d0"
+    },
+    "willyou-dev123-archive.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-archive.py",
+      "sha256": "c6a8b48b8a83f5d97e7f526dfed660c561661e1a76a28dc7fa0dcc9d614aaae2"
+    },
+    "willyou-dev123-authority-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-authority-regression.json",
+      "sha256": "e23bd43665cdc6bf040064ff090d82a8b86ae8fefc3520e7c33a5bc05ee4b08b"
+    },
+    "willyou-dev123-build-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-build-snapshot.py",
+      "sha256": "889f79f393007969f925e165c762fd7d35326a4a01cb65fd0d5167b96a860212"
+    },
+    "willyou-dev123-bundle-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-bundle-hashes.json",
+      "sha256": "781e3aad053ddc909b5785cff1e29f7f7d3ef19042952b8e1ac6a8eb9bcd5eb8"
+    },
+    "willyou-dev123-code-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-code-audit.json",
+      "sha256": "552fb8d91d3832e8c7179f14a1da378b1b640313543d1a3c76fe9197fa133523"
+    },
+    "willyou-dev123-code-final-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-code-final-r1.json",
+      "sha256": "a2e3ef90e4b308559b0af3013e6e266a8293175469b3c03c20d9ab56c7b66421"
+    },
+    "willyou-dev123-code-final-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-code-final-r1.log",
+      "sha256": "b6592f92bb9419a5e75adb2e86fe087a6fd7d265bca6652f731b06d8c746ea80"
+    },
+    "willyou-dev123-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-code-r1.json",
+      "sha256": "e8d9e36b01451f8d3891a970313080179fb2ebccc4617f6c822742aaa84da8d8"
+    },
+    "willyou-dev123-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-code-r1.log",
+      "sha256": "30da44f5d214ee0857133e1d3556ceec06ba6e0fdbbe7e0cbd728c71e7a58ddb"
+    },
+    "willyou-dev123-confinement-code.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-confinement-code.json",
+      "sha256": "7e839c5388b7880108ce9aca092e0265857b202b9530400f9309512e76e2fbd7"
+    },
+    "willyou-dev123-confinement-code.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-confinement-code.log",
+      "sha256": "2a49f6a609cb11c3f2adfe324b186cbc15e3a0bbf38daa182cd1e8836eedf991"
+    },
+    "willyou-dev123-confinement-experiment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-confinement-experiment.json",
+      "sha256": "8b5ce0f0d49cd35fe91932cb58691a74a0155200aff4c02950a0703d562ffab7"
+    },
+    "willyou-dev123-diff-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-diff-regression.json",
+      "sha256": "69e7438a5645393c2829b00ae79c6c206caa15e73becbee1496ec1010a758d2e"
+    },
+    "willyou-dev123-experiment-test-baseline.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-experiment-test-baseline.ts",
+      "sha256": "fe4d0f91acc31055080cfe1b76e637079464893080fa4b88ca227732ed2e5a41"
+    },
+    "willyou-dev123-index-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-index-before.json",
+      "sha256": "c9f40337bffa66eb45413db1bd2492bc513db1551b5a3d35eebaa7e8d054b0c4"
+    },
+    "willyou-dev123-mode-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-mode-regression.json",
+      "sha256": "c8c30d09dbbecb9219509e96af712ca91d7c1f65bc34e3540f9da73d6cd3af0d"
+    },
+    "willyou-dev123-native-broker-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-native-broker-regression.json",
+      "sha256": "2e7718e3f2e86af74f63384be34dc44ffcd61baa696b6ab13e8e09fb0c2ec011"
+    },
+    "willyou-dev123-native-broker-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-native-broker-regression.log",
+      "sha256": "6f40c4a16bd489db506d1706d9c8d4d796eda82583449e972ebe9c6b1b98efe9"
+    },
+    "willyou-dev123-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-native-final.json",
+      "sha256": "c4504f8175dfe01b87de4d80b1f0713932e199f269e1d9d70eb114375ee67dc0"
+    },
+    "willyou-dev123-native-policy-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-native-policy-r1.json",
+      "sha256": "aa543c1d24426d0b89bbede770e8719af90fefdde2166f3f3146373bdd0640a4"
+    },
+    "willyou-dev123-native-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-native-r1.json",
+      "sha256": "773a9addaaff5afe9a5faedd29ac819193f6bcd7368e6bc673091d0fe7bc222b"
+    },
+    "willyou-dev123-office-save-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-office-save-regression.json",
+      "sha256": "fcc01004c3633461f1aeab6baa07c07814621d18735dba32c05e052be3013f86"
+    },
+    "willyou-dev123-owner-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-owner-regression.json",
+      "sha256": "74f5c91a689e9d4925b7605d531f189ecaf7f8cdc548ecb89704347a4723326a"
+    },
+    "willyou-dev123-package.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-package.log",
+      "sha256": "2f6231fe67db5d21f20eccede55008ebbd2322272cfb09c6ab2b49a55adc863a"
+    },
+    "willyou-dev123-policy-code-r1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-policy-code-r1.json",
+      "sha256": "8e2781aea85e21669842c780be0aacf1a76a06ec914101353a53534c8a47a37a"
+    },
+    "willyou-dev123-policy-code-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-policy-code-r1.log",
+      "sha256": "f3d5c5e811b45619888ad3479e2b42a7723fc69ba89258266725c3ef3d7cc53e"
+    },
+    "willyou-dev123-pre-policy-native-broker.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-pre-policy-native-broker.ts",
+      "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2"
+    },
+    "willyou-dev123-process-audit.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-process-audit.json",
+      "sha256": "234d72aaf6967938df7430b830e539f06e3e55a9e44ec78320fb73a0b543af43"
+    },
+    "willyou-dev123-process-code-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-process-code-final.json",
+      "sha256": "dd7ce7f02e4cfa7caa447df5b7e1af9f57bfe607c9126690b7f1007fb445e6d7"
+    },
+    "willyou-dev123-process-code-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-process-code-final.log",
+      "sha256": "9244d8925d17d1b9c923693d56ce5f118855e450a875c77c13fb99cf663b5cdb"
+    },
+    "willyou-dev123-runtime-r71.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-runtime-r71.json",
+      "sha256": "f2aad6db7588910dd7e145e176e7a495718e10b3684e5c15266dbd58f237a14c"
+    },
+    "willyou-dev123-runtime-r71.stderr": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-runtime-r71.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-dev123-save-conflict-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-save-conflict-regression.json",
+      "sha256": "af75ae937e2cdabf880ae37bde41cdf738c851b48f161edb9c097694d7014bad"
+    },
+    "willyou-dev123-save-failure-code.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-save-failure-code.json",
+      "sha256": "0958050a2fb510d1a54d9a2f23e933c88facc87250f9a1354aa3c53bc1001563"
+    },
+    "willyou-dev123-save-failure-code.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-save-failure-code.log",
+      "sha256": "dae0cc0380b9e256e8c50d971a8ae42dfe765f21ccec46731f30a0e9023306ab"
+    },
+    "willyou-dev123-save-failure-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-save-failure-regression.json",
+      "sha256": "d32915fc4c2566f6a1a45748a25d44bb9d112b4fd6bf73534ada0d6b8e3596aa"
+    },
+    "willyou-dev123-save-integration-code.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-save-integration-code.json",
+      "sha256": "72cf60b925c5ff5840b2d05dd12b09fcbab86c347c5c4b0d4cc40c037ba4357d"
+    },
+    "willyou-dev123-save-integration-code.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-save-integration-code.log",
+      "sha256": "5b31758bd705b70d5aeda9441001b15a5e8238f291f8c228bcd24cd97b7bc4c1"
+    },
+    "willyou-dev123-tested-snapshot.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-tested-snapshot.py",
+      "sha256": "ce707037b818fca261853a2448e45d150b9b887c7bb202e17c42b8f396881ce2"
+    },
+    "willyou-dev123-typecheck-current.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-typecheck-current.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev123-typecheck-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-typecheck-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev123-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-typecheck-r1.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-dev123-verify-runtime-r71.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-verify-runtime-r71.cjs",
+      "sha256": "422c22f67a1eaf1874075ef60d73d7fb88f2ffda434a212cac5c187ab5a9632a"
+    },
+    "willyou-dev123-watcher-r71.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-watcher-r71.cjs",
+      "sha256": "7e8fcb8127243bcbabbc385bdf189a23708df6ba56c28ee2abb570a4735c0cba"
+    },
+    "willyou-dev123-watcher-r71.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-watcher-r71.json",
+      "sha256": "549e9ea41a062b402ff981573ad937f1c580ee5cd4e93c83bae79e6377fd5272"
+    },
+    "willyou-dev123-watcher-r71.stderr": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-dev123-watcher-r71.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "willyou-m9-acceptance-batch-r71-build-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-m9-acceptance-batch-r71-build-sources.json",
+      "sha256": "6b55a1d04f34793bb17eae0f8bb8c843c24bb15520c9771262a2acdd3541fcda"
+    },
+    "willyou-m9-acceptance-batch-r71-build-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-m9-acceptance-batch-r71-build-sources.tar.gz",
+      "sha256": "5232066bcadf1edb07458bb4807d9675ead24953760f6576378f187cad7fa910"
+    },
+    "willyou-m9-acceptance-batch-r71-dev123-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-m9-acceptance-batch-r71-dev123-tested-sources.json",
+      "sha256": "5918967c96e2c870703ae78d096ef177301cd0514a430fd7ddd2b082b9e8b71d"
+    },
+    "willyou-m9-acceptance-batch-r71-dev123-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/willyou-m9-acceptance-batch-r71-dev123-tested-sources.tar.gz",
+      "sha256": "bb9e06d3a25f81799f4a214aa14524d0a54cd746b074cd2b24fec70225df70fb"
+    },
+    "runs/willyou-symlink-race-app-lZQu8E/failure-electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-lZQu8E/failure-electron.log",
+      "sha256": "9cd1061b6b047c523ab5d355d029a9f0c66aa7456891abb2f63b3e9c407fc238"
+    },
+    "runs/willyou-symlink-race-app-lZQu8E/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-lZQu8E/failure.png",
+      "sha256": "a4bfa81090f9c2d4b1075c2e1344a561c92676d53aeb22ab82c7d2007ca489aa"
+    },
+    "runs/willyou-symlink-race-app-lZQu8E/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-lZQu8E/result.json",
+      "sha256": "2311b5925b73fd342bc91e24ced9d1024512639cc2153d9c84706dba5d4b0aab"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-read-parent-inside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-read-parent-inside-denied.png",
+      "sha256": "2161faebca8dc9581a6505438ce0993582322ace7a22f96cac31b34a7fd9a8d4"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-read-parent-inside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-read-parent-inside-retry.png",
+      "sha256": "8032bf0ad99078ac1ff1b3b539c04b8b994887a6a732c731d857a3a0971f0dd4"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-read-parent-outside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-read-parent-outside-denied.png",
+      "sha256": "8859053d1e38d676d3774548a1e8c80331fcf9edf7f6275bb20e05a8f0649b96"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-read-parent-outside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-read-parent-outside-retry.png",
+      "sha256": "a5d5b213d8d36e71d17f5ca21b29dafd57f67ca0ebf94ed51cc351ffd95e0cce"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-read-target-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-read-target-denied.png",
+      "sha256": "7f46385287de66969ac2fac7a82b29d18338348c94ed0052fe8142c5ff28e903"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-read-target-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-read-target-retry.png",
+      "sha256": "f081f8906fa63c8957a74e25d781b260aa1b200901f6671f824298684ce2145e"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-save-parent-inside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-save-parent-inside-denied.png",
+      "sha256": "e23131bda64f9fc85820fb0d33729e83786382863ebcccac1b17d85b0b04a872"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-save-parent-inside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-save-parent-inside-retry.png",
+      "sha256": "b48ceb3269faeca574b7b5817c16c30e5a5fa753fba11c1a2e5a25427e5ddccf"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-save-parent-outside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-save-parent-outside-denied.png",
+      "sha256": "7134f688cbc61e1deaa634538432e7a49b09872dc222c0496da31029fd8206b9"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-save-parent-outside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-save-parent-outside-retry.png",
+      "sha256": "e3dbd4d3ae0f72d659da55b35a447e00f8f80f20307cfbfafcea3b467713fc34"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-save-target-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-save-target-denied.png",
+      "sha256": "34f97ab9cb3ae5345a0e6b021a330ba577c551c9d319946af4659452d579b9c9"
+    },
+    "runs/willyou-symlink-race-app-kw490y/dark-save-target-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/dark-save-target-retry.png",
+      "sha256": "ea88b65e0b8aecca52166062d79984d0a7ae66a1f102e539ca15540dc6f780d3"
+    },
+    "runs/willyou-symlink-race-app-kw490y/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/electron.log",
+      "sha256": "f1caf9be7c05ab0a59bca45a24142ebabfb38b255bb0b97995ceaeb6882ab012"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-read-parent-inside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-read-parent-inside-denied.png",
+      "sha256": "5849c851df2187691797341292a9b7b6bd3a1643140b03b632a952841a9781a0"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-read-parent-inside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-read-parent-inside-retry.png",
+      "sha256": "804a167370dad022eef71cb5f265ec816277712423697433e2019646548d2c7e"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-read-parent-outside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-read-parent-outside-denied.png",
+      "sha256": "e8b20cc62329a289a8ee3fdb31119b8e8b5ef94b28caffad43c43a7e227bf27e"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-read-parent-outside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-read-parent-outside-retry.png",
+      "sha256": "f08fc2f74d8da4320a984f2ec9b278a837d77d12b9257802b0dc08eeeb9cd526"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-read-target-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-read-target-denied.png",
+      "sha256": "ae88d46b5a52828786e82a37d918d00cc245a2c6dd87ce3f809c59b70bbc264a"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-read-target-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-read-target-retry.png",
+      "sha256": "8d85be7d85f05df4b0f752aad2c1ed32654c835d641e67b23a3033f241c676ce"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-save-parent-inside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-save-parent-inside-denied.png",
+      "sha256": "38a59ef208dc47ab9610c2264acb77eaeb7fb8c49bcba923248a07f70a7832de"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-save-parent-inside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-save-parent-inside-retry.png",
+      "sha256": "52d59b8e224f40763188dd2f0aa4edecc584efdfc17fa8ca427a920dbae4f131"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-save-parent-outside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-save-parent-outside-denied.png",
+      "sha256": "8ac3ef3fb0ac05cb71717e30efecf02925065850a27a0c142bf46309fe3c0281"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-save-parent-outside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-save-parent-outside-retry.png",
+      "sha256": "1dfaec3aba5d039c1ebd72f824f26bda96831de124c8e93fc60bdb352e7160f6"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-save-target-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-save-target-denied.png",
+      "sha256": "4caa32ffd04917d08edbd2a8c60644cb59e2fb84b6c72c4c3d7ff1196eecafad"
+    },
+    "runs/willyou-symlink-race-app-kw490y/light-save-target-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/light-save-target-retry.png",
+      "sha256": "424ec8fc12a46383f23ec0d79c78fdc90d7f7d5d82611e0a6e1495797748b518"
+    },
+    "runs/willyou-symlink-race-app-kw490y/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-kw490y/result.json",
+      "sha256": "e52b69dde688d0f7041ec26450f8b739c364fd3295c39b9382b9ede7730ec536"
+    },
+    "runs/willyou-symlink-race-app-5LzOj7/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-5LzOj7/broker-test.mm",
+      "sha256": "828b3bd5f4e39c8483e65c1bf4df083fc8e363b9c0a98096dd163600a8f822c2"
+    },
+    "runs/willyou-symlink-race-app-5LzOj7/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-5LzOj7/result.json",
+      "sha256": "03161876e5e2d2681735430b2c3abc913d9eb65b676be6d98e51d5012494a5a5"
+    },
+    "runs/willyou-symlink-race-app-cSQe3c/broker-test.mm": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-cSQe3c/broker-test.mm",
+      "sha256": "d25de389a51a97b919d98f49c58b60602b0d335fb0c9beb6aa4ad64d7309bf90"
+    },
+    "runs/willyou-symlink-race-app-cSQe3c/dark-save-parent-outside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-cSQe3c/dark-save-parent-outside-denied.png",
+      "sha256": "b5277424184e0aae1b7585d0948ac2e4c66b2c01f1dc8c04a2a8078bad85d4ca"
+    },
+    "runs/willyou-symlink-race-app-cSQe3c/dark-save-parent-outside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-cSQe3c/dark-save-parent-outside-retry.png",
+      "sha256": "6e5b4dc50b69f6e7871bee4cc57046f2e12960952a8a896a7a91810c76429067"
+    },
+    "runs/willyou-symlink-race-app-cSQe3c/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-cSQe3c/electron.log",
+      "sha256": "c1d28b88ec3d17e681bd2a2570b7c68587b7fb3722bd876b3237104da578d7ca"
+    },
+    "runs/willyou-symlink-race-app-cSQe3c/light-save-parent-outside-denied.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-cSQe3c/light-save-parent-outside-denied.png",
+      "sha256": "f811508de3ef15623368775f4179fa7dec6513ec78e2da272d604c64670283f3"
+    },
+    "runs/willyou-symlink-race-app-cSQe3c/light-save-parent-outside-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-cSQe3c/light-save-parent-outside-retry.png",
+      "sha256": "ba96939404a4ea4a5b12ad1b62eb0a581ffbf51a655c2b6715921250a7ee84c7"
+    },
+    "runs/willyou-symlink-race-app-cSQe3c/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-symlink-race-app-cSQe3c/result.json",
+      "sha256": "4052a944820dcc8c24a92e2eaba752ef8a61889d08542de781c1e305adab8d89"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/0-light-keep.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/0-light-keep.txt-resolved.png",
+      "sha256": "6fa01c133cd0d76573fdbf084322a4c09d20e11ec6ef06b84783015492c34efe"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/1-light-disk.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/1-light-disk.txt-resolved.png",
+      "sha256": "6a7d0f21028a8c52cb9c798573fc4ceccc13e1fc3cbd53d23b63edc2c9df7226"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/10-dark-keep.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/10-dark-keep.txt-resolved.png",
+      "sha256": "5611194f64985d274a11fee89987c0f6e3cd478b89be923c93257d7ffccb38ba"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/11-dark-disk.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/11-dark-disk.txt-resolved.png",
+      "sha256": "fd68ac0f716870a32228308cbbe30ec8af1f8d481ce1518e834a97c558d28f38"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/12-dark-edit.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/12-dark-edit.txt-resolved.png",
+      "sha256": "9e209a0f6b3b751453f5f0c63ab62205b35133c830a9c7603a23ab305a76af8b"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/13-dark-keep-race.txt-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/13-dark-keep-race.txt-competing-writer.png",
+      "sha256": "c8d8ad9c51de3c8e4d816bb42ebb3aabe761cec9a3f534a7df5ca5262a79c839"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/13-dark-keep-race.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/13-dark-keep-race.txt-resolved.png",
+      "sha256": "ff96eb96529f08050bfe390239155e14431e876627975fa23bfead98d3857d0b"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/14-dark-edit-race.txt-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/14-dark-edit-race.txt-competing-writer.png",
+      "sha256": "1264b656dc20dbe98810029db6b8dc334ee1c724d6f515913d4d386e4687f7d9"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/14-dark-edit-race.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/14-dark-edit-race.txt-resolved.png",
+      "sha256": "682863ae746ea084e06843dd3a23617b1c070f63eb7467836b0bd9636d5cc9e3"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/15-dark-keep.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/15-dark-keep.md-resolved.png",
+      "sha256": "51218a5302033c76369499a024ad633c4d3dc81a4a28556a7e819a204e38304c"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/16-dark-disk.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/16-dark-disk.md-resolved.png",
+      "sha256": "afa1049dc6e54c0c9739f25f0cdb2b440e796700dd9e4c08172a019479eac3e8"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/17-dark-edit.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/17-dark-edit.md-resolved.png",
+      "sha256": "ecb62d9cf1aa559fed7c9ca0e4d53e80f38b292a4b3c10ab2bfd284d0fd633a3"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/18-dark-keep-race.md-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/18-dark-keep-race.md-competing-writer.png",
+      "sha256": "9f2673a5a2ad64dbfe802f0bcf71497ebcae53c2044fc87e038ad785120adaf0"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/18-dark-keep-race.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/18-dark-keep-race.md-resolved.png",
+      "sha256": "70dc7f415f08c25cb836cdd42f749483d3ab81ef05d698e5f202a8daf7d6f726"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/19-dark-edit-race.md-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/19-dark-edit-race.md-competing-writer.png",
+      "sha256": "b66f78dccb1241afb1a1deb8e1f1b4cb8bd1a3b7a9b65a56d10e26ee5c8f5e00"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/19-dark-edit-race.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/19-dark-edit-race.md-resolved.png",
+      "sha256": "3a771da7d0483e223a73fecbb350b4d4b639c97ce31440d6cfdf28676dc4c2ea"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/2-light-edit.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/2-light-edit.txt-resolved.png",
+      "sha256": "adcdeffb845bb3a5a0d1ee353e01abfb2380058e3d4ee9adab11a542ba45e0ae"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/3-light-keep-race.txt-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/3-light-keep-race.txt-competing-writer.png",
+      "sha256": "7f89b5737a4b0655c08386f14e7b66cb98f6f1f9fbec81fc524c03b0ef226120"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/3-light-keep-race.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/3-light-keep-race.txt-resolved.png",
+      "sha256": "f3bb15bebd6627151e9741826589c50f3234efd144b51cab738237eb3f37572b"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/4-light-edit-race.txt-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/4-light-edit-race.txt-competing-writer.png",
+      "sha256": "6bc80a1ad74db47ccbc800e170d4ed8788257fcff03202a357fbda34466fbd12"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/4-light-edit-race.txt-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/4-light-edit-race.txt-resolved.png",
+      "sha256": "251b993fb2c0819841fd858094f87ed771725b628f44f1c3c46f5a6cca42c11e"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/5-light-keep.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/5-light-keep.md-resolved.png",
+      "sha256": "4da3866d0a404a04ba4f0e0469cbaa82a3e5516230285f7fdc68fee0b27f2d27"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/6-light-disk.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/6-light-disk.md-resolved.png",
+      "sha256": "52e6d373bfdb4b730957080d82faaea8feb6d7081c0c72aa3daa88890efe21ee"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/7-light-edit.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/7-light-edit.md-resolved.png",
+      "sha256": "27f470f234bedd825d5e992fb2ea11a958d2f5dbc39a66169b8aff2177236d31"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/8-light-keep-race.md-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/8-light-keep-race.md-competing-writer.png",
+      "sha256": "07b3b252f6b0a34e2c6558818e30343cefe35314bc5b2f1d0a6b9c512a8d74ec"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/8-light-keep-race.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/8-light-keep-race.md-resolved.png",
+      "sha256": "905e82419c145b0a6151b40d89177538dc30b89db4a67340f08a91c34d49c992"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/9-light-edit-race.md-competing-writer.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/9-light-edit-race.md-competing-writer.png",
+      "sha256": "421b1ea9535d0ec1ed6af9d2474159dd14b11911543cba556bedbb4539677f67"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/9-light-edit-race.md-resolved.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/9-light-edit-race.md-resolved.png",
+      "sha256": "24c231e34d6e5f994c382385e60dff5cbf7feba2ab7604cd89d5c5117bd6c7a6"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/electron.log",
+      "sha256": "0a653831f8c441bbdd9d97bfae12b4b6962f2e844ea6d33cd2fabc5480597cbe"
+    },
+    "runs/willyou-text-conflict-app-vkDukP/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-text-conflict-app-vkDukP/result.json",
+      "sha256": "1b887a91677e36edc9fda4bf63dc10d9a9a0048727a56e808c13a43bf7600129"
+    },
+    "runs/willyou-inline-diff-app-WzICTh/dark-units-equal.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-inline-diff-app-WzICTh/dark-units-equal.png",
+      "sha256": "bc4770085537fba236ca83f25007c1a0165342d1be6f38aa474659045128c0f6"
+    },
+    "runs/willyou-inline-diff-app-WzICTh/dark-units-local-over.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-inline-diff-app-WzICTh/dark-units-local-over.png",
+      "sha256": "a4a8869cc203b1bcefed19b1b4424284a6052b04b64678a907e413e6bd3ee453"
+    },
+    "runs/willyou-inline-diff-app-WzICTh/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-inline-diff-app-WzICTh/electron.log",
+      "sha256": "ddf5efbafb5285c056c82a1087576115eba7a3c01ee5d6a5b6a95f18ee79a08e"
+    },
+    "runs/willyou-inline-diff-app-WzICTh/light-units-equal.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-inline-diff-app-WzICTh/light-units-equal.png",
+      "sha256": "d41dc0a9ee954d2a24bc7ffb8cbcc15d99a069de4e8cf57780f2fcb474bace75"
+    },
+    "runs/willyou-inline-diff-app-WzICTh/light-units-local-over.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-inline-diff-app-WzICTh/light-units-local-over.png",
+      "sha256": "a8ff27bcef2da976346ac6fb8390a1f7b3eae22e78cb5f07e2b2d4c889410e3a"
+    },
+    "runs/willyou-inline-diff-app-WzICTh/result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-inline-diff-app-WzICTh/result.json.gz",
+      "sha256": "fd5562c50d838d4fa0aeed92458680e25eaeb40ef03d64b3a888fec55ce2848f",
+      "encoding": "gzip",
+      "uncompressedSha256": "a6ad5139c84a73fb81fde9d74afbe495457be54b14ec613f22ec347b37c09aa2",
+      "uncompressedBytes": 22129963
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/dark-disk-full.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/dark-disk-full.txt-failure.png",
+      "sha256": "4772bf031154b9e4638189e66be4cf546cdf053135cd45a50df3b36e2bb3b0ed"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/dark-disk-full.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/dark-disk-full.txt-retry.png",
+      "sha256": "94726e85353781c386da0143d3dc5ae2259533acc55ee02a62d96d202b6293bd"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/dark-generic.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/dark-generic.txt-failure.png",
+      "sha256": "986ab5a5e106a624ca077702b77d27c666bdb65a5230402adbf74609cffb964b"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/dark-generic.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/dark-generic.txt-retry.png",
+      "sha256": "4c097fcfd82427e5194cefd78daabe8d53d67f78342fa9120cf03db7360910c5"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/dark-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/dark-permission.txt-failure.png",
+      "sha256": "ee1c024504bb9229e1b874874da9616dad2c1568f41222270851dab8365e4c19"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/dark-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/dark-permission.txt-retry.png",
+      "sha256": "baec3f9c680a7187140529d67cecf4232065299964a6584c01a9e010ae0e96f2"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/electron.log",
+      "sha256": "7ef6fe418d72316e0a557ffd54bd22aa0b948b1ddc0e69f951ec0f6ef3cdb0a3"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/environment.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/environment.json",
+      "sha256": "643950f55a1472805332e69726ed14d6691c767540d5a23ac655c646c0f4ebf6"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/light-disk-full.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/light-disk-full.txt-failure.png",
+      "sha256": "1882ebf564796e9520a081b1797f8a7ef294a288db088060d0522c6d746ac782"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/light-disk-full.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/light-disk-full.txt-retry.png",
+      "sha256": "f692ac3127338aed1c6d56f103b8f8e3bc5fb9d0c5e12b1df2413a5bdc6eef16"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/light-generic.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/light-generic.txt-failure.png",
+      "sha256": "9013f9a2d111932eb3f06606d11376b4bc37105c2e3f03a241b769ce794ed6c4"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/light-generic.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/light-generic.txt-retry.png",
+      "sha256": "a782fce9c8a5d3b2bd07ac52575c73594c96c0452f74b8ab533a9625930c0b33"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/light-permission.txt-failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/light-permission.txt-failure.png",
+      "sha256": "6361f56933e1d558586b72472107400ff7b2ced26960239bf9877fab9d769781"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/light-permission.txt-retry.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/light-permission.txt-retry.png",
+      "sha256": "378d9521f2cffeae6986d2cde8a2556d05efdfb2e4b51f24e2a59b58ce25b67b"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/native-relay.jsonl": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/native-relay.jsonl",
+      "sha256": "498e139ddf5cd949a687757752f0002f4864f3733c106ad5e4b101f94beceb28"
+    },
+    "runs/willyou-native-save-failure-j1H5Bu/result.json.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/runs/willyou-native-save-failure-j1H5Bu/result.json.gz",
+      "sha256": "d0e06eae8ab87fb8a10dbf9db3991569e11b23b95fd2b32528db4bcc189b68a5",
+      "encoding": "gzip",
+      "uncompressedSha256": "e30ce4757151739f48343e81a923c3d977a1d226a65ee703a4e248555f92c011",
+      "uncompressedBytes": 1964500
+    },
+    "execution-boundaries.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-symlink-race-dev123-r71/execution-boundaries.txt",
+      "sha256": "ece54dfdfb8ff88cd63af873a97b1b093f40c8b69e2073cb5c062176ac7ef858"
+    }
+  }
+}

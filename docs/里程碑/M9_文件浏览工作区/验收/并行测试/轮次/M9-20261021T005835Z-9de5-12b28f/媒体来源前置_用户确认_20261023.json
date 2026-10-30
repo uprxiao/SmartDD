@@ -1,0 +1,165 @@
+{
+  "at": "2026-10-23T04:25:55.160631+00:00",
+  "userAnswer": "同意补充前置（推荐）",
+  "questionItemId": "[\"request_user_input_async\",\"call_612071f481c244caaa983789a985a4bb\",0]",
+  "proposal": "验收/媒体可选来源与灯箱入口的前置澄清提案_20261023.md",
+  "reviewedProposalSHA256": "c9cc45f1519b4fb645b8ee7736748e45623742475d9252deb82607a45fa48f96",
+  "approvedStatusDocumentSHA256": "69c7d2367e7979c174d515b18219c4dbfe2490a89d59dafbf1f78567d227625e",
+  "caseIds": [
+    "M9-T-T20",
+    "M9-T-T21",
+    "M9-T-T23",
+    "M9-T-V01",
+    "M9-T-V03",
+    "M9-T-V04",
+    "M9-T-V09",
+    "M9-T-V15",
+    "M9-T-V16",
+    "M9-T-V17"
+  ],
+  "sourceConditions": {
+    "M9-T-T20": "真实入口能产生对应sourcePath/src组合时执行该A分支；现有本机路径菜单、复制和无源保护仍验。data URI及空源组合保留接口/组件检查，不造App来源。",
+    "M9-T-T21": "本机路径的真实另存、取消和错误检查保留。data URI真实入口存在时再执行其A分支；字节提取、文件名与错误语义的适用I仍验。",
+    "M9-T-T23": "现有本机媒体实际形成Blob时，照验20次打开及关标签/切根/销毁的暂停、释放和原件保护；data URI特有入口存在时另验其A分支，不以本机源冒称data URI。",
+    "M9-T-V01": "现有本机Markdown图片菜单和能力过滤仍验；HTTP/data及参考scope/任务上下文组合只在实际来源/宿主存在时执行A。原条件矩阵、顺序与无假菜单检查保留。",
+    "M9-T-V03": "第一有效HTTP(S)URL的完整R/P/I矩阵保留；实际来源提供这种URL时执行复制地址A。现有本机图片不应出现假web地址，仍需真实A检查。原无效URL红测及修复复验保留。",
+    "M9-T-V04": "现有本机匹配host的定位及来源保护照验；远程/不匹配host、HTTP/data组合在真实来源存在时执行A，能力拒绝的适用I保留。",
+    "M9-T-V09": "现有本机图片的另存、建议名、取消/失败、动画原格式照验；宿主回调及HTTP/data分支在实际入口存在时执行A，适用接口与组件分支保留。",
+    "M9-T-V15": "现有默认旧路径照验。真实新overlay宿主/flag/portal存在时执行相应A矩阵；未接入时保留完整R/P/I条件与两种旧容器下载差异，不加测试开关造A。",
+    "M9-T-V16": "新overlay真实入口启用时执行A；原R/P/I的只读导航、序号及禁止编辑控件检查保留。不得将当前旧灯箱结果记为新overlay通过。",
+    "M9-T-V17": "新overlay真实入口及失败数据路径存在时执行A；原R/P/I的fallback、重试、切图迟到保护保留，不用合成App宿主冒充真实来源。"
+  },
+  "originalContractsUnchanged": {
+    "M9-T-T20": {
+      "id": "M9-T-T20",
+      "steps": "sourcePath为文件路径/data URI，src为有效/null分别打开更多菜单。",
+      "expected": "非data路径可Copy path；src存在才Save a copy；无源不显示假保存按钮；copy内容准确。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-T21": {
+      "id": "M9-T-T21",
+      "steps": "对data URI及本地路径各保存一次，再取消/注入写失败。",
+      "expected": "data分支提取bytes，路径分支受控读取再save-file；文件名清理；取消无文件，失败toast，原音频保持可用且不写回原文件。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-T23": {
+      "id": "M9-T-T23",
+      "steps": "反复打开data URI媒体20次，播放中关tab/切根/销毁window。",
+      "expected": "暂停并清src/load/revoke；media query gcTime=0按实现释放；监听/URL/内存不持续增长，旧声音不残留。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-V01": {
+      "id": "M9-T-V01",
+      "steps": "用local/chatgpt/other scope，依次打开本机PNG、HTTP PNG、data PNG；切换任务上下文与Clipboard能力。",
+      "expected": "已启用provider时按新标签→地址→加入输入→复制→文件管理器→下载的过滤后顺序；other且无ChatGPT上下文不挂provider；无裁剪/旋转/删除原文件伪菜单。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-V03": {
+      "id": "M9-T-V03",
+      "steps": "依次src/data+displaySrc HTTPS、src HTTP+displaySrc HTTPS、file、data、无效URL。",
+      "expected": "只复制第一个有效HTTP(S)URL；没有有效地址不出现该项；不把本地路径或data内容冒充web地址。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-V04": {
+      "id": "M9-T-V04",
+      "steps": "给同一绝对路径设置本机匹配host、远程host、本机不匹配host，再测HTTP/data来源。",
+      "expected": "只有本机匹配host且有绝对路径出现定位；定位目标是正确文件；其它来源不泄露或调用本机任意路径。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-V09": {
+      "id": "M9-T-V09",
+      "steps": "有/无宿主onDownload两种情况下下载本地、HTTP和data图；取消保存及故障注入。",
+      "expected": "优先宿主回调，否则解析并另存；建议名/扩展合理；不覆盖原文件，不将取消/失败计成功；动画下载不被强制转PNG。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-V15": {
+      "id": "M9-T-V15",
+      "steps": "测试适配器枚举local/chatgpt/other、flag开/关、portal存在/缺失；参考环境仅记录实际可观察路由，不修改目标安装包。",
+      "expected": "Zel只满足scope/flag等条件转新lightbox；V27 portal/flag退旧xel时showDownload=false；直接旧tnl仍有默认下载，两者不可混同。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-V16": {
+      "id": "M9-T-V16",
+      "steps": "在新路径打开Markdown多图，观察标题/保存/关闭/缩放/前后/序号；尝试请求编辑。",
+      "expected": "可见只读导航与保存，current of total正确；无composer、编辑/擦除/背景移除/resize；Markdown无favorites/destination就无收藏/出处链接。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    },
+    "M9-T-V17": {
+      "id": "M9-T-V17",
+      "steps": "主图加载失败但缩略图成功；两者失败后点Try again；重试中换图再回传旧成功。",
+      "expected": "先按允许fallback展示；双失败明确错误与重试；旧结果不污染新图；恢复后状态正确，不能空白当成功。",
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "R",
+        "P",
+        "I",
+        "A"
+      ],
+      "scope": "m9-local"
+    }
+  },
+  "authorityBeforeSHA256": "c9d6078d7a7542ffbe5ad75c159201c78f648d9c3757d53d33f6028cdda20314",
+  "authorityAfterSHA256": "015eb5522bd2ff963b34b525f910d66949336cfefe83ba7dba47848f29b572c6",
+  "formalCaseIncrement": 0,
+  "denominator": 419,
+  "noFailedCaseErased": true
+}

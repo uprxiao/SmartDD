@@ -1,0 +1,683 @@
+{
+  "schema": "smartdd-m9-acceptance-evidence-v1",
+  "recordedAt": "2026-10-18T01:51:04.355629+00:00",
+  "cases": [
+    "M9-T-L03",
+    "M9-T-L04"
+  ],
+  "status": "passed for explicitly required U/I branches; no actual window/GUI claim",
+  "formalIndexUpdated": false,
+  "requirements": [
+    "M9-R08.2",
+    "M9-R08.3",
+    "M9-R08.8"
+  ],
+  "requirementRevision": "R3.4-P1",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "caseDefinitionsAtExecution": [
+    {
+      "id": "M9-T-L03",
+      "group": "L",
+      "title": "旧实例失败回调",
+      "requirements": [
+        "M9-R08.2"
+      ],
+      "level": "单元／集成／安装端到端",
+      "environments": [
+        "U",
+        "I"
+      ],
+      "data": [
+        "D01",
+        "D11"
+      ],
+      "steps": "watch1失败回调延迟；同key watch2已启动再交付watch1错误。",
+      "expected": "只清理同实例；watch2仍工作。",
+      "source": "L§6",
+      "prototype": "PS-lifecycle",
+      "basis": "参考事实＋迁移设计",
+      "status": "未执行",
+      "evidence": [],
+      "actual_result": null,
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R08",
+        "M9-R07"
+      ],
+      "prototype_pages": [
+        "P06",
+        "P16"
+      ],
+      "prototype_status": "界面关联；真实服务／安装状态未实现",
+      "prototype_note": "关联页面只说明状态落点；原型不含真实文件授权、watch、多窗口、平台安装或生产 PTY，需开发后执行。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R08.2"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-L04",
+      "group": "L",
+      "title": "事件owner过滤",
+      "requirements": [
+        "M9-R08.3",
+        "M9-R08.8"
+      ],
+      "level": "单元／集成／安装端到端",
+      "environments": [
+        "I"
+      ],
+      "data": [
+        "D01",
+        "D11"
+      ],
+      "steps": "向W1 root发送变更，并伪造W2 watchId/owner。",
+      "expected": "仅合法owner收到；跨窗口不得借ID读取或停掉watch。",
+      "source": "L§6",
+      "prototype": "PS-lifecycle",
+      "basis": "参考事实＋迁移设计",
+      "status": "未执行",
+      "evidence": [],
+      "actual_result": null,
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R08",
+        "M9-R07"
+      ],
+      "prototype_pages": [
+        "P03"
+      ],
+      "prototype_status": "界面关联；真实服务／安装状态未实现",
+      "prototype_note": "关联页面只说明状态落点；原型不含真实文件授权、watch、多窗口、平台安装或生产 PTY，需开发后执行。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R08.3",
+          "M9-R08.8"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ],
+  "environment": {
+    "platform": "macOS 26.6.1 arm64",
+    "electron": "42.11.14",
+    "runner": "pnpm test -> Electron bundled Node/Vitest",
+    "nativeWatcher": "packaged @parcel/watcher 2.5.6, fs-events backend",
+    "filesystem": "unique synthetic project roots under temporary directory; removed after tests",
+    "finalRunPermissions": "approved require_escalated after sandbox FSEvents stream initialization failure"
+  },
+  "package": {
+    "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+    "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "watcherVersion": "2.5.6",
+    "watcherBinding": [
+      {
+        "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/node_modules/@parcel/watcher-darwin-arm64/watcher.node",
+        "sha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5"
+      }
+    ]
+  },
+  "sourceBaseline": {
+    "manifest": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.json",
+    "sha256": "be6cc4310aeb917b972031fdb24a189b3686661db497b69a81b2fba64d4bdf11",
+    "archive": "/private/tmp/willyou-m9-acceptance-batch-r1-sources.tar.gz",
+    "archiveSha256": "5ec8a673a2569d2f6a6439a4f22e170b828c254f993e0d951357c2e085a3f008",
+    "productionSources": {
+      "src/main/core/files/watch-service.ts": {
+        "sha256": "7b3581d3be24d7d4e1131dac2b1691d774a041272965891359543313ad89928b",
+        "packagedSourceSha256": "7b3581d3be24d7d4e1131dac2b1691d774a041272965891359543313ad89928b",
+        "matchesPackagedSource": true
+      },
+      "src/main/core/files/file-service.ts": {
+        "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "packagedSourceSha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "matchesPackagedSource": true
+      },
+      "src/main/core/files/roots.ts": {
+        "sha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "packagedSourceSha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "matchesPackagedSource": true
+      },
+      "src/main/core/files/recovery-store.ts": {
+        "sha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "packagedSourceSha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "matchesPackagedSource": true
+      },
+      "src/main/core/files/native-broker.ts": {
+        "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "packagedSourceSha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "matchesPackagedSource": true
+      },
+      "src/main/core/files/controller.ts": {
+        "sha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+        "packagedSourceSha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+        "matchesPackagedSource": true
+      },
+      "src/shared/ipc/rpc.ts": {
+        "sha256": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac",
+        "packagedSourceSha256": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac",
+        "matchesPackagedSource": true
+      },
+      "src/shared/files.ts": {
+        "sha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "packagedSourceSha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "matchesPackagedSource": true
+      },
+      "src/shared/events.ts": {
+        "sha256": "9a1b1acfe587eb7c4f82a842fa64e92466f48159bd0513fb0497acb9f496bbab",
+        "packagedSourceSha256": "9a1b1acfe587eb7c4f82a842fa64e92466f48159bd0513fb0497acb9f496bbab",
+        "matchesPackagedSource": true
+      }
+    }
+  },
+  "newTest": {
+    "path": "src/main/core/files/watch-ownership-acceptance.test.ts",
+    "sha256": "7e3616776448d2775a142a9f11e92e6ef99fdb29a187342f3f6bddc28efbee81",
+    "includedInR1Package": false,
+    "note": "New test harness is outside the earlier source archive. All executed production watch/owner code and native resources match the existing package; no product or native source changed and no package was built for these tests."
+  },
+  "command": "SMARTDD_WATCH_ACCEPTANCE_APP='/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app' SMARTDD_WATCH_ACCEPTANCE_EVIDENCE=/private/tmp/willyou-watch-owner-matrix-r5.json pnpm test src/main/core/files/watch-ownership-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-watch-owner-tests-r5.json",
+  "result": {
+    "passed": 3,
+    "failed": 0,
+    "unselected": 0,
+    "formalCasesCovered": 2,
+    "suiteSpanSeconds": 1.03
+  },
+  "L03": {
+    "status": "passed",
+    "layers": [
+      "U controlled late error at public native subscription boundary",
+      "I production FileService/roots/watch + actual packaged native broker/watcher"
+    ],
+    "failureModes": [
+      "callback error delivered after watch2 is native-ready",
+      "subscription promise rejection delivered after watch2 is native-ready"
+    ],
+    "sameKey": "Both generations use the same real root lease, canonical path and inode identity.",
+    "validated": [
+      "Old-instance delayed failure never changes watch2 to poll/none or removes the new root consumer.",
+      "Actual subsequent filesystem write produces a macOS native callback for watch2 and a changed production broker snapshot.",
+      "Old consumer receives no late events; all new updates use watch2 ID.",
+      "Fresh FileService read returns the new bytes.",
+      "New native subscription is not unsubscribed by the old failure; explicit cleanup releases all consumers/timers/stops."
+    ],
+    "injectionBoundary": "Captured callback / promise from constructor nativeSubscribe interface; no private FileWatchService handler or private map is called or edited. The error is synthetic by design; successful changed events come from the real filesystem/native subscription."
+  },
+  "L04": {
+    "status": "passed",
+    "layers": [
+      "I registered production RPC controller + FileService + actual packaged native watcher/broker"
+    ],
+    "senderBoundary": "Synthetic trusted Electron sender/frame identities supplied to registered public RPC handlers; no actual Electron windows. Context-derived owner is tested independently of renderer arguments.",
+    "validated": [
+      "Real W1 filesystem event is delivered only to the registered W1 watch ID and root lease; W2 gets no changed event.",
+      "Foreign configure by each other window is rejected.",
+      "Forged owner/root, foreign document watch/read and subframe stop are rejected.",
+      "Cross-owner stop calls leave both native consumers alive.",
+      "After W1 render-process-gone, W1 watch is revoked and receives no later event. W2 still receives an actual native event and fresh changed snapshot.",
+      "W2 destruction releases all resources."
+    ]
+  },
+  "runHistory": [
+    {
+      "run": 1,
+      "path": "/private/tmp/willyou-watch-owner-tests-r1.json",
+      "sha256": "5c5b5ff962fa7844354cedfe746e57b05eeb58404e9dca1401cb73a1d3d525e4",
+      "passed": 0,
+      "failed": 3,
+      "unselected": 0,
+      "failureClass": "test harness setup: Electron ASAR virtual-root read"
+    },
+    {
+      "run": 2,
+      "path": "/private/tmp/willyou-watch-owner-tests-r2.json",
+      "sha256": "de8a0f2c88f23e1a079c0c98a957c1c794a6ae53bd009c498f3a37856532d629",
+      "passed": 0,
+      "failed": 3,
+      "unselected": 0,
+      "failureClass": "test harness strict request: extra public root fields rejected"
+    },
+    {
+      "run": 3,
+      "path": "/private/tmp/willyou-watch-owner-tests-r3.json",
+      "sha256": "0cdfb2d0a364669159752b53d2d690dfb78cc365ffb75a2178b0e0d37bae6164",
+      "passed": 0,
+      "failed": 3,
+      "unselected": 0,
+      "failureClass": "sandbox FSEvents unavailable; poll fallback observed; not counted native pass"
+    },
+    {
+      "run": 4,
+      "path": "/private/tmp/willyou-watch-owner-tests-r4.json",
+      "sha256": "5b152dc73c9fe45ca294832a78c348223bc31df76c8e06215f33f7107d158282",
+      "passed": 0,
+      "failed": 1,
+      "unselected": 2,
+      "failureClass": "sandbox FSEvents unavailable; poll fallback observed; not counted native pass"
+    },
+    {
+      "run": 5,
+      "path": "/private/tmp/willyou-watch-owner-tests-r5.json",
+      "sha256": "8b5d885c1bf4740ce24502f6765c357ab1d2aa7e5741a1ed25feb1c1486ac7de",
+      "passed": 3,
+      "failed": 0,
+      "unselected": 0,
+      "failureClass": null
+    }
+  ],
+  "sandboxFailureEvidence": {
+    "cases": [
+      "M9-T-L03",
+      "M9-T-L04"
+    ],
+    "startedAt": "2026-10-18T01:49:58.727Z",
+    "runs": [
+      {
+        "case": "M9-T-L03",
+        "failure": "late callback error",
+        "oldUpdates": [
+          {
+            "id": "b781c333-2b5a-49a8-8823-86c1081f6376",
+            "lease": "b855ab04-48c8-400e-a009-68f2d6df9005",
+            "generation": 1,
+            "sequence": 2,
+            "coverage": "poll",
+            "resyncRequired": true,
+            "changed": false,
+            "message": "原生监听不可用，正在补扫已展开目录和打开文件：Error starting FSEvents stream"
+          },
+          {
+            "id": "b781c333-2b5a-49a8-8823-86c1081f6376",
+            "lease": "b855ab04-48c8-400e-a009-68f2d6df9005",
+            "generation": 1,
+            "sequence": 3,
+            "coverage": "poll",
+            "resyncRequired": false,
+            "changed": false,
+            "message": "原生监听不可用，正在补扫已展开目录和打开文件：Error starting FSEvents stream"
+          },
+          {
+            "id": "b781c333-2b5a-49a8-8823-86c1081f6376",
+            "lease": "b855ab04-48c8-400e-a009-68f2d6df9005",
+            "generation": 1,
+            "sequence": 4,
+            "coverage": "poll",
+            "resyncRequired": false,
+            "changed": false,
+            "message": "原生监听不可用，正在补扫已展开目录和打开文件：Error starting FSEvents stream"
+          },
+          {
+            "id": "b781c333-2b5a-49a8-8823-86c1081f6376",
+            "lease": "b855ab04-48c8-400e-a009-68f2d6df9005",
+            "generation": 1,
+            "sequence": 5,
+            "coverage": "poll",
+            "resyncRequired": false,
+            "changed": false,
+            "message": "原生监听不可用，正在补扫已展开目录和打开文件：Error starting FSEvents stream"
+          }
+        ],
+        "currentUpdates": [],
+        "nativeEvents": [],
+        "pass": false
+      }
+    ],
+    "resources": {
+      "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "watcherVersion": "2.5.6",
+      "watcherBinding": [
+        {
+          "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/node_modules/@parcel/watcher-darwin-arm64/watcher.node",
+          "sha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5"
+        }
+      ]
+    },
+    "finishedAt": "2026-10-18T01:50:04.833Z"
+  },
+  "finalMatrix": {
+    "cases": [
+      "M9-T-L03",
+      "M9-T-L04"
+    ],
+    "startedAt": "2026-10-18T01:50:15.499Z",
+    "runs": [
+      {
+        "case": "M9-T-L03",
+        "failure": "late callback error",
+        "oldUpdates": [
+          {
+            "id": "16a9182c-4bf3-4348-994c-59a87ead3992",
+            "lease": "7ee5f034-ab49-4bfe-a4fa-aba2b64ef6e6",
+            "generation": 1,
+            "sequence": 2,
+            "coverage": "native",
+            "resyncRequired": true,
+            "changed": false
+          },
+          {
+            "id": "16a9182c-4bf3-4348-994c-59a87ead3992",
+            "lease": "7ee5f034-ab49-4bfe-a4fa-aba2b64ef6e6",
+            "generation": 1,
+            "sequence": 3,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": false
+          }
+        ],
+        "currentUpdates": [
+          {
+            "id": "6d6f07e8-3192-48ae-a2df-563092501ca1",
+            "lease": "7ee5f034-ab49-4bfe-a4fa-aba2b64ef6e6",
+            "generation": 1,
+            "sequence": 2,
+            "coverage": "native",
+            "resyncRequired": true,
+            "changed": false
+          },
+          {
+            "id": "6d6f07e8-3192-48ae-a2df-563092501ca1",
+            "lease": "7ee5f034-ab49-4bfe-a4fa-aba2b64ef6e6",
+            "generation": 1,
+            "sequence": 3,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": false
+          },
+          {
+            "id": "6d6f07e8-3192-48ae-a2df-563092501ca1",
+            "lease": "7ee5f034-ab49-4bfe-a4fa-aba2b64ef6e6",
+            "generation": 1,
+            "sequence": 4,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": true
+          }
+        ],
+        "nativeEvents": [
+          {
+            "generation": 2,
+            "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-xCfBb7/one",
+            "error": null,
+            "events": [
+              {
+                "type": "create",
+                "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-xCfBb7/one/value.txt"
+              }
+            ]
+          }
+        ],
+        "pass": true,
+        "oldId": "16a9182c-4bf3-4348-994c-59a87ead3992",
+        "replacementId": "6d6f07e8-3192-48ae-a2df-563092501ca1",
+        "currentGeneration": 2,
+        "oldConsumerReceivedLateEvents": false,
+        "unsubscribed": [
+          1,
+          2
+        ],
+        "finalResources": {
+          "roots": 0,
+          "consumers": 0,
+          "timers": 0,
+          "stopping": 0
+        },
+        "finalText": "watch2 survived late callback error"
+      },
+      {
+        "case": "M9-T-L03",
+        "failure": "late subscribe rejection",
+        "oldUpdates": [],
+        "currentUpdates": [
+          {
+            "id": "272e8c98-1af6-4766-b3ab-b6014fc30359",
+            "lease": "b3c6794b-1e6c-4e03-9629-1d59e3eaec5c",
+            "generation": 1,
+            "sequence": 2,
+            "coverage": "native",
+            "resyncRequired": true,
+            "changed": false
+          },
+          {
+            "id": "272e8c98-1af6-4766-b3ab-b6014fc30359",
+            "lease": "b3c6794b-1e6c-4e03-9629-1d59e3eaec5c",
+            "generation": 1,
+            "sequence": 3,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": false
+          },
+          {
+            "id": "272e8c98-1af6-4766-b3ab-b6014fc30359",
+            "lease": "b3c6794b-1e6c-4e03-9629-1d59e3eaec5c",
+            "generation": 1,
+            "sequence": 4,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": true
+          }
+        ],
+        "nativeEvents": [
+          {
+            "generation": 1,
+            "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-27HR0V/one",
+            "error": null,
+            "events": [
+              {
+                "type": "create",
+                "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-27HR0V/one/value.txt"
+              }
+            ]
+          }
+        ],
+        "pass": true,
+        "oldId": "1a49e2e0-7dea-4234-90ab-5ad63dec5dda",
+        "replacementId": "272e8c98-1af6-4766-b3ab-b6014fc30359",
+        "currentGeneration": 1,
+        "oldConsumerReceivedLateEvents": false,
+        "unsubscribed": [
+          1
+        ],
+        "finalResources": {
+          "roots": 0,
+          "consumers": 0,
+          "timers": 0,
+          "stopping": 0
+        },
+        "finalText": "watch2 survived late subscribe rejection"
+      },
+      {
+        "case": "M9-T-L04",
+        "watch1": "acdc9f78-7d6e-416a-b5c7-db03066c0c09",
+        "watch2": "7ad53bb2-92a3-4f45-b761-5b1b5b408eea",
+        "rejectedAttempts": [
+          "W2 configure W1 watchId",
+          "W1 configure W2 watchId",
+          "W2 forged owner + W1 root/watchId",
+          "W2 watch W1 document",
+          "W2 read W1 document",
+          "foreign frame stopWatch",
+          "W2 read revoked W1 document"
+        ],
+        "ineffectiveStopAttempts": [
+          "W2 stop W1",
+          "W1 stop W2"
+        ],
+        "w1Updates": [
+          {
+            "id": "acdc9f78-7d6e-416a-b5c7-db03066c0c09",
+            "lease": "b336a65b-86be-46cf-acc5-f8982875b20a",
+            "generation": 1,
+            "sequence": 2,
+            "coverage": "native",
+            "resyncRequired": true,
+            "changed": false
+          },
+          {
+            "id": "acdc9f78-7d6e-416a-b5c7-db03066c0c09",
+            "lease": "b336a65b-86be-46cf-acc5-f8982875b20a",
+            "generation": 1,
+            "sequence": 3,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": false
+          },
+          {
+            "id": "acdc9f78-7d6e-416a-b5c7-db03066c0c09",
+            "lease": "b336a65b-86be-46cf-acc5-f8982875b20a",
+            "generation": 1,
+            "sequence": 4,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": true
+          },
+          {
+            "id": "acdc9f78-7d6e-416a-b5c7-db03066c0c09",
+            "lease": "b336a65b-86be-46cf-acc5-f8982875b20a",
+            "generation": 1,
+            "sequence": 5,
+            "coverage": "none",
+            "resyncRequired": true,
+            "changed": false,
+            "message": "目录来源已失效，监听已停止；已有编辑仍保留"
+          }
+        ],
+        "w2Updates": [
+          {
+            "id": "7ad53bb2-92a3-4f45-b761-5b1b5b408eea",
+            "lease": "80da72f2-a79b-4662-9828-a2a62e7df288",
+            "generation": 2,
+            "sequence": 2,
+            "coverage": "native",
+            "resyncRequired": true,
+            "changed": false
+          },
+          {
+            "id": "7ad53bb2-92a3-4f45-b761-5b1b5b408eea",
+            "lease": "80da72f2-a79b-4662-9828-a2a62e7df288",
+            "generation": 2,
+            "sequence": 3,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": false
+          },
+          {
+            "id": "7ad53bb2-92a3-4f45-b761-5b1b5b408eea",
+            "lease": "80da72f2-a79b-4662-9828-a2a62e7df288",
+            "generation": 2,
+            "sequence": 4,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": false
+          },
+          {
+            "id": "7ad53bb2-92a3-4f45-b761-5b1b5b408eea",
+            "lease": "80da72f2-a79b-4662-9828-a2a62e7df288",
+            "generation": 2,
+            "sequence": 5,
+            "coverage": "native",
+            "resyncRequired": false,
+            "changed": true
+          },
+          {
+            "id": "7ad53bb2-92a3-4f45-b761-5b1b5b408eea",
+            "lease": "80da72f2-a79b-4662-9828-a2a62e7df288",
+            "generation": 2,
+            "sequence": 6,
+            "coverage": "none",
+            "resyncRequired": true,
+            "changed": false,
+            "message": "目录来源已失效，监听已停止；已有编辑仍保留"
+          }
+        ],
+        "nativeEvents": [
+          {
+            "generation": 1,
+            "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-3vco4H/one",
+            "error": null,
+            "events": [
+              {
+                "type": "create",
+                "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-3vco4H/one/value.txt"
+              }
+            ]
+          },
+          {
+            "generation": 2,
+            "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-3vco4H/two",
+            "error": null,
+            "events": [
+              {
+                "type": "create",
+                "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-watch-owner-3vco4H/two/value.txt"
+              }
+            ]
+          }
+        ],
+        "unsubscribed": [
+          1,
+          2
+        ],
+        "closedOwnerReceivedLaterEvents": false,
+        "finalResources": {
+          "roots": 0,
+          "consumers": 0,
+          "timers": 0,
+          "stopping": 0
+        },
+        "ipcBoundary": "Registered production controller with synthetic authenticated Electron sender identities; actual OS watcher events and broker IO; no actual Electron windows/GUI",
+        "pass": true
+      }
+    ],
+    "resources": {
+      "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "watcherVersion": "2.5.6",
+      "watcherBinding": [
+        {
+          "path": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/node_modules/@parcel/watcher-darwin-arm64/watcher.node",
+          "sha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5"
+        }
+      ]
+    },
+    "finishedAt": "2026-10-18T01:50:16.533Z"
+  },
+  "typecheck": {
+    "command": "pnpm exec tsc --noEmit -p tsconfig.node.json",
+    "status": "passed",
+    "initialLog": "/private/tmp/willyou-watch-owner-typecheck-r1.log",
+    "initialLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exitCode": 0,
+    "finalLog": "/private/tmp/willyou-watch-owner-typecheck-r2.log",
+    "finalLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limitations": [
+    "No actual two-window App GUI interaction or separate installed-window IPC process is claimed; L03 explicitly U/I and L04 explicitly I were exercised.",
+    "Native failure delivery timing was injected at the public subscription boundary because a naturally delayed OS failure is not deterministic. Actual successful watcher events were not injected.",
+    "This does not establish all filesystem lifecycle cases, polling fallback acceptance, other platforms or power-loss behavior.",
+    "Stage-level packaged App requirements remain in force; this record covers two case definitions and does not alter scope or formal totals."
+  ]
+}

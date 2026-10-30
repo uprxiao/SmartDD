@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-19T21:49:32.264Z",
+  "method": "Reuse same verified Electron-ABI native modules; full electron-vite build + identical electron-builder configuration/afterPack + original six native-smoke checks. No installer/publish.",
+  "steps": [
+    {
+      "command": "/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+      "args": [
+        "-e",
+        "const req=require('node:module').createRequire(\"/Users/hx/hx/hxWork/SmartDD/package.json\"),Db=req('better-sqlite3'),db=new Db(':memory:'),pty=req('node-pty');if(process.platform!=='darwin'||process.arch!=='arm64'||process.versions.electron!==\"42.11.14\")throw Error('Target mismatch');if(db.prepare('select 1 as value').get().value!==1||typeof pty.spawn!=='function')throw Error('Native ABI mismatch');db.close();console.log(JSON.stringify({platform:process.platform,arch:process.arch,versions:process.versions,sqlite:'passed',ptyModule:'loaded'}));"
+      ],
+      "log": "/private/tmp/willyou-dev175-r100-native-abi-before-fast-package.json",
+      "code": 0,
+      "signal": null,
+      "ms": 271
+    },
+    {
+      "command": "pnpm",
+      "args": [
+        "build"
+      ],
+      "log": "/private/tmp/willyou-dev175-r100-compile.log",
+      "code": 1,
+      "signal": null,
+      "ms": 10308
+    }
+  ],
+  "status": "failed",
+  "error": "Error: Step failed: /private/tmp/willyou-dev175-r100-compile.log",
+  "finishedAt": "2026-10-19T21:49:42.844Z"
+}

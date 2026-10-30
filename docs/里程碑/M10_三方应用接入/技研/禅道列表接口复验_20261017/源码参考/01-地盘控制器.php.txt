@@ -1,0 +1,101 @@
+PUBLIC SOURCE RESEARCH EXCERPT — NOT RUNNABLE
+Repository: https://github.com/easysoft/zentaopms
+Tag: zentaopms_22.0_20260318
+Commit: 88d6de983014956235e3bf735d225106e38be551
+License: upstream ZPL 1.2 or AGPL 3.0; see LICENSE.*.upstream and COPYING.upstream.
+
+===== UPSTREAM module/my/control.php L1-L12 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/my/control.php#L1-L12
+<?php
+declare(strict_types=1);
+/**
+ * The control file of dashboard module of ZenTaoPMS.
+ *
+ * @copyright   Copyright 2009-2023 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
+ * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
+ * @package     dashboard
+ * @version     $Id: control.php 5020 2013-07-05 02:03:26Z wyd621@gmail.com $
+ * @link        https://www.zentao.net
+ */
+
+===== UPSTREAM module/my/control.php L90-L96 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/my/control.php#L90-L96
+    public function work(string $mode = 'task', string $type = 'assignedTo', int $param = 0, string $orderBy = 'id_desc', int $recTotal = 0, int $recPerPage = 20, int $pageID = 1)
+    {
+        if(in_array($mode, array('testcase', 'feedback')) && $type == 'assignedTo') $type = 'assigntome';
+        $this->lang->my->featureBar[$this->app->rawMethod] = $this->lang->my->featureBar[$this->app->rawMethod][strtolower($mode)];
+
+        echo $this->fetch('my', $mode, "type={$type}&param={$param}&orderBy={$orderBy}&recTotal={$recTotal}&recPerPage={$recPerPage}&pageID={$pageID}");
+    }
+
+===== UPSTREAM module/my/control.php L200-L228 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/my/control.php#L200-L228
+    public function story(string $type = 'assignedTo', int $param = 0, string $orderBy = 'id_desc', int $recTotal = 0, int $recPerPage = 20, int $pageID = 1)
+    {
+        /* Save session. */
+        if($this->app->viewType != 'json') $this->session->set('storyList', $this->app->getURI(true), 'my');
+
+        /* Load pager. */
+        $this->app->loadClass('pager', true);
+        if($this->app->getViewType() == 'mhtml') $recPerPage = 10;
+        $pager = pager::init($recTotal, $recPerPage, $pageID);
+
+        /* Append id for second sort. */
+        $sort = common::appendOrder($orderBy);
+        if(strpos($sort, 'planTitle') !== false) $sort = str_replace('planTitle', 'plan', $sort);
+        if(strpos($sort, 'pri_') !== false) $sort = str_replace('pri_', 'priOrder_', $sort);
+        $queryID = $type == 'bysearch' ? (int)$param : 0;
+
+        $this->loadModel('story');
+        if($type == 'assignedBy')
+        {
+            $stories = $this->my->getAssignedByMe($this->app->user->account, $pager, $sort, 'story');
+        }
+        elseif($type == 'bysearch')
+        {
+            $stories = $this->my->getStoriesBySearch($queryID, $this->app->rawMethod, $sort, $pager);
+        }
+        else
+        {
+            $stories = $this->story->getUserStories($this->app->user->account, $type, $sort, $pager, 'story', false, 'all');
+        }
+
+===== UPSTREAM module/my/control.php L468-L493 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/my/control.php#L468-L493
+    public function bug(string $type = 'assignedTo', int $param = 0, string $orderBy = 'id_desc', int $recTotal = 0, int $recPerPage = 20, int $pageID = 1)
+    {
+        /* Save session. load Lang. */
+        $this->loadModel('bug');
+        $queryID  = $type == 'bySearch' ? (int)$param : 0;
+        if($type != 'bySearch')            $this->session->set('myBugType', $type);
+        if($this->app->viewType != 'json') $this->session->set('bugList', $this->app->getURI(true), 'qa');
+
+        /* Load pager. */
+        $this->app->loadClass('pager', true);
+        if($this->app->getViewType() == 'mhtml') $recPerPage = 10;
+        $pager = pager::init($recTotal, $recPerPage, $pageID);
+
+        /* Append id for second sort. */
+        $sort = common::appendOrder($orderBy);
+        if(strpos($sort, 'pri_') !== false) $sort = str_replace('pri_', 'priOrder_', $sort);
+        if(strpos($sort, 'severity_') !== false) $sort = str_replace('severity_', 'severityOrder_', $sort);
+        if($type == 'assignedBy')
+        {
+            $bugs = $this->my->getAssignedByMe($this->app->user->account, $pager, $sort, 'bug');
+        }
+        else
+        {
+            $bugs = $this->bug->getUserBugs($this->app->user->account, $type, $sort, 0, $pager, 0, $queryID);
+        }
+        $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'bug', false);
+
+===== UPSTREAM module/my/control.php L524-L530 =====
+https://github.com/easysoft/zentaopms/blob/88d6de983014956235e3bf735d225106e38be551/module/my/control.php#L524-L530
+        $this->view->pageID      = $pageID;
+        $this->view->orderBy     = $orderBy;
+        $this->view->pager       = $pager;
+        $this->view->mode        = 'bug';
+        $this->view->param       = $param;
+        $this->display();
+    }

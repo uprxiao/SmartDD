@@ -1,0 +1,222 @@
+{
+  "schema": "m10-codex-real-model-preflight-v1",
+  "startedAt": "2026-10-19T07:33:23.693Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.23.1",
+    "cliVersion": "codex-cli 0.162.1",
+    "model": "gpt-6.1-sol"
+  },
+  "isolation": {
+    "temporaryHome": true,
+    "temporaryCodexHome": true,
+    "userConfigCopied": false,
+    "userChatRead": false,
+    "originalAuthModified": false,
+    "temporaryAuthCopy": true,
+    "refreshTokenRemoved": true,
+    "syntheticOnly": true
+  },
+  "cases": [
+    {
+      "name": "new-conversation-v1-real-model-read-and-mcp",
+      "expected": "v1",
+      "status": "passed",
+      "turnStatus": "completed",
+      "error": null,
+      "skillBodySeenInAnswer": true,
+      "selectedToolMarkerSeen": true,
+      "forbiddenVersionMarkerSeen": false,
+      "events": [
+        {
+          "type": "agentMessage",
+          "text": "I’m using the willyou-fixture-v1 skill."
+        },
+        {
+          "type": "mcpToolCall",
+          "server": "m10_fixture",
+          "tool": "fixture_marker",
+          "status": "completed",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"project\":\"project-a\",\"version\":\"v1\",\"marker\":\"M10_TOOL_v1\"}"
+              }
+            ],
+            "structuredContent": null,
+            "_meta": null
+          }
+        },
+        {
+          "type": "agentMessage",
+          "text": "M10_SKILL_BODY_v1\nM10_TOOL_v1"
+        }
+      ]
+    },
+    {
+      "name": "new-conversation-v2-while-v1-process-alive",
+      "expected": "v2",
+      "status": "passed",
+      "turnStatus": "completed",
+      "error": null,
+      "skillBodySeenInAnswer": true,
+      "selectedToolMarkerSeen": true,
+      "forbiddenVersionMarkerSeen": false,
+      "events": [
+        {
+          "type": "mcpToolCall",
+          "server": "m10_fixture",
+          "tool": "fixture_marker",
+          "status": "completed",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"project\":\"project-a\",\"version\":\"v2\",\"marker\":\"M10_TOOL_v2\"}"
+              }
+            ],
+            "structuredContent": null,
+            "_meta": null
+          }
+        },
+        {
+          "type": "agentMessage",
+          "text": "M10_SKILL_BODY_v2\nM10_TOOL_v2"
+        }
+      ]
+    },
+    {
+      "name": "native-resume-same-id",
+      "status": "passed",
+      "previousTurnCount": 1
+    },
+    {
+      "name": "resumed-conversation-v1-real-model-read-and-mcp",
+      "expected": "v1",
+      "status": "passed",
+      "turnStatus": "completed",
+      "error": null,
+      "skillBodySeenInAnswer": true,
+      "selectedToolMarkerSeen": true,
+      "forbiddenVersionMarkerSeen": false,
+      "events": [
+        {
+          "type": "mcpToolCall",
+          "server": "m10_fixture",
+          "tool": "fixture_marker",
+          "status": "completed",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"project\":\"project-a\",\"version\":\"v1\",\"marker\":\"M10_TOOL_v1\"}"
+              }
+            ],
+            "structuredContent": null,
+            "_meta": null
+          }
+        },
+        {
+          "type": "agentMessage",
+          "text": "M10_SKILL_BODY_v1\nM10_TOOL_v1"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Isolated user discovery root and native state; production global-root merge and packaged WillYou remain unverified.",
+    "This probe uses real model turns with synthetic inputs; it does not test business APIs or GUI terminal behavior."
+  ],
+  "nativeThreadId": "01a15314-54ce-7570-9ce0-0c0b743ef887",
+  "status": "passed-with-boundaries",
+  "clients": [
+    {
+      "name": "new-v1",
+      "methods": [
+        "initialize",
+        "thread/start",
+        "turn/start"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [
+        "remoteControl/status/changed",
+        "account/updated",
+        "thread/started",
+        "mcpServer/startupStatus/updated",
+        "thread/status/changed",
+        "turn/started",
+        "item/started",
+        "item/completed",
+        "item/agentMessage/delta",
+        "turn/moderationMetadata",
+        "thread/tokenUsage/updated",
+        "account/rateLimits/updated",
+        "turn/completed"
+      ],
+      "stderrTail": ""
+    },
+    {
+      "name": "new-v2-concurrent",
+      "methods": [
+        "initialize",
+        "thread/start",
+        "turn/start"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [
+        "remoteControl/status/changed",
+        "thread/started",
+        "mcpServer/startupStatus/updated",
+        "thread/status/changed",
+        "turn/started",
+        "account/updated",
+        "item/started",
+        "item/completed",
+        "turn/moderationMetadata",
+        "thread/tokenUsage/updated",
+        "account/rateLimits/updated",
+        "item/agentMessage/delta",
+        "turn/completed"
+      ],
+      "stderrTail": "\u001b[2m2026-10-19T07:33:41.249335Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_models_manager::manager\u001b[0m\u001b[2m:\u001b[0m failed to refresh available models: request timed out\n"
+    },
+    {
+      "name": "resume-v1",
+      "methods": [
+        "initialize",
+        "thread/resume",
+        "turn/start"
+      ],
+      "unexpectedRequests": [],
+      "notificationMethods": [
+        "remoteControl/status/changed",
+        "deprecationNotice",
+        "mcpServer/startupStatus/updated",
+        "thread/status/changed",
+        "thread/tokenUsage/updated",
+        "thread/goal/cleared",
+        "turn/started",
+        "account/updated",
+        "item/started",
+        "item/completed",
+        "turn/moderationMetadata",
+        "account/rateLimits/updated",
+        "item/agentMessage/delta",
+        "turn/completed"
+      ],
+      "stderrTail": ""
+    }
+  ],
+  "authUnchanged": true,
+  "cleanup": {
+    "allChildrenExited": true,
+    "temporaryAuthAndFixtureRemoved": true
+  },
+  "sourceHashes": {
+    "real-model-probe.mjs": "5f291f5a30a6dbdd407fb9470818f1ae08c5710d641f29c615fab123cf72dd65",
+    "probe.mjs": "81dd4b6cb148b4e5d1300f7004eb99a9371d5bb81d6941b30e2057e877f8df78"
+  },
+  "finishedAt": "2026-10-19T07:34:06.575Z"
+}

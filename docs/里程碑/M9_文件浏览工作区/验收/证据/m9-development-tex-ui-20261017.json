@@ -1,0 +1,188 @@
+{
+  "date": "2026-10-17",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "workingTree": "uncommitted M9",
+  "requirements": [
+    "R06.6",
+    "R06.17",
+    "R08"
+  ],
+  "formalCases": [
+    "F16"
+  ],
+  "formalPassed": 3,
+  "formalTotal": 419,
+  "environment": {
+    "system": "Darwin",
+    "version": "26.6.1",
+    "arch": "arm64"
+  },
+  "build": {
+    "path": "/private/tmp/willyou-m9-tex-html-r2-build/mac-arm64/WillYou.app",
+    "asarSha256": "16dc87ea2575f4365edd6227469aa0f06c2c873fc7483f61dffc8d4dd50f6ca2",
+    "log": "/private/tmp/willyou-m9-tex-html-r2-package.log",
+    "nativeChecks": [
+      "SQLite",
+      "PTY",
+      "voiceBridge",
+      "fileBroker",
+      "fileWatcher",
+      "TeX resources and helper packaging"
+    ]
+  },
+  "tests": {
+    "count": 48,
+    "files": 11,
+    "log": "/private/tmp/willyou-m9-tex-html-tests-r3.log",
+    "typecheck": "/private/tmp/willyou-m9-tex-html-typecheck-r3.log",
+    "scope": "TeX service/resources/PDF compatibility; real native compiler 5 cases; HTML/React/FileBuffer regression. Electron host/React API doubles are not UI acceptance."
+  },
+  "fixtures": [
+    {
+      "name": "blank.pdf",
+      "bytes": 862,
+      "sha256": "0767d076a407fb4bbee7b42ca13ede01034dd07c1fa15feafa6a5135117bf64b"
+    },
+    {
+      "name": "empty.tex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "loop.tex",
+      "bytes": 97,
+      "sha256": "666b27ae40a10fcde7ff053f3a16cb510be6138d21963a1052c6626019b34b8a"
+    },
+    {
+      "name": "missing.tex",
+      "bytes": 100,
+      "sha256": "89a027a496dc3805d9b67622ee08fdfad9bbd5278d1747f2fa60d116f841b391"
+    },
+    {
+      "name": "no-output.tex",
+      "bytes": 56,
+      "sha256": "0e69ef7426214d078f5ea82efa518e5000397e66e90a22d726c56321f5f7b22f"
+    },
+    {
+      "name": "parts/中文.tex",
+      "bytes": 39,
+      "sha256": "6d7bce8334add86ea44101cd6618bf03a996330a37aa00238504eafccc762584"
+    },
+    {
+      "name": "valid.tex",
+      "bytes": 246,
+      "sha256": "cee5ec5bb2d1e74263017edd9712a408c23a0c3a500dae0027fa6d86a726ff76"
+    }
+  ],
+  "appChecks": [
+    {
+      "fixture": "valid.tex",
+      "action": "Open source, choose compile/view PDF, read page and compilation details, return to source",
+      "result": "Actual one-page PDF visibly displayed Chinese, English, a²+b²=c² and local Chinese chapter; blank PDF image compatibility warning shown; source retained",
+      "status": "development check passed"
+    },
+    {
+      "fixture": "missing.tex",
+      "action": "Compile missing synthetic package and return to source",
+      "result": "Failure named willyouMissingPackage.sty; no PDF substituted; source retained. Electron transport prefix visible in error; followup correction pending UI retest",
+      "status": "expected failure observed"
+    },
+    {
+      "fixture": "loop.tex",
+      "action": "Compile then cancel through App button",
+      "result": "已取消编译 and 重新编译 appeared; no late PDF. CUA round trip does not establish a 2-second end-to-end latency",
+      "status": "development cancellation observed"
+    },
+    {
+      "fixture": "empty.tex",
+      "action": "Compile zero-byte input",
+      "result": "Emergency stop shown, source/retry retained",
+      "status": "expected failure observed"
+    },
+    {
+      "fixture": "no-output.tex",
+      "action": "Prepared after r2 App checks",
+      "result": "Not yet run; empty.tex failure is not evidence of successful compiler exit without output",
+      "status": "pending"
+    }
+  ],
+  "evidenceBoundary": "CUA accessibility and screenshots remain in this conversation; no standalone App screenshots archived in this batch. User data is isolated synthetic project, no AIS writes.",
+  "prototype": {
+    "firstAttempt": "/private/tmp/willyou-m9-tex-html-prototype-r3.log",
+    "firstResult": "failed: prototype node_modules/vite absent",
+    "fallback": "root installed Vite from prototype cwd, then prepare-sites-build.mjs",
+    "buildLog": "/private/tmp/willyou-m9-tex-html-prototype-r3-vite.log",
+    "prepareLog": "/private/tmp/willyou-m9-tex-html-prototype-r3-prepare.log",
+    "result": "passed; no new browser visual acceptance"
+  },
+  "remaining": [
+    "Complete F16 provider-unavailable/no-output/retry/edit-save cases",
+    "Final package retest after followup changes",
+    "Crash orphan job cleanup",
+    "Cold/warm, memory and repeated lifecycle full App matrix",
+    "Full code appearance/IME and all other M9 cases"
+  ],
+  "followups": [
+    {
+      "buildPath": "/private/tmp/willyou-m9-html-guard-r4-build/mac-arm64/WillYou.app",
+      "buildAsar": "24f962c0fccd27470f7ed14e4c345bfa133f185853b629f4f54be4dcfbb0ced7",
+      "layer": "real packaged App / CUA",
+      "results": [
+        "An empty document environment produced no XDV; Tectonic reported xdvipdfmx failure. UI retained source and retry, no PDF substituted; this is not an exit-0 compiler result",
+        "Electron remote-method transport prefix no longer shown; diagnostic retained",
+        "Returned to source, edited in App to add TeX retry after editing succeeded., Cmd+S showed 已保存",
+        "Recompiled and actual one-page PDF/text layer showed the updated sentence"
+      ],
+      "editedFixture": {
+        "path": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/tex-cases/no-output.tex",
+        "sha256": "c15d4e7d540dcec23d83ee943aa114e44bcfdb28ca44982247c3129f294bd5b0",
+        "bytes": 91
+      }
+    }
+  ],
+  "recoveryFollowup": {
+    "state": "native tests and packaged crash/restart cleanup passed for this synthetic case",
+    "tests": 15,
+    "nativeTests": 7,
+    "files": 3,
+    "log": "/private/tmp/willyou-m9-tex-recovery-r1-tests.log",
+    "typecheck": "/private/tmp/willyou-m9-tex-recovery-r1-typecheck.log",
+    "scope": "Real bounded FD cleanup, preserve live/invalid/symlink jobs, active compiler lock prevents deletion until cancellation, previous compiler regression",
+    "buildPath": "/private/tmp/willyou-m9-tex-recovery-r5-build/mac-arm64/WillYou.app",
+    "buildAsar": "704286cb21b248dd765ed68ee546cb874731188e522268ac176bf7354637b361",
+    "packageLog": "/private/tmp/willyou-m9-tex-recovery-r5-package.log",
+    "crash": {
+      "time": 1792251613.861242,
+      "pid": 14136,
+      "executable": "/private/tmp/willyou-m9-tex-recovery-r5-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "job": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/userdata/m9-tex-jobs/job-e45ff104-9046-4b5e-8921-50d608fefeac-Tt8lub",
+      "marker": {
+        "schema": 1,
+        "ownerPid": 14136,
+        "identity": {
+          "device": "16777232",
+          "inode": "42878138"
+        }
+      },
+      "fault": "SIGKILL exact isolated App main process during UI-started synthetic TeX compilation",
+      "restartObservation": {
+        "time": 1792251626.030088,
+        "jobStillPresent": false
+      },
+      "finalObservation": {
+        "time": 1792251657.324912,
+        "jobStillPresent": false,
+        "sourceHash": "666b27ae40a10fcde7ff053f3a16cb510be6138d21963a1052c6626019b34b8a",
+        "sourceUnchanged": true,
+        "survivingCompilerOrBroker": []
+      }
+    },
+    "remaining": "Repeated cycles, actual native lock across restart timing window and complete resource budgets remain"
+  },
+  "postCrashUiFollowup": {
+    "buildAsar": "704286cb21b248dd765ed68ee546cb874731188e522268ac176bf7354637b361",
+    "result": "After r5 crash/restart, opened restored no-output.tex tab; actual one-page PDF showed TeX retry after editing succeeded.",
+    "boundary": "Observed through CUA; exact busy-lock timing after restart was not measured by UI."
+  }
+}

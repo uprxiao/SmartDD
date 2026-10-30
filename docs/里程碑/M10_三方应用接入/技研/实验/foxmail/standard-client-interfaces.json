@@ -1,0 +1,224 @@
+{
+  "schema": "m10-standard-mail-client-static-v1",
+  "at": "2026-10-17T05:58:00.929918+00:00",
+  "clients": [
+    {
+      "app_path": "/Applications/Foxmail.app",
+      "exists": true,
+      "metadata": {
+        "CFBundleIdentifier": "com.tencent.Foxmail",
+        "CFBundleShortVersionString": "1.5.8",
+        "CFBundleVersion": "94590",
+        "NSAppleScriptEnabled": null,
+        "OSAScriptingDefinition": null,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "mailto",
+            "CFBundleURLSchemes": [
+              "mailto"
+            ]
+          }
+        ],
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeExtensions": [
+              "eml"
+            ],
+            "CFBundleTypeMIMETypes": [
+              "message/rfc822"
+            ],
+            "CFBundleTypeName": "eml",
+            "CFBundleTypeRole": "Viewer",
+            "LSHandlerRank": "Alternate"
+          },
+          {
+            "CFBundleTypeExtensions": [
+              "*"
+            ],
+            "CFBundleTypeName": "other",
+            "CFBundleTypeRole": "Viewer",
+            "LSHandlerRank": "Alternate"
+          }
+        ]
+      },
+      "plist_sha256": "7e8867a92cca179c37516cf799272005a8456b745a6312af5b211c918da6dd91",
+      "sdef_paths": [],
+      "static_dictionary_features": []
+    },
+    {
+      "app_path": "/System/Applications/Mail.app",
+      "exists": true,
+      "metadata": {
+        "CFBundleIdentifier": "com.apple.mail",
+        "CFBundleShortVersionString": "16.0",
+        "CFBundleVersion": "3864.700.51.1.1",
+        "NSAppleScriptEnabled": true,
+        "OSAScriptingDefinition": "Mail.sdef",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "Email Address URL",
+            "CFBundleURLSchemes": [
+              "mailto"
+            ],
+            "LSIsAppleDefaultForScheme": true
+          },
+          {
+            "CFBundleURLName": "Email Message Storage URL",
+            "CFBundleURLSchemes": [
+              "message"
+            ],
+            "LSIsAppleDefaultForScheme": true
+          },
+          {
+            "CFBundleURLName": "Pref Pane",
+            "CFBundleURLSchemes": [
+              "mail-pref-pane"
+            ],
+            "LSIsAppleDefaultForScheme": true
+          }
+        ],
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "Email Message",
+            "CFBundleTypeRole": "Viewer",
+            "LSIsAppleDefaultForType": true,
+            "LSItemContentTypes": [
+              "com.apple.mail.email"
+            ]
+          },
+          {
+            "CFBundleTypeName": "Mail Message",
+            "CFBundleTypeRole": "Viewer",
+            "LSItemContentTypes": [
+              "com.apple.mail.emlx"
+            ]
+          },
+          {
+            "CFBundleTypeName": "Mail Message Part",
+            "CFBundleTypeRole": "None",
+            "LSItemContentTypes": [
+              "com.apple.mail.emlx.part"
+            ]
+          },
+          {
+            "CFBundleTypeName": "Mail Mailbox",
+            "CFBundleTypeRole": "Editor",
+            "LSItemContentTypes": [
+              "com.apple.mail.mbox"
+            ]
+          },
+          {
+            "CFBundleTypeName": "Mail Cached IMAP Mailbox",
+            "CFBundleTypeRole": "Editor",
+            "LSItemContentTypes": [
+              "com.apple.mail.imapmbox"
+            ]
+          },
+          {
+            "CFBundleTypeName": "Mail Cached Exchange Web Services Mailbox",
+            "CFBundleTypeRole": "Editor",
+            "LSItemContentTypes": [
+              "com.apple.mail.ewsmbox"
+            ]
+          },
+          {
+            "CFBundleTypeRole": "Viewer",
+            "LSHandlerRank": "None",
+            "LSItemContentTypes": [
+              "public.item"
+            ]
+          }
+        ]
+      },
+      "plist_sha256": "d019f451cc0002e1281251d102acfba6d9a18090534563d7fd1500fb8fa4763b",
+      "sdef_paths": [
+        "/System/Applications/Mail.app/Contents/Resources/Mail.sdef"
+      ],
+      "static_dictionary_features": [
+        {
+          "name": "forward",
+          "code": "emalfwms",
+          "children": [
+            {
+              "tag": "direct-parameter",
+              "type": "message",
+              "description": "the message to forward"
+            },
+            {
+              "tag": "parameter",
+              "name": "opening window",
+              "code": "ropw",
+              "type": "boolean",
+              "optional": "yes",
+              "description": "Whether the window for the forwarded message is shown. Default is to not show the window."
+            },
+            {
+              "tag": "result",
+              "type": "outgoing message",
+              "description": "the message to be forwarded"
+            }
+          ]
+        },
+        {
+          "name": "reply",
+          "code": "emalrpms",
+          "children": [
+            {
+              "tag": "direct-parameter",
+              "type": "message",
+              "description": "the message to reply to"
+            },
+            {
+              "tag": "parameter",
+              "name": "opening window",
+              "code": "ropw",
+              "type": "boolean",
+              "optional": "yes",
+              "description": "Whether the window for the reply message is shown. Default is to not show the window."
+            },
+            {
+              "tag": "parameter",
+              "name": "reply to all",
+              "code": "rpal",
+              "type": "boolean",
+              "optional": "yes",
+              "description": "Whether to reply to all recipients. Default is to reply to the sender only."
+            },
+            {
+              "tag": "result",
+              "type": "outgoing message",
+              "description": "the reply message"
+            }
+          ]
+        },
+        {
+          "name": "send",
+          "code": "emsgsend",
+          "children": [
+            {
+              "tag": "direct-parameter",
+              "type": "outgoing message",
+              "description": "the message to send"
+            },
+            {
+              "tag": "result",
+              "type": "boolean",
+              "description": "true if sending was successful, false if not"
+            }
+          ]
+        }
+      ],
+      "sdef_sha256": "111b9291c502354106a320f6ba0a7e38ed29f09e443404679fb57778708b0722"
+    },
+    {
+      "app_path": "/Applications/Microsoft Outlook.app",
+      "exists": false
+    }
+  ],
+  "app_events_sent": false,
+  "account_state_read": false,
+  "limits": [
+    "A dictionary is a static declaration, not evidence that an account is configured or that sending works.",
+    "No app was opened or controlled. Outlook absence is limited to the explicit default application path."
+  ]
+}

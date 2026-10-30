@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T04:44:35.470Z",
+  "scriptSha256": "bb2a02c2c2ed1c8d8beb093855705b3465a5852cc80008b783bd6ab261eff8ef",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0",
+    "ssh2": "1.17.0",
+    "server": "ssh2 内置最小 SFTP 服务（不是 OpenSSH）"
+  },
+  "scope": "回环、临时目录、随机凭据；只测 provider 的探测与降级策略。不含：OpenSSH 真实行为、公钥/Agent 认证、符号链接与权限、大目录/大文件吞吐、watch（SFTP 无监听，需轮询）、Windows 服务器",
+  "cases": [
+    {
+      "id": "SF01",
+      "title": "主机密钥固定：指纹匹配才完成握手；不匹配在认证前被拒绝（服务端没有收到认证尝试）",
+      "status": "passed",
+      "ms": 10,
+      "evidence": {
+        "wrongPinRejected": "Host denied (verification failed)",
+        "authAttemptsAfterWrongPin": 0,
+        "matchedFingerprint": true,
+        "fingerprintShown": "SHA256:3W8zVa+QURqXP7LIDMPcDedg4Wl2yAr8T7N8av3jSk4",
+        "productionNote": "生产 ssh-tester.ts 注明“M2 不校验主机密钥，只报告指纹”；远程读写源码前必须首次连接固定指纹并拒绝变更"
+      }
+    },
+    {
+      "id": "SF02",
+      "title": "列目录/stat/读取：含中文空格文件名与 UTF-8 内容",
+      "status": "passed",
+      "ms": 5,
+      "evidence": {
+        "entries": [
+          "src",
+          "中文 文件.md"
+        ],
+        "statSize": 20,
+        "utf8": "# 你好 😀"
+      }
+    },
+    {
+      "id": "SF03",
+      "title": "能力探测：目标已存在时 rename 是否覆盖（规范行为：失败）→ atomicReplace=false；CAS 恒为 false",
+      "status": "passed",
+      "ms": 6,
+      "evidence": {
+        "strictServer": {
+          "atomicReplace": false,
+          "posixRenameExtension": false,
+          "compareAndSwap": false
+        },
+        "overwritingServer": {
+          "atomicReplace": true,
+          "posixRenameExtension": false,
+          "compareAndSwap": false
+        },
+        "probeLeftovers": [],
+        "note": "探测文件在两种服务器上都被清理；posix-rename 扩展需要服务端声明，ssh2 客户端据此决定是否可用"
+      }
+    },
+    {
+      "id": "SF04",
+      "title": "写回（目标不能被 rename 覆盖时）：默认拒绝并保持原文件；用户明确允许才走“删除再 rename”的非原子路径",
+      "status": "passed",
+      "ms": 9,
+      "evidence": {
+        "refused": {
+          "state": "unsupported",
+          "reason": "atomic-replace-unavailable"
+        },
+        "originalIntact": true,
+        "allowedNonAtomic": {
+          "state": "saved",
+          "hash": "e7941bea8a31800905dafb6c805ee05f090c641163880f0ef3cfd732f1bc86d2",
+          "atomic": false
+        },
+        "tempLeftovers": []
+      }
+    },
+    {
+      "id": "SF05",
+      "title": "基线冲突：远程内容已变化时写回返回 conflict，不覆盖",
+      "status": "passed",
+      "ms": 5,
+      "evidence": {
+        "result": {
+          "state": "conflict"
+        },
+        "remoteStillExternalVersion": true
+      }
+    },
+    {
+      "id": "SF06",
+      "title": "负对照：校验之后、rename 之前的外部写入仍会被覆盖（SFTP 没有条件写）",
+      "status": "observed-gap",
+      "ms": 827,
+      "evidence": {
+        "result": "saved",
+        "finalRemoteContent": "\"mine\\n\"",
+        "meaning": "外部写入在校验与替换之间发生，被静默覆盖。远程 provider 必须声明 compareAndSwap=false，并在界面上不得承诺“不丢失外部修改”"
+      }
+    },
+    {
+      "id": "SF07",
+      "title": "断线：上传中途连接被切断。裸 ssh2 调用会一直挂起；加“连接关闭/超时”保护的 provider 快速失败、原文件不变、重连后清理临时文件",
+      "status": "observed-gap",
+      "ms": 3017,
+      "evidence": {
+        "rawSsh2OutcomeAfter3s": "hung",
+        "guarded": {
+          "state": "failed",
+          "code": "CLOSED",
+          "failedAfterMs": 2
+        },
+        "originalIntact": true,
+        "tempsLeftByDisconnect": 2,
+        "tempsAfterReconnectCleanup": 0,
+        "baselineStillValid": true,
+        "meaning": "裸 ssh2 在连接被切断后回调不会触发——这是被保护的缺口（observed-gap），不是 provider 可以直接使用的行为；断线后半上传的临时文件不能当作已保存，重连要重新核对基线"
+      }
+    },
+    {
+      "id": "SF08",
+      "title": "请求挂起：服务端不再响应读取 → 在预算内超时，连接被丢弃并可重新连接（连接世代失效）",
+      "status": "passed",
+      "ms": 1406,
+      "evidence": {
+        "outcome": "timeout",
+        "afterMs": 1200,
+        "reconnectedAndRead": true,
+        "note": "ssh2 的 SFTP 请求自身没有超时，必须由 provider 自加超时并销毁连接"
+      }
+    },
+    {
+      "id": "SF09",
+      "title": "凭据：错误密码被拒绝且不泄漏；连接参数中的密码不出现在 provider 结果里",
+      "status": "passed",
+      "ms": 2,
+      "evidence": {
+        "rejectedWith": "All configured authentication methods failed",
+        "passwordAppearsInReport": false
+      }
+    }
+  ],
+  "fixtureCleanup": {
+    "removed": true
+  },
+  "completedAt": "2026-10-17T04:44:40.761Z",
+  "summary": {
+    "passed": 7,
+    "observed-gap": 2
+  }
+}

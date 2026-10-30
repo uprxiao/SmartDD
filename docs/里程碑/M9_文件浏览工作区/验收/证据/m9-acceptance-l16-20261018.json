@@ -1,0 +1,526 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-L16",
+  "requirements": [
+    "M9-R07.4",
+    "M9-R07.17"
+  ],
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "recordedAt": "2026-10-18T01:30:38.866154+00:00",
+  "conclusion": "全部指定 U+I 连续步骤通过；本记录未操作真实 App 界面，未改正式用例状态。原用例测试层级列为组级“单元／集成／安装端到端”，环境明确 U+I；由主流程按既有边界核定是否收口。",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "workingTree": "Existing dirty M9 workspace preserved; only this targeted test and evidence added by the L16 agent.",
+  "environment": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64",
+    "macOS": "26.6.1",
+    "data": "New isolated synthetic project and userdata under macOS temporary directory; removed after assertions. No AIS project or user credentials used."
+  },
+  "build": {
+    "appPath": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+    "appAsarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+    "nativeExecutable": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "nativeExecutableSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "packagedSourceSnapshot": "/private/tmp/willyou-m9-chart-resize-r1-sources.tar.gz",
+    "packagedSourceSnapshotSha256": "703ba5102105a2cd339ba585f92ca108e31720668c8aa7dce4c113ba192e56a9",
+    "serviceLayer": "Current working-tree FileService, FileRootsService, FileRecoveryStore and NativeFileBroker loaded by Vitest; executable is the production helper from the retained app bundle. This is not packaged renderer/IPC end-to-end evidence."
+  },
+  "sourceHashes": {
+    "src/main/core/files/opid-retry-acceptance.test.ts": {
+      "sha256": "fdee56d9bbf04a71c2db8f8cb3ccc0fe390e4ae8cd0f8616aab8883b729c56f2",
+      "matches_packaged_source_snapshot": null
+    },
+    "src/main/core/files/file-service.ts": {
+      "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "matches_packaged_source_snapshot": true
+    },
+    "src/main/core/files/native-broker.ts": {
+      "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "matches_packaged_source_snapshot": true
+    },
+    "src/main/core/files/roots.ts": {
+      "sha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "matches_packaged_source_snapshot": true
+    },
+    "src/main/core/files/recovery-store.ts": {
+      "sha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+      "matches_packaged_source_snapshot": true
+    },
+    "src/shared/files.ts": {
+      "sha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+      "matches_packaged_source_snapshot": true
+    },
+    "scripts/files/build.mjs": {
+      "sha256": "dd3369a3cee43155eddd51c7b24211c86c97a89e58a28f437a6944c1f433a3a2",
+      "matches_packaged_source_snapshot": true
+    },
+    "scripts/run-tests.mjs": {
+      "sha256": "c8eb4fda8cf33dc74d5c079776ad12fadd3e3716fa01203e82e3b214357b8543",
+      "matches_packaged_source_snapshot": true
+    },
+    "vitest.config.ts": {
+      "sha256": "44c1796369ad3aa78d4db20db97d784b68c35e16df1fa6230b326ccad244fbd4",
+      "matches_packaged_source_snapshot": null
+    },
+    "native/files/broker.mm": {
+      "sha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+      "matches_packaged_source_snapshot": true
+    },
+    "native/files/desktop-actions.inc.mm": {
+      "sha256": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+      "matches_packaged_source_snapshot": true
+    },
+    "native/files/engine-workspaces.inc.mm": {
+      "sha256": "e048043afcc8882d18711c98f4d1eb0e99b3bd6947ee37911d71ff105d064825",
+      "matches_packaged_source_snapshot": true
+    },
+    "native/files/git-metadata.inc.mm": {
+      "sha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+      "matches_packaged_source_snapshot": true
+    },
+    "native/files/office-calculate.inc.mm": {
+      "sha256": "bc7c5b9817b9d8567db86357de0ea330ef3be2221ecd7709732efb5dd1e94277",
+      "matches_packaged_source_snapshot": true
+    },
+    "native/files/office-measure.inc.mm": {
+      "sha256": "fd7895e2fe380e7577f8dc23a15687471dfcdb321de0e5e1079b4f4a199c4a56",
+      "matches_packaged_source_snapshot": true
+    },
+    "native/files/office-render.inc.mm": {
+      "sha256": "8f1d15d81b58da42cecddcf655302cd4ef6dcb7caf0aa0f5bcbea1c61385d57d",
+      "matches_packaged_source_snapshot": true
+    },
+    "native/files/tex-compile.inc.mm": {
+      "sha256": "675f5b7dfa327aa73c314cba371f65f0c24bef699caea2389c93b9e95ca52e99",
+      "matches_packaged_source_snapshot": true
+    }
+  },
+  "run": {
+    "command": "SMARTDD_M9_FILE_BROKER='/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files' SMARTDD_M9_L16_EVIDENCE=/private/tmp/willyou-acceptance-l16-r1-observations.json pnpm test src/main/core/files/opid-retry-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-acceptance-l16-r1.json",
+    "exitCode": 0,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "testDurationMs": 266.99350000000004,
+    "reportPath": "/private/tmp/willyou-acceptance-l16-r1.json",
+    "reportSha256": "8fe857d648a88c61abfe9d0ec6f08d7c55c1a28f2f7233db2b4b40ae7778e59e",
+    "failureHistory": []
+  },
+  "steps": [
+    {
+      "step": 1,
+      "action": "Submit through production FileService; withhold its successful response at simulated client transport boundary.",
+      "expected": "Actual disk commit and durable journal exist even though caller receives an error.",
+      "result": "passed"
+    },
+    {
+      "step": 2,
+      "action": "Separate Node process writes and atomically renames an external revision onto the target.",
+      "expected": "External bytes and a distinct inode replace the first committed version.",
+      "result": "passed"
+    },
+    {
+      "step": 3,
+      "action": "Replay identical opId via live service, directly via production native broker, and after service reconstruction with persisted recovery scan.",
+      "expected": "Original receipt returned; external hash/inode and all project/recovery entries, timestamps and bytes stay unchanged; no new transaction event.",
+      "result": "passed"
+    },
+    {
+      "step": 4,
+      "action": "Replay same opId with changed payload.",
+      "expected": "IDEMPOTENCY rejection with no write.",
+      "result": "passed"
+    },
+    {
+      "step": 5,
+      "action": "Submit fresh opId with old base revision.",
+      "expected": "Conflict before native save; no duplicate transaction or directory entry; external version remains.",
+      "result": "passed"
+    },
+    {
+      "step": 6,
+      "action": "Submit another fresh opId with current external base revision.",
+      "expected": "One successful new transaction; exact final bytes/hash; distinct new target inode; original baseline and external displaced versions plus both independent drafts retained.",
+      "result": "passed"
+    }
+  ],
+  "observations": {
+    "case": "M9-T-L16",
+    "observedAt": "2026-10-18T01:30:05.837Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "level": "Production FileService + packaged/native broker + real macOS filesystem (U+I); no renderer or GUI",
+    "fixture": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-l16-VPvIn9",
+    "executable": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "executableSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "fault": "Client reply withheld after production save returned durable saved receipt",
+    "savedInode": "44345639",
+    "externalInode": "44345645",
+    "withheldReceipt": {
+      "revision": {
+        "size": 17,
+        "inode": "44345639",
+        "device": "16777232",
+        "changedNs": "1792287005650402740",
+        "modifiedNs": "1792287005640768000",
+        "hash": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23"
+      },
+      "bufferVersion": 1,
+      "opId": "e08e9242-a893-44e2-8564-f53cb38502b2",
+      "state": "saved",
+      "recoveryId": "e08e9242-a893-44e2-8564-f53cb38502b2"
+    },
+    "sameProcess": {
+      "revision": {
+        "size": 17,
+        "inode": "44345639",
+        "device": "16777232",
+        "changedNs": "1792287005650402740",
+        "modifiedNs": "1792287005640768000",
+        "hash": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23"
+      },
+      "bufferVersion": 1,
+      "opId": "e08e9242-a893-44e2-8564-f53cb38502b2",
+      "state": "saved",
+      "recoveryId": "e08e9242-a893-44e2-8564-f53cb38502b2"
+    },
+    "nativeReplay": {
+      "recoveryId": "e08e9242-a893-44e2-8564-f53cb38502b2",
+      "bufferVersion": 1,
+      "opId": "e08e9242-a893-44e2-8564-f53cb38502b2",
+      "revision": {
+        "changedNs": "1792287005650402740",
+        "inode": "44345639",
+        "device": "16777232",
+        "hash": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23",
+        "modifiedNs": "1792287005640768000",
+        "size": 17
+      },
+      "state": "saved"
+    },
+    "recovered": {
+      "opId": "e08e9242-a893-44e2-8564-f53cb38502b2",
+      "bufferVersion": 1,
+      "state": "saved",
+      "recoveryId": "e08e9242-a893-44e2-8564-f53cb38502b2",
+      "revision": {
+        "device": "16777232",
+        "inode": "44345639",
+        "size": 17,
+        "hash": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23",
+        "modifiedNs": "1792287005640768000",
+        "changedNs": "1792287005650402740"
+      }
+    },
+    "stale": {
+      "opId": "1c032d44-8b8e-43bc-a7fb-23a703f0ec56",
+      "bufferVersion": 1,
+      "state": "conflict",
+      "message": "磁盘文件已改变；本地修改仍保留"
+    },
+    "fresh": {
+      "revision": {
+        "size": 33,
+        "inode": "44345651",
+        "device": "16777232",
+        "changedNs": "1792287005832454435",
+        "modifiedNs": "1792287005823440000",
+        "hash": "0f8660d56d71a69b1c875f1eef4151114b089688dd481bf5b0582b4edffea987"
+      },
+      "bufferVersion": 2,
+      "opId": "22d03c46-0676-45ea-bdd6-73a4d6c40328",
+      "state": "saved",
+      "recoveryId": "22d03c46-0676-45ea-bdd6-73a4d6c40328"
+    },
+    "nativeSaveRequests": 3,
+    "transactionEvents": [
+      "e08e9242-a893-44e2-8564-f53cb38502b2",
+      "22d03c46-0676-45ea-bdd6-73a4d6c40328"
+    ],
+    "unchangedAcrossRetries": {
+      "project": {
+        ".": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345628",
+          "size": "128",
+          "modifiedNs": "1792287005697126140",
+          "changedNs": "1792287005697126140"
+        },
+        ".willyou-recovery-0a54bebe-0e60-4c3a-9aeb-6682708f7ad8-e08e9242-a893-44e2-8564-f53cb38502b2": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345637",
+          "size": "128",
+          "modifiedNs": "1792287005650402782",
+          "changedNs": "1792287005650402782"
+        },
+        ".willyou-recovery-0a54bebe-0e60-4c3a-9aeb-6682708f7ad8-e08e9242-a893-44e2-8564-f53cb38502b2/candidate": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345630",
+          "size": "6",
+          "modifiedNs": "1792287005575646525",
+          "changedNs": "1792287005650402740",
+          "sha256": "4c5352d41f3cb438326fed5ebe29aacf9d32b6cbb5e7835552ef722707354ad0"
+        },
+        ".willyou-recovery-0a54bebe-0e60-4c3a-9aeb-6682708f7ad8-e08e9242-a893-44e2-8564-f53cb38502b2/materialized": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345639",
+          "size": "17",
+          "modifiedNs": "1792287005640768000",
+          "changedNs": "1792287005697126099",
+          "sha256": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23"
+        },
+        "a.txt": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345645",
+          "size": "22",
+          "modifiedNs": "1792287005697014724",
+          "changedNs": "1792287005697126099",
+          "sha256": "53de7989163c25afce209a656c2caaab704106938e65dec12a5092ec638c4bfc"
+        }
+      },
+      "recovery": {
+        ".": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345629",
+          "size": "96",
+          "modifiedNs": "1792287005590418368",
+          "changedNs": "1792287005590418368"
+        },
+        "file-recovery": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345631",
+          "size": "96",
+          "modifiedNs": "1792287005590474660",
+          "changedNs": "1792287005590474660"
+        },
+        "file-recovery/v1": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345632",
+          "size": "96",
+          "modifiedNs": "1792287005611904572",
+          "changedNs": "1792287005611904572"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345633",
+          "size": "96",
+          "modifiedNs": "1792287005611964905",
+          "changedNs": "1792287005611964905"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/e08e9242-a893-44e2-8564-f53cb38502b2": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345634",
+          "size": "128",
+          "modifiedNs": "1792287005654926689",
+          "changedNs": "1792287005654926689"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/e08e9242-a893-44e2-8564-f53cb38502b2/draft": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345636",
+          "size": "17",
+          "modifiedNs": "1792287005622892799",
+          "changedNs": "1792287005622892799",
+          "sha256": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/e08e9242-a893-44e2-8564-f53cb38502b2/journal.json": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345644",
+          "size": "2008",
+          "modifiedNs": "1792287005650660156",
+          "changedNs": "1792287005654926647",
+          "sha256": "dda7a5896c8a5c83b82e97c7069bd34dfe22684cb13c6d2c0991e5efc261299b"
+        }
+      }
+    },
+    "final": {
+      "project": {
+        ".": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345628",
+          "size": "160",
+          "modifiedNs": "1792287005832454519",
+          "changedNs": "1792287005832454519"
+        },
+        ".willyou-recovery-0a54bebe-0e60-4c3a-9aeb-6682708f7ad8-e08e9242-a893-44e2-8564-f53cb38502b2": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345637",
+          "size": "128",
+          "modifiedNs": "1792287005650402782",
+          "changedNs": "1792287005650402782"
+        },
+        ".willyou-recovery-0a54bebe-0e60-4c3a-9aeb-6682708f7ad8-e08e9242-a893-44e2-8564-f53cb38502b2/candidate": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345630",
+          "size": "6",
+          "modifiedNs": "1792287005575646525",
+          "changedNs": "1792287005650402740",
+          "sha256": "4c5352d41f3cb438326fed5ebe29aacf9d32b6cbb5e7835552ef722707354ad0"
+        },
+        ".willyou-recovery-0a54bebe-0e60-4c3a-9aeb-6682708f7ad8-e08e9242-a893-44e2-8564-f53cb38502b2/materialized": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345639",
+          "size": "17",
+          "modifiedNs": "1792287005640768000",
+          "changedNs": "1792287005697126099",
+          "sha256": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23"
+        },
+        ".willyou-recovery-e99c50f7-46b3-46fd-bfc3-410ee9476558-22d03c46-0676-45ea-bdd6-73a4d6c40328": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345649",
+          "size": "128",
+          "modifiedNs": "1792287005832454477",
+          "changedNs": "1792287005832454477"
+        },
+        ".willyou-recovery-e99c50f7-46b3-46fd-bfc3-410ee9476558-22d03c46-0676-45ea-bdd6-73a4d6c40328/candidate": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345645",
+          "size": "22",
+          "modifiedNs": "1792287005697014724",
+          "changedNs": "1792287005832454477",
+          "sha256": "53de7989163c25afce209a656c2caaab704106938e65dec12a5092ec638c4bfc"
+        },
+        ".willyou-recovery-e99c50f7-46b3-46fd-bfc3-410ee9476558-22d03c46-0676-45ea-bdd6-73a4d6c40328/materialized": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345651",
+          "size": "33",
+          "modifiedNs": "1792287005823440000",
+          "changedNs": "1792287005832454435",
+          "sha256": "0f8660d56d71a69b1c875f1eef4151114b089688dd481bf5b0582b4edffea987"
+        },
+        "a.txt": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345651",
+          "size": "33",
+          "modifiedNs": "1792287005823440000",
+          "changedNs": "1792287005832454435",
+          "sha256": "0f8660d56d71a69b1c875f1eef4151114b089688dd481bf5b0582b4edffea987"
+        }
+      },
+      "recovery": {
+        ".": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345629",
+          "size": "96",
+          "modifiedNs": "1792287005590418368",
+          "changedNs": "1792287005590418368"
+        },
+        "file-recovery": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345631",
+          "size": "96",
+          "modifiedNs": "1792287005590474660",
+          "changedNs": "1792287005590474660"
+        },
+        "file-recovery/v1": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345632",
+          "size": "96",
+          "modifiedNs": "1792287005611904572",
+          "changedNs": "1792287005611904572"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345633",
+          "size": "128",
+          "modifiedNs": "1792287005801590960",
+          "changedNs": "1792287005801590960"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/22d03c46-0676-45ea-bdd6-73a4d6c40328": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345646",
+          "size": "128",
+          "modifiedNs": "1792287005836473802",
+          "changedNs": "1792287005836473802"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/22d03c46-0676-45ea-bdd6-73a4d6c40328/draft": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345648",
+          "size": "33",
+          "modifiedNs": "1792287005810787023",
+          "changedNs": "1792287005810787023",
+          "sha256": "0f8660d56d71a69b1c875f1eef4151114b089688dd481bf5b0582b4edffea987"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/22d03c46-0676-45ea-bdd6-73a4d6c40328/journal.json": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345655",
+          "size": "2009",
+          "modifiedNs": "1792287005832692810",
+          "changedNs": "1792287005836473802",
+          "sha256": "1199427168f3ee83cc03b1d2b156248452811653a3623f70ef41574055dc629d"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/e08e9242-a893-44e2-8564-f53cb38502b2": {
+          "kind": "directory",
+          "device": "16777232",
+          "inode": "44345634",
+          "size": "128",
+          "modifiedNs": "1792287005654926689",
+          "changedNs": "1792287005654926689"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/e08e9242-a893-44e2-8564-f53cb38502b2/draft": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345636",
+          "size": "17",
+          "modifiedNs": "1792287005622892799",
+          "changedNs": "1792287005622892799",
+          "sha256": "03a02a2beb880a6acd59937a5dae93b21c9c0a29c990043d2bd554a60bef7f23"
+        },
+        "file-recovery/v1/0e847c3c89b83a3163774b7699d10ba82442b023e18b4517f6c29ec45984ba24/e08e9242-a893-44e2-8564-f53cb38502b2/journal.json": {
+          "kind": "file",
+          "device": "16777232",
+          "inode": "44345644",
+          "size": "2008",
+          "modifiedNs": "1792287005650660156",
+          "changedNs": "1792287005654926647",
+          "sha256": "dda7a5896c8a5c83b82e97c7069bd34dfe22684cb13c6d2c0991e5efc261299b"
+        }
+      }
+    },
+    "assertions": [
+      "Same-process replay",
+      "Native durable-journal replay",
+      "Service restart recovery replay",
+      "Changed payload rejected",
+      "New opId stale revision conflict before native write",
+      "New opId current revision commits once",
+      "Hash/inode/timestamps/directory entries/journal bytes unchanged on retries",
+      "Original and external displaced versions plus both private drafts retained"
+    ]
+  },
+  "limits": [
+    "Fault injection is at the caller boundary after a real successful commit; no real Electron IPC transport is disconnected.",
+    "Service restart reconstructs FileService/recovery; it is not a full application relaunch.",
+    "macOS arm64 only.",
+    "No GUI, pointer, keyboard, theme, or renderer save-status assertions are claimed.",
+    "Formal coverage index and main milestone documents were not changed by this agent."
+  ]
+}

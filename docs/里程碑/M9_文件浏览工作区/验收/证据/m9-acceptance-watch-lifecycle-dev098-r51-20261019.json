@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-WATCH-LIFECYCLE-DEV098-R51",
+  "at": "2026-10-18T19:43:32.640034+00:00",
+  "localDate": "2026-10-19",
+  "status": "passed-three-cases",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS arm64",
+  "fullCasesPassed": [
+    "M9-T-L01",
+    "M9-T-L02",
+    "M9-T-L07"
+  ],
+  "regressionCasesPassed": [
+    "M9-T-L03",
+    "M9-T-L04"
+  ],
+  "defects": [],
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r51-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "87303784b522445709bb5b6ea132edc0d7ab77be5adecf4507c133df6a026a01",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcherSha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 81,
+    "nativeChecksReusedFrom": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-content-controls-dev097-r51-20261019.json",
+    "processes": 2,
+    "distinctIsolatedProfiles": true
+  },
+  "sourceBaseline": {
+    "files": 1007,
+    "previousFiles": 1004,
+    "previousTestedSha256": "c697ee39b4f81a7e0ba1c55551f20eddb7740dbe9443cdbe89a2660721c4ddd4",
+    "previousToFinalChanges": [],
+    "previousToFinalAdded": [
+      "scripts/files/watch-lifecycle-ui.mjs",
+      "src/main/core/files/watch-lifecycle-acceptance.test.ts",
+      "src/renderer/features/files/watch-lifecycle-acceptance.test.ts"
+    ],
+    "buildFiles": 1004,
+    "buildSha256": "bf3845504e3bcf6c37af37101cc9996778f1fe04d63dea1942225e98726d3944",
+    "finalTestedSha256": "2b6d2a6b297851cc2c79302fdada465a891639c8916cd3514f16e2669edfa5ef",
+    "buildToFinalChanges": [
+      "scripts/files/content-search-controls-ui.mjs"
+    ],
+    "buildToFinalAdded": [
+      "scripts/files/watch-lifecycle-ui.mjs",
+      "src/main/core/files/watch-lifecycle-acceptance.test.ts",
+      "src/renderer/features/files/watch-lifecycle-acceptance.test.ts"
+    ],
+    "runtimeRebuilt": false,
+    "productionSourceChanges": [],
+    "prototypeSourceChanges": []
+  },
+  "verification": {
+    "codePassedDeduplicated": 11,
+    "newUniqueCodeTests": 6,
+    "newRendererUnitTests": 3,
+    "newNativeIntegrationTests": 3,
+    "cumulativeCodeUnion": 1844,
+    "externalCliOptInNotSelected": 2,
+    "nativeTestsNotSelected": 57,
+    "actualWatchChecks": 4,
+    "typecheckExit": 0,
+    "unhandledErrors": 0,
+    "formalPassed": 187,
+    "formalTotal": 419,
+    "formalRemaining": 232,
+    "unexecuted": 230,
+    "blocked": 2,
+    "appRemaining": 229
+  },
+  "runtimeHashes": {
+    "at": "2026-10-18T19:42:10.950Z",
+    "asar": "87303784b522445709bb5b6ea132edc0d7ab77be5adecf4507c133df6a026a01",
+    "broker": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "watcher": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5",
+    "runtimeVerified": 81
+  },
+  "integrity": {
+    "sentinelFingerprintUnchanged": true,
+    "explicitExternalWrites": [
+      "a.txt atomic replacement and later rewrites",
+      "fresh.txt creation"
+    ],
+    "originalPacketHashesUnchanged": true,
+    "watchStopSendSubscribeIdentitiesRestoredBothProcesses": true,
+    "allFourNativeSubscriptionsStoppedOnce": true,
+    "zeroConsumerIdsBothApps": true
+  },
+  "boundaries": [
+    "L01 U two attached views retain one Store membership until last detach. I two real owners in one FileService share exactly one original OS subscription; atomic replacement reaches both, stopping one leaves the other active, final stop is idempotent and root/consumer/timer/stopping counts all0. A uses two original packaged App processes/windows with distinct isolated userData over one actual canonical source. It proves actual UI/ref/OS independence and survivor updates, not one-main physical subscription sharing. Each visible tree legitimately retains its root subscription after its file ref closes; hiding the corresponding scope then releases it. Same-main pooling is specifically I, not an A claim.",
+    "L02 A first delays execution of original native subscribe until after UI scope close; actual late native success is immediately unsubscribed once. A second holds unchanged original authenticated files.watch ack while a real OS subscription exists; UI unmount has no ID yet, releasing ack triggers actual compensating stop for that ID exactly once. U independently proves delayed-ID cleanup and double-unmount idempotence. I real late native subscribe/stop ends with all resources0. No fake subscribe success.",
+    "L07 U shows pre-ID progress ignored but acknowledged resync refreshes. I/A delay original OS registration before calling it, wait for real initial list/stat baseline (coverage:none,resyncRequired:false after configured file refs), then change own source/create own file while registration has not started. A still displays BASE before release. Ready resync/actual snapshots then show new file and exact new source, no manual refresh and no manufactured event. Packet hashes remain unchanged. OS callbacks are invalidation hints, not a promised complete mutation history.",
+    "Final6new U/I +3existing owner regressions +2selected native regressions =11 deduplicated assertions from three completed exit0 commands, no unhandled errors. Native57 unrelated assertions excluded by-t, not new passing or product-blocked cases. Historical1844 is a union, not fresh full suite;2externalCLI opt-ins not selected. All native helpers/watcher loaded from r51 package and hashes match.",
+    "No production/prototype change:1004 previous tested sources unchanged, only3new test/driver files;1007final snapshot. Existing build differs only by prior DEV097 external row-ready driver adjustment plus3new tests, no runtime input change. r51 six smokes reused from immutable DEV097 report;81runtime files and ASAR/helper/watcher hashes freshly rechecked. No new package/P build or visual parity claim. Assigned cases U/I/A require no new P.",
+    "A original subscribe/IPC/send functions restored by identity in both processes. Four actual subscriptions (3A,1B) stop once, consumer sets empty, UI scope leave precedes harness cleanup. Own a.txt mutations and fresh.txt explicitly allowed test writes, sentinel content/inode/mtime unchanged; no App write substituted for test mutation. No model/task/PTY/clipboard/daily AIS/r4/r6pending57bytes access. Harness close not normal quit proof. No commit,push,merge,tag,release; stage remains active."
+  ],
+  "artifacts": {
+    "app/final/L01-surviving-window.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/L01-surviving-window.png",
+      "sha256": "76ccc7ba33c3fcb3a43a6ed8d2b0653272ac011deab6bf84103a3a6e63106ab0"
+    },
+    "app/final/L07-native-ready-resync.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/L07-native-ready-resync.png",
+      "sha256": "7d6553bf795c4154b60728dc11d9324958b8da22c9bd2ab98bbec7260f9f9185"
+    },
+    "app/final/electron-A.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/electron-A.log",
+      "sha256": "9ce8f081b7227775625c97a273f02b2e001fdcae04616510f755cd69e59d6cc6"
+    },
+    "app/final/electron-B.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/electron-B.log",
+      "sha256": "432b436e38c3ad0aab120b2182ef3aea2c93ef5bddf599352663355231b8eeaf"
+    },
+    "app/final/project/a.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/project/a.txt",
+      "sha256": "4be4be61bd6dd2988c2ece94bbdea24e550d47ff79f4e3be8ea180553673a42a"
+    },
+    "app/final/project/fresh.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/project/fresh.txt",
+      "sha256": "54b882ef254c1087dca23b7a08dc975c5b741df8eb0b900024cd4dd41318497c"
+    },
+    "app/final/project/sentinel.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/project/sentinel.txt",
+      "sha256": "4943fd2b446c6e48a21fe3a3e4f1efc46e63cf692fe0a18b433e16b32d5ed369"
+    },
+    "app/final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/app/final/result.json",
+      "sha256": "94350b42a0d048d625616006494fda372231e0fd93a0cca8cdc6afa1419b75d9"
+    },
+    "sources/completed-tested.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/sources/completed-tested.json",
+      "sha256": "9ec420b3129836047e3250c6010c9ddde9a70376ab2c93be849721a99a950220"
+    },
+    "sources/completed-tested.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/sources/completed-tested.tar.gz",
+      "sha256": "2b6d2a6b297851cc2c79302fdada465a891639c8916cd3514f16e2669edfa5ef"
+    },
+    "sources/previous-tested.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/sources/previous-tested.json",
+      "sha256": "462352d421400e0e6e02d32c0e3a9250f7b030667bab29da1e551e545751abf4"
+    },
+    "sources/previous-tested.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/sources/previous-tested.tar.gz",
+      "sha256": "c697ee39b4f81a7e0ba1c55551f20eddb7740dbe9443cdbe89a2660721c4ddd4"
+    },
+    "validation/willyou-dev098-app-r51-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-app-r51-r1.log",
+      "sha256": "d69bc30bf741e63a7ffb1e3d6ce89832ad886fb76bd27e9b4709270b6ede0a56"
+    },
+    "validation/willyou-dev098-code-completed.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-code-completed.json",
+      "sha256": "562f51090efacf1158b217f8a192ce4a399507e93f131ee63ff7f458c5b7d403"
+    },
+    "validation/willyou-dev098-initial-code.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-initial-code.json",
+      "sha256": "1f43d92d4f2fcdb3fba64cb937d2c507d721e77099119829120a51c431a7ddb9"
+    },
+    "validation/willyou-dev098-initial-code.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-initial-code.log",
+      "sha256": "ff6ad1b1361024fd9fcdca14a6624da558cab0e674da12879786e4ee4bb2d778"
+    },
+    "validation/willyou-dev098-native-evidence.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-native-evidence.json",
+      "sha256": "ce7b3e3fce1c222c10df073c3fbb63655e1fd3f2257aa1f79bf001f1c2d68d7c"
+    },
+    "validation/willyou-dev098-native-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-native-regression.json",
+      "sha256": "509432d3c090544f38fcdf1391a64a8fb49f1f22ddb2794a43c0aa70bd84b0a6"
+    },
+    "validation/willyou-dev098-native-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-native-regression.log",
+      "sha256": "00b1bed854a353eea2cd68f0278a2e5fd6c0dbdc788738953b0a607d3ae28d1c"
+    },
+    "validation/willyou-dev098-owner-regression-evidence.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-owner-regression-evidence.json",
+      "sha256": "77584c4419f77f6ccff4e4cc8eb8f8f391d503fef7d8ba9b9fc03d377388355e"
+    },
+    "validation/willyou-dev098-owner-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-owner-regression.json",
+      "sha256": "90c38c5fe0b22267c587ba40ebd6533e7236a1c3d1292f1215aa12c46bc0e345"
+    },
+    "validation/willyou-dev098-owner-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-owner-regression.log",
+      "sha256": "a5b033c43d8bab9f73a04b9278e435180200c12139c0fd15e01e74c081371e2e"
+    },
+    "validation/willyou-dev098-runtime-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-runtime-hashes.json",
+      "sha256": "1adb9fd6bb186e04071e245b15344e97ab7d72100ca184642d497b3d677561c1"
+    },
+    "validation/willyou-dev098-runtime-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-runtime-verification.json",
+      "sha256": "d6f782b37d0387675487cbe508dc7438efd700f81bbf8ac09b804a6975d6cf89"
+    },
+    "validation/willyou-dev098-typecheck-r1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-watch-lifecycle-dev098-r51/validation/willyou-dev098-typecheck-r1.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    }
+  }
+}

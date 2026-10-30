@@ -1,0 +1,301 @@
+{
+  "at": "2026-10-18T11:05:56.460991+08:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "system": "macOS",
+    "arch": "arm64",
+    "app": {
+      "at": "2026-10-18T10:49:32.392670+08:00",
+      "command": "pnpm package --output-dir /private/tmp/willyou-m9-acceptance-batch-r5-build",
+      "exitCode": 0,
+      "app": "/private/tmp/willyou-m9-acceptance-batch-r5-build/mac-arm64/WillYou.app",
+      "asarSha256": "4ed97c8632b87fcd9e2b351b5e11412a0a6feb46bfd1298cd7f2e118e0f01468",
+      "asarSize": 80870439,
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "sourceArchive": "/private/tmp/willyou-m9-acceptance-batch-r5-sources.tar.gz",
+      "sourceArchiveSha256": "ae451c5a878b5570d9a386510f9aa893f3e23bff2d0012de2696aacd111314c3",
+      "manifest": "/private/tmp/willyou-m9-acceptance-batch-r5-sources.json",
+      "manifestSha256": "57841d6ad7912897af103dc683eb511446117ac6a0e24dae94bb13d27836de61",
+      "fileCount": 1208,
+      "changedAfterBuild": [],
+      "log": "/private/tmp/willyou-m9-acceptance-batch-r5-build.log",
+      "logSha256": "9a76e4f72ba9337cfa773fd25a326344d1efd6577d678180b2857d944d4325e4",
+      "nativeSmoke": {
+        "version": "0.0.5",
+        "platform": "darwin",
+        "arch": "arm64",
+        "sqlite": "passed",
+        "pty": "passed",
+        "voiceBridge": "passed",
+        "fileBroker": "passed",
+        "officeRenderer": "passed",
+        "fileWatcher": "passed"
+      }
+    }
+  },
+  "layer": "A - packaged native GUI via cua_repl with independent filesystem reads",
+  "ime": {
+    "at": "2026-10-18T10:56:50.007570+08:00",
+    "text": "M9 IME r5 baseline\nr5 ASCII edit\nr5 external refresh\n中文输入法验收",
+    "sha256": "e87093fc5dbb1da301bc4fb44d0faae5d05ea26784a1d73a2072babaeb969794",
+    "candidateUserReport": "已输入，无异常",
+    "imeCount": 1,
+    "source": "physical keyboard/system IME by user; final AX and independent disk read by agent"
+  },
+  "ordinaryEditorSmoke": {
+    "typed": "r5 ASCII edit",
+    "undo": "baseline restored",
+    "redo": "ASCII text restored",
+    "explicitSave": "disk readback exact",
+    "externalRefresh": "r5 external refresh appeared automatically"
+  },
+  "cases": {
+    "H10": {
+      "status": "passed",
+      "steps": [
+        "Opened text, Markdown and TypeScript with no edits; each received three Cmd-S saves and closed without confirmation.",
+        "Reopened text: physical IME text retained exactly once."
+      ],
+      "actual": "No dirty state or confirmation; independent SHA256/inode/mtimeNs/ctimeNs unchanged for all three files.",
+      "files": [
+        "ime-r5.txt",
+        "h10-clean.md",
+        "h10-clean.ts"
+      ]
+    },
+    "H11": {
+      "status": "passed",
+      "steps": [
+        "Opened chmod0444 text and 10485761-byte UTF-8 text.",
+        "Attempted typing, paste, select-all replacement and Cmd-S in each actual readonly editor."
+      ],
+      "actual": "Permission reason: 此文件为只读. Size reason: 文件超过 10 MiB，当前以只读文本打开. AX editors non-settable; no inserted sentinel, dirty state or disk changes. SHA256/inode/mtimeNs/ctimeNs unchanged.",
+      "files": [
+        "h11-readonly.txt",
+        "h11-size-readonly.txt"
+      ],
+      "boundary": "The AX readonly click does not create an editable text focus; attempted replacement selected page content and could not mutate the editor. Actual CodeMirror command-level guards are separately exercised in U/I."
+    },
+    "H12": {
+      "status": "passed",
+      "steps": [
+        "Replaced baseline with local text in actual App.",
+        "An independent CLI waited for that real durable checkpoint, rewrote the identical baseline bytes, then the file watcher delivered the invalidation."
+      ],
+      "actual": "Local text stayed visible, no conflict prompt; normal autosave subsequently committed H12 local edit. I layer separately proves the intermediate dirty/base state before autosave."
+    },
+    "H16": {
+      "status": "passed",
+      "steps": [
+        "Changed local text in actual App; CLI wrote a different disk text after its actual checkpoint.",
+        "Repeated with an independent external file-writing process.",
+        "Opened a third fixture in TextEdit, edited the WillYou buffer, then changed/saved TextEdit in one actual GUI batch taking 2243ms."
+      ],
+      "actual": "All three show 磁盘内容已改变，本地修改仍保留; local editor text and dirty tab remain. Expanded disk version for first two shows their external text. Independent readback after more than 3s confirms disk retained external text; actual private checkpoints retain local text. TextEdit branch began with App dirty=true and produced conflict=true while keeping local content.",
+      "collectorFailure": "First external writer completed its write but the evidence collector assumed a literal draft filename and failed. The actual journal draftLeaf was independently reread; original CLI error is recorded, and no product failure is hidden."
+    }
+  },
+  "sourceAfter": {
+    "h12-same-base.txt": {
+      "text": "H12 local edit",
+      "sha256": "80ec788e0936f804e7c29db614df2b91b9eee76389f03a3f335288d9d42e9436",
+      "mtimeNs": 1792292591384250000
+    },
+    "h16-conflict.txt": {
+      "text": "H16 external CLI",
+      "sha256": "eb83173fe7a545ccb984460d3b72f9729bfde7fcdfd99df6f511f6707dd962ea",
+      "mtimeNs": 1792292471961359955
+    },
+    "h16-program.txt": {
+      "text": "H16 external program",
+      "sha256": "073e4900653f36247c75e7abc4dc5c543048c5fab7e363046cd1ea797eca923a",
+      "mtimeNs": 1792292536474885519
+    },
+    "h16-textedit.txt": {
+      "text": "H16 TextEdit external disk",
+      "sha256": "2186f985a49c21ff0d63af0a6fc02be5988eb6900c9604f0e91b572f9f1d1f6e",
+      "mtimeNs": 1792292708163398000
+    }
+  },
+  "retainedDrafts": {
+    "h16-conflict.txt": {
+      "journal": {
+        "baseHash": "28817ce9a9c975c47d1be655635b5e747032a3bf70a885a9fd7fd472729bbb2f",
+        "bom": false,
+        "bufferVersion": 14,
+        "bytes": 65578,
+        "createdAt": 1792292471847,
+        "draftHash": "0b542683aaaf4c14a11122a18f07ac13062dbcfe5300aeb3cf882967f403d930",
+        "draftIdentity": {
+          "device": "16777232",
+          "inode": "44565571"
+        },
+        "draftLeaf": "draft-795433a6-07c9-4421-aa23-80117aa87802",
+        "encoding": "utf-8",
+        "fingerprint": "95d495d4e4d3448caf568938128f7e48429d960890e529bce0d521a4337a4b38",
+        "kind": "checkpoint",
+        "opId": "b594bf09-f7c2-4275-a4c2-6546adbfa708",
+        "projectKey": "0c734970f2499977bd569bd76bdf63dd05ffd163ccb2c90f0ce1e22040be07ba",
+        "recordIdentity": {
+          "device": "16777232",
+          "inode": "44565569"
+        },
+        "relativePath": "h16-conflict.txt",
+        "root": {
+          "identity": {
+            "device": "16777232",
+            "inode": "42425758"
+          },
+          "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+          "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project"
+        },
+        "schemaVersion": 1,
+        "source": {
+          "id": "e8e48b76-dbfd-4f2a-b49b-7771a399c491",
+          "kind": "task-cwd",
+          "scope": {
+            "kind": "task",
+            "taskId": "e8e48b76-dbfd-4f2a-b49b-7771a399c491"
+          }
+        },
+        "state": "dirty",
+        "updatedAt": 1792292471847
+      },
+      "text": "H16 local edit"
+    },
+    "h16-program.txt": {
+      "journal": {
+        "baseHash": "be47d024469eefe0cc0d5d2c6e8710a9fa896c87605640cb16972518ccd0ae83",
+        "bom": false,
+        "bufferVersion": 16,
+        "bytes": 65584,
+        "createdAt": 1792292536429,
+        "draftHash": "c6d0e6dda71c70257ac2858043e9be3a1942d06b88b571184de5240a3d8f27f4",
+        "draftIdentity": {
+          "device": "16777232",
+          "inode": "44566290"
+        },
+        "draftLeaf": "draft-2fb151bd-e7aa-43c8-8bfa-c258d121b322",
+        "encoding": "utf-8",
+        "fingerprint": "67dee09595ef1523e7f47b210b52ab23110fc10ef7977ac5bf6e5fdff171ed4e",
+        "kind": "checkpoint",
+        "opId": "302fcc43-db7e-4cbf-9b26-e82e6b98c390",
+        "projectKey": "0c734970f2499977bd569bd76bdf63dd05ffd163ccb2c90f0ce1e22040be07ba",
+        "recordIdentity": {
+          "device": "16777232",
+          "inode": "44566288"
+        },
+        "relativePath": "h16-program.txt",
+        "root": {
+          "identity": {
+            "device": "16777232",
+            "inode": "42425758"
+          },
+          "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+          "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project"
+        },
+        "schemaVersion": 1,
+        "source": {
+          "id": "e8e48b76-dbfd-4f2a-b49b-7771a399c491",
+          "kind": "task-cwd",
+          "scope": {
+            "kind": "task",
+            "taskId": "e8e48b76-dbfd-4f2a-b49b-7771a399c491"
+          }
+        },
+        "state": "dirty",
+        "updatedAt": 1792292536429
+      },
+      "text": "H16 second local"
+    },
+    "h16-textedit.txt": {
+      "journal": {
+        "baseHash": "0a3ca27b9e4a8bdfde01118783a48b347cb01535818799c2ea029a0b9be65957",
+        "bom": false,
+        "bufferVersion": 1,
+        "bytes": 65623,
+        "createdAt": 1792292707391,
+        "draftHash": "a9d31f45a030d065ccb7e1f49435e93a9780c813194aa4da01cfb9ac28446dfb",
+        "draftIdentity": {
+          "device": "16777232",
+          "inode": "44568738"
+        },
+        "draftLeaf": "draft-9509adb6-e14b-4d29-9a2b-cbf0eb15ffc3",
+        "encoding": "utf-8",
+        "fingerprint": "ae237de44ee79b33400582c4b2311ea28071c690db25de2724b8ab96fa07c62f",
+        "kind": "checkpoint",
+        "opId": "bdb9d7ae-cd9c-4ee4-a046-cb77e87ed98f",
+        "projectKey": "0c734970f2499977bd569bd76bdf63dd05ffd163ccb2c90f0ce1e22040be07ba",
+        "recordIdentity": {
+          "device": "16777232",
+          "inode": "44568735"
+        },
+        "relativePath": "h16-textedit.txt",
+        "root": {
+          "identity": {
+            "device": "16777232",
+            "inode": "42425758"
+          },
+          "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+          "sourcePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project"
+        },
+        "schemaVersion": 1,
+        "source": {
+          "id": "e8e48b76-dbfd-4f2a-b49b-7771a399c491",
+          "kind": "task-cwd",
+          "scope": {
+            "kind": "task",
+            "taskId": "e8e48b76-dbfd-4f2a-b49b-7771a399c491"
+          }
+        },
+        "state": "dirty",
+        "updatedAt": 1792292707391
+      },
+      "text": "H16 app local versus TextEdit"
+    }
+  },
+  "artifacts": {
+    "willyou-m9-acceptance-batch-r5-package.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-m9-acceptance-batch-r5-package.json",
+      "sha256": "049ade22ef55166dde89c0a307517306498ce63c1be775b56dae7deb5afe1987"
+    },
+    "willyou-r5-ime-result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-r5-ime-result.json",
+      "sha256": "caf89829f3fc73d68dec5f9aeeb685e587dfb4c6ff8053939a6c267f638220ea"
+    },
+    "willyou-h10-app-before.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-h10-app-before.json",
+      "sha256": "6471e93ab24fd5410dfe0bd2e166b53680292c2a766333c772e842f37e1a0a3a"
+    },
+    "willyou-h10-app-after.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-h10-app-after.json",
+      "sha256": "6471e93ab24fd5410dfe0bd2e166b53680292c2a766333c772e842f37e1a0a3a"
+    },
+    "willyou-r5-h10-h11-app-disk.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-r5-h10-h11-app-disk.json",
+      "sha256": "ab225d4369f4bc331132af5ebc49cc58d754f2b4d232bf0197443e9dcc280296"
+    },
+    "willyou-h12-app.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-h12-app.json",
+      "sha256": "533db957e4a63eae6dbc78a1bc729c2c2ea4cc5fe38e497e5f213cc91054b380"
+    },
+    "willyou-h16-app-cli-readback.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-h16-app-cli-readback.json",
+      "sha256": "2f0f5f8626ebb2f62700c41b8348d39bf4f1f76a76e1ccdfdf9934d21e93f19c"
+    },
+    "willyou-h16-app-program.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-h16-app-program.json",
+      "sha256": "6a55d02b845613f5c768febdcf51808bdd3e12950511f9a8552e3ad1c707d225"
+    },
+    "willyou-external-after-draft.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-r5-app/willyou-external-after-draft.py",
+      "sha256": "d82ec93d60732bdaf863b2c78a7cebe8ac6566f49e8ff69828c8cd03ff94570b"
+    }
+  },
+  "boundaries": [
+    "System candidate interaction is user-confirmed; final AX and disk are independently verified. This is not the complete IME case matrix.",
+    "No screenshots were exported for this batch; actual AX observations/actions remain in the tool conversation.",
+    "R5 contains DEV040/041/042, not the subsequent keepLocal/DEV044/DEV047/search-protocol/MCP/terminal-context changes. Their final App verification remains separate."
+  ]
+}

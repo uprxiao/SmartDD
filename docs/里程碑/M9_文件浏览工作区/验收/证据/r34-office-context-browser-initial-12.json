@@ -1,0 +1,585 @@
+{
+  "ranAt": "2026-10-17T07:55:22.697Z",
+  "browser": "155.0.8059.80",
+  "target": "http://127.0.0.1:4176/tests/r34-office-context-runtime.html",
+  "scope": "Synthetic Office model and Promise insertion adapter via actual FileArtifactPreview; no real Office codec/PTY/CLI/model; not formal M9 acceptance",
+  "checks": [
+    {
+      "id": "OC01",
+      "title": "real Artifact route forwards path/page/object context without trailing Enter",
+      "status": "passed",
+      "details": {
+        "calls": [
+          {
+            "id": 0,
+            "text": "/synthetic/演示 文档.pptx · 第 1 页\n对象：el-0-title\n所选文字：文件浏览工作区\n评论：请调整所选标题，保留原有备注。",
+            "metadata": {
+              "source": "office-comment",
+              "kind": "pptx",
+              "path": "/synthetic/演示 文档.pptx",
+              "commentId": "office-comment-1",
+              "page": 1,
+              "selectedText": "文件浏览工作区",
+              "elementId": "el-0-title"
+            }
+          }
+        ],
+        "states": [
+          {
+            "state": "inserted",
+            "text": "第 1 页：请调整所选标题，保留原有备注。文件浏览工作区已插入输入，未回车"
+          }
+        ],
+        "draft": ""
+      }
+    },
+    {
+      "id": "OC02",
+      "title": "explicit failure preserves text and retries only the failed comment",
+      "status": "passed",
+      "details": {
+        "failed": {
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：失败后保留这条原文",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "failed",
+              "text": "第 1 页：失败后保留这条原文插入失败，内容已保留"
+            }
+          ],
+          "draft": ""
+        },
+        "retried": {
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：失败后保留这条原文",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            },
+            {
+              "id": 1,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：失败后保留这条原文",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "inserted",
+              "text": "第 1 页：失败后保留这条原文已插入输入，未回车"
+            }
+          ],
+          "draft": ""
+        }
+      }
+    },
+    {
+      "id": "OC03",
+      "title": "unknown/missing/thrown acknowledgements remain unknown and cannot auto-retry",
+      "status": "passed",
+      "details": [
+        {
+          "mode": "unknown",
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：未知回执",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "unknown",
+              "text": "第 1 页：未知回执结果未知；请检查终端，不会自动重发"
+            }
+          ],
+          "draft": "",
+          "buttonDisabled": true,
+          "retryButtons": 0
+        },
+        {
+          "mode": "missing",
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：无回执",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "unknown",
+              "text": "第 1 页：无回执结果未知；请检查终端，不会自动重发"
+            }
+          ],
+          "draft": "",
+          "buttonDisabled": true,
+          "retryButtons": 0
+        },
+        {
+          "mode": "throw",
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：回调抛错",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "unknown",
+              "text": "第 1 页：回调抛错结果未知；请检查终端，不会自动重发"
+            }
+          ],
+          "draft": "",
+          "buttonDisabled": true,
+          "retryButtons": 0
+        }
+      ]
+    },
+    {
+      "id": "OC04",
+      "title": "settling a pending insertion never clears a newer draft",
+      "status": "passed",
+      "details": {
+        "calls": [
+          {
+            "id": 0,
+            "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：正在投递的旧评论",
+            "metadata": {
+              "source": "office-comment",
+              "kind": "pptx",
+              "path": "/synthetic/演示 文档.pptx",
+              "commentId": "office-comment-1",
+              "page": 1,
+              "selectedText": "",
+              "elementId": null
+            }
+          }
+        ],
+        "states": [
+          {
+            "state": "inserted",
+            "text": "第 1 页：正在投递的旧评论已插入输入，未回车"
+          }
+        ],
+        "draft": "等待期间写下的新草稿"
+      }
+    },
+    {
+      "id": "OC05",
+      "title": "batch stops on failure, explicit retry resumes only failed/queued entries",
+      "status": "passed",
+      "details": {
+        "mixed": {
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：批次成功",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            },
+            {
+              "id": 1,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：批次失败",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-2",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "inserted",
+              "text": "第 1 页：批次成功已插入输入，未回车"
+            },
+            {
+              "state": "failed",
+              "text": "第 1 页：批次失败插入失败，内容已保留"
+            },
+            {
+              "state": "queued",
+              "text": "第 1 页：批次未知待插入"
+            }
+          ],
+          "draft": ""
+        },
+        "retried": {
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：批次成功",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            },
+            {
+              "id": 1,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：批次失败",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-2",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            },
+            {
+              "id": 2,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：批次失败",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-2",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            },
+            {
+              "id": 3,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：批次未知",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-3",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "inserted",
+              "text": "第 1 页：批次成功已插入输入，未回车"
+            },
+            {
+              "state": "inserted",
+              "text": "第 1 页：批次失败已插入输入，未回车"
+            },
+            {
+              "state": "unknown",
+              "text": "第 1 页：批次未知结果未知；请检查终端，不会自动重发"
+            }
+          ],
+          "draft": ""
+        }
+      }
+    },
+    {
+      "id": "OC06",
+      "title": "same mounted component path change discards the old insertion acknowledgement",
+      "status": "passed",
+      "details": {
+        "calls": [
+          {
+            "id": 0,
+            "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：旧路径等待项",
+            "metadata": {
+              "source": "office-comment",
+              "kind": "pptx",
+              "path": "/synthetic/演示 文档.pptx",
+              "commentId": "office-comment-1",
+              "page": 1,
+              "selectedText": "",
+              "elementId": null
+            }
+          }
+        ],
+        "states": [
+          {
+            "state": "queued",
+            "text": "第 1 页：新路径未投递项待插入"
+          }
+        ],
+        "draft": ""
+      }
+    },
+    {
+      "id": "OC07",
+      "title": "unmount drops late results and a fresh file has no previous delivery state",
+      "status": "passed",
+      "details": {
+        "calls": [
+          {
+            "id": 0,
+            "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：已卸载页面的评论",
+            "metadata": {
+              "source": "office-comment",
+              "kind": "pptx",
+              "path": "/synthetic/演示 文档.pptx",
+              "commentId": "office-comment-1",
+              "page": 1,
+              "selectedText": "",
+              "elementId": null
+            }
+          }
+        ],
+        "states": [],
+        "draft": ""
+      }
+    },
+    {
+      "id": "OC08",
+      "title": "DOCX legacy route forwards its own path and active page through Artifact",
+      "status": "passed",
+      "details": {
+        "calls": [
+          {
+            "id": 0,
+            "text": "/synthetic/中文说明.docx · 第 3 页\n评论：第三页段落上下文",
+            "metadata": {
+              "source": "office-comment",
+              "kind": "docx",
+              "path": "/synthetic/中文说明.docx",
+              "commentId": "office-comment-1",
+              "page": 3,
+              "selectedText": "",
+              "elementId": null
+            }
+          }
+        ],
+        "states": [
+          {
+            "state": "inserted",
+            "text": "第 3 页：第三页段落上下文已插入输入，未回车"
+          }
+        ],
+        "draft": ""
+      }
+    },
+    {
+      "id": "OC09",
+      "title": "missing adapter is a visible failure with retained original text",
+      "status": "passed",
+      "details": {
+        "calls": [],
+        "states": [
+          {
+            "state": "failed",
+            "text": "第 1 页：缺适配器必须保留插入失败，内容已保留"
+          }
+        ],
+        "draft": ""
+      }
+    },
+    {
+      "id": "OC11",
+      "title": "A-to-B-to-A scope reuse rejects old results even while new same-ID delivery is pending",
+      "status": "passed",
+      "details": {
+        "beforeNewReply": {
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：第一代A",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            },
+            {
+              "id": 1,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：新一代A",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "inserting",
+              "text": "第 1 页：新一代A正在插入"
+            }
+          ],
+          "draft": ""
+        },
+        "afterNewReply": {
+          "calls": [
+            {
+              "id": 0,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：第一代A",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            },
+            {
+              "id": 1,
+              "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：新一代A",
+              "metadata": {
+                "source": "office-comment",
+                "kind": "pptx",
+                "path": "/synthetic/演示 文档.pptx",
+                "commentId": "office-comment-1",
+                "page": 1,
+                "selectedText": "",
+                "elementId": null
+              }
+            }
+          ],
+          "states": [
+            {
+              "state": "failed",
+              "text": "第 1 页：新一代A插入失败，内容已保留"
+            }
+          ],
+          "draft": ""
+        }
+      }
+    },
+    {
+      "id": "OC12",
+      "title": "real two-second timeout becomes unknown and ignores a late success",
+      "status": "passed",
+      "details": {
+        "timeoutMs": 2044,
+        "calls": [
+          {
+            "id": 0,
+            "text": "/synthetic/演示 文档.pptx · 第 1 页\n评论：真实等待超时保留项",
+            "metadata": {
+              "source": "office-comment",
+              "kind": "pptx",
+              "path": "/synthetic/演示 文档.pptx",
+              "commentId": "office-comment-1",
+              "page": 1,
+              "selectedText": "",
+              "elementId": null
+            }
+          }
+        ],
+        "states": [
+          {
+            "state": "unknown",
+            "text": "第 1 页：真实等待超时保留项结果未知；请检查终端，不会自动重发"
+          }
+        ],
+        "draft": ""
+      }
+    },
+    {
+      "id": "OC10",
+      "title": "isolated route produces no external requests or unhandled page errors",
+      "status": "passed",
+      "details": {
+        "errors": [],
+        "external": []
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "r34-office-context-mixed-batch.png",
+      "sha256": "7e61077f0f6ee9a3137b04354e2e01bb9638a40cb715ccce0f47460bf04da02a"
+    },
+    {
+      "file": "r34-office-context-docx-context.png",
+      "sha256": "c78a67db57989a765ed1640f3ea919ebe7b1228e1a5b043b1b2b82425c6143fb"
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "sourceHashes": {
+    "prototypes/m6-codex/src/FileOfficePreview.jsx": "8e550f158088d2be7b6656f9625aaaf94cbdc111f505d329c9fa1ac32733a684",
+    "prototypes/m6-codex/src/FileArtifactPreview.jsx": "f011cb2222174e722fd216e7b561afdd9de988fb539974353a70ac30189244d7",
+    "prototypes/m6-codex/src/file-office-context-model.mjs": "26309920374625a5d5f60850f4420b217b537eea8ecde7740e8a2340e543cc9d",
+    "prototypes/m6-codex/tests/r34-office-context-harness.jsx": "c73fbb30fe802dff2465330573efcdacc8f119bb2ce7786560871813222b5ce3",
+    "prototypes/m6-codex/tests/r34-office-context-runtime.html": "e64d362b0df1a1122976e3618b2710c4ecd7a769de92195b89e73a3399f98bd8"
+  },
+  "scriptSha256": "fe3d3dbae034e82db19a9a475bbf0fa5f961742f8764336738a45cab9d6b8b1e",
+  "summary": {
+    "passed": 12
+  }
+}

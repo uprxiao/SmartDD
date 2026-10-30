@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T03:38:50.540669+00:00",
+  "defect": "M9-DEV-048",
+  "state": "development-checkpoint-partial",
+  "formallyPassedCases": [],
+  "branch": "feature/0.0.1",
+  "requirementBaseline": "R3.4 R05.9/R05.13/R08.2; Q01-Q04/Y29",
+  "implemented": [
+    "Explicit persisted local language server registry; readonly discovery without launch/install; per-language/project selection and initialize capability/version reporting",
+    "Trusted owner/FileRef/root validation, byte bounded UTF8 JSONRPC, UTF16, full document sync, cancellation and 10s/5s/3s budgets",
+    "Only hover/definition/typeDefinition/implementation/references; server applyEdit refused; no executeCommand exposed",
+    "CodeMirror real Ctrl/Meta token input, four-kind menus, 100-item result pages, hover300/100/500x2, local navigation history and terminal focus isolation",
+    "Canonical root-relative location validation and LocationLink; outside-root results display only and receive no new read/write capability",
+    "Initializer consumerId cancellation before start reply; globally reserved IDs and same-owner/document latest-open intent; owned child group shutdown",
+    "Prototype four navigation kinds/capability/error/result count settings; sample data remains synthetic"
+  ],
+  "validation": [
+    {
+      "name": "host-r3",
+      "passed": 17,
+      "failed": 0,
+      "pending": 0,
+      "durationMs": 28439.28,
+      "report": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-service/willyou-dev048-host-r3.json",
+      "sha256": "999df0ec3bd78bcb3081dd567f8d34cebec9c8c68d711dade537190aed33cbe7",
+      "tests": [
+        {
+          "name": "production text history controls (real CodeMirror; file API isolated) M9-T-H02: reflects real undo/redo availability, restores focus and avoids a save after returning to base",
+          "status": "passed"
+        },
+        {
+          "name": "production text history controls (real CodeMirror; file API isolated) disables both directions when the file becomes read-only even with a usable history branch",
+          "status": "passed"
+        },
+        {
+          "name": "production text history controls (real CodeMirror; file API isolated) targets only the current document and retains its own history after a view switch",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker performs real clangd UTF-16 emoji+CRLF hover and definition without changing source bytes",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker gates negotiated capabilities: none; covers 0/1/101 Location and LocationLink results",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker gates negotiated capabilities: definition; covers 0/1/101 Location and LocationLink results",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker gates negotiated capabilities: full; covers 0/1/101 Location and LocationLink results",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker expresses disabled, unconfigured, failed startup and incompatible position encoding separately",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker rejects owner/position/version mismatches, cancels old results on edits, and sends latest full document",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker validates canonical aliases and flags outside-root locations without issuing a new root lease",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker reports crash peer failure and permits explicit restart",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker reports oversize peer failure and permits explicit restart",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker honors explicit cancellation, root revocation and close during an outstanding result",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker bounds unresponsive initialize/request/shutdown with the approved 10s/5s/3s budgets",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker cancels initialize when the source document closes rather than waiting for its budget",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker reserves consumer IDs across owners and releases close-before-open-reply immediately",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 production language service / packaged native broker does not let an older initialized client close or replace a newer consumer of the same file",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "name": "renderer-r2",
+      "passed": 21,
+      "failed": 0,
+      "pending": 0,
+      "durationMs": 3525.44,
+      "report": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-service/willyou-dev048-renderer-r2.json",
+      "sha256": "9ebbe686cb8bde56d4607ba30547376d9938a39d49e43fc5e19ecf1e107b7aa4",
+      "tests": [
+        {
+          "name": "M9-DEV-041 interrupted input recovery UI disables save, retains a blocked close and recovers through the actual Undo toolbar",
+          "status": "passed"
+        },
+        {
+          "name": "M9-DEV-037 D08 non-active tab close focus keeps the active editor focus, selection and buffer while releasing the inactive tab",
+          "status": "passed"
+        },
+        {
+          "name": "M9-DEV-037 D08 non-active tab close focus gives keyboard close a usable focus target on the still-active tab",
+          "status": "passed"
+        },
+        {
+          "name": "M9-DEV-037 D08 non-active tab close focus does not steal focus from outside the workspace when closing inactive C with the mouse",
+          "status": "passed"
+        },
+        {
+          "name": "M9-DEV-037 D08 non-active tab close focus restores focus to the adjacent active tab when the previously focused editor was removed",
+          "status": "passed"
+        },
+        {
+          "name": "M9-DEV-036 visible persistence conflict actions shows explicit layout overwrite and reread actions; a clean reread adopts latest routes",
+          "status": "passed"
+        },
+        {
+          "name": "M9-DEV-036 visible persistence conflict actions disables reread while dirty and explicit layout save retains the editor bytes and dirty state",
+          "status": "passed"
+        },
+        {
+          "name": "shared TextMate tokenization and verified reference colors keeps the complete 245 public-derived scope rules equal to the statically observed reference colors",
+          "status": "passed"
+        },
+        {
+          "name": "shared TextMate tokenization and verified reference colors uses independent light/dark reference colors for TypeScript syntax instead of inferred roles",
+          "status": "passed"
+        },
+        {
+          "name": "shared TextMate tokenization and verified reference colors preserves CRLF, Unicode, multiline lexical state and source offsets",
+          "status": "passed"
+        },
+        {
+          "name": "shared TextMate tokenization and verified reference colors honors exact filename, compound suffix, original-case collisions and complete grammar IDs",
+          "status": "passed"
+        },
+        {
+          "name": "shared TextMate tokenization and verified reference colors F09 resolves registered extensionless names to their real syntax grammars",
+          "status": "passed"
+        },
+        {
+          "name": "shared TextMate tokenization and verified reference colors bounds window output and rejects invalid paint fields and oversized sources",
+          "status": "passed"
+        },
+        {
+          "name": "shared TextMate tokenization and verified reference colors shares escaped dual-theme tokens with Markdown and Notebook without changing source text",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 real EditorView language integration uses 300ms initial hover, at most two 500ms null retries, and 100ms leave close",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 real EditorView language integration handles ctrlKey+token with actual editor DOM and does not navigate on zero results",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 real EditorView language integration handles metaKey+token with actual editor DOM and does not navigate on zero results",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 real EditorView language integration renders all four kinds, correct one-based UTF-16 locations and 100-item pagination",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 real EditorView language integration navigates A→B→C then back/forward with production workspace; terminal key events remain untouched",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 real EditorView language integration cancels hover on edits, composition and view replacement, and never renders a late response",
+          "status": "passed"
+        },
+        {
+          "name": "DEV048 real EditorView language integration closes an initializing consumer on unmount and rejects late capability/response state",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "name": "boundaries-r1",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0,
+      "durationMs": 799.07,
+      "report": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-service/willyou-dev048-boundaries-r1.json",
+      "sha256": "1bc0dfd8ef96235ae0fa4a2c3d754922cbaa4497cef7895e8e23233b8f7f0f18",
+      "tests": [
+        {
+          "name": "shared language registry migration preserves all 345 reviewed IDs and the highlighter filename resolution",
+          "status": "passed"
+        },
+        {
+          "name": "bounded LSP byte framing accepts fragmented multibyte UTF-8, case-insensitive headers and multiple frames",
+          "status": "passed"
+        },
+        {
+          "name": "bounded LSP byte framing fails closed before exposing invalid frame 0",
+          "status": "passed"
+        },
+        {
+          "name": "bounded LSP byte framing fails closed before exposing invalid frame 1",
+          "status": "passed"
+        },
+        {
+          "name": "bounded LSP byte framing fails closed before exposing invalid frame 2",
+          "status": "passed"
+        },
+        {
+          "name": "bounded LSP byte framing fails closed before exposing invalid frame 3",
+          "status": "passed"
+        },
+        {
+          "name": "bounded LSP byte framing fails closed before exposing invalid frame 4",
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "passedTargetedTests": 45,
+  "nativeBroker": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r6-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c"
+  },
+  "realServer": "/usr/bin/clangd Apple clangd21; isolated C++ emoji/CRLF/native source unchanged",
+  "scopeOfTests": "Production source and packaged native helper I, actual EditorView/jsdom component integration with protocol boundary substitutes; deterministic peer is not a real TS/Python server; no packaged GUI LSP acceptance.",
+  "typecheck": {
+    "previousFullExit": 0,
+    "previousLog": "acceptance-language-service/willyou-dev048-types-r4.log",
+    "latestFullExit": 2,
+    "latestLog": "acceptance-language-service/willyou-dev048-checkpoint-typecheck.log",
+    "latestErrors": "Only newly added workspace-tree-native-acceptance.test.tsx: hold possibly undefined and 6 unsupported exact ByRole options; owner notified to fix; LSP production/test code no reported errors.",
+    "finalFullExit": 0,
+    "finalLog": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-service/shared-final-typecheck.log",
+    "finalLogSha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "resolution": "Tree test owner corrected test-only narrowing/ByRole options; shared final full node+web tsc exit0 includes all current LSP/MCP/D20/DEV050/root routing."
+  },
+  "prototypeBuild": {
+    "exit": 0,
+    "log": "acceptance-language-service/willyou-dev048-prototype-build-r1.log",
+    "browserVerified": false
+  },
+  "diffCheck": "exit0",
+  "failureHistory": [
+    "host-r1 12 failures caused by harness openScope nonexistent; corrected to real FileRootsService.open, host-r2 12/12",
+    "renderer-r1 old panel mocks lacked new LSP boundary; unrelated focus harness now explicitly mocks LSP, full actual-LSP integration lives in renderer.test.tsx",
+    "renderer test Content initially mounted FileTextEditor before buffer.editor existed unlike production FileContent; harness corrected; vi mock once queues reset per test",
+    "Independent review identified concurrent session ID collision and same-file late initializer; fixed using global pending reservation and per-owner/ref latest intent; two new real client tests pass"
+  ],
+  "remaining": [
+    "Q01-Q04 are NOT yet counted formal complete: finish original-step audit including all 1-result kinds/capability UI and actual prototype observations",
+    "Y29 real TypeScript and Python services absent in audited locations; no auto install or inferred pass",
+    "Y29 requires actual packaged App; current LSP source is newer than r6; r7 unified build/GUI still pending and desktop currently locked",
+    "Root-external target requirement is not treated as full file preview: current implementation displays readonly location only and does not acquire arbitrary file access; explicit authorized readonly preview, if required, remains pending",
+    "Prototype config is a synthetic state selector and lacks full production form/hover/history event parity; do not claim complete design match",
+    "Cross-platform OS behavior and all server-to-client/flood cases not yet fully executed; configured executable is trusted local code, not sandboxed by this host"
+  ],
+  "securityBoundary": "No shell; explicit executable runs with local user privileges and minimized env/temp HOME. Host readonly protocol does NOT mean executable cannot independently read/write OS files; configuration dialog states this. No models/network calls performed by tests.",
+  "sourceArchive": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-service/checkpoint-sources.tar.gz",
+    "sha256": "8b15268a6e75c108b77ca668a5e3746d0554d95170b0eb967e924f6a64455263",
+    "files": 39,
+    "manifest": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-language-service/checkpoint-sources.json"
+  },
+  "guiFixture": {
+    "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/acceptance-dev048/navigation.cpp",
+    "sha256": "5c873b436abf970f7a7b0b9a0c78f9b5afcf7ac269c2cf92939f2b7545876669",
+    "bytes": 182,
+    "addedAt": 1792294648.6828249,
+    "kind": "isolated GUI fixture; no source execution/model calls"
+  }
+}

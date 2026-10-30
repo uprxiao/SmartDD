@@ -1,0 +1,23 @@
+.fw-recovery-dialog { width:min(900px,calc(100vw - 32px));max-width:calc(100vw - 32px);padding:0;color:var(--text,var(--foreground));background:var(--bg,var(--background)); }
+.fw-recovery-view { display:flex;flex-direction:column;min-height:0;font-size:13px;line-height:1.5; }
+.fw-recovery-description { margin:0;padding:0 24px 20px;color:var(--secondary,var(--foreground-muted)); }
+.fw-recovery-layout { display:grid;grid-template-columns:minmax(160px,28%) minmax(0,1fr);height:min(62vh,600px);min-height:200px;border-top:1px solid var(--border); }
+.fw-recovery-records,.fw-recovery-materials { min-width:0;overflow:auto;overscroll-behavior:contain;padding:12px; }
+.fw-recovery-records { border-right:1px solid var(--border); }
+.fw-recovery-records>button { display:flex;flex-direction:column;gap:4px;width:100%;padding:10px;border-radius:8px;text-align:left;background:transparent; }
+.fw-recovery-records>button:hover { background:var(--hover,var(--muted)); }
+.fw-recovery-records>button[aria-pressed=true] { background:var(--selected,var(--accent)); }
+.fw-recovery-records span { max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis; }
+.fw-recovery-records small,.fw-recovery-records>p,.fw-recovery-materials p,.fw-recovery-materials small { font-size:12px;color:var(--secondary,var(--foreground-muted)); }
+.fw-recovery-materials .fw-recovery-state { margin:0 0 12px; }
+.fw-recovery-materials details { margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden; }
+.fw-recovery-materials summary { padding:10px;cursor:pointer;font-weight:500; }
+.fw-recovery-materials summary small { float:right;margin-left:8px;font-weight:400; }
+.fw-recovery-materials details>p { margin:8px 10px; }
+.fw-recovery-materials pre { max-height:180px;overflow:auto;margin:0;padding:10px;border-top:1px solid var(--border);background:var(--surface,var(--background));font:12px/1.6 var(--mono,var(--font-mono,monospace));white-space:pre-wrap;overflow-wrap:anywhere;user-select:text; }
+.fw-recovery-materials dl { margin:0;padding:8px 10px;border-top:1px solid var(--border);font-size:10px; }
+.fw-recovery-materials dt { color:var(--secondary,var(--foreground-muted)); }
+.fw-recovery-materials dd { margin:2px 0 0;overflow-wrap:anywhere;font-family:var(--mono,var(--font-mono,monospace));user-select:text; }
+.fw-recovery-prototype-header { display:flex;align-items:center;justify-content:space-between;padding:24px; }
+.fw-recovery-prototype-header h2 { margin:0;font-size:16px;font-weight:500; }
+@media(max-width:600px) { .fw-recovery-layout{grid-template-columns:minmax(120px,32%) minmax(0,1fr)} .fw-recovery-records,.fw-recovery-materials{padding:8px} }

@@ -1,0 +1,92 @@
+{
+  "startedAt": "2026-10-18T06:02:15.320Z",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r12-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "4c644131d338d61bb38bb42564106fc94790f053d2bb07ad0b1e811c1f9e7c4f",
+  "brokerSha256": "81205d4eb75670835a23652a936a3cdd07fcf3e8e8d2f65eb7afa2c546af4676",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "fixtureManifest": "/Users/hx/hx/hxWork/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/tree-basic-20261018/fixtures.json",
+  "root": "/private/tmp/willyou-m9-tree-basic-qb7KP1/D02",
+  "scratch": "/private/tmp/willyou-tree-basic-ui-gtpFoJ",
+  "before": {
+    ".env": {
+      "sha256": "a23b9033f81d47204c0748de59a15a416ebc16dce54ead8c0ab76df986648dc7",
+      "size": "26",
+      "inode": "44650780",
+      "mtimeNs": "1792294511696395454",
+      "ctimeNs": "1792294511696395454"
+    },
+    ".gitignore": {
+      "sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+      "size": "14",
+      "inode": "44650781",
+      "mtimeNs": "1792294511696492120",
+      "ctimeNs": "1792294511696492120"
+    },
+    ".hidden/x": {
+      "sha256": "92ca2889c598d906f3f28ae1fdb9f407c6d3e0f6078849311fd1444328827504",
+      "size": "13",
+      "inode": "44650783",
+      "mtimeNs": "1792294511696609787",
+      "ctimeNs": "1792294511696609787"
+    },
+    "node_modules/x": {
+      "sha256": "38ea589b3edc41619bfcfbd4fb96fcd5502aace15c4efd1f98bb2c213ad7f91b",
+      "size": "36",
+      "inode": "44650785",
+      "mtimeNs": "1792294511696720453",
+      "ctimeNs": "1792294511696720453"
+    },
+    "level1/level2/level3/level4/level5/leaf.txt": {
+      "sha256": "3ecb5475f8ff5ff83745e31b6a08df63626069d633ef717a29ed0d51a4a590a4",
+      "size": "24",
+      "inode": "44650791",
+      "mtimeNs": "1792294511696992994",
+      "ctimeNs": "1792294511696992994"
+    },
+    "A.txt": {
+      "sha256": "eeeaf1dfb10bbf98d4d178afd605b276bd63526589c5cf97e3a08932cc75a895",
+      "size": "16",
+      "inode": "44650792",
+      "mtimeNs": "1792294511697055244",
+      "ctimeNs": "1792294511697055244"
+    },
+    "B.txt": {
+      "sha256": "e480e56e40438a86256a2f25a07c8f45f1b9e77405cb957e718aac7928cdc82d",
+      "size": "16",
+      "inode": "44650793",
+      "mtimeNs": "1792294511697123911",
+      "ctimeNs": "1792294511697123911"
+    }
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-B01",
+      "initialRootOnly": true,
+      "firstExpandShowsOnlyLevel2": true,
+      "secondExpandShowsOnlyLevel3": true,
+      "collapseAndReexpandKeepsNestedExpansion": true,
+      "level4Absent": true,
+      "requestAccounting": "Exact root/level1/level2 requests and pending/cache deduplication are verified by current production native integration, not inferred from DOM."
+    },
+    {
+      "caseId": "M9-T-B04",
+      "visible": [
+        ".env",
+        ".gitignore",
+        ".hidden/x",
+        "node_modules/x"
+      ],
+      "filter": "ordinary tree, filename filter empty and changes-only disabled"
+    }
+  ],
+  "status": "failed",
+  "input": "Actual packaged Electron renderer CDP pointer events, including a first-double-click sequence; no DOM .click() or store/API replacement.",
+  "projectId": "716ec314-e23c-4acd-8496-d1b44936a1ec",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n8 !== 0\n",
+  "failureDom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 tree basic acceptance\n设置\n首页\n›\nM9 tree basic acceptance\n文件\nM9 tree basic acceptance\n\nRead-only D02 acceptance fixture\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 tree basic acceptance\n别名\n—\n说明\nRead-only D02 acceptance fixture\n规则文件\n—\n配置版本\n1\n创建时间\n10/18/2026, 2:02:15 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nD02 synthetic tree\n\n从右侧目录选择文件\n\nD02\n.hidden\nempty\n空目录\nlevel1\nnode_modules\n.env\n.gitignore\nA.txt\nB.txt\n本机文件",
+  "finishedAt": "2026-10-18T06:02:17.501Z"
+}

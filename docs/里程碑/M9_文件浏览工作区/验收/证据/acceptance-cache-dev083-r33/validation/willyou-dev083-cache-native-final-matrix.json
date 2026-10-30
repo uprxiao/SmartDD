@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-18T14:41:54.039Z",
+  "caseId": "M9-T-B19",
+  "layer": "I: production React tree/store/service + packaged native broker, passive native list accounting; jsdom geometry. Watch not attached so explicit stale-cache invalidation is deterministic. No PTY or model; actual task states are tested separately in App A.",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r33-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "observations": [
+    {
+      "scenario": "confirmed cache and explicit refresh",
+      "immediateMs": 16.089708999999857,
+      "afterFiveMs": 5115.265417,
+      "lists": [
+        {
+          "path": "",
+          "at": 1168.7635,
+          "outcome": "ready"
+        },
+        {
+          "path": "cache",
+          "at": 1229.069042,
+          "outcome": "ready"
+        },
+        {
+          "path": "",
+          "at": 6381.010375,
+          "outcome": "ready"
+        },
+        {
+          "path": "cache",
+          "at": 6381.659292,
+          "outcome": "ready"
+        }
+      ],
+      "confirmedCachePreservedAcrossCollapse": true,
+      "staleRowsBeforeRefresh": [
+        "cache/old.txt"
+      ],
+      "refreshedRows": [
+        "cache/new.txt"
+      ],
+      "stableUnchanged": {
+        "sha256": "f131289428c2f0a57475b59eb45b1f16a901ae30513bfffb8714bed3a3c03dc3",
+        "inode": "47048051",
+        "mtimeNs": "1792334508721940288"
+      }
+    },
+    {
+      "scenario": "native error and explicit retry",
+      "failure": {
+        "text": "读取失败重试",
+        "title": "[PERMISSION] open component: Permission denied"
+      },
+      "lists": [
+        {
+          "path": "",
+          "at": 6418.769125,
+          "outcome": "ready"
+        },
+        {
+          "path": "restricted",
+          "at": 6433.600375,
+          "outcome": "FileError: [PERMISSION] open component: Permission denied"
+        },
+        {
+          "path": "restricted",
+          "at": 6450.641042,
+          "outcome": "ready"
+        }
+      ],
+      "state": {
+        "state": "ready",
+        "entries": [
+          {
+            "size": 22,
+            "identity": {
+              "inode": "47048069",
+              "device": "16777232"
+            },
+            "kind": "file",
+            "symbolicLink": false,
+            "name": "child.txt",
+            "relativePath": "restricted/child.txt"
+          }
+        ]
+      }
+    }
+  ]
+}

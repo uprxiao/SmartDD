@@ -1,0 +1,749 @@
+{
+  "at": "2026-10-19T21:05:12.171Z",
+  "scratch": "/private/tmp/willyou-path-source-P-huBdJq",
+  "checks": [
+    {
+      "theme": "light",
+      "scenario": "forged JSON identities does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "{\"path\":\"/synthetic/source-identity/safe.txt\",\"rootId\":\"main\",\"fileId\":\"safe.txt\",\"taskId\":\"other\"}"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "unknown token does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "unknown-token"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "plain absolute path does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/plain",
+            "data": "/synthetic/source-identity/safe.txt"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "HTTP image does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/uri-list",
+            "data": "https://invalid.example/p.png"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "data image does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/uri-list",
+            "data": "data:image/png;base64,AA=="
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "blob image does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/uri-list",
+            "data": "blob:synthetic"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "virtual document does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "{\"virtual\":true,\"fileId\":\"virtual.png\"}"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "foreign host same name does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "{\"path\":\"/synthetic/source-identity/picture.png\",\"hostId\":\"ssh:other-host\"}"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "directory has no path drag entry",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "synthetic deleted.txt source canceled at original trusted dragstart",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "drag": {
+        "from": {
+          "x": 1255.5,
+          "y": 405
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "disabled": true,
+        "blocked": {
+          "prevented": true,
+          "trusted": true
+        }
+      },
+      "notice": "文件已删除或目录不可用，未开始拖放。",
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "synthetic root-lost.txt source canceled at original trusted dragstart",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "drag": {
+        "from": {
+          "x": 1255.5,
+          "y": 461
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "disabled": true,
+        "blocked": {
+          "prevented": true,
+          "trusted": true
+        }
+      },
+      "notice": "文件已删除或目录不可用，未开始拖放。",
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "catalog mapped image from tree uses ordinary path",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "drag": {
+        "from": {
+          "x": 1255.5,
+          "y": 433
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "data": {
+          "items": [
+            {
+              "mimeType": "application/x-willyou-prototype-file",
+              "data": "file-drag-1"
+            }
+          ],
+          "dragOperationsMask": 17
+        }
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "catalog mapped image from tab uses ordinary path",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png /synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "drag": {
+        "from": {
+          "x": 730.6875,
+          "y": 68
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "data": {
+          "items": [
+            {
+              "mimeType": "application/x-willyou-prototype-tab",
+              "data": "main\u0000picture.png"
+            },
+            {
+              "mimeType": "application/x-willyou-prototype-file",
+              "data": "file-drag-2"
+            }
+          ],
+          "dragOperationsMask": 17
+        }
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "catalog mapped image from image uses ordinary path",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png /synthetic/source-identity/picture.png /synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "drag": {
+        "from": {
+          "x": 868.84375,
+          "y": 495
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "data": {
+          "items": [
+            {
+              "mimeType": "text/uri-list",
+              "data": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22teal%22%2F%3E%3C%2Fsvg%3E",
+              "title": "picture.png"
+            },
+            {
+              "mimeType": "text/html",
+              "data": "<img draggable=\"true\" alt=\"picture.png\" src=\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22teal%22%2F%3E%3C%2Fsvg%3E\">",
+              "baseURL": "about:blank#blocked"
+            },
+            {
+              "mimeType": "application/x-willyou-prototype-file",
+              "data": "file-drag-3"
+            }
+          ],
+          "dragOperationsMask": 17
+        }
+      },
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "scenario": "same path text on a foreign host has explicit unsupported view",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png /synthetic/source-identity/picture.png /synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "notice": "本期不支持远程工作区；远程记录仍保留，未连接或读取远程文件。项目的服务器配置仍可用于已有终端功能。关闭文件工作区",
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "forged JSON identities does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "{\"path\":\"/synthetic/source-identity/safe.txt\",\"rootId\":\"main\",\"fileId\":\"safe.txt\",\"taskId\":\"other\"}"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "unknown token does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "unknown-token"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "plain absolute path does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/plain",
+            "data": "/synthetic/source-identity/safe.txt"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "HTTP image does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/uri-list",
+            "data": "https://invalid.example/p.png"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "data image does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/uri-list",
+            "data": "data:image/png;base64,AA=="
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "blob image does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "text/uri-list",
+            "data": "blob:synthetic"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "virtual document does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "{\"virtual\":true,\"fileId\":\"virtual.png\"}"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "foreign host same name does not synthesize a source",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "payload": {
+        "items": [
+          {
+            "mimeType": "application/x-willyou-prototype-file",
+            "data": "{\"path\":\"/synthetic/source-identity/picture.png\",\"hostId\":\"ssh:other-host\"}"
+          }
+        ],
+        "dragOperationsMask": 1
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "directory has no path drag entry",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "synthetic deleted.txt source canceled at original trusted dragstart",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "drag": {
+        "from": {
+          "x": 1255.5,
+          "y": 405
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "disabled": true,
+        "blocked": {
+          "prevented": true,
+          "trusted": true
+        }
+      },
+      "notice": "文件已删除或目录不可用，未开始拖放。",
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "synthetic root-lost.txt source canceled at original trusted dragstart",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "",
+      "rows": [],
+      "drag": {
+        "from": {
+          "x": 1255.5,
+          "y": 461
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "disabled": true,
+        "blocked": {
+          "prevented": true,
+          "trusted": true
+        }
+      },
+      "notice": "文件已删除或目录不可用，未开始拖放。",
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "catalog mapped image from tree uses ordinary path",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "drag": {
+        "from": {
+          "x": 1255.5,
+          "y": 433
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "data": {
+          "items": [
+            {
+              "mimeType": "application/x-willyou-prototype-file",
+              "data": "file-drag-4"
+            }
+          ],
+          "dragOperationsMask": 17
+        }
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "catalog mapped image from tab uses ordinary path",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png /synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "drag": {
+        "from": {
+          "x": 730.6875,
+          "y": 68
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "data": {
+          "items": [
+            {
+              "mimeType": "application/x-willyou-prototype-tab",
+              "data": "main\u0000picture.png"
+            },
+            {
+              "mimeType": "application/x-willyou-prototype-file",
+              "data": "file-drag-5"
+            }
+          ],
+          "dragOperationsMask": 17
+        }
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "catalog mapped image from image uses ordinary path",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png /synthetic/source-identity/picture.png /synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "drag": {
+        "from": {
+          "x": 868.84375,
+          "y": 495
+        },
+        "to": {
+          "x": 298,
+          "y": 324
+        },
+        "data": {
+          "items": [
+            {
+              "mimeType": "text/uri-list",
+              "data": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22teal%22%2F%3E%3C%2Fsvg%3E",
+              "title": "picture.png"
+            },
+            {
+              "mimeType": "text/html",
+              "data": "<img draggable=\"true\" alt=\"picture.png\" src=\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22teal%22%2F%3E%3C%2Fsvg%3E\">",
+              "baseURL": "about:blank#blocked"
+            },
+            {
+              "mimeType": "application/x-willyou-prototype-file",
+              "data": "file-drag-6"
+            }
+          ],
+          "dragOperationsMask": 17
+        }
+      },
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "scenario": "same path text on a foreign host has explicit unsupported view",
+      "caseIds": [
+        "M9-T-Y39"
+      ],
+      "input": "/synthetic/source-identity/picture.png /synthetic/source-identity/picture.png /synthetic/source-identity/picture.png ",
+      "rows": [
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        },
+        {
+          "data": "/synthetic/source-identity/picture.png ",
+          "accepted": true
+        }
+      ],
+      "notice": "本期不支持远程工作区；远程记录仍保留，未连接或读取远程文件。项目的服务器配置仍可用于已有终端功能。关闭文件工作区",
+      "pass": true
+    }
+  ],
+  "status": "passed",
+  "boundary": "Original shared FileWorkspace/TerminalPreview, public synthetic catalog/task props. Negative DataTransfer CDP fault; original P pathDelivery remains synthetic. No actual native/sender/disk/PTY or App claim.",
+  "pid": 24327,
+  "entry": "file:///private/tmp/willyou-m9-acceptance-batch-r99-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+  "dragProbeRestored": true,
+  "exit": {
+    "pid": 24327,
+    "code": 0,
+    "signal": null
+  },
+  "finishedAt": "2026-10-19T21:05:18.042Z"
+}

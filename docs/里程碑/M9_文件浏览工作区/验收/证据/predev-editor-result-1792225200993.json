@@ -1,0 +1,324 @@
+{
+  "ranAt": "2026-10-17T08:19:39.532Z",
+  "scope": "isolated real CodeMirror/current parser/native Worker feasibility; no production App acceptance",
+  "budget": {
+    "frozenBeforeRun": true,
+    "scope": "isolated editor feasibility, not product SLA",
+    "workerReadyMs": 5000,
+    "parseDeadlineMs": 15000,
+    "editBurstCount": 100,
+    "renderWindowMax": 60,
+    "largeInputBytes": 10485760,
+    "longSingleLineBytes": 2097152,
+    "complexCaseDeadlineMs": 15000,
+    "editorInitialMountMs": 3000,
+    "editorLongTaskMs": 1000,
+    "cmDomLinesMax": 1000,
+    "cancelCloseMs": 1000
+  },
+  "checks": [
+    {
+      "id": "PE01",
+      "title": "real editor and current Markdown native Worker render semantic blocks",
+      "status": "passed",
+      "detail": {
+        "epoch": 1,
+        "revision": 1,
+        "length": 256,
+        "rawLength": 291,
+        "pending": false,
+        "queued": false,
+        "activeWorkers": 1,
+        "indexBytes": 352,
+        "items": 22,
+        "renderedRevision": 1,
+        "viewLines": 32,
+        "domWidgets": 1,
+        "composing": false,
+        "selection": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    },
+    {
+      "id": "PE02",
+      "title": "mixed CRLF/CR/LF and emoji map by UTF-16 and preserve untouched bytes",
+      "status": "passed",
+      "detail": {
+        "roundtrip": true,
+        "normalized": "first😀\n中文\nlast\nEND",
+        "unchanged": true,
+        "utf16Emoji": 7,
+        "rawLength": 20,
+        "docLength": 19
+      }
+    },
+    {
+      "id": "PE03",
+      "title": "real history restores exact mixed EOL source across replacement undo/redo",
+      "status": "passed",
+      "detail": {
+        "original": "first😀\r\n中文\nlast\rEND",
+        "changed": "first😀中文新\r\n行\nlast\rEND",
+        "undo": "first😀\r\n中文\nlast\rEND",
+        "redo": "first😀中文新\r\n行\nlast\rEND",
+        "undoExact": true,
+        "redoExact": true
+      }
+    },
+    {
+      "id": "PE04",
+      "title": "cross-block selection through table/list/quote uses actual editor transaction and undo",
+      "status": "passed",
+      "detail": {
+        "from": 30,
+        "to": 152,
+        "selected": "重复 **bold** 与 `code`，公式 $a^2$；[中文](需求.md)。\n\n- [ ] task\n- child\n\n| 中文 | value |\n| --- | --- |\n| 文本 | 42 |\n\n> 引用\n> 二行\n\n```js",
+        "changed": "---\r\ntitle: 合成语义\r\n---\r\n\r\n# 标题 😀\r\n\r\n跨段替换😀\r\nconst n = 42\r\n```\r\n\r\n```mermaid\r\ngraph TD\r\n A-->B\r\n```\r\n\r\n[ref]: ./本地.md\r\n\r\n末尾 [引用][ref]。\r\n\r\n$$\r\na^2+b^2=c^2\r\n$$\r\n\r\nEND",
+        "restored": true,
+        "selectionBlocks": true
+      }
+    },
+    {
+      "id": "PE05",
+      "title": "direct StateField block math widget renders and reveals exact source without DOM roundtrip",
+      "status": "failed",
+      "detail": {
+        "widgets": {
+          "widgets": 1,
+          "hasKatex": true
+        },
+        "reveal": {
+          "selected": "",
+          "widgets": 0
+        }
+      }
+    },
+    {
+      "id": "PE06",
+      "title": "rendered preview source navigation targets exact heading range",
+      "status": "passed",
+      "detail": {
+        "previewSelection": "# 标题 😀\n"
+      }
+    },
+    {
+      "id": "PE07",
+      "title": "100 edits coalesce latest snapshot and delayed stale parse cannot overwrite content",
+      "status": "passed",
+      "detail": {
+        "ignored": 1,
+        "snapshot": {
+          "epoch": 4,
+          "revision": 102,
+          "length": 116,
+          "rawLength": 116,
+          "pending": false,
+          "queued": false,
+          "activeWorkers": 1,
+          "indexBytes": 48,
+          "items": 3,
+          "renderedRevision": 102,
+          "viewLines": 3,
+          "domWidgets": 0,
+          "composing": false,
+          "selection": {
+            "from": 0,
+            "to": 0
+          }
+        },
+        "text": "# Old\n\nhello old0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+        "last": "<h1><span data-md-source-from=\"2\" data-md-source-to=\"5\" data-md-source-mode=\"linear\">Old</span></h1>\n<p><span data-md-source-from=\"7\" data-md-source-to=\"116\" data-md-source-mode=\"linear\">hello old0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789</span></p>\n",
+        "maxQueued": 1
+      }
+    },
+    {
+      "id": "PE08",
+      "title": "Chromium composition replacement commits once without duplicate romanization (CDP, not OS IME)",
+      "status": "passed",
+      "detail": {
+        "text": "开始 中文😀",
+        "events": [
+          {
+            "type": "compositionstart",
+            "trusted": true
+          },
+          {
+            "type": "compositionupdate",
+            "data": "zhong",
+            "trusted": true
+          },
+          {
+            "type": "compositionupdate",
+            "data": "中文😀",
+            "trusted": true
+          },
+          {
+            "type": "compositionupdate",
+            "data": "中文😀",
+            "trusted": true
+          },
+          {
+            "type": "compositionend",
+            "data": "中文😀",
+            "trusted": false
+          }
+        ],
+        "transactions": [
+          {
+            "revision": 100,
+            "userEvent": [
+              "input"
+            ],
+            "composing": false
+          },
+          {
+            "revision": 101,
+            "userEvent": [
+              "input"
+            ],
+            "composing": false
+          },
+          {
+            "revision": 102,
+            "userEvent": [
+              "input"
+            ],
+            "composing": false
+          },
+          {
+            "revision": 2,
+            "userEvent": [
+              "input.type.compose.start"
+            ],
+            "composing": true
+          },
+          {
+            "revision": 3,
+            "userEvent": [
+              "input.type.compose"
+            ],
+            "composing": true
+          }
+        ],
+        "composing": false
+      }
+    },
+    {
+      "id": "PE09",
+      "title": "composition undo/redo restores complete composed text",
+      "status": "passed",
+      "detail": {
+        "imeUndo": "开始 ",
+        "imeRedo": "开始 中文😀"
+      }
+    },
+    {
+      "id": "FATAL",
+      "title": "complete isolated run",
+      "status": "failed",
+      "detail": {
+        "error": "page.evaluate: Error: deadline\n    at eval (eval at evaluate (:234:30), <anonymous>:1:672)\n    at /Users/liubu/Documents/ChatGPT/SmartDD/prototypes/m6-codex/tests/predev-editor/check.mjs:41:54"
+      }
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "workers": [
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    },
+    {
+      "url": "http://127.0.0.1:4193/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+      "closed": true
+    }
+  ],
+  "browser": "155.0.8059.80",
+  "complex": [
+    {
+      "name": "single-line-2MiB",
+      "bytes": 1887438,
+      "ms": 694.0999999642372,
+      "snapshot": {
+        "epoch": 6,
+        "revision": 1,
+        "length": 1048576,
+        "rawLength": 1048576,
+        "pending": false,
+        "queued": false,
+        "activeWorkers": 1,
+        "indexBytes": 16,
+        "items": 1,
+        "renderedRevision": 1,
+        "viewLines": 1,
+        "domWidgets": 0,
+        "composing": false,
+        "selection": {
+          "from": 0,
+          "to": 0
+        }
+      },
+      "latest": {
+        "status": "parsed",
+        "revision": 1,
+        "parseMs": 22.400000035762787,
+        "blocks": 1
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/budget.json",
+      "bytes": 348,
+      "sha256": "291c3a151eed66ed66794efbb7e970747e359f77cb14604006e4cf6d2a98627a"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/check.mjs",
+      "bytes": 10458,
+      "sha256": "b7e993fe60f2d30869dffbe98be5dbe7036ada594fbc04a4c3c80b5bb4cee7f3"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/deps-entry.mjs",
+      "bytes": 107,
+      "sha256": "d7a59bf6f732840e0ec2d37c95b22c153787f26eafadb0b39a67fc8d43fabe0f"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/host.mjs",
+      "bytes": 8177,
+      "sha256": "bb8ca234a2b982c5e716450eeb79ce7a657eafdccb50c17063449dd15ecfa2c2"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/index.html",
+      "bytes": 750,
+      "sha256": "aa017f01999cd8b54abf4d0ef5f4ebff01efef448c92241a40ffcd0f7a909bec"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/offsets.mjs",
+      "bytes": 1105,
+      "sha256": "81c91ef4a4db66e3e125aefc6d43e56787f422cd4ce0414d204bbff5f7c62f45"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/predev-editor/vite.config.mjs",
+      "bytes": 395,
+      "sha256": "a5a44ec0db399556fbd956a52d55dfb816253c133c234ac6a73403ff0d67aa4b"
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 2
+  }
+}

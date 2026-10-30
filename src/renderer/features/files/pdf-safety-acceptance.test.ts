@@ -1,0 +1,29 @@
+import {afterAll,beforeAll,describe,expect,it,vi} from 'vitest';
+import {createHash,randomUUID} from 'node:crypto';
+import {readFileSync,writeFileSync,mkdtempSync,realpathSync,rmSync,statSync} from 'node:fs';
+import {join} from 'node:path';
+import {FileService} from '@main/core/files/file-service';
+import {FileRootsService} from '@main/core/files/roots';
+import {FileRecoveryStore} from '@main/core/files/recovery-store';
+import {NativeFileBroker} from '@main/core/files/native-broker';
+import {readPreviewResource} from '@renderer/features/files/preview-resource';
+import {classifyPdfError} from '@renderer/features/files/pdf/model';
+vi.mock('electron',()=>({BrowserWindow:{},dialog:{},shell:{}}));
+const rows:unknown[]=[],sha=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
+afterAll(()=>{if(process.env.SMARTDD_PDF_SAFETY_EVIDENCE)writeFileSync(process.env.SMARTDD_PDF_SAFETY_EVIDENCE,JSON.stringify({at:new Date().toISOString(),layer:'I: actual NativeFileBroker/FileService/resource grant/production verified reader + real PDF.js legacy parser in Electron Node. fetch forwards only the minted local grant to original resource handler, no byte/result replacement. Node PDF.js uses its own fake-worker path; native browser Worker and user UI are separate A/P.',rows},null,2)+'\n')});
+describe.skipIf(!process.env.SMARTDD_PDF_PROJECT||!process.env.SMARTDD_FILES_NATIVE_PATH)('Y15/Y16 PDF native source and real parser',()=>{
+ let pdfjs:typeof import('pdfjs-dist');
+ beforeAll(async()=>{pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs');});
+ async function fixture(name:string){
+  const project=process.env.SMARTDD_PDF_PROJECT!,base=realpathSync(mkdtempSync('/private/tmp/willyou-pdf-safety-I-')),broker=new NativeFileBroker(process.env.SMARTDD_FILES_NATIVE_PATH!),resolver={sources:()=>[{kind:'project-directory' as const,id:'root',projectId:'pdf',path:project,label:'Synthetic PDFs'}]},files=new FileService(new FileRootsService(resolver,broker),broker,new FileRecoveryStore(broker,base,resolver));files.resources.setProtocolAvailable(true);
+  const owner='pdf-safety',root=(await files.openScope(owner,{kind:'project',projectId:'pdf'})).roots[0],file=await files.open(owner,{lease:root.lease,generation:root.generation,relativePath:name}),original=readFileSync(join(project,name)),before=statSync(join(project,name),{bigint:true});
+  const calls:string[]=[],fetch=vi.spyOn(globalThis,'fetch').mockImplementation(async(input,init)=>{const url=String(input);expect(files.resources.allows(owner,url)).toBe(true);calls.push(url);return files.resources.handle(new Request(url,init));});
+  const bytes=await readPreviewResource(file,{openResource:v=>files.resources.open(owner,v),releaseResource:async id=>files.resources.release(owner,id)},new AbortController().signal);expect(Buffer.from(bytes)).toEqual(original);expect(sha(bytes)).toBe(file.revision.hash);expect(calls).toHaveLength(1);
+  const task=pdfjs.getDocument({data:bytes,isEvalSupported:false,useSystemFonts:false,verbosity:0});void task.promise.catch(()=>undefined);
+  return{files,file,task,async close(){await task.destroy();fetch.mockRestore();files.closeOwner(owner);await files.watcher.dispose();broker.dispose();expect(readFileSync(join(project,name))).toEqual(original);const after=statSync(join(project,name),{bigint:true});for(const k of['ino','mtimeNs','ctimeNs']as const)expect(after[k]).toBe(before[k]);expect(files.resources.resourceCounts).toEqual({grants:0,tokens:0,readers:0});rmSync(base,{recursive:true,force:true});}};
+ }
+ it.each(['truncated.pdf','garbage.pdf','invalid.pdf'])('Y16 %s returns an invalid-PDF error from exact native bytes',async name=>{const f=await fixture(name);try{let error:unknown;try{await f.task.promise}catch(e){error=e}expect(error).toBeTruthy();expect(classifyPdfError(error)).toEqual({kind:'invalid',message:'文件不是有效的 PDF，或已损坏、不完整。'});rows.push({name,hash:f.file.revision.hash,classification:classifyPdfError(error),pass:true});}finally{await f.close()}});
+ it('Y15 preserves missing/wrong/repeated-wrong/correct password states without exposing source before ready',async()=>{const f=await fixture('encrypted.pdf');try{let ready=false;void f.task.promise.then(()=>{ready=true},()=>undefined);const reasons:number[]=[];f.task.onPassword=(update:(value:string)=>void,reason:number)=>{reasons.push(reason);expect(ready).toBe(false);update(reasons.length<3?'dev135-wrong-synthetic':'m9-user')};const doc=await f.task.promise,page=await doc.getPage(1),content=await page.getTextContent();expect(reasons).toEqual([1,2,2]);expect(content.items.some(x=>'str'in x&&x.str.length>0)).toBe(true);rows.push({scenario:'missing/wrong/repeated-wrong/correct',reasons,pages:doc.numPages,textItemCount:content.items.length,pass:true});}finally{await f.close()}});
+ it('Y15 actual parser task destroyed while awaiting a password settles instead of leaking a pending task',async()=>{const f=await fixture('encrypted.pdf');try{let prompt!:()=>void;const waiting=new Promise<void>(r=>prompt=r);f.task.onPassword=()=>prompt();await waiting;const settled=f.task.promise.then(()=>({success:true}),e=>({success:false,name:e.name,message:e.message}));await f.task.destroy();const result=await settled;expect(result.success).toBe(false);rows.push({scenario:'password wait cancel',result,pass:true});}finally{await f.close()}});
+ it('Y16 classification distinguishes corruption from password, IO, native worker failure and timeout',()=>{const kinds=['InvalidPDFException','PasswordException','ResponseException','PdfWorkerError','PdfWorkerTimeout'].map(name=>classifyPdfError(Object.assign(new Error('controlled read failure'),{name})).kind);expect(kinds).toEqual(['invalid','password','read','worker','timeout']);rows.push({scenario:'classifier control errors only; parser errors in other real I cases',kinds,pass:true});});
+});

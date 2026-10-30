@@ -1,0 +1,4639 @@
+{
+  "at": "2026-10-19T23:20:42.168Z",
+  "scratch": "/private/tmp/willyou-pdf-retry-A-ltUYqP",
+  "manifest": "/private/tmp/willyou-pdf-lifecycle-woqicyal/fixtures.json",
+  "root": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project",
+  "before": {
+    "normal.pdf": {
+      "sha256": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+      "inode": "50691835",
+      "mtimeNs": "1792418770728105905"
+    },
+    "alternate200.pdf": {
+      "sha256": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c",
+      "inode": "50691834",
+      "mtimeNs": "1792418770728005696"
+    }
+  },
+  "asarSha256": "cd9efcb0b8c83808a5e9cda8abe96a9a124dd3d9261ec6c0b4efd5c3c8215b67",
+  "hook": {
+    "indexName": "index-uXO5ClTt.js",
+    "line": 94105,
+    "scriptUrl": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/index-uXO5ClTt.js",
+    "installed": {
+      "installed": true,
+      "page": 1,
+      "prototype": "PDFPageProxy"
+    }
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-T15",
+      "theme": "light",
+      "scenario": "explicit page-result failure clears canvas and offers original page retry",
+      "failed": {
+        "at": 1792452043408,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "text": "",
+        "rendered": "error",
+        "width": 0,
+        "height": 0,
+        "pixels": null,
+        "error": "DEV180 explicit page-render result failure重试此页",
+        "status": "第 1 / 3 页"
+      },
+      "error": {
+        "id": 1,
+        "page": 1,
+        "at": 1792452043357,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452043381,
+        "originalUndefined": true,
+        "mode": "reject",
+        "injectedFailureAt": 1792452043381,
+        "canvas": {
+          "connected": true,
+          "width": 0,
+          "height": 0,
+          "rendered": "error"
+        }
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "light",
+      "scenario": "page retry creates fresh original task but held native success is not declared ready",
+      "held": {
+        "held": [
+          2
+        ],
+        "rows": [
+          {
+            "id": 1,
+            "page": 1,
+            "at": 1792452043357,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452043381,
+            "originalUndefined": true,
+            "mode": "reject",
+            "injectedFailureAt": 1792452043381,
+            "canvas": {
+              "connected": true,
+              "width": 285,
+              "height": 369,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 2,
+            "page": 1,
+            "at": 1792452043421,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452043437,
+            "originalUndefined": true,
+            "mode": "hold",
+            "canvas": {
+              "connected": true,
+              "width": 285,
+              "height": 369,
+              "rendered": "false"
+            }
+          }
+        ]
+      },
+      "pending": {
+        "at": 1792452043528,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "text": "",
+        "rendered": "false",
+        "width": 285,
+        "height": 369,
+        "pixels": 2892613355,
+        "status": "第 1 / 3 页"
+      },
+      "input": {
+        "at": 1792452043420,
+        "trusted": true,
+        "text": "重试此页"
+      },
+      "retriedWorker": {
+        "targetId": "1688D72BF0077BD0D7499EC0226ACDEB",
+        "sessionId": "0F1E49418ED0A75EDF04CD9D048E55CB",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452043295,
+        "held": false,
+        "resumedAt": 1792452043296
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "light",
+      "scenario": "page old original success delivered after new document ready cannot repaint or replace new document",
+      "before": {
+        "at": 1792452043669,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "after": {
+        "at": 1792452043775,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "old": {
+        "id": 2,
+        "page": 1,
+        "at": 1792452043421,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452043437,
+        "originalUndefined": true,
+        "mode": "hold",
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "result": {
+        "id": 2,
+        "page": 1,
+        "at": 1792452043421,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452043437,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452043670,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "releasedAt": 1792452043670,
+      "frames": [
+        {
+          "at": 1792452043556,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043562,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043571,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043578,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043586,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043595,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043603,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043611,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043620,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452043628,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452043636,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452043645,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043653,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043661,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043669,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043678,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043686,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043695,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043703,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043711,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043720,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043727,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043735,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043745,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043753,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043761,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452043770,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        }
+      ]
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "light",
+      "scenario": "actual native Worker thrown error clears loaded document and exposes host retry",
+      "previous": {
+        "targetId": "9689EF1D1677DBD382DE1FA1305AACBC",
+        "sessionId": "CF9AF933AD2DB804DD6A3102460CD8DD",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452043920,
+        "held": false,
+        "resumedAt": 1792452043921
+      },
+      "failed": {
+        "at": 1792452044085,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "pixels": null,
+        "error": "PDF 工作进程意外退出，请重试。重试"
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "light",
+      "scenario": "worker retry creates fresh original task but held native success is not declared ready",
+      "held": {
+        "held": [
+          5
+        ],
+        "rows": [
+          {
+            "id": 1,
+            "page": 1,
+            "at": 1792452043357,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452043381,
+            "originalUndefined": true,
+            "mode": "reject",
+            "injectedFailureAt": 1792452043381,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 2,
+            "page": 1,
+            "at": 1792452043421,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452043437,
+            "originalUndefined": true,
+            "mode": "hold",
+            "deliveredAt": 1792452043670,
+            "deliveredUndefined": true,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 3,
+            "page": 1,
+            "at": 1792452043624,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452043637,
+            "originalUndefined": true,
+            "deliveredAt": 1792452043637,
+            "canvas": null
+          },
+          {
+            "id": 4,
+            "page": 1,
+            "at": 1792452043938,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452043956,
+            "originalUndefined": true,
+            "deliveredAt": 1792452043956,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 5,
+            "page": 1,
+            "at": 1792452044135,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452044155,
+            "originalUndefined": true,
+            "mode": "hold",
+            "canvas": {
+              "connected": true,
+              "width": 285,
+              "height": 369
+            }
+          }
+        ]
+      },
+      "pending": {
+        "at": 1792452044202,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "text": "",
+        "width": 285,
+        "height": 369,
+        "pixels": 2892613355,
+        "status": "第 1 / 3 页"
+      },
+      "input": {
+        "at": 1792452044095,
+        "trusted": true,
+        "text": "重试"
+      },
+      "retriedWorker": {
+        "targetId": "E5FB81258BB45037464120FA99188B77",
+        "sessionId": "E398AA4CDA24CD6149EA740E9DDE37A3",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452044120,
+        "held": false,
+        "resumedAt": 1792452044121
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "light",
+      "scenario": "worker old original success delivered after new document ready cannot repaint or replace new document",
+      "before": {
+        "at": 1792452044324,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "after": {
+        "at": 1792452044430,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "old": {
+        "id": 5,
+        "page": 1,
+        "at": 1792452044135,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452044155,
+        "originalUndefined": true,
+        "mode": "hold",
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "result": {
+        "id": 5,
+        "page": 1,
+        "at": 1792452044135,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452044155,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452044325,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "releasedAt": 1792452044325,
+      "frames": [
+        {
+          "at": 1792452044220,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044227,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044236,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044245,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044253,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044261,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044272,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452044278,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452044286,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\n\n\n"
+        },
+        {
+          "at": 1792452044295,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044303,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044311,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044320,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044328,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044336,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044345,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044353,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044361,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044370,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044378,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044386,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044395,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044403,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044411,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044419,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044430,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        }
+      ]
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "dark",
+      "scenario": "explicit page-result failure clears canvas and offers original page retry",
+      "failed": {
+        "at": 1792452044627,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "text": "",
+        "rendered": "error",
+        "width": 0,
+        "height": 0,
+        "pixels": null,
+        "error": "DEV180 explicit page-render result failure重试此页",
+        "status": "第 1 / 3 页"
+      },
+      "error": {
+        "id": 7,
+        "page": 1,
+        "at": 1792452044584,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452044606,
+        "originalUndefined": true,
+        "mode": "reject",
+        "injectedFailureAt": 1792452044606,
+        "canvas": {
+          "connected": true,
+          "width": 0,
+          "height": 0,
+          "rendered": "error"
+        }
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "dark",
+      "scenario": "page retry creates fresh original task but held native success is not declared ready",
+      "held": {
+        "held": [
+          8
+        ],
+        "rows": [
+          {
+            "id": 1,
+            "page": 1,
+            "at": 1792452043357,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452043381,
+            "originalUndefined": true,
+            "mode": "reject",
+            "injectedFailureAt": 1792452043381,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 2,
+            "page": 1,
+            "at": 1792452043421,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452043437,
+            "originalUndefined": true,
+            "mode": "hold",
+            "deliveredAt": 1792452043670,
+            "deliveredUndefined": true,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 3,
+            "page": 1,
+            "at": 1792452043624,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452043637,
+            "originalUndefined": true,
+            "deliveredAt": 1792452043637,
+            "canvas": null
+          },
+          {
+            "id": 4,
+            "page": 1,
+            "at": 1792452043938,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452043956,
+            "originalUndefined": true,
+            "deliveredAt": 1792452043956,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 5,
+            "page": 1,
+            "at": 1792452044135,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452044155,
+            "originalUndefined": true,
+            "mode": "hold",
+            "deliveredAt": 1792452044325,
+            "deliveredUndefined": true,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 6,
+            "page": 1,
+            "at": 1792452044271,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452044278,
+            "originalUndefined": true,
+            "deliveredAt": 1792452044278,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 7,
+            "page": 1,
+            "at": 1792452044584,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452044606,
+            "originalUndefined": true,
+            "mode": "reject",
+            "injectedFailureAt": 1792452044606,
+            "canvas": {
+              "connected": true,
+              "width": 285,
+              "height": 369,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 8,
+            "page": 1,
+            "at": 1792452044646,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452044662,
+            "originalUndefined": true,
+            "mode": "hold",
+            "canvas": {
+              "connected": true,
+              "width": 285,
+              "height": 369,
+              "rendered": "false"
+            }
+          }
+        ]
+      },
+      "pending": {
+        "at": 1792452044751,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "text": "",
+        "rendered": "false",
+        "width": 285,
+        "height": 369,
+        "pixels": 2892613355,
+        "status": "第 1 / 3 页"
+      },
+      "input": {
+        "at": 1792452044645,
+        "trusted": true,
+        "text": "重试此页"
+      },
+      "retriedWorker": {
+        "targetId": "CA1046F676499F8F7278CEB077744667",
+        "sessionId": "A210FC216DB38EDD08EB50EDF8E3DAE9",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452044566,
+        "held": false,
+        "resumedAt": 1792452044566
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "dark",
+      "scenario": "page old original success delivered after new document ready cannot repaint or replace new document",
+      "before": {
+        "at": 1792452044878,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "after": {
+        "at": 1792452044984,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "old": {
+        "id": 8,
+        "page": 1,
+        "at": 1792452044646,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452044662,
+        "originalUndefined": true,
+        "mode": "hold",
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "result": {
+        "id": 8,
+        "page": 1,
+        "at": 1792452044646,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452044662,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452044879,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "releasedAt": 1792452044879,
+      "frames": [
+        {
+          "at": 1792452044770,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044778,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044786,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044796,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044803,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044810,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044820,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452044829,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452044836,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452044845,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044853,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044861,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044869,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044878,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044886,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044895,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044903,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044911,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044920,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044928,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044936,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044945,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044953,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044961,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044969,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452044978,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        }
+      ]
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "dark",
+      "scenario": "actual native Worker thrown error clears loaded document and exposes host retry",
+      "previous": {
+        "targetId": "6C5570D7129FFEC7DE65E787E9F9D6DC",
+        "sessionId": "BFE294C7B467DD05CF453CA15824AC81",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452045122,
+        "held": false,
+        "resumedAt": 1792452045123
+      },
+      "failed": {
+        "at": 1792452045209,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "pixels": null,
+        "error": "PDF 工作进程意外退出，请重试。重试"
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "dark",
+      "scenario": "worker retry creates fresh original task but held native success is not declared ready",
+      "held": {
+        "held": [
+          11
+        ],
+        "rows": [
+          {
+            "id": 1,
+            "page": 1,
+            "at": 1792452043357,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452043381,
+            "originalUndefined": true,
+            "mode": "reject",
+            "injectedFailureAt": 1792452043381,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 2,
+            "page": 1,
+            "at": 1792452043421,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452043437,
+            "originalUndefined": true,
+            "mode": "hold",
+            "deliveredAt": 1792452043670,
+            "deliveredUndefined": true,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 3,
+            "page": 1,
+            "at": 1792452043624,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452043637,
+            "originalUndefined": true,
+            "deliveredAt": 1792452043637,
+            "canvas": null
+          },
+          {
+            "id": 4,
+            "page": 1,
+            "at": 1792452043938,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452043956,
+            "originalUndefined": true,
+            "deliveredAt": 1792452043956,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 5,
+            "page": 1,
+            "at": 1792452044135,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452044155,
+            "originalUndefined": true,
+            "mode": "hold",
+            "deliveredAt": 1792452044325,
+            "deliveredUndefined": true,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 6,
+            "page": 1,
+            "at": 1792452044271,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452044278,
+            "originalUndefined": true,
+            "deliveredAt": 1792452044278,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 7,
+            "page": 1,
+            "at": 1792452044584,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452044606,
+            "originalUndefined": true,
+            "mode": "reject",
+            "injectedFailureAt": 1792452044606,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 8,
+            "page": 1,
+            "at": 1792452044646,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 1,
+            "originalSettledAt": 1792452044662,
+            "originalUndefined": true,
+            "mode": "hold",
+            "deliveredAt": 1792452044879,
+            "deliveredUndefined": true,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 9,
+            "page": 1,
+            "at": 1792452044822,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452044837,
+            "originalUndefined": true,
+            "deliveredAt": 1792452044837,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 10,
+            "page": 1,
+            "at": 1792452045139,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452045164,
+            "originalUndefined": true,
+            "deliveredAt": 1792452045164,
+            "canvas": {
+              "connected": false,
+              "width": 0,
+              "height": 0,
+              "rendered": "false"
+            }
+          },
+          {
+            "id": 11,
+            "page": 1,
+            "at": 1792452045254,
+            "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+            "cancelCalls": 0,
+            "originalSettledAt": 1792452045272,
+            "originalUndefined": true,
+            "mode": "hold",
+            "canvas": {
+              "connected": true,
+              "width": 285,
+              "height": 369
+            }
+          }
+        ]
+      },
+      "pending": {
+        "at": 1792452045325,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "text": "",
+        "width": 285,
+        "height": 369,
+        "pixels": 2892613355,
+        "status": "第 1 / 3 页"
+      },
+      "input": {
+        "at": 1792452045220,
+        "trusted": true,
+        "text": "重试"
+      },
+      "retriedWorker": {
+        "targetId": "FE107D30E1A838E610C7559F52E316BC",
+        "sessionId": "EBBBF7E8D7195DD2A8AA86C20FC4BAD4",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452045240,
+        "held": false,
+        "resumedAt": 1792452045243
+      }
+    },
+    {
+      "caseId": "M9-T-T15",
+      "theme": "dark",
+      "scenario": "worker old original success delivered after new document ready cannot repaint or replace new document",
+      "before": {
+        "at": 1792452045447,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "after": {
+        "at": 1792452045552,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "text": "DEV137_ALTERNATE page 1 of 200",
+        "rendered": "true",
+        "width": 285,
+        "height": 404,
+        "pixels": 2217972679,
+        "status": "第 1 / 200 页"
+      },
+      "old": {
+        "id": 11,
+        "page": 1,
+        "at": 1792452045254,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452045272,
+        "originalUndefined": true,
+        "mode": "hold",
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "result": {
+        "id": 11,
+        "page": 1,
+        "at": 1792452045254,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452045272,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452045447,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      "releasedAt": 1792452045447,
+      "frames": [
+        {
+          "at": 1792452045344,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452045353,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452045361,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452045370,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452045378,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452045386,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": ""
+        },
+        {
+          "at": 1792452045395,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452045403,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "\n\n\n"
+        },
+        {
+          "at": 1792452045411,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\n\n"
+        },
+        {
+          "at": 1792452045420,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045428,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045436,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045445,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045453,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045463,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045470,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045478,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045486,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045495,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045503,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045511,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045520,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045528,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045536,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        },
+        {
+          "at": 1792452045544,
+          "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+        }
+      ]
+    }
+  ],
+  "boundary": "A own packaged App/original PDF.js/native Worker/protected bytes. Genuine Worker thrown error; page failure and main-thread render-result delivery latency explicitly injected through a Proxy forwarding original RenderTask/cancel. Held value is actual original native render success, no fake canvas/document/worker success or source/store/DOM value change. Retry/source switch through trusted original UI. No clipboard/picker/model/external App/current Codex access.",
+  "pid": 86644,
+  "renderGate": {
+    "held": [],
+    "rows": [
+      {
+        "id": 1,
+        "page": 1,
+        "at": 1792452043357,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452043381,
+        "originalUndefined": true,
+        "mode": "reject",
+        "injectedFailureAt": 1792452043381,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 2,
+        "page": 1,
+        "at": 1792452043421,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452043437,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452043670,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 3,
+        "page": 1,
+        "at": 1792452043624,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452043637,
+        "originalUndefined": true,
+        "deliveredAt": 1792452043637,
+        "canvas": null
+      },
+      {
+        "id": 4,
+        "page": 1,
+        "at": 1792452043938,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452043956,
+        "originalUndefined": true,
+        "deliveredAt": 1792452043956,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 5,
+        "page": 1,
+        "at": 1792452044135,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452044155,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452044325,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 6,
+        "page": 1,
+        "at": 1792452044271,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452044278,
+        "originalUndefined": true,
+        "deliveredAt": 1792452044278,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 7,
+        "page": 1,
+        "at": 1792452044584,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452044606,
+        "originalUndefined": true,
+        "mode": "reject",
+        "injectedFailureAt": 1792452044606,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 8,
+        "page": 1,
+        "at": 1792452044646,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452044662,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452044879,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 9,
+        "page": 1,
+        "at": 1792452044822,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452044837,
+        "originalUndefined": true,
+        "deliveredAt": 1792452044837,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 10,
+        "page": 1,
+        "at": 1792452045139,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452045164,
+        "originalUndefined": true,
+        "deliveredAt": 1792452045164,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 11,
+        "page": 1,
+        "at": 1792452045254,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+        "cancelCalls": 1,
+        "originalSettledAt": 1792452045272,
+        "originalUndefined": true,
+        "mode": "hold",
+        "deliveredAt": 1792452045447,
+        "deliveredUndefined": true,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      },
+      {
+        "id": 12,
+        "page": 1,
+        "at": 1792452045395,
+        "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+        "cancelCalls": 0,
+        "originalSettledAt": 1792452045403,
+        "originalUndefined": true,
+        "deliveredAt": 1792452045403,
+        "canvas": {
+          "connected": false,
+          "width": 0,
+          "height": 0,
+          "rendered": "false"
+        }
+      }
+    ]
+  },
+  "gateCleanup": {
+    "installed": true,
+    "restored": true
+  },
+  "frames": [
+    {
+      "at": 1792452043087,
+      "text": ""
+    },
+    {
+      "at": 1792452043096,
+      "text": ""
+    },
+    {
+      "at": 1792452043103,
+      "text": ""
+    },
+    {
+      "at": 1792452043111,
+      "text": ""
+    },
+    {
+      "at": 1792452043120,
+      "text": ""
+    },
+    {
+      "at": 1792452043128,
+      "text": ""
+    },
+    {
+      "at": 1792452043136,
+      "text": ""
+    },
+    {
+      "at": 1792452043145,
+      "text": ""
+    },
+    {
+      "at": 1792452043153,
+      "text": ""
+    },
+    {
+      "at": 1792452043161,
+      "text": ""
+    },
+    {
+      "at": 1792452043170,
+      "text": ""
+    },
+    {
+      "at": 1792452043178,
+      "text": ""
+    },
+    {
+      "at": 1792452043186,
+      "text": ""
+    },
+    {
+      "at": 1792452043195,
+      "text": ""
+    },
+    {
+      "at": 1792452043203,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043215,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043220,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043228,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043237,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043244,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043255,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043262,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043269,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043278,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043290,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043294,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043302,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043360,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452043369,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452043372,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452043378,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452043395,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043395,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043403,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043411,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043420,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043428,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043436,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043444,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043453,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043461,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043469,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043478,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043486,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043495,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043504,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043511,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043520,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043528,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043536,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043545,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043556,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043562,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043571,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043578,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043586,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043595,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043603,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043611,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043620,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043628,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452043636,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452043645,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043653,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043661,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043669,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043678,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043686,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043695,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043703,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043711,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043720,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043727,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043735,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043745,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043753,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043761,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043770,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043778,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043786,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043795,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043803,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043811,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043820,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043828,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452043836,
+      "text": ""
+    },
+    {
+      "at": 1792452043845,
+      "text": ""
+    },
+    {
+      "at": 1792452043853,
+      "text": ""
+    },
+    {
+      "at": 1792452043861,
+      "text": ""
+    },
+    {
+      "at": 1792452043870,
+      "text": ""
+    },
+    {
+      "at": 1792452043878,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043888,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043895,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043903,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043912,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043920,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043928,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043938,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452043945,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452043955,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452043962,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043970,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043979,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452043987,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452043995,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044003,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044011,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044020,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044028,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044036,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044044,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044053,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044061,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044069,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044078,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044087,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044095,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044103,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044111,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044120,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044128,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044137,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452044146,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452044154,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452044161,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044170,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044178,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044186,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044194,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044203,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044211,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044220,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044227,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044236,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044245,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044253,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044261,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044272,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452044278,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452044286,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\n\n\n"
+    },
+    {
+      "at": 1792452044295,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044303,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044311,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044320,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044328,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044336,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044345,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044353,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044361,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044370,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044378,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044386,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044395,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044403,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044411,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044419,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044430,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044436,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044445,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044453,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044461,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044470,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044478,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044486,
+      "text": ""
+    },
+    {
+      "at": 1792452044495,
+      "text": ""
+    },
+    {
+      "at": 1792452044503,
+      "text": ""
+    },
+    {
+      "at": 1792452044513,
+      "text": ""
+    },
+    {
+      "at": 1792452044520,
+      "text": ""
+    },
+    {
+      "at": 1792452044528,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044538,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044545,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044553,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044562,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044570,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044578,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044587,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452044595,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452044604,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452044611,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044619,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044628,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044635,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044644,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044652,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044661,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044670,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044678,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044686,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044695,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044702,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044711,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044720,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044728,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044736,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044744,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044753,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044762,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452044770,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044778,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044786,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044796,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044803,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044810,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044820,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452044829,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452044836,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452044845,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044853,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044861,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044869,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044878,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044886,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044895,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044903,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044911,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044920,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044928,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044936,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044945,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044953,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044961,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044969,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044978,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044986,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452044995,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045003,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045011,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045019,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045028,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045036,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045045,
+      "text": ""
+    },
+    {
+      "at": 1792452045053,
+      "text": ""
+    },
+    {
+      "at": 1792452045061,
+      "text": ""
+    },
+    {
+      "at": 1792452045070,
+      "text": ""
+    },
+    {
+      "at": 1792452045078,
+      "text": ""
+    },
+    {
+      "at": 1792452045086,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045095,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045103,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045113,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045120,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045128,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045136,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045145,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452045155,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452045163,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452045170,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045178,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045186,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045195,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045203,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045211,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045220,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045228,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045236,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045245,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045253,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045261,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452045271,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n\n"
+    },
+    {
+      "at": 1792452045278,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045286,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045295,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045303,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045311,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045319,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045328,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045336,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+      "text": "\n交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。\n验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+    },
+    {
+      "at": 1792452045344,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045353,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045361,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045370,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045378,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045386,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": ""
+    },
+    {
+      "at": 1792452045395,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452045403,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "\n\n\n"
+    },
+    {
+      "at": 1792452045411,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\n\n"
+    },
+    {
+      "at": 1792452045420,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045428,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045436,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045445,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045453,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045463,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045470,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045478,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045486,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045495,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045503,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045511,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045520,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045528,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045536,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045544,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045554,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045561,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045570,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045578,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045587,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045595,
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+      "text": "DEV137_ALTERNATE page 1 of 200\nDEV137_ALTERNATE page 2 of 200\nDEV137_ALTERNATE page 3 of 200\nDEV137_ALTERNATE page 4 of 200"
+    },
+    {
+      "at": 1792452045603,
+      "text": ""
+    },
+    {
+      "at": 1792452045611,
+      "text": ""
+    },
+    {
+      "at": 1792452045620,
+      "text": ""
+    }
+  ],
+  "inputs": [
+    {
+      "at": 1792452043195,
+      "trusted": true,
+      "text": "normal.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf"
+    },
+    {
+      "at": 1792452043420,
+      "trusted": true,
+      "text": "重试此页"
+    },
+    {
+      "at": 1792452043545,
+      "trusted": true,
+      "text": "alternate200.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf"
+    },
+    {
+      "at": 1792452043829,
+      "trusted": true,
+      "text": ""
+    },
+    {
+      "at": 1792452043871,
+      "trusted": true,
+      "text": "normal.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf"
+    },
+    {
+      "at": 1792452044095,
+      "trusted": true,
+      "text": "重试"
+    },
+    {
+      "at": 1792452044212,
+      "trusted": true,
+      "text": "alternate200.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf"
+    },
+    {
+      "at": 1792452044479,
+      "trusted": true,
+      "text": ""
+    },
+    {
+      "at": 1792452044520,
+      "trusted": true,
+      "text": "normal.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf"
+    },
+    {
+      "at": 1792452044645,
+      "trusted": true,
+      "text": "重试此页"
+    },
+    {
+      "at": 1792452044763,
+      "trusted": true,
+      "text": "alternate200.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf"
+    },
+    {
+      "at": 1792452045037,
+      "trusted": true,
+      "text": ""
+    },
+    {
+      "at": 1792452045079,
+      "trusted": true,
+      "text": "normal.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf"
+    },
+    {
+      "at": 1792452045220,
+      "trusted": true,
+      "text": "重试"
+    },
+    {
+      "at": 1792452045337,
+      "trusted": true,
+      "text": "alternate200.pdf",
+      "source": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf"
+    },
+    {
+      "at": 1792452045596,
+      "trusted": true,
+      "text": ""
+    }
+  ],
+  "targets": {
+    "rows": [
+      {
+        "targetId": "1688D72BF0077BD0D7499EC0226ACDEB",
+        "sessionId": "0F1E49418ED0A75EDF04CD9D048E55CB",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452043295,
+        "held": false,
+        "resumedAt": 1792452043296,
+        "detachedAt": 1792452043564,
+        "destroyedAt": 1792452043565
+      },
+      {
+        "targetId": "E3EA9610424DC54270EF22FFA9C65958",
+        "sessionId": "D27970DE5224CCFF916342A14571B555",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452043603,
+        "held": false,
+        "resumedAt": 1792452043604,
+        "detachedAt": 1792452043838,
+        "destroyedAt": 1792452043838
+      },
+      {
+        "targetId": "9689EF1D1677DBD382DE1FA1305AACBC",
+        "sessionId": "CF9AF933AD2DB804DD6A3102460CD8DD",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452043920,
+        "held": false,
+        "resumedAt": 1792452043921,
+        "detachedAt": 1792452043983,
+        "destroyedAt": 1792452043984
+      },
+      {
+        "targetId": "E5FB81258BB45037464120FA99188B77",
+        "sessionId": "E398AA4CDA24CD6149EA740E9DDE37A3",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452044120,
+        "held": false,
+        "resumedAt": 1792452044121,
+        "detachedAt": 1792452044223,
+        "destroyedAt": 1792452044223
+      },
+      {
+        "targetId": "35A09F5856C4B884339CDF281054C5C2",
+        "sessionId": "7DDA8DCF158A5FCFDC25A15E00141947",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452044253,
+        "held": false,
+        "resumedAt": 1792452044254,
+        "detachedAt": 1792452044488,
+        "destroyedAt": 1792452044489
+      },
+      {
+        "targetId": "CA1046F676499F8F7278CEB077744667",
+        "sessionId": "A210FC216DB38EDD08EB50EDF8E3DAE9",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452044566,
+        "held": false,
+        "resumedAt": 1792452044566,
+        "detachedAt": 1792452044773,
+        "destroyedAt": 1792452044773
+      },
+      {
+        "targetId": "2165C0DA307A05516341A59288539973",
+        "sessionId": "AA4BBBB66DF574E6E22CBAAF703B2ECF",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452044804,
+        "held": false,
+        "resumedAt": 1792452044804,
+        "detachedAt": 1792452045047,
+        "destroyedAt": 1792452045047
+      },
+      {
+        "targetId": "6C5570D7129FFEC7DE65E787E9F9D6DC",
+        "sessionId": "BFE294C7B467DD05CF453CA15824AC81",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452045122,
+        "held": false,
+        "resumedAt": 1792452045123,
+        "detachedAt": 1792452045188,
+        "destroyedAt": 1792452045188
+      },
+      {
+        "targetId": "FE107D30E1A838E610C7559F52E316BC",
+        "sessionId": "EBBBF7E8D7195DD2A8AA86C20FC4BAD4",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452045240,
+        "held": false,
+        "resumedAt": 1792452045243,
+        "detachedAt": 1792452045348,
+        "destroyedAt": 1792452045348
+      },
+      {
+        "targetId": "0AB5BB2D883ABE92C2B527799C9E3C0A",
+        "sessionId": "219878262A87AB8FA027566A9CC1A705",
+        "url": "file:///private/tmp/willyou-m9-acceptance-batch-r106-build/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/assets/pdf.worker.min-qwK7q_zL.mjs",
+        "waitingForDebugger": true,
+        "attachedAt": 1792452045377,
+        "held": false,
+        "resumedAt": 1792452045377,
+        "detachedAt": 1792452045605,
+        "destroyedAt": 1792452045605
+      }
+    ],
+    "errors": [],
+    "restored": true
+  },
+  "rpc": {
+    "rows": [
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "normal.pdf"
+          }
+        ],
+        "inputHash": "d1912883cde23150b5bd4a9db82bf4ba9f4067cd89d272954908420a2315aa2e",
+        "at": 1792452043202,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "e04de6fd-1b1f-4913-910c-0a33f871e17f",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "0a1383d17d5edbab299312bd105de5e25d3c0a034cbdbc6fd68fdfcd6627b3c7",
+        "currentFrame": true,
+        "after": "0a1383d17d5edbab299312bd105de5e25d3c0a034cbdbc6fd68fdfcd6627b3c7",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "e04de6fd-1b1f-4913-910c-0a33f871e17f",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "1cea410c253afddf08a76f4f8dcb06c69d8c2536f137fd275e7f1bcdef819346",
+        "at": 1792452043216,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "e04de6fd-1b1f-4913-910c-0a33f871e17f",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "0a1383d17d5edbab299312bd105de5e25d3c0a034cbdbc6fd68fdfcd6627b3c7",
+        "currentFrame": true,
+        "after": "0a1383d17d5edbab299312bd105de5e25d3c0a034cbdbc6fd68fdfcd6627b3c7",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "alternate200.pdf"
+          }
+        ],
+        "inputHash": "2c3c154e2bc11bd8604c66ff346b54a1a576b72b37ab8a8a308d2c8375a5fc64",
+        "at": 1792452043550,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "efb72fb9-dfa0-4609-9f87-de72140185c8",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "c8153261e18bf1c7ad26d0be8d4af9f3a4c5ca2ccdfae826ab413fa4c656e620",
+        "currentFrame": true,
+        "after": "c8153261e18bf1c7ad26d0be8d4af9f3a4c5ca2ccdfae826ab413fa4c656e620",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "efb72fb9-dfa0-4609-9f87-de72140185c8",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "f7c23aa1e7946c574babf5c80e9067f8fb425d3b80c12f401d48060608e36579",
+        "at": 1792452043570,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "efb72fb9-dfa0-4609-9f87-de72140185c8",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "c8153261e18bf1c7ad26d0be8d4af9f3a4c5ca2ccdfae826ab413fa4c656e620",
+        "currentFrame": true,
+        "after": "c8153261e18bf1c7ad26d0be8d4af9f3a4c5ca2ccdfae826ab413fa4c656e620",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "normal.pdf"
+          }
+        ],
+        "inputHash": "d1912883cde23150b5bd4a9db82bf4ba9f4067cd89d272954908420a2315aa2e",
+        "at": 1792452043872,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "1eafd3fc-8b6c-4a5e-94b1-300a9ea6ac6a",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "251de6155aa6c0c22d610a652c77b6177b735aa91935bc7f33b4ec964d34385c",
+        "currentFrame": true,
+        "after": "251de6155aa6c0c22d610a652c77b6177b735aa91935bc7f33b4ec964d34385c",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "1eafd3fc-8b6c-4a5e-94b1-300a9ea6ac6a",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "8b76da62cbe0d357660cc424d8713600b1631e047d34165a17ba8fadde31ce14",
+        "at": 1792452043884,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "1eafd3fc-8b6c-4a5e-94b1-300a9ea6ac6a",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "251de6155aa6c0c22d610a652c77b6177b735aa91935bc7f33b4ec964d34385c",
+        "currentFrame": true,
+        "after": "251de6155aa6c0c22d610a652c77b6177b735aa91935bc7f33b4ec964d34385c",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "alternate200.pdf"
+          }
+        ],
+        "inputHash": "2c3c154e2bc11bd8604c66ff346b54a1a576b72b37ab8a8a308d2c8375a5fc64",
+        "at": 1792452044214,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "0aa0d471-0e10-4132-a117-d4dc6462067e",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "b1e95c623b32a5d111dd6c1151e4c92c43aa01c3b8de02542b0d5d81ebc73800",
+        "currentFrame": true,
+        "after": "b1e95c623b32a5d111dd6c1151e4c92c43aa01c3b8de02542b0d5d81ebc73800",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "0aa0d471-0e10-4132-a117-d4dc6462067e",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "2a8cf0903e0fa5eeb87c4b3a4a3ab01577cfa5cf8cd6b41c1fb862a19a47bb1e",
+        "at": 1792452044226,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "0aa0d471-0e10-4132-a117-d4dc6462067e",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "b1e95c623b32a5d111dd6c1151e4c92c43aa01c3b8de02542b0d5d81ebc73800",
+        "currentFrame": true,
+        "after": "b1e95c623b32a5d111dd6c1151e4c92c43aa01c3b8de02542b0d5d81ebc73800",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "normal.pdf"
+          }
+        ],
+        "inputHash": "d1912883cde23150b5bd4a9db82bf4ba9f4067cd89d272954908420a2315aa2e",
+        "at": 1792452044522,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "96fe20e6-3936-4f01-8019-60fbf42ed957",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "2dad5fad9855725cea628cee83494bfce21bdf7b7080a4fe34e4bfe2d5c559b9",
+        "currentFrame": true,
+        "after": "2dad5fad9855725cea628cee83494bfce21bdf7b7080a4fe34e4bfe2d5c559b9",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "96fe20e6-3936-4f01-8019-60fbf42ed957",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "ea640053db72905fe556fc1a00002c82e9ff990be277d6e50d8b217b47fd299b",
+        "at": 1792452044537,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "96fe20e6-3936-4f01-8019-60fbf42ed957",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "2dad5fad9855725cea628cee83494bfce21bdf7b7080a4fe34e4bfe2d5c559b9",
+        "currentFrame": true,
+        "after": "2dad5fad9855725cea628cee83494bfce21bdf7b7080a4fe34e4bfe2d5c559b9",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "alternate200.pdf"
+          }
+        ],
+        "inputHash": "2c3c154e2bc11bd8604c66ff346b54a1a576b72b37ab8a8a308d2c8375a5fc64",
+        "at": 1792452044765,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "716b531b-0941-4855-9349-583d5bba2e55",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "40e3292bf2a596de0185ac2984587c7ca9c83596ef6fb0c88fffbe6bea5d4f66",
+        "currentFrame": true,
+        "after": "40e3292bf2a596de0185ac2984587c7ca9c83596ef6fb0c88fffbe6bea5d4f66",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "716b531b-0941-4855-9349-583d5bba2e55",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "9c0ae7d5626e222dc6e145b7cb00c262a834457ecc309d513a54cc9ace536455",
+        "at": 1792452044777,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "716b531b-0941-4855-9349-583d5bba2e55",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "40e3292bf2a596de0185ac2984587c7ca9c83596ef6fb0c88fffbe6bea5d4f66",
+        "currentFrame": true,
+        "after": "40e3292bf2a596de0185ac2984587c7ca9c83596ef6fb0c88fffbe6bea5d4f66",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "normal.pdf"
+          }
+        ],
+        "inputHash": "d1912883cde23150b5bd4a9db82bf4ba9f4067cd89d272954908420a2315aa2e",
+        "at": 1792452045081,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "02c40745-6638-402f-a915-4136172b7c11",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "dddb02a92459967dccd6de2d2ce0f585c5e959f5bbe1c6e340e353e5b326cbf0",
+        "currentFrame": true,
+        "after": "dddb02a92459967dccd6de2d2ce0f585c5e959f5bbe1c6e340e353e5b326cbf0",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "02c40745-6638-402f-a915-4136172b7c11",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "4c030e6ceb25efd55107ca539f630406f6e156c00c9cb62807af8d7356d9d20a",
+        "at": 1792452045092,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "02c40745-6638-402f-a915-4136172b7c11",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691835",
+          "name": "normal.pdf",
+          "relativePath": "normal.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/normal.pdf",
+          "revision": {
+            "size": 56519,
+            "inode": "50691835",
+            "device": "16777232",
+            "changedNs": "1792418770728105905",
+            "modifiedNs": "1792418770728105905",
+            "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "dddb02a92459967dccd6de2d2ce0f585c5e959f5bbe1c6e340e353e5b326cbf0",
+        "currentFrame": true,
+        "after": "dddb02a92459967dccd6de2d2ce0f585c5e959f5bbe1c6e340e353e5b326cbf0",
+        "delivered": true
+      },
+      {
+        "method": "open",
+        "args": [
+          {
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1,
+            "relativePath": "alternate200.pdf"
+          }
+        ],
+        "inputHash": "2c3c154e2bc11bd8604c66ff346b54a1a576b72b37ab8a8a308d2c8375a5fc64",
+        "at": 1792452045339,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "e4e2df2f-6bca-4131-8b56-cfec24a079a1",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "92c52c46feac6fe30a38956cc430ed377b1492445948084e863fced6404fbdf9",
+        "currentFrame": true,
+        "after": "92c52c46feac6fe30a38956cc430ed377b1492445948084e863fced6404fbdf9",
+        "delivered": true
+      },
+      {
+        "method": "refresh",
+        "args": [
+          {
+            "id": "e4e2df2f-6bca-4131-8b56-cfec24a079a1",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          }
+        ],
+        "inputHash": "ff11f07a76389c013ced07e56e58fde7cd1bb6d77e42dc91aca599cb69dde9ba",
+        "at": 1792452045352,
+        "frame": {
+          "processId": 4,
+          "routingId": 8
+        },
+        "originalReturned": true,
+        "output": {
+          "ref": {
+            "id": "e4e2df2f-6bca-4131-8b56-cfec24a079a1",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "documentKey": "local:16777232:50691834",
+          "name": "alternate200.pdf",
+          "relativePath": "alternate200.pdf",
+          "absolutePath": "/private/tmp/willyou-pdf-lifecycle-woqicyal/project/alternate200.pdf",
+          "revision": {
+            "size": 58624,
+            "inode": "50691834",
+            "device": "16777232",
+            "changedNs": "1792418770728005696",
+            "modifiedNs": "1792418770728005696",
+            "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+          },
+          "writable": true,
+          "content": {
+            "kind": "pdf",
+            "mime": "application/pdf",
+            "format": "pdf",
+            "basis": "extension"
+          }
+        },
+        "before": "92c52c46feac6fe30a38956cc430ed377b1492445948084e863fced6404fbdf9",
+        "currentFrame": true,
+        "after": "92c52c46feac6fe30a38956cc430ed377b1492445948084e863fced6404fbdf9",
+        "delivered": true
+      }
+    ],
+    "reads": [],
+    "opens": [],
+    "readErrors": [],
+    "saves": []
+  },
+  "resources": [
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "03d4eeee-0fb9-4099-8153-a05edd93fc45",
+          "ref": {
+            "id": "e04de6fd-1b1f-4913-910c-0a33f871e17f",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+        }
+      ],
+      "at": 1792452043214,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "2a5c076d5276d8217dcc5d3fa1ba7bd6ef7dc46e4e0e82dd0e7db0fe68ac4f14",
+      "before": "1e810e39f67a7526fd54e25f0be97988f143ab78150993a56f5da61bc5c9248a",
+      "output": {
+        "id": "03d4eeee-0fb9-4099-8153-a05edd93fc45",
+        "transport": "protocol",
+        "url": "willyou-resource://local/404cac65609337e249032638788a20f9d1eea66a5c1f98c9a52a2940197c6aa5",
+        "mime": "application/pdf",
+        "size": 56519,
+        "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+      },
+      "after": "1e810e39f67a7526fd54e25f0be97988f143ab78150993a56f5da61bc5c9248a",
+      "inputAfter": "2a5c076d5276d8217dcc5d3fa1ba7bd6ef7dc46e4e0e82dd0e7db0fe68ac4f14",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "03d4eeee-0fb9-4099-8153-a05edd93fc45"
+      ],
+      "at": 1792452043554,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "351d40035cf510eb85ae70840d3bcd1a197d6c6b1a7f9d21c8c8c293fcd59b77",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "351d40035cf510eb85ae70840d3bcd1a197d6c6b1a7f9d21c8c8c293fcd59b77",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "4776e6ec-60be-4b7f-b737-555d6768884c",
+          "ref": {
+            "id": "efb72fb9-dfa0-4609-9f87-de72140185c8",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+        }
+      ],
+      "at": 1792452043569,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "c3ab6bd493e036d9f2a9a711c79f7ff3682f5e4e5c31eb367f310b10c488b331",
+      "before": "4676dee8b26a599df09724c64acd920448c38165cdbc2eff8cdb78a8c5a27eaf",
+      "output": {
+        "id": "4776e6ec-60be-4b7f-b737-555d6768884c",
+        "transport": "protocol",
+        "url": "willyou-resource://local/fe552491bd56abdef66abae40fae82c8e0243a023eb98597f91a11775d540e4c",
+        "mime": "application/pdf",
+        "size": 58624,
+        "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+      },
+      "after": "4676dee8b26a599df09724c64acd920448c38165cdbc2eff8cdb78a8c5a27eaf",
+      "inputAfter": "c3ab6bd493e036d9f2a9a711c79f7ff3682f5e4e5c31eb367f310b10c488b331",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "4776e6ec-60be-4b7f-b737-555d6768884c"
+      ],
+      "at": 1792452043831,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "c4a7b37832636edfa184894f269c78916f75480be319e25a830be96bc121f443",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "c4a7b37832636edfa184894f269c78916f75480be319e25a830be96bc121f443",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "513943ac-b2f3-433b-b11f-93b4e3acd764",
+          "ref": {
+            "id": "1eafd3fc-8b6c-4a5e-94b1-300a9ea6ac6a",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+        }
+      ],
+      "at": 1792452043884,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "e8de8ff63134a37ac5cefe114fda0198d4c0953259c126a07f63e55835b8c83b",
+      "before": "8e7a8e6269660993ee94873e2228b07cd21de81e687e880e76933c97ce6634d3",
+      "output": {
+        "id": "513943ac-b2f3-433b-b11f-93b4e3acd764",
+        "transport": "protocol",
+        "url": "willyou-resource://local/6d4369a1a8f8c0b42574dd9cc624a210d3f39cc13944dd86bd0749cd533a05da",
+        "mime": "application/pdf",
+        "size": 56519,
+        "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+      },
+      "after": "8e7a8e6269660993ee94873e2228b07cd21de81e687e880e76933c97ce6634d3",
+      "inputAfter": "e8de8ff63134a37ac5cefe114fda0198d4c0953259c126a07f63e55835b8c83b",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "513943ac-b2f3-433b-b11f-93b4e3acd764"
+      ],
+      "at": 1792452044096,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "1a0190e8d3eeba5711b920f46d70b4482d9e36c75d7183121f0a999c838f5faa",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "1a0190e8d3eeba5711b920f46d70b4482d9e36c75d7183121f0a999c838f5faa",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "a80c42bf-a045-4e62-a9c9-30c3699473eb",
+          "ref": {
+            "id": "1eafd3fc-8b6c-4a5e-94b1-300a9ea6ac6a",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+        }
+      ],
+      "at": 1792452044096,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "cdd535e761976798709215d91046496c4a965ccd3e967b91e4c5fdc2ad0131ea",
+      "before": "fe72c8988820aea04ba4ff6c90ba1dea1d65bf18c0ca757787243b9286dbba00",
+      "output": {
+        "id": "a80c42bf-a045-4e62-a9c9-30c3699473eb",
+        "transport": "protocol",
+        "url": "willyou-resource://local/a809ff8ffa43028d80e3aaea9159418f2bd1cce48edaa43c351cfd6fcc4260d3",
+        "mime": "application/pdf",
+        "size": 56519,
+        "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+      },
+      "after": "fe72c8988820aea04ba4ff6c90ba1dea1d65bf18c0ca757787243b9286dbba00",
+      "inputAfter": "cdd535e761976798709215d91046496c4a965ccd3e967b91e4c5fdc2ad0131ea",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "a80c42bf-a045-4e62-a9c9-30c3699473eb"
+      ],
+      "at": 1792452044216,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "ccaf0610129e54a95d2fca979de666d1d4229b698fc18ab4451069a88981a5ce",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "ccaf0610129e54a95d2fca979de666d1d4229b698fc18ab4451069a88981a5ce",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "a8655eda-43ce-423b-a7c3-f999317134d1",
+          "ref": {
+            "id": "0aa0d471-0e10-4132-a117-d4dc6462067e",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+        }
+      ],
+      "at": 1792452044226,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "f413911742e26226b24ca267dbedddfa8975bcda1c72eb31d1a95ca6e25507d9",
+      "before": "19ec6d45d8f694d377cb89753bf5badb4401a866dc3bbdfd2282281a5110de1d",
+      "output": {
+        "id": "a8655eda-43ce-423b-a7c3-f999317134d1",
+        "transport": "protocol",
+        "url": "willyou-resource://local/65df691792a186653f9ed1f8e9dfeef650422368e9fabfc206e64e58366d34f0",
+        "mime": "application/pdf",
+        "size": 58624,
+        "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+      },
+      "after": "19ec6d45d8f694d377cb89753bf5badb4401a866dc3bbdfd2282281a5110de1d",
+      "inputAfter": "f413911742e26226b24ca267dbedddfa8975bcda1c72eb31d1a95ca6e25507d9",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "a8655eda-43ce-423b-a7c3-f999317134d1"
+      ],
+      "at": 1792452044481,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "40a175ad5d7aeb845aacdf269f5697e3ad7eab4f7a373a7540317ba7d67b414b",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "40a175ad5d7aeb845aacdf269f5697e3ad7eab4f7a373a7540317ba7d67b414b",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "dd36ccd5-57f8-4b29-be8d-0602696dd180",
+          "ref": {
+            "id": "96fe20e6-3936-4f01-8019-60fbf42ed957",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+        }
+      ],
+      "at": 1792452044536,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "a80a1e22cdc309dadd9a76e074e27bfc1630308fe7b2f5a33333cc8deebdab5d",
+      "before": "f8fdeee9a30d47561d0cd65bfe4163c7cada058677a80236cf67ba25efb220f5",
+      "output": {
+        "id": "dd36ccd5-57f8-4b29-be8d-0602696dd180",
+        "transport": "protocol",
+        "url": "willyou-resource://local/aa1eed6ac0f698a21bcd42959f2889af4d39730c9ed1de880d557aeb61ac8796",
+        "mime": "application/pdf",
+        "size": 56519,
+        "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+      },
+      "after": "f8fdeee9a30d47561d0cd65bfe4163c7cada058677a80236cf67ba25efb220f5",
+      "inputAfter": "a80a1e22cdc309dadd9a76e074e27bfc1630308fe7b2f5a33333cc8deebdab5d",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "dd36ccd5-57f8-4b29-be8d-0602696dd180"
+      ],
+      "at": 1792452044767,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "a6f3aebc35b689912b4f6c0de52c997050782dbe38a133ce986536d50358a43f",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "a6f3aebc35b689912b4f6c0de52c997050782dbe38a133ce986536d50358a43f",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "b667055e-4c4a-4344-a8fd-3180eaa3db57",
+          "ref": {
+            "id": "716b531b-0941-4855-9349-583d5bba2e55",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+        }
+      ],
+      "at": 1792452044776,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "b0d81d40903e252c02299a02a0e4f3eb1c9a9cda1ff9725615bd47314a6d2e6d",
+      "before": "a011d8849e1ba442227edf4400ca7a161b6089f00315fa4082c5d96eb03ac005",
+      "output": {
+        "id": "b667055e-4c4a-4344-a8fd-3180eaa3db57",
+        "transport": "protocol",
+        "url": "willyou-resource://local/786fe36e117b92c19c579dd998a51113a2e23450c5f7beedcef1e78a05db1ec2",
+        "mime": "application/pdf",
+        "size": 58624,
+        "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+      },
+      "after": "a011d8849e1ba442227edf4400ca7a161b6089f00315fa4082c5d96eb03ac005",
+      "inputAfter": "b0d81d40903e252c02299a02a0e4f3eb1c9a9cda1ff9725615bd47314a6d2e6d",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "b667055e-4c4a-4344-a8fd-3180eaa3db57"
+      ],
+      "at": 1792452045039,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "8e2af66ff08f2dbd284ab56b3681e3a4ecba20674a80020a6ea094f87a980522",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "8e2af66ff08f2dbd284ab56b3681e3a4ecba20674a80020a6ea094f87a980522",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "1dc0116f-45df-48fa-9719-948f834e21ed",
+          "ref": {
+            "id": "02c40745-6638-402f-a915-4136172b7c11",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+        }
+      ],
+      "at": 1792452045092,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "5f0e2968ad15fee1eda6d636225b772ea9bcf89b0934569f4b2cbcd86a29296b",
+      "before": "328aa37c5fd165a2c39e4abc2da6231ef2a433c2548d00102b85607cdbd28bef",
+      "output": {
+        "id": "1dc0116f-45df-48fa-9719-948f834e21ed",
+        "transport": "protocol",
+        "url": "willyou-resource://local/3b117c9dc52f9cc89fe57a0f76608df3183204d399a452861ee933f2070dfbfe",
+        "mime": "application/pdf",
+        "size": 56519,
+        "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+      },
+      "after": "328aa37c5fd165a2c39e4abc2da6231ef2a433c2548d00102b85607cdbd28bef",
+      "inputAfter": "5f0e2968ad15fee1eda6d636225b772ea9bcf89b0934569f4b2cbcd86a29296b",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "1dc0116f-45df-48fa-9719-948f834e21ed"
+      ],
+      "at": 1792452045221,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "a9de96c6143e291bf247af8b16227573fbf946c3ec6993f8c67cbfbdcc5096ab",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "a9de96c6143e291bf247af8b16227573fbf946c3ec6993f8c67cbfbdcc5096ab",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "a8ffb399-242c-4d30-bf2b-54c94b7f0866",
+          "ref": {
+            "id": "02c40745-6638-402f-a915-4136172b7c11",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+        }
+      ],
+      "at": 1792452045221,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "6bf43ef71e2ab615d2cc22118b9f93f79ff225675131c0848d93e9236d946120",
+      "before": "289f7ca2d2c5ed885fc20e98b83b2d5f2d7dd3ea12c7cd0a3e9c9573e5f5464e",
+      "output": {
+        "id": "a8ffb399-242c-4d30-bf2b-54c94b7f0866",
+        "transport": "protocol",
+        "url": "willyou-resource://local/6d99eda25655b4a0267b16bce6c5a03c15a5cd6550d7c6632558a1daf9b30990",
+        "mime": "application/pdf",
+        "size": 56519,
+        "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+      },
+      "after": "289f7ca2d2c5ed885fc20e98b83b2d5f2d7dd3ea12c7cd0a3e9c9573e5f5464e",
+      "inputAfter": "6bf43ef71e2ab615d2cc22118b9f93f79ff225675131c0848d93e9236d946120",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "a8ffb399-242c-4d30-bf2b-54c94b7f0866"
+      ],
+      "at": 1792452045340,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "980f98721d0c2ede1e0718b988264eaeeb0fec0f53aabc99c7d4e24d742002be",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "980f98721d0c2ede1e0718b988264eaeeb0fec0f53aabc99c7d4e24d742002be",
+      "delivered": true
+    },
+    {
+      "method": "openResource",
+      "args": [
+        {
+          "id": "b9cf837e-b11b-45e9-8a17-36cc1c1a74d6",
+          "ref": {
+            "id": "e4e2df2f-6bca-4131-8b56-cfec24a079a1",
+            "lease": "cf91a5b1-90f7-4fa4-bd9b-0bd033239572",
+            "generation": 1
+          },
+          "baseHash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+        }
+      ],
+      "at": 1792452045351,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "f1b5a3ad8ca49dd2072be44216335a96d5684156071c1a86a651a20850cf91d8",
+      "before": "8058fd939b21d624a76b51d7b7eb799f307e55e64cc544c6026df6693946b77b",
+      "output": {
+        "id": "b9cf837e-b11b-45e9-8a17-36cc1c1a74d6",
+        "transport": "protocol",
+        "url": "willyou-resource://local/eac7939e5ce4454aa7bdce4baef77758614d11110b9010f0d943cceb3e7da2a3",
+        "mime": "application/pdf",
+        "size": 58624,
+        "hash": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c"
+      },
+      "after": "8058fd939b21d624a76b51d7b7eb799f307e55e64cc544c6026df6693946b77b",
+      "inputAfter": "f1b5a3ad8ca49dd2072be44216335a96d5684156071c1a86a651a20850cf91d8",
+      "delivered": true
+    },
+    {
+      "method": "releaseResource",
+      "args": [
+        "b9cf837e-b11b-45e9-8a17-36cc1c1a74d6"
+      ],
+      "at": 1792452045597,
+      "sender": 1,
+      "frame": {
+        "processId": 4,
+        "routingId": 8
+      },
+      "input": "4514bb563b577cfd4a7ee5496270c29160f7eaffa80e2e6190c756ec46dfd22c",
+      "before": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "after": "eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+      "inputAfter": "4514bb563b577cfd4a7ee5496270c29160f7eaffa80e2e6190c756ec46dfd22c",
+      "delivered": true
+    }
+  ],
+  "restored": {
+    "files.open": true,
+    "files.read": true,
+    "files.refresh": true,
+    "files.save": true,
+    "files.checkpoint": true,
+    "files.openResource": true,
+    "files.releaseResource": true
+  },
+  "after": {
+    "normal.pdf": {
+      "sha256": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+      "inode": "50691835",
+      "mtimeNs": "1792418770728105905"
+    },
+    "alternate200.pdf": {
+      "sha256": "20b5d7134a11bb3fa91164b549ec26d84e60eae478dece5b5c1ea01cf03e020c",
+      "inode": "50691834",
+      "mtimeNs": "1792418770728005696"
+    }
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 86644,
+    "code": 0,
+    "signal": null
+  },
+  "status": "passed",
+  "finishedAt": "2026-10-19T23:20:45.839Z"
+}

@@ -1,0 +1,221 @@
+{
+  "at": "2026-10-19T09:55:52.106Z",
+  "layer": "A",
+  "caseIds": [
+    "M9-T-Y15",
+    "M9-T-Y16"
+  ],
+  "scratch": "/private/tmp/willyou-pdf-safety-app-Q9Rh0C",
+  "projectPath": "/private/tmp/willyou-pdf-formats-h40rtmo3/project",
+  "userData": "/private/tmp/willyou-pdf-safety-app-Q9Rh0C/userdata",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r79-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "27955322091cbe2e2dbc7f6668c757c5b9e7fbbe53e9d4693eef2ae90e532e86",
+  "before": {
+    "encrypted.pdf": {
+      "sha256": "c412661ad81258c5110672fe6d2f5be6ab780c22cf58aef95e1abb3e9daef73b",
+      "inode": "50138156",
+      "mtimeNs": "1792403189985358491",
+      "ctimeNs": "1792403189985358491"
+    },
+    "truncated.pdf": {
+      "sha256": "9ffb22240a4a4f96e9850b632d5186c36723d473e5beca98a0c7245622ea8ee4",
+      "inode": "50138158",
+      "mtimeNs": "1792403189985741784",
+      "ctimeNs": "1792403189985741784"
+    },
+    "garbage.pdf": {
+      "sha256": "de7ef6753f04ce592af55b7c15e1f03cf28d454d4e82a3b7537a9b3d13eeeaac",
+      "inode": "50138157",
+      "mtimeNs": "1792403189985543117",
+      "ctimeNs": "1792403189985543117"
+    },
+    "invalid.pdf": {
+      "sha256": "c6b7375f3b4a2cffb0025329ca4cd63f5f303fcd0fd32668a5b6ce2c62335d55",
+      "inode": "50138159",
+      "mtimeNs": "1792403189985891368",
+      "ctimeNs": "1792403189985891368"
+    }
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "missing password has dialog and no page content",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "cancel remains a password error after real destroy settles",
+      "pass": true,
+      "cancelled": "已取消输入密码。需要密码才能打开此 PDF。重试"
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "retry produces a fresh missing-password prompt",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "two wrong attempts preserve prompt and expose no page",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "correct password dismisses prompt and renders actual PDF pixels/text",
+      "pass": true,
+      "rendered": {
+        "width": 285,
+        "height": 369,
+        "ink": 2335,
+        "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+      }
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "reopen does not reuse password; close during retry removes dialog and web storage has no password",
+      "pass": true
+    }
+  ],
+  "status": "failed",
+  "boundary": "A normal packaged App with actual native file/resource/PDF.js Worker and trusted UI, private userData. External-open entries are inspected without launching any other app. No store/DOM value/RPC result substitution; no clipboard, task, CLI or model.",
+  "pid": 90672,
+  "runtime": {
+    "executable": "/private/tmp/willyou-m9-acceptance-batch-r79-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "packaged": true,
+    "userData": "/private/tmp/willyou-pdf-safety-app-Q9Rh0C/userdata",
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    }
+  },
+  "failedStage": "light:truncated.pdf",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(choices.includes('打开方式')||choices.includes('预览')||choices.includes('Preview'))\n",
+  "stack": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(choices.includes('打开方式')||choices.includes('预览')||choices.includes('Preview'))\n\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/files/pdf-safety-ui.mjs:39:534",
+  "dom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 PDF password and corruption\n设置\n首页\n›\nM9 PDF password and corruption\n文件\nM9 PDF password and corruption\n\nIsolated packaged-file acceptance\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 PDF password and corruption\n别名\n—\n说明\nIsolated packaged-file acceptance\n规则文件\n—\n配置版本\n1\n创建时间\n10/19/2026, 5:55:53 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\ntruncated.pdf\nSynthetic static viewers\n›\ntruncated.pdf\n打开\n100%\n\n文件不是有效的 PDF，或已损坏、不完整。\n\n重试\nproject\ncjk-missing-font.pdf\nencrypted.pdf\nforms.pdf\ngarbage.pdf\ninvalid.pdf\nmissing-mixed-fonts.pdf\nnormal.pdf\nrotated.pdf\nscripts.pdf\ntruncated.pdf\n27.6 KiB\nGoogle Chrome（系统默认）\nPreview\nColorSync Utility\nBooks\nGoogle Chrome for Testing\nGoogle Chrome for Testing\nSafari\nChromium\nGoogle Chrome for Testing\n记住选择的应用",
+  "focus": "<div data-side=\"bottom\" data-align=\"end\" data-open=\"\" tabindex=\"-1\" data-base-ui-focusable=\"\" id=\"base-ui-_r_8l_\" role=\"menu\" aria-labelledby=\"base-ui-_r_8n_\" data-rootownerid=\"base-ui-_r_8k_\" class=\"z-50 max-h-(--available-height) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border/50 bg-background-quaternary p-1.5 text-foreground shadow-lg duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fw-file-menu\" style=\"\"><div role=\"menuitem\" id=\"base-ui-_r_a8_\" tabindex=\"-1\" data-variant=\"default\" class=\"relative flex min-h-8 cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-hidden select-none focus:bg-background-quaternary-1 data-[variant=destructive]:text-foreground-destructive data-[variant=destructive]:focus:bg-background-destructive data-disabled:pointer-events-none data-disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4\"><img class=\"fw-app-icon\" alt=\"\" src=\"blob:file:///c1f9b714-fe0b-42fb-b251-354ee06121ba\"><span class=\"fw-menu-name\">Google C",
+  "inputs": [
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    }
+  ],
+  "finishedAt": "2026-10-19T09:55:56.542Z"
+}

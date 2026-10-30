@@ -1,0 +1,1336 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-NOTEBOOK-DEV061-R15",
+  "at": "2026-10-18T06:46:17.763782+00:00",
+  "status": "passed",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "app": {
+    "app": "/private/tmp/willyou-m9-acceptance-batch-r15-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "7c3622d96a3c702c0caa7eeb7fd2fbe375ca3db08b04778d8f2c1da949fd356b",
+    "brokerSha256": "81205d4eb75670835a23652a936a3cdd07fcf3e8e8d2f65eb7afa2c546af4676",
+    "system": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "release": "25.6.0"
+    },
+    "startedAt": "2026-10-18T06:45:14.881Z",
+    "finishedAt": "2026-10-18T06:45:19.791Z"
+  },
+  "cases": {
+    "M9-T-G01": {
+      "I": "passed, production chunk reader/native files + NotebookModel; real Worker in separate packaged A; G06 production request handler with synthetic transport",
+      "A": "passed on r15 actual UI",
+      "actual": "Code/Markdown/raw/unknown type and three empty-source states plus empty notebook displayed through actual dedicated Worker; original bytes preserved."
+    },
+    "M9-T-G02": {
+      "I": "passed, production chunk reader/native files + NotebookModel; real Worker in separate packaged A; G06 production request handler with synthetic transport",
+      "A": "passed on r15 actual UI",
+      "actual": "stdout/stderr, missing text, error name/value/two traceback lines and independent summary/raw expansions displayed without invented output."
+    },
+    "M9-T-G03": {
+      "I": "passed, production chunk reader/native files + NotebookModel; real Worker in separate packaged A; G06 production request handler with synthetic transport",
+      "A": "passed on r15 actual UI",
+      "actual": "Both display_data/execute_result carried eight MIME types; removed highest at eight stages; two empty HTML/Markdown fallbacks checked. I asserts exact selected MIME, A verifies actual image decode or expected rendered type without lower branches."
+    },
+    "M9-T-G04": {
+      "I": "passed, production chunk reader/native files + NotebookModel; real Worker in separate packaged A; G06 production request handler with synthetic transport",
+      "A": "passed on r15 actual UI",
+      "actual": "JSON and Vega-only payloads displayed pretty JSON twice per file; no Vega canvas/runtime or trap request."
+    },
+    "M9-T-G05": {
+      "I": "passed, production chunk reader/native files + NotebookModel; real Worker in separate packaged A; G06 production request handler with synthetic transport",
+      "A": "passed on r15 actual UI",
+      "actual": "DEV061 fixed and retested: opaque sandbox, no script/network/frame/object/form, actual whitelisted PNG decode 1x1, actual OOPIF page has no electronAPI/require/process and cannot read parent, raw original available; no trap requests."
+    },
+    "M9-T-G06": {
+      "I": "passed, production chunk reader/native files + NotebookModel; real Worker in separate packaged A; G06 production request handler with synthetic transport",
+      "A": "passed on r15 actual UI",
+      "actual": "Read-only Run is decorative, labelled accurately and not a keyboard stop. Pointer/Enter/Space create no task, execution canary or request. Production worker rejects run/execute/evaluate/kernel and keeps source unchanged."
+    },
+    "M9-T-G07": {
+      "I": "passed, production chunk reader/native files + NotebookModel; real Worker in separate packaged A; G06 production request handler with synthetic transport",
+      "A": "passed on r15 actual UI",
+      "actual": "Invalid JSON and cells-not-array show distinct errors; unknown cell falls back to raw, unknown output/MIME discarded without fake result and valid source retained."
+    }
+  },
+  "defect": {
+    "id": "M9-DEV-061",
+    "status": "fixed-retested",
+    "redR13": "Opaque frame cannot fetch host blob:file image: complete=true, naturalWidth=0.",
+    "failedR14": "Encoded PNG still blocked by inherited renderer img-src: complete=true, naturalWidth=0.",
+    "fix": "Only HTML-output assets use bounded host-generated encoded raster/sanitized SVG. Exact image data URL mapping, frame img-src data and parent img-src data; other CSP/native permissions preserved.",
+    "greenR15": {
+      "frameObservation": "Read-only DOM and globals in the actual OOPIF default page context.",
+      "childObservation": {
+        "images": [
+          {
+            "complete": true,
+            "width": 1,
+            "height": 1,
+            "src": "data:image/png;base64,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"
+          }
+        ],
+        "electronAPI": "undefined",
+        "require": "undefined",
+        "process": "undefined",
+        "parentBlocked": true
+      },
+      "rawHtmlAvailable": true,
+      "trapRequests": [],
+      "mainSentinelAbsent": true
+    }
+  },
+  "verification": {
+    "appChecks": 26,
+    "nativeFixtures": 23,
+    "codePassed": 11,
+    "codeFailed": 0,
+    "codeSkipped": 0,
+    "types": "passed before package, unchanged TypeScript; subsequent index.html CSP-only change validated by package and actual App",
+    "packageNativeChecks": [
+      "SQLite",
+      "PTY",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ],
+    "runtimeMatches": 81,
+    "sourceInputMatches": 845,
+    "nativeTestReuse": "Final 11 tests ran against r14 packaged broker; r15 broker hash identical and TypeScript unchanged. r15 package additionally ran six native smoke checks.",
+    "cumulativeCodeUnion": 1549,
+    "cumulativeExternalCliOptInNotSelected": 2
+  },
+  "iterations": {
+    "r13-driver1": "Raw output assertion ran before asynchronous Worker response; corrected waiting.",
+    "r13-driver2": "26 earlier checks passed, but did not assert image decoding; insufficient for G05 and not counted as full pass.",
+    "r13-driver3": "Initial about:blank race before isolated srcdoc committed; corrected waiting.",
+    "r13-driver4": "Opaque frame is OOPIF and absent from parent frame tree; inspect own iframe target.",
+    "r13-driver5": "Real image decode failed.",
+    "r13-red-observed": "Actual default frame context confirms zero width, no bridge and blocked parent access.",
+    "r14-driver1/r14-red-observed": "Actual encoded PNG still zero width due parent CSP; preserved failed build.",
+    "r15-green": "All 26 checks passed, image 1x1, bridge absent, parent blocked, requests0."
+  },
+  "boundaries": [
+    "macOS arm64 only; actual packaged renderer input, no physical IME or drag claim.",
+    "Only G01–G07 counted; other Notebook limits, long content, copying, theme/visual and lifecycle cases remain independent.",
+    "No model/CLI/kernel launched; old r6 pending input and AIS directory unchanged.",
+    "No release, tag, push or main merge."
+  ],
+  "artifacts": {
+    "app/r13-driver1/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/driver.log",
+      "sha256": "ebb2a8c9c55a824f6ad127ef11864941f0cdc747301648b28290c00936205969"
+    },
+    "app/r13-driver1/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/electron.log",
+      "sha256": "63c1c08488c7acb9c53c12e032fd58e942c2e734966e2401347f72785f8e191b"
+    },
+    "app/r13-driver1/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/failure.png",
+      "sha256": "cd5393115723bd22e7e707ed92637527201eff3dbeb29016f9471b7230484498"
+    },
+    "app/r13-driver1/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/fixtures.json",
+      "sha256": "817b126e0184db5701437fc4d7787908eddbed79598f1512bee3a048314e796a"
+    },
+    "app/r13-driver1/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/html-sandbox-safe-output.png",
+      "sha256": "5980766d676a290653e96d67f5d6a862d5d889418d504598a4b2684d6e5ed848"
+    },
+    "app/r13-driver1/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r13-driver1/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r13-driver1/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/cell-code.ipynb",
+      "sha256": "23e380247c10d784fca820c932f7e3c0ea8a4a77d2c04385157dbe21383f3bd3"
+    },
+    "app/r13-driver1/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r13-driver1/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r13-driver1/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r13-driver1/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r13-driver1/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r13-driver1/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r13-driver1/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r13-driver1/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/html-sandbox.ipynb",
+      "sha256": "934120feb0c8126a4ca22555b4fd9cc50ac11353d4eea7c050ca23c269269638"
+    },
+    "app/r13-driver1/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r13-driver1/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r13-driver1/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r13-driver1/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r13-driver1/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r13-driver1/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r13-driver1/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r13-driver1/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r13-driver1/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r13-driver1/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r13-driver1/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r13-driver1/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r13-driver1/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/result.json",
+      "sha256": "1e2890cc0e1bf46a665ce03ea15135a2e114e9f5432143c9b90b27ad6294ea52"
+    },
+    "app/r13-driver1/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver1/streams-error-details.png",
+      "sha256": "b7cee29da590581e2018a04df5c220e6eb0114760950a811516850c27f17b71f"
+    },
+    "app/r13-driver2/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/driver.log",
+      "sha256": "ece0784e3e3eb6b3d21a79bbfb0098bb6f5cacff943dde7afa5fc97cc2fa572b"
+    },
+    "app/r13-driver2/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/electron.log",
+      "sha256": "1da0adf3dfe016ae532115fd34e79e1689b27b26998796a71278cf882cc5d400"
+    },
+    "app/r13-driver2/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/fixtures.json",
+      "sha256": "48675cfb3e2bd38cb3addef1d4b4b1551e520f1f0f8fde3249bed78ee3a30096"
+    },
+    "app/r13-driver2/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/html-sandbox-safe-output.png",
+      "sha256": "bc409b7b1b558f6b1da8da479489d714fc1feed4a0989517b60a799e34b00815"
+    },
+    "app/r13-driver2/notebook-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/notebook-final.png",
+      "sha256": "adc41fd139cff5983700bbd03e968e053f81ea9324584e1ffeea5b0db44ffd4d"
+    },
+    "app/r13-driver2/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r13-driver2/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r13-driver2/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/cell-code.ipynb",
+      "sha256": "031a3ead92f1bda2196257094993497ffe24c78133bd1df8622c49dd7c2190d2"
+    },
+    "app/r13-driver2/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r13-driver2/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r13-driver2/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r13-driver2/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r13-driver2/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r13-driver2/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r13-driver2/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r13-driver2/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/html-sandbox.ipynb",
+      "sha256": "28c2e29c9e0878326f367354ffb1ae79294146b8bda002c12ea08664b06daeab"
+    },
+    "app/r13-driver2/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r13-driver2/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r13-driver2/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r13-driver2/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r13-driver2/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r13-driver2/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r13-driver2/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r13-driver2/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r13-driver2/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r13-driver2/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r13-driver2/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r13-driver2/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r13-driver2/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/result.json",
+      "sha256": "c31efeee1fde814485a6efb83cd4b9b6d2aa3e0431cf84fd595f9418dae498e9"
+    },
+    "app/r13-driver2/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver2/streams-error-details.png",
+      "sha256": "f0a426099d0b0d8a9c5ac4c6b28caf2482c2f59b2cf00f6975d27700e4abf04e"
+    },
+    "app/r13-driver3/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/driver.log",
+      "sha256": "14154fa58e6396800335e911670729ef21c787d60f39502f8f1ae9ab18025cbb"
+    },
+    "app/r13-driver3/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/electron.log",
+      "sha256": "9ad91d76fcf262c60e63d22f83d56cca290135485eb766606b25cbf06c12deac"
+    },
+    "app/r13-driver3/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/failure.png",
+      "sha256": "8d88aefc0cd60db78ec70cd20d80549b6e5846527a9707f9ae05b533011f3e65"
+    },
+    "app/r13-driver3/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/fixtures.json",
+      "sha256": "0d39bbf732a6e873c0eaa57bf237006b6eb15d4655cd31f5da93788b351c0329"
+    },
+    "app/r13-driver3/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r13-driver3/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r13-driver3/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/cell-code.ipynb",
+      "sha256": "1b2b7a2eb9255bf64ba8ad1afa880ccc9ced292851f8ee18ab4fdda9ffc42012"
+    },
+    "app/r13-driver3/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r13-driver3/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r13-driver3/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r13-driver3/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r13-driver3/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r13-driver3/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r13-driver3/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r13-driver3/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/html-sandbox.ipynb",
+      "sha256": "0a2567d85863ce05369081f02f1642136af1c46f21bd29749066f6f40d9fd3f8"
+    },
+    "app/r13-driver3/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r13-driver3/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r13-driver3/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r13-driver3/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r13-driver3/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r13-driver3/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r13-driver3/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r13-driver3/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r13-driver3/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r13-driver3/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r13-driver3/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r13-driver3/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r13-driver3/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/result.json",
+      "sha256": "5f96d8ce52b88a2e2a1c140837b4293d9cecfc8d7f4f833dbeb626f53aaca0da"
+    },
+    "app/r13-driver3/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver3/streams-error-details.png",
+      "sha256": "05a73705205e7768e182e5d0f0a3343f78f3c7c3e1fe1d05240d0d4b30277733"
+    },
+    "app/r13-driver4/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/driver.log",
+      "sha256": "85989bfd348255e173b92acf1bb6fbd342540a45fa194f6d445eeda34c3bfd20"
+    },
+    "app/r13-driver4/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/electron.log",
+      "sha256": "c508f95b9cf8a779fba2c3777b6265ea56f2c275ff411154dbcddec2619e27c8"
+    },
+    "app/r13-driver4/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/failure.png",
+      "sha256": "f3c65a08f4e788ba5b35e8d973c9e74e230b2d0d30da4e4dbf6f941d4f4aa9fd"
+    },
+    "app/r13-driver4/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/fixtures.json",
+      "sha256": "61c144e96eee91929bcd8a1f7373974cac16e6d8648e518e967549011e8185b1"
+    },
+    "app/r13-driver4/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/html-sandbox-safe-output.png",
+      "sha256": "f3c65a08f4e788ba5b35e8d973c9e74e230b2d0d30da4e4dbf6f941d4f4aa9fd"
+    },
+    "app/r13-driver4/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r13-driver4/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r13-driver4/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/cell-code.ipynb",
+      "sha256": "b3ad7935ba6afec4e163ea6f4fedbdd29a4204cbe77dc5fb693a259266eda686"
+    },
+    "app/r13-driver4/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r13-driver4/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r13-driver4/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r13-driver4/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r13-driver4/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r13-driver4/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r13-driver4/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r13-driver4/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/html-sandbox.ipynb",
+      "sha256": "562ecc5044a7884408d32139a14b1d63fc0ca88fb148acce2639ceefb7554f88"
+    },
+    "app/r13-driver4/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r13-driver4/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r13-driver4/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r13-driver4/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r13-driver4/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r13-driver4/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r13-driver4/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r13-driver4/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r13-driver4/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r13-driver4/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r13-driver4/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r13-driver4/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r13-driver4/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/result.json",
+      "sha256": "4d31fcbffffcb453f89d96bb1a85929c20c3da0110541976ca204351892e0cd5"
+    },
+    "app/r13-driver4/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver4/streams-error-details.png",
+      "sha256": "dbf461c7bb33007af6c8c6bff05954eee718cf63c342d10568f34c9081bbce55"
+    },
+    "app/r13-driver5/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/driver.log",
+      "sha256": "a353d8b931aa5ce261512c560ee2ee263bfc111dd13351c4b4f1b613f34ac733"
+    },
+    "app/r13-driver5/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/electron.log",
+      "sha256": "27cb8ee484e3b35790d2873b6d204efdf89b6601249fc3879bca13afd34a16c9"
+    },
+    "app/r13-driver5/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/failure.png",
+      "sha256": "95d309bb12e018b10f1484cfe9bcfe044222cf85ecd2625b91bc0ff33cc8cd93"
+    },
+    "app/r13-driver5/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/fixtures.json",
+      "sha256": "50474791a2c3966145fae12927865395059c9f31bc7013897788f0fe057c6eb5"
+    },
+    "app/r13-driver5/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/html-sandbox-safe-output.png",
+      "sha256": "95d309bb12e018b10f1484cfe9bcfe044222cf85ecd2625b91bc0ff33cc8cd93"
+    },
+    "app/r13-driver5/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r13-driver5/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r13-driver5/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/cell-code.ipynb",
+      "sha256": "92db339986aa8703d6d7b7247f4a811ca046c8e538afbc6035e8fbaafefdbc64"
+    },
+    "app/r13-driver5/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r13-driver5/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r13-driver5/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r13-driver5/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r13-driver5/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r13-driver5/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r13-driver5/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r13-driver5/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/html-sandbox.ipynb",
+      "sha256": "b76907417731855f76e0cf5724a37550ba0747af1ee89295091ae92a1b184a95"
+    },
+    "app/r13-driver5/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r13-driver5/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r13-driver5/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r13-driver5/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r13-driver5/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r13-driver5/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r13-driver5/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r13-driver5/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r13-driver5/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r13-driver5/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r13-driver5/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r13-driver5/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r13-driver5/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/result.json",
+      "sha256": "1858dcc69ec07f66011c739f35222661035aaa7463f0720209c2a1e59f139f4a"
+    },
+    "app/r13-driver5/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-driver5/streams-error-details.png",
+      "sha256": "8e3599e6fcc235c981a4c9d3f310b99146925ff74ef4a7e06512c2943b374d07"
+    },
+    "app/r13-red-observed/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/driver.log",
+      "sha256": "105a3fbaa30cdc7358b8f51c6bfd698865ccbedc28e844cddab6684c98e81b69"
+    },
+    "app/r13-red-observed/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/electron.log",
+      "sha256": "54c8e0c6b115adffd2990265933a0f99497fcec4b9477ac3aa999d7f6dee6f62"
+    },
+    "app/r13-red-observed/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/failure.png",
+      "sha256": "39f7c248867fb24624bffc26634c7f2da0090c04365842af306d78a9399c3d7d"
+    },
+    "app/r13-red-observed/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/fixtures.json",
+      "sha256": "5c5c00c4d7b87e7bb6a0ec7f6995c3411776a29d76b94f5276e68029c4737950"
+    },
+    "app/r13-red-observed/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/html-sandbox-safe-output.png",
+      "sha256": "39f7c248867fb24624bffc26634c7f2da0090c04365842af306d78a9399c3d7d"
+    },
+    "app/r13-red-observed/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r13-red-observed/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r13-red-observed/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/cell-code.ipynb",
+      "sha256": "7e0e2224cf5f0b02031358bdea8b691b0651cafb6b5a3c70a5e39138a19e861a"
+    },
+    "app/r13-red-observed/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r13-red-observed/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r13-red-observed/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r13-red-observed/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r13-red-observed/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r13-red-observed/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r13-red-observed/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r13-red-observed/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/html-sandbox.ipynb",
+      "sha256": "8817c8d2df193b153923d75bd262c8b041c34eb6600094627d0f4e30ca4483d4"
+    },
+    "app/r13-red-observed/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r13-red-observed/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r13-red-observed/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r13-red-observed/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r13-red-observed/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r13-red-observed/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r13-red-observed/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r13-red-observed/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r13-red-observed/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r13-red-observed/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r13-red-observed/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r13-red-observed/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r13-red-observed/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/result.json",
+      "sha256": "fde687089e3d6e35bfb6a97732e13d12f4e8a76a2ef3c889ab1eccfc0b325ac0"
+    },
+    "app/r13-red-observed/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r13-red-observed/streams-error-details.png",
+      "sha256": "3ea0eb7f55f9a013fdae075764d029d6ed3e890d434f7f2489207b9c44c26ff8"
+    },
+    "app/r14-driver1/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/driver.log",
+      "sha256": "ee7a9c87c102dd4e01542737b8b9102a81558437411f1deed20877d49696edc6"
+    },
+    "app/r14-driver1/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/electron.log",
+      "sha256": "3d7818d19dbe272914f605620f36655abb58abca5703693773ab5331daa69663"
+    },
+    "app/r14-driver1/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/failure.png",
+      "sha256": "c71c90e6b6fb9781e74f70a810fe80ad6e496e4ac92cd41f71985b0a6c507765"
+    },
+    "app/r14-driver1/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/fixtures.json",
+      "sha256": "029cf5214a29baeb2f682c958017e6307e40c98e68d002fa93f034510b9d49a6"
+    },
+    "app/r14-driver1/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/html-sandbox-safe-output.png",
+      "sha256": "c71c90e6b6fb9781e74f70a810fe80ad6e496e4ac92cd41f71985b0a6c507765"
+    },
+    "app/r14-driver1/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r14-driver1/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r14-driver1/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/cell-code.ipynb",
+      "sha256": "3edf7dc46609b0021bdfbd607d5b45e7fd572107d0366910f760aac8d9a09236"
+    },
+    "app/r14-driver1/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r14-driver1/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r14-driver1/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r14-driver1/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r14-driver1/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r14-driver1/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r14-driver1/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r14-driver1/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/html-sandbox.ipynb",
+      "sha256": "9504721e85da75a8d9d8c25ac28c63cedd97125d2b43171432bbc7d9ba52379d"
+    },
+    "app/r14-driver1/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r14-driver1/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r14-driver1/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r14-driver1/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r14-driver1/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r14-driver1/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r14-driver1/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r14-driver1/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r14-driver1/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r14-driver1/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r14-driver1/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r14-driver1/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r14-driver1/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/result.json",
+      "sha256": "c7594a3796122acf4b1a0d0bde6daa56425bdce09cce2fad3b588ae46dba2e15"
+    },
+    "app/r14-driver1/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-driver1/streams-error-details.png",
+      "sha256": "50d3cae553fb36b7632dba3a6b7445b0df78216e24fad7be7fb951f27a74b604"
+    },
+    "app/r14-red-observed/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/driver.log",
+      "sha256": "71e08b1b71047130b474203b9144aa68bfd312c98b60b8581db3b5228cc4ae67"
+    },
+    "app/r14-red-observed/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/electron.log",
+      "sha256": "37b2023eb0b52400e8cc97fe4f9fa5e30a17619a71e8650eb2348ff30632358b"
+    },
+    "app/r14-red-observed/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/failure.png",
+      "sha256": "53e3dd676e07900f618a17820c362b9bad4eec5a20f009c2999a67f996f1bbfc"
+    },
+    "app/r14-red-observed/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/fixtures.json",
+      "sha256": "810152ff50738b157208d6c64b5dd7b68c026f726e6bcb6b20944008b0f5cf7d"
+    },
+    "app/r14-red-observed/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/html-sandbox-safe-output.png",
+      "sha256": "53e3dd676e07900f618a17820c362b9bad4eec5a20f009c2999a67f996f1bbfc"
+    },
+    "app/r14-red-observed/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r14-red-observed/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r14-red-observed/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/cell-code.ipynb",
+      "sha256": "f1aa7b8815e0bbd03a69565fe5eb13b982466db0d354722ff92227cab416b9eb"
+    },
+    "app/r14-red-observed/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r14-red-observed/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r14-red-observed/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r14-red-observed/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r14-red-observed/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r14-red-observed/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r14-red-observed/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r14-red-observed/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/html-sandbox.ipynb",
+      "sha256": "521dd74c93748dd238651e50a57671a37aef80ec4d8919657b5779e2544fb671"
+    },
+    "app/r14-red-observed/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r14-red-observed/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r14-red-observed/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r14-red-observed/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r14-red-observed/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r14-red-observed/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r14-red-observed/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r14-red-observed/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r14-red-observed/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r14-red-observed/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r14-red-observed/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r14-red-observed/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r14-red-observed/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/result.json",
+      "sha256": "8bc1dd8908e99564b06c682d52cd433e1475138c446f5f75c1b35b6be6ec0257"
+    },
+    "app/r14-red-observed/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r14-red-observed/streams-error-details.png",
+      "sha256": "53d11b93875d60f147451a9dfdc0c0b0b88fb740fbd579a2d5d55e49267646ce"
+    },
+    "app/r15-green/driver.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/driver.log",
+      "sha256": "5865779d3399cee0998117161aaa0c5a71d7639dd67b3a4493f1da61e27a6d8b"
+    },
+    "app/r15-green/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/electron.log",
+      "sha256": "19ef441384101594e7f257f076ca1afed2e6ac4a2f92084078e4188c6cf7bca9"
+    },
+    "app/r15-green/fixtures.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/fixtures.json",
+      "sha256": "cd2a912c2d0feaf5cb5731f905e394eeef52fa8736f57fb7aa9c99d6405c203d"
+    },
+    "app/r15-green/html-sandbox-safe-output.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/html-sandbox-safe-output.png",
+      "sha256": "ccd56beaf3519c855c6670598710d197bd10b52f6326c66d87b6744c04978bf4"
+    },
+    "app/r15-green/notebook-final.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/notebook-final.png",
+      "sha256": "584e6e44f01c055f8d8e4a5a7f9ce905b764c6a34b966088737303484938169d"
+    },
+    "app/r15-green/project/bad-json.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/bad-json.ipynb",
+      "sha256": "161751ade1d5c99df7d8e92c1d350bcf1b58266979dc3806b4f4d9939f6d0a20"
+    },
+    "app/r15-green/project/bad-schema.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/bad-schema.ipynb",
+      "sha256": "f85139ede90deb8c214fb0e51bc25791850e3c04dcc4034bf270c5ee651b8d94"
+    },
+    "app/r15-green/project/cell-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/cell-code.ipynb",
+      "sha256": "39a135addc9cf00172783bafbbdd268f9c0fb1ac70b7ca516efe23e91117f594"
+    },
+    "app/r15-green/project/cell-future.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/cell-future.ipynb",
+      "sha256": "598165008cd1d55ccfab36855d4fe3b0a083efbfa07e5135a9930d4a4e41d6c6"
+    },
+    "app/r15-green/project/cell-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/cell-markdown.ipynb",
+      "sha256": "a6a752fab11f46f8296d2f862a3c57e8011fd0512ea51c605248aee2a1e2f273"
+    },
+    "app/r15-green/project/cell-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/cell-raw.ipynb",
+      "sha256": "284dc00dfb6046a67dc117cbc177e40d4b04e4a65b46474c1d883243eec09e14"
+    },
+    "app/r15-green/project/empty-code.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/empty-code.ipynb",
+      "sha256": "e666f6f7bafb4c420b1d45e2aa019bfaaaaa6b2d08edc75e723f72d416d7566f"
+    },
+    "app/r15-green/project/empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/empty-markdown.ipynb",
+      "sha256": "87f2a6a2d4838710f9e4e2ed9b829e9b48b447b8c2f7cde394d459f454fe3829"
+    },
+    "app/r15-green/project/empty-notebook.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/empty-notebook.ipynb",
+      "sha256": "b9897686399bf1c3bc0690fbd3574345d1e79764b41ceaf1a0d17960770b2b2c"
+    },
+    "app/r15-green/project/empty-raw.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/empty-raw.ipynb",
+      "sha256": "30a5ff43271528d54f71338be30bf80bfe27f5e74b717d40bca45b45d62ac458"
+    },
+    "app/r15-green/project/html-sandbox.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/html-sandbox.ipynb",
+      "sha256": "05cac243d6c690ae30af78a8d376755d281bed1c4c151af050223e69f1f95c2e"
+    },
+    "app/r15-green/project/mime-0.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-0.ipynb",
+      "sha256": "ea8ce321d34f511667d071bc2a7e9a4f04b4ac0c5cecd6ef87b55c1363008e36"
+    },
+    "app/r15-green/project/mime-1.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-1.ipynb",
+      "sha256": "e12df2f2d7d578421e914be903964800b4b22e08d279fd8af5e6063a6bccdd6b"
+    },
+    "app/r15-green/project/mime-2.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-2.ipynb",
+      "sha256": "de58ec47023b70aed96d8f9ef744cb7ffe8ee7e0f39a3c4af0330bf98e9d1b93"
+    },
+    "app/r15-green/project/mime-3.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-3.ipynb",
+      "sha256": "3f414005837092a7b422133fd2a00808114173b87a64a1fd823ad411a54b04ae"
+    },
+    "app/r15-green/project/mime-4.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-4.ipynb",
+      "sha256": "67eb18131029fc0b4df446bb9ebd9ec6b9a1ebd72737333c7228dec2b1642995"
+    },
+    "app/r15-green/project/mime-5.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-5.ipynb",
+      "sha256": "9f04927f2402cc985d8b880892e4545ce8c00975dc2571524226b35226c5159d"
+    },
+    "app/r15-green/project/mime-6.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-6.ipynb",
+      "sha256": "2114094839860d2546475f4c400e0dba48760fed34fdf30be057f58f4d382458"
+    },
+    "app/r15-green/project/mime-7.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-7.ipynb",
+      "sha256": "93a319782aabe4910ad7bbaaf6eb07019c7d5de244b692ea24b6d3d7aff40573"
+    },
+    "app/r15-green/project/mime-empty-html.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-empty-html.ipynb",
+      "sha256": "35076ed730316c19cda770f257c6f14abda116b7e5fa20747390240fb58591b0"
+    },
+    "app/r15-green/project/mime-empty-markdown.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/mime-empty-markdown.ipynb",
+      "sha256": "ece4385c219ad263b65840d02db9b7a5f414b6c910ee68d6d6d6d5810276d1eb"
+    },
+    "app/r15-green/project/stream-error.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/stream-error.ipynb",
+      "sha256": "db7217616662622af6197de42040b7e1365ff032cae5e3959aad9f7006d39318"
+    },
+    "app/r15-green/project/unknown-output.ipynb": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/project/unknown-output.ipynb",
+      "sha256": "a23621c0d301c0598a98d0f88515ca5ba8d0bb7ff1b1f2c10b7d9fdfa964cf41"
+    },
+    "app/r15-green/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/result.json",
+      "sha256": "f8a9e6d7f921aad84d37f79fc200a4ced47fe4866b400c957a43af836e8e86e2"
+    },
+    "app/r15-green/streams-error-details.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/app/r15-green/streams-error-details.png",
+      "sha256": "7322ed0fbdd2015ee1485a606caedaafb17c122936a7ffe35c601b377fa66e7a"
+    },
+    "validation/willyou-dev061-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-red.json",
+      "sha256": "701a9a28547346eeef754cc3257768c3ceed14ed73d7f983166230f4b0ad84ae"
+    },
+    "validation/willyou-dev061-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-red.log",
+      "sha256": "5b0439525c4e705e5eba9e27df4749b3f2d1106f3107b79c352a6aae0d615253"
+    },
+    "validation/willyou-dev061-red-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-red-sources.json",
+      "sha256": "01e9290a408bac4fcff77d3210c493245d42e062ef3fd2f9637a8b5e39d69365"
+    },
+    "validation/willyou-dev061-red-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-red-sources.tar.gz",
+      "sha256": "6f8a88274891123b76b937b38f573127f89d7cbd16c8ae201e655111203cf8dd"
+    },
+    "validation/willyou-dev061-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-green.json",
+      "sha256": "9b4e5971c80b726535363eecbe9961988fe3a127b689a959162620f82d85032e"
+    },
+    "validation/willyou-dev061-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-green.log",
+      "sha256": "8feffc6d79ab052be24da34cbec035686bf6ff6c8ea6e43b2f61943145412415"
+    },
+    "validation/willyou-dev061-native-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-native-green.json",
+      "sha256": "c5fa1d8159b695b0937b882e5b76371be933b1fc72c3f93adbb67085ab39d586"
+    },
+    "validation/willyou-dev061-types.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-dev061-types.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-notebook-r13-tests-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-r13-tests-final.json",
+      "sha256": "fe4f6e70cf8fc2bdf4f97d7efa54d7d95e7dac342b4f1c9e2ef0a3c9a0ad8cb8"
+    },
+    "validation/willyou-notebook-r13-tests-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-r13-tests-final.log",
+      "sha256": "4f3541d45090175b6fd9dfcb83a8a680b72338b492755f14d5d3fff2ad2cec6a"
+    },
+    "validation/willyou-notebook-r13-native-final.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-r13-native-final.json",
+      "sha256": "603cf0b58c2ba2cfa40368089d2db45b0942eae56821cac012bfc633d88109c0"
+    },
+    "validation/willyou-notebook-r13-types-final.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-r13-types-final.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-notebook-r14-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-r14-tests.json",
+      "sha256": "678e71365dc7f15d3763e8b455822529dadf9434a51664431ffe8d26088efca2"
+    },
+    "validation/willyou-notebook-r14-tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-r14-tests.log",
+      "sha256": "4d445f8bbd75f22ac7df25c9e0d6054f3f5776c7ae1cde99877e168591302e04"
+    },
+    "validation/willyou-notebook-r14-native.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-r14-native.json",
+      "sha256": "a4bff5edd8de3d8317b75ae7e5c51a7a81f499b26e18c402284af8abe0dcc154"
+    },
+    "validation/willyou-m9-acceptance-batch-r14-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-m9-acceptance-batch-r14-build.log",
+      "sha256": "8b3b0c022e8a4c0c419e56be78c456efcbd1a2597be76e838d30eb0ba2333b9f"
+    },
+    "validation/willyou-m9-acceptance-batch-r15-build.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-m9-acceptance-batch-r15-build.log",
+      "sha256": "0f7ff771d1acbc58c8e45b550efb9606e273cb65ce1d9d7c82a29269baa96aa5"
+    },
+    "validation/willyou-m9-acceptance-batch-r14-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-m9-acceptance-batch-r14-sources.json",
+      "sha256": "6c23566a8e9720a09b3c6425c0b55460062aeef6a23439002e5e96f8a059cba6"
+    },
+    "validation/willyou-m9-acceptance-batch-r14-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-m9-acceptance-batch-r14-sources.tar.gz",
+      "sha256": "7c999a0d3cf132c0648e02c8cfda9306a3776ba7485989f86c229f838d1aa943"
+    },
+    "validation/willyou-m9-acceptance-batch-r15-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-m9-acceptance-batch-r15-sources.json",
+      "sha256": "d9e612073f81071c9e695a3d5ea2837d5cddbe5c7fcc9aeae8fd6a55eab1a10f"
+    },
+    "validation/willyou-m9-acceptance-batch-r15-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-m9-acceptance-batch-r15-sources.tar.gz",
+      "sha256": "f950d85fa6eb4c35efefb44a047b63a6fc63272cc3a4eca3e49e7123d7983a6c"
+    },
+    "validation/willyou-r15-runtime-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-r15-runtime-verification.json",
+      "sha256": "a0855a8f44729d1f23b3bcb8e04c9dfd2bcc04ab50e05f69700a083c9c5dfbeb"
+    },
+    "validation/willyou-r15-runtime-verification.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-r15-runtime-verification.log",
+      "sha256": "6257761c93394dff9b724d5a430fa9101c1f1f0e46a4628300e23d42d81fe668"
+    },
+    "validation/willyou-notebook-red-observe.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-notebook-red-observe.mjs",
+      "sha256": "259b890fd27a84e0c914bdbf66b9a50e52675616a49d6a05378b4cf6b6b3a2cc"
+    },
+    "validation/willyou-verify-r15-runtime.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/validation/willyou-verify-r15-runtime.cjs",
+      "sha256": "6374c1556f7505689cdab6163a67d24ae40e1fbe0610fec09930c0cbf39e5d38"
+    },
+    "baseline-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/baseline-verification.json",
+      "sha256": "e5cc3c38c13c4f565f5d5cde182947046a27fdf8ec660b5c550cd8aff46c66f0"
+    },
+    "sources/src/renderer/index.html": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/src/renderer/index.html",
+      "sha256": "c3732ec15c5594a603ca1b1e23780139aac1e773e519bcd204e5e4924a693a8d"
+    },
+    "sources/src/renderer/features/files/notebook/assets.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/src/renderer/features/files/notebook/assets.ts",
+      "sha256": "03dadb69b0211623360dbbf0096f653aedb4f1fa69deb08d41e9b1e5bfa92862"
+    },
+    "sources/src/renderer/features/files/notebook/preview.tsx": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/src/renderer/features/files/notebook/preview.tsx",
+      "sha256": "a634dac0d4e1f63d9e3ccf0e7a8b85fd08647895ce36c1b1bb996fbaa13664d5"
+    },
+    "sources/src/renderer/features/files/notebook/sanitize.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/src/renderer/features/files/notebook/sanitize.ts",
+      "sha256": "edf6c4a0f6c0b374abc8833fc0b1c450df7110e7702344382c4db3742fe1b303"
+    },
+    "sources/src/renderer/features/files/notebook/model.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/src/renderer/features/files/notebook/model.test.ts",
+      "sha256": "58bcd9eba1f1241474c14ed6dd5f28a7a2ccc0f50178bfe3b9ea2c733797d45f"
+    },
+    "sources/src/renderer/features/files/notebook/content-acceptance.test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/src/renderer/features/files/notebook/content-acceptance.test.ts",
+      "sha256": "d647e3f262b848ff291062ea7521f6c7623c831441a30d0a9c289e8bf519a98b"
+    },
+    "sources/scripts/files/notebook-content-ui.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/scripts/files/notebook-content-ui.mjs",
+      "sha256": "43d22cf8da4eda96c9e56ff96c4be7181e5d5a71b7f7d8872bfa5d5b15ec632f"
+    },
+    "sources/scripts/files/notebook-fixtures.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-notebook-dev061-r15/sources/scripts/files/notebook-fixtures.mjs",
+      "sha256": "ddcad042ef6be80131b5cbe884f45f6f5ae4c86cb1ee7287f897edebc31532b4"
+    }
+  }
+}

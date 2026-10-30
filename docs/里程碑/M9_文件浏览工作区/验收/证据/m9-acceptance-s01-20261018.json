@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-S01",
+  "caseTitle": "只读Git状态装饰",
+  "requirements": [
+    "M9-R02.8"
+  ],
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "prototype": "P02/P17",
+  "status": "通过",
+  "recordedAt": "2026-10-18T01:42:05.879170+00:00",
+  "conclusion": "chart-resize-r1 真实 App 的 A/M/D/U 状态与独立 Git 读取一致，AIS 非 Git 根可正常浏览且明确提示 Git 不可用；独立 Git 查看/刷新前后全部342项文件系统记录完全相同。当前选定4项包内原生Git测试及3项parser测试通过；原测试沙箱失败和首次混合观察中的两处ctime变化完整保留。",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "platform": "Darwin",
+    "macOS": "26.6.1",
+    "arch": "arm64",
+    "isolatedGitProject": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project",
+    "isolatedUserData": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/userdata",
+    "nonGitRoot": "/Users/hx/ideaProject/sys/Ultra_ML/trunk/Src/AIS_Web/ultrasafe-ais-ms",
+    "nonGitBoundary": "User-authorized local AIS project; root agent only browsed and opened pom.xml, without editing/saving. No before/after whole-AIS hash capture is claimed."
+  },
+  "acceptedBuild": {
+    "appPath": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app",
+    "appAsarSha256": "5a2d5738ee5e8f7ebf00b5eb492f2b33eceb718e52de851b4a7e62543b976110",
+    "nativeExecutablePath": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "nativeExecutableSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "sourceSnapshot": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-sources.tar.gz",
+      "sha256": "703ba5102105a2cd339ba585f92ca108e31720668c8aa7dce4c113ba192e56a9"
+    },
+    "relatedSourceHashes": {
+      "src/main/core/files/git-metadata.ts": {
+        "sha256": "01052c5df6eb3c1c343f50f28274b88f80bc010a90dbda531b1781485ed1b4ff",
+        "snapshotSha256": "01052c5df6eb3c1c343f50f28274b88f80bc010a90dbda531b1781485ed1b4ff",
+        "matchesSnapshot": true
+      },
+      "src/main/core/files/git-metadata.test.ts": {
+        "sha256": "213799b67e942186498c32f5721d6272bcbba695c4269e869cb2fd2d93bd624f",
+        "snapshotSha256": "213799b67e942186498c32f5721d6272bcbba695c4269e869cb2fd2d93bd624f",
+        "matchesSnapshot": true
+      },
+      "src/main/core/files/controller.ts": {
+        "sha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+        "snapshotSha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+        "matchesSnapshot": true
+      },
+      "src/shared/file-git.ts": {
+        "sha256": "b2321b602ec1b22028c179b7fc4266c9618f3881cfaef911fb07e92d89636283",
+        "snapshotSha256": "b2321b602ec1b22028c179b7fc4266c9618f3881cfaef911fb07e92d89636283",
+        "matchesSnapshot": true
+      },
+      "native/files/git-metadata.inc.mm": {
+        "sha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+        "snapshotSha256": "13d35dc9480303c4b2470a93702ce9a94d6e170bb62f0a4d157f6ea32df2ab02",
+        "matchesSnapshot": true
+      },
+      "src/renderer/features/files/workspace-tree.tsx": {
+        "sha256": "156e820cdfb2369213e876eadd57ad7040535b498b74d5d4b4177da6a573f32a",
+        "snapshotSha256": "156e820cdfb2369213e876eadd57ad7040535b498b74d5d4b4177da6a573f32a",
+        "matchesSnapshot": true
+      },
+      "src/renderer/features/files/git-metadata.tsx": {
+        "sha256": "55dfc4d51c961f5a4384ce1d24df36fbfae216f3a5813b535f17246cdf85141f",
+        "snapshotSha256": "55dfc4d51c961f5a4384ce1d24df36fbfae216f3a5813b535f17246cdf85141f",
+        "matchesSnapshot": true
+      },
+      "src/renderer/features/files/workspace-panel.tsx": {
+        "sha256": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+        "snapshotSha256": "e1f14a77d1d4723349697cb70501eecaa2506940f72d956927594b9a1bf49965",
+        "matchesSnapshot": true
+      }
+    }
+  },
+  "appObservationProvenance": {
+    "observer": "Root agent /root",
+    "method": "CUA on the actual packaged App; observations supplied to evidence-writing agent.",
+    "screenshotsArchived": false,
+    "rawAccessibilitySnapshotsArchived": false,
+    "note": "These are root observation records, not invented screenshot or AX exports. Snapshot timestamps bound the read-only observation intervals."
+  },
+  "appSteps": [
+    {
+      "step": 1,
+      "action": "Open the isolated Git project file tree without editing.",
+      "expected": "New/staged, modified and untracked files carry their matching decorations.",
+      "actual": {
+        "git-added.ts": "A 新增",
+        "git-generated.ts": "M 修改",
+        "git-manual.ts": "M 修改",
+        "git-new 中文🙂.txt": "U 未跟踪"
+      },
+      "status": "通过"
+    },
+    {
+      "step": 2,
+      "action": "File menu → 查看变化文件.",
+      "expected": "The changes list includes deletion alongside matching A/M/U statuses.",
+      "actual": {
+        "count": 113,
+        "git-added.ts": "A 新增",
+        "git-deleted.txt": "D 删除",
+        "git-generated.ts": "M 修改",
+        "git-manual.ts": "M 修改",
+        "git-new 中文🙂.txt": "U 未跟踪"
+      },
+      "status": "通过"
+    },
+    {
+      "step": 3,
+      "action": "Switch to the authorized AIS non-Git project and open pom.xml; inspect Git actions and the changes list.",
+      "expected": "Normal file browsing remains available; unavailable Git state is explicit, without inventing repository data.",
+      "actual": {
+        "directoriesListed": true,
+        "pom.xml": "Real content displayed, UTF-8, 20.4 KiB",
+        "lineAttributionMenu": "disabled",
+        "help": "当前目录不在 Git 工作树中",
+        "changesCount": 0,
+        "changesReason": "当前目录不在 Git 工作树中"
+      },
+      "status": "通过"
+    },
+    {
+      "step": 4,
+      "action": "After the first after-snapshot, only inspect and refresh Git changes again; no TextEdit interaction or file editing.",
+      "expected": "Same statuses and no metadata/content changes caused by read-only Git.",
+      "actual": {
+        "loadingThenCount": 113,
+        "statuses": "A/D/M/M/U unchanged",
+        "filesystemComparison": "All342 entries identical including ctime, mtime, inode and SHA-256; Git status bytes identical."
+      },
+      "status": "通过"
+    }
+  ],
+  "filesystemEvidence": {
+    "artifacts": {
+      "before": {
+        "path": "acceptance-s01/before.json",
+        "sha256": "b97bf2315dff937c5a97f14f439a8924622bd4739277d672a8cbe919f7a4342f",
+        "originalPath": "/private/tmp/willyou-s01-before.json",
+        "bytes": 156421
+      },
+      "after-ui-with-textedit": {
+        "path": "acceptance-s01/after-ui-with-textedit.json",
+        "sha256": "86734f998fe82a619bdd823006a875c2145c1f7f66e717c16fafc19f098f2485",
+        "originalPath": "/private/tmp/willyou-s01-after.json",
+        "bytes": 156421
+      },
+      "after-git-only": {
+        "path": "acceptance-s01/after-git-only.json",
+        "sha256": "dd5be5c37794ea0bdce3e030fc8e4de79ca0659d41f2abc846fe3324e9bccbde",
+        "originalPath": "/private/tmp/willyou-s01-after-git-only.json",
+        "bytes": 156421
+      },
+      "comparison-first": {
+        "path": "acceptance-s01/comparison-first.json",
+        "sha256": "cbb10d10399c7ab3b10b2056c8a7b28afc1ff39450d868bd546ffeb6772a0687",
+        "originalPath": "/private/tmp/willyou-s01-comparison.json",
+        "bytes": 484
+      },
+      "comparison-git-only": {
+        "path": "acceptance-s01/comparison-git-only.json",
+        "sha256": "32ff8803af26e09942efcbb6fc9ed894f8b8e361c1e214dd70999a1026392ac1",
+        "originalPath": "/private/tmp/willyou-s01-git-only-comparison.json",
+        "bytes": 110
+      },
+      "tests-tool-sandbox-failed": {
+        "path": "acceptance-s01/tests-tool-sandbox-failed.json",
+        "sha256": "9761ff2c22d546cbf95d62b2005fc9491b1d074d4e271ab1116afe363816502d",
+        "originalPath": "/private/tmp/willyou-s01-git-current.json",
+        "bytes": 22248
+      },
+      "tests-outside-tool-sandbox-passed": {
+        "path": "acceptance-s01/tests-outside-tool-sandbox-passed.json",
+        "sha256": "a22c0ff56ac87767ad7b290d7fc57acd73aa23cd1d3d118bcd07851af1db8163",
+        "originalPath": "/private/tmp/willyou-s01-git-current-r2.json",
+        "bytes": 20706
+      },
+      "existing-evidence-audit": {
+        "path": "acceptance-s01/existing-evidence-audit.json",
+        "sha256": "24db200b45bef928d3292ed6a2937e15eaddff84370e872cc9ceb1a6f906b1f9",
+        "originalPath": "/private/tmp/willyou-s01-existing-evidence-audit.json",
+        "bytes": 5701
+      },
+      "snapshot-script": {
+        "path": "acceptance-s01/snapshot-script.py",
+        "sha256": "5de3c7f9af520443b47d5b2fbe9bab8202987f638a6af646e1eaa1e466f10d93",
+        "originalPath": "/private/tmp/willyou-s01-snapshot.py",
+        "bytes": 3909
+      }
+    },
+    "entries": 342,
+    "regularFiles": 250,
+    "regularFileBytes": 488004867,
+    "scope": "Entire isolated project and complete .git tree including HEAD/index/refs/objects/config; no followed symlinks or special-file reads.",
+    "exclusions": [
+      "Only .DS_Store files; present as root .DS_Store in all snapshots.",
+      "atime omitted because reading itself can update access time. Parent directory metadata is still captured."
+    ],
+    "gitStatusReadOnly": "GIT_OPTIONAL_LOCKS=0, --no-optional-locks, fsmonitor/untracked-cache/hooks disabled; each snapshot independently asserted its own status command left index unchanged.",
+    "firstInterval": {
+      "before": "2026-10-18T01:36:16.076489+00:00",
+      "after": "2026-10-18T01:39:49.663203+00:00",
+      "added": [],
+      "removed": [],
+      "allRegularFileHashesInodesMtimesEqual": true,
+      "entireGitMetadataEqual": true,
+      "statusRawBytesEqual": true,
+      "differences": {
+        "acceptance-batch-r1/accept-A.txt": {
+          "ctimeNs": {
+            "before": "1792287026683701827",
+            "after": "1792287393735591185"
+          }
+        },
+        "acceptance-batch-r1/accept-B.txt": {
+          "ctimeNs": {
+            "before": "1792287026683791161",
+            "after": "1792287432931811634"
+          }
+        }
+      },
+      "explanation": "Only accept-A.txt and accept-B.txt ctime changed while root also opened those fixtures in TextEdit without editing. No hash/inode/mtime/size change. The changed ctimes are retained; their precise source cannot be proved from this capture and is not falsely attributed to Git or TextEdit."
+    },
+    "isolatedGitInterval": {
+      "before": "2026-10-18T01:39:49.663203+00:00",
+      "after": "2026-10-18T01:41:21.647270+00:00",
+      "comparison": {
+        "entriesIdentical": true,
+        "changed": [],
+        "gitStatusRawIdentical": true,
+        "excludedIdentical": true
+      },
+      "conclusion": "No file, directory, content, identity or captured metadata difference across the read-only Git refresh."
+    }
+  },
+  "currentLayerTests": {
+    "sourceHashes": {
+      "src/main/core/files/native-broker.test.ts": "693f23b2fa79fdf7a48c7e275c87e733795bd858c87f1646ad807f619b1c3f4e",
+      "src/main/core/files/git-metadata.test.ts": "213799b67e942186498c32f5721d6272bcbba695c4269e869cb2fd2d93bd624f"
+    },
+    "testOnlyChange": "Native test beforeAll accepts SMARTDD_M9_FILE_BROKER for selected non-failpoint cases; no production change, compile or package rebuild. Default complete suite retains its existing test-helper compilation.",
+    "command": "SMARTDD_M9_FILE_BROKER='/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files' pnpm test src/main/core/files/native-broker.test.ts src/main/core/files/git-metadata.test.ts -t 'reads real Git states/attributes|keeps hostile filter/fsmonitor|binds Git queries|supports worktree metadata|Git metadata parser and safe location links' --reporter=json",
+    "selected": 7,
+    "passed": 7,
+    "failed": 0,
+    "unselected": 48,
+    "unselectedBoundary": "The -t filter intentionally left48 unrelated tests unexecuted; they are not counted as passing or as additional formal cases.",
+    "executable": "Same retained app production helper as acceptedBuild; no test suspension hooks compiled.",
+    "results": [
+      {
+        "name": "Git metadata parser and safe location links limits web locations to credential-free GitHub repository mappings",
+        "status": "passed",
+        "durationMs": 1.6833330000000046
+      },
+      {
+        "name": "Git metadata parser and safe location links preserves NUL-delimited rename paths, Unicode and unknown generated attributes",
+        "status": "passed",
+        "durationMs": 1.2340000000000089
+      },
+      {
+        "name": "Git metadata parser and safe location links does not invent missing author metadata and rejects stale or uncommitted line mappings",
+        "status": "passed",
+        "durationMs": 0.31562500000001137
+      },
+      {
+        "name": "native file boundary (real macOS filesystem) reads real Git states/attributes within a nested root without writing the index",
+        "status": "passed",
+        "durationMs": 294.216542
+      },
+      {
+        "name": "native file boundary (real macOS filesystem) keeps hostile filter/fsmonitor helpers from running and makes their failure explicit",
+        "status": "passed",
+        "durationMs": 139.94320800000003
+      },
+      {
+        "name": "native file boundary (real macOS filesystem) binds Git queries to the owning scope and does not expose arbitrary commands",
+        "status": "passed",
+        "durationMs": 201.42816700000003
+      },
+      {
+        "name": "native file boundary (real macOS filesystem) supports worktree metadata outside the file root and reports a non-Git directory",
+        "status": "passed",
+        "durationMs": 208.24470799999995
+      }
+    ],
+    "executionBoundary": "Run outside the enclosing command-tool sandbox after its automatic approval; the production broker own read-only Git sandbox remained enabled."
+  },
+  "failureHistory": [
+    {
+      "run": "First current selected run under default command-tool sandbox",
+      "passed": 4,
+      "failed": 3,
+      "unselected": 48,
+      "report": {
+        "path": "acceptance-s01/tests-tool-sandbox-failed.json",
+        "sha256": "9761ff2c22d546cbf95d62b2005fc9491b1d074d4e271ab1116afe363816502d",
+        "originalPath": "/private/tmp/willyou-s01-git-current.json",
+        "bytes": 22248
+      },
+      "failures": [
+        {
+          "name": "native file boundary (real macOS filesystem) reads real Git states/attributes within a nested root without writing the index",
+          "messages": [
+            "FileError: [UNSUPPORTED] Git status is unavailable; external filters, helpers and writes are disabled\n    at Socket.<anonymous> (/Users/hx/hx/hxWork/SmartDD/src/main/core/files/native-broker.ts:85:27)\n    at Socket.emit (node:events:509:28)\n    at addChunk (node:internal/streams/readable:563:12)\n    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)\n    at Socket.Readable.push (node:internal/streams/readable:394:5)\n    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)"
+          ]
+        },
+        {
+          "name": "native file boundary (real macOS filesystem) binds Git queries to the owning scope and does not expose arbitrary commands",
+          "messages": [
+            "FileError: [UNSUPPORTED] Git status is unavailable; external filters, helpers and writes are disabled\n    at Socket.<anonymous> (/Users/hx/hx/hxWork/SmartDD/src/main/core/files/native-broker.ts:85:27)\n    at Socket.emit (node:events:509:28)\n    at addChunk (node:internal/streams/readable:563:12)\n    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)\n    at Socket.Readable.push (node:internal/streams/readable:394:5)\n    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)"
+          ]
+        },
+        {
+          "name": "native file boundary (real macOS filesystem) supports worktree metadata outside the file root and reports a non-Git directory",
+          "messages": [
+            "FileError: [UNSUPPORTED] Git status is unavailable; external filters, helpers and writes are disabled\n    at Socket.<anonymous> (/Users/hx/hx/hxWork/SmartDD/src/main/core/files/native-broker.ts:85:27)\n    at Socket.emit (node:events:509:28)\n    at addChunk (node:internal/streams/readable:563:12)\n    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)\n    at Socket.Readable.push (node:internal/streams/readable:394:5)\n    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)"
+          ]
+        }
+      ],
+      "resolution": "The same source, test selection and packaged executable passed7/7 after only moving the command outside the enclosing tool sandbox. This establishes an execution-environment difference; the exact underlying OS rejection was not diagnosed. Production code was not changed to bypass its read-only restrictions."
+    }
+  ],
+  "existingEvidenceBoundary": {
+    "audit": {
+      "path": "acceptance-s01/existing-evidence-audit.json",
+      "sha256": "24db200b45bef928d3292ed6a2937e15eaddff84370e872cc9ceb1a6f906b1f9",
+      "originalPath": "/private/tmp/willyou-s01-existing-evidence-audit.json",
+      "bytes": 5701
+    },
+    "note": "Prior62/47/15 successful summaries remain historical. Current selected rerun closes their missing exact run-time source-hash gap for this S01 scope; it does not retroactively attach current hashes to old tests."
+  },
+  "limits": [
+    "Only macOS arm64 and the explicitly identified old package are accepted; later builds require affected regression checks.",
+    "No screenshots/raw AX dumps were archived.",
+    "No formal coverage index or milestone documentation was changed by the evidence-writing agent."
+  ]
+}

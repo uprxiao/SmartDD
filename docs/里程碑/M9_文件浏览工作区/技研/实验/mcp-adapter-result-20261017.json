@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T04:44:10.553Z",
+  "scriptSha256": "4d98f2340cda72f2d3691cacaa24f5223d784f3f3a06d9c8e898ca523d5ef4c4",
+  "fakeServerSha256": "e71d27f01066531c431a8eb7d104835fb96ca9e098dd1d7f7413a1a856ee8179",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0",
+    "realServer": "本机 rea mcp（命令行 --version 为 6.1.0，MCP 握手的 serverInfo.version 为 6.5.0，两者不一致，原因未查）",
+    "protocolVersion": "2025-06-18"
+  },
+  "scope": "最小 MCP stdio 客户端；真实服务仅握手/关闭；受控服务验证适配策略。不含：viewer 的隔离宿主/沙箱 UI、资源订阅、真实第三方 viewer、Windows",
+  "cases": [
+    {
+      "id": "MC01",
+      "title": "真实 MCP 服务（rea mcp）：握手、能力声明、工具清单、ping，记录就绪时间",
+      "status": "passed",
+      "ms": 1068,
+      "evidence": {
+        "protocolVersion": "2025-06-18",
+        "serverInfo": {
+          "name": "rea",
+          "version": "6.5.0"
+        },
+        "declaredCapabilities": [
+          "tools",
+          "completions",
+          "prompts"
+        ],
+        "toolCount": 207,
+        "toolsListBytes": 3087986,
+        "lineCapBytes": 28224171,
+        "viewerAdapterShouldCallToolsList": false,
+        "ping": true,
+        "readyMs": 742,
+        "viewerAvailable": {
+          "available": false,
+          "reason": "resources-not-declared"
+        },
+        "meaning": "配置了的 MCP 服务不等于可用 viewer：rea 只声明 tools 时 viewerAvailability 为不可用；tools/list 响应约 3MB，viewer 适配层不需要它，也就不应请求"
+      }
+    },
+    {
+      "id": "MC02",
+      "title": "真实服务关闭：关闭 stdin 后进程树在预算内退出",
+      "status": "passed",
+      "ms": 0,
+      "evidence": {
+        "treeDiedAfterMs": 51,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    },
+    {
+      "id": "MC03",
+      "title": "真实服务：未知方法返回 -32601 并被识别为“不支持”，而不是挂起",
+      "status": "passed",
+      "ms": 1086,
+      "evidence": {
+        "resourcesListOutcome": -32601,
+        "note": "服务未声明 resources，调用被拒绝；适配层应根据能力声明提前不发该请求"
+      }
+    },
+    {
+      "id": "MC04",
+      "title": "受控服务：能力门控后列出并读取会话资源",
+      "status": "passed",
+      "ms": 67,
+      "evidence": {
+        "avail": {
+          "available": true,
+          "canSubscribe": false,
+          "canList": true
+        },
+        "uri": "viewer://doc/a.pptx",
+        "decoded": {
+          "kind": "text",
+          "bytes": 12
+        }
+      }
+    },
+    {
+      "id": "MC05",
+      "title": "恶意/越界 URI 在发送前被拒绝，服务端日志里没有对应读取请求",
+      "status": "passed",
+      "ms": 231,
+      "evidence": {
+        "rejected": [
+          "file:///etc/passwd → uri-not-session-resource",
+          "viewer://doc/../secret → uri-not-session-resource",
+          "viewer://doc/b.pptx → uri-not-session-resource",
+          "http://evil.invalid/x → uri-not-session-resource"
+        ],
+        "readsReceivedByServer": [
+          "viewer://doc/a.pptx"
+        ]
+      }
+    },
+    {
+      "id": "MC06",
+      "title": "大资源：传输层上限立即以 TOO_LARGE 拒绝；声明 size 与真实不符时按解码后字节拒绝",
+      "status": "passed",
+      "ms": 508,
+      "evidence": {
+        "transport": {
+          "code": "TOO_LARGE",
+          "rejectedAfterMs": 120,
+          "oversizeLinesDropped": 1,
+          "connectionStillUsable": true,
+          "lineCapBytes": 28224171
+        },
+        "decode": {
+          "declaredSize": 10,
+          "decodedBytes": 3145728,
+          "error": "too-large",
+          "maxBytesUsed": 1048576
+        },
+        "note": "超限那一行（约 40MB base64）仍会被完整读入内存后丢弃——生产应在传输层按字节计数并尽早断开/限流；本实验只证明“拒绝且连接可恢复”"
+      }
+    },
+    {
+      "id": "MC07",
+      "title": "写回：旧 ifMatch → conflict；新 ifMatch → saved 并更新基线；只有 saved 才更新基线",
+      "status": "passed",
+      "ms": 30,
+      "evidence": {
+        "stale": {
+          "ok": false,
+          "state": "conflict",
+          "etag": "e1"
+        },
+        "ok": {
+          "ok": true,
+          "state": "saved",
+          "etag": "e2"
+        },
+        "baselineAfter": "e2",
+        "reusedOldEtag": "conflict",
+        "tooLarge": "too-large"
+      }
+    },
+    {
+      "id": "MC08",
+      "title": "服务未声明 resources：viewer 不可用，且适配层没有发出任何 resources/* 请求",
+      "status": "passed",
+      "ms": 324,
+      "evidence": {
+        "avail": {
+          "available": false,
+          "reason": "resources-not-declared"
+        },
+        "methodsReceivedByServer": [
+          "initialize",
+          "notifications/initialized"
+        ]
+      }
+    },
+    {
+      "id": "MC09",
+      "title": "超时：无响应请求在预算内被拒绝；服务稍后的迟到响应被丢弃，不污染后续请求",
+      "status": "passed",
+      "ms": 1972,
+      "evidence": {
+        "code": "TIMEOUT",
+        "ms": 501,
+        "lateResponsesDropped": 1,
+        "nextRequestOk": true
+      }
+    },
+    {
+      "id": "MC10",
+      "title": "崩溃：服务在请求中途退出，请求立即被拒绝；重启后可继续",
+      "status": "passed",
+      "ms": 87,
+      "evidence": {
+        "code": "EXIT",
+        "ms": 2,
+        "restartedAndListed": true
+      }
+    },
+    {
+      "id": "MC11",
+      "title": "通知洪峰：5000 条通知被限流，丢弃数可见，请求仍能及时响应",
+      "status": "passed",
+      "ms": 335,
+      "evidence": {
+        "received": 5000,
+        "accepted": 200,
+        "dropped": 4800,
+        "limitPerSecond": 200,
+        "requestAfterFloodMs": 10
+      }
+    },
+    {
+      "id": "MC12",
+      "title": "脏数据：非 JSON、半截 JSON、20 万字符超长行不会打死客户端，后续合法响应照常解析",
+      "status": "passed",
+      "ms": 32,
+      "evidence": {
+        "badLinesIgnored": 3,
+        "handshakeOk": true
+      }
+    },
+    {
+      "id": "MC13",
+      "title": "关闭后的请求：服务退出后新请求立即失败而不是挂起",
+      "status": "passed",
+      "ms": 1127,
+      "evidence": {
+        "code": "TIMEOUT",
+        "ms": 802,
+        "note": "写入已退出进程的 stdin 不会抛错，只能靠超时/退出状态发现；适配层应在 exit 后直接拒绝（本客户端在退出前已排队的请求才得到 EXIT）"
+      }
+    }
+  ],
+  "fixtureCleanup": {
+    "removed": true
+  },
+  "completedAt": "2026-10-17T04:44:17.425Z",
+  "summary": {
+    "passed": 13
+  }
+}

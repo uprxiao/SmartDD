@@ -1,0 +1,13 @@
+
+> smartdd@0.0.5 typecheck /Users/hx/hx/hxWork/SmartDD
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/files/resource-service.test.ts(31,144): error TS2322: Type '(value: Buffer<ArrayBuffer> | PromiseLike<Buffer<ArrayBuffer>>) => void' is not assignable to type '(bytes: Buffer<ArrayBufferLike>) => void'.
+  Types of parameters 'value' and 'bytes' are incompatible.
+    Type 'Buffer<ArrayBufferLike>' is not assignable to type 'Buffer<ArrayBuffer> | PromiseLike<Buffer<ArrayBuffer>>'.
+      Type 'Buffer<ArrayBufferLike>' is not assignable to type 'Buffer<ArrayBuffer>'.
+        Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+          Type 'SharedArrayBuffer' is not assignable to type 'ArrayBuffer'.
+            Types of property '[Symbol.toStringTag]' are incompatible.
+              Type '"SharedArrayBuffer"' is not assignable to type '"ArrayBuffer"'.
+ ELIFECYCLE  Command failed with exit code 2.

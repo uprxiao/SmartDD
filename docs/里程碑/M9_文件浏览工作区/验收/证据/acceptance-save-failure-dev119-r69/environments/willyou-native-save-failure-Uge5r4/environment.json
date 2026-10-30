@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-19T02:35:05.126Z",
+  "base": "/private/tmp/willyou-native-save-failure-Uge5r4",
+  "volume": "/private/tmp/willyou-native-save-failure-Uge5r4/volume",
+  "project": "/private/tmp/willyou-native-save-failure-Uge5r4/volume/project",
+  "image": "/private/tmp/willyou-native-save-failure-Uge5r4/fault-volume.dmg",
+  "commands": [
+    {
+      "args": [
+        "hdiutil",
+        "create",
+        "-size",
+        "16m",
+        "-fs",
+        "HFS+",
+        "-volname",
+        "WillYou-Save-Failure",
+        "-type",
+        "UDIF",
+        "/private/tmp/willyou-native-save-failure-Uge5r4/fault-volume.dmg"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "hdiutil",
+        "attach",
+        "-nobrowse",
+        "-noautoopen",
+        "-mountpoint",
+        "/private/tmp/willyou-native-save-failure-Uge5r4/volume",
+        "-plist",
+        "/private/tmp/willyou-native-save-failure-Uge5r4/fault-volume.dmg"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/bin/python3",
+        "-c",
+        "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+        "/private/tmp/willyou-native-save-failure-Uge5r4/attach.plist"
+      ],
+      "code": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "hdiutil",
+        "detach",
+        "/dev/disk7s1"
+      ],
+      "code": 0,
+      "stderr": ""
+    }
+  ],
+  "boundary": "Own16MiB HFS+ image only; actual parent permission removal, actual native ENOSPC, actual native EFBIG from4096-byte RLIMIT_FSIZE on save only. Relay forwards original requests and newline frames byte-identically, never fabricates responses. userData/drafts remain outside full volume.",
+  "capacityBytes": 16736256,
+  "device": "/dev/disk7s1",
+  "originalBrokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+  "wrapperSha256": "aa3516a96b205801765d90d65588defbf5a45b940288a1d6855e1a2294699fda",
+  "detached": true,
+  "finishedAt": "2026-10-19T02:35:12.129Z"
+}

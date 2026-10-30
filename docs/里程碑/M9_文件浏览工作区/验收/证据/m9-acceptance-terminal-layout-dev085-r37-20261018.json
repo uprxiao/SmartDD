@@ -1,0 +1,534 @@
+{
+  "schemaVersion": 1,
+  "id": "M9-ACCEPTANCE-TERMINAL-LAYOUT-DEV085-R37",
+  "at": "2026-10-18T15:34:18.287834+00:00",
+  "status": "passed-three-cases",
+  "revision": "R3.4-20261017 / R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": "macOS arm64",
+  "fullCasesPassed": [
+    "M9-T-P03",
+    "M9-T-P04",
+    "M9-T-P07"
+  ],
+  "regressionCasesPassed": [
+    "M9-T-A08",
+    "M9-T-A11",
+    "M9-T-B22",
+    "M9-T-B19"
+  ],
+  "partialCases": [
+    "M9-T-P09"
+  ],
+  "defects": {
+    "M9-DEV-085": "Each ResizeObserver callback fitted and sent identical grids, including hundreds of unnecessary raw native resize IPCs during a 5s actual drag. One cancellable visible frame scheduler now measures latest geometry and sends only changed valid positive integer cell dimensions. Hidden/minimized zero-sized hosts cannot fit/send; restored visibility requests a fresh fit. Each PTY owns a fresh scheduler. Original PtyAccess authorization/ownership is unchanged."
+  },
+  "app": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r37-build/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "be97715643018be4a34b5bfebc1c6781581561243d90edb6ca42f8324a0aea44",
+    "brokerSha256": "cae73e3859bdf342971ad9bcfcb148b8485064d564546bea7227fb9610b712cb",
+    "nativeChecks": {
+      "version": "0.0.5",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "runtimeAssetsVerified": 81
+  },
+  "sourceBaseline": {
+    "files": 955,
+    "redSha256": "82b651d8f1af2fc5b4d0e6c44eddcdb4033815c96458fe502fe2bd74ca9e4ae3",
+    "buildSha256": "0dae360c6ddab8261c6197e4939141b1b74acf7125daf257f8ee540294d2ba24",
+    "finalTestedSha256": "c4a2116c9a4028c41e359a7e664a16b52b9d21bd1a3709895bace257524ff1d1",
+    "postBuildChanged": [
+      "scripts/files/terminal-layout-ui.mjs",
+      "scripts/m4-ui-smoke.mjs"
+    ],
+    "productionChangedAfterBuild": 0,
+    "productionSourceChanges": [
+      "src/renderer/core/terminal-fit.ts",
+      "src/renderer/views/task-view.tsx"
+    ],
+    "newCodeTest": "src/renderer/core/terminal-fit.test.ts",
+    "prototypeSourceChanges": []
+  },
+  "performance": {
+    "budget": {
+      "id": "M9-DEV085-TERMINAL-LAYOUT-E1",
+      "revision": "R3.4-20261017 / R3.4-P1",
+      "frozenAt": "2026-10-18T15:21:33.182667+00:00",
+      "caseIds": [
+        "M9-T-P03",
+        "M9-T-P04",
+        "M9-T-P07"
+      ],
+      "minDragDurationMs": 5000,
+      "minPointerMoves": 120,
+      "maxAdjacentDuplicateSizes": 0,
+      "maxResizeCountOverObservedFrames": 2,
+      "mainHeartbeatIntervalMs": 25,
+      "maxMainEventLoopLagMs": 250,
+      "minMainHeartbeatSamples": 100,
+      "basis": [
+        "P04 requires five actual seconds of dragging, frame coalescing, unchanged-size suppression, correct final geometry and no sustained main-process blocking.",
+        "Duplicate size suppression and nonzero dimensions are direct behavioral requirements. Frame count is an aggregate App bound with two boundary messages; exact coalescing is additionally verified with a deterministic scheduler, not inferred from aggregate timing alone.",
+        "250ms maximum event-loop lag and 100 samples at 25ms are pre-execution engineering gates for this local fixture, not observed Codex performance or a general all-device SLA. No minimum display refresh rate is invented."
+      ],
+      "changePolicy": "Preserve E1 and failures. Do not loosen a gate to count the current execution as passed."
+    },
+    "budgetSha256": "32dcf16c18f00c8129ed8be2325f92ed433f7005fb65776a303bbd08e7432ebd",
+    "red": {
+      "elapsedMs": 5017.97575,
+      "moves": 601,
+      "frames": 636,
+      "records": 598,
+      "duplicates": 547,
+      "maxMainLagMs": 1.47400000000016,
+      "mainSamples": 204
+    },
+    "driverFailure": {
+      "elapsedMs": 5018.837958,
+      "moves": 599,
+      "frames": 633,
+      "records": 51,
+      "duplicates": 0,
+      "maxMainLagMs": 5.629500000000007,
+      "mainSamples": 199
+    },
+    "final": {
+      "elapsedMs": 5017.024041999999,
+      "moves": 601,
+      "frames": 635,
+      "records": 51,
+      "duplicates": 0,
+      "maxMainLagMs": 2.477915999999823,
+      "mainSamples": 205
+    },
+    "boundaries": "Frozen engineering E1 before first drag; unchanged in red/current runs. Actual 120Hz display, passive RAF/pointer timestamps, additional passive main IPC resize observer and 25ms heartbeat timer. Measurements run solo after build/code tests. No minimum FPS/all-device throughput/cold-cache SLA inferred."
+  },
+  "verification": {
+    "codePassedDeduplicated": 22,
+    "newUniqueCodeTests": 11,
+    "cumulativeCodeUnion": 1721,
+    "externalCliOptInNotSelected": 2,
+    "actualNewCaseChecks": 3,
+    "actualRegressionChecks": 10,
+    "m4TechnicalChecks": 7,
+    "typecheckExit": 0,
+    "formalPassed": 141,
+    "formalTotal": 419,
+    "formalRemaining": 278,
+    "blocked": 2
+  },
+  "m4DriverCorrection": "Legacy probe could inspect pre-reload DOM because Page.reload returned before new document navigation; wait for a different performance.timeOrigin and required target. Preserve first5 technical checks/null-click failure. Add bounded own-child cleanup after failed test, manually stop only original own test executable+observedport51616 to clear hung legacy child. Same packagedApp final7checks green, source runtime unchanged.",
+  "driverCorrection": "r37 first run passed all frozen performance gates but compared final separator left against initial separator left. Its4px handle was grabbed at centre while production correctly uses actual pointer x as boundary. Correct assertion compares measured final left against requested pointer x with unchanged1.5px tolerance. Pre-correction driver/result/screenshot preserved; no production source or budget change to fix this driver error.",
+  "boundaries": [
+    "A actual packaged renderer/native IPC/PTY and trusted pointer/tree/menu/navigation/stop-resume. Project/profile/task setup uses public IPC. Main inspector only adds own-sender passive resize observer/timer and controls own window size/minimize/restore; it never replaces handlers/authorization/results.",
+    "P03 keeps task PTY/id and actual input-only receiver pid stable across hide file, hide task, window minimize/size/restore; raw sizes all positive, hidden task phase sends0. Last original size equals actual kernel PTY rows/columns after restore.",
+    "P07 exact same task remains stopped while opening/refreshing/reading external changes. Explicit UI resume creates a new PTY/receiver; ordinary file operations cannot restart it. Missing own root has recoverable UI error while receiver remains running. Restoring directory on disk is cleanup, not native permission/regrant acceptance.",
+    "M4 UI probe is existing programmatic DOM-click technical renderer/IPC/PTY fake-runner smoke;7checks do not count new formal cases and do not prove P09 model/real resources/voice/global shortcuts. CLI probe not rerun against denied Codex target.",
+    "No prototype UI changes; cases only requireA. Fit helper11tests plus existing terminal-key4/PtyAccess7 validate coalescing, latest size, hidden checks, invalid grids, cancel/late-frame disposal and independent scheduler. Historical1721 is union, not fresh full-suite execution.",
+    "Own input-only terminal receives0bytes/executes0commands; unrelatedr4/r6 pending57bytes, daily credentials/resources, system clipboard and AIS directory untouched. All source fixture fingerprints unchanged. No commit/push/merge/tag/release."
+  ],
+  "artifacts": {
+    "app/r36-repeated-resize-red/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r36-repeated-resize-red/electron.log",
+      "sha256": "47c313c2118ff2fc60d7fd74096be24a58a6c448e309dbb974be70aa452912f0"
+    },
+    "app/r36-repeated-resize-red/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r36-repeated-resize-red/failure.png",
+      "sha256": "585eebb3f450d89380ee4fb7a93d2b98556469bc95161e0fdae81098df0939ef"
+    },
+    "app/r36-repeated-resize-red/project/layout.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r36-repeated-resize-red/project/layout.txt",
+      "sha256": "a1d18ac802bc545f3823b11c9663d3d6cafcd4a9f105e80a09f809b7d089e657"
+    },
+    "app/r36-repeated-resize-red/project/nested/stable.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r36-repeated-resize-red/project/nested/stable.txt",
+      "sha256": "620a29d287bf6ef3d28501180d3fbcbe7db62911a05f120c4443a82b6c7200cc"
+    },
+    "app/r36-repeated-resize-red/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r36-repeated-resize-red/receiver/state.json",
+      "sha256": "33bc92f1391089a2b6e556a99cd8a38ef4b49039acea81df11d7b5995a12207f"
+    },
+    "app/r36-repeated-resize-red/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r36-repeated-resize-red/result.json",
+      "sha256": "675360e527fe29392dadb5a57d87ec6d15ec4214af9cf4cbd383a30073f237e4"
+    },
+    "app/r37-boundary-driver-failure/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-boundary-driver-failure/electron.log",
+      "sha256": "4fe8d5e0f59f4cb6ab7daafc5949f811e28d452214a3b6bec4b5711c5a72ea41"
+    },
+    "app/r37-boundary-driver-failure/failure.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-boundary-driver-failure/failure.png",
+      "sha256": "5b1cc818d3fad59e652d298ee78d032eb7809b8022d55ed3bd37c455c48652ac"
+    },
+    "app/r37-boundary-driver-failure/project/layout.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-boundary-driver-failure/project/layout.txt",
+      "sha256": "a1d18ac802bc545f3823b11c9663d3d6cafcd4a9f105e80a09f809b7d089e657"
+    },
+    "app/r37-boundary-driver-failure/project/nested/stable.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-boundary-driver-failure/project/nested/stable.txt",
+      "sha256": "620a29d287bf6ef3d28501180d3fbcbe7db62911a05f120c4443a82b6c7200cc"
+    },
+    "app/r37-boundary-driver-failure/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-boundary-driver-failure/receiver/state.json",
+      "sha256": "03f60d5dce4050c8ce8f392f6ad0a9a177beb5a32f66d7415a620409cf926cbe"
+    },
+    "app/r37-boundary-driver-failure/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-boundary-driver-failure/result.json",
+      "sha256": "358c157835d43a14a913be5cb7b7a755b50ed3d778bf039c01d283762acf721b"
+    },
+    "app/r37-final/P03-restored.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/P03-restored.png",
+      "sha256": "9b0b02544c7c7d64aeaa8e1b73918228d62d98d41d973de7a558c1747d51d887"
+    },
+    "app/r37-final/P04-five-second-drag.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/P04-five-second-drag.png",
+      "sha256": "d4bd652dc4aebdb71b91cd3cd3ef0c3add96f3ed5b1222a5a9f56d74efc3b985"
+    },
+    "app/r37-final/P07-missing-root-no-task-restart.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/P07-missing-root-no-task-restart.png",
+      "sha256": "67350cc28570102990983eb63302ba48e2c1ec2d619058adce1d388cda852c9e"
+    },
+    "app/r37-final/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/electron.log",
+      "sha256": "15a71c6fd4ff9c3c8ed6a58d37b6e8c27ddd044e5a1249c51e693650973d7fda"
+    },
+    "app/r37-final/project/layout.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/project/layout.txt",
+      "sha256": "8afbdc79b7e94a85f88afe1da48add062370f027d952a55a4d6f42d4c93140ca"
+    },
+    "app/r37-final/project/nested/stable.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/project/nested/stable.txt",
+      "sha256": "620a29d287bf6ef3d28501180d3fbcbe7db62911a05f120c4443a82b6c7200cc"
+    },
+    "app/r37-final/project/running-new.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/project/running-new.txt",
+      "sha256": "cabe4e12697ba44208e80e242d8079fe8fc2e1f2597bafe93f4885970631e2aa"
+    },
+    "app/r37-final/project/stopped-new.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/project/stopped-new.txt",
+      "sha256": "3f89f0a4ce9f5f2f502faafc60e15b8733063bca5fdff213887f727cc59ae987"
+    },
+    "app/r37-final/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/receiver/state.json",
+      "sha256": "73be0ad3c2155f16e8497aae23f92e506da117346af70493f3bf2c184989d250"
+    },
+    "app/r37-final/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-final/result.json",
+      "sha256": "fb81f95cec704f9dfbffb1d084226e0bfd5646cfcf5029fc5bdedb2a1cb3fac9"
+    },
+    "app/r37-m4-reload-driver-failure/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/electron.log",
+      "sha256": "157ad8d66d878fd66ff0c0d9dcee62c714a2c40637f69d94629dd85a219f7a39"
+    },
+    "app/r37-m4-reload-driver-failure/failure.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/failure.json",
+      "sha256": "3efb99598a96664d875a637e96a0f6cf5f40e4ee550da75bbb635f976ef34941"
+    },
+    "app/r37-m4-reload-driver-failure/launch-preview.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/launch-preview.png",
+      "sha256": "f39ae80fc604af62b0bd3fd07217a74442d97fe121d16d795eb77579962325a8"
+    },
+    "app/r37-m4-reload-driver-failure/project.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/project.png",
+      "sha256": "d34022a0f7c51d9d247206f60fd3be78e79e67f4ea45a2ca2babe2b67db19042"
+    },
+    "app/r37-m4-reload-driver-failure/runner.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/runner.py",
+      "sha256": "4cf8be7a769e317a6fd167155b21b2f3ccaeb87ed2d56c836910685388a0e79b"
+    },
+    "app/r37-m4-reload-driver-failure/settings.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/settings.png",
+      "sha256": "c23f48e0924ccde9adafbbdd63fa38cbd3ccbd89ddde309673c68419f987be6e"
+    },
+    "app/r37-m4-reload-driver-failure/task-info.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/task-info.png",
+      "sha256": "54fb13057702f47f41f1b47c3a989440264b393f07fd6193547ee6fa45d4cd4f"
+    },
+    "app/r37-m4-reload-driver-failure/terminal-colour-ydark.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/terminal-colour-ydark.png",
+      "sha256": "699cf2bbefdb0ebac941e87167705d1f5ba3ef1b53d082a1a6ba902f95e3c827"
+    },
+    "app/r37-m4-reload-driver-failure/terminal-colour-ylight.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/terminal-colour-ylight.png",
+      "sha256": "3ef002391622821024da2e21ecaa7f2a40ecfd8fbbe0e4d53a6ae3c3985b5b20"
+    },
+    "app/r37-m4-reload-driver-failure/work/unchanged.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-m4-reload-driver-failure/work/unchanged.txt",
+      "sha256": "b0c0635935221c550924dc53762f25c57b0311e000ecf694fb89c942681c9df0"
+    },
+    "app/r37-regression-cache/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/electron.log",
+      "sha256": "db43c9967fd12cfd66d5a045e086e017670fa3c5a8f94b2556b9ed55427bf01d"
+    },
+    "app/r37-regression-cache/no-terminal.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/no-terminal.png",
+      "sha256": "bd4434a22f0f80e0d60b52e571e3ec93dca65f92e8c3b3a27fa7b9d4b3fb84af"
+    },
+    "app/r37-regression-cache/project/cache/stopped.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/project/cache/stopped.txt",
+      "sha256": "bc207906649d2f14165ade2639db860a20f1b0ede3ee20dce9768482d8998a00"
+    },
+    "app/r37-regression-cache/project/stable.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/project/stable.txt",
+      "sha256": "b7056c8374a3440d8a42362ee31c3a9ae0038598028cacde2e7e51297535f886"
+    },
+    "app/r37-regression-cache/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/receiver/state.json",
+      "sha256": "95e5fcd78c0d095d2cc709b3ef039489293924fe695533e4d7b378f23d589098"
+    },
+    "app/r37-regression-cache/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/result.json",
+      "sha256": "7e3a1cc3e3175a792c647ff313bd040c249aaa7cdfb95076d76dfd2253ea1dc6"
+    },
+    "app/r37-regression-cache/running.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/running.png",
+      "sha256": "fc0186a7cf57d4a48fa93e5503c36017bb10280e127da3417e4afdbea95d4cd4"
+    },
+    "app/r37-regression-cache/stopped.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-cache/stopped.png",
+      "sha256": "0c2f81ccec0c106115ceff5d3e81be891bb6dfd69335a203abc9de1eccb94b06"
+    },
+    "app/r37-regression-layout/electron-1.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/electron-1.log",
+      "sha256": "4f940f1215f07f3dbdf1f9e4dfe4f53beab90fc0363a5c8c5a8cb0b1e6e8152a"
+    },
+    "app/r37-regression-layout/electron-2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/electron-2.log",
+      "sha256": "c66199a3e8ee5815f311adcb2a40c669cd0c81719ea3aff3b2ef54db43ba7142"
+    },
+    "app/r37-regression-layout/outer-maximum.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/outer-maximum.png",
+      "sha256": "ade312d45e83a9cdd3bef78c3bb6b7b2c5b306086af55de3e4abce16be29fdef"
+    },
+    "app/r37-regression-layout/outer-minimum.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/outer-minimum.png",
+      "sha256": "925cb4e1ae4323bba469c33020410b76b4fa4e8ce0fa65e7999d3afb17a001c1"
+    },
+    "app/r37-regression-layout/project/layout.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/project/layout.txt",
+      "sha256": "4feb6e805022827a23e56bb2bc458091684dd9b5d075760b5b3437545b796b09"
+    },
+    "app/r37-regression-layout/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/receiver/state.json",
+      "sha256": "b2282bc5e7b7f39b4843250aab39527b321dd75a76087f1942e5b933c8acb304"
+    },
+    "app/r37-regression-layout/restored-independent-layout.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/restored-independent-layout.png",
+      "sha256": "505d20a5b6a34793a9711b06b67bc64ed82a57ff19a6c9d554fd625558d53324"
+    },
+    "app/r37-regression-layout/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-layout/result.json",
+      "sha256": "a68185e08fdeca6f5bce7fb302119baa64cd6f9fcd99f4d915889ca29b817a3d"
+    },
+    "app/r37-regression-m4/compact.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/compact.png",
+      "sha256": "b3af4780d6407b51f04730a0008337c4c82fda353a12931e8b0d6b217904c40c"
+    },
+    "app/r37-regression-m4/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/electron.log",
+      "sha256": "ac32dc19ec6193dda02cac5492872d0463ed542db9181383a1cfeca5d659b1c3"
+    },
+    "app/r37-regression-m4/english.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/english.png",
+      "sha256": "446469d2b188284891d6184f8a45025a4fb6a42eef0059276e84e8462723b663"
+    },
+    "app/r37-regression-m4/launch-preview.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/launch-preview.png",
+      "sha256": "ef8c7c06557c26dee9ee30c64ccb7c1702e70f9936ad2b1527b0d212645b7903"
+    },
+    "app/r37-regression-m4/project.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/project.png",
+      "sha256": "3eea7048192c3ce0d56ff28c8e4b7a89ac2076d39d97f1ebc1290035a0309f83"
+    },
+    "app/r37-regression-m4/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/result.json",
+      "sha256": "8649f1ca200b93723c860a60801d2973d13d7e529007ac1dc3c25415463c4804"
+    },
+    "app/r37-regression-m4/runner.py": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/runner.py",
+      "sha256": "4cf8be7a769e317a6fd167155b21b2f3ccaeb87ed2d56c836910685388a0e79b"
+    },
+    "app/r37-regression-m4/settings.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/settings.png",
+      "sha256": "5806b550dc0237ee5d57bf5676bbbd455adcab3c2edc39b997f34cf3e7160857"
+    },
+    "app/r37-regression-m4/task-info.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/task-info.png",
+      "sha256": "314bc70fdecb6973e88d2903e1e589217b5f783a7f09f7bbe09a56e137a49157"
+    },
+    "app/r37-regression-m4/terminal-colour-ydark.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/terminal-colour-ydark.png",
+      "sha256": "c9a186c3dedeb21396efafb7b7ce405cc198e09cda5d1c961d100c297ec79035"
+    },
+    "app/r37-regression-m4/terminal-colour-ylight.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/terminal-colour-ylight.png",
+      "sha256": "a198ea0225fc63ae6e8cf53f968a1b5ca16a429bfdc8b685f3aa0a6ba7052b53"
+    },
+    "app/r37-regression-m4/work/unchanged.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-m4/work/unchanged.txt",
+      "sha256": "b0c0635935221c550924dc53762f25c57b0311e000ecf694fb89c942681c9df0"
+    },
+    "app/r37-regression-selection/dark-selection-focus.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/dark-selection-focus.png",
+      "sha256": "c1505bb997d72889651075f5584786026115386bc1270bac9a2f772743a5218f"
+    },
+    "app/r37-regression-selection/dark-visible-all-single-file.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/dark-visible-all-single-file.png",
+      "sha256": "e428a6e367c2259de5cd72906a3d315fbf6f7710dca9c56e8c96c0b64b6100d0"
+    },
+    "app/r37-regression-selection/electron.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/electron.log",
+      "sha256": "b6a2978622df856fbf9f5d5061d18cefb0ff4eb270ae27b370cc1cb4e7033166"
+    },
+    "app/r37-regression-selection/light-selection-focus.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/light-selection-focus.png",
+      "sha256": "7abd4ed52acba3bbd570fddb1e10476c08d7095c2526a4191e8842f7f70b6fec"
+    },
+    "app/r37-regression-selection/light-visible-all-single-file.png": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/light-visible-all-single-file.png",
+      "sha256": "537087f942ab7bf2973950a989169e31ead57d3a9f55e0f1561a738281231a92"
+    },
+    "app/r37-regression-selection/project/A.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/project/A.txt",
+      "sha256": "ab2093f3aa5682668b14616fd38630c331b68df5615f61c9c84a1aa4b147554e"
+    },
+    "app/r37-regression-selection/project/B.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/project/B.txt",
+      "sha256": "77dbda02971c5de22853eaef97d6609c6ff26e20d6acc4a94b3ce0c8ff10fd7d"
+    },
+    "app/r37-regression-selection/project/C.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/project/C.txt",
+      "sha256": "2d2bd035676cdaf0d4cb13b2c2423fd034d8d6cc9a4a7005fccf3bf84ef57bac"
+    },
+    "app/r37-regression-selection/project/folder/child.txt": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/project/folder/child.txt",
+      "sha256": "83f96c8853ce7cb71e6931a6edbacbd11f8a977a4765df30970aba845af60b53"
+    },
+    "app/r37-regression-selection/receiver/state.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/receiver/state.json",
+      "sha256": "815fc7668e9b3101f453d8da0c7f26e3d0aef329c6c7f56ca72e42ddad7c93ce"
+    },
+    "app/r37-regression-selection/result.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/app/r37-regression-selection/result.json",
+      "sha256": "88d012e85ff9a67cd02fa6ff19fced96902b1d8e54631b118103af52519f65e8"
+    },
+    "sources/r36-dev085-red-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r36-dev085-red-sources.json",
+      "sha256": "25d4a02e03086cfd34b180d690dd11cb82313d96f4e50693f6d1bbb6d06b9ac0"
+    },
+    "sources/r36-dev085-red-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r36-dev085-red-sources.tar.gz",
+      "sha256": "82b651d8f1af2fc5b4d0e6c44eddcdb4033815c96458fe502fe2bd74ca9e4ae3"
+    },
+    "sources/r37-completed-tested-r2-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r37-completed-tested-r2-sources.json",
+      "sha256": "c02d4e7817924b219defdb2ee9b781f66829d4c3c423c251d85fa8b9a8811d5f"
+    },
+    "sources/r37-completed-tested-r2-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r37-completed-tested-r2-sources.tar.gz",
+      "sha256": "c4a2116c9a4028c41e359a7e664a16b52b9d21bd1a3709895bace257524ff1d1"
+    },
+    "sources/r37-completed-tested-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r37-completed-tested-sources.json",
+      "sha256": "7b25cb382c263d3a7ca9d33ffae60f8baab640fde26ba7f20bd21ac1f5fbaf9e"
+    },
+    "sources/r37-completed-tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r37-completed-tested-sources.tar.gz",
+      "sha256": "6b5931a103ce82e9372c970a8842613ace4f72dcc13176894cdc06dd403593f2"
+    },
+    "sources/r37-sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r37-sources.json",
+      "sha256": "6c0cb56a794e841935db463830e8706f104957776251caa53e6d2542e7241be7"
+    },
+    "sources/r37-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/sources/r37-sources.tar.gz",
+      "sha256": "0dae360c6ddab8261c6197e4939141b1b74acf7125daf257f8ee540294d2ba24"
+    },
+    "validation/frozen-budget-e1.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/frozen-budget-e1.json",
+      "sha256": "32dcf16c18f00c8129ed8be2325f92ed433f7005fb65776a303bbd08e7432ebd"
+    },
+    "validation/willyou-dev085-app-regressions-r37.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-app-regressions-r37.json",
+      "sha256": "c450429b54c161182fa60c3c43040b55563f069c3b5f1de99970866a6e127ef4"
+    },
+    "validation/willyou-dev085-app-regressions.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-app-regressions.mjs",
+      "sha256": "4f09b7a490e73726cfdc6f13730e4d5c782d04b0069e6679d62bc01790058cba"
+    },
+    "validation/willyou-dev085-m4-before-readiness.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-m4-before-readiness.mjs",
+      "sha256": "146f33cb6943c90b5f1e62ea0103455e88fb3bef8773d2dccb5f196f103a9d9e"
+    },
+    "validation/willyou-dev085-m4-r37-readiness.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-m4-r37-readiness.log",
+      "sha256": "9fcb7864f2c90ea5e6adf1f20045ca0ee9355306019ca13ccc955c6f52b39486"
+    },
+    "validation/willyou-dev085-p04-red-app.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-p04-red-app.log",
+      "sha256": "1b65aa9c0b15e7c2a757464757431b69697c63775a1cdd964e3bdfdfd476a55b"
+    },
+    "validation/willyou-dev085-package-r37.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-package-r37.log",
+      "sha256": "403112c853eb7242937d9f6d926e830fff441900f436879b5c9d24c9e06a4e41"
+    },
+    "validation/willyou-dev085-r37-regression-cache.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-r37-regression-cache.log",
+      "sha256": "ea9876256434858ef0fc5a31e5b4e814afc046e43f5737ab22b36c5f65243b61"
+    },
+    "validation/willyou-dev085-r37-regression-layout.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-r37-regression-layout.log",
+      "sha256": "04130643933c9e4503c932421cec64473091b89d05448eee3da9d7876e2050d3"
+    },
+    "validation/willyou-dev085-r37-regression-m4.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-r37-regression-m4.log",
+      "sha256": "e16d3fe3b357dc757e1808077939597394f9b4388228b579a73867b0797b5f00"
+    },
+    "validation/willyou-dev085-r37-regression-selection.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-r37-regression-selection.log",
+      "sha256": "f6e4c36bfc9a12c592c27f4f6faf85ce2276b481fd1e65104e8e2f9b8656cec4"
+    },
+    "validation/willyou-dev085-runtime-verification.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-runtime-verification.json",
+      "sha256": "7bcd6574276ea0b6ec993031990f87cdaed32107bcae83015d4d715aa0671116"
+    },
+    "validation/willyou-dev085-terminal-before-boundary.mjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-terminal-before-boundary.mjs",
+      "sha256": "597559059ed8ea1bb5169fa154e84041ea6060f447e8e6d2b5e5b1403a20d0ad"
+    },
+    "validation/willyou-dev085-terminal-r37-app-boundary.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-terminal-r37-app-boundary.log",
+      "sha256": "979e8a29c291c8185881ebbd49e6b0c89901456e42ab150a190698d0b3a8ee9a"
+    },
+    "validation/willyou-dev085-terminal-r37-app.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-terminal-r37-app.log",
+      "sha256": "09a33405f4c9ee107a38db84a09a5dc2eaf65f6e5b511cf3f2dca61d947d0fd9"
+    },
+    "validation/willyou-dev085-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "validation/willyou-dev085-unit-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-unit-tests.json",
+      "sha256": "b08e103ac71e1196ab883cf8d0df55761f53a02ae4b5bd59e1697d11453c8d03"
+    },
+    "validation/willyou-dev085-unit-tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-unit-tests.log",
+      "sha256": "5db7308724fe13dda8a26a711a0f91bd2b78390809d0bf1ba7102a103903ad67"
+    },
+    "validation/willyou-dev085-verify-r37-runtime.cjs": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-layout-dev085-r37/validation/willyou-dev085-verify-r37-runtime.cjs",
+      "sha256": "724af505fdb3e50e631b5aca571ed6a034dd14e3a8070258e6fb4dce16a29c25"
+    }
+  }
+}

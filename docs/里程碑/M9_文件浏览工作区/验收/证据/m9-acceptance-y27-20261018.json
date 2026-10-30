@@ -1,0 +1,240 @@
+{
+  "id": "M9-T-Y27",
+  "at": "2026-10-18T11:15:29.347308+08:00",
+  "status": "passed",
+  "requiredLayer": "I",
+  "completedLayers": [
+    "I"
+  ],
+  "requirements": [
+    "M9-R05.12"
+  ],
+  "baseline": "R3.4-20261017，显式I；不新增A门槛",
+  "scope": "Production registered RPC/event handlers, real authorization/root/FileService/native broker; real PTY in designated rows. Electron window objects/sender metadata simulated: integration, not actual GUI.",
+  "steps": [
+    {
+      "step": "正确 taskId/ptyId；键盘/CJK/Ctrl、resize、kill 与受控文件插入",
+      "expected": "当前受信文档/活动实例可用，原控制键不被正文清理误删",
+      "actual": [
+        "新 raw matrix 正确实例：中文🙂+CtrlC、120×32 resize、scoped kill各1次",
+        "受控服务 exact path与4个真实PTY样本"
+      ],
+      "status": "passed"
+    },
+    {
+      "step": "错任务、旧/已停止/已结束/不存在PTY",
+      "expected": "全部拒绝，无写入/resize/kill副作用",
+      "actual": [
+        "新 raw matrix wrong-task/nonexistent/old/stopped/exited 对三个入口逐项断言0副作用",
+        "受控RPC错误task、不存在bind、旧active mapping、dead与revoked root拒绝0写入",
+        "当前25项TaskService覆盖stop/reopen撤销旧实例"
+      ],
+      "status": "passed"
+    },
+    {
+      "step": "其他窗口、子frame、导航后文档、已销毁sender",
+      "expected": "可信主文档外无权限，不能伪造owner",
+      "actual": [
+        "新 raw matrix用实际isMainRenderer；foreign/subframe/navigated/destroyed/replaced-window对三入口全部拒绝",
+        "受控files registered RPC 的既有owner与PtyAccess拒绝同类事件，写入0"
+      ],
+      "status": "passed"
+    },
+    {
+      "step": "空/超长上下文及控制字符/多行",
+      "expected": "上下文不能绕过清理、限额和永不追加Enter",
+      "actual": [
+        "空references校验拒绝、格式化总长度>8000于write前failed",
+        "shared边界4000/4001、200/201、8000/8001和UTF-16/控制字符矩阵",
+        "raw真实PTY两模式逐字节对照；zsh括号/sh关闭模式未执行canary，未提交行，进程存活"
+      ],
+      "status": "passed"
+    },
+    {
+      "step": "分别验证input/resize/kill与专用插入通道",
+      "expected": "共享同一权限边界，文件投递另行清理与回执，不复用raw ptyInputEvent",
+      "actual": [
+        "新11项raw三入口矩阵、旧7项PtyAccess、当前9项受控服务链全部通过",
+        "代码：FileTerminalService authorize→source inspect/mode flush→再authorize/assert→writeControlled，无input/pty:input调用",
+        "同操作去重、变载荷拒绝、换目标迟到取消、可能部分写入unknown缓存均验证"
+      ],
+      "status": "passed"
+    }
+  ],
+  "allExpectedResultsMet": true,
+  "missingRequiredSteps": [],
+  "primaryEvidence": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-dev045-terminal-context-20261018.json",
+    "sha256": "d79f11bd6e686619a09f9c4c428605118cda1c9ed48c93575c083b98b66f9046"
+  },
+  "controlledAndRegressionBatch": {
+    "passed": 54,
+    "failed": 0,
+    "skipped": 0,
+    "result": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-final-tests.json",
+      "sha256": "3747f6f07d0201d06136726fd1fddc1cf48efaf1b9946f7e2b79de2bb740011b"
+    },
+    "matrix": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-native-matrix-final.json",
+      "sha256": "614edb2a367108515cc63e88165c33d6f23362d6576f44847c9fb84d96dbe928"
+    }
+  },
+  "additionalRawMatrix": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "result": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-y27-raw-channels.json",
+      "sha256": "80b7f97939ad74b9515117f19b1f16584b7c94d5af930abe1399950bf1190dc8"
+    },
+    "source": {
+      "path": "src/main/terminal-ownership-acceptance.test.ts",
+      "sha256": "22dda77b37735936855f8dfccfb00d11a98bb57bb2e7b00d5dc7e61fc552463f"
+    },
+    "recoverableSource": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/terminal-ownership-acceptance.test.ts",
+      "sha256": "22dda77b37735936855f8dfccfb00d11a98bb57bb2e7b00d5dc7e61fc552463f"
+    },
+    "note": "Test-only addition after r6. Initial Mock types corrected, runtime behavior unchanged."
+  },
+  "existingRawRegressions": {
+    "passed": 7,
+    "result": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-payload-tests-r1.json",
+      "sha256": "d6f5b628013db4e722b6323b293e5ca51a674c1f68b749ae44f61c93c3a7e151"
+    }
+  },
+  "package": {
+    "metadata": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-m9-acceptance-batch-r6-package.json",
+      "sha256": "29b99bbc1039a94d89486fc72d1193c35f89b9315b104d606f4a5df7b6bb03ad"
+    },
+    "productionBaseline": [
+      {
+        "path": "src/main/core/files/controller.ts",
+        "testedSha256": "16947a14f76f45ce2b092c6f68a9fef8762b8daed006d8dd212da2bc40f5cd63",
+        "currentSha256": "dade78f909a5e49e8b96ec29b9bdb039edc01c84247764526f5ffb79b7228200",
+        "r6Sha256": "16947a14f76f45ce2b092c6f68a9fef8762b8daed006d8dd212da2bc40f5cd63"
+      },
+      {
+        "path": "src/main/core/files/file-service.ts",
+        "testedSha256": "a64221c26fb5ce95cea35de83101fec66f520e95286b434a31c6d27c22bf3f7d",
+        "currentSha256": "a64221c26fb5ce95cea35de83101fec66f520e95286b434a31c6d27c22bf3f7d",
+        "r6Sha256": "a64221c26fb5ce95cea35de83101fec66f520e95286b434a31c6d27c22bf3f7d"
+      },
+      {
+        "path": "src/main/core/files/terminal-context.ts",
+        "testedSha256": "bc7e3626c1b4db5871565275561c307c0dddd95e6dd4bc2f9e989bf2554e86a7",
+        "currentSha256": "bc7e3626c1b4db5871565275561c307c0dddd95e6dd4bc2f9e989bf2554e86a7",
+        "r6Sha256": "bc7e3626c1b4db5871565275561c307c0dddd95e6dd4bc2f9e989bf2554e86a7"
+      },
+      {
+        "path": "src/main/pty-access.ts",
+        "testedSha256": "5f95ba6e6fc4757b1d5591f71ede06720d7771a570c1edd00abe6ca53431a2b6",
+        "currentSha256": "5f95ba6e6fc4757b1d5591f71ede06720d7771a570c1edd00abe6ca53431a2b6",
+        "r6Sha256": "5f95ba6e6fc4757b1d5591f71ede06720d7771a570c1edd00abe6ca53431a2b6"
+      },
+      {
+        "path": "src/main/pty-manager.ts",
+        "testedSha256": "20501a2a35a013bf3e871e4146d3d652ebb02c7ee58e2635e3f32fafafbe3c36",
+        "currentSha256": "20501a2a35a013bf3e871e4146d3d652ebb02c7ee58e2635e3f32fafafbe3c36",
+        "r6Sha256": "20501a2a35a013bf3e871e4146d3d652ebb02c7ee58e2635e3f32fafafbe3c36"
+      },
+      {
+        "path": "src/main/rpc.ts",
+        "testedSha256": "a4ea5dd83f357f071a9e480db99685afa4371b16c86e7a15881ff5b5ef2de08b",
+        "currentSha256": "a4ea5dd83f357f071a9e480db99685afa4371b16c86e7a15881ff5b5ef2de08b",
+        "r6Sha256": "a4ea5dd83f357f071a9e480db99685afa4371b16c86e7a15881ff5b5ef2de08b"
+      },
+      {
+        "path": "src/main/terminal-modes.ts",
+        "testedSha256": "bffa14f3acea399f3974e81d6258c55a6f81b09ec04aabb23362f232ae2ee9e4",
+        "currentSha256": "bffa14f3acea399f3974e81d6258c55a6f81b09ec04aabb23362f232ae2ee9e4",
+        "r6Sha256": "bffa14f3acea399f3974e81d6258c55a6f81b09ec04aabb23362f232ae2ee9e4"
+      },
+      {
+        "path": "src/renderer/features/files/file-actions.tsx",
+        "testedSha256": "737f8510f7a3a96241513d64eccefd580e4a8f9ee0a7ebfcb744433f6234d4d3",
+        "currentSha256": "737f8510f7a3a96241513d64eccefd580e4a8f9ee0a7ebfcb744433f6234d4d3",
+        "r6Sha256": "737f8510f7a3a96241513d64eccefd580e4a8f9ee0a7ebfcb744433f6234d4d3"
+      },
+      {
+        "path": "src/renderer/features/files/terminal-context/context.tsx",
+        "testedSha256": "086bb7faeec4f672815539bae6afb057a3a777705ff95d62c8e6f84d2841a4cd",
+        "currentSha256": "086bb7faeec4f672815539bae6afb057a3a777705ff95d62c8e6f84d2841a4cd",
+        "r6Sha256": "086bb7faeec4f672815539bae6afb057a3a777705ff95d62c8e6f84d2841a4cd"
+      },
+      {
+        "path": "src/renderer/features/files/terminal-context/selection.tsx",
+        "testedSha256": "bed12534516876fc340bdd227ebd4ba9d84b8982b286a5b92073e684468b5057",
+        "currentSha256": "bed12534516876fc340bdd227ebd4ba9d84b8982b286a5b92073e684468b5057",
+        "r6Sha256": "bed12534516876fc340bdd227ebd4ba9d84b8982b286a5b92073e684468b5057"
+      },
+      {
+        "path": "src/renderer/features/files/terminal-context/store.ts",
+        "testedSha256": "2a6a4ca37c749d71a88b03f0a125d0b5361cb8f26ef123887806a5e4446a8795",
+        "currentSha256": "2a6a4ca37c749d71a88b03f0a125d0b5361cb8f26ef123887806a5e4446a8795",
+        "r6Sha256": "2a6a4ca37c749d71a88b03f0a125d0b5361cb8f26ef123887806a5e4446a8795"
+      },
+      {
+        "path": "src/renderer/features/files/text-editor.tsx",
+        "testedSha256": "a96ff7385064a79e736013197e222dab3b35affe0cab11fa63032c2820d4565f",
+        "currentSha256": "a96ff7385064a79e736013197e222dab3b35affe0cab11fa63032c2820d4565f",
+        "r6Sha256": "a96ff7385064a79e736013197e222dab3b35affe0cab11fa63032c2820d4565f"
+      },
+      {
+        "path": "src/renderer/features/files/workspace-panel.tsx",
+        "testedSha256": "b4d2dfa1f6e08f851027fa79243482492ed639254abc24708526da8aa4913eef",
+        "currentSha256": "b4d2dfa1f6e08f851027fa79243482492ed639254abc24708526da8aa4913eef",
+        "r6Sha256": "b4d2dfa1f6e08f851027fa79243482492ed639254abc24708526da8aa4913eef"
+      },
+      {
+        "path": "src/renderer/features/files/workspace-tree.tsx",
+        "testedSha256": "39e47537c2113e5aaaa2c1c34aa3e60b1d16f44476014972ff7bf39eaca5bed5",
+        "currentSha256": "39e47537c2113e5aaaa2c1c34aa3e60b1d16f44476014972ff7bf39eaca5bed5",
+        "r6Sha256": "39e47537c2113e5aaaa2c1c34aa3e60b1d16f44476014972ff7bf39eaca5bed5"
+      },
+      {
+        "path": "src/renderer/views/task-view.tsx",
+        "testedSha256": "74d8f3475c16a41fb633c30b7309ab5dbed6ecc59fdacffe756f9d3829dd1364",
+        "currentSha256": "74d8f3475c16a41fb633c30b7309ab5dbed6ecc59fdacffe756f9d3829dd1364",
+        "r6Sha256": "74d8f3475c16a41fb633c30b7309ab5dbed6ecc59fdacffe756f9d3829dd1364"
+      },
+      {
+        "path": "src/shared/file-terminal.ts",
+        "testedSha256": "86af51958168ee6003fee53fa09944d8c60483b8cedad3a7c7125b9505eea438",
+        "currentSha256": "86af51958168ee6003fee53fa09944d8c60483b8cedad3a7c7125b9505eea438",
+        "r6Sha256": "86af51958168ee6003fee53fa09944d8c60483b8cedad3a7c7125b9505eea438"
+      }
+    ],
+    "note": "All16 DEV045 tested-source hashes match r6. Current controller later gained MCP UI-only imports/endpoints, no terminal/owner changes; other15 still match. New raw test not inr6. Integration used identical r5/r6 native broker.",
+    "laterUnrelatedControllerDelta": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/r6-controller-followup.diff",
+      "sha256": "d2dbda29663e8fbdc6020c7a4114409e5f43308a289e0e375ff81a869622d278"
+    }
+  },
+  "validation": {
+    "previousFullTypecheck": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-final-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "newTestTypecheck": {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "log": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev043-ui-types-r2.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+      "sharedWith": "acceptance_l16; includes corrected new Mock types and MCP UI overloads"
+    },
+    "initialNodeTypecheck": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-y27-types.log",
+      "sha256": "52ebebe477b222250fd6632a45ca8fcf483c749ce25828855b57d119ae88932f"
+    }
+  },
+  "independentReview": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-terminal-context/willyou-dev045-independent-review.json",
+    "sha256": "3333e4f2cb6df9f1dacfad70dbb5ae6441d8b3973277f78b4b28acf73885d2f9"
+  },
+  "historicalSupportOnly": "PA01–PA06 real Electron probe retained under 技研/实验/pty-access-result-20261017-r3.json; not rerun or counted here",
+  "counting": "One complete required I acceptance case. Test count is not formal-case count. No GUI claim."
+}

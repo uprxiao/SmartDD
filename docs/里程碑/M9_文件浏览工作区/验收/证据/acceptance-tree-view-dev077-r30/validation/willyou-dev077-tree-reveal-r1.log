@@ -1,0 +1,50 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-reveal-acceptance.test.tsx
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/tree-reveal-acceptance.test.tsx (6 tests | 6 failed) 236ms
+     × B09 opens a real search row, expands ancestors, selects and reveals the file without focusing the tree 56ms
+     × does not consume a reveal in a hidden viewport; resizing visible completes it once 36ms
+     × wheel browsing supersedes a delayed native directory result and later refresh does not pull the user back 35ms
+     × folding the root while its reveal is pending keeps it folded after late IO 36ms
+     × never treats a directory replacing the target as a file to select or open 36ms
+     × an explicit repeat activation reveals again, while passive refresh does not 35ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > B09 opens a real search row, expands ancestors, selects and reveals the file without focusing the tree
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > does not consume a reveal in a hidden viewport; resizing visible completes it once
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > wheel browsing supersedes a delayed native directory result and later refresh does not pull the user back
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > folding the root while its reveal is pending keeps it folded after late IO
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > never treats a directory replacing the target as a file to select or open
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > an explicit repeat activation reveals again, while passive refresh does not
+ReferenceError: Cannot access 'rows' before initialization
+ ❯ WorkspaceTree src/renderer/features/files/workspace-tree.tsx:54:28
+     52|     // focus while the tree reveals the authenticated current file onc…
+     53|     store.completeTreeReveal(reveal.id, element.scrollTop);
+     54|   }, [store, reveal, root, rows, height]);
+       |                            ^
+     55|   const expanded = store.currentExpanded;
+     56|   const rows = useMemo(() => {
+ ❯ Object.react_stack_bottom_frame node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+ ❯ renderRootSync node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:18985:11
+ ❯ performWorkOnRoot node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:18094:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  20:36:38
+   Duration  1.55s (transform 432ms, setup 0ms, import 848ms, tests 236ms, environment 310ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

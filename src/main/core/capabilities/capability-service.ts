@@ -16,6 +16,7 @@ import { stateRootFor } from '../tasks/native-sessions';
 import { BUNDLED_SKILLS, runtimeFiles, sha256, treeHash, type BundledSkill } from './assets';
 import { discoverCapabilities } from './discovery';
 import { readOwnedTree, writeOwnedTree } from './files';
+import { CLAUDE_PNG_ADAPTER, imageInputLaunchSchema, imageInputMode, type ImageInputLaunch } from '@shared/terminal-image';
 
 export const MCP_CAPABILITY = 'smartdd-project-context';
 export const RUNTIME_ISOLATION = ['SMARTDD_', 'PROJECT_DB_CONFIG', 'REMOTE_SERVERS_CONFIG'];
@@ -27,6 +28,7 @@ export interface PreparedRuntime {
   snapshot: RuntimeSnapshot;
   wrap: (command: string, args: string[]) => { command: string; args: string[] };
   check: () => RuntimeSnapshot['selfCheck'] | null;
+  imageInputLaunch?: () => ImageInputLaunch | null;
   release: () => void;
 }
 
@@ -263,8 +265,29 @@ export class CapabilityService {
     const allowedIssues = new Set(['file_hash_mismatch', 'file_unreadable', 'resource_path_unreadable', 'manifest_hash_mismatch', 'manifest_invalid', 'runner_not_found', 'self_check_report_failed',
       ...Object.keys(env).map((n) => `missing_env:${n}`), ...Object.keys(pathEnv).concat(['SMARTDD_PROJECT_ID', 'SMARTDD_CONFIG_VERSION']).map((n) => `wrong_path_env:${n}`),
       'missing_dependency:pymysql', 'missing_dependency:psycopg2', 'missing_command:ssh']);
+    let expectedImageMode: ImageInputLaunch['mode'] = 'unknown', verifiedImageIdentity = '';
     return { args, env, secretValues, snapshot,
-      wrap: (command, cliArgs) => ({ command: 'python3', args: [join(this.runtimeRoot, 'launch.py'), manifestPath, sha256(manifest), command, ...cliArgs] }),
+      wrap: (command, cliArgs) => {
+        expectedImageMode = imageInputMode(cliArgs);
+        return { command: 'python3', args: [join(this.runtimeRoot, 'launch.py'), manifestPath, sha256(manifest), command, ...cliArgs] };
+      },
+      imageInputLaunch: () => {
+        try {
+          const file = join(runRoot, 'image-input-launch.json');
+          if (statSync(file).size > 16 * 1024) return null;
+          const launch = imageInputLaunchSchema.parse(JSON.parse(readFileSync(file, 'utf8')));
+          const current = statSync(launch.executable, { bigint: true });
+          if (launch.runId !== runId || launch.mode !== expectedImageMode || !current.isFile() || String(current.dev) !== launch.device || String(current.ino) !== launch.inode || Number(current.size) !== launch.size || String(current.mtimeNs) !== launch.mtimeNs) return null;
+          const identity = `${launch.executable}/${launch.device}/${launch.inode}/${launch.size}/${launch.mtimeNs}`;
+          if (launch.sha256 === CLAUDE_PNG_ADAPTER.sha256 && verifiedImageIdentity !== identity) {
+            if (launch.size !== CLAUDE_PNG_ADAPTER.bytes || sha256(readFileSync(launch.executable)) !== CLAUDE_PNG_ADAPTER.sha256) return null;
+            const after = statSync(launch.executable, { bigint: true });
+            if (current.dev !== after.dev || current.ino !== after.ino || current.size !== after.size || current.mtimeNs !== after.mtimeNs) return null;
+            verifiedImageIdentity = identity;
+          }
+          return launch;
+        } catch { return null; }
+      },
       check: () => {
         const file = join(runRoot, 'self-check.json');
         if (!existsSync(file)) return null;

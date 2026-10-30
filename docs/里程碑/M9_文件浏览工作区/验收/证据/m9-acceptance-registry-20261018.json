@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T02:09:39.980481+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "cases": [
+    "M9-T-F05",
+    "M9-T-F06",
+    "M9-T-F28"
+  ],
+  "formalVerdicts": {
+    "F05": "failed",
+    "F06": "passed-unsupported-capability-branch",
+    "F28": "pending-production-viewer-host"
+  },
+  "environment": {
+    "platform": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.1\nBuildVersion:\t\t25G76",
+    "arch": "arm64",
+    "integration": "Current workspace production TypeScript + real packaged native broker. No build, app launch or GUI test in this batch.",
+    "native": {
+      "path": "/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "nativeSourceUnchangedFromR2": true
+  },
+  "validation": {
+    "command": "SMARTDD_REGISTRY_BROKER='/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files' SMARTDD_REGISTRY_EVIDENCE=/private/tmp/willyou-registry-r2-observations.json pnpm test src/renderer/features/files/classification-registry-acceptance.test.ts src/renderer/features/files/code/model.test.ts --reporter=json --outputFile=/private/tmp/willyou-registry-r2.json",
+    "exitCode": 0,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "composition": "3 capability/matrix U checks + 3 real native/service I checks + 5 existing tokenizer regressions; not 11 formal acceptance cases.",
+    "typecheck": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+    "typecheckExitCode": 0,
+    "initialHarnessFailure": "8 passed / 3 failed: finally block explicitly closed the capability already closed by FileBuffer.dispose(). Removed only this duplicate close; no product fix. Original report, observations and test source retained."
+  },
+  "matrix": {
+    "baselineEntries": 345,
+    "baselineDistinctLanguageIds": 228,
+    "unitNameObservations": 1380,
+    "unitForms": [
+      "primary name",
+      "literal registry key",
+      "lowercase primary",
+      "uppercase primary"
+    ],
+    "integrationRegistryFiles": 345,
+    "additionalIntegrationFiles": 9,
+    "languageCounts": {
+      "plainTextFallback": 266,
+      "differentLanguageId": 34,
+      "sameLanguageId": 43,
+      "artifactOverride": 2
+    },
+    "statIntegrity": "All 354 independent readbacks preserved original bytes/SHA-256, inode, mtimeNs and ctimeNs; no save or checkpoint calls.",
+    "caseComparisonBoundary": "Each U transformed-name row cites its originating registry key/language, not an independently emulated Codex resolver. Case transforms of P/p and R/r are observational and do not claim reference case resolution. Primary 345-row I counts use the original entry spelling.",
+    "grammarBoundary": "Same ID does not establish same tokens/colors; different ID may be alias or a genuinely different grammar. The 266 plain fallbacks are a material highlighter coverage defect, not successful grammar support.",
+    "artifactOverrides": [
+      "sample.potx: archive, despite a potx language registry hint",
+      "sample.wasm: binary by approved explicit routing override"
+    ]
+  },
+  "scope": "Pure UTF-8 synthetic samples; actual FileService/FileRootsService/FileRecoveryStore/FileBuffer + broker disk reads. API forwarding functions are spies over real production services, not mocks. No Electron IPC transport, real App or theme/pixel comparison claim.",
+  "requirementsReview": {
+    "F05": "R06.1 and 2026-10-17 user requirement require complete Codex highlighter parity; recorded differences cannot satisfy that stronger requirement. M9-DEV-038 remains open.",
+    "F06": "The original case explicitly allows a documented unsupported custom-mapping branch. No stronger requirement mandates configurable language overrides. Full/compound/final .ts names retain fixed TypeScript selection; attempted custom fields are rejected at strict route/open request schema. No override was installed.",
+    "F28": "The original row permits no-host fallback, which was observed, but R06.18/D05 additionally require production host/adapter engineering and prohibit indefinite disablement as delivery. Keep formal F28 pending until that stronger requirement is met; registration/longest suffix/preferred/explicit-null arbitration was not executed."
+  },
+  "artifacts": {
+    "tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/tests.json",
+      "sha256": "d9af6a84d627017b35421a9cf84ecf2f7c92b6f633fd36ab0a9ff90b11a76d78"
+    },
+    "source-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/source-hashes.json",
+      "sha256": "75b157b7d4ca34f6a51c71ddb61f6b21b5abd91c0d3792583d60adc182a9efc7"
+    },
+    "failed-harness.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/failed-harness.log",
+      "sha256": "51113f35546a648b654d656b994adf668fe845b1754c5b4fe46003fa1a9c3767"
+    },
+    "failed-harness-tests.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/failed-harness-tests.json",
+      "sha256": "ef0a8aa74e4f7e2065fda0ddb323e26e12e153d2b41e87474852b46886c6e9ea"
+    },
+    "failed-harness-test.ts": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/failed-harness-test.ts",
+      "sha256": "2972a18ddc1fe136b48290708c812cd6680f410ceb4eebec238973d6e6eee64e"
+    },
+    "typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "failed-harness-observations.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/failed-harness-observations.json",
+      "sha256": "3dcfd38d36be8904ede87335e082b6a232aeb761b0a7ee63c6b459c4ff37e89e"
+    },
+    "observations.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/observations.json",
+      "sha256": "d0b4f01b88689b09a416c32edd13a24f906480dfaa2631d2a09b0e41ac90f5dd"
+    },
+    "tests.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/tests.log",
+      "sha256": "ad60b0155570165ee7d98f8638a7e7ba4c632934787b283dfdcc7b60dc285d74"
+    },
+    "tested-sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/tested-sources.tar.gz",
+      "sha256": "ae453f4bc7da93db0ee953aa46adf54c56302c75891e18d7d2c0cad0687ab7c9"
+    },
+    "first-run-source-hashes.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-registry/first-run-source-hashes.json",
+      "sha256": "b324a29128440aa58eb82e799a58c6df039fbe9b8419a795e174c8635ec7a6e8"
+    }
+  },
+  "remaining": {
+    "F05": [
+      "Implement/reconcile baseline 345 mappings and missing grammars, including exact filename/compound suffix/case collision behavior.",
+      "Verify actual syntax roles/theme tokenization across code/Markdown/Notebook/prototype; 43 matching IDs are not pixel parity.",
+      "Re-run registry + worker/editor regressions then affected App dark/light/selection/IME/save workflows."
+    ],
+    "F06": [
+      "Optional custom mapping facility is absent and explicitly recorded; no custom-priority parity claim."
+    ],
+    "F28": [
+      "Implement approved explicit adapter manifest, isolated host/session resources and lifecycle per R06.18; then actual .foo/.bar.foo registration and missing preferred/explicit selection matrix."
+    ]
+  }
+}

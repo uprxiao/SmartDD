@@ -1,0 +1,30 @@
+[1020/073954.294444:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1020/073954.616604:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/markdown/image-source-native-acceptance.test.ts (1 test | 1 failed) 73ms
+     × reads exact related images, copies selected bytes safely, and opens an independent main-narrowed readonly image tab 72ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/markdown/image-source-native-acceptance.test.ts > Embedded local image native/source lifetime > reads exact related images, copies selected bytes safely, and opens an independent main-narrowed readonly image tab
+FileError: [IO] 副本未确认保存：[IO] 文件 broker 意外退出：sandbox-exec: sandbox_apply: Operation not permitted
+；请核对恢复记录与目标文件
+ ❯ FileActions.copyTo src/main/core/files/actions.ts:97:13
+     95|     if (receipt.state !== 'saved' || !receipt.revision) {
+     96|       if (receipt.state === 'unknown' || receipt.state === 'conflict' …
+     97|       throw new FileError(receipt.state === 'conflict' ? 'CONFLICT' : …
+       |             ^
+     98|     }
+     99|     this.validate(owner, context);
+ ❯ src/renderer/features/files/markdown/image-source-native-acceptance.test.ts:31:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  07:39:54
+   Duration  703ms (transform 355ms, setup 0ms, import 560ms, tests 73ms, environment 0ms)
+

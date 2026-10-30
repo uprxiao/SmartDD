@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-17T01:21:32.928Z",
+  "scriptSha256": "18f2fc688ad31c529fe40ec4d11b38e3699d78dffbb6601aaddad6515f6a2552",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "25.6.0"
+  },
+  "scope": "Synthetic temporary files; no Electron IPC or production implementation",
+  "cases": [
+    {
+      "id": "FS01",
+      "title": "Real paths, Unicode, dotfile, traversal and symlink bounds",
+      "status": "passed",
+      "durationMs": 2.04,
+      "evidence": {
+        "rejected": {
+          "../outside/sentinel.txt": "PATH_ESCAPE",
+          "/etc/passwd": "INVALID_ARGUMENT",
+          "C:\\outside\\x": "INVALID_ARGUMENT",
+          "//server/share": "INVALID_ARGUMENT",
+          "file:///tmp/x": "INVALID_ARGUMENT",
+          "bad<NUL>name": "INVALID_ARGUMENT"
+        },
+        "outsideSymlink": "rejected",
+        "insideAlias": "same canonical identity",
+        "bytePreservation": "CRLF exact"
+      }
+    },
+    {
+      "id": "FS02",
+      "title": "Host/root/task identity and owner/generation guards",
+      "status": "passed",
+      "durationMs": 0.65,
+      "evidence": {
+        "differentProjectSameName": "distinct",
+        "sameRootAlias": "shared",
+        "differentHost": "distinct",
+        "taskBufferPolicy": "separate scope; file identity shared",
+        "ownerValidation": "research registry only, not Electron sender verification"
+      }
+    },
+    {
+      "id": "FS03",
+      "title": "Root directory replacement invalidates the lease",
+      "status": "passed",
+      "durationMs": 0.74,
+      "evidence": {
+        "sameDisplayPathDifferentInode": "rejected"
+      }
+    },
+    {
+      "id": "FS04",
+      "title": "Same mtime and size content change defeats mtime-only detection",
+      "status": "passed",
+      "durationMs": 19.95,
+      "evidence": {
+        "sameMtimeNs": true,
+        "sameSize": true,
+        "hashChanged": true,
+        "staleSave": "conflict",
+        "outsideProcess": true
+      }
+    },
+    {
+      "id": "FS05",
+      "title": "Atomic replacement preserves complete bytes, mode and precommit failure",
+      "status": "passed",
+      "durationMs": 14.26,
+      "evidence": {
+        "exactBytes": "db402f0c9ed759bfff8d1c928417465bb00e0196fe521eda66bbbe6ead3227ed",
+        "mode": "640",
+        "failedCommitOriginalPreserved": true,
+        "temporaryFilesCleaned": true,
+        "durability": "temp file fsync only; power-loss/directory fsync not proven"
+      }
+    },
+    {
+      "id": "FS06",
+      "title": "Independent reader sees old/new whole files during 32 renames",
+      "status": "passed",
+      "durationMs": 111.32,
+      "evidence": {
+        "reads": 73,
+        "partial": 0,
+        "errors": 0,
+        "replacements": 32,
+        "bytesPerFile": 262144,
+        "boundary": "observed macOS local FS semantics, not cross-platform/crash durability"
+      }
+    },
+    {
+      "id": "FS07",
+      "title": "Concurrent external write before final revision check is rejected",
+      "status": "passed",
+      "durationMs": 27.19,
+      "evidence": {
+        "save": "conflict",
+        "externalContentPreserved": true
+      }
+    },
+    {
+      "id": "FS08",
+      "title": "Negative control: external write after final check is overwritten by rename",
+      "status": "observed-gap",
+      "durationMs": 24.73,
+      "evidence": {
+        "reproduced": true,
+        "externalWriteLost": true,
+        "implication": "hash+atomic rename is not a cross-process CAS; native/cooperative locking or explicit residual race boundary required"
+      }
+    },
+    {
+      "id": "FS09",
+      "title": "Negative control: parent symlink swap bypasses a prior path check",
+      "status": "observed-gap",
+      "durationMs": 0.68,
+      "evidence": {
+        "reproduced": true,
+        "finalComponentNoFollowInsufficient": true,
+        "outsideSyntheticSentinelChanged": true,
+        "implication": "anchored component-by-component descriptor operations/native broker required for adversarial topology"
+      }
+    },
+    {
+      "id": "FS10",
+      "title": "Real directory watcher observes atomic replacement and subsequent edit",
+      "status": "failed",
+      "error": {
+        "code": "ERR_ASSERTION",
+        "message": "The expression evaluated to a falsy value:\n\n  assert.ok(events.some(e => e.name === 'watched.txt'))\n"
+      },
+      "durationMs": 669.08
+    },
+    {
+      "id": "FS11",
+      "title": "Native file-inode watch does not guarantee monitoring after atomic replacement",
+      "status": "passed",
+      "durationMs": 593.17,
+      "evidence": {
+        "events": [
+          {
+            "phase": "replace",
+            "type": "rename",
+            "name": "inode-watch.txt"
+          }
+        ],
+        "laterEditObserved": false,
+        "implication": "prefer containing-directory subscription + rescan/rebind; one run is not a universal watcher guarantee"
+      }
+    }
+  ],
+  "fixtureCleanup": "completed",
+  "completedAt": "2026-10-17T01:21:34.396Z",
+  "summary": {
+    "passed": 8,
+    "observed-gap": 2,
+    "failed": 1
+  }
+}

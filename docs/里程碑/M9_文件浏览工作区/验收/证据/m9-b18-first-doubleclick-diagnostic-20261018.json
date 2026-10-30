@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-B18",
+  "recordedAt": "2026-10-18T02:02:00.736968+00:00",
+  "status": "component-passed-app-input-discrepancy-unresolved",
+  "formalCasePassed": false,
+  "productionSourceChanged": false,
+  "sourceBaseline": {
+    "src/renderer/features/files/workspace-tree.tsx": "156e820cdfb2369213e876eadd57ad7040535b498b74d5d4b4177da6a573f32a",
+    "src/renderer/features/files/workspace-store.ts": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+    "src/renderer/features/files/file-actions.tsx": "09a2855d986b64048cd0ee4be862711235d97c0b88e11214817884e8c3224c19",
+    "src/renderer/features/files/workspace-tree-acceptance.test.tsx": "67fbc6ec6dce3f7a33c17d6f2e6e94937f6f24fe6d201a8817e943ceab705bf3"
+  },
+  "nativeObservation": {
+    "observer": "Root agent /root",
+    "actual": "An AX double-click on a previously unopened tree file appeared to leave a preview; repeating double-click on the selected row pinned it. A prior single click followed by double-click worked.",
+    "classification": "Unresolved automated input discrepancy; not enough evidence to classify it as an App defect or proven AX limitation."
+  },
+  "componentResult": {
+    "status": "passed",
+    "passed": 3,
+    "failed": 0,
+    "actual": {
+      "observedAt": "2026-10-18T02:01:02.448Z",
+      "level": "Production WorkspaceTree + FileWorkspaceStore + Base UI ContextMenuTrigger in jsdom; native file API isolated; real user-event click/dblclick sequence, no AX input or native App.",
+      "observations": [
+        {
+          "delayed": "none",
+          "events": [
+            {
+              "type": "mousedown",
+              "detail": 1
+            },
+            {
+              "type": "mouseup",
+              "detail": 1
+            },
+            {
+              "type": "click",
+              "detail": 1
+            },
+            {
+              "type": "mousedown",
+              "detail": 2
+            },
+            {
+              "type": "mouseup",
+              "detail": 2
+            },
+            {
+              "type": "click",
+              "detail": 2
+            },
+            {
+              "type": "dblclick",
+              "detail": 2
+            }
+          ],
+          "sameTreeNodeAfterFirstClickAndDoubleClick": true,
+          "tabs": [
+            {
+              "path": "B.txt",
+              "pinned": true
+            }
+          ],
+          "opensOfB": 1,
+          "directoryOnlyToggled": true
+        },
+        {
+          "delayed": "open",
+          "events": [
+            {
+              "type": "mousedown",
+              "detail": 1
+            },
+            {
+              "type": "mouseup",
+              "detail": 1
+            },
+            {
+              "type": "click",
+              "detail": 1
+            },
+            {
+              "type": "mousedown",
+              "detail": 2
+            },
+            {
+              "type": "mouseup",
+              "detail": 2
+            },
+            {
+              "type": "click",
+              "detail": 2
+            },
+            {
+              "type": "dblclick",
+              "detail": 2
+            }
+          ],
+          "sameTreeNodeAfterFirstClickAndDoubleClick": true,
+          "tabs": [
+            {
+              "path": "B.txt",
+              "pinned": true
+            }
+          ],
+          "opensOfB": 1,
+          "directoryOnlyToggled": true
+        },
+        {
+          "delayed": "read",
+          "events": [
+            {
+              "type": "mousedown",
+              "detail": 1
+            },
+            {
+              "type": "mouseup",
+              "detail": 1
+            },
+            {
+              "type": "click",
+              "detail": 1
+            },
+            {
+              "type": "mousedown",
+              "detail": 2
+            },
+            {
+              "type": "mouseup",
+              "detail": 2
+            },
+            {
+              "type": "click",
+              "detail": 2
+            },
+            {
+              "type": "dblclick",
+              "detail": 2
+            }
+          ],
+          "sameTreeNodeAfterFirstClickAndDoubleClick": true,
+          "tabs": [
+            {
+              "path": "B.txt",
+              "pinned": true
+            }
+          ],
+          "opensOfB": 1,
+          "directoryOnlyToggled": true
+        }
+      ]
+    },
+    "reportPath": "/private/tmp/willyou-dev037-after-tests.json",
+    "reportSha256": "c7ec471f15094c665de9f78e067fa7ccfc468fafd557e487d8f62e49b32a2c6d",
+    "boundaries": "Actual production tree, store and Base UI ContextMenuTrigger, user-event DOM pointer+click(detail1/2)+dblclick(detail2). File open/read delivery individually delayed. jsdom only; no Chrome DOM or native App reproduction claimed."
+  },
+  "conclusion": "First new-file double click pinned B, preserved the same tree DOM node, opened B exactly once, left no duplicate tabs and kept directory clicks as expansion only in all tested delivery timings. Async open/read rerender swallowing was not reproduced. Root chose to stop further browser/tool experiments for this batch. P/I/A formal case remains uncompleted."
+}

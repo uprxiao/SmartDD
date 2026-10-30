@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-17T20:39:08.999922+00:00",
+  "baseline": "M9 R3.4-P1",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "environment": {
+    "platform": "26.6.1",
+    "architecture": "arm64"
+  },
+  "state": "P01/P02/P03 base structure implementation; full PPTX fidelity and actual App acceptance remain unfinished",
+  "requirements": [
+    "R06.10",
+    "R07.2",
+    "R07.11",
+    "R07.16",
+    "R07.18"
+  ],
+  "caseCandidates": [
+    "M9-T-W13",
+    "M9-T-W16",
+    "M9-T-W26",
+    "M9-T-Y10",
+    "M9-T-Y13"
+  ],
+  "implemented": [
+    "P01 appends a new page with the selected source layout and empty placeholders; existing layout/master/theme parts remain unchanged",
+    "P02 inserts after the source; independently copies mutable notes/chart/embedded-workbook dependency closures; shares immutable layout/media",
+    "P03 removes private dependency closure, custom-show references, section slide IDs and recognized incoming hyperlinks; last slide and unknown references reject without mutation",
+    "500ms save/recovery chain reused, pending notes flush before structure changes; composition and invalid notes block the action",
+    "stable selected slide across insert/delete, selected removal falls back to first page; add selects its new final page; bounded page/zoom undo history",
+    "approved insert toolbar and duplicate/show-hide/delete context actions; keyboard menu and last-page disable; thumbnail/grid range clamping"
+  ],
+  "sourceSnapshot": {
+    "path": "/private/tmp/willyou-m9-pptx-structure-r1-sources.tar.gz",
+    "sha256": "d9df206fee9abc2f4d405301b0062444d5d804ca3356c6090df3f8c80e6d54e9",
+    "files": {
+      "src/shared/file-pptx.ts": "6d0d689239418c9518ebf2bbc836ef8f0aa0b63c60a03fb0319b12c88b51ed4b",
+      "src/main/core/files/office/pptx-slides.ts": "f125b9e312cbd7f428eca5d344a848f49ee5e5c56b34987bc53684bca848a686",
+      "src/main/core/files/office/pptx-slides.test.ts": "c20e3779f873ac91418aa178d33eb3897ec90d83af5a1701667f237124f73de6",
+      "src/main/core/files/office/pptx-edit.ts": "db41ae182d3fa6a6c80f41e75fd0f2391210b1d57681b1833ae93c6c1b11fc50",
+      "src/main/core/files/office/libreoffice-native.test.ts": "3e8583db0785c892e279df1eea0a669db2a655be82399d652d2d12d647bf98b6",
+      "src/renderer/features/files/office/pptx-buffer.ts": "af7905b413baae2ec6ff7e30b2cb420731df641180330951484af667cebbb667",
+      "src/renderer/features/files/office/pptx-buffer.test.ts": "4695588b04839136221870beab835081a2e0abd3a666652e82878e82ca9ba701",
+      "src/renderer/features/files/office/pptx-menu.tsx": "9ca188fd71e63ee70ec1be7a9aa389f9c99000af0c9c55fb213d61606c9544d8",
+      "src/renderer/features/files/office/pages-preview.tsx": "cb9a5b22459c9fef12940544339a9ab1245df61e1c500d00e3b19eeb03d33941",
+      "src/renderer/features/files/office/pptx-preview.test.tsx": "d5e9e16b63f41f6847bc8326a0f6c34f60096322aafe8cb1272fd3da45a33626",
+      "src/renderer/features/files/office/pages-style.css": "985e938a17823a22c1ae3ca111ef7666428ba456571f6422d5034ea25e0b4073"
+    }
+  },
+  "tests": [
+    {
+      "layer": "code regression; RPC/PDF/native mocks where indicated; opt-in native suites skipped",
+      "passed": 246,
+      "skipped": 38,
+      "log": "/private/tmp/willyou-m9-pptx-structure-regression-r1.log",
+      "json": "/private/tmp/willyou-m9-pptx-structure-regression-r1.json"
+    },
+    {
+      "layer": "real source FileService/compiled Worker/native test broker/fixed LibreOffice; independent Poppler pixels and Python ZIP/XML disk read",
+      "passed": 1,
+      "skipped": 9,
+      "log": "/private/tmp/willyou-m9-pptx-structure-native-r1.log",
+      "json": "/private/tmp/willyou-m9-pptx-structure-native-r1.json",
+      "pages": 4,
+      "pdfHash": "8ca9fe4467e915991f180fdcb431066e72f1d4b9da759bb367799e418b6ea5ce",
+      "originalAndClonePixelHash": "005b026e3be6e3de6ec3775ed72e077ec5a36f912d1b6de16135c70e3d995f17",
+      "restoredPartCount": 48,
+      "structureSavedHash": "101968456f862c42c46c35ce9e4d676b231f6c8d8ff04a01a5dc8ff2198861e4",
+      "restoredSavedHash": "49aeb3598ce5653779af4c653caaf0a52b30705e948069d17619034b4b6fd85a",
+      "boundary": "one synthetic rich PPTX; pixel equality of its original/clone is not a full fidelity or real App UI claim"
+    },
+    {
+      "layer": "typecheck",
+      "state": "passed",
+      "log": "/private/tmp/willyou-m9-pptx-structure-final-typecheck.log"
+    },
+    {
+      "layer": "git diff --check",
+      "state": "passed"
+    },
+    {
+      "layer": "actual packaged PPTX Worker and official native helper/resources via source FileService harness; not whole packaged main RPC or App UI",
+      "passed": 1,
+      "skipped": 3,
+      "log": "/private/tmp/willyou-m9-pptx-structure-packaged-r1.log",
+      "json": "/private/tmp/willyou-m9-pptx-structure-packaged-r1.json",
+      "testFile": "src/main/core/files/office/libreoffice-packaged.test.ts",
+      "testFileSha256": "2c68a4d741d65343c75117d3346858bc96b2c1bdc6e5ed493d137783b6c1ce00",
+      "testFileNote": "added after build; package runtime source still matches recorded source snapshot",
+      "structureSavedHash": "1920e44226bccecc9212c0de0baea4778d0275a10e09c8370eb3b4fb449a5fab",
+      "restoredSavedHash": "49aeb3598ce5653779af4c653caaf0a52b30705e948069d17619034b4b6fd85a",
+      "pdfHash": "47e03899f501b8c678dbc4923303f4575513e823abb282c83c8a83e28ee6bc84",
+      "pages": 4,
+      "independentOriginalPartHashesRestored": true,
+      "reopened": true
+    }
+  ],
+  "fixture": {
+    "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/predev-office/final/rich-edited.pptx",
+    "sha256": "78d689d77581d44067d234860dc76e527cc4b7774dd181231f1b9698e9bbdac6"
+  },
+  "package": {
+    "state": "passed",
+    "path": "/private/tmp/willyou-m9-pptx-structure-r1-build/mac-arm64/WillYou.app",
+    "log": "/private/tmp/willyou-m9-pptx-structure-r1-package.log",
+    "asarSha256": "4040e23913b11103ef4ba81a0eceb785e87a7fd105c02158ac10dfde113ae752",
+    "nativeChecks": [
+      "sqlite",
+      "pty",
+      "voiceBridge",
+      "fileBroker",
+      "officeRenderer",
+      "fileWatcher"
+    ]
+  },
+  "actualApp": {
+    "state": "not executed",
+    "reason": "CUA still explicitly reports Mac locked after latest unlock reply; previous ui-r3 app retained",
+    "screenshots": []
+  },
+  "remaining": [
+    "P07-P15 object actions and associated fidelity matrix",
+    "complex incoming page references/animations/extensions and shared notes scenarios",
+    "complete notes fields/soft-break/multiple body and signature confirmation",
+    "actual packaged App light/dark/focus/IME/save-restart acceptance",
+    "other M9 requirements and complete formal 419-case acceptance"
+  ],
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "futureExcluded": 6,
+    "newPassesFromThisBatch": 0
+  },
+  "release": "not requested; no merge/tag/publish"
+}

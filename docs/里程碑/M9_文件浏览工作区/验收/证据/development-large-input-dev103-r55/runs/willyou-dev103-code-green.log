@@ -1,0 +1,42 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/large-input.test.ts src/renderer/features/files/text-editor.test.tsx src/renderer/features/files/file-buffer.test.ts src/renderer/features/files/readonly-text-acceptance.test.tsx src/renderer/features/files/text-buffer-acceptance.test.ts src/renderer/features/files/draft-restoration-acceptance.test.ts src/renderer/features/files/text-size-acceptance.test.ts src/shared/file-text.test.ts --reporter=default --reporter=json --outputFile=/private/tmp/willyou-dev103-code-green.json
+
+[1019/052256.149877:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1019/052256.352484:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052256.352458:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052256.352920:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052256.353882:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052256.360224:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052256.365106:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052256.367390:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1019/052256.400193:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/shared/file-text.test.ts (6 tests) 213ms
+ ✓ src/renderer/features/files/file-buffer.test.ts (27 tests) 45ms
+ ✓ src/renderer/features/files/large-input.test.ts (12 tests) 96ms
+ ✓ src/renderer/features/files/text-size-acceptance.test.ts (12 tests) 1311ms
+ ✓ src/renderer/features/files/text-editor.test.tsx (15 tests) 978ms
+ ✓ src/renderer/features/files/readonly-text-acceptance.test.tsx (2 tests) 785ms
+     ✓ size readonly blocks input, paste, selection replacement and writes  508ms
+ ✓ src/renderer/features/files/draft-restoration-acceptance.test.ts (5 tests) 1389ms
+     ✓ H29 fresh session restores clean with a verified base and fresh capability  388ms
+     ✓ H30 keeps the previous verified private draft when a subsequent real checkpoint fails  326ms
+ ✓ src/renderer/features/files/text-buffer-acceptance.test.ts (10 tests) 5146ms
+     ✓ M9-T-H04 resets 3000ms autosave on repeated edits and never overlaps a suspended real save  686ms
+     ✓ M9-T-H07 merges concurrent save requests behind one real write and commits the newer buffer against its returned revision  455ms
+     ✓ M9-DEV-034 preserves rebased durable input when checkpoint v2 arrives after the newer checkpoint  865ms
+     ✓ M9-DEV-034 preserves rebased durable input when checkpoint v3 arrives after the newer checkpoint  936ms
+     ✓ M9-DEV-035 retains the new durable draft when an old clean cleanup resumes before its checkpoint  612ms
+     ✓ M9-DEV-035 retains the new durable draft when an old clean cleanup resumes after its checkpoint  518ms
+     ✓ M9-T-H21 keeps r2 when an older refresh response/error arrives late, including after disposal  344ms
+     ✓ M9-T-H21 keeps r2 when an older read response/error arrives late, including after disposal  306ms
+
+ Test Files  8 passed (8)
+      Tests  89 passed (89)
+   Start at  05:22:56
+   Duration  6.82s (transform 4.01s, setup 0ms, import 6.22s, tests 9.96s, environment 1.42s)
+
+JSON report written to /private/tmp/willyou-dev103-code-green.json

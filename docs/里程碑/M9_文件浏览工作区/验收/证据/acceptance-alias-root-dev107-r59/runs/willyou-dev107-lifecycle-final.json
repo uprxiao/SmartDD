@@ -1,0 +1,239 @@
+{
+  "cases": [
+    "M9-T-L11",
+    "M9-T-L12",
+    "M9-T-L13"
+  ],
+  "startedAt": "2026-10-18T22:28:04.226Z",
+  "runs": [
+    {
+      "case": "M9-T-L11",
+      "sample": "registered RPC / exact-scope broadcast / own-duplicate-old echo",
+      "databaseRoutes": [
+        "a.md",
+        "b.csv"
+      ],
+      "firstWindowRoutes": [
+        "a.md",
+        "b.csv"
+      ],
+      "secondWindowRoutes": [
+        "a.md",
+        "b.csv"
+      ],
+      "writesBefore": 1,
+      "writesAfter": 1,
+      "bufferIdentityRetained": true,
+      "otherScopeEventsAdded": 0,
+      "revisions": [
+        1792362484336,
+        1792362484438,
+        1792362484464,
+        1792362484464,
+        1
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "two SQLite connections / stale CAS / monotonic timestamp",
+      "initialRevision": 1000,
+      "secondRevision": 1001,
+      "staleAccepted": false,
+      "noOpRevision": 1001,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "remote removal / local dirty + selection / explicit layout-only retry",
+      "activeIdentityRetained": true,
+      "dirtyText": "LOCAL # A original\n",
+      "selection": 6,
+      "sourceHashUnchanged": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "clean active/preview preserved; existing SVG source initialization; explicit reread after active deletion",
+      "svgEditor": true,
+      "svgBufferIdentityRetained": true,
+      "routesAfterExplicitReload": [
+        "icon.svg",
+        "preview.txt"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "public service save response held / pending real recovery draft",
+      "inFlightSaveProtected": true,
+      "unresolvedDraftProtected": true,
+      "treeWidthHeld": 381,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "delayed own acknowledgement + queued local layout + newer remote CAS",
+      "staleQueuedWriteRejected": true,
+      "explicitRetry": "local queued after old acknowledgement",
+      "sourceUnchanged": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "explicit reread response held / user selection guard",
+      "selected": "b.csv",
+      "localRoutesPreserved": [
+        "a.md",
+        "b.csv"
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-L11",
+      "sample": "closeScope isolation / main-frame navigation / subframe write rejection",
+      "deliveryCounts": {
+        "afterProjectClose": 0,
+        "remainingTask": 1,
+        "afterNavigation": 1
+      },
+      "pass": true
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unknown-schema-version",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unknown-payload-version",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"../escape\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"/etc/hosts\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"sub/../a.md\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "unsafe-path-\"a\\u0000.md\"",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "capability-in-route",
+      "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+      "loading": false,
+      "rootsCalls": 0,
+      "openCalls": 0,
+      "dbUnchanged": true,
+      "pass": true,
+      "retryRestored": [
+        "a.md"
+      ]
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "duplicate-tabs",
+      "routes": [
+        "a.md"
+      ],
+      "active": "a.md",
+      "tabError": "",
+      "openCalls": 2,
+      "newLease": "975cbd97-40de-43bc-b274-436f928aa597",
+      "pass": true
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "invalid-active",
+      "routes": [
+        "a.md",
+        "b.csv"
+      ],
+      "active": "a.md",
+      "tabError": "",
+      "openCalls": 2,
+      "newLease": "237a26c3-1115-463b-9168-71626ef16dfd",
+      "pass": true
+    },
+    {
+      "case": "M9-T-L12",
+      "sample": "source-path-changed",
+      "routes": [
+        "a.md"
+      ],
+      "active": "a.md",
+      "tabError": "原目录来源当前不可用；此标签保留原路径，未切换到新目录",
+      "openCalls": 0,
+      "pass": true
+    }
+  ],
+  "resources": {
+    "package": "/private/tmp/willyou-m9-acceptance-batch-r59-build/mac-arm64/WillYou.app",
+    "asarSha256": "badf36aaf295c8465c351e0703441b741bf00d1899b8ce37e86f02f1596aeb6b",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "sqliteVersion": "12.11.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "finishedAt": "2026-10-18T22:28:07.678Z"
+}

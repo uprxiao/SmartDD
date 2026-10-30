@@ -1,0 +1,160 @@
+{
+  "at": "2026-10-19T22:18:13.481342+00:00",
+  "projectPath": "/private/tmp/willyou-media-controls-fixtures-_z88t0ri/project",
+  "source": "Own ffmpeg testsrc2 and anullsrc, original encoded H264/AAC and MPEG4/AAC; no user media.",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/bin/ffmpeg",
+        "-nostdin",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "testsrc2=size=320x180:rate=12",
+        "-f",
+        "lavfi",
+        "-i",
+        "anullsrc=r=48000:cl=mono",
+        "-map",
+        "0:v:0",
+        "-map",
+        "1:a:0",
+        "-t",
+        "30",
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:a",
+        "aac",
+        "-b:a",
+        "32k",
+        "-movflags",
+        "+faststart",
+        "-preset",
+        "ultrafast",
+        "/private/tmp/willyou-media-controls-fixtures-_z88t0ri/project/clip-a.mp4"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/opt/homebrew/bin/ffmpeg",
+        "-nostdin",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "testsrc2=size=320x180:rate=12",
+        "-f",
+        "lavfi",
+        "-i",
+        "anullsrc=r=48000:cl=mono",
+        "-map",
+        "0:v:0",
+        "-map",
+        "1:a:0",
+        "-t",
+        "30",
+        "-c:v",
+        "mpeg4",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:a",
+        "aac",
+        "-b:a",
+        "32k",
+        "-movflags",
+        "+faststart",
+        "/private/tmp/willyou-media-controls-fixtures-_z88t0ri/project/unsupported.mp4"
+      ],
+      "exit": 0,
+      "stderr": ""
+    }
+  ],
+  "cases": [
+    {
+      "name": "clip-a.mp4",
+      "kind": "video",
+      "size": 1461549,
+      "sha256": "7269649e44121a5132146f37aa5a9edbdffcd9c4aff6942498d4e6ef2c4ad112",
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "h264",
+          "width": 320,
+          "height": 180,
+          "duration": "30.000000"
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "duration": "30.000000"
+        }
+      ],
+      "duration": "30.000000"
+    },
+    {
+      "name": "clip-b.mp4",
+      "kind": "video",
+      "size": 1461549,
+      "sha256": "7269649e44121a5132146f37aa5a9edbdffcd9c4aff6942498d4e6ef2c4ad112",
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "h264",
+          "width": 320,
+          "height": 180,
+          "duration": "30.000000"
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "duration": "30.000000"
+        }
+      ],
+      "duration": "30.000000"
+    },
+    {
+      "name": "control.wav",
+      "kind": "audio",
+      "size": 96044,
+      "sha256": "0a8f76d89c709043814cb74f331a4578d17ff61256303bd0019a263d053f86e8",
+      "streams": [
+        {
+          "codec_type": "audio",
+          "codec_name": "pcm_s16le",
+          "duration": "1.000000"
+        }
+      ],
+      "duration": "1.000000"
+    },
+    {
+      "name": "unsupported.mp4",
+      "kind": "video",
+      "size": 878260,
+      "sha256": "736cfffeeb68970c24b81df2a328a000c0dafdc8beae5875115b5c8c3e22d12f",
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "mpeg4",
+          "width": 320,
+          "height": 180,
+          "duration": "30.000000"
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "duration": "30.000000"
+        }
+      ],
+      "duration": "30.000000"
+    }
+  ]
+}

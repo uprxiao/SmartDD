@@ -1,0 +1,266 @@
+{
+  "startedAt": "2026-10-18T03:28:31.794Z",
+  "layer": "I: actual native file broker + registered sandboxed stdio MCP + public App SDK + production bridge + Electron WebContentsView; no packaged App GUI",
+  "versions": {
+    "node": "24.19.0",
+    "acorn": "8.17.0",
+    "ada": "3.4.4",
+    "amaro": "1.1.10",
+    "ares": "1.34.6",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "146",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.69.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.4",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.3",
+    "tz": "2025c",
+    "undici": "7.29.0",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "14.8.178.38-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "42.11.14",
+    "chrome": "148.0.7778.280"
+  },
+  "cases": [
+    {
+      "name": "Actual registered MCP SDK handshake, input-before-result, native byte read, bounded tool and forbidden capabilities",
+      "startedAt": "2026-10-18T03:28:31.854Z",
+      "observed": {
+        "observed": {
+          "order": [
+            "input",
+            "result"
+          ],
+          "denied": [
+            {
+              "name": "foreign-resource",
+              "denied": true,
+              "message": "ProtocolError: 扩展只能读取当前资源"
+            },
+            {
+              "name": "initial-tool",
+              "denied": true,
+              "message": "ProtocolError: [UNTRUSTED] 扩展工具不在当前文件 app-only 白名单"
+            },
+            {
+              "name": "write-tool",
+              "denied": true,
+              "message": "ProtocolError: [UNTRUSTED] 扩展工具不在当前文件 app-only 白名单"
+            },
+            {
+              "name": "tool-range",
+              "denied": true,
+              "message": "ProtocolError: [UNTRUSTED] 扩展读取范围超过登记预算"
+            },
+            {
+              "name": "model-message",
+              "denied": true,
+              "message": "ProtocolError: 此文件查看器没有该宿主能力"
+            },
+            {
+              "name": "open-link",
+              "denied": true,
+              "message": "ProtocolError: 此文件查看器没有该宿主能力"
+            },
+            {
+              "name": "model-context",
+              "denied": true,
+              "message": "ProtocolError: 此文件查看器没有该宿主能力"
+            }
+          ],
+          "parentAccess": false,
+          "node": "undefined",
+          "preload": "undefined",
+          "fileClickPrevented": true,
+          "fileClickHandlers": 0,
+          "tamperedPrototypesStillBlocked": true,
+          "fileShowPickerDenied": true,
+          "fileShowPickerFixed": true,
+          "pickerGlobalsFixed": true,
+          "filePastePrevented": true,
+          "textPasteAllowed": true,
+          "initialTheme": "dark",
+          "input": {
+            "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource"
+          },
+          "initialResult": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"name\":\"initial\",\"arguments\":{\"uri\":\"fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource\"}}"
+              }
+            ],
+            "structuredContent": {
+              "name": "initial",
+              "args": {
+                "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource"
+              }
+            }
+          },
+          "read": {
+            "contents": [
+              {
+                "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource",
+                "mimeType": "text/plain",
+                "blob": "TmF0aXZlIHNvdXJjZSDkuK3mlofwn5mCDQo="
+              }
+            ]
+          },
+          "tool": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"name\":\"slice\",\"arguments\":{\"uri\":\"fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource\",\"offset\":0,\"length\":12}}"
+              }
+            ],
+            "structuredContent": {
+              "name": "slice",
+              "args": {
+                "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource",
+                "offset": 0,
+                "length": 12
+              }
+            }
+          }
+        },
+        "apiCalls": [
+          "read",
+          "slice",
+          "initial",
+          "mutate",
+          "slice"
+        ],
+        "wrongOwnerGenerationUriRejected": true,
+        "before": {
+          "sha256": "12780e546a05ac943fdc31767223564654ce7b7e5f678a3b1d0dff321f0e4d28",
+          "ino": 44631879,
+          "mtime": 1792294111855.033
+        },
+        "after": {
+          "sha256": "12780e546a05ac943fdc31767223564654ce7b7e5f678a3b1d0dff321f0e4d28",
+          "ino": 44631879,
+          "mtime": 1792294111855.033
+        },
+        "childrenAfterClose": 0
+      },
+      "pass": true,
+      "finishedAt": "2026-10-18T03:28:32.531Z"
+    }
+  ],
+  "broker": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r4-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c"
+  },
+  "sdkObserved": {
+    "order": [
+      "input",
+      "result"
+    ],
+    "denied": [
+      {
+        "name": "foreign-resource",
+        "denied": true,
+        "message": "ProtocolError: 扩展只能读取当前资源"
+      },
+      {
+        "name": "initial-tool",
+        "denied": true,
+        "message": "ProtocolError: [UNTRUSTED] 扩展工具不在当前文件 app-only 白名单"
+      },
+      {
+        "name": "write-tool",
+        "denied": true,
+        "message": "ProtocolError: [UNTRUSTED] 扩展工具不在当前文件 app-only 白名单"
+      },
+      {
+        "name": "tool-range",
+        "denied": true,
+        "message": "ProtocolError: [UNTRUSTED] 扩展读取范围超过登记预算"
+      },
+      {
+        "name": "model-message",
+        "denied": true,
+        "message": "ProtocolError: 此文件查看器没有该宿主能力"
+      },
+      {
+        "name": "open-link",
+        "denied": true,
+        "message": "ProtocolError: 此文件查看器没有该宿主能力"
+      },
+      {
+        "name": "model-context",
+        "denied": true,
+        "message": "ProtocolError: 此文件查看器没有该宿主能力"
+      }
+    ],
+    "parentAccess": false,
+    "node": "undefined",
+    "preload": "undefined",
+    "fileClickPrevented": true,
+    "fileClickHandlers": 0,
+    "tamperedPrototypesStillBlocked": true,
+    "fileShowPickerDenied": true,
+    "fileShowPickerFixed": true,
+    "pickerGlobalsFixed": true,
+    "filePastePrevented": true,
+    "textPasteAllowed": true,
+    "initialTheme": "dark",
+    "input": {
+      "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource"
+    },
+    "initialResult": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"name\":\"initial\",\"arguments\":{\"uri\":\"fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource\"}}"
+        }
+      ],
+      "structuredContent": {
+        "name": "initial",
+        "args": {
+          "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource"
+        }
+      }
+    },
+    "read": {
+      "contents": [
+        {
+          "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource",
+          "mimeType": "text/plain",
+          "blob": "TmF0aXZlIHNvdXJjZSDkuK3mlofwn5mCDQo="
+        }
+      ]
+    },
+    "tool": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"name\":\"slice\",\"arguments\":{\"uri\":\"fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource\",\"offset\":0,\"length\":12}}"
+        }
+      ],
+      "structuredContent": {
+        "name": "slice",
+        "args": {
+          "uri": "fixture://7a85e8dc-3252-473f-b7f3-8ddf09618ee3/resource",
+          "offset": 0,
+          "length": 12
+        }
+      }
+    }
+  },
+  "pass": true,
+  "finishedAt": "2026-10-18T03:28:32.531Z"
+}

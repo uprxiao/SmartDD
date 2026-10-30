@@ -1,0 +1,294 @@
+{
+  "startedAt": "2026-10-19T03:02:45.486Z",
+  "observations": [
+    {
+      "case": "M9-T-H06",
+      "scenario": "beforeinput-without-change 549/550",
+      "dirtyAtInput": true,
+      "at549": {
+        "dirty": true,
+        "settled": false,
+        "saveCalls": 0,
+        "checkpointCalls": 0
+      },
+      "at550": {
+        "dirty": false,
+        "settled": true,
+        "saved": true,
+        "saveCalls": 0,
+        "checkpointCalls": 0
+      },
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        }
+      ],
+      "sourceUnchanged": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "composition 600ms -> DOM MutationObserver CJK -> end",
+      "dirtyAtStart": true,
+      "whileComposing": {
+        "dirty": true,
+        "settled": false,
+        "saveCalls": 0,
+        "checkpointCalls": 0
+      },
+      "final": {
+        "source": "# 中文🙂\n中文\n",
+        "raw": "# 中文🙂\n中文\n",
+        "dirty": false,
+        "settled": true,
+        "saveCalls": 1
+      },
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 1150
+        },
+        {
+          "method": "save",
+          "at": 1150
+        },
+        {
+          "method": "resolveDraft",
+          "at": 1150
+        }
+      ],
+      "boundary": "Synthetic DOM events and actual CodeMirror MutationObserver in jsdom; no physical system IME or App GUI claim"
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "synchronous transaction + two waiting saves",
+      "elapsedFakeMilliseconds": 0,
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 0
+        },
+        {
+          "method": "save",
+          "at": 0
+        },
+        {
+          "method": "resolveDraft",
+          "at": 0
+        }
+      ],
+      "sourceSha256": "27c16da6f0e47c8f751bfe27c756f4bfd58ae0f0941143cf98782e5f9417318d",
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "200ms delayed DOM transaction checkpoint + close-save",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 200
+        },
+        {
+          "method": "save",
+          "at": 200
+        },
+        {
+          "method": "resolveDraft",
+          "at": 200
+        }
+      ],
+      "sourceSha256": "546b037dad2fd7c3c7e9c4e3540ef433cb38c5d0f1e60e4d3f39dd0371cd24c7",
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "live candidate 3500ms -> DOM cancellation -> 549/550",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        }
+      ],
+      "sourceUnchanged": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "unmount cancels save/checkpoint/close; old event cannot settle replacement; dispose has no hanging waiter",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        }
+      ],
+      "sourceUnchanged": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "switch document while old composition pending",
+      "oldCalls": [
+        {
+          "method": "read",
+          "at": 0
+        }
+      ],
+      "newCalls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 0
+        },
+        {
+          "method": "save",
+          "at": 0
+        },
+        {
+          "method": "resolveDraft",
+          "at": 0
+        }
+      ],
+      "oldSourceUnchanged": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "candidate transaction -> view unmount -> 3500ms",
+      "actual": {
+        "raw": "# 未确认候选\n中文\n",
+        "source": "# Base\n中文\n",
+        "checkpointCalls": 0,
+        "saveCalls": 0,
+        "dirty": true
+      },
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        }
+      ]
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "interrupted candidate blocks explicit save/checkpoint/close; real history undo restores clean",
+      "sourceUnchanged": true,
+      "historyRestored": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "external revision during composition retains local state and blocks source save",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "refresh",
+          "at": 0
+        },
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 550
+        }
+      ],
+      "externalSourceSha256": "2b1d6131f149362f5c055472fc797b4ae80f90583064fe0c0715292ec5930233",
+      "localRaw": "# 本地候选\n中文\n",
+      "conflict": true,
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "compositionend pending tail unmount -> interrupted -> external conflict -> explicit useDisk clears barrier and new view binding works",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "refresh",
+          "at": 3500
+        },
+        {
+          "method": "read",
+          "at": 3500
+        },
+        {
+          "method": "read",
+          "at": 3500
+        }
+      ],
+      "finalSource": "# New disk\n",
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "new CJK composition after interrupted candidate",
+      "outcome": "commit",
+      "inputInterrupted": false,
+      "source": "# 已确认中文\n中文\n",
+      "raw": "# 已确认中文\n中文\n",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        },
+        {
+          "method": "checkpoint",
+          "at": 550
+        },
+        {
+          "method": "save",
+          "at": 550
+        },
+        {
+          "method": "resolveDraft",
+          "at": 550
+        }
+      ],
+      "pass": true
+    },
+    {
+      "case": "M9-T-H06",
+      "scenario": "new CJK composition after interrupted candidate",
+      "outcome": "cancel",
+      "inputInterrupted": true,
+      "source": "# Base\n中文\n",
+      "raw": "# 旧候选\n中文\n",
+      "calls": [
+        {
+          "method": "read",
+          "at": 0
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r69-build/mac-arm64/WillYou.app",
+    "asarSha256": "4ee64b38636975dddce540e2958ae66869ae2669d1dbf3ca95743faf2c9edac0",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "finishedAt": "2026-10-19T03:02:49.109Z"
+}

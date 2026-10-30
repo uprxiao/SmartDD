@@ -1,0 +1,138 @@
+{
+  "schema": "m9-development-fix/v1",
+  "id": "M9-DEV-053",
+  "recordedAt": "2026-10-18T04:59:30.025645+00:00",
+  "requirementBaseline": "R3.4 / R3.4-P1",
+  "requirements": [
+    "M9-R07.18"
+  ],
+  "relatedCase": "M9-T-Y11",
+  "formalCasePassed": false,
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "problem": "XLSX cell edit changed a shared-string reference to inline text, deviating from the approved reference-count/copy-on-write rule and flattening the edited cell rich runs.",
+  "resolution": "Count references in all workbook worksheets. A single reference changes its existing item; multiple references append a new item and change only the selected cell index. Prefix/suffix text interval changes preserve each rich run and font; unknown phonetic/foreign text objects reject explicitly rather than flatten. Update count/uniqueCount and invalidate only approved formula caches.",
+  "validation": {
+    "red": {
+      "passed": 5,
+      "failed": 3,
+      "report": "willyou-y11-shared-red.json"
+    },
+    "focusedRegression": {
+      "passed": 20,
+      "failed": 0,
+      "report": "willyou-y11-shared-green.json"
+    },
+    "affectedRegression": {
+      "passed": 51,
+      "failed": 0,
+      "report": "willyou-y11-regression.json"
+    },
+    "nativeServiceWorkerSaveReopen": {
+      "passed": 2,
+      "failed": 0,
+      "report": "willyou-y11-native-r2.json",
+      "matrix": "willyou-y11-native-matrix-r2.json"
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "log": "willyou-y11-typecheck.log"
+    }
+  },
+  "nativeBroker": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r7-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+    "sha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c"
+  },
+  "failuresRetained": [
+    "Initial native run 1 pass/1 failure: test incorrectly required worksheet XML to change for the single-reference branch where index remains 0. Corrected expected part plan; source and target values already correct."
+  ],
+  "boundaries": [
+    "Y11 shared-string and cross-rich-run XLSX portions complete; do not count complete until original ambiguous byte-match negative control is reconciled with structured-target production entry and executed.",
+    "Existing PPTX run-preservation and duplicate-object identity rejection included in affected regression; these alone do not prove a text-search ambiguity negative control.",
+    "No packaged App GUI claim. r7 does not include DEV052/DEV053 JavaScript; next unified package pending.",
+    "No automatic dependency installation, model call, network request or AIS source modification."
+  ],
+  "sourceFiles": {
+    "src/main/core/files/office/cell-edit.ts": "4d302eacecc102d7ae2169d5b7405edab8f5c0d8e6c5b28f7c27da17ff3c187a",
+    "src/main/core/files/office/cell-edit.test.ts": "3799449129de529473748666ad3c539d7630b1edc422087a2cf7a2614c4a9aeb",
+    "src/main/core/files/office/shared-string-acceptance.test.ts": "28d89062d2f8748d7407b9c36709d14d73603c2fce5147ac3d5cebdcdef61eec",
+    "src/main/core/files/office/format-edit.ts": "8bb3e8c129d5ec9f87977245b4ec3afead3420f53705dd190a3e1223a2b4ae56",
+    "src/main/core/files/office/range-edit.ts": "e7806c27f49dee9c3bfd6a6de10c5398e672e73d2b81ea2ff937b30c3402d4ac",
+    "src/main/core/files/office/document.ts": "194c11fc96ad31f8815d43a9953faa8172052e5aabb327b5066f0b42530e525a",
+    "src/main/core/files/office/service.ts": "a0fddfbb4f0560b8f9ca65bfdce45c0b325c0a1f714a99a4c9aa516045bbc4fb",
+    "src/main/core/files/office/worker.ts": "20d990f6df8dd2f40fe603217db5df60164335cd1dfd61ee8f92b0dfafccd317",
+    "src/main/core/files/office/package.ts": "39ee90c53efa354cf0ddda09883dc17a7822dc97be041ed9ebd6b1cc6e4049a5",
+    "src/main/core/files/office/workbook.ts": "5e8e886d15d2d7964de9bc9c203f8ef6851843226fdfb5a7ce3f731219ffbb2f",
+    "src/main/core/files/office/xml.ts": "96d9f52d6ae42d2a5c03fbbb414433386c7abf95c74eadeabb1f37972dd5cd14",
+    "src/main/core/files/office/xstring.ts": "8a2c650a31d7be76e563de99d67c4d54d4fc1d3021287721de7804c726c550a2",
+    "src/main/core/files/office/mutation.ts": "dc75623650c0ff09680a8be22c69c3a6fd0f08f6726736cd6820245c943303a1",
+    "src/main/core/files/office/calculation.ts": "4b14cab65a2d656fcd8f0d1a60a68a2cb139647c07846c712b6fd594cb25a0d4",
+    "src/main/core/files/office/worksheet-edits.ts": "22fd0cda08ee5e27ecc6b939d6abede686ff510262bbbf98b0a367de545d3b41",
+    "src/main/core/files/office/pptx-text-edit.ts": "0e56dfa95a9e199cbe3433bacc9eb3a45e8cda961cf3092cc39ffca08bd06a5b",
+    "src/main/core/files/office/pptx-elements.ts": "f19c17dabbbe07e5204e3328ee6804f31b126e0e1fbef43a12ee67b580fdbc5d",
+    "src/main/core/files/office/pptx-edit.test.ts": "949659c6edd4b5c5ce3e2c71fadd4b743a3fba9648cce787dbb274b6e4d49f86",
+    "src/main/core/files/office/pptx-elements.test.ts": "0974fb0382efc43a3af61a706054c97fed88e3cc022028b32e523c502ea608c0"
+  },
+  "artifacts": {
+    "willyou-y11-shared-green.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-shared-green.json",
+      "sha256": "9bb9aa826585aa3bb505f56b64283aaf5abd8ac6699bb8be011204a6d2f94826"
+    },
+    "willyou-y11-native-matrix-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-native-matrix-r2.json",
+      "sha256": "c124ec26d4b976abf35f8d7a023dfb63395184236461de3a19ce95b1c65d6d31"
+    },
+    "willyou-y11-regression.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-regression.log",
+      "sha256": "ac57dac4efd5c774ff2bd6d4d87a94c1a7c7c81e4b537a925916f6996d637e0b"
+    },
+    "willyou-y11-shared-green.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-shared-green.log",
+      "sha256": "c40d5e6b815be7d2255962f623f81ab309cf93084729190658b551198ae9dec9"
+    },
+    "willyou-y11-shared-red.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-shared-red.json",
+      "sha256": "ca134629e0166c8e3f633a52a3bc26fa096e6c60ebf8ea16ad445ed158034189"
+    },
+    "willyou-y11-native.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-native.log",
+      "sha256": "f52d3a118b566e77ae8e7748a68ecee6e04767fceaf38274be6194fdc12d2240"
+    },
+    "willyou-y11-regression.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-regression.json",
+      "sha256": "fd7421d60e05151cd7957e1165d62de8c8113f6c9815388f1a90848cf7e657c3"
+    },
+    "willyou-y11-typecheck.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-typecheck.log",
+      "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+    },
+    "willyou-y11-shared-red.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-shared-red.log",
+      "sha256": "2b9728864ceb0eb21747bd58487a1b6751a4106ad20e550c5a0f0ced33419cd6"
+    },
+    "willyou-y11-native-r2.log": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-native-r2.log",
+      "sha256": "0cd0f7cfce61fdb69fb38e98fda82d69e5ad1674b794a14dc95b238a7a76c454"
+    },
+    "willyou-y11-native.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-native.json",
+      "sha256": "70eab862d75844c9abbebc8d27b7fab8a04f527f11154914e1549c702dfe61d9"
+    },
+    "willyou-y11-native-r2.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-native-r2.json",
+      "sha256": "7ca168a3dbcd3f964fc26b60fef54321267e0a5c0501143c342b0390688906a1"
+    },
+    "willyou-y11-native-matrix.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/willyou-y11-native-matrix.json",
+      "sha256": "c5ddbf72112905c5a8933ea94569632d71374a269feb8c3eae0e4f177ff15c81"
+    },
+    "sources.tar.gz": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/sources.tar.gz",
+      "sha256": "9634240f72dd8682f77c44af1eaa4984e14768a05e5dc6442c5087a7e2afffd9"
+    },
+    "sources.json": {
+      "path": "docs/里程碑/M9_文件浏览工作区/验收/证据/development-shared-string/sources.json",
+      "sha256": "19788c985000d10599ff97fe63f20edd84c0ed8de1aed44e207fec86264691df"
+    }
+  }
+}

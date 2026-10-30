@@ -1,0 +1,48 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/external-tree-refresh-acceptance.test.tsx -t same-name --reporter=default --reporter=json --outputFile=/private/tmp/willyou-missing-replacement-red-tests.json
+
+[1018/134616.165802:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+[1018/134616.303111:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/134617.781391:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1018/134617.822572:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (10 tests | 2 failed | 8 skipped) 458ms
+     ↓ B08 'ordinary writer' / 'native watch' updates create/delete/rename and marks the old document missing
+     ↓ B08 'ordinary writer' / 'explicit refresh' updates create/delete/rename and marks the old document missing
+     ↓ B08 'ordinary writer' / 'resume scan' updates create/delete/rename and marks the old document missing
+     ↓ B08 'CLI process' / 'native watch' updates create/delete/rename and marks the old document missing
+     ↓ B08 'CLI process' / 'explicit refresh' updates create/delete/rename and marks the old document missing
+     ↓ B08 'CLI process' / 'resume scan' updates create/delete/rename and marks the old document missing
+     × B08 ordinary writer cannot redirect a missing dirty document to a new same-name same-bytes file 203ms
+     × B08 CLI process cannot redirect a missing dirty document to a new same-name same-bytes file 254ms
+     ↓ L06 observes another process changing the file immediately after an acknowledged local save
+     ↓ L07 rescans changes made after the initial list/read but before native subscription starts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 ordinary writer cannot redirect a missing dirty document to a new same-name same-bytes file
+ FAIL  src/renderer/features/files/external-tree-refresh-acceptance.test.tsx > External filesystem refresh acceptance > B08 CLI process cannot redirect a missing dirty document to a new same-name same-bytes file
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx:108:21
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 8 skipped (10)
+   Start at  13:46:16
+   Duration  1.63s (transform 447ms, setup 0ms, import 820ms, tests 458ms, environment 278ms)
+
+JSON report written to /private/tmp/willyou-missing-replacement-red-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

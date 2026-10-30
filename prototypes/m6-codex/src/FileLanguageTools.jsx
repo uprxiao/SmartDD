@@ -1,0 +1,15 @@
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, X } from 'lucide-react';
+export const LANGUAGE_ACTIONS = { definition: '定义', typeDefinition: '类型定义', implementation: '实现', references: '引用' };
+/** Approved semantic navigation states; all data here remains synthetic. */
+export default function FileLanguageTools({ command, onCommand, path, onOpen }) {
+  const [capability, setCapability] = useState('full'), [count, setCount] = useState(101), [visibleCount, setVisibleCount] = useState(100), [history, setHistory] = useState([]), [at, setAt] = useState(-1);
+  const last = useRef(path);
+  useEffect(() => { if (last.current !== path) { last.current = path; onCommand(null); } }, [path]);
+  useEffect(() => setVisibleCount(100), [command, count]);
+  if (!command) return null;
+  const available = capability === 'full' || capability === 'definition' && command === 'definition';
+  const jump = (target, remember = true) => { if (remember && target !== path) { const items = at < 0 ? [path] : history.slice(0, at + 1); if(items.at(-1)!==path) items.push(path); items.push(target); setHistory(items); setAt(items.length - 1); } onOpen(target); };
+  if (command === 'settings') return <div className="fw-symbol-panel" role="dialog" aria-label="语言服务配置原型"><strong>本机语言服务 · 原型</strong><label>能力状态（模拟）<select aria-label="语言服务能力示例" value={capability} onChange={e=>setCapability(e.target.value)}><option value="full">全部导航与悬浮类型</option><option value="definition">仅定义</option><option value="unconfigured">未配置</option><option value="disabled">已关闭</option><option value="failed">连接失败</option></select></label><label>结果数量<select aria-label="语义结果数量" value={count} onChange={e=>setCount(Number(e.target.value))}>{[0,1,101].map(n=><option key={n}>{n}</option>)}</select></label><p>正式 App 从本机已有或明确登记的服务读取能力和版本，不自动安装。此原型不会执行语言服务器。</p><button onClick={()=>onCommand(null)}>完成</button></div>;
+  return <div className="fw-symbol-panel" role="region" aria-label="语义导航结果"><strong>{LANGUAGE_ACTIONS[command]} · workspace</strong><span><button aria-label="语义导航后退" disabled={at <= 0} onClick={()=>{setAt(at-1);jump(history[at-1],false)}}><ArrowLeft size={14}/></button><button aria-label="语义导航前进" disabled={at<0||at>=history.length-1} onClick={()=>{setAt(at+1);jump(history[at+1],false)}}><ArrowRight size={14}/></button></span>{!available ? <p role={capability==='failed'?'alert':'status'}>{capability==='failed'?'语言服务连接失败，请重试':capability==='disabled'?'语言服务已关闭':capability==='unconfigured'?'尚未配置本机语言服务':'此语言服务不支持当前操作'}<button onClick={()=>onCommand('settings')}>语言服务设置…</button></p> : <>{count===0?<p role="status">未找到{LANGUAGE_ACTIONS[command]}</p>:Array.from({length:Math.min(visibleCount,count)},(_,i)=><button key={i} onClick={()=>jump(i%2?'src/renderer/App.tsx':'src/main.ts')}>{i%2?'src/renderer/App.tsx':'src/main.ts'}:{i+1}:5</button>)}{visibleCount<count&&<button onClick={()=>setVisibleCount(visibleCount+100)}>加载更多</button>}</>}<small>合成位置示例；真实 App 需握手能力。UTF-16 行列显示从 1 开始。</small><button aria-label="关闭符号结果" onClick={()=>onCommand(null)}><X size={14}/></button></div>;
+}

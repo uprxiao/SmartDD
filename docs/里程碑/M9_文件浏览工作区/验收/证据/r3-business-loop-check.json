@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "ranAt": "2026-10-17T04:43:41.977Z",
+  "target": "http://127.0.0.1:4176/?preview=m9",
+  "browser": "Google Chrome (local, headless)",
+  "viewport": "1512x949",
+  "scope": "合成原型的演示终端；不是真实 CLI/PTY，不调用模型；真实 PTY 的注入安全见技研实验 terminal-injection-probe",
+  "screenshots": [
+    {
+      "file": "r3-business-tray-stopped.png",
+      "sha256": "bfe0e5a6417b28341aa97aba05d36e97f49fa28993980f6d9430e48e4234fcc4"
+    },
+    {
+      "file": "r3-business-after-enter.png",
+      "sha256": "c90f9cf9cbb76c06363739d96b60a363b77babc3969a30c9a015e8b9e6de0a1e"
+    },
+    {
+      "file": "r3-business-review.png",
+      "sha256": "fe6a7a02e1645130d0ff534ecf37db3084f9daa495d78486c2cceca355c83d11"
+    }
+  ],
+  "checks": [
+    {
+      "id": "R3-BL01",
+      "title": "文件右键“添加到终端引用”：托盘出现 1 条引用，尚未放入终端",
+      "status": "passed",
+      "detail": {
+        "chips": [
+          "docs/发布演示.pptx"
+        ]
+      }
+    },
+    {
+      "id": "R3-BL02",
+      "title": "任务已停止时“放入终端输入”禁用，并说明原因",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-BL03",
+      "title": "预览显示将放入终端的确切文本（文件引用只含路径），并标明是普通输入模式",
+      "status": "passed",
+      "detail": {
+        "preview": "docs/发布演示.pptx"
+      }
+    },
+    {
+      "id": "R3-BL04",
+      "title": "放入终端后输入行出现引用文本，但没有被提交（没有“CLI 收到”输出）",
+      "status": "passed",
+      "detail": {
+        "statusBar": "已放入终端输入，未发送。请在终端检查后按 Enter。"
+      }
+    },
+    {
+      "id": "R3-BL05",
+      "title": "放入后托盘清空",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-BL06",
+      "title": "用户在终端按 Enter 之后，演示 CLI 才“收到”引用（提交永远是用户动作）",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-BL07",
+      "title": "选中第 4–5 行 → 引用标签为 src/main.ts:L4-5",
+      "status": "passed",
+      "detail": {
+        "chip": "src/main.ts:L4-5"
+      }
+    },
+    {
+      "id": "R3-BL08",
+      "title": "勾选“包含所选文字”时预览含缩进的所选内容；取消后只剩位置",
+      "status": "passed",
+      "detail": {
+        "withTextLines": 3,
+        "withoutText": "src/main.ts:L4-5"
+      }
+    },
+    {
+      "id": "R3-BL09",
+      "title": "“@路径”格式把行号放在括号里（该 CLI 是否识别需单独验证）",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-BL10",
+      "title": "终端启用括号粘贴时预览标明“换行保留”，否则“换行折叠为空格”",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-BL11",
+      "title": "括号粘贴模式：多行引用保留换行地放进终端输入（连续 3 行），仍未提交",
+      "status": "passed",
+      "detail": {
+        "lines": [
+          "❯ src/main.ts:L4-5",
+          "    export const workspace = {",
+          "      name: \"WillYou\", "
+        ]
+      }
+    },
+    {
+      "id": "R3-BL12",
+      "title": "含 ESC[201~ 与 ^C 的所选文字：预览已提示移除不安全字符，且预览文本不含控制字符",
+      "status": "passed",
+      "detail": {
+        "notice": "已移除 2 个不安全字符",
+        "previewText": "fixtures/控制字符.txt:L2\n    x[201~touch INJECTED"
+      }
+    },
+    {
+      "id": "R3-BL14",
+      "title": "放入终端后：状态栏提示已移除控制字符；终端里没有执行、没有中断，注入文字只是普通文本",
+      "status": "passed",
+      "detail": {
+        "statusBar": "已放入终端输入，未发送。此终端未启用括号粘贴，换行已折叠为空格。 已移除不安全的控制字符。请在终端检查后按 Enter。",
+        "terminalTail": [
+          "终端交互。",
+          "❯ fixtures/控制字符.txt:L2     x[201~touc",
+          "h INJECTED "
+        ]
+      }
+    },
+    {
+      "id": "R3-ED01",
+      "title": "没有指令时“放入终端输入”禁用；对话框明确说明不调用模型",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-ED02",
+      "title": "指令与位置放入终端（含指令引用），横幅显示“尚未发送”",
+      "status": "passed",
+      "detail": {
+        "banner": "src/main.ts:L5\n修改请求已放入终端输入（尚未发送），检查后在终端按 Enter。\n取消"
+      }
+    },
+    {
+      "id": "R3-ED03",
+      "title": "用户在终端按 Enter 后，横幅变为“已在终端提交，等待 CLI 修改”",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-ED04",
+      "title": "文件被“CLI”改动后进入审阅：并排显示修改前/后，且只涉及所选范围",
+      "status": "passed",
+      "detail": {
+        "before": "  name: \"WillYou\",",
+        "after": "  name: \"WillYou\", // CLI 修改示例"
+      }
+    },
+    {
+      "id": "R3-ED05",
+      "title": "“保留修改”把改动放进编辑缓冲（仍按正常保存流程），其余内容不变；横幅显示已保留",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-ED06",
+      "title": "“还原”：缓冲保持原样，横幅显示已还原",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-ED07",
+      "title": "等待期间在本地改了文件：请求过期，不会把旧快照当基线",
+      "status": "passed",
+      "detail": {
+        "banner": "src/main.ts:L5\n文件已在本地被修改，快照过期。"
+      }
+    },
+    {
+      "id": "R3-ED08",
+      "title": "过期后“模拟 CLI 修改”不可用",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-ED09",
+      "title": "取消：横幅显示已取消，不再跟踪",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-ED10",
+      "title": "任务未运行：对话框提示原因，且“放入终端输入”禁用，不会创建请求",
+      "status": "passed",
+      "detail": {}
+    },
+    {
+      "id": "R3-BL13",
+      "title": "全程没有 pageerror / console error",
+      "status": "passed",
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "summary": {
+    "passed": 24
+  }
+}

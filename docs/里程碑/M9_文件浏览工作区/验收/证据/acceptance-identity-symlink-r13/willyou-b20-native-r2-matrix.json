@@ -1,0 +1,110 @@
+{
+  "caseId": "M9-T-B20",
+  "completedAt": "2026-10-18T06:08:15.042Z",
+  "layer": "I: real FileService, roots, recovery and packaged native broker; no GUI claim",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r13-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "rows": [
+    {
+      "branch": "contained directory/file aliases",
+      "children": [
+        {
+          "size": 25,
+          "identity": {
+            "inode": "45192277",
+            "device": "16777232"
+          },
+          "kind": "file",
+          "symbolicLink": false,
+          "name": "child.txt",
+          "relativePath": "inner/child.txt"
+        }
+      ],
+      "documentKeys": [
+        "local:16777232:45192277",
+        "local:16777232:45192277",
+        "local:16777232:45192277"
+      ],
+      "before": {
+        "hash": "4a1f06c2ee8dd5605fa56c3997484b970497dd796bd21cbd160a65eedacfb3db",
+        "inode": "45192277",
+        "size": "25",
+        "mtimeNs": "1792303694938922662",
+        "ctimeNs": "1792303694938922662"
+      },
+      "after": {
+        "hash": "4a1f06c2ee8dd5605fa56c3997484b970497dd796bd21cbd160a65eedacfb3db",
+        "inode": "45192277",
+        "size": "25",
+        "mtimeNs": "1792303694938922662",
+        "ctimeNs": "1792303694938922662"
+      }
+    },
+    {
+      "branch": "outside directory/file and cycles",
+      "rejected": [
+        {
+          "reason": "Too many symbolic links",
+          "symbolicLink": true,
+          "size": 6,
+          "identity": {
+            "inode": "45192298",
+            "device": "16777232"
+          },
+          "kind": "unavailable",
+          "name": "loop-a",
+          "relativePath": "loop-a"
+        },
+        {
+          "reason": "Too many symbolic links",
+          "symbolicLink": true,
+          "size": 6,
+          "identity": {
+            "inode": "45192299",
+            "device": "16777232"
+          },
+          "kind": "unavailable",
+          "name": "loop-b",
+          "relativePath": "loop-b"
+        },
+        {
+          "reason": "Path escapes its root",
+          "symbolicLink": true,
+          "size": 10,
+          "identity": {
+            "inode": "45192296",
+            "device": "16777232"
+          },
+          "kind": "unavailable",
+          "name": "outside-dir",
+          "relativePath": "outside-dir"
+        },
+        {
+          "reason": "Path escapes its root",
+          "symbolicLink": true,
+          "size": 21,
+          "identity": {
+            "inode": "45192297",
+            "device": "16777232"
+          },
+          "kind": "unavailable",
+          "name": "outside-file.txt",
+          "relativePath": "outside-file.txt"
+        }
+      ],
+      "before": {
+        "hash": "fafe349898414cdb74e97d6d730db2c32efa84661a61532b0729ba553b53ed98",
+        "inode": "45192293",
+        "size": "39",
+        "mtimeNs": "1792303694986885898",
+        "ctimeNs": "1792303694986885898"
+      },
+      "after": {
+        "hash": "fafe349898414cdb74e97d6d730db2c32efa84661a61532b0729ba553b53ed98",
+        "inode": "45192293",
+        "size": "39",
+        "mtimeNs": "1792303694986885898",
+        "ctimeNs": "1792303694986885898"
+      }
+    }
+  ]
+}

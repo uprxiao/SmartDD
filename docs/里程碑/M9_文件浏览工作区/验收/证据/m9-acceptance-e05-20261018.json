@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "caseId": "M9-T-E05",
+  "requirements": [
+    "M9-R05.6"
+  ],
+  "status": "passed",
+  "formalCasePassed": true,
+  "recordedAt": "2026-10-18T02:16:24.172614+00:00",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "caseDefinition": {
+    "steps": "Use Open for supported file; use approved fallback for unknown file.",
+    "expected": "Main process permits only allowed system/target open; pass paths as arguments; accurate success/failure feedback; no silent preference change.",
+    "requiredLayers": [
+      "P",
+      "I",
+      "A"
+    ]
+  },
+  "sourceBaseline": {
+    "archive": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-e05/tested-sources.tar.gz",
+    "sha256": "6e8870ff75231f64c521233d277c148849395bd85e0867ecf72ba6134f5e2fdb",
+    "files": {
+      "src/main/core/files/actions.ts": "e3a4cd8adcab11f4c95bcead9e35f9c84ae7a19a70d119fb4be4aef00d8013aa",
+      "src/main/core/files/actions.test.ts": "3674c598926d871e5bc7460e12b26557aed9877f9f9ff6a6986c4512cfaca221",
+      "src/renderer/features/files/file-actions.tsx": "09a2855d986b64048cd0ee4be862711235d97c0b88e11214817884e8c3224c19",
+      "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+      "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+      "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+      "native/files/desktop-actions.inc.mm": "290e3021c5bf6b4f73e4e2f6f34ee41442e7d520c0383c0f9e125672cef5509d",
+      "prototypes/m6-codex/src/FileWorkspace.jsx": "8af90d5d4f116b13ecafd1f3688cb3492b30930792613d3c84b5e52bc85e340a",
+      "prototypes/m6-codex/src/file-actions-model.mjs": "c78672fe8524965b8041b0f7d7b71dcf416011ae8424b6e3b903d709d2e52be6",
+      "prototypes/m6-codex/src/file-workspace-model.mjs": "146fe987fa62afe6df8a8fdb00214276197bbafafec3350c5fae1d34298a9fab"
+    },
+    "r2Matches": {
+      "src/main/core/files/actions.ts": true,
+      "src/main/core/files/actions.test.ts": true,
+      "src/renderer/features/files/file-actions.tsx": true,
+      "src/main/core/files/file-service.ts": true,
+      "src/main/core/files/roots.ts": true,
+      "src/main/core/files/native-broker.ts": true,
+      "native/files/desktop-actions.inc.mm": true
+    },
+    "boundary": "All listed production files and actions test still match r2; prototype is its current separately saved snapshot. Unrelated workspace/controller later changes are not described as r2 source."
+  },
+  "layers": {
+    "P": {
+      "status": "passed",
+      "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-e05/prototype-observations.json",
+      "sha256": "36f566b1080963f736a8fb352ec3688b493de66629a0efbcdbf63f999753b562",
+      "newBranches": [
+        "supported default open",
+        "unknown-format approved fallback",
+        "unchecked remember preserves preferred target"
+      ],
+      "reusedFailureBranch": {
+        "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-prototype-actions-20261018.json",
+        "sha256": "58a7d03691a8a08017ad03a03af2dc687832d237569804b87d6beca5afcb9ec6",
+        "observation": "observations.M9-T-E06.steps: deleted scenario reports 文件不存在，原标签和内容已保留。 with no remembered preference change. Reused existing tested behavior, not a new browser rerun."
+      }
+    },
+    "I": {
+      "status": "passed",
+      "source": "Reused actual completed actions.test.ts run; independently rechecked raw report and test/production hashes. No duplicate execution.",
+      "command": "SMARTDD_M9_FILE_BROKER='/private/tmp/willyou-m9-chart-resize-r1-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files' pnpm test src/main/core/files/actions.test.ts --reporter=json --outputFile=/private/tmp/willyou-e07-layer.json",
+      "report": "docs/里程碑/M9_文件浏览工作区/验收/证据/acceptance-e05/actions-shared-tests.json",
+      "reportSha256": "31ad8f0acac63f7b5268c4d2854e23bb095ce28805ee5e0f392584a6ddafebbf",
+      "priorTestBatch": {
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      "relevantChecks": [
+        "Opaque owner-bound applications: rejects another owner and unissued app ID; dispatches discovered application object and exact relativePath to native boundary.",
+        "Default/non-remembered open does not update preferences.",
+        "Native failure propagates; remember true still cannot update preference after failure; closed/revoked source rejected."
+      ],
+      "nativeArgumentAudit": {
+        "file": "native/files/desktop-actions.inc.mm",
+        "lines": "21-76",
+        "actual": "Validated root/relative path becomes a file-reference NSURL; discovered app identity rechecked; NSWorkspace openURLs:@[reference] withApplicationAtURL:appURL, no shell command construction; timeout/error precede opened receipt.",
+        "boundary": "Static audit supplements the existing native-boundary unit checks; real default/fallback dispatch is exercised by the App A below."
+      }
+    },
+    "A": {
+      "status": "passed",
+      "evidence": "docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-e05-app-20261018.json",
+      "sha256": "86b2c573d0577dce26f235322c42857c384dd63f02475b89ea6bacfd089f74ff",
+      "package": "/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app",
+      "asarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6",
+      "scope": "Root actual packaged WillYou supported Chinese+emoji path and binary fallback both open correct TextEdit windows; file hash/mtime preserved and fileOpener remains TextEdit."
+    }
+  },
+  "limits": [
+    "Only macOS arm64, specified r2 package and independently recorded prototype states are accepted.",
+    "9 shared action tests are supporting checks, not nine formal cases; only relevant assertions are reused here.",
+    "No new model/native process or production changes in this E05 evidence subtask; no formal index/README changes.",
+    "No screenshot files or raw AX snapshots were archived; P/A text is explicitly attributed action observation."
+  ]
+}

@@ -1,0 +1,49 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/external-tree-refresh-acceptance.test.tsx src/renderer/features/files/markdown-refresh-acceptance.test.tsx src/main/core/files/watch-ownership-acceptance.test.ts src/renderer/features/files/tree-failure-native-acceptance.test.tsx --reporter=default --reporter=json --outputFile=/private/tmp/willyou-r11-files-tests.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/renderer/features/files/external-tree-refresh-acceptance.test.tsx (18 tests) 3880ms
+     ✓ L06 observes another process changing the file immediately after an acknowledged local save  442ms
+ ✓ src/renderer/features/files/tree-failure-native-acceptance.test.tsx (6 tests) 4935ms
+     ✓ B13 lists all 10000 files and keeps rendered rows bounded at the first, middle and last position  2176ms
+     ✓ B13 lists all 10001 files and keeps rendered rows bounded at the first, middle and last position  2051ms
+ ❯ src/main/core/files/watch-ownership-acceptance.test.ts (3 tests | 1 failed) 6704ms
+     × L03: the replacement survives late callback error and receives a real filesystem event 6120ms
+     ✓ L03: the replacement survives late subscribe rejection and receives a real filesystem event 213ms
+     ✓ L04: real native changes stay with the authenticated IPC owner, and forged IDs cannot read/reconfigure/stop another watch  369ms
+ ✓ src/renderer/features/files/markdown-refresh-acceptance.test.tsx (8 tests) 7374ms
+     ✓ 'ordinary writer' / 'native watch' updates source and real rich widgets twice without writeback  1322ms
+     ✓ 'ordinary writer' / 'reactivation' updates source and real rich widgets twice without writeback  898ms
+     ✓ 'ordinary writer' / 'explicit refresh' updates source and real rich widgets twice without writeback  940ms
+     ✓ 'CLI process' / 'native watch' updates source and real rich widgets twice without writeback  1232ms
+     ✓ 'CLI process' / 'reactivation' updates source and real rich widgets twice without writeback  973ms
+     ✓ 'CLI process' / 'explicit refresh' updates source and real rich widgets twice without writeback  951ms
+     ✓ reports actual missing-file read error and recovers fresh Markdown without writes  475ms
+     ✓ only a later actual local edit plus differing disk bytes becomes an ordinary conflict  329ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/files/watch-ownership-acceptance.test.ts > M9 L03/L04 production watch owner boundary with packaged native resources > L03: the replacement survives late callback error and receives a real filesystem event
+Error: Expected actual native event/snapshot did not arrive
+ ❯ until src/main/core/files/watch-ownership-acceptance.test.ts:29:60
+     27| const until = async (condition: () => boolean) => {
+     28|   const deadline = Date.now() + 6000;
+     29|   while (!condition()) { if (Date.now() >= deadline) throw new Error('…
+       |                                                            ^
+     30| };
+     31| let fixture: string, broker: NativeFileBroker, service: FileService;
+ ❯ src/main/core/files/watch-ownership-acceptance.test.ts:88:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 34 passed (35)
+   Start at  13:53:14
+   Duration  8.63s (transform 1.69s, setup 0ms, import 3.17s, tests 22.89s, environment 990ms)
+
+JSON report written to /private/tmp/willyou-r11-files-tests.json
+ ELIFECYCLE  Test failed. See above for more details.

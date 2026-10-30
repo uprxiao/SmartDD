@@ -1,0 +1,385 @@
+{
+  "ranAt": "2026-10-17T07:41:26.896Z",
+  "scope": "isolated synthetic Chromium parser feasibility; actual current Markdown parser; not complete editor or packaged App",
+  "browser": "155.0.8059.80",
+  "budget": {
+    "revision": "R3.4",
+    "scope": "isolated actual Markdown parser in Chromium Worker, not production editor acceptance",
+    "fixtureBytes": [
+      262144,
+      2097152,
+      10485760
+    ],
+    "workerReadyMsMax": 5000,
+    "parseMsMax": 15000,
+    "mainLongTaskMsMax": 100,
+    "cancelMsMax": 500,
+    "timeoutInjectedMs": 100,
+    "timeoutReleaseMsMax": 1000,
+    "renderWindowBlocksMax": 60,
+    "postGcMainHeapGrowthBytesMax": 31457280
+  },
+  "fixtures": [
+    {
+      "bytes": 262144,
+      "utf16": 260414,
+      "sha256": "857b9e172f206e2b2e9b2eb8ccaeda5a0ab912d6da70b9421707c4cd636b511f"
+    },
+    {
+      "bytes": 2097152,
+      "utf16": 2083734,
+      "sha256": "c0bc1763181ba6492431124eae206bf8206a60d1c983dd69783facfb6d7450d1"
+    },
+    {
+      "bytes": 10485760,
+      "utf16": 10418906,
+      "sha256": "f54a60b8e21e231396c60f2ab0e6c150012bad114e58b5002a90afa02159e68e"
+    }
+  ],
+  "checks": [
+    {
+      "id": "MW01",
+      "title": "real native module Worker loads current parser and fixed fixtures",
+      "status": "passed",
+      "detail": {
+        "readyMs": 82.60000002384186,
+        "fixtures": [
+          {
+            "bytes": 262144,
+            "utf16": 260414,
+            "sha256": "857b9e172f206e2b2e9b2eb8ccaeda5a0ab912d6da70b9421707c4cd636b511f"
+          },
+          {
+            "bytes": 2097152,
+            "utf16": 2083734,
+            "sha256": "c0bc1763181ba6492431124eae206bf8206a60d1c983dd69783facfb6d7450d1"
+          },
+          {
+            "bytes": 10485760,
+            "utf16": 10418906,
+            "sha256": "f54a60b8e21e231396c60f2ab0e6c150012bad114e58b5002a90afa02159e68e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "MW02",
+      "title": "Worker and synchronous parser preserve exact CRLF/Unicode ranges and viewport output",
+      "status": "passed",
+      "detail": {
+        "sameIndex": true,
+        "sameSource": true,
+        "sameWindow": true,
+        "workerBlocks": 18
+      }
+    },
+    {
+      "id": "MW03",
+      "title": "up to 10MiB parses within frozen budget without blocking main thread",
+      "status": "passed",
+      "detail": {
+        "measurements": [
+          {
+            "bytes": 262144,
+            "status": "completed",
+            "parseMs": 10.600000023841858,
+            "elapsedMs": 11,
+            "blocks": 574,
+            "indexHash": "6ff40098637c526f4da0e472c3e12e5ca3c7fd92920059b010e1cf49e91942e4",
+            "indexBytes": 9184,
+            "mainLongTasks": [],
+            "ticksDuringParse": 7
+          },
+          {
+            "bytes": 2097152,
+            "status": "completed",
+            "parseMs": 50.10000002384186,
+            "elapsedMs": 51.799999952316284,
+            "blocks": 4470,
+            "indexHash": "39204cb6e87c0e4c720f3f97cee370ef61e1588ce6df7214947d746021b942e4",
+            "indexBytes": 71520,
+            "mainLongTasks": [],
+            "ticksDuringParse": 10
+          },
+          {
+            "bytes": 10485760,
+            "status": "completed",
+            "parseMs": 194.30000001192093,
+            "elapsedMs": 201.20000004768372,
+            "blocks": 22282,
+            "indexHash": "a7f822f69c2ff0f4950bd79a88a6a214a3d2b52710cd45594ee4deda0bddb71f",
+            "indexBytes": 356512,
+            "mainLongTasks": [],
+            "ticksDuringParse": 19
+          }
+        ],
+        "budget": {
+          "revision": "R3.4",
+          "scope": "isolated actual Markdown parser in Chromium Worker, not production editor acceptance",
+          "fixtureBytes": [
+            262144,
+            2097152,
+            10485760
+          ],
+          "workerReadyMsMax": 5000,
+          "parseMsMax": 15000,
+          "mainLongTaskMsMax": 100,
+          "cancelMsMax": 500,
+          "timeoutInjectedMs": 100,
+          "timeoutReleaseMsMax": 1000,
+          "renderWindowBlocksMax": 60,
+          "postGcMainHeapGrowthBytesMax": 31457280
+        }
+      }
+    },
+    {
+      "id": "MW04",
+      "title": "bounded viewport materializes at most 60 real rendered blocks",
+      "status": "passed",
+      "detail": {
+        "nodes": 60,
+        "mountMs": 4,
+        "longTasks": []
+      }
+    },
+    {
+      "id": "MW05-2097152",
+      "title": "synchronous baseline is semantically identical; blocking cost recorded",
+      "status": "passed",
+      "detail": {
+        "bytes": 2097152,
+        "parseMs": 62.10000002384186,
+        "indexHash": "39204cb6e87c0e4c720f3f97cee370ef61e1588ce6df7214947d746021b942e4",
+        "mainLongTasks": [
+          66
+        ]
+      }
+    },
+    {
+      "id": "MW05-10485760",
+      "title": "synchronous baseline is semantically identical; blocking cost recorded",
+      "status": "passed",
+      "detail": {
+        "bytes": 10485760,
+        "parseMs": 177.69999998807907,
+        "indexHash": "a7f822f69c2ff0f4950bd79a88a6a214a3d2b52710cd45594ee4deda0bddb71f",
+        "mainLongTasks": [
+          196
+        ]
+      }
+    },
+    {
+      "id": "MW06",
+      "title": "cancel terminates a real in-flight synchronous parser Worker",
+      "status": "passed",
+      "detail": {
+        "status": "cancelled",
+        "ms": 0,
+        "snapshot": {
+          "created": 1,
+          "disposed": 1,
+          "ignored": 0,
+          "started": 5,
+          "active": 0,
+          "pending": false,
+          "indexBytes": 0
+        }
+      }
+    },
+    {
+      "id": "MW07",
+      "title": "deadline terminates in-flight Worker and releases host index",
+      "status": "passed",
+      "detail": {
+        "status": "timeout",
+        "elapsedMs": 108,
+        "snapshot": {
+          "created": 2,
+          "disposed": 2,
+          "ignored": 0,
+          "started": 6,
+          "active": 0,
+          "pending": false,
+          "indexBytes": 0
+        }
+      }
+    },
+    {
+      "id": "MW08",
+      "title": "actual delayed old Worker reply is ignored after revision changes",
+      "status": "passed",
+      "detail": {
+        "previous": "superseded",
+        "next": "completed",
+        "ignored": 1,
+        "window": [
+          {
+            "from": 0,
+            "to": 15,
+            "type": "heading",
+            "html": "<h1><span data-md-source-from=\"2\" data-md-source-to=\"14\" data-md-source-mode=\"linear\">New revision</span></h1>\n"
+          },
+          {
+            "from": 15,
+            "to": 16,
+            "type": "blank",
+            "source": "\n"
+          },
+          {
+            "from": 16,
+            "to": 23,
+            "type": "paragraph",
+            "html": "<p><span data-md-source-from=\"16\" data-md-source-to=\"23\" data-md-source-mode=\"linear\">changed</span></p>\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "MW09",
+      "title": "unmount during parse removes Worker, pending job and viewport nodes",
+      "status": "passed",
+      "detail": {
+        "status": "cancelled",
+        "ms": 0.19999998807907104,
+        "children": 0,
+        "snapshot": {
+          "created": 3,
+          "disposed": 3,
+          "ignored": 1,
+          "started": 9,
+          "active": 0,
+          "pending": false,
+          "indexBytes": 0
+        }
+      }
+    },
+    {
+      "id": "MW10",
+      "title": "unmount during module bootstrap also settles request and releases Worker",
+      "status": "passed",
+      "detail": {
+        "status": "cancelled",
+        "snapshot": {
+          "created": 4,
+          "disposed": 4,
+          "ignored": 1,
+          "started": 9,
+          "active": 0,
+          "pending": false,
+          "indexBytes": 0
+        }
+      }
+    },
+    {
+      "id": "MW11",
+      "title": "all owned workers close, no external requests and bounded main page heap",
+      "status": "passed",
+      "detail": {
+        "workers": [
+          {
+            "url": "http://127.0.0.1:4176/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+            "closed": true
+          },
+          {
+            "url": "http://127.0.0.1:4176/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+            "closed": true
+          },
+          {
+            "url": "http://127.0.0.1:4176/tests/r34-markdown-worker/worker.mjs?worker_file&type=module",
+            "closed": true
+          }
+        ],
+        "external": [],
+        "errors": [],
+        "baselineHeap": 4314620,
+        "finalHeap": 25956268,
+        "delta": 21641648
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "bytes": 262144,
+      "status": "completed",
+      "parseMs": 10.600000023841858,
+      "elapsedMs": 11,
+      "blocks": 574,
+      "indexHash": "6ff40098637c526f4da0e472c3e12e5ca3c7fd92920059b010e1cf49e91942e4",
+      "indexBytes": 9184,
+      "mainLongTasks": [],
+      "ticksDuringParse": 7
+    },
+    {
+      "bytes": 2097152,
+      "status": "completed",
+      "parseMs": 50.10000002384186,
+      "elapsedMs": 51.799999952316284,
+      "blocks": 4470,
+      "indexHash": "39204cb6e87c0e4c720f3f97cee370ef61e1588ce6df7214947d746021b942e4",
+      "indexBytes": 71520,
+      "mainLongTasks": [],
+      "ticksDuringParse": 10
+    },
+    {
+      "bytes": 10485760,
+      "status": "completed",
+      "parseMs": 194.30000001192093,
+      "elapsedMs": 201.20000004768372,
+      "blocks": 22282,
+      "indexHash": "a7f822f69c2ff0f4950bd79a88a6a214a3d2b52710cd45594ee4deda0bddb71f",
+      "indexBytes": 356512,
+      "mainLongTasks": [],
+      "ticksDuringParse": 19
+    }
+  ],
+  "sources": [
+    {
+      "path": "prototypes/m6-codex/src/file-markdown-model.mjs",
+      "bytes": 13351,
+      "sha256": "146dc474946d849c4904912ea0080396ab393d3e7a86c83724f65d36f1cfed84"
+    },
+    {
+      "path": "prototypes/m6-codex/src/file-markdown-source.mjs",
+      "bytes": 7537,
+      "sha256": "0f613d6d986d0e11a02a0759c2877cc8292b6e126d8052c9a6c98281df3f3f1f"
+    },
+    {
+      "path": "prototypes/m6-codex/src/file-highlight.mjs",
+      "bytes": 1576,
+      "sha256": "df7e982e76d509fa49e2b44005cb67e5683ab0ddd9df8325cb5afa55e7825420"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/r34-markdown-worker/analyze.mjs",
+      "bytes": 1458,
+      "sha256": "df70be7843d00b48971a92e6f5cdefdd08f25d3d1a6ce0c0fd96aa6b081a8d1c"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/r34-markdown-worker/budget.json",
+      "bytes": 359,
+      "sha256": "aa3b70f84eacbfe28e42f172eca240b04e80b5fda10dfa64d3606514bf8828a7"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/r34-markdown-worker/fixtures.mjs",
+      "bytes": 944,
+      "sha256": "22b6d24118d49c515675b5cdf760b34fe979097ef1f1d5dff9d97d5d061f7a84"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/r34-markdown-worker/harness.html",
+      "bytes": 253,
+      "sha256": "57c88af4dc46dc06be36f2903a1d10db23fad0b960b193aaadeaf5a436aba596"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/r34-markdown-worker/host.mjs",
+      "bytes": 3821,
+      "sha256": "e538e5ea473e7f634211b9316b41b0f1743cd778129d3ac4942c745e47fb5b8b"
+    },
+    {
+      "path": "prototypes/m6-codex/tests/r34-markdown-worker/worker.mjs",
+      "bytes": 1067,
+      "sha256": "450ce376882f3c21ac427e7e3449127999420e3c651f9296ab7ea92d38190c62"
+    }
+  ],
+  "summary": {
+    "passed": 12
+  }
+}

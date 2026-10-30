@@ -1,0 +1,141 @@
+{
+  "kind": "packaged-app-media-validation",
+  "recordedAt": "2026-10-17T22:09:21.878463+08:00",
+  "branch": "feature/0.0.1",
+  "baseline": "89de9af4b631abdef5673ce8949fb02a32f6fcad + uncommitted M9 work",
+  "requirements": "R3.4/R3.4-P1 R06.12/R05.6/R08/R09",
+  "environment": "macOS 26.6.1 arm64, Electron 42.11.14, App 0.0.5",
+  "builds": [
+    {
+      "id": "media-r1",
+      "path": "/private/tmp/willyou-m9-media-build/mac-arm64/WillYou.app",
+      "asarSHA256": "4f5f81ad9a1ad66e1060d158076b7802d5c4dfdefc64834de470e2e0efe99ab6"
+    },
+    {
+      "id": "media-r2",
+      "path": "/private/tmp/willyou-m9-media-r2-build/mac-arm64/WillYou.app",
+      "asarSHA256": "e5cb0b1aa28d704522d918820e8e0fc765a058766c86d52c35ac6ea128c5c95d"
+    }
+  ],
+  "fixture": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m9-ui-4nPmew/project/media-cases",
+  "fixtureManifest": {
+    "synthetic": true,
+    "files": {
+      "empty.wav": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "boundary-134217728.mp4": {
+        "size": 134217728,
+        "sha256": "df3ea17d2f7651638e8d200952061520af3467fa0070a5fb774a6d24df6e2d1a"
+      },
+      "boundary-134217729.mp4": {
+        "size": 134217729,
+        "sha256": "df891436edf61e8181ab6c09a73d00e046294513d59b36fd9355401548cda0cf"
+      },
+      "broken.mp4": {
+        "size": 23,
+        "sha256": "003d20e92f04c7ceae475fed7c3c6b5f65b408282d241ea62e99ca47d1c1f6b5"
+      },
+      "tone 中文.wav": {
+        "size": 576044,
+        "sha256": "a46aab105a92611747a9fc8c773ccba4ab72ddfe6d85cf7a8efca935994ef8b1"
+      },
+      "boundary-134217727.mp4": {
+        "size": 134217727,
+        "sha256": "df0d60afd6badd9fcb34b49e3a74293fb15c55d43b1b3f675b4f7c8126fbcc75"
+      },
+      "colors.mp4": {
+        "size": 579545,
+        "sha256": "a2aed87b343d58bcd9cb34a0638d1a8f89feda4f61b6f6f69c70a94e53367d46"
+      }
+    }
+  },
+  "postChecks": "/private/tmp/willyou-m9-media-fixture-check.json; all source hashes unchanged",
+  "checks": [
+    {
+      "id": "M9-T-T18",
+      "build": "media-r2",
+      "state": "passed",
+      "actual": "media-r2/macOS arm64：真实12秒PCM WAV自定义卡片，播放/暂停同步，Home→Right进度为0.1秒，自然结束为0:12/0:12并恢复播放按钮；无可见native controls及音量/速度/循环入口。组件测试另核对hidden audio、controls=false与结束事件；源文件哈希不变。"
+    },
+    {
+      "id": "M9-T-T22",
+      "build": "media-r2",
+      "state": "passed",
+      "actual": "media-r2/macOS arm64同包两次启动：正常protocol和隔离binary退路均加载134217727及134217728字节有效H.264/AAC MP4，等于上限样本实际播放；134217729字节明确提示超过128 MiB。native独立限额、main owner/Range、binary hash/Blob测试通过；ffprobe确认三者均为12秒有效MP4，全部源文件哈希不变。远程参数仍为后续。"
+    },
+    {
+      "id": "MEDIA-UI-03",
+      "state": "passed-with-limits",
+      "actual": "真实视频Space开始、Enter暂停；菜单列出八档速度并实选2×/0.25×。音量1→静音→Home/Right为0.01且解除静音；系统全屏进入/Escape退出、PiP进入/退出。未完成全部速率播放、系统拒绝和终端回归矩阵，不整条计通过。"
+    },
+    {
+      "id": "MEDIA-UI-04",
+      "build": "media-r2",
+      "state": "passed-with-limits",
+      "actual": "真实视频播放中拖进度后恢复播放，暂停时拖动保持暂停；工具栏持续可见。pointercancel/lostcapture模型有测试，完整组件/真实系统异常路径仍待核对。"
+    },
+    {
+      "id": "MEDIA-UI-05",
+      "state": "passed-with-limits",
+      "actual": "broken.mp4显示格式/编码不受支持，play/seek禁用、时长0:00且有重读入口；不是空白成功。其它codec/权限/时长异常矩阵未全部执行。"
+    },
+    {
+      "id": "MEDIA-UI-06",
+      "build": "media-r2",
+      "state": "passed",
+      "actual": "普通深色视频容器回到可用区域中央、画面保持比例、below控制条位于画面下方；r1中容器/画面class重名压缩布局缺陷已复验修复。"
+    }
+  ],
+  "defects": [
+    {
+      "id": "M9-DEV-007",
+      "state": "fixed-and-rechecked",
+      "foundBuild": "media-r1",
+      "fixedBuild": "media-r2",
+      "actual": "外容器和video节点共用fw-media-video，外层错误应用画面flex/max-height。改为fw-media-kind-video，真实r2截图复验中心布局。"
+    }
+  ],
+  "tests": [
+    {
+      "log": "/private/tmp/willyou-m9-media-native-tests.log",
+      "result": "59 passed in 5 files; includes real native IO and existing regression"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-media-controls-tests.log",
+      "result": "5 passed; decoder-isolated actual React controls"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-media-r2-tests.log",
+      "result": "13 passed in 4 files after layout change; overlaps prior tests, not 13 additional unique cases"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-media-typecheck-final.log",
+      "result": "failed: test mock this annotations missing, corrected"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-media-r2-typecheck.log",
+      "result": "passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-media-r2-package.log",
+      "result": "passed; sqlite/pty/voice/fileBroker/fileWatcher native smoke passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-media-prototype-build.log",
+      "result": "prototype build passed; prepare-sites build passed separately"
+    }
+  ],
+  "transports": {
+    "protocol": "default startup in media-r1 and media-r2; ready/actual playback through registered local protocol",
+    "binary": "same media-r2 package started with SMARTDD_USER_DATA and SMARTDD_M9_MEDIA_BINARY=1; log /private/tmp/willyou-m9-media-r2-binary-app.log confirms isolated binary transport; guard limits unchanged"
+  },
+  "limits": [
+    "仅T18、T22按本期完整步骤计通过；其它观察为开发验证。",
+    "data URI/附件宿主、全codec/保存/取消/系统能力拒绝、20次真实播放切换、完整像素对照仍待完成。单元20次Blob释放不能替代真实App20次。",
+    "CUA一次报告用户改变应用及ScreenCaptureKit参数无效；重新读取/绑定同一运行App后恢复，没有替代工具或权限绕过。",
+    "截图/AX保留于会话工具输出，未声称存在新本地PNG。",
+    "Mac不证明其它平台；最终交付如影响本功能须复验。"
+  ]
+}

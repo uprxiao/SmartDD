@@ -1,0 +1,47 @@
+{
+  "schema": "m10-zentao-anonymous-reachability-audit-v1",
+  "at": "2026-10-17T07:59:44.335628+00:00",
+  "base": "http://192.168.106.185",
+  "checks": [
+    {
+      "path": "/biz/",
+      "method": "GET",
+      "authenticated": false,
+      "httpStatus": 302,
+      "contentType": "text/html",
+      "loginHtmlObserved": false,
+      "jsonParsed": false,
+      "elapsedSeconds": 0.21
+    },
+    {
+      "path": "/biz/api.php/v1/user",
+      "method": "GET",
+      "authenticated": false,
+      "httpStatus": 401,
+      "contentType": "application/json",
+      "loginHtmlObserved": false,
+      "jsonParsed": true,
+      "jsonTopLevelType": "dict",
+      "businessDataRecorded": false,
+      "errorShapePresent": true,
+      "elapsedSeconds": 0.299
+    },
+    {
+      "path": "/biz/api.php/v2/products",
+      "method": "GET",
+      "authenticated": false,
+      "transportErrorType": "TimeoutError",
+      "reasonType": "NoneType",
+      "elapsedSeconds": 6.05
+    }
+  ],
+  "credentialsUsed": false,
+  "browserCookiesRead": false,
+  "responseBodySaved": false,
+  "writesPerformed": false,
+  "redirectsFollowed": false,
+  "limitations": [
+    "Reachability/anonymous response only; no token authentication, authenticated Bug/Story detail, mine filtering, paging, attachments or writes verified.",
+    "Non-2xx or non-JSON does not prove the route is absent or the version incompatible."
+  ]
+}

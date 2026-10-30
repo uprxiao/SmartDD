@@ -1,0 +1,99 @@
+{
+  "startedAt": "2026-10-18T14:26:02.710Z",
+  "app": "/private/tmp/willyou-m9-acceptance-batch-r33-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "046f316754ba0aa958e8a3629102ad47a1a195b699a7cd11f256f87115ebaa13",
+  "brokerSha256": "cae73e3859bdf342971ad9bcfcb148b8485064d564546bea7227fb9610b712cb",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "fixtureManifest": "/private/tmp/willyou-dev075-tree-fixtures.json",
+  "root": "/private/tmp/willyou-dev075-tree-u1q5y72y",
+  "scratch": "/private/tmp/willyou-tree-basic-ui-mcCunb",
+  "before": {
+    "A.txt": {
+      "sha256": "eeeaf1dfb10bbf98d4d178afd605b276bd63526589c5cf97e3a08932cc75a895",
+      "size": "16",
+      "inode": "46167600",
+      "mtimeNs": "1792324548569460892",
+      "ctimeNs": "1792324548569460892"
+    },
+    "B.txt": {
+      "sha256": "e480e56e40438a86256a2f25a07c8f45f1b9e77405cb957e718aac7928cdc82d",
+      "size": "16",
+      "inode": "46167601",
+      "mtimeNs": "1792324548569531434",
+      "ctimeNs": "1792324548569531434"
+    },
+    ".env": {
+      "sha256": "ae4899a29c4b0f72dbbb7652facd72af770cb4596291ac91fa8b3f49f2102fce",
+      "size": "14",
+      "inode": "46167602",
+      "mtimeNs": "1792324548569592184",
+      "ctimeNs": "1792324548569592184"
+    },
+    ".gitignore": {
+      "sha256": "982842573ba047b5a7409852d62c0f3d1f8b75ee485be1cf584a114bc9788c69",
+      "size": "17",
+      "inode": "46167603",
+      "mtimeNs": "1792324548569662976",
+      "ctimeNs": "1792324548569662976"
+    },
+    ".hidden/x": {
+      "sha256": "d3f29218ec1fff8d7c9f4524dc44b3b048c1e47c2d6f6faf4f8e0429e06ec1b3",
+      "size": "15",
+      "inode": "46167605",
+      "mtimeNs": "1792324548569743309",
+      "ctimeNs": "1792324548569743309"
+    },
+    "node_modules/x": {
+      "sha256": "3f7d0935fed216fe172632ecc5593621f5bf4a64846a5522284c9331ef040939",
+      "size": "19",
+      "inode": "46167607",
+      "mtimeNs": "1792324548569812310",
+      "ctimeNs": "1792324548569812310"
+    },
+    "level1/level2/level3/level4/level5/deep.txt": {
+      "sha256": "491c7816879b3145e5be5933155a3c796cd14076c208fd75244f9d9a8710d338",
+      "size": "13",
+      "inode": "46167613",
+      "mtimeNs": "1792324548570007810",
+      "ctimeNs": "1792324548570007810"
+    }
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-B01",
+      "initialRootOnly": true,
+      "firstExpandShowsOnlyLevel2": true,
+      "secondExpandShowsOnlyLevel3": true,
+      "collapseAndReexpandKeepsNestedExpansion": true,
+      "level4Absent": true,
+      "requestAccounting": "Exact root/level1/level2 requests and pending/cache deduplication are verified by current production native integration, not inferred from DOM."
+    },
+    {
+      "caseId": "M9-T-B04",
+      "visible": [
+        ".env",
+        ".gitignore",
+        ".hidden/x",
+        "node_modules/x"
+      ],
+      "filter": "ordinary tree, filename filter empty and changes-only disabled"
+    },
+    {
+      "caseId": "M9-T-B05",
+      "explicitEmpty": true,
+      "fakeFileRows": 0,
+      "spinnerAfterReady": false,
+      "collapsible": true
+    }
+  ],
+  "status": "failed",
+  "input": "Actual packaged Electron renderer CDP pointer events, including a first-double-click sequence; no DOM .click() or store/API replacement.",
+  "projectId": "75524626-7729-4f10-acc9-cb212c48c340",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(await evaluate(exists('.fw-tab.selected:not(.preview)')))\n",
+  "failureDom": "WillYou\n新建任务\n⌘N\n任务历史\n项目\nM9 tree basic acceptance\n设置\n首页\n›\nM9 tree basic acceptance\n文件\nM9 tree basic acceptance\n\nRead-only D02 acceptance fixture\n\n新建任务\n概览\n代码目录\n数据库\n服务器\nSkill 与 MCP\n任务\n项目名称\nM9 tree basic acceptance\n别名\n—\n说明\nRead-only D02 acceptance fixture\n规则文件\n—\n配置版本\n1\n创建时间\n10/18/2026, 10:26:03 PM\n导出项目\n编辑\n归档\n删除\n代码目录\n1\n数据库\n0\n服务器\n0\nB.txt\nD02 synthetic tree\n›\nB.txt\n打开\n1\n2\nTree B baseline\n\n\nwillyou-dev075-tree-u1q5y72y\n.hidden\nempty\nlevel1\nnode_modules\n.env\n.gitignore\nA.txt\nB.txt\n0.0 KiB\nUTF-8",
+  "finishedAt": "2026-10-18T14:26:05.434Z"
+}

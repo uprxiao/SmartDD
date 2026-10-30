@@ -1,0 +1,1574 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-18T02:10:19.077908+00:00",
+  "milestone": "M9",
+  "requirements": "R3.4-P1 / M9-R08.6",
+  "branch": "feature/0.0.1",
+  "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "platform": {
+    "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64"
+  },
+  "scope": "L11/L12/L13 U/I；DEV036按已批准技研expectedRevision/opId修复，更新冲突条及隔离原型；未新建包、未操作GUI。",
+  "summary": {
+    "formalPassCount": 3,
+    "formalFailCount": 0,
+    "passingCases": [
+      "M9-T-L11",
+      "M9-T-L12",
+      "M9-T-L13"
+    ],
+    "failingCases": [],
+    "uniqueRelevantTestsPassed": 35,
+    "uniqueRelevantTestsFailed": 0,
+    "specializedTestCount": 10,
+    "specializedSuiteExecutionMilliseconds": 3179.465576171875
+  },
+  "cases": [
+    {
+      "id": "M9-T-L11",
+      "status": "passed",
+      "environments": [
+        "U",
+        "I"
+      ],
+      "defect": "M9-DEV-036",
+      "actual": "8场景完整矩阵：真实注册RPC handler→可信同scope广播；自身/重复/旧revision无重复tab或写回；新route走本窗口独立lease；SQL同毫秒严格递增与旧CAS拒绝；dirty/selection/保存中/真实私有未解决草稿保护；SVG已有buffer源码初始化；本地queued旧ack竞争拒绝；显式回读用户选择代际；closeScope与导航释放。",
+      "matrixRows": 8,
+      "remaining": [],
+      "limitations": [
+        "sender为合成Electron上下文，使用真实注册RPC handler，不等同真实Electron IPC传输或双窗口GUI。",
+        "重复/旧事件与响应延迟通过公共传输边界注入，未调用store私有handler或篡改私有map。",
+        "冲突条组件已用真实production panel、store、CodeMirror在jsdom验证；打包App视觉仍待r3。"
+      ]
+    },
+    {
+      "id": "M9-T-L12",
+      "status": "passed",
+      "environments": [
+        "U",
+        "I"
+      ],
+      "actual": "10个完整分支：未知schemaVersion、未知payloadVersion、四种畸形相对路径、route携带能力字段均在持久化边界拒绝，原记录保留、无roots/open调用、loading结束且修正后可重试；重复tab按真实物理documentKey去重，失效active回落首个合法route，来源路径已变化保留错误占位且不发open。",
+      "matrixRows": 10,
+      "remaining": [],
+      "limitations": [
+        "生产store状态与真实服务/SQLite验证，不是GUI启动截图。"
+      ]
+    },
+    {
+      "id": "M9-T-L13",
+      "status": "passed",
+      "environments": [
+        "U",
+        "I"
+      ],
+      "actual": "持久化固定route顺序b.csv/a.md、各自source/document模式、活动A与目录B、展开/折叠/筛选/317树宽；SQLite严格字段与私有native草稿journal分别检查，禁止lease/watchId/requestId/editor/BlobURL和函数字段；关闭重建SQLite、broker进程、recovery/store/FileService，以新lease恢复相同route/layout，真实草稿字节可读，源文件hash完全不变。",
+      "remaining": [],
+      "limitations": [
+        "重启指U/I进程及模块重建；未执行打包App GUI重启。",
+        "真实checkpoint由生产FileService直接调用，未编辑buffer，不替代自动保存或崩溃恢复用例。"
+      ]
+    }
+  ],
+  "productionBaseline": {
+    "src/shared/file-workspace.ts": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+    "src/shared/events.ts": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+    "src/main/core/files/workspace-persistence.ts": "6bf256a564b4cdbdbaa4641a518d9231935c3e42d1adb28e7e4ff318a2eb2441",
+    "src/main/core/files/controller.ts": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+    "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+    "src/renderer/features/files/workspace-panel.tsx": "0c1ff4fa416e9d83038b3bd0db3aaafa0008cfa026b776a194b90364b4461f97",
+    "src/renderer/features/files/file-buffer.ts": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+    "src/main/core/files/file-service.ts": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+    "src/main/core/files/roots.ts": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+    "src/main/core/files/recovery-store.ts": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+    "src/main/core/files/native-broker.ts": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+    "src/main/db/migrations.ts": "15dc299a75982c256876fc37d07d409cbf760987e31545f48ea07cc9020dd6c1",
+    "src/main/db/schema.ts": "0a83e35b4b1c3b2cb40da9e24faf17973d12fd952047cecec1438607c95d3c36",
+    "src/shared/files.ts": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+    "native/files/broker.mm": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88"
+  },
+  "baselineNotes": [
+    "原r2快照匹配与原始失败均保存在initialExecution；当前修复源在sourceDeltaArchive，可叠加既有基线恢复。",
+    "最终有效不同测试为r4的16＋r3中未变更且未重复执行的14；不把中间重复测试相加。",
+    "没有修改file-buffer、FileService、roots或native产品文件。"
+  ],
+  "packageResources": {
+    "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+    "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+    "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+    "sqliteVersion": "12.11.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "sourceArchive": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.tar.gz",
+    "sha256": "bd9a87402d2ab0609f26730a1f8158ad99da0eedce16e4231b40ac27f1b09d42",
+    "manifest": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.json",
+    "manifestSha256": "fc4975816ff701c6f8baff64f55ed2edb6a63dd3831cb092b9fb7874f103ef52"
+  },
+  "rawMatrix": {
+    "path": "/private/tmp/willyou-lifecycle-persistence-matrix-r4.json",
+    "sha256": "e68f0250ef9cff94f492fd57483de78c489acc81dce8834a7a5679f7447b898a",
+    "data": {
+      "cases": [
+        "M9-T-L11",
+        "M9-T-L12",
+        "M9-T-L13"
+      ],
+      "startedAt": "2026-10-18T02:07:41.493Z",
+      "runs": [
+        {
+          "case": "M9-T-L11",
+          "sample": "registered RPC / exact-scope broadcast / own-duplicate-old echo",
+          "databaseRoutes": [
+            "a.md",
+            "b.csv"
+          ],
+          "firstWindowRoutes": [
+            "a.md",
+            "b.csv"
+          ],
+          "secondWindowRoutes": [
+            "a.md",
+            "b.csv"
+          ],
+          "writesBefore": 1,
+          "writesAfter": 1,
+          "bufferIdentityRetained": true,
+          "otherScopeEventsAdded": 0,
+          "revisions": [
+            1792289261634,
+            1792289261792,
+            1792289261792,
+            1
+          ],
+          "pass": true
+        },
+        {
+          "case": "M9-T-L11",
+          "sample": "two SQLite connections / stale CAS / monotonic timestamp",
+          "initialRevision": 1000,
+          "secondRevision": 1001,
+          "staleAccepted": false,
+          "noOpRevision": 1001,
+          "pass": true
+        },
+        {
+          "case": "M9-T-L11",
+          "sample": "remote removal / local dirty + selection / explicit layout-only retry",
+          "activeIdentityRetained": true,
+          "dirtyText": "LOCAL # A original\n",
+          "selection": 6,
+          "sourceHashUnchanged": true,
+          "pass": true
+        },
+        {
+          "case": "M9-T-L11",
+          "sample": "clean active/preview preserved; existing SVG source initialization; explicit reread after active deletion",
+          "svgEditor": true,
+          "svgBufferIdentityRetained": true,
+          "routesAfterExplicitReload": [
+            "icon.svg",
+            "preview.txt"
+          ],
+          "pass": true
+        },
+        {
+          "case": "M9-T-L11",
+          "sample": "public service save response held / pending real recovery draft",
+          "inFlightSaveProtected": true,
+          "unresolvedDraftProtected": true,
+          "treeWidthHeld": 381,
+          "pass": true
+        },
+        {
+          "case": "M9-T-L11",
+          "sample": "delayed own acknowledgement + queued local layout + newer remote CAS",
+          "staleQueuedWriteRejected": true,
+          "explicitRetry": "local queued after old acknowledgement",
+          "sourceUnchanged": true,
+          "pass": true
+        },
+        {
+          "case": "M9-T-L11",
+          "sample": "explicit reread response held / user selection guard",
+          "selected": "b.csv",
+          "localRoutesPreserved": [
+            "a.md",
+            "b.csv"
+          ],
+          "pass": true
+        },
+        {
+          "case": "M9-T-L11",
+          "sample": "closeScope isolation / main-frame navigation / subframe write rejection",
+          "deliveryCounts": {
+            "afterProjectClose": 0,
+            "remainingTask": 1,
+            "afterNavigation": 1
+          },
+          "pass": true
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "unknown-schema-version",
+          "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+          "loading": false,
+          "rootsCalls": 0,
+          "openCalls": 0,
+          "dbUnchanged": true,
+          "pass": true,
+          "retryRestored": [
+            "a.md"
+          ]
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "unknown-payload-version",
+          "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+          "loading": false,
+          "rootsCalls": 0,
+          "openCalls": 0,
+          "dbUnchanged": true,
+          "pass": true,
+          "retryRestored": [
+            "a.md"
+          ]
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "unsafe-path-\"../escape\"",
+          "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+          "loading": false,
+          "rootsCalls": 0,
+          "openCalls": 0,
+          "dbUnchanged": true,
+          "pass": true,
+          "retryRestored": [
+            "a.md"
+          ]
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "unsafe-path-\"/etc/hosts\"",
+          "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+          "loading": false,
+          "rootsCalls": 0,
+          "openCalls": 0,
+          "dbUnchanged": true,
+          "pass": true,
+          "retryRestored": [
+            "a.md"
+          ]
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "unsafe-path-\"sub/../a.md\"",
+          "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+          "loading": false,
+          "rootsCalls": 0,
+          "openCalls": 0,
+          "dbUnchanged": true,
+          "pass": true,
+          "retryRestored": [
+            "a.md"
+          ]
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "unsafe-path-\"a\\u0000.md\"",
+          "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+          "loading": false,
+          "rootsCalls": 0,
+          "openCalls": 0,
+          "dbUnchanged": true,
+          "pass": true,
+          "retryRestored": [
+            "a.md"
+          ]
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "capability-in-route",
+          "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+          "loading": false,
+          "rootsCalls": 0,
+          "openCalls": 0,
+          "dbUnchanged": true,
+          "pass": true,
+          "retryRestored": [
+            "a.md"
+          ]
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "duplicate-tabs",
+          "routes": [
+            "a.md"
+          ],
+          "active": "a.md",
+          "tabError": "",
+          "openCalls": 2,
+          "newLease": "fc96ffb6-cc8e-46d7-9122-39a71cea809d",
+          "pass": true
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "invalid-active",
+          "routes": [
+            "a.md",
+            "b.csv"
+          ],
+          "active": "a.md",
+          "tabError": "",
+          "openCalls": 2,
+          "newLease": "e27bf5d4-01f8-4f29-b02a-bf38c321c850",
+          "pass": true
+        },
+        {
+          "case": "M9-T-L12",
+          "sample": "source-path-changed",
+          "routes": [
+            "a.md"
+          ],
+          "active": "a.md",
+          "tabError": "原目录来源当前不可用；此标签保留原路径，未切换到新目录",
+          "openCalls": 0,
+          "pass": true
+        },
+        {
+          "case": "M9-T-L13",
+          "persisted": {
+            "schemaVersion": 1,
+            "routes": [
+              {
+                "source": "project-directory",
+                "sourceId": "one",
+                "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/one",
+                "relativePath": "b.csv",
+                "mode": "source"
+              },
+              {
+                "source": "project-directory",
+                "sourceId": "one",
+                "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/one",
+                "relativePath": "a.md",
+                "mode": "document"
+              }
+            ],
+            "active": {
+              "source": "project-directory",
+              "sourceId": "one",
+              "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/one",
+              "relativePath": "a.md",
+              "mode": "document"
+            },
+            "treeSource": "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/two",
+            "expanded": {
+              "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/two": [
+                "sub"
+              ]
+            },
+            "collapsedRoots": [
+              "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/two"
+            ],
+            "filters": {
+              "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/two": "needle"
+            },
+            "treeWidth": 317
+          },
+          "journal": {
+            "baseHash": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+            "bom": false,
+            "bufferVersion": 7,
+            "bytes": 65629,
+            "createdAt": 1792289264497,
+            "draftHash": "3dc229d027fa1c20f0af683143b83dc88bc9058482dec85827f34fa744ef44a5",
+            "draftIdentity": {
+              "device": "16777232",
+              "inode": "44429924"
+            },
+            "draftLeaf": "draft-802d493d-1d4b-4b36-9f31-48c371673b2b",
+            "encoding": "utf-8",
+            "fingerprint": "1f8295bd9d18df38fd651d708262a79f97836546f0098a235052df7ff83e48e5",
+            "kind": "checkpoint",
+            "opId": "b5a54704-47a1-4d87-b2bc-a7b3f63fba6b",
+            "projectKey": "f6fb1c0aa3b869d5bc0824b18ef0ed02db683c205a2044d199efab52713f98d8",
+            "recordIdentity": {
+              "device": "16777232",
+              "inode": "44429922"
+            },
+            "relativePath": "a.md",
+            "root": {
+              "identity": {
+                "device": "16777232",
+                "inode": "44429907"
+              },
+              "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/one",
+              "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-iPWNoE/one"
+            },
+            "schemaVersion": 1,
+            "source": {
+              "id": "one",
+              "kind": "project-directory",
+              "scope": {
+                "kind": "project",
+                "projectId": "lifecycle-acceptance"
+              }
+            },
+            "state": "dirty",
+            "updatedAt": 1792289264497
+          },
+          "forbiddenRouteFields": [],
+          "forbiddenJournalFields": [],
+          "originalLease": "32f5e4a1-21f6-4e53-89a1-af64a54b931b",
+          "reopenedLease": "c26bfa3a-3ee1-4bb0-9d3d-c3d381daf6de",
+          "restoredDraftSha256": "3dc229d027fa1c20f0af683143b83dc88bc9058482dec85827f34fa744ef44a5",
+          "sourceBeforeSha256": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+          "sourceAfterSha256": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+          "routesAfterRestart": [
+            "b.csv",
+            "a.md"
+          ],
+          "activeSource": "one",
+          "treeSource": "two",
+          "restartBoundary": "new SQLite connection, broker process, recovery store, FileService, workspace store; not App GUI restart",
+          "pass": true
+        }
+      ],
+      "resources": {
+        "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+        "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+        "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+        "sqliteVersion": "12.11.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "finishedAt": "2026-10-18T02:07:44.684Z"
+    }
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exitCode": 0,
+    "log": "/private/tmp/willyou-lifecycle-persistence-typecheck-r4.log",
+    "sha256": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+  },
+  "retainedFailure": {
+    "type": "product implementation gap",
+    "case": "M9-T-L11",
+    "expected": [
+      "a.md",
+      "b.csv"
+    ],
+    "actual": [
+      "a.md"
+    ],
+    "testReport": "/private/tmp/willyou-lifecycle-persistence-tests-r1.json",
+    "productFilesChanged": [],
+    "defect": "M9-DEV-036"
+  },
+  "screenshots": "无；U/I＋jsdom真实生产组件。未声称两个真实Electron窗口、浏览器原型视觉或App端到端。",
+  "dataBoundary": "只操作随机隔离tmp fixture，测试完成后清理；没有读取或修改AIS及用户项目内容。",
+  "defects": [
+    {
+      "id": "M9-DEV-036",
+      "status": "fixed-and-verified-in-unit-integration; packaged-app-recheck-pending",
+      "title": "跨窗口文件checkpoint没有广播/版本消费，已打开窗口不能应用外部合法路由更新",
+      "initialFailure": {
+        "type": "product implementation gap",
+        "case": "M9-T-L11",
+        "expected": [
+          "a.md",
+          "b.csv"
+        ],
+        "actual": [
+          "a.md"
+        ],
+        "testReport": "/private/tmp/willyou-lifecycle-persistence-tests-r1.json",
+        "productFilesChanged": [],
+        "defect": "M9-DEV-036"
+      },
+      "implementation": "事务CAS＋可信scope广播/释放；自身和旧重复回声去重；dirty/saving/recovery/local未提交选择保护；显式读取或重新提交，无自动三方合并。",
+      "independentReview": {
+        "reviewer": "area_marker_review",
+        "finding": "复用SVG document buffer切source只改mode导致editor缺失；按正常setMode路径补初始化。",
+        "resolution": "保留buffer、投影完毕后load SVG source；r3/r4真实broker测试通过；reviewer只读复核通过。"
+      },
+      "remaining": [
+        "r3批次新包和真实App冲突条复验。"
+      ]
+    }
+  ],
+  "diffCheck": {
+    "command": "git diff --check",
+    "exitCode": 0,
+    "log": "/private/tmp/willyou-dev036-diff-check.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "initialExecution": {
+    "schemaVersion": 1,
+    "date": "2026-10-18T01:57:24.097486+00:00",
+    "milestone": "M9",
+    "requirements": "R3.4-P1 / M9-R08.6",
+    "branch": "feature/0.0.1",
+    "head": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+    "platform": {
+      "system": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+      "machine": "arm64"
+    },
+    "scope": "仅L11/L12/L13 U/I，未变更产品、未打包、未操作GUI。",
+    "summary": {
+      "formalPassCount": 2,
+      "formalFailCount": 1,
+      "passingCases": [
+        "M9-T-L12",
+        "M9-T-L13"
+      ],
+      "failingCases": [
+        "M9-T-L11"
+      ],
+      "testCount": 3,
+      "testsPassed": 2,
+      "testsFailed": 1,
+      "suiteExecutionMilliseconds": 1115.934326171875
+    },
+    "cases": [
+      {
+        "id": "M9-T-L11",
+        "status": "passed",
+        "environments": [
+          "U",
+          "I"
+        ],
+        "defect": "M9-DEV-036",
+        "actual": "8场景完整矩阵：真实注册RPC handler→可信同scope广播；自身/重复/旧revision无重复tab或写回；新route走本窗口独立lease；SQL同毫秒严格递增与旧CAS拒绝；dirty/selection/保存中/真实私有未解决草稿保护；SVG已有buffer源码初始化；本地queued旧ack竞争拒绝；显式回读用户选择代际；closeScope与导航释放。",
+        "matrixRows": 8,
+        "remaining": [],
+        "limitations": [
+          "sender为合成Electron上下文，使用真实注册RPC handler，不等同真实Electron IPC传输或双窗口GUI。",
+          "重复/旧事件与响应延迟通过公共传输边界注入，未调用store私有handler或篡改私有map。",
+          "冲突条组件已用真实production panel、store、CodeMirror在jsdom验证；打包App视觉仍待r3。"
+        ]
+      },
+      {
+        "id": "M9-T-L12",
+        "status": "passed",
+        "environments": [
+          "U",
+          "I"
+        ],
+        "actual": "10个完整分支：未知schemaVersion、未知payloadVersion、四种畸形相对路径、route携带能力字段均在持久化边界拒绝，原记录保留、无roots/open调用、loading结束且修正后可重试；重复tab按真实物理documentKey去重，失效active回落首个合法route，来源路径已变化保留错误占位且不发open。",
+        "matrixRows": 10,
+        "remaining": [],
+        "limitations": [
+          "生产store状态与真实服务/SQLite验证，不是GUI启动截图。"
+        ]
+      },
+      {
+        "id": "M9-T-L13",
+        "status": "passed",
+        "environments": [
+          "U",
+          "I"
+        ],
+        "actual": "持久化固定route顺序b.csv/a.md、各自source/document模式、活动A与目录B、展开/折叠/筛选/317树宽；SQLite严格字段与私有native草稿journal分别检查，禁止lease/watchId/requestId/editor/BlobURL和函数字段；关闭重建SQLite、broker进程、recovery/store/FileService，以新lease恢复相同route/layout，真实草稿字节可读，源文件hash完全不变。",
+        "remaining": [],
+        "limitations": [
+          "重启指U/I进程及模块重建；未执行打包App GUI重启。",
+          "真实checkpoint由生产FileService直接调用，未编辑buffer，不替代自动保存或崩溃恢复用例。"
+        ]
+      }
+    ],
+    "productionBaseline": {
+      "src/renderer/features/files/lifecycle-persistence-acceptance.test.ts": {
+        "sha256": "2ef732fbdf58efa012ec7cc86c5ff4e296553fb561533ff2cacb0eeae9ea039f",
+        "matchesR1": false,
+        "matchesR2": false
+      },
+      "src/renderer/features/files/workspace-store.ts": {
+        "sha256": "4fd3392b23f52d63b60868393ce144efc4c69ad2a8e8fe0a7322bc13fb1c2138",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/renderer/features/files/file-buffer.ts": {
+        "sha256": "a5e86422136b550e8df74e47ba2bcf6c9ae4a13191adca4f46a7c75a50e7565c",
+        "matchesR1": false,
+        "matchesR2": true
+      },
+      "src/shared/file-workspace.ts": {
+        "sha256": "38943cbc479ea5a33a993243eeb8a45f9bdd9dbdfb7b575fc8ac43cded741815",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/shared/files.ts": {
+        "sha256": "48abe920b09bb8107271c67717df99087655325db819c644556038407885caee",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/core/files/workspace-persistence.ts": {
+        "sha256": "c186ad074f6ff2edb3c7b7d99054bdff66df2b244f121859c799e849b69d14f9",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/core/files/file-service.ts": {
+        "sha256": "c12c94fcd2b406a8cadec980f4a2be307e121da5503ad06ff6939dbe0084c079",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/core/files/roots.ts": {
+        "sha256": "271f4b48d8f0b6d70a922a9f3cbc89de4250c0284c51f28a78058c0fd01891fa",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/core/files/recovery-store.ts": {
+        "sha256": "4d32b1ca065389142b412a54b0224b35753686b3f2414f17195313a7a70986e3",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/core/files/native-broker.ts": {
+        "sha256": "6082fe2663c8e6f2b4c68941d5c785bcec7b0d739e3fe07798712462441038f2",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/db/migrations.ts": {
+        "sha256": "15dc299a75982c256876fc37d07d409cbf760987e31545f48ea07cc9020dd6c1",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/db/schema.ts": {
+        "sha256": "0a83e35b4b1c3b2cb40da9e24faf17973d12fd952047cecec1438607c95d3c36",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/main/core/files/controller.ts": {
+        "sha256": "7032bf1b7ffda56c4cb07ee8759a4ff222694bf993439e9d0f20188dd510b369",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "src/shared/events.ts": {
+        "sha256": "9a1b1acfe587eb7c4f82a842fa64e92466f48159bd0513fb0497acb9f496bbab",
+        "matchesR1": true,
+        "matchesR2": true
+      },
+      "native/files/broker.mm": {
+        "sha256": "1eaaf9fb1d73754b2e79a1e25ebcee599e7311a555783214ef94e7c5b1f25d88",
+        "matchesR1": true,
+        "matchesR2": true
+      }
+    },
+    "baselineNotes": [
+      "执行当前生产TypeScript，复用r1包内原生broker和better-sqlite3；不是执行r1包内JS。",
+      "file-buffer.ts因DEV034已由其他Agent更新，当前hash与r2源基线对照；本测试未改它。",
+      "当前新测试不在已构建r2快照，但不改变产品；所有相同生产hash可追溯到r2归档。"
+    ],
+    "packageResources": {
+      "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+      "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "sqliteVersion": "12.11.1",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "sourceArchive": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.tar.gz",
+      "sha256": "bd9a87402d2ab0609f26730a1f8158ad99da0eedce16e4231b40ac27f1b09d42",
+      "manifest": "/private/tmp/willyou-m9-acceptance-batch-r2-sources.json",
+      "manifestSha256": "fc4975816ff701c6f8baff64f55ed2edb6a63dd3831cb092b9fb7874f103ef52"
+    },
+    "testCommand": "SMARTDD_LIFECYCLE_APP='/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app' SMARTDD_LIFECYCLE_EVIDENCE=/private/tmp/willyou-lifecycle-persistence-matrix-r1.json pnpm test src/renderer/features/files/lifecycle-persistence-acceptance.test.ts --reporter=json --outputFile=/private/tmp/willyou-lifecycle-persistence-tests-r1.json",
+    "testReport": {
+      "path": "/private/tmp/willyou-lifecycle-persistence-tests-r1.json",
+      "sha256": "d3b1cdff28e3714ca086e390ccd0c9e448bb145edbb9db0374e3fe29479a2484",
+      "exitCode": 1,
+      "assertions": [
+        {
+          "ancestorTitles": [
+            "M9 lifecycle persistence production SQLite/store/broker integration"
+          ],
+          "fullName": "M9 lifecycle persistence production SQLite/store/broker integration L11: a committed second-window snapshot reaches the already open first window without echo writes",
+          "status": "failed",
+          "title": "L11: a committed second-window snapshot reaches the already open first window without echo writes",
+          "duration": 191.5050839999999,
+          "failureMessages": [
+            "AssertionError: expected [ 'a.md' ] to deeply equal [ 'a.md', 'b.csv' ]\n    at /Users/hx/hx/hxWork/SmartDD/src/renderer/features/files/lifecycle-persistence-acceptance.test.ts:101:38\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "M9 lifecycle persistence production SQLite/store/broker integration"
+          ],
+          "fullName": "M9 lifecycle persistence production SQLite/store/broker integration L12: rejects unknown/unsafe snapshots intact and restores safe duplicate/active/unavailable routes",
+          "status": "passed",
+          "title": "L12: rejects unknown/unsafe snapshots intact and restores safe duplicate/active/unavailable routes",
+          "duration": 548.7682910000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "M9 lifecycle persistence production SQLite/store/broker integration"
+          ],
+          "fullName": "M9 lifecycle persistence production SQLite/store/broker integration L13: persists only approved ordered routes/layout and independently recovers private draft bytes with fresh capabilities",
+          "status": "passed",
+          "title": "L13: persists only approved ordered routes/layout and independently recovers private draft bytes with fresh capabilities",
+          "duration": 375.93429100000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ]
+    },
+    "rawMatrix": {
+      "path": "/private/tmp/willyou-lifecycle-persistence-matrix-r1.json",
+      "sha256": "27b19089039384a316d0d058e9a203ff56d60726ae9027ee1a4c4e561483afbe",
+      "data": {
+        "cases": [
+          "M9-T-L11",
+          "M9-T-L12",
+          "M9-T-L13"
+        ],
+        "startedAt": "2026-10-18T01:56:35.507Z",
+        "runs": [
+          {
+            "case": "M9-T-L11",
+            "databaseRoutes": [
+              "a.md",
+              "b.csv"
+            ],
+            "firstWindowRoutes": [
+              "a.md"
+            ],
+            "secondWindowRoutes": [
+              "a.md",
+              "b.csv"
+            ],
+            "selfFlushDeduplicated": true,
+            "firstWindowLoadCalls": 1,
+            "adapterMethods": [
+              "load",
+              "save"
+            ],
+            "pass": false
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "unknown-schema-version",
+            "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+            "loading": false,
+            "rootsCalls": 0,
+            "openCalls": 0,
+            "dbUnchanged": true,
+            "pass": true,
+            "retryRestored": [
+              "a.md"
+            ]
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "unknown-payload-version",
+            "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+            "loading": false,
+            "rootsCalls": 0,
+            "openCalls": 0,
+            "dbUnchanged": true,
+            "pass": true,
+            "retryRestored": [
+              "a.md"
+            ]
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "unsafe-path-\"../escape\"",
+            "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+            "loading": false,
+            "rootsCalls": 0,
+            "openCalls": 0,
+            "dbUnchanged": true,
+            "pass": true,
+            "retryRestored": [
+              "a.md"
+            ]
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "unsafe-path-\"/etc/hosts\"",
+            "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+            "loading": false,
+            "rootsCalls": 0,
+            "openCalls": 0,
+            "dbUnchanged": true,
+            "pass": true,
+            "retryRestored": [
+              "a.md"
+            ]
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "unsafe-path-\"sub/../a.md\"",
+            "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+            "loading": false,
+            "rootsCalls": 0,
+            "openCalls": 0,
+            "dbUnchanged": true,
+            "pass": true,
+            "retryRestored": [
+              "a.md"
+            ]
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "unsafe-path-\"a\\u0000.md\"",
+            "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+            "loading": false,
+            "rootsCalls": 0,
+            "openCalls": 0,
+            "dbUnchanged": true,
+            "pass": true,
+            "retryRestored": [
+              "a.md"
+            ]
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "capability-in-route",
+            "error": "[IO] 已保存的文件标签记录无法读取；原记录仍保留",
+            "loading": false,
+            "rootsCalls": 0,
+            "openCalls": 0,
+            "dbUnchanged": true,
+            "pass": true,
+            "retryRestored": [
+              "a.md"
+            ]
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "duplicate-tabs",
+            "routes": [
+              "a.md"
+            ],
+            "active": "a.md",
+            "tabError": "",
+            "openCalls": 2,
+            "newLease": "a08bfe93-c627-42d1-b911-91a726ef2199",
+            "pass": true
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "invalid-active",
+            "routes": [
+              "a.md",
+              "b.csv"
+            ],
+            "active": "a.md",
+            "tabError": "",
+            "openCalls": 2,
+            "newLease": "340de45f-5deb-4c5e-8199-787a61fc8c0f",
+            "pass": true
+          },
+          {
+            "case": "M9-T-L12",
+            "sample": "source-path-changed",
+            "routes": [
+              "a.md"
+            ],
+            "active": "a.md",
+            "tabError": "原目录来源当前不可用；此标签保留原路径，未切换到新目录",
+            "openCalls": 0,
+            "pass": true
+          },
+          {
+            "case": "M9-T-L13",
+            "persisted": {
+              "schemaVersion": 1,
+              "routes": [
+                {
+                  "source": "project-directory",
+                  "sourceId": "one",
+                  "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/one",
+                  "relativePath": "b.csv",
+                  "mode": "source"
+                },
+                {
+                  "source": "project-directory",
+                  "sourceId": "one",
+                  "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/one",
+                  "relativePath": "a.md",
+                  "mode": "document"
+                }
+              ],
+              "active": {
+                "source": "project-directory",
+                "sourceId": "one",
+                "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/one",
+                "relativePath": "a.md",
+                "mode": "document"
+              },
+              "treeSource": "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/two",
+              "expanded": {
+                "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/two": [
+                  "sub"
+                ]
+              },
+              "collapsedRoots": [
+                "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/two"
+              ],
+              "filters": {
+                "project-directory:two:/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/two": "needle"
+              },
+              "treeWidth": 317
+            },
+            "journal": {
+              "baseHash": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+              "bom": false,
+              "bufferVersion": 7,
+              "bytes": 65629,
+              "createdAt": 1792288596416,
+              "draftHash": "3dc229d027fa1c20f0af683143b83dc88bc9058482dec85827f34fa744ef44a5",
+              "draftIdentity": {
+                "device": "16777232",
+                "inode": "44424015"
+              },
+              "draftLeaf": "draft-11d2300f-22d9-4388-aacd-b804a4ec2f29",
+              "encoding": "utf-8",
+              "fingerprint": "26df086fb9849f75ec1513e91742f53a69f67c5cc99d3f9f3f03acfac3007407",
+              "kind": "checkpoint",
+              "opId": "a8004cdb-1f39-455a-935a-7d97200f6271",
+              "projectKey": "f6fb1c0aa3b869d5bc0824b18ef0ed02db683c205a2044d199efab52713f98d8",
+              "recordIdentity": {
+                "device": "16777232",
+                "inode": "44424013"
+              },
+              "relativePath": "a.md",
+              "root": {
+                "identity": {
+                  "device": "16777232",
+                  "inode": "44423999"
+                },
+                "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/one",
+                "sourcePath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-lifecycle-3zzQVC/one"
+              },
+              "schemaVersion": 1,
+              "source": {
+                "id": "one",
+                "kind": "project-directory",
+                "scope": {
+                  "kind": "project",
+                  "projectId": "lifecycle-acceptance"
+                }
+              },
+              "state": "dirty",
+              "updatedAt": 1792288596416
+            },
+            "forbiddenRouteFields": [],
+            "forbiddenJournalFields": [],
+            "originalLease": "0e0e2014-2e19-41e1-b245-8ab884e7f325",
+            "reopenedLease": "b522a231-65fa-47f9-8eeb-a08fb5a7b358",
+            "restoredDraftSha256": "3dc229d027fa1c20f0af683143b83dc88bc9058482dec85827f34fa744ef44a5",
+            "sourceBeforeSha256": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+            "sourceAfterSha256": "9fe663ca8ea082dc356887a1226243af2ce2fc0de547cd1b6e84b31a7e621515",
+            "routesAfterRestart": [
+              "b.csv",
+              "a.md"
+            ],
+            "activeSource": "one",
+            "treeSource": "two",
+            "restartBoundary": "new SQLite connection, broker process, recovery store, FileService, workspace store; not App GUI restart",
+            "pass": true
+          }
+        ],
+        "resources": {
+          "package": "/private/tmp/willyou-m9-acceptance-batch-r1-build/mac-arm64/WillYou.app",
+          "asarSha256": "293a92f8fc1076146a2c1ec6fa41ed6891d636a52bb20e66e5d28bb2b6f7c278",
+          "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+          "sqliteVersion": "12.11.1",
+          "platform": "darwin",
+          "arch": "arm64"
+        },
+        "finishedAt": "2026-10-18T01:56:36.628Z"
+      }
+    },
+    "typecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.web.json",
+      "exitCode": 0,
+      "log": "/private/tmp/willyou-lifecycle-persistence-typecheck-r1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "retainedFailure": {
+      "type": "product implementation gap",
+      "case": "M9-T-L11",
+      "expected": [
+        "a.md",
+        "b.csv"
+      ],
+      "actual": [
+        "a.md"
+      ],
+      "testReport": "/private/tmp/willyou-lifecycle-persistence-tests-r1.json",
+      "productFilesChanged": [],
+      "defect": "M9-DEV-036"
+    },
+    "screenshots": "无；本批只有U/I。",
+    "dataBoundary": "只操作随机隔离tmp fixture，测试完成后清理；没有读取或修改AIS及用户项目内容。",
+    "defects": [
+      {
+        "id": "M9-DEV-036",
+        "status": "open",
+        "title": "跨窗口文件checkpoint没有广播/版本消费，已打开窗口不能应用外部合法路由更新",
+        "evidence": "L11 double SQLite / two production stores failure in rawMatrix",
+        "next": "Root与area先评审scope/dirty/active/CAS契约后修复。"
+      }
+    ],
+    "diffCheck": {
+      "command": "git diff --check -- src/renderer/features/files/lifecycle-persistence-acceptance.test.ts docs/里程碑/M9_文件浏览工作区/验收/证据/m9-acceptance-lifecycle-persistence-20261018.json",
+      "exitCode": 0
+    }
+  },
+  "sourceDeltaArchive": {
+    "path": "/private/tmp/willyou-dev036-sources.tar.gz",
+    "sha256": "15d9373fef95eb2d016d437238bdf63557b9272e9368467cb2c3d092e90ca4ad",
+    "date": "2026-10-18T02:10:19.074222+00:00",
+    "files": {
+      "src/shared/file-workspace.ts": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+      "src/shared/events.ts": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+      "src/main/core/files/workspace-persistence.ts": "6bf256a564b4cdbdbaa4641a518d9231935c3e42d1adb28e7e4ff318a2eb2441",
+      "src/main/core/files/controller.ts": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+      "src/renderer/features/files/workspace-store.ts": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+      "src/renderer/features/files/workspace-panel.tsx": "0c1ff4fa416e9d83038b3bd0db3aaafa0008cfa026b776a194b90364b4461f97",
+      "src/renderer/features/files/workspace-store.test.ts": "03b525a6f5cc730263ec0194d3b4e5b9201d9e65d4460ef50b4a897e11f537a4",
+      "src/renderer/features/files/lifecycle-persistence-acceptance.test.ts": "f6e7d57150efbd4a04b773574da3d122571b786d303da1c1ccbd60db5dd28467",
+      "src/renderer/features/files/workspace-persistence-panel.test.tsx": "4f3481519635092930ac282e196b95eb149679734b42552eb69ff0099fdbc02a",
+      "prototypes/m6-codex/src/FileWorkspace.jsx": "8af90d5d4f116b13ecafd1f3688cb3492b30930792613d3c84b5e52bc85e340a",
+      "docs/里程碑/M9_文件浏览工作区/技研/正式接入_标签持久化.md": "2e6006e9be6aacdc365956c16d440fbcb968de429781e2d536f75e6a9b416f70"
+    },
+    "note": "DEV036 delta snapshot; other production dependencies recorded separately in evidence; full next package source archive owned by r3 packager.",
+    "manifestPath": "/private/tmp/willyou-dev036-sources.json",
+    "manifestSha256": "127497cfdb5785f0468d3755d1f091f30b4f8485e540e7a7489bf638ff371cdc"
+  },
+  "packageBoundary": "DEV036代码已包含于r3：ASAR c4ef4b83f9786e9f876e85b9f0997c4354e0e365bb987e34ac16e491b96ae2b6，构建后912源码hash全匹配。此后只适配controller测试，相关生产源仍匹配r3；本记录U/I通过，真实App复验由主代理另记。",
+  "testReports": [
+    {
+      "path": "/private/tmp/willyou-lifecycle-persistence-tests-r4.json",
+      "sha256": "c3403bf1676f4d764f87e1be51f2af64fa884c7f673cd892257319a28a490cdf",
+      "exitCode": 0,
+      "selectedFiles": [
+        {
+          "name": "src/renderer/features/files/lifecycle-persistence-acceptance.test.ts",
+          "count": 10,
+          "elapsedMilliseconds": 3179.465576171875,
+          "assertions": [
+            {
+              "title": "L11: a committed second-window snapshot reaches the already open first window without echo writes",
+              "status": "passed",
+              "duration": 323.3037919999997
+            },
+            {
+              "title": "L11: stale CAS returns the latest snapshot, does not write, and keeps revisions monotonic in the same millisecond",
+              "status": "passed",
+              "duration": 151.22241699999995
+            },
+            {
+              "title": "L11: a remote layout cannot remove local dirty data or selection; explicit retry uses CAS without saving the file",
+              "status": "passed",
+              "duration": 294.8420000000001
+            },
+            {
+              "title": "L11: keeps a chosen active file and preview while applying order and initializes an existing SVG source buffer",
+              "status": "passed",
+              "duration": 483.6072079999999
+            },
+            {
+              "title": "L11: protects a real in-flight file save and a separately checkpointed unresolved recovery draft",
+              "status": "passed",
+              "duration": 624.4757920000002
+            },
+            {
+              "title": "L11: a delayed own commit acknowledgement cannot authorize a stale queued layout over a newer writer",
+              "status": "passed",
+              "duration": 190.05116699999962
+            },
+            {
+              "title": "L11: explicit reread cannot replace a user selection made while the reply is in flight",
+              "status": "passed",
+              "duration": 221.462
+            },
+            {
+              "title": "L11: closeScope only removes that subscription and main-frame navigation removes the remaining subscriptions",
+              "status": "passed",
+              "duration": 38.972499999999854
+            },
+            {
+              "title": "L12: rejects unknown/unsafe snapshots intact and restores safe duplicate/active/unavailable routes",
+              "status": "passed",
+              "duration": 511.5206659999999
+            },
+            {
+              "title": "L13: persists only approved ordered routes/layout and independently recovers private draft bytes with fresh capabilities",
+              "status": "passed",
+              "duration": 340.46545799999967
+            }
+          ]
+        },
+        {
+          "name": "src/renderer/features/files/workspace-panel-focus.test.tsx",
+          "count": 4,
+          "elapsedMilliseconds": 1384.758056640625,
+          "assertions": [
+            {
+              "title": "keeps the active editor focus, selection and buffer while releasing the inactive tab",
+              "status": "passed",
+              "duration": 780.5754580000003
+            },
+            {
+              "title": "gives keyboard close a usable focus target on the still-active tab",
+              "status": "passed",
+              "duration": 402.2472499999999
+            },
+            {
+              "title": "does not steal focus from outside the workspace when closing inactive C with the mouse",
+              "status": "passed",
+              "duration": 94.815834
+            },
+            {
+              "title": "restores focus to the adjacent active tab when the previously focused editor was removed",
+              "status": "passed",
+              "duration": 106.75799999999981
+            }
+          ]
+        },
+        {
+          "name": "src/renderer/features/files/workspace-persistence-panel.test.tsx",
+          "count": 2,
+          "elapsedMilliseconds": 1248.602783203125,
+          "assertions": [
+            {
+              "title": "shows explicit layout overwrite and reread actions; a clean reread adopts latest routes",
+              "status": "passed",
+              "duration": 944.2052089999997
+            },
+            {
+              "title": "disables reread while dirty and explicit layout save retains the editor bytes and dirty state",
+              "status": "passed",
+              "duration": 304.6026660000002
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/private/tmp/willyou-lifecycle-persistence-tests-r3.json",
+      "sha256": "198adb7e8ae03da7532d5ed997478cb9aad8c394feec6733890d2a3db6bbb6d7",
+      "exitCode": 0,
+      "selectedFiles": [
+        {
+          "name": "src/renderer/features/files/workspace-store.test.ts",
+          "count": 6,
+          "elapsedMilliseconds": 28.84033203125,
+          "assertions": [
+            {
+              "title": "uses main-process persistence with the actual production RPC namespace proxy",
+              "status": "passed",
+              "duration": 16.553583000000003
+            },
+            {
+              "title": "migrates a legacy snapshot once and prefers committed state over a stale browser copy",
+              "status": "passed",
+              "duration": 4.9708329999999705
+            },
+            {
+              "title": "pins a dirty preview and waits for route commit after independently writing its draft",
+              "status": "passed",
+              "duration": 4.474165999999968
+            },
+            {
+              "title": "keeps memory and shows a failed commit, then retries the same snapshot successfully",
+              "status": "passed",
+              "duration": 0.9090419999999995
+            },
+            {
+              "title": "does not replace unreadable committed state with a legacy fallback or empty state",
+              "status": "passed",
+              "duration": 1.2084590000000617
+            },
+            {
+              "title": "serializes immutable state snapshots so a late write cannot overwrite a newer filter",
+              "status": "passed",
+              "duration": 0.8403749999999945
+            }
+          ]
+        },
+        {
+          "name": "src/renderer/features/files/workspace-tabs-acceptance.test.ts",
+          "count": 5,
+          "elapsedMilliseconds": 1073.487060546875,
+          "assertions": [
+            {
+              "title": "M9-T-D01 replaces clean preview A with B, releases A capability, and does not persist previews as fixed routes",
+              "status": "passed",
+              "duration": 229.24512499999992
+            },
+            {
+              "title": "M9-T-D02 preserves the one pinned A while B occupies the preview slot and restores only A",
+              "status": "passed",
+              "duration": 204.94891699999994
+            },
+            {
+              "title": "M9-T-D03 preserves the one pinned A while B occupies the preview slot and restores only A",
+              "status": "passed",
+              "duration": 216.50779100000022
+            },
+            {
+              "title": "M9-T-D08 closes the requested tab, releases its capability, and persists a valid adjacent/current active route",
+              "status": "passed",
+              "duration": 224.54029199999968
+            },
+            {
+              "title": "M9-T-D09 closes the requested tab, releases its capability, and persists a valid adjacent/current active route",
+              "status": "passed",
+              "duration": 198.48716700000023
+            }
+          ]
+        },
+        {
+          "name": "src/main/core/files/workspace-persistence.test.ts",
+          "count": 3,
+          "elapsedMilliseconds": 89.421630859375,
+          "assertions": [
+            {
+              "title": "commits independent scopes to the existing database and reloads without browser state",
+              "status": "passed",
+              "duration": 36.738707999999974
+            },
+            {
+              "title": "rejects capabilities, unsafe relative paths and excessive state without replacing prior routes",
+              "status": "passed",
+              "duration": 43.28666600000008
+            },
+            {
+              "title": "reports corrupt records and database failures while preserving the last committed value",
+              "status": "passed",
+              "duration": 9.421750000000088
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "prototypeBuild": {
+    "command": "node ../../node_modules/vite/bin/vite.js build --outDir /private/tmp/willyou-dev036-prototype-build",
+    "cwd": "prototypes/m6-codex",
+    "exitCode": 0,
+    "log": "/private/tmp/willyou-dev036-prototype-build-r3.log",
+    "sha256": "cc252dbe2d16f01eabfccebe334541d1b9358d78b1c6d2344e4f3c9cf7fe7b17",
+    "reportedSeconds": 8.18,
+    "warnings": "Vite部分chunk超过500kB，既有bundle拆分建议；编译成功。",
+    "boundary": "新冲突状态仅合成数据/固定route顺序及保留clean preview；未做真实浏览器或App视觉验收。",
+    "retainedHarnessFailure": {
+      "path": "/private/tmp/willyou-dev036-prototype-build.log",
+      "sha256": "5b6b87f155faa0d07470b1e53d0416b1d79e3e0b5c19121036f2620296cc165b",
+      "exitCode": 254,
+      "reason": "原型目录没有自己的vite bin，改用既有根node_modules/vite；未安装或升级依赖。"
+    }
+  },
+  "additionalRegressionAudit": {
+    "recordedAt": "2026-10-18T02:17:36.721057+00:00",
+    "method": "rg所有测试中的workspaceSnapshot/saveWorkspace/FileWorkspacePersistence/FileWorkspaceStore/file-workspace/event依赖；比对已跑30项，仅补遗漏controller4项与file-buffer中SVG/store1项。",
+    "reusedWithoutRepeat": [
+      {
+        "file": "src/renderer/features/files/workspace-store.test.ts",
+        "passed": 6
+      },
+      {
+        "file": "src/main/core/files/workspace-persistence.test.ts",
+        "passed": 3
+      },
+      {
+        "file": "src/renderer/features/files/workspace-tabs-acceptance.test.ts",
+        "passed": 5
+      },
+      {
+        "file": "src/renderer/features/files/workspace-panel-focus.test.tsx",
+        "passed": 4
+      },
+      {
+        "file": "src/renderer/features/files/workspace-persistence-panel.test.tsx",
+        "passed": 2
+      },
+      {
+        "file": "src/renderer/features/files/lifecycle-persistence-acceptance.test.ts",
+        "passed": 10
+      }
+    ],
+    "notRepeatedReason": {
+      "src/shared/ipc/rpc.test.ts": "通用RPC实现未改，新签名已经由默认client代理与注册RPC/controller链测试覆盖。",
+      "src/renderer/features/files/workspace-tree-acceptance.test.tsx": "其store显式persistence=null，DEV036冲突持久化路径不参与；原型树/点击缺陷独立证据。",
+      "otherFileBufferTests": "仅SVG用例直接创建store并调用setMode；其余buffer生命周期未在DEV036修改，已有DEV034及其他专项测试，不重复跑。"
+    },
+    "retainedInitialFailure": {
+      "classification": "test-only stale contract, not a new production defect",
+      "reason": "controller原测试使用旧saveWorkspace(scope,state)缺mutationId且workspace mock仅load/save；已生效生产契约正确返回INVALID_INPUT。完整原失败保留。",
+      "report": {
+        "path": "/private/tmp/willyou-dev036-controller-regression-r1.json",
+        "sha256": "86be7bdd394bcc50e8bbd8f59edaa9162868a0d7879a0445ca342435bfcffa47",
+        "exitCode": 1,
+        "passed": 3,
+        "failed": 1,
+        "filteredNotExecuted": 0,
+        "files": [
+          {
+            "name": "src/main/core/files/controller.test.ts",
+            "elapsedMilliseconds": 11.374755859375,
+            "assertions": [
+              {
+                "title": "authenticates every PPTX entry before edit, persistence, projection or release",
+                "status": "passed",
+                "failureMessages": []
+              },
+              {
+                "title": "limits persistent route reads and writes to the trusted main renderer",
+                "status": "failed",
+                "failureMessages": [
+                  "FileError: [INVALID_INPUT] 标签状态操作编号无效\n    at saveWorkspace (/Users/hx/hx/hxWork/SmartDD/src/main/core/files/controller.ts:49:136)\n    at /Users/hx/hx/hxWork/SmartDD/src/shared/ipc/rpc.ts:33:25\n    at /Users/hx/hx/hxWork/SmartDD/src/main/core/files/controller.test.ts:36:87\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+                ]
+              },
+              {
+                "title": "does not copy on cancellation and accepts a destination only from its native dialog",
+                "status": "passed",
+                "failureMessages": []
+              },
+              {
+                "title": "rejects viewers/foreign documents before touching a source, and revokes navigation/crash owners",
+                "status": "passed",
+                "failureMessages": []
+              }
+            ]
+          }
+        ]
+      },
+      "log": {
+        "path": "/private/tmp/willyou-dev036-controller-regression-r1.log",
+        "sha256": "68acf60139b6fa53946e4627cfcb8d3aac5c094c4b0e58a63420d7d101692079"
+      }
+    },
+    "testOnlyAdaptation": "仅controller.test.ts：将mock和可信写入适配snapshot/commit(expectedRevision)及mutationId；仍断言外来frame拒绝；新增旧无版本调用不产生commit/广播；验证可信snapshot、CAS返回与同scope可信广播。生产没有修改。",
+    "finalReports": [
+      {
+        "path": "/private/tmp/willyou-dev036-controller-regression-r2.json",
+        "sha256": "dbc3c75dcca354f5da4647a7006d2039a89c4c7b0809353f29a7a8690aa1d4b0",
+        "exitCode": 0,
+        "passed": 4,
+        "failed": 0,
+        "filteredNotExecuted": 0,
+        "files": [
+          {
+            "name": "src/main/core/files/controller.test.ts",
+            "elapsedMilliseconds": 12.681396484375,
+            "assertions": [
+              {
+                "title": "authenticates every PPTX entry before edit, persistence, projection or release",
+                "status": "passed",
+                "failureMessages": []
+              },
+              {
+                "title": "limits persistent route reads and writes to the trusted main renderer",
+                "status": "passed",
+                "failureMessages": []
+              },
+              {
+                "title": "does not copy on cancellation and accepts a destination only from its native dialog",
+                "status": "passed",
+                "failureMessages": []
+              },
+              {
+                "title": "rejects viewers/foreign documents before touching a source, and revokes navigation/crash owners",
+                "status": "passed",
+                "failureMessages": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/private/tmp/willyou-dev036-svg-regression-r1.json",
+        "sha256": "ae956d407ca8a0c79b0d85e1d94be2ed27d9a9effec4263c6e42f0f1ad617f1e",
+        "exitCode": 0,
+        "passed": 1,
+        "failed": 0,
+        "filteredNotExecuted": 14,
+        "files": [
+          {
+            "name": "src/renderer/features/files/file-buffer.test.ts",
+            "elapsedMilliseconds": 6.74853515625,
+            "assertions": [
+              {
+                "title": "loads SVG source on mode entry, saves before returning to the image and retains source on a save conflict",
+                "status": "passed",
+                "failureMessages": []
+              },
+              {
+                "title": "does not create an editor or read the complete bytes for non-text metadata",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "drops a clean text view when the same local path becomes binary, then can recover to text",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "preserves CSV BOM, quoting, separators and mixed EOLs through preview and a targeted source save",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "uses separate 500ms checkpoints and 3s autosaves",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "M9-T-H02: real history restores clean state without saving across checkpoint and autosave deadlines",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "keeps new edits dirty when an older save completes",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "reloads clean external edits and retains all dirty conflict versions",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "does not retry an unknown commit or remove recovery material after using disk",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "resolves a superseded checkpoint when undo returns the buffer to disk content",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "discards late success/error after disposal and releases the backend reference",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "leaves the in-memory buffer intact if checkpoint storage fails",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "flushes the latest edit after awaiting an older save during close",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "can explicitly discard a durable older draft when its latest checkpoint failed",
+                "status": "skipped",
+                "failureMessages": []
+              },
+              {
+                "title": "keeps an updated draft if the discard receipt refuses an older version",
+                "status": "skipped",
+                "failureMessages": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "additionalUniquePassed": 5,
+    "previousUniquePassed": 30,
+    "totalUniqueRelevantPassed": 35,
+    "filteredTestsBoundary": "SVG命令使用-t选择唯一store相关用例，报告其余14条pending是filter未执行，不作为通过、失败或本轮完整套件。",
+    "commands": [
+      "pnpm test src/main/core/files/controller.test.ts --reporter=json --outputFile=/private/tmp/willyou-dev036-controller-regression-r2.json",
+      "pnpm test src/renderer/features/files/file-buffer.test.ts -t 'loads SVG source on mode entry' --reporter=json --outputFile=/private/tmp/willyou-dev036-svg-regression-r1.json"
+    ],
+    "nodeTypecheck": {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.node.json",
+      "exitCode": 0,
+      "path": "/private/tmp/willyou-dev036-controller-typecheck-r2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    "postPackageTestOnlyDelta": {
+      "path": "src/main/core/files/controller.test.ts",
+      "r3SnapshotSha256": "0859eb9ba24293a7339d900ce81b29a003a77b8647d15dccde8911c1de4be178",
+      "currentSha256": "95ddb88a1e054c71a979107e955f9d18639928a2feb4cb5b3890328bd2529c6f",
+      "archive": {
+        "path": "/private/tmp/willyou-dev036-post-r3-test-only.tar.gz",
+        "sha256": "4c5c899ecbb61ebbf132b38c33d7770a84ef56d17065dcd4264420dc7da6d35f"
+      },
+      "boundary": "仅测试适配在r3构建成功及912文件sourcecheck后进行；不进入包、不需为此重包。"
+    },
+    "productionMatchesR3": {
+      "src/shared/file-workspace.ts": {
+        "sha256": "d3b78a3da8afcdc078813a851013fff5e6d295c702ac33580eab1b95b9d3dbf5",
+        "matches": true
+      },
+      "src/shared/events.ts": {
+        "sha256": "f5cd1eb55d890616d58de001f10fffedd19bb1deb35e2ef40221aa2f18fc61c4",
+        "matches": true
+      },
+      "src/main/core/files/workspace-persistence.ts": {
+        "sha256": "6bf256a564b4cdbdbaa4641a518d9231935c3e42d1adb28e7e4ff318a2eb2441",
+        "matches": true
+      },
+      "src/main/core/files/controller.ts": {
+        "sha256": "fdac22d3591ee90125029163756af7f74727a45a9c6daa13a06de348ff30cd6c",
+        "matches": true
+      },
+      "src/renderer/features/files/workspace-store.ts": {
+        "sha256": "2018295fd374d4688c86eed148518efc93577da51eba1a6ed8701ce3c321c02e",
+        "matches": true
+      },
+      "src/renderer/features/files/workspace-panel.tsx": {
+        "sha256": "0c1ff4fa416e9d83038b3bd0db3aaafa0008cfa026b776a194b90364b4461f97",
+        "matches": true
+      }
+    }
+  },
+  "r3BuiltPackage": {
+    "evidence": {
+      "path": "/private/tmp/willyou-m9-acceptance-batch-r3-package.json",
+      "sha256": "86f38acc11a55dca327407f602a106e3d1383e23dfeffc7e389d041c51a4a483"
+    },
+    "details": {
+      "at": "2026-10-18T10:16:36.949421+08:00",
+      "command": "pnpm package --output-dir /private/tmp/willyou-m9-acceptance-batch-r3-build",
+      "exitCode": 0,
+      "app": "/private/tmp/willyou-m9-acceptance-batch-r3-build/mac-arm64/WillYou.app",
+      "asarSha256": "c4ef4b83f9786e9f876e85b9f0997c4354e0e365bb987e34ac16e491b96ae2b6",
+      "asarSize": 42859778,
+      "brokerSha256": "9af554bf01ed879ca39e0792b771e486fe9aca8654a7223ea73825a1126f3b7c",
+      "sourceArchive": "/private/tmp/willyou-m9-acceptance-batch-r3-sources.tar.gz",
+      "sourceArchiveSha256": "fc129143ab873d32a06e1948a743cce648503e5cf04375170f91e96eb3836b91",
+      "manifest": "/private/tmp/willyou-m9-acceptance-batch-r3-sources.json",
+      "manifestSha256": "9b359af52187d8be576c05ee367475fdcd3f4da55387c8cf33419da3a9eaabf3",
+      "fileCount": 912,
+      "changedAfterBuild": [],
+      "smoke": {
+        "sqlite": "passed",
+        "pty": "passed",
+        "voiceBridge": "passed",
+        "fileBroker": "passed",
+        "officeRenderer": "passed",
+        "fileWatcher": "passed"
+      },
+      "log": "/private/tmp/willyou-m9-acceptance-batch-r3-build.log",
+      "logSha256": "f95b033eb0d89d33bff1a1322b1761bf46a218327130dc237a03acf2cbc13851"
+    },
+    "boundary": "构建由主代理完成，源清单和原生hash已核；本代理未操作r3 GUI，真实App复验由主代理记录。"
+  }
+}

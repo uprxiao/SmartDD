@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "ranAt": "2026-10-17T07:32:52.999Z",
+  "browser": "155.0.8059.80",
+  "target": "http://127.0.0.1:4176/tests/r34-pdf-runtime.html",
+  "scope": "isolated synthetic WillYou prototype; real Chromium workers; no Codex operations; not formal App acceptance",
+  "budget": {
+    "scope": "R3.4 isolated Chromium synthetic PDF/Notebook design feasibility; not installed App acceptance",
+    "viewport": "1280x960 DPR1",
+    "largePages": 2000,
+    "rounds": 3,
+    "openReadyMsMax": 10000,
+    "cancelDisposeMsMax": 1000,
+    "workerFailureRecoveryMsMax": 5000,
+    "mountedMainPagesMax": 8,
+    "canvasElementsMax": 20,
+    "activeWorkersAfterClose": 0,
+    "mainLongTaskMsMax": 250,
+    "postGcHeapGrowthBytesMax": 20971520,
+    "boundary": "Page JS heap and native worker lifetime are measured; full renderer/GPU/process RSS and installed resource loading remain separate. CJK glyph coverage depends on system fallback fonts."
+  },
+  "checks": [
+    {
+      "id": "PDF00",
+      "title": "synchronous invalid source rejection disposes its native worker",
+      "status": "passed",
+      "detail": {
+        "error": "Invalid PDF url data: either string or URL-object is expected in the url property.",
+        "runtime": {
+          "created": 1,
+          "destroyed": 1,
+          "active": 0,
+          "sessions": []
+        }
+      }
+    },
+    {
+      "id": "PDF01",
+      "title": "native dedicated pdf.js worker renders artifact canvas/text/links",
+      "status": "passed",
+      "detail": {
+        "runtime": {
+          "created": 2,
+          "destroyed": 1,
+          "active": 1,
+          "sessions": [
+            {
+              "id": 2,
+              "nativeWorker": true,
+              "disposed": false,
+              "failed": false,
+              "pendingTimers": 0
+            }
+          ]
+        },
+        "workerUrls": [
+          "http://127.0.0.1:4176/node_modules/pdfjs-dist/build/pdf.worker.min.mjs"
+        ]
+      }
+    },
+    {
+      "id": "PDF02",
+      "title": "real worker crash surfaces error and terminates owned worker",
+      "status": "passed",
+      "detail": {
+        "alert": "PDF 页面渲染失败\n\nPDF 工作进程意外退出，请重试。原始文件没有被修改。\n\n重试"
+      }
+    },
+    {
+      "id": "PDF03",
+      "title": "retry creates a fresh native worker and renders",
+      "status": "passed",
+      "detail": {
+        "ms": 274
+      }
+    },
+    {
+      "id": "FATAL",
+      "title": "runtime probe completed",
+      "status": "failed",
+      "detail": {
+        "error": "page.evaluate: PdfWorkerTimeout: PDF loading timed out\n    at errorOf (http://127.0.0.1:4176/src/file-pdf-engine.mjs?t=1792222275894:12:50)\n    at http://127.0.0.1:4176/src/file-pdf-engine.mjs?t=1792222275894:61:103\n    at /Users/liubu/Documents/ChatGPT/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/证据/r34-pdf-runtime-check.mjs:42:14"
+      }
+    }
+  ],
+  "measurements": [],
+  "screenshots": [
+    {
+      "file": "r34-pdf-artifact.png",
+      "sha256": "20b572f85b252245ca22666b83d296a92da8cda6c958fa8f83fdf030e9cc3193"
+    },
+    {
+      "file": "r34-failure.png",
+      "sha256": "3881d2dea6a11ce90e3ad0055d2473214305eb5a45db07bc70f20a5c7a102a0e"
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "summary": {
+    "passed": 4,
+    "failed": 1
+  }
+}

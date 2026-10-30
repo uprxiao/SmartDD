@@ -1,0 +1,545 @@
+{
+  "at": "2026-10-19T09:56:48.829Z",
+  "layer": "A",
+  "caseIds": [
+    "M9-T-Y15",
+    "M9-T-Y16"
+  ],
+  "scratch": "/private/tmp/willyou-pdf-safety-app-w4cRhN",
+  "projectPath": "/private/tmp/willyou-pdf-formats-h40rtmo3/project",
+  "userData": "/private/tmp/willyou-pdf-safety-app-w4cRhN/userdata",
+  "executable": "/private/tmp/willyou-m9-acceptance-batch-r79-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "27955322091cbe2e2dbc7f6668c757c5b9e7fbbe53e9d4693eef2ae90e532e86",
+  "before": {
+    "encrypted.pdf": {
+      "sha256": "c412661ad81258c5110672fe6d2f5be6ab780c22cf58aef95e1abb3e9daef73b",
+      "inode": "50138156",
+      "mtimeNs": "1792403189985358491",
+      "ctimeNs": "1792403189985358491"
+    },
+    "truncated.pdf": {
+      "sha256": "9ffb22240a4a4f96e9850b632d5186c36723d473e5beca98a0c7245622ea8ee4",
+      "inode": "50138158",
+      "mtimeNs": "1792403189985741784",
+      "ctimeNs": "1792403189985741784"
+    },
+    "garbage.pdf": {
+      "sha256": "de7ef6753f04ce592af55b7c15e1f03cf28d454d4e82a3b7537a9b3d13eeeaac",
+      "inode": "50138157",
+      "mtimeNs": "1792403189985543117",
+      "ctimeNs": "1792403189985543117"
+    },
+    "invalid.pdf": {
+      "sha256": "c6b7375f3b4a2cffb0025329ca4cd63f5f303fcd0fd32668a5b6ce2c62335d55",
+      "inode": "50138159",
+      "mtimeNs": "1792403189985891368",
+      "ctimeNs": "1792403189985891368"
+    }
+  },
+  "checks": [
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "missing password has dialog and no page content",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "cancel remains a password error after real destroy settles",
+      "pass": true,
+      "cancelled": "已取消输入密码。需要密码才能打开此 PDF。重试"
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "retry produces a fresh missing-password prompt",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "two wrong attempts preserve prompt and expose no page",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "correct password dismisses prompt and renders actual PDF pixels/text",
+      "pass": true,
+      "rendered": {
+        "width": 285,
+        "height": 369,
+        "ink": 2335,
+        "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+      }
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "light",
+      "scenario": "reopen does not reuse password; close during retry removes dialog and web storage has no password",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y16",
+      "theme": "light",
+      "scenario": "truncated.pdf rejects with retry and reachable external-open choices, no launch",
+      "pass": true,
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试",
+      "firstErrorMs": 219,
+      "choices": "Google Chrome（系统默认）PreviewColorSync UtilityBooksGoogle Chrome for TestingGoogle Chrome for TestingSafariChromiumGoogle Chrome for Testing记住选择的应用"
+    },
+    {
+      "caseId": "M9-T-Y16",
+      "theme": "light",
+      "scenario": "garbage.pdf rejects with retry and reachable external-open choices, no launch",
+      "pass": true,
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试",
+      "firstErrorMs": 222,
+      "choices": "Google Chrome（系统默认）PreviewColorSync UtilityBooksGoogle Chrome for TestingGoogle Chrome for TestingSafariChromiumGoogle Chrome for Testing记住选择的应用"
+    },
+    {
+      "caseId": "M9-T-Y16",
+      "theme": "light",
+      "scenario": "invalid.pdf rejects with retry and reachable external-open choices, no launch",
+      "pass": true,
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试",
+      "firstErrorMs": 221,
+      "choices": "Google Chrome（系统默认）PreviewColorSync UtilityBooksGoogle Chrome for TestingGoogle Chrome for TestingSafariChromiumGoogle Chrome for Testing记住选择的应用"
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "dark",
+      "scenario": "missing password has dialog and no page content",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "dark",
+      "scenario": "cancel remains a password error after real destroy settles",
+      "pass": true,
+      "cancelled": "已取消输入密码。需要密码才能打开此 PDF。重试"
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "dark",
+      "scenario": "retry produces a fresh missing-password prompt",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "dark",
+      "scenario": "two wrong attempts preserve prompt and expose no page",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "dark",
+      "scenario": "correct password dismisses prompt and renders actual PDF pixels/text",
+      "pass": true,
+      "rendered": {
+        "width": 285,
+        "height": 369,
+        "ink": 2335,
+        "text": "文件浏览工作区 Overview项目维护根目录；会话保存面板与标签状态；文件身份由宿主与路径共同确定。中文与English mixed text 12345。PAGE_ONE_MARKER 第一页的结尾，下一页开始是交互。交互与状态PAGE_TWO_MARKER 单击预览，双击固定；保存时检查外部变化，冲突保留草稿。验收与交付PAGE_THREE_MARKER 全部用例通过才算开发完成。"
+      }
+    },
+    {
+      "caseId": "M9-T-Y15",
+      "theme": "dark",
+      "scenario": "reopen does not reuse password; close during retry removes dialog and web storage has no password",
+      "pass": true
+    },
+    {
+      "caseId": "M9-T-Y16",
+      "theme": "dark",
+      "scenario": "truncated.pdf rejects with retry and reachable external-open choices, no launch",
+      "pass": true,
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试",
+      "firstErrorMs": 222,
+      "choices": "Google Chrome（系统默认）PreviewColorSync UtilityBooksGoogle Chrome for TestingGoogle Chrome for TestingSafariChromiumGoogle Chrome for Testing记住选择的应用"
+    },
+    {
+      "caseId": "M9-T-Y16",
+      "theme": "dark",
+      "scenario": "garbage.pdf rejects with retry and reachable external-open choices, no launch",
+      "pass": true,
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试",
+      "firstErrorMs": 222,
+      "choices": "Google Chrome（系统默认）PreviewColorSync UtilityBooksGoogle Chrome for TestingGoogle Chrome for TestingSafariChromiumGoogle Chrome for Testing记住选择的应用"
+    },
+    {
+      "caseId": "M9-T-Y16",
+      "theme": "dark",
+      "scenario": "invalid.pdf rejects with retry and reachable external-open choices, no launch",
+      "pass": true,
+      "error": "文件不是有效的 PDF，或已损坏、不完整。重试",
+      "firstErrorMs": 222,
+      "choices": "Google Chrome（系统默认）PreviewColorSync UtilityBooksGoogle Chrome for TestingGoogle Chrome for TestingSafariChromiumGoogle Chrome for Testing记住选择的应用"
+    }
+  ],
+  "status": "passed",
+  "boundary": "A normal packaged App with actual native file/resource/PDF.js Worker and trusted UI, private userData. External-open entries are inspected without launching any other app. No store/DOM value/RPC result substitution; no clipboard, task, CLI or model.",
+  "pid": 91362,
+  "runtime": {
+    "executable": "/private/tmp/willyou-m9-acceptance-batch-r79-build/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "packaged": true,
+    "userData": "/private/tmp/willyou-pdf-safety-app-w4cRhN/userdata",
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    }
+  },
+  "webStorage": {
+    "localValues": 3,
+    "sessionValues": 0,
+    "noPassword": true
+  },
+  "inputs": [
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "Escape",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "Escape",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "Escape",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "a",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "Escape",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "Escape",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    },
+    {
+      "type": "keydown",
+      "key": "Escape",
+      "trusted": true
+    },
+    {
+      "type": "pointerdown",
+      "trusted": true
+    }
+  ],
+  "observerRestored": true,
+  "after": {
+    "encrypted.pdf": {
+      "sha256": "c412661ad81258c5110672fe6d2f5be6ab780c22cf58aef95e1abb3e9daef73b",
+      "inode": "50138156",
+      "mtimeNs": "1792403189985358491",
+      "ctimeNs": "1792403189985358491"
+    },
+    "truncated.pdf": {
+      "sha256": "9ffb22240a4a4f96e9850b632d5186c36723d473e5beca98a0c7245622ea8ee4",
+      "inode": "50138158",
+      "mtimeNs": "1792403189985741784",
+      "ctimeNs": "1792403189985741784"
+    },
+    "garbage.pdf": {
+      "sha256": "de7ef6753f04ce592af55b7c15e1f03cf28d454d4e82a3b7537a9b3d13eeeaac",
+      "inode": "50138157",
+      "mtimeNs": "1792403189985543117",
+      "ctimeNs": "1792403189985543117"
+    },
+    "invalid.pdf": {
+      "sha256": "c6b7375f3b4a2cffb0025329ca4cd63f5f303fcd0fd32668a5b6ce2c62335d55",
+      "inode": "50138159",
+      "mtimeNs": "1792403189985891368",
+      "ctimeNs": "1792403189985891368"
+    }
+  },
+  "exit": {
+    "pid": 91362,
+    "code": 0,
+    "signal": null
+  },
+  "persistedScan": {
+    "ownedFilesChecked": 50,
+    "matchedPaths": [],
+    "boundary": "All owned userData regular-file bytes plus Electron log after normal exit; no memory/other-user-data claim."
+  },
+  "finishedAt": "2026-10-19T09:56:57.025Z"
+}

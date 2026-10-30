@@ -1,0 +1,1 @@
+export const message='MODULE_中文🙂';

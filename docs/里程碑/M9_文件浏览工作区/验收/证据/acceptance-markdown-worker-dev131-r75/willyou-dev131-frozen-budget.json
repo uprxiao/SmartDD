@@ -1,0 +1,40 @@
+{
+  "path": "docs/里程碑/M9_文件浏览工作区/技研/实验/dev131-markdown-worker-budget.json",
+  "sha256": "b7767bc9b2ce57ca40472db8852746c096a5d4745b464510f86259c66b4f6200",
+  "budget": {
+    "id": "M9-DEV131-MARKDOWN-BUDGET-E1",
+    "frozenAt": "2026-10-19T07:50:16.478Z",
+    "revision": "R3.4/R3.4-P1",
+    "caseId": "M9-T-Y06",
+    "platform": "macOS arm64",
+    "sampleBytes": [
+      102400,
+      262144,
+      1048576,
+      2097152,
+      10485760
+    ],
+    "workerReadyMsMax": 5000,
+    "parseRequestMsMax": 15000,
+    "firstWindowPaintMsMax": 15000,
+    "mainLongTaskMsMax": 100,
+    "cancelToTargetDestroyedMsMax": 500,
+    "watchdogMs": 15000,
+    "watchdogOvershootMsMax": 1000,
+    "renderWindowBlocksMax": 60,
+    "windowHtmlUnitsMax": 2097152,
+    "retainedWorkerHeapBytesMax": 268435456,
+    "rendererPeakWorkingSetBytesMax": 1073741824,
+    "closedMainPostGcHeapGrowthBytesMax": 31457280,
+    "basis": [
+      "Retain reviewed R3.4 feasibility bounds: ready5s,parse15s,main longtask100ms,cancel500ms,timeout cleanup1s,window60,post-GC main growth30MiB. Runtime current r75 watchdog is actually15s; formal App fault run must wait it, no clock acceleration.",
+      "Existing R3.4 fixture generator and original Y06 sizes form a five-size union. No easier replacement corpus. Exact byte/code-unit hashes are separately frozen.",
+      "Exploratory exact packaged Node Worker10MiB parse268ms and observed isolate heap151.4MiB; App10MiB parse326ms,first window387.1ms,observed retained Worker heap143426896bytes. Fix Worker metadata observer to WeakRef before judging GC: first strong-reference observation retained callbacks/editor; corrected five-file closed-main growth2734096bytes. Both raw runs preserved.",
+      "Worker retained-heap ceiling256MiB and renderer peak working-set ceiling1GiB are pre-formal engineering bounds, roughly1.7x current raw high-water values, not retrospective user SLA or OS limits. App reports Electron working/peak-working-set in KiB, converted to bytes. Worker heap is a post-parse/window observation, not a claimed continuous heap peak; process peak is recorded separately.",
+      "Main post-GC30MiB bound means all measured document tabs closed and no source intentionally retained by the observer; active document heap and source buffers are recorded separately. UI long tasks are measured from original parse post through first real window paint, with full-source hashing/serialization outside the measured interval.",
+      "Raw Node parent tick gaps are not browser long tasks. Natural App/I samples exclude explicit transport delay, invalid-window and startup-throw faults. Formal cancellation requires actual native target destruction, not only terminate() returning."
+    ],
+    "changePolicy": "Frozen before formal performance acceptance. Keep failures and raw measures; never relax this budget, replace inputs, change memory scope or count partial/mocked rendering as full success to obtain a pass."
+  },
+  "boundary": "Independent witness before formal I/A performance; earlier source-functional and exploratory runs do not count as formal performance passes."
+}

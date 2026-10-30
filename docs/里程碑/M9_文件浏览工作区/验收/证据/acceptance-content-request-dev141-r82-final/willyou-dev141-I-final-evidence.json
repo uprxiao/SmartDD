@@ -1,0 +1,168 @@
+{
+  "at": "2026-10-19T12:05:17.906Z",
+  "caseId": "M9-T-R02",
+  "broker": "/private/tmp/willyou-m9-acceptance-batch-r81-build/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "boundary": "I real registered sender/controller/FileSearchService/native walk and literal scan, original component controls/store. IPC event routing local to jsdom, no fabricated search rows, no native GUI/model/clipboard/OS external action.",
+  "rows": [
+    {
+      "scenario": "actual component request and real body hits",
+      "request": {
+        "id": "122c0f38-4bda-4d80-9c4d-a8549785a01b",
+        "root": {
+          "lease": "b75a7e28-16fc-4f53-a9e9-6773910a4d60",
+          "generation": 1
+        },
+        "kind": "content",
+        "query": "bodyOnly141",
+        "mask": "*.ts",
+        "roots": [
+          {
+            "lease": "b75a7e28-16fc-4f53-a9e9-6773910a4d60",
+            "generation": 1
+          }
+        ],
+        "fileMask": "*.ts",
+        "priorityFolders": [
+          "preferred/deep",
+          "preferred"
+        ]
+      },
+      "result": {
+        "id": "122c0f38-4bda-4d80-9c4d-a8549785a01b",
+        "kind": "content",
+        "issues": [],
+        "skipped": 0,
+        "rows": [
+          {
+            "revision": {
+              "size": 22,
+              "inode": "50446784",
+              "device": "16777232",
+              "changedNs": "1792411517427901551",
+              "modifiedNs": "1792411517427901551",
+              "hash": "4a58457901810bf0ecddf40e0da728d3ca7fe58f0098cd361d74af36cd35fa41"
+            },
+            "ranges": [
+              {
+                "to": 11,
+                "from": 0
+              }
+            ],
+            "rangesTruncated": false,
+            "rawOffset": 0,
+            "text": "bodyOnly141 preferred",
+            "relativePath": "preferred/deep/unopened/hit.ts",
+            "line": 1
+          },
+          {
+            "revision": {
+              "size": 21,
+              "inode": "50446782",
+              "device": "16777232",
+              "changedNs": "1792411517427812425",
+              "modifiedNs": "1792411517427812425",
+              "hash": "2cd982f1a8cb22aa37bbdb159b43a847a32adb76330d2a60a19e9a432c08495e"
+            },
+            "ranges": [
+              {
+                "to": 11,
+                "from": 0
+              }
+            ],
+            "rangesTruncated": false,
+            "rawOffset": 0,
+            "text": "bodyOnly141 ordinary",
+            "relativePath": "aaa/ordinary.ts",
+            "line": 1
+          },
+          {
+            "revision": {
+              "size": 21,
+              "inode": "50446786",
+              "device": "16777232",
+              "changedNs": "1792411517427975842",
+              "modifiedNs": "1792411517427975842",
+              "hash": "8886db199b9bc3cb3c3593f00df8a9ed5dac6d44dd467ecc127c2de16ec90014"
+            },
+            "ranges": [
+              {
+                "to": 11,
+                "from": 0
+              }
+            ],
+            "rangesTruncated": false,
+            "rawOffset": 0,
+            "text": "bodyOnly141 fallback",
+            "relativePath": "preferred-extra/segment.ts",
+            "line": 1
+          }
+        ],
+        "searched": 4,
+        "limited": false,
+        "paths": []
+      },
+      "unopenedRetained": true
+    },
+    {
+      "scenario": "different selected root removes active path hint",
+      "request": {
+        "id": "d392481b-0dbd-4e3b-9aa5-d7fa2159bb41",
+        "root": {
+          "lease": "739a60d3-6ca3-498e-b8fd-afa212129ab7",
+          "generation": 1
+        },
+        "kind": "content",
+        "query": "bodyOnly141",
+        "mask": "*.ts",
+        "roots": [
+          {
+            "lease": "739a60d3-6ca3-498e-b8fd-afa212129ab7",
+            "generation": 1
+          }
+        ],
+        "fileMask": "*.ts",
+        "priorityFolders": []
+      },
+      "result": {
+        "id": "d392481b-0dbd-4e3b-9aa5-d7fa2159bb41",
+        "kind": "content",
+        "issues": [],
+        "skipped": 0,
+        "rows": [
+          {
+            "revision": {
+              "size": 22,
+              "inode": "50446845",
+              "device": "16777232",
+              "changedNs": "1792411517622057998",
+              "modifiedNs": "1792411517622057998",
+              "hash": "18cc1de466609de0376482afd57cc5d02b26f8aec0c1c388877af22cee51bbb5"
+            },
+            "ranges": [
+              {
+                "to": 11,
+                "from": 0
+              }
+            ],
+            "rangesTruncated": false,
+            "rawOffset": 0,
+            "text": "bodyOnly141 otherRoot",
+            "relativePath": "other.ts",
+            "line": 1
+          }
+        ],
+        "searched": 1,
+        "limited": false,
+        "paths": []
+      }
+    },
+    {
+      "scenario": "native cap/priorities and rejects",
+      "legacyFirst": "a-cap.ts",
+      "first": "z-priority/hit.ts",
+      "count": 100,
+      "limited": true,
+      "rejected": 4
+    }
+  ]
+}

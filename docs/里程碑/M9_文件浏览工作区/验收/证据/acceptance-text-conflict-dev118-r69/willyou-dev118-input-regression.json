@@ -1,0 +1,74 @@
+{
+  "startedAt": "2026-10-19T02:25:28.933Z",
+  "observations": [
+    {
+      "scenario": "interrupted candidate -> external conflict -> public keepLocal",
+      "before": {
+        "conflict": true,
+        "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+        "version": 1,
+        "reads": 2,
+        "source": "# External disk\n",
+        "raw": "# 未确认候选\n中文\n",
+        "interrupted": true
+      },
+      "after": {
+        "conflict": true,
+        "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+        "version": 1,
+        "reads": 2,
+        "source": "# External disk\n",
+        "raw": "# 未确认候选\n中文\n",
+        "interrupted": true
+      },
+      "result": false,
+      "saveCalls": 0
+    },
+    {
+      "scenario": "pending before keepLocal",
+      "before": {
+        "conflict": true,
+        "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+        "version": 1,
+        "reads": 2,
+        "raw": "# Local confirmed\n"
+      },
+      "after": {
+        "conflict": true,
+        "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+        "version": 1,
+        "reads": 2,
+        "raw": "# Local confirmed\n"
+      },
+      "result": false,
+      "saveCalls": 0
+    },
+    {
+      "scenario": "composition begins during disk read",
+      "before": {
+        "conflict": true,
+        "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+        "version": 2,
+        "raw": "# 新候选\n",
+        "source": "# External disk\n"
+      },
+      "after": {
+        "conflict": true,
+        "baseHash": "8549040698f282603c6ae12bbd546daad193708438222b0ef6cdfd3f6b74f613",
+        "version": 2,
+        "raw": "# 新候选\n",
+        "source": "# External disk\n"
+      },
+      "result": false,
+      "saveCalls": 0
+    }
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-acceptance-batch-r68-build/mac-arm64/WillYou.app",
+    "asarSha256": "cdf4cf129fb3538dfd2318c64d1c290d11006a8bfd3260179484fdb1fb8db3a9",
+    "brokerSha256": "2fa4d850af4cca2826d638948771f0bae40a6580a5189fe95a923e52c89b6e61",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "finishedAt": "2026-10-19T02:25:29.578Z"
+}

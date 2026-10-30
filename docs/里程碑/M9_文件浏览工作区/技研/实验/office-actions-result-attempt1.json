@@ -1,0 +1,270 @@
+{
+  "revision": "R3.4",
+  "startedAt": "2026-10-17T07:41:55Z",
+  "environment": "macOS-26.6.1-arm64-arm-64bit",
+  "scriptSha256": "8ed1044b2afeab8ad892047799f15a713ea00f5e59df30fee0e115560a612cfd",
+  "scope": "Synthetic sheet action dependency proof, not complete Office engine or production save",
+  "cases": [
+    {
+      "id": "OA01",
+      "title": "sheet改名同步直接公式、命名区域与图表，保留字面量/格式/部件",
+      "status": "passed",
+      "durationMs": 3.06,
+      "facts": {
+        "changed": [
+          "xl/charts/chart1.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ],
+        "added": [],
+        "removed": [],
+        "unchangedPartCount": 15,
+        "internalRelationships": 13,
+        "opaquePreserved": true,
+        "dependencyEdits": [
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "before": "Data!$B$2+'Data'!B3",
+            "after": "'计划 O''Brien'!$B$2+'计划 O''Brien'!B3"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "before": "SUM(Data!B2:B3)",
+            "after": "SUM('计划 O''Brien'!B2:B3)"
+          },
+          {
+            "part": "xl/charts/chart1.xml",
+            "before": "'Data'!B1",
+            "after": "'计划 O''Brien'!B1"
+          },
+          {
+            "part": "xl/charts/chart1.xml",
+            "before": "'Data'!$B$2:$B$3",
+            "after": "'计划 O''Brien'!$B$2:$B$3"
+          },
+          {
+            "part": "xl/workbook.xml",
+            "before": "'Data'!$A$2:$A$3",
+            "after": "'计划 O''Brien'!$A$2:$A$3"
+          }
+        ],
+        "stringLiteralsPreserved": true,
+        "stableSheetIdsAndRelationships": true
+      }
+    },
+    {
+      "id": "OA02",
+      "title": "sheet重排保留身份并重映射localSheetId/activeTab",
+      "status": "passed",
+      "durationMs": 4.64,
+      "facts": {
+        "changed": [
+          "xl/workbook.xml"
+        ],
+        "added": [],
+        "removed": [],
+        "unchangedPartCount": 17,
+        "internalRelationships": 13,
+        "opaquePreserved": true,
+        "order": [
+          "Calc",
+          "Spare",
+          "Data"
+        ],
+        "active": "Calc",
+        "localDefinedNamesRemainOnSameIdentity": true
+      }
+    },
+    {
+      "id": "OA03",
+      "title": "删除无引用工作表只删除其私有部件与本地名称",
+      "status": "passed",
+      "durationMs": 2.91,
+      "facts": {
+        "changed": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml"
+        ],
+        "added": [],
+        "removed": [
+          "xl/worksheets/sheet3.xml"
+        ],
+        "unchangedPartCount": 14,
+        "internalRelationships": 12,
+        "opaquePreserved": true,
+        "deletedLocalName": true,
+        "dependencyEdits": []
+      }
+    },
+    {
+      "id": "OA04",
+      "title": "删除被直接引用工作表产生明确REF错误并清理专属图表/批注关系",
+      "status": "passed",
+      "durationMs": 2.3,
+      "facts": {
+        "changed": [
+          "[Content_Types].xml",
+          "xl/_rels/workbook.xml.rels",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet2.xml"
+        ],
+        "added": [],
+        "removed": [
+          "xl/charts/chart1.xml",
+          "xl/comments/comment1.xml",
+          "xl/drawings/_rels/drawing1.xml.rels",
+          "xl/drawings/commentsDrawing1.vml",
+          "xl/drawings/drawing1.xml",
+          "xl/worksheets/_rels/sheet1.xml.rels",
+          "xl/worksheets/sheet1.xml"
+        ],
+        "unchangedPartCount": 7,
+        "internalRelationships": 8,
+        "opaquePreserved": true,
+        "dependencyEdits": [
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "before": "Data!$B$2+'Data'!B3",
+            "after": "#REF!+#REF!"
+          },
+          {
+            "part": "xl/worksheets/sheet2.xml",
+            "before": "SUM(Data!B2:B3)",
+            "after": "SUM(#REF!)"
+          },
+          {
+            "part": "xl/workbook.xml",
+            "before": "'Data'!$A$2:$A$3",
+            "after": "#REF!"
+          }
+        ],
+        "invalidReferencesAreExplicit": true
+      }
+    },
+    {
+      "id": "OA05",
+      "title": "空/重复/非法/过长名称拒绝，不产生部分改名",
+      "status": "passed",
+      "durationMs": 1.03,
+      "facts": {
+        "rejected": [
+          "",
+          "calc",
+          "bad/name",
+          "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "'leading",
+          "trailing'"
+        ]
+      }
+    },
+    {
+      "id": "OA06",
+      "title": "最后可见工作表删除被拒绝",
+      "status": "passed",
+      "durationMs": 0.19,
+      "facts": {
+        "rejected": "must retain a visible worksheet"
+      }
+    },
+    {
+      "id": "OA07",
+      "title": "3D/动态/shared/array依赖拒绝有限补丁，不伪装完整支持",
+      "status": "passed",
+      "durationMs": 0.3,
+      "facts": {
+        "rejected": [
+          {
+            "kind": "3D",
+            "reason": "unsupported 3D sheet reference: Data:Calc!B2"
+          },
+          {
+            "kind": "dynamic",
+            "reason": "dynamic INDIRECT dependency requires a richer semantic adapter"
+          },
+          {
+            "kind": "shared",
+            "reason": "unsupported formula storage shared"
+          },
+          {
+            "kind": "array",
+            "reason": "unsupported formula storage array"
+          }
+        ],
+        "capabilityStillRequired": "richer dependency adapter, not removed from M9"
+      }
+    },
+    {
+      "id": "OA08",
+      "title": "同名外部工作簿与字符串不被改为本机sheet",
+      "status": "passed",
+      "durationMs": 0.05,
+      "facts": {
+        "before": "[other.xlsx]Data!A1+Data!A1+\"Data!A1\"",
+        "after": "[other.xlsx]Data!A1+'Renamed'!A1+\"Data!A1\"",
+        "externalFetch": false,
+        "scope": "formula token unit; not a fully linked external workbook fixture"
+      }
+    },
+    {
+      "id": "OA09",
+      "title": "sheet操作仍拒绝非预期未知部件损失",
+      "status": "passed",
+      "durationMs": 0.01,
+      "facts": {
+        "rejected": "unexpected package mutation: changed={'xl/charts/chart1.xml', 'xl/worksheets/sheet2.xml', 'xl/workbook.xml'} added=set() removed={'customXml/m9-opaque.bin'}"
+      }
+    },
+    {
+      "id": "OA10",
+      "title": "仍被其它关系引用的部件不误删除，其依赖显式失效",
+      "status": "passed",
+      "durationMs": 0.5,
+      "facts": {
+        "sharedPartRetained": true,
+        "chartDependencyMarkedRef": true,
+        "boundary": "synthetic extra internal relationship; not a renderer compatibility claim"
+      }
+    },
+    {
+      "id": "OA11",
+      "title": "独立LibreOffice重算改名后的跨sheet公式而非只读字符串",
+      "status": "passed",
+      "durationMs": 2196.27,
+      "facts": {
+        "independentEngine": "LibreOffice",
+        "returnCode": 0,
+        "computedValues": [
+          7,
+          7,
+          100
+        ],
+        "convertedFileUsedOnlyForValidation": true,
+        "candidateHash": "3bb955f45d12f4644bba76e46be7a89c96a3d3ab621d4c86d7f15d1a7706a98a",
+        "calculatedCopyHash": "d4230a67ad398a1cd2e1c34a48213f284780be613d8d49de746c8e0b53e3dc24"
+      }
+    },
+    {
+      "id": "OA12",
+      "title": "独立LibreOffice重算删除引用为REF错误且无关字符串公式仍100",
+      "status": "failed",
+      "durationMs": 1417.81,
+      "facts": {
+        "error": "AssertionError(['#NAME?', '#NAME?', 100])"
+      }
+    }
+  ],
+  "originalInputUnchanged": true,
+  "summary": {
+    "passed": 11,
+    "failed": 1
+  },
+  "completedAt": "2026-10-17T07:41:59Z",
+  "cleanup": "Owned temporary XLSX files, private LibreOffice profiles and converted copies removed",
+  "limitations": [
+    "Direct references only; shared/array/3D/dynamic dependencies require further adapter work",
+    "No production UI/save service or Microsoft Office layout acceptance",
+    "No general row/column insertion, chart editing, workbook copy, signed VBA or arbitrary OOXML claim",
+    "Existing formula calcChain intentionally blocked until invalidation is registered; formula caches rebuilt only on disposable LibreOffice copies"
+  ]
+}

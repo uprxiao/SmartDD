@@ -1,0 +1,50 @@
+{
+  "caseId": "M9-T-E05",
+  "layer": "A",
+  "status": "passed actual described branches; P/I pending consolidation",
+  "recordedAt": "2026-10-18T10:10:27.254786+08:00",
+  "package": "/private/tmp/willyou-m9-acceptance-batch-r2-build/mac-arm64/WillYou.app",
+  "asarSha256": "393c6233ca4cbd5531b913d95d4270d132f951d0871ccc28b2b8a3bfb76a70a6",
+  "method": "cua_repl native App clicks and independent TextEdit AX",
+  "actions": [
+    {
+      "file": "git-new 中文🙂.txt",
+      "result": "使用TextEdit打开→已交给TextEdit打开；TextEdit标题git-new 中文🙂.txt，精确file URL，正文new synthetic file。"
+    },
+    {
+      "file": "acceptance-batch-r1/f10-escape.txt",
+      "result": "App明确二进制不支持文本编辑且可外开；点击使用TextEdit打开，提示已交给TextEdit，系统窗口f10-escape.txt及29字节对应控制字符正文正确。"
+    }
+  ],
+  "openerAfter": [
+    {
+      "key": "fileOpener",
+      "value": {
+        "path": "/System/Applications/TextEdit.app",
+        "bundleId": "com.apple.TextEdit"
+      }
+    }
+  ],
+  "preferenceBaseline": "Earlier E06/r1 evidence records same TextEdit preference; no menu choice or remember toggle in these E05 actions.",
+  "filesAfter": [
+    {
+      "relativePath": "git-new 中文🙂.txt",
+      "sha256": "603bfe3cb7574a3c6ee0a6a4b07a5d6bd7c89b0df7f17f5c25935e8c0f961d4c",
+      "mtime_ns": 1792243972937972383,
+      "size": 19,
+      "inode": 42645462
+    },
+    {
+      "relativePath": "acceptance-batch-r1/f10-escape.txt",
+      "sha256": "9f7c091f5c612652421a11aea4b55fda920defe602f2ed7219887e02abcf8aa1",
+      "mtime_ns": 1792287798808632605,
+      "size": 29,
+      "inode": 44381828
+    }
+  ],
+  "limits": [
+    "Only actual success plus unsupported internal-text-viewer external fallback; induced system failure is covered separately.",
+    "One auto-approval timeout and stale-state rejection retained in conversation; action completed after fresh app binding.",
+    "No screenshot files saved."
+  ]
+}

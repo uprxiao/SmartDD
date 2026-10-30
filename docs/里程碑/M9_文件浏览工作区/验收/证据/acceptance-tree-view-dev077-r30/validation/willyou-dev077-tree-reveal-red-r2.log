@@ -1,0 +1,43 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/files/tree-reveal-acceptance.test.tsx
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/renderer/features/files/tree-reveal-acceptance.test.tsx (6 tests | 6 failed) 385ms
+     × B09 opens a real search row, expands ancestors, selects and reveals the file without focusing the tree 112ms
+     × does not consume a reveal in a hidden viewport; resizing visible completes it once 53ms
+     × wheel browsing supersedes a delayed native directory result and later refresh does not pull the user back 55ms
+     × folding the root while its reveal is pending keeps it folded after late IO 54ms
+     × never treats a directory replacing the target as a file to select or open 54ms
+     × an explicit repeat activation reveals again, while passive refresh does not 56ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > B09 opens a real search row, expands ancestors, selects and reveals the file without focusing the tree
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > does not consume a reveal in a hidden viewport; resizing visible completes it once
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > wheel browsing supersedes a delayed native directory result and later refresh does not pull the user back
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > folding the root while its reveal is pending keeps it folded after late IO
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > never treats a directory replacing the target as a file to select or open
+ FAIL  src/renderer/features/files/tree-reveal-acceptance.test.tsx > one-shot current file tree reveal > an explicit repeat activation reveals again, while passive refresh does not
+FileError: [CANCELLED] 文件请求已取消
+ ❯ AbortSignal.cancel src/main/core/files/native-broker.ts:68:38
+     66|         killTimer = setTimeout(() => stopProcessGroup(child, 'SIGKILL'…
+     67|       };
+     68|       const cancel = () => terminate(new FileError('CANCELLED', '文件请求已…
+       |                                      ^
+     69|       const timer = setTimeout(() => terminate(new FileError('TIMEOUT'…
+     70|       options.signal?.addEventListener('abort', cancel, { once: true }…
+ ❯ Object.onSearchRow src/main/core/files/search-service.ts:33:149
+ ❯ Socket.<anonymous> src/main/core/files/native-broker.ts:81:202
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  20:35:08
+   Duration  1.27s (transform 378ms, setup 0ms, import 655ms, tests 385ms, environment 162ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

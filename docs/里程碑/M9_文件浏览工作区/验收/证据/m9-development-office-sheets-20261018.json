@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "time": "2026-10-18T01:39:04.927564+08:00",
+  "branch": "feature/0.0.1",
+  "baseCommit": "89de9af4b631abdef5673ce8949fb02a32f6fcad",
+  "requirements": [
+    "R06.8",
+    "R07.2",
+    "R07.12",
+    "R07.16",
+    "R07.17"
+  ],
+  "actions": [
+    "X12 sheet-add",
+    "X14 sheet-move"
+  ],
+  "layer": "model/component, trusted IPC service and real native save/reopen integration; App interaction pending",
+  "sourceHashes": {
+    "src/shared/file-office.ts": "435afae583780c3734244280629321422cb26f6c628e1bd1924ac50177639888",
+    "src/main/core/files/controller.ts": "b45b908be3804f50687a55412b2ae133b81e0a5c382d050d8342038c47adfc10",
+    "src/main/core/files/office/sheet-edit.ts": "d77365120cacf91056959b0acc207feedc4eff9c4730b0ee961def84bf9c4a41",
+    "src/main/core/files/office/sheet-edit.test.ts": "b4fa3fb9055141383aeb261ca983ca66f9f025a68998d34a33500cabf9d2e13a",
+    "src/main/core/files/office/workbook-edits.ts": "a0ecdf64e6c906c93fb253cecc4706f274a25fd8ba13472f4953d91473d36150",
+    "src/main/core/files/office/cell-edit.ts": "761b70048410f20fb69d50154bf08ab3070a1fce912b8bf6a240068d214debf3",
+    "src/main/core/files/office/service.ts": "de2a7442bfba62f1f09ebb427a83c7de6ba0233b16830f4078b487011d1d0610",
+    "src/main/core/files/office/service.test.ts": "11febf002fe1e0f16cf74097da2c66448fd8d53b68552ba8df9b719b86dc38ac",
+    "src/main/core/files/office/native.test.ts": "387960a70cb63656d0c6b4f84fb3ab4164a1466b29ee1c323e163ea618787ed0",
+    "src/main/core/files/office/document.ts": "40919add5192c76df3a78b642bbdcfc806e8715f084337968a554404566c6369",
+    "src/main/core/files/office/parser.ts": "4aba15e7737387d624342e121061905b80f8678a7f321b7f05c318e52246cca0",
+    "src/main/core/files/office/worker.ts": "e979bb5336edd4da8b621a227de059ab0b7490952e046a543ad2999bc309301e",
+    "src/renderer/features/files/office/buffer.ts": "053d0a10f929861324eb2496827c442c00c5249e33a29cd49fdac8f3a4c106ec",
+    "src/renderer/features/files/office/preview.tsx": "cf66bf598584c64666e2ff2e74419e847d5509a1633be79f6490b2a81c9665b8",
+    "src/renderer/features/files/office/preview.test.tsx": "30efd8c83bfd0e6c2426114d2b485af7471fcb6be63529f4fff56cb512c0f0b6",
+    "src/renderer/features/files/office/style.css": "f441bba917438bde054a89cdf55cbe1b6d51e848233480531a0721043dfaa259"
+  },
+  "sourceArchive": {
+    "path": "/private/tmp/willyou-m9-office-sheets-r1-sources.tar.gz",
+    "sha256": "35eedd6880d2c7e4308314d72be7f8e0e836bf5e45993c06ca88571754282967",
+    "scope": "M9 source directories/shared contracts and package/build metadata; no real project files or runtime resource binaries"
+  },
+  "runs": [
+    {
+      "log": "/private/tmp/willyou-m9-office-sheets-r1-tests.log",
+      "result": "30 passed, 1 failed; UI assertion ran before post-undo selection effect; wait for actual selected state"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-sheets-r1-typecheck.log",
+      "result": "failed: test sorted readonly plan array; corrected to copy first"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-sheets-r2-tests.log",
+      "result": "37 passed, 6 files"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-sheets-r2-typecheck.log",
+      "result": "passed"
+    },
+    {
+      "log": "/private/tmp/willyou-m9-office-sheets-r3-native-tests.log",
+      "json": "/private/tmp/willyou-m9-office-sheets-r3-native-tests.json",
+      "result": "1 selected actual native case passed, 13 non-selected cases not rerun"
+    }
+  ],
+  "nativeChecks": [
+    "real private XLSX add/move in Worker; native recalculation ready",
+    "atomic native save returns saved; reopened source contains Sheet1/Data/Calc/Spare in expected order",
+    "formula value remains 7; original non-declared parts byte-identical",
+    "close/reopen real source retains added stable identity and clean model state"
+  ],
+  "package": {
+    "path": "/private/tmp/willyou-m9-office-sheets-r1-build/mac-arm64/WillYou.app",
+    "status": "built; native smoke passed",
+    "asarSHA256": "2b06db62a0b68a3b8d3476ec2cd19b381c782efb36634c6afd121fa3311e0970",
+    "buildLog": "/private/tmp/willyou-m9-office-sheets-r1-package.log"
+  },
+  "appChecks": {
+    "status": "pending",
+    "reason": "Mac locked; existing unlock request pending"
+  },
+  "formalAcceptance": {
+    "passed": 3,
+    "inScope": 419,
+    "unchanged": true
+  },
+  "limitations": [
+    "Real App click/drag/save/restart and physical IME not yet exercised",
+    "Rename/delete and other approved Office actions still incomplete",
+    "Full undo view/selection history matrix remains; current tests cover data history and fallback after removed active sheet",
+    "No full visual/format parity claim"
+  ]
+}
