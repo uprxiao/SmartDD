@@ -8,6 +8,8 @@ export interface PptxElementBox {x:number;y:number;width:number;height:number;ro
 export type PptxChildFrame=Pick<PptxElementBox,'x'|'y'|'width'|'height'>;
 export interface PptxElementInfo {
   id:string;name:string;kind:'text'|'shape'|'image'|'table'|'chart'|'group'|'connector'|'other';
+  /** Descriptive document marker only; never grants generation or file authority. */
+  isPlaceholder?:boolean;
   parentId?:string;box?:PptxElementBox;boxSource?:'local'|'layout'|'master';childFrame?:PptxChildFrame;pageBox?:PptxElementBox;text?:string;textStyle?:PptxTextStyle;appearance?:PptxAppearance;table?:PptxTableInfo;chart?:PptxChartInfo;preset?:string;hidden:boolean;
 }
 export const PPTX_SHAPES=['rect','circle','triangle','diamond','star','arrow','left-arrow','plus','chevron','callout','line'] as const;

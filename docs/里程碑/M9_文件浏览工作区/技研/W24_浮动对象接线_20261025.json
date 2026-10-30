@@ -1,0 +1,154 @@
+{
+  "kind": "bounded readonly next engineering handoff, not test-result",
+  "sourceRoot": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source",
+  "sourceManifestSHA256": "6ee4b0e928648506b28740712c45e4e029a98f7aa2d4e872a19e7676d8ae0862",
+  "SUT": 0,
+  "newTests": 0,
+  "productionChanges": 0,
+  "completeOriginalCases": 0,
+  "wiring": [
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/shared/file-office.ts",
+      "sha256": "84b62b2a6ec9a549615517dbd3e702c47533d2ac36a1d022cf8dc77b712625e4",
+      "lineAnchors": [
+        56,
+        63,
+        76,
+        110
+      ],
+      "recommendation": "现有真实Image/source/media/anchor DTO已通；后续只补有界媒体响应及带稳定objectId/version的对象动作schema，不把part路径直接当renderer URL，也不新增provider/config API义务。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/drawing-images.ts",
+      "sha256": "24f387b620ae4632d50af68c2b278abd992bd89c694e434541873ac8678179be",
+      "lineAnchors": [
+        41
+      ],
+      "recommendation": "复用真实OPC身份；媒体须在当前已owned parser文档按objectId/source/partHash验证并取本包bytes，拒绝external及无关part。实现有界bytes/MIME传输的具体内部路由由root决定，不能用文件URL或合成图片替代。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/workbook.ts",
+      "sha256": "b899132946380c247f098feb6bb522e06e250b5caf83a5ac2465053bc3e4f47e",
+      "lineAnchors": [
+        160,
+        218
+      ],
+      "recommendation": "现metadata投影/克隆已绿。渲染坐标沿真实anchor，留意本fixture usedRange只有2x2而anchor延伸至row5/col5。对象可见/viewport范围处理不能仅依cells用到的范围。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/renderer/features/files/office/client.ts",
+      "sha256": "44f83791297fa2e98fc65195ea6ea847edf882676470e4e989862707d92ca430",
+      "lineAnchors": [
+        19,
+        26
+      ],
+      "recommendation": "沿已有owned read/retiring/current-client链读取有界媒体；迟到资源回执不能跨host/client重用，卸载回收本轮Blob URL/请求。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/renderer/features/files/office/preview.tsx",
+      "sha256": "b097c7562423155ac57ed96944ed26af6f560b63b3022f8fbec484c291cb551e",
+      "lineAnchors": [
+        33,
+        51,
+        91,
+        235,
+        280,
+        288,
+        297
+      ],
+      "recommendation": "此处当前只画cells与checkbox，尚无objects层。最小新增真图片layer，沿axes/logicalLeft/logicalTop/zoom换算anchor；真实pointer/keyboard建立独立object选中/取消状态，hostRevision/新client换代清旧选中；未授权来源可读但不可发编辑。Add/Format走已确认现有入口与实际能力，不是P JSON卡片冒真实渲染。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/renderer/features/files/office/buffer.ts",
+      "sha256": "8e86bf6283b6e749e7d9c9e615e1380802d86e0f11a35cbeed99bbe108785432",
+      "lineAnchors": [
+        99,
+        270,
+        337
+      ],
+      "recommendation": "沿writer epoch→serialize→flush→再次editable/current/source gate→versioned mutation→accept/rememberView/dirty/schedule，补对象动作；不得直接赋模型或绕pending/checkpoint。撤源/readonly/fallback/旧writer继续拒绝；普通metadata stat语义保持。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/renderer/features/files/office/format-panel.tsx",
+      "sha256": "ae25f9f57e459b818b56702aafc59eb600aa3973cf3c51f4b02f1db1bd0aebaf",
+      "lineAnchors": [
+        57
+      ],
+      "recommendation": "当前是cell格式panel。真实object被选中后将已确认且适配器支持的对象格式/位置尺寸动作接到writer；不要复用cell action去假装修改图片，也不扩大为任意格式全写回。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/service.ts",
+      "sha256": "c4be1f61746d7e24cbc2c62648ecf58b9694fdeb1132082cf4c295a6894d6306",
+      "lineAnchors": [
+        110,
+        178,
+        194,
+        200,
+        244,
+        253,
+        278
+      ],
+      "recommendation": "复用现有owner/ref/当前issued-writable/serialize/version/候选事务和save管道。对象变化提交前后仍核权限/身份；保存继续走materialize→verify→checkpoint→native FileService save→receipt/ack，禁止直接ZIP写盘捷径。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/parser.ts",
+      "sha256": "91c68f14d8f619e40fe2ef1b2f64e56257a48ae9f0ff3d3367bf84b891da4942",
+      "lineAnchors": [
+        14,
+        25,
+        26,
+        30
+      ],
+      "recommendation": "对象动作及本包媒体读取按实际parser request桥接；保现超时/AbortSignal/旧reader retire，非新假backend。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/worker.ts",
+      "sha256": "315cdbe3803064b768299b4e94a3e0f0a722b853e65379f9be4d210f724b8ea0",
+      "lineAnchors": [
+        24,
+        51,
+        61,
+        62,
+        65
+      ],
+      "recommendation": "worker schema只接受经审查的objectId/version/有限patch/媒体字节限制，分派到真实OfficeDocument；不允许renderer直接指定任意ZIP part写。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/document.ts",
+      "sha256": "46f7ff9b1d315eb5a0a9c29b376e5fe54d1eeb16363793049f580b372da3d0f0",
+      "lineAnchors": [
+        72,
+        84,
+        128
+      ],
+      "recommendation": "复用候选package+单次push history与materialize；对象format/insert实现为真实OPC patch（建议独立drawing-edit.ts），没有变化不增版本，失败不能半提交，undo恢复原parts。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/range-edit.ts",
+      "sha256": "d5bd2c09e6a6bdcd9dab05198d5692b2d0cf08bf6e0f3fbd557c2d279252fc52",
+      "lineAnchors": [
+        22
+      ],
+      "recommendation": "现有cell/range动作没有floating写入口。可复用其原子candidate习惯但不要给对象强塞虚拟cell range；对象变更入口形式由root统一选定。"
+    },
+    {
+      "path": "/private/tmp/willyou-office-floating-root-g307-9de5/r196-projection-v1-source/src/main/core/files/office/drawing-preview.ts",
+      "sha256": "96bbdf6828028ca36b189d06612bcad9e6962cf0953ffcfb4ea4d3ddbf7c3381",
+      "lineAnchors": [
+        14
+      ],
+      "recommendation": "当前ordinary drawing notice必须继续保留到真实可显示/编辑能力落地；未支持chart/shape/图片分支仍明确不可用，checkbox-only不误报。不能以metadata投影25绿移除所有warning。"
+    }
+  ],
+  "minimalNextSequence": [
+    "原3323B普通PNG：真实renderer显示→仅选中/取消（v0/clean/原件不变）；metadata不是这一步的通过。",
+    "真实对象format/move/resize→同模型history/undo→现有保存管道→独立OPC与重新打开；动作与实际能力依原W24，不能把它缩为仅image metadata。",
+    "同一真实对象链接已确认Add插入能力；若走原生选择器，该用户层独立保留，禁止fakeprovider/fileInput绕过。"
+  ],
+  "independentWriteOracle": [
+    "已有对象仅geometry/已支持样式变化：drawing XML仅目标对象允许段改变；既有image bytes和其他object/chart/comment/control/unknown part均exact。",
+    "插入真实PNG：事前声明允许的sheet drawing引用/关系、drawing XML/关系、实际media、必要Content_Types闭包；所有未声明part与未知XML子树exact。",
+    "保存后独立Python ZipFile+ElementTree校验关系、stable source id/anchor/media SHA，再真实重新打开对应模型；不能只看dirty=false或materialize成功。"
+  ],
+  "scope": "只列现有链的接线和工程实施顺序，不新建需求/外部provider，不声明所有格式/所有对象均支持。G306003单读投影和G307001 affected25绿保持原窄边界；W24 renderer/selection/insert/format/save和P/R/实际A仍逐项待验。"
+}

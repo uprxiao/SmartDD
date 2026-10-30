@@ -11,7 +11,7 @@ import type { FileClient } from './file-buffer';
 import { FileWorkspaceStore } from './workspace-store';
 import { FileWorkspacePanel } from './workspace-panel';
 
-const injected = vi.hoisted(() => ({ store: null as FileWorkspaceStore | null, searchRows: [] as FileSearchRow[] }));
+const injected = vi.hoisted(() => ({ store: null as FileWorkspaceStore | null, searchRows: [] as FileSearchRow[], searchAvailable: true }));
 // Search results are controlled only in this U focus suite; real search/native
 // transport and geometry are covered separately by I/A.
 vi.mock('./file-search', () => ({ useFileSearch: (_root: unknown, kind: string, query: string) => ({ rows: kind === 'content' && query ? injected.searchRows : [], names: [], phase: query ? 'done' : 'idle', result: null, slow: false, error: '', retry() {} }) }));
@@ -20,7 +20,7 @@ vi.mock('./lsp/components', () => ({ FileLanguageProvider: ({ children }: { chil
 // MCP resources are covered separately; preserve the real panel/editor under test.
 vi.mock('./mcp/viewer', () => ({ McpViewerMenu: () => null, McpViewerSettings: () => null, McpViewerSlot: ({ children }: { children: import('react').ReactNode }) => children }));
 vi.mock('./workspace-store', async (original) => ({ ...await original<typeof import('./workspace-store')>(), fileWorkspaceFor: () => injected.store! }));
-vi.mock('@renderer/lib/ipc', () => ({ rpc: { files: { applications: vi.fn(async () => ({ id: 'fixture', apps: [], preferredUnavailable: false })) } }, events: { on: vi.fn(() => () => undefined) } }));
+vi.mock('@renderer/lib/ipc', () => ({ rpc: { files: { applications: vi.fn(async () => ({ id: 'fixture', apps: [], preferredUnavailable: false })), get search() { return injected.searchAvailable ? async () => ({ rows: [] }) : undefined; }, get startSearchSession() { return injected.searchAvailable ? async () => ({ rows: [] }) : undefined; }, cancelSearch: async () => undefined } }, events: { on: vi.fn(() => () => undefined) } }));
 // Keep real panel/tab controls, store and CodeMirror. Other viewers and syntax
 // decoration are outside this focus test and never supply its focus behavior.
 vi.mock('./code/editor', () => ({ codeHighlight: () => [] }));
@@ -36,10 +36,14 @@ vi.mock('./html/preview', () => ({ FileHtmlPreview: () => null }));
 vi.mock('./tex/preview', () => ({ FileTexPreview: () => null }));
 
 const observations: unknown[] = [];
-async function fixture(names = ['A.txt', 'B.txt', 'C.txt']) {
+type SearchHostCase = 'local' | 'missing-host' | 'missing-root' | 'missing-select' | 'missing-service' | 'durable' | 'host-denied';
+async function fixture(names = ['A.txt', 'B.txt', 'C.txt'], searchHost: SearchHostCase = 'local') {
   const root: FileRoot = { source: 'project-directory', sourceId: 'root', path: '/fixture', canonicalPath: '/fixture', lease: randomUUID(), generation: 1, label: 'Fixture', identity: { device: '1', inode: '2' } }, documents = new Map<string, FileDocument>();
+  // Explicit host DTO fixture; UI never grants a native lease from this data.
+  Object.assign(root, { hostId: searchHost === 'missing-host' ? undefined : searchHost === 'durable' ? 'durable' : 'local', capabilities: { searchContent: searchHost !== 'host-denied' } });
+  injected.searchAvailable = searchHost !== 'missing-service';
   const api = {
-    roots: vi.fn(async () => ({ roots: [root], unavailable: [] })), list: vi.fn(async () => []),
+    roots: vi.fn(async () => ({ roots: searchHost === 'missing-root' ? [] : [root], unavailable: [] })), list: vi.fn(async () => []),
     open: vi.fn(async ({ relativePath }: { relativePath: string }) => {
       const file: FileDocument = { ref: { id: randomUUID(), lease: root.lease, generation: 1 }, documentKey: `local:1:${relativePath}`, name: relativePath, relativePath, absolutePath: `/fixture/${relativePath}`, writable: true, revision: { device: '1', inode: relativePath, size: 5, hash: createHash('sha256').update('BASE\n').digest('hex'), modifiedNs: '1', changedNs: '1' } };
       documents.set(file.ref.id, file); return file;
@@ -52,16 +56,45 @@ async function fixture(names = ['A.txt', 'B.txt', 'C.txt']) {
     watch: vi.fn(async () => null), stopWatch: vi.fn(async () => undefined), closeDocument: vi.fn(async () => undefined), closeScope: vi.fn(async () => undefined),
   };
   const store = new FileWorkspaceStore({ kind: 'project', projectId: randomUUID() }, api as unknown as FileClient, null, null); injected.store = store;
-  await store.initialize(); for (const name of names) await store.open(root, name, true);
-  const b = store.tabs[1], c = store.tabs[2]; store.activate(b.id);
+  await store.initialize(); if (searchHost !== 'missing-root') for (const name of names) await store.open(root, name, true);
+  const b = store.tabs[1], c = store.tabs[2]; if (b) store.activate(b.id);
+  if (searchHost === 'missing-select') Object.defineProperty(store, 'openSearchRow', { value: undefined });
   render(<><input aria-label="Outside workspace focus sentinel" /><FileWorkspacePanel scope={store.scope} onClose={() => undefined} /></>);
-  const editor = EditorView.findFromDOM(document.querySelector('.cm-editor') as HTMLElement)!;
+  const editor = document.querySelector('.cm-editor') ? EditorView.findFromDOM(document.querySelector('.cm-editor') as HTMLElement)! : null!;
   return { store, api, b, c, editor };
 }
 beforeEach(() => {
-  injected.searchRows = [];
+  injected.searchRows = []; injected.searchAvailable = true;
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   Object.defineProperties(Range.prototype, { getClientRects: { configurable: true, value: () => [] }, getBoundingClientRect: { configurable: true, value: () => new DOMRect() } });
+});
+
+describe('R01 content search host capability entry', () => {
+  it.each<SearchHostCase>(['missing-host', 'missing-root', 'missing-select', 'missing-service', 'durable', 'host-denied'])('does not offer a content search entry for %s', async searchHost => {
+    const f = await fixture(undefined, searchHost), browser = vi.spyOn(window, 'open').mockImplementation(() => null);
+    expect(screen.queryByRole('button', { name: '在文件中搜索' })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull(); expect(browser).not.toHaveBeenCalled();
+    expect(f.api.open).toHaveBeenCalledTimes(searchHost === 'missing-root' ? 0 : 3);
+    observations.push({ caseId: 'M9-T-R01', layer: 'U component; explicit host DTO/callback/service fixture, not App authority', searchHost, entryAbsent: true, browserCalls: 0 });
+    browser.mockRestore();
+  });
+  it('opens the supported local search without changing source selection or launching a browser', async () => {
+    const f = await fixture(), user = userEvent.setup(), browser = vi.spyOn(window, 'open').mockImplementation(() => null), active = f.store.active;
+    act(() => { f.editor.dispatch({ selection: { anchor: 1, head: 4 } }); f.editor.focus(); });
+    const selection = f.editor.state.selection.toJSON(), source = f.editor.state.doc.toString();
+    await user.click(screen.getByRole('button', { name: '在文件中搜索' })); await screen.findByRole('textbox', { name: '全文搜索内容' });
+    expect(f.editor.state.selection.toJSON()).toEqual(selection); expect(f.editor.state.doc.toString()).toBe(source); expect(f.store.active).toBe(active); expect(browser).not.toHaveBeenCalled(); expect(f.api.open).toHaveBeenCalledTimes(3);
+    observations.push({ caseId: 'M9-T-R01', searchHost: 'local', source, selection, retained: true, browserCalls: 0 }); browser.mockRestore();
+  });
+  it('closes an open search when its host identity becomes unknown and does not reopen it on recovery', async () => {
+    const f = await fixture(), user = userEvent.setup(), root = f.store.treeRoot!;
+    await user.click(screen.getByRole('button', { name: '在文件中搜索' })); await screen.findByRole('dialog');
+    await act(async () => { f.store.selectRoot({ ...root, hostId: undefined }); });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull()); expect(screen.queryByRole('button', { name: '在文件中搜索' })).toBeNull();
+    await act(async () => { f.store.selectRoot(root); });
+    expect(screen.getByRole('button', { name: '在文件中搜索' })).toBeTruthy(); expect(screen.queryByRole('dialog')).toBeNull();
+    observations.push({ caseId: 'M9-T-R01', scenario: 'live host identity loss/recovery', closedOnUnavailable: true, recoveryRequiresNewClick: true });
+  });
 });
 
 describe('Y22 successful search result focus handoff', () => {
@@ -129,7 +162,7 @@ describe('M9-DEV-068 H23 failed mode-switch focus (real panel/editor, native API
     await waitFor(() => expect(f.b.buffer!.saveError).toContain('只读')); expect(document.activeElement).toBe(button); expect(f.b.buffer!.mode).toBe('document');
   });
 });
-afterEach(() => { cleanup(); injected.store?.dispose(); injected.store = null; vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); injected.store?.dispose(); injected.store = null; vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 afterAll(() => {
   if (process.env.SMARTDD_M9_TAB_FOCUS_EVIDENCE) writeFileSync(process.env.SMARTDD_M9_TAB_FOCUS_EVIDENCE, JSON.stringify({ observedAt: new Date().toISOString(), level: 'Real production workspace panel/store/CodeMirror in jsdom, user-event pointer/keyboard events; native API isolated, no actual terminal/native App.', observations }, null, 2) + '\n');
 });

@@ -41,6 +41,18 @@ describe.skipIf(!process.env.WILLYOU_MARKDOWN_IMAGE_FIXTURES || !process.env.SMA
       await expect(files.save(owner, { ref: image.buffer!.file.ref, opId: crypto.randomUUID(), bufferVersion: 1, baseHash: image.buffer!.baseHash, base64: Buffer.from('MUST NOT WRITE').toString('base64') })).rejects.toMatchObject({ code: 'PERMISSION' });
       expect(sha(readFileSync(join(f.project, 'vector.svg')))).toBe(f.cases.find(x => x.name === 'vector.svg')!.sha256);
       expect(parent.file.ref).not.toEqual(image.buffer!.file.ref); expect(store.tabs).toHaveLength(2);
+      // V02 deliberately empty/error asset adapter after original native success.
+      // Each real temporary capability closes before the explicit fault returns.
+      const related = api.related, tabIds = store.tabs.map(tab => tab.id), activeId = store.active!.id;
+      api.related = async (ref, href) => { const doc = await related(ref, href); files.closeDocument(owner, doc.ref); return null as unknown as typeof doc; };
+      await expect(store.openRelated(parent, 'vector.svg', { readOnlyImage: true })).rejects.toThrow('图片来源为空');
+      expect(store.tabs.map(tab => tab.id)).toEqual(tabIds); expect(store.active!.id).toBe(activeId);
+      api.related = async (ref, href) => { const doc = await related(ref, href); files.closeDocument(owner, doc.ref); throw new Error('V02 explicit asset adapter error'); };
+      await expect(store.openRelated(parent, 'vector.svg', { readOnlyImage: true })).rejects.toThrow('V02 explicit asset adapter error');
+      expect(store.tabs.map(tab => tab.id)).toEqual(tabIds); api.related = related;
+      await store.openRelated(parent, 'vector.svg', { readOnlyImage: true }); expect(store.active!.id).toBe(id);
+      rows.push({ V02: true, emptyAssetRefused: true, adapterErrorRefused: true, originalTemporaryCapabilitiesClosed: true, noFalseNewTab: true, originalReadonlyTabReusedAfterRecovery: true });
+
       rows.push({ readonlyNewTab: true, sameOriginReuse: true, independentParent: true, attemptedWriteRefused: true, noNativePicker: true });
     } finally { store.dispose(); files.closeOwner(owner); await files.watcher.dispose(); broker.dispose(); rmSync(base, { recursive: true, force: true }); }
   });

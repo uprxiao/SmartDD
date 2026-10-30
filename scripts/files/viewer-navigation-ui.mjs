@@ -1,0 +1,62 @@
+// Existing viewer registration/selection and native content-search UI only.
+// Tests source navigation against an actual registered local-resource adapter;
+// no fake business host, callbacks, decoded results, stores or DOM values.
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {copyFile,mkdir,mkdtemp,readFile,writeFile,stat} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
+import {openFileAcceptanceApp} from './file-acceptance-ui.mjs';
+import {installFileMethodObserver,observeFileMethods,restoreFileMethodObserver} from '../lib/file-method-observer.mjs';
+const executable=process.env.WILLYOU_FILES_APP;assert(executable);
+const scratch=await mkdtemp('/private/tmp/willyou-viewer-navigation-A-'),root=join(scratch,'project');await mkdir(root);
+const original='# Viewer navigation\r\n\r\n中文🙂 prefix NEEDLE_ROUTE_NAV suffix\r\n\r\n## Tail heading\r\nLast line.\r\n';
+const html='<h1>HTML_ROUTE_CONTROL</h1>\r\n<p>中文🙂 NEEDLE_HTML_NAV original source only.</p>\r\n';
+await writeFile(join(root,'route.md'),original);await writeFile(join(root,'route.html'),html);
+const pdf=process.env.WILLYOU_ROUTING_PDF;assert(pdf);await copyFile(pdf,join(root,'route.pdf'));
+const q=JSON.stringify,sha=x=>createHash('sha256').update(x).digest('hex'),fp=async()=>Object.fromEntries(await Promise.all(['route.md','route.html','route.pdf'].map(async name=>{const p=join(root,name),s=await stat(p,{bigint:true});return[name,{sha256:sha(await readFile(p)),inode:String(s.ino),mtimeNs:String(s.mtimeNs)}];})));
+const configuration={adapters:[{id:'f01-local',name:'A F01 本机只读资源',enabled:true,suffixes:['.md','.html','.pdf'],sources:['project-directory'],provider:{kind:'local-resource',writable:false}}],preferred:{'.md':'f01-local','.html':'f01-local','.pdf':'f01-local'}};
+const r={at:new Date().toISOString(),caseIds:['M9-T-F01','M9-T-F03','M9-T-F29'],layer:'A',scratch,root,executable,configuration,before:await fp(),checks:[],asarSha256:sha(await readFile(resolve(executable,'../../Resources/app.asar'))),status:'running',boundary:'Normal packaged App; actual menu/config textarea registration, explicit built-in/adapter/auto selection, native full-text result click and existing source/document toggle. Real local-resource provider/SQLite/native reads, not a canned peer. Read-only CM model/selection and original RPC observation. Only current local branches: no external-application openMode/workspace or absent artifact/filePreviewTitle host completion claim, CUA/focus/browser/clipboard/physicalIME. Original full cases remain pending.'};
+let app,observed=false,stage='setup';
+const cm="document.querySelector('.fw-editor-host .cm-content')?.cmTile?.root?.view";
+const snapshot=()=>app.evaluate(`(()=>{const v=${cm};return{resource:!!document.querySelector('.fw-content pre'),resourceText:document.querySelector('.fw-content pre')?.textContent,cm:!!v,doc:v?.state.doc.toString(),selected:v?.state.sliceDoc(v.state.selection.main.from,v.state.selection.main.to),selection:v?.state.selection.toJSON(),focus:v?.hasFocus,tabCount:document.querySelectorAll('.fw-tab').length,tabTitles:[...document.querySelectorAll('.fw-tab [role=tab]')].map(x=>x.title),menu:!!document.querySelector('.fw-file-menu'),dialog:document.querySelector('[role=dialog]')?.textContent,notice:[...document.querySelectorAll('[role=status]')].map(x=>x.textContent)}})()`);
+async function mark(value){stage=value;const row={stage,pid:app?.processId,scratch,at:new Date().toISOString()};await writeFile(join(scratch,'progress.json'),JSON.stringify(row,null,2)+'\n');console.log(JSON.stringify(row));}
+async function menu(label){await app.click('[aria-label=文件菜单]');await app.waitFor("!!document.querySelector('.fw-file-menu')");await app.click('.fw-file-menu [role=menuitem]',label);await app.waitFor("!document.querySelector('.fw-file-menu')");}
+async function register(){await menu('管理扩展文件查看器…');await app.waitFor("!!document.querySelector('[role=dialog] textarea[aria-label=文件查看器适配清单]')");const selector='[role=dialog] textarea[aria-label=文件查看器适配清单]';await app.click(selector);for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key:'a',code:'KeyA',modifiers:4,commands:['selectAll']});await app.cdp('Input.insertText',{text:JSON.stringify(configuration,null,2)});await app.waitFor(`document.querySelector(${q(selector)})?.value===${q(JSON.stringify(configuration,null,2))}`);await app.click('[role=dialog] button','保存登记');await app.waitFor("!document.querySelector('[role=dialog]')");}
+async function extension(){await app.waitFor("document.querySelector('.fw-save-strip[role=status]')?.textContent.includes('A F01 本机只读资源')&&!!document.querySelector('.fw-content pre')",15000);assert.equal((await snapshot()).tabCount,1);}
+async function builtin(kind){await app.waitFor(kind==='pdf'?"!!document.querySelector('.fw-pdf canvas[data-rendered=true]')":`!!${cm}`,20000);assert.equal((await snapshot()).tabCount,1);}
+async function searchRange(needle,expected){
+ const traceStart=(await observeFileMethods(app)).length;
+ await app.click('[aria-label=在文件中搜索]');await app.waitFor("document.activeElement?.getAttribute('aria-label')==='全文搜索内容'");
+ for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key:'a',code:'KeyA',modifiers:4,commands:['selectAll']});
+ await app.cdp('Input.insertText',{text:needle});await app.waitFor("document.querySelectorAll('[role=dialog] [data-search-row]').length===1");
+ const rows=await app.evaluate("[...document.querySelectorAll('[role=dialog] [data-search-row]')].map(x=>x.textContent)");
+ await app.click('[role=dialog] [data-search-row]');await app.waitFor("!document.querySelector('.fw-search-dialog')");
+ await app.waitFor(`!!${cm}&&${cm}.state.sliceDoc(${cm}.state.selection.main.from,${cm}.state.selection.main.to)===${q(needle)}`,10000);
+ const state=await snapshot(),calls=(await observeFileMethods(app)).slice(traceStart);assert.equal(state.doc,expected.replace(/\r\n/g,'\n'));assert.equal(state.selected,needle);assert.equal(state.tabCount,1);assert(!calls.some(x=>x.method==='open'));
+ const from=expected.replace(/\r\n/g,'\n').indexOf(needle);assert.equal(state.selection.ranges[0].anchor,from);assert.equal(state.selection.ranges[0].head,from+needle.length);
+ return{rows,state};
+}
+async function documentView(kind){await app.waitFor(kind==='html'?"document.querySelector('.fw-html-preview .sr-only')?.textContent.includes('文档已加载')":`!!${cm}`,15000);assert.equal((await snapshot()).tabCount,1);}
+try{
+ app=await openFileAcceptanceApp({executable,projectPath:root,userData:join(scratch,'userdata'),name:'A viewer source navigation',inspectMain:true});r.pid=app.processId;await app.click('[aria-label=文件全屏]');await installFileMethodObserver(app,['open','read','save','checkpoint','openViewer','closeViewer','viewerStatus','viewerConfiguration','configureViewers','startSearchSession','cancelSearch']);observed=true;
+ await app.open('route.md');await builtin('md');await mark('register-existing-local-resource');await register();await extension();r.beforeNavigation=await snapshot();
+ await mark('search-existing-tab-through-actual-result');const traceStart=(await observeFileMethods(app)).length;await app.click('[aria-label=在文件中搜索]');await app.waitFor("document.activeElement?.getAttribute('aria-label')==='全文搜索内容'");await app.cdp('Input.insertText',{text:'NEEDLE_ROUTE_NAV'});await app.waitFor("document.querySelectorAll('[role=dialog] [data-search-row]').length===1");r.searchRows=await app.evaluate("[...document.querySelectorAll('[role=dialog] [data-search-row]')].map(x=>x.textContent)");await app.click('[role=dialog] [data-search-row]');await app.waitFor("!document.querySelector('.fw-search-dialog')");
+ await app.waitFor(`!!${cm}&&${cm}.state.sliceDoc(${cm}.state.selection.main.from,${cm}.state.selection.main.to)==='NEEDLE_ROUTE_NAV'`,10000);
+ r.navigation=await snapshot();assert.equal(r.navigation.doc,original.replace(/\r\n/g,'\n'));assert.equal(r.navigation.tabCount,1);assert(!(await observeFileMethods(app)).slice(traceStart).some(x=>x.method==='open'));assert.equal(r.navigation.selected,'NEEDLE_ROUTE_NAV');await app.screenshot(join(scratch,'search-source-selected.png'));r.checks.push({scenario:'explicit native source-position navigation reuses one document and takes precedence over default readonly adapter',pass:true,state:r.navigation});
+ if(process.env.WILLYOU_ROUTING_PROBE!=='source-only')for(const theme of ['light','dark']){await app.invoke('appSettings.update','theme','y'+theme);for(const kind of ['md','html','pdf']){
+  await mark(theme+':'+kind+':existing-viewer-choices');const name='route.'+kind;
+  if(await app.evaluate('document.querySelectorAll(".fw-tab").length>0')){const current=await app.evaluate("document.querySelector('.fw-tab-close')?.getAttribute('aria-label')");await app.click('[aria-label='+q(current)+']');await app.waitFor("document.querySelectorAll('.fw-tab').length===0");}
+  const start=(await observeFileMethods(app)).length;await app.open(name);await extension();const automatic=await snapshot();await menu('内置文件查看器');await builtin(kind);const internal=await snapshot();await menu('A F01 本机只读资源');await extension();const explicit=await snapshot();await menu('自动选择查看器');await extension();const backAutomatic=await snapshot();
+  let sourceNavigation,toggleDocument,toggleSource;
+  if(kind!=='pdf'){
+   if(kind==='html'){await menu('内置文件查看器');await builtin(kind);await app.click('[aria-label=查看文档]');await documentView(kind);await menu('A F01 本机只读资源');await extension();}
+   sourceNavigation=await searchRange(kind==='md'?'NEEDLE_ROUTE_NAV':'NEEDLE_HTML_NAV',kind==='md'?original:html);await app.screenshot(join(scratch,`${theme}-${kind}-search-selected.png`));
+   await menu('A F01 本机只读资源');await extension();await app.click('[aria-label=查看文档]');await documentView(kind);toggleDocument=await snapshot();
+   await menu('A F01 本机只读资源');await extension();await app.click('[aria-label=查看源码]');await builtin(kind);toggleSource=await snapshot();
+  }
+  const calls=(await observeFileMethods(app)).slice(start),source=calls.find(x=>x.method==='open'&&x.delivered)?.output;assert(source);const sessions=calls.filter(x=>x.method==='openViewer'&&x.delivered);assert(sessions.length>=2);for(const s of sessions){assert.equal(s.args[0].ref.id,source.ref.id);assert.equal(s.args[0].baseHash,r.before[name].sha256);assert.equal(sha(Buffer.from(s.output.resource.base64,'base64')),r.before[name].sha256);assert.equal(s.output.writable,false);}assert.equal(calls.filter(x=>x.method==='open').length,1);r.checks.push({theme,kind,scenario:'actual viewer menu choices, validated search range and explicit source/document mode priority on same document',sourceId:source.ref.id,automatic,internal,explicit,backAutomatic,sourceNavigation,toggleDocument,toggleSource,sessionIds:sessions.map(x=>x.output.id),pass:true});
+ }}
+ if(await app.evaluate('document.querySelectorAll(".fw-tab").length>0')){const close=await app.evaluate("document.querySelector('.fw-tab-close').getAttribute('aria-label')");await app.click('[aria-label='+q(close)+']');await app.waitFor("document.querySelectorAll('.fw-tab').length===0");}
+ r.rpc=await observeFileMethods(app);assert(r.rpc.every(x=>!x.delivered||x.input===x.inputAfter&&x.before===x.after));assert(!r.rpc.some(x=>['save','checkpoint'].includes(x.method)));r.rpcRestored=await restoreFileMethodObserver(app);observed=false;assert(Object.values(r.rpcRestored).every(Boolean));r.after=await fp();assert.deepEqual(r.after,r.before);assert.deepEqual(app.rendererErrors,[]);r.rendererErrors=[];r.status='selected-existing-local-viewer-and-source-navigation-passed;original-full-cases-pending';r.normalExitClaimed=false;
+}catch(error){r.status='failed';r.failedStage=stage;r.error=String(error);r.stack=error.stack;process.exitCode=1;if(app)try{r.last=await snapshot();r.rpc=observed?await observeFileMethods(app):undefined;await app.screenshot(join(scratch,'failure.png'));}catch{}}
+finally{if(app){if(observed)try{r.cleanupRestored=await restoreFileMethodObserver(app);}catch{}await writeFile(join(scratch,'electron.log'),app.logs());if(r.status==='failed')try{r.failedCleanupCrash=await app.crash();}catch{}await app.close();}r.finalSourceState=await fp();r.finishedAt=new Date().toISOString();await writeFile(join(scratch,'result.json'),JSON.stringify(r,null,2)+'\n');console.log(JSON.stringify({status:r.status,checks:r.checks.length,scratch,stage:r.failedStage,error:r.error}));}

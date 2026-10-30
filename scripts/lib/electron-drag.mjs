@@ -5,7 +5,7 @@ import {pause} from './electron-harness.mjs';
 // CDP only delivers that captured payload to the target; no UUID/store state or
 // application handler is manufactured. This is browser DnD, not physical OS DnD.
 // Protocol source: https://github.com/ChromeDevTools/devtools-protocol/blob/master/pdl/domains/Input.pdl
-export async function dragElectronElement(app,source,target,{beforeDrop,dropTarget,deferDropForNavigation=false,onOver,repeats=1,cancel=false,expectNoDrag=false}={}){
+export async function dragElectronElement(app,source,target,{beforeDrop,dropTarget,deferDropForNavigation=false,onOver,repeats=1,cancel=false,expectNoDrag=false,allowNoDrag=false}={}){
  const point=async selector=>app.evaluate(`(async()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing actual drag control');e.scrollIntoView({block:'nearest',inline:'nearest'});await new Promise(requestAnimationFrame);const b=e.getBoundingClientRect();let left=Math.max(0,b.left),right=Math.min(innerWidth,b.right),top=Math.max(0,b.top),bottom=Math.min(innerHeight,b.bottom);for(let p=e.parentElement;p;p=p.parentElement){const s=getComputedStyle(p),r=p.getBoundingClientRect();if(/auto|scroll|hidden|clip/.test(s.overflowX)){left=Math.max(left,r.left+p.clientLeft);right=Math.min(right,r.left+p.clientLeft+p.clientWidth)}if(/auto|scroll|hidden|clip/.test(s.overflowY)){top=Math.max(top,r.top+p.clientTop);bottom=Math.min(bottom,r.top+p.clientTop+p.clientHeight)}}if(right<=left||bottom<=top)throw Error('Actual drag control has no visible area');const x=(left+right)/2,y=(top+bottom)/2;if(!e.contains(document.elementFromPoint(x,y)))throw Error('Actual drag control occluded');return{x,y}})()`);
  const from=await point(source),to=await point(target);let intercepted;
  const off=app.onCDP('Input.dragIntercepted',event=>{intercepted=event.data});
@@ -17,6 +17,7 @@ export async function dragElectronElement(app,source,target,{beforeDrop,dropTarg
   for(let i=1;i<=12&&!intercepted;i++){await app.cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:from.x+(to.x-from.x)*i/12,y:from.y+(to.y-from.y)*i/12,button:'left',buttons:1});await pause(15)}
   const deadline=Date.now()+3000;let blocked;while(!intercepted&&Date.now()<deadline){if(expectNoDrag){blocked=await app.evaluate('globalThis.__willyouDragProbe.events.find(e=>e.prevented&&e.trusted)');if(blocked)break;}await pause(20);}
   if(expectNoDrag){assert(!intercepted,'Unexpected native drag from disabled source');assert(blocked?.prevented&&blocked.trusted,'Disabled source did not cancel an actual trusted dragstart');await app.cdp('Input.dispatchMouseEvent',{type:'mouseReleased',...to,button:'left',buttons:0,clickCount:1});return{from,to,disabled:true,blocked};}
+  if(!intercepted&&allowNoDrag){await app.cdp('Input.dispatchMouseEvent',{type:'mouseReleased',...to,button:'left',buttons:0,clickCount:1});return{from,to,started:false};}
   assert(intercepted,'Chromium did not report a real intercepted drag');
   if(deferDropForNavigation){await app.cdp('Input.dispatchDragEvent',{type:'dragCancel',...to,data:intercepted});await app.cdp('Input.dispatchMouseEvent',{type:'mouseReleased',...to,button:'left',buttons:0,clickCount:1});await app.cdp('Input.setInterceptDrags',{enabled:false});}
   if(beforeDrop)await beforeDrop({from,to,data:intercepted});

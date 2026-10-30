@@ -46,6 +46,22 @@ async function ready(kind = 'video') {
   return node;
 }
 describe('media player user interactions (decoder isolated)', () => {
+  it('T31 exposes Copy link only for an explicit host URL, copies that exact URL and keeps copy failure separate from playback', async () => {
+    const writeText=vi.fn(async()=>undefined),url='https://media.example.invalid/%E4%B8%AD%20clip.mp4?download=1#part';
+    capability(navigator,'clipboard',{value:{writeText}});
+    const host=buffer(),view=render(<FileMediaPreview buffer={host} {...{sourceUrl:url}}/>),node=await ready();
+    fireEvent.click(screen.getByLabelText('媒体菜单'));const copy=await screen.findByRole('menuitem',{name:'复制链接'});fireEvent.click(copy);await waitFor(()=>expect(writeText).toHaveBeenCalledExactlyOnceWith(url));expect(api.copy).not.toHaveBeenCalled();expect(node.getAttribute('src')).toContain('willyou-media:');
+    writeText.mockRejectedValueOnce(new Error('Synthetic clipboard denied'));
+    fireEvent.click(screen.getByLabelText('媒体菜单'));fireEvent.click(await screen.findByRole('menuitem',{name:'复制链接'}));await screen.findByText('操作未完成：Synthetic clipboard denied');expect(node.getAttribute('src')).toContain('willyou-media:');expect((screen.getByLabelText('播放')as HTMLButtonElement).disabled).toBe(false);
+    view.rerender(<FileMediaPreview buffer={host}/>);fireEvent.click(screen.getByLabelText('媒体菜单'));expect(screen.queryByRole('menuitem',{name:'复制链接'})).toBeNull();expect(screen.getByRole('menuitem',{name:'视频另存为…'})).toBeTruthy();expect(writeText).toHaveBeenCalledTimes(2);
+  });
+  it.each(['willyou-media://local/private-token','blob:https://local/private-token','data:video/mp4;base64,AA=='])('T31 never treats an internal transport %s as a host Copy link',async sourceUrl=>{
+    render(<FileMediaPreview buffer={buffer()} {...{sourceUrl}}/>);await ready();fireEvent.click(screen.getByLabelText('媒体菜单'));expect(screen.queryByRole('menuitem',{name:'复制链接'})).toBeNull();expect(screen.getByRole('menuitem',{name:'视频另存为…'})).toBeTruthy();
+  });
+  it('T31 keeps an explicit save-copy error independent and preserves the active preview',async()=>{
+    render(<FileMediaPreview buffer={buffer()}/>);const node=await ready(),source=node.getAttribute('src');api.copy.mockRejectedValueOnce(new Error('Synthetic native copy denied'));
+    fireEvent.click(screen.getByLabelText('媒体菜单'));fireEvent.click(await screen.findByRole('menuitem',{name:'视频另存为…'}));await screen.findByText('操作未完成：Synthetic native copy denied');expect(node.getAttribute('src')).toBe(source);expect(api.copy).toHaveBeenCalledExactlyOnceWith({kind:'document',ref:buffer().file.ref});expect(screen.queryByText(/副本已保存到/)).toBeNull();fireEvent.click(screen.getByLabelText('播放'));await screen.findByLabelText('暂停');
+  });
   it('rejects an undecodable video track even when its supported audio track reaches canplay', async () => {
     render(<FileMediaPreview buffer={buffer()} />);
     const node = document.querySelector('video')!;

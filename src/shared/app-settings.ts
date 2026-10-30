@@ -39,6 +39,11 @@ export const APP_SETTINGS_STRICT_SCHEMA_MAP = {
   }),
   fileLanguages: languageConfigurationSchema,
   fileViewers: viewerConfigurationSchema,
+  // Independent host rollout capabilities. These never grant DOCX write access
+  // or infer a rendering route from an installed library or a terminal runner.
+  fileOffice: z.object({
+    docx: z.object({ documentHostFlag: z.boolean(), renderFlag: z.boolean(), redlinesEnabled: z.boolean() }),
+  }),
   fileOpener: z.object({ path: z.string().max(32768).nullable(), bundleId: z.string().max(512).nullable() }),
 };
 
@@ -56,6 +61,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettings = {
   homeDraft: { projectId: null, dirId: null, aiProfileId: null },
   fileLanguages: { enabled: true, servers: [] },
   fileViewers: { adapters: [], preferred: {} },
+  fileOffice: { docx: { documentHostFlag: false, renderFlag: false, redlinesEnabled: true } },
   fileOpener: { path: null, bundleId: null },
 };
 
@@ -76,6 +82,7 @@ export const APP_SETTINGS_SCHEMA_MAP: { [K in AppSettingsKey]: z.ZodType<AppSett
   homeDraft: lenientObject(strict.homeDraft, APP_SETTINGS_DEFAULTS.homeDraft),
   fileLanguages: strict.fileLanguages.catch(APP_SETTINGS_DEFAULTS.fileLanguages),
   fileViewers: strict.fileViewers.catch(APP_SETTINGS_DEFAULTS.fileViewers),
+  fileOffice: strict.fileOffice.catch(APP_SETTINGS_DEFAULTS.fileOffice),
   fileOpener: lenientObject(strict.fileOpener, APP_SETTINGS_DEFAULTS.fileOpener),
 };
 

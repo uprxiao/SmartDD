@@ -1,4 +1,4 @@
-import type { FileEntry, FileRoot, FileRoots, FileScope, FileWatchUpdate, FileSearchRow } from '@shared/files';
+import type { FileDocument, FileEntry, FileRoot, FileRoots, FileScope, FileWatchUpdate, FileSearchRow } from '@shared/files';
 import { fileScopeKey, fileWorkspaceSchema, workspaceSnapshotSchema, workspaceUpdateSchema, type FileRoute, type SavedFileWorkspace, type WorkspacePersistence, type WorkspaceSnapshot, type WorkspaceUpdate } from '@shared/file-workspace';
 import { fileWatchEvent, fileWorkspaceEvent } from '@shared/events';
 import { events, rpc } from '@renderer/lib/ipc';
@@ -6,6 +6,12 @@ import { FileBuffer, type FileClient } from './file-buffer';
 import { isNonLocalFileSource, NONLOCAL_WORKSPACE_MESSAGE } from '@shared/file-source-boundary.mjs';
 import { fileAttachmentHintSchema, type FileAttachmentHint } from '@shared/files';
 import { fileDisplayLocation, fileNavigationLocation } from '@shared/file-root-location.mjs';
+import { officeHandoffFormat, type FileOpenOptions, type OfficePageHandoff } from './office-handoff';
+import { chooseFileViewer } from './viewer-choice';
+import { textOffsetMap } from '@shared/file-text';
+import { selectFileViewer, type ViewerConfiguration } from '@shared/file-viewer';
+import { fileLinkLocation } from '@shared/file-link-location.mjs';
+import { fileDisplayIntent, type FileDisplayOptions } from '@shared/file-navigation';
 
 export type { FileRoute } from '@shared/file-workspace';
 export { fileScopeKey } from '@shared/file-workspace';
@@ -14,16 +20,25 @@ export { fileScopeKey } from '@shared/file-workspace';
 export interface LocalAttachment extends FileAttachmentHint { key: string; onDownload?: () => void | Promise<void>; onClose?: () => void | Promise<void> }
 export const ATTACHMENT_SESSION_NOTICE = '本机附件为只读，仅在当前会话保留；关闭或重启后请从原来源重新打开。';
 export interface FileTab { id: string; route: FileRoute; buffer: FileBuffer | null; pinned: boolean; error: string; loading: boolean; attachment?: Readonly<LocalAttachment>; loadSequence?: number }
-export type DirectoryState = { state: 'loading' } | { state: 'ready'; entries: FileEntry[] } | { state: 'error'; message: string };
+export type DirectoryState = { state: 'loading'; entries?: FileEntry[] } | { state: 'ready'; entries: FileEntry[] } | { state: 'error'; message: string; entries?: never };
 interface DirectoryRequest { id: string; root: FileRoot; path: string; previous?: Extract<DirectoryState, { state: 'ready' }>; promise: Promise<void> }
 export interface TreeRevealRequest { id: string; lease: string; generation: number; path: string; tabId: string; bufferInstance: string }
+export class FileWorkspaceCloseError extends Error {
+  constructor(message: string, readonly canDiscard: boolean) { super(message); this.name = 'FileWorkspaceCloseError'; }
+}
+export interface FileWorkspaceClosePreparation {
+  assertCurrent(): void;
+  commit(): Promise<void>;
+  cancel(): void;
+}
 const sourceKey = (root: Pick<FileRoot, 'source' | 'sourceId' | 'path'>) => `${root.source}:${root.sourceId}:${root.path}`;
 const routeKey = (route: FileRoute) => JSON.stringify([route.hostId ?? 'local', route.remotePath ?? null, route.source, route.sourceId, route.sourcePath, route.relativePath]);
 const durableRoute = (tab: FileTab): FileRoute => {
   const text = tab.buffer ? tab.buffer.loadState === 'ready' ? tab.buffer.readingSnapshot() : tab.route.text : tab.route.text;
   const position = tab.buffer?.pdfPosition;
   const pdf = tab.buffer ? tab.buffer.content.kind === 'pdf' && position?.initialized ? { page: position.page, zoom: position.zoom } : undefined : tab.route.pdf;
-  return { source: tab.route.source, sourceId: tab.route.sourceId, sourcePath: tab.route.sourcePath, relativePath: tab.route.relativePath, mode: tab.buffer?.mode ?? tab.route.mode, ...(pdf ? { pdf } : {}), ...(text ? { text } : {}), ...(tab.route.hostId !== undefined ? { hostId: tab.route.hostId } : {}), ...(tab.route.remotePath !== undefined ? { remotePath: tab.route.remotePath } : {}) };
+  const navigationView = tab.buffer ? tab.buffer.navigationView : tab.route.navigationView;
+  return { source: tab.route.source, sourceId: tab.route.sourceId, sourcePath: tab.route.sourcePath, relativePath: tab.route.relativePath, mode: tab.buffer?.mode ?? tab.route.mode, ...(navigationView ? { navigationView } : {}), ...(pdf ? { pdf } : {}), ...(text ? { text } : {}), ...(tab.route.hostId !== undefined ? { hostId: tab.route.hostId } : {}), ...(tab.route.remotePath !== undefined ? { remotePath: tab.route.remotePath } : {}) };
 };
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
 // RPC namespaces are proxies created on property access; retain one identity for
@@ -86,12 +101,13 @@ export class FileWorkspaceStore {
   private pendingWorkspace: WorkspaceSnapshot | null = null;
   private conflictingWorkspace: WorkspaceSnapshot | null = null;
   private readonly workspaceMutations = new Set<string>();
+  private officePageAbort: AbortController | null = null;
   constructor(readonly scope: FileScope, private readonly api: FileClient = defaultFileApi, private readonly storage: Pick<Storage, 'getItem' | 'setItem'> | null = typeof localStorage === 'undefined' ? null : localStorage,
     private readonly persistence: WorkspacePersistence | null = api === defaultFileApi ? {
       load: (scope) => api.workspace(scope), snapshot: (scope) => api.workspaceSnapshot(scope),
       commit: (scope, state, revision, mutationId) => api.saveWorkspace(scope, state, revision, mutationId),
       subscribe: (listener) => events.on(fileWorkspaceEvent, listener),
-    } : null) {
+    } : null, private readonly officePage?: OfficePageHandoff) {
     this.storageKey = `willyou-files-v1:${fileScopeKey(scope)}`;
   }
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => this.listeners.delete(listener); };
@@ -149,6 +165,7 @@ export class FileWorkspaceStore {
   get filter(): string { return this.treeRoot ? this.filters[sourceKey(this.treeRoot)] ?? '' : ''; }
   setFilter(value: string): void { if (!this.treeRoot) return; if (value.trim()) this.cancelTreeReveal(); this.filters[sourceKey(this.treeRoot)] = value.slice(0, 256); this.changed(); }
   attach(): () => void {
+    if (this.disposed) return () => undefined;
     this.views++;
     if (this.views === 1) for (const tab of this.tabs) if (tab.buffer && !this.viewFlushes.has(tab.buffer)) tab.buffer.resumeAutosave();
     if (!this.unlistenWatch) this.unlistenWatch = events.on(fileWatchEvent, (update) => this.receiveWatch(update));
@@ -157,7 +174,7 @@ export class FileWorkspaceStore {
     return () => {
       if (!attached) return; attached = false;
       this.views--;
-      if (this.views > 0) return;
+      if (this.views > 0 || this.disposed) return;
       this.treeIntent++; this.treeReveal = null;
       for (const key of this.pendingDirectories.keys()) this.cancelDirectory(key);
       this.unlistenWatch?.(); this.unlistenWatch = null; this.watchToken++;
@@ -183,6 +200,39 @@ export class FileWorkspaceStore {
     };
   }
   async flushDetachedViews(): Promise<void> { await Promise.allSettled([...this.viewFlushes.values()]); }
+  /** Save without removing a tab. The caller commits only after its PTY exits. */
+  async prepareSessionClose(action: 'save' | 'discard'): Promise<FileWorkspaceClosePreparation> {
+    await this.flushDetachedViews();
+    const tabs = [...this.tabs];
+    const tabBuffers = tabs.map(tab => tab.buffer);
+    const buffers = [...new Set(tabs.flatMap(tab => tab.buffer ? [tab.buffer] : []))];
+    const sameTabs = () => !this.disposed && tabs.length === this.tabs.length && tabs.every((tab, index) => tab === this.tabs[index] && tab.buffer === tabBuffers[index]);
+    const resume = () => { if (!this.disposed && this.views > 0) for (const buffer of buffers) buffer.resumeAutosave(); };
+    for (const buffer of buffers) buffer.pauseAutosave();
+    try {
+      for (const buffer of buffers) {
+        let ready: boolean;
+        try { ready = await buffer.prepareClose(action); }
+        catch (error) { throw new FileWorkspaceCloseError(errorMessage(error), true); }
+        if (!ready) throw new FileWorkspaceCloseError(buffer.saveError || buffer.draftError || '文件尚未保存，原会话和恢复材料仍保留', true);
+      }
+      if (!sameTabs()) throw new FileWorkspaceCloseError('关闭期间文件标签已改变，请重新核对后关闭', false);
+      await this.flushPersistence();
+      const version = (buffer: FileBuffer) => JSON.stringify([buffer.version, buffer.office?.result?.state.version, buffer.office?.pending, buffer.pptx?.result?.state.version, buffer.pptx?.pendingInputs]);
+      const stamps = buffers.map(buffer => ({ buffer, instance: buffer.instance, version: version(buffer) }));
+      const assertCurrent = () => {
+        if (!sameTabs() || stamps.some(stamp => stamp.buffer.instance !== stamp.instance || version(stamp.buffer) !== stamp.version || action === 'save' && (stamp.buffer.dirty || stamp.buffer.recoveryBlocked || !stamp.buffer.inputSettled))) {
+          throw new FileWorkspaceCloseError('关闭期间文件内容已改变，原视图和恢复材料仍保留，请重试', false);
+        }
+      };
+      assertCurrent();
+      return {
+        assertCurrent,
+        commit: async () => { assertCurrent(); await this.api.closeScope(this.scope); this.dispose(false); },
+        cancel: resume,
+      };
+    } catch (error) { resume(); throw error; }
+  }
   private receiveWatch(update: FileWatchUpdate): void {
     if (!this.views) return;
     // Root revocation is authoritative for the lease, even if its first watch
@@ -290,6 +340,7 @@ export class FileWorkspaceStore {
         existing.pinned = true; existing.route = route;
         if (existing.buffer) {
           existing.buffer.mode = route.mode;
+          existing.buffer.navigationView = route.navigationView ?? null;
           if (route.mode === 'source' && !existing.buffer.editor && existing.buffer.content.mime === 'image/svg+xml') sourceLoads.push(existing.buffer);
         }
         return existing;
@@ -411,20 +462,117 @@ export class FileWorkspaceStore {
         if (this.activeId === tab.id) this.activeId = existing.id;
         void this.api.closeDocument(file.ref).catch(() => undefined); this.changed(); return;
       }
-      tab.buffer = new FileBuffer(file, this.api, this.changed, this.flushPersistence); tab.buffer.mode = tab.route.mode; tab.buffer.textReadingHint = tab.route.text;
+      tab.buffer = new FileBuffer(file, this.api, this.changed, this.flushPersistence); tab.buffer.mode = tab.route.mode; tab.buffer.navigationView = tab.route.navigationView ?? null; tab.buffer.textReadingHint = tab.route.text;
       if (tab.route.pdf && tab.buffer.content.kind === 'pdf') tab.buffer.updatePdfPosition({ ...tab.route.pdf, initialized: true });
       tab.loading = false; tab.error = ''; this.changed();
       await tab.buffer.load();
     } catch (error) { if (!this.disposed && own === this.epoch && sequence === tab.loadSequence && this.tabs.includes(tab)) { tab.error = errorMessage(error); tab.loading = false; this.changed(); } }
   }
-  async open(root: FileRoot, relativePath: string, pin = false, options: { reveal?: boolean } = {}): Promise<void> {
-    const route: FileRoute = { source: root.source, sourceId: root.sourceId, sourcePath: root.path, relativePath, mode: /\.(?:csv|tsv|html?|tex)$/i.test(relativePath) ? 'source' : 'document' };
-    await this.openRoute(route, pin, options.reveal !== false);
+  private cancelOfficePage(): void { this.officePageAbort?.abort(); this.officePageAbort = null; }
+  private async tryOfficePage(root: FileRoot, route: FileRoute, format: 'xlsx' | 'pptx', current: () => boolean): Promise<boolean> {
+    const abort = this.officePageAbort = new AbortController();
+    let file: FileDocument | undefined, accepted = false;
+    try {
+      if (this.officePage!.available(this.scope)) {
+        file = await this.api.open({ lease: root.lease, generation: root.generation, relativePath: route.relativePath });
+        if (current() && !abort.signal.aborted && file.content?.kind === 'office' && file.content.format === format) {
+          let cancel!: () => void;
+          const cancelled = new Promise<boolean>(resolve => { cancel = () => resolve(false); abort.signal.addEventListener('abort', cancel, { once: true }); });
+          try {
+            accepted = await Promise.race([this.officePage!.open({ document: file, scope: this.scope, format, signal: abort.signal }), cancelled]) === true;
+          } finally { abort.signal.removeEventListener('abort', cancel); }
+        }
+      }
+    } catch {
+      // A page integration failure must leave the ordinary file route usable.
+      // File access errors are shown by that route's normal loader.
+    } finally {
+      abort.abort(); if (this.officePageAbort === abort) this.officePageAbort = null;
+      if (file) await this.api.closeDocument(file.ref).catch(() => undefined);
+    }
+    return accepted;
   }
-  private async openRoute(route: FileRoute, pin: boolean, reveal = true): Promise<void> {
-    const intent = ++this.intent, treeIntent = this.treeIntent;
+  async open(root: FileRoot, relativePath: string, pin = false, options: FileOpenOptions = {}): Promise<void> {
+    if (this.disposed) return;
+    const display = fileDisplayIntent(relativePath, options), titled = display.title !== null;
+    if (titled && options.fileViewer != null && options.fileViewer !== 'default') throw new Error('指定扩展查看器不适用于带预览标题的请求');
+    this.cancelOfficePage();
+    const treeIntent = this.treeIntent;
+    const route: FileRoute = { source: root.source, sourceId: root.sourceId, sourcePath: root.path, relativePath, mode: /\.(?:csv|tsv|html?|tex)$/i.test(relativePath) ? 'source' : 'document' };
+    const location = (options.line != null || options.column != null || options.endLine != null)
+      && ![options.line, options.column, options.endLine, options.endColumn].some(value => value != null && (!Number.isSafeInteger(value) || value < 1))
+      && (options.endLine == null || options.endLine >= (options.line ?? 1))
+      && (options.fileViewer == null || options.fileViewer === 'default');
+    const previous = this.tabs.find(tab => !tab.attachment && routeKey(tab.route) === routeKey(route));
+    // A title alone does not replace an eligible existing view. It is fallback
+    // metadata, distinct from a request to rename the file or its ordinary tab.
+    if (titled && !location && options.artifactNavigationTarget == null && previous?.buffer) {
+      route.navigationView = previous.route.navigationView;
+      await this.openRoute(route, pin, options.reveal !== false, treeIntent); return;
+    }
+    const titleArtifact = titled && !location && !previous && /\.(?:csv|tsv|pdf)$/i.test(relativePath);
+    if (display.target || titleArtifact) route.mode = 'document';
+    else if (location || titled) route.navigationView = titled || options.endLine != null || /\.pdf$/i.test(relativePath) ? 'review' : 'source';
+    if ((display.target || titleArtifact) && (previous?.buffer?.dirty || previous?.buffer?.saving)) throw new Error('请先保存当前修改，再切换文件预览');
+    const format = this.officePage && officeHandoffFormat(relativePath, options), registered = this.rootFor(route);
+    const hasViewer = Object.prototype.hasOwnProperty.call(options, 'fileViewer');
+    let viewerConfiguration: ViewerConfiguration | undefined;
+    if (hasViewer) {
+      const own = ++this.intent, epoch = this.epoch;
+      const existing = this.tabs.find(tab => !tab.attachment && routeKey(tab.route) === routeKey(route)), original = existing?.buffer;
+      const current = () => !this.disposed && this.intent === own && this.epoch === epoch && this.rootFor(route) === registered && (!original || existing?.buffer === original && this.tabs.includes(existing));
+      const protect = () => { if (existing?.buffer?.dirty || existing?.buffer?.saving) throw new Error('请先保存当前修改，再切换文件查看器'); };
+      protect();
+      if (options.fileViewer != null && options.fileViewer !== 'default') {
+        if (!registered || isNonLocalFileSource(root) || options.line != null || options.endLine != null) throw new Error('指定扩展查看器不适用于当前来源或行范围请求');
+        viewerConfiguration = await this.api.viewerConfiguration();
+        if (!current()) return;
+        if (!selectFileViewer(viewerConfiguration, relativePath.split('/').at(-1)!, root.source, options.fileViewer)) throw new Error('指定扩展查看器当前不可用，请重新选择');
+      }
+      protect();
+    }
+    if (format && registered && !isNonLocalFileSource(root) && !this.tabs.some(tab => !tab.attachment && routeKey(tab.route) === routeKey(route))) {
+      const intent = ++this.intent, epoch = this.epoch;
+      const current = () => !this.disposed && this.intent === intent && this.epoch === epoch && this.rootFor(route) === registered;
+      if (await this.tryOfficePage(registered, route, format, current) || !current()) return;
+    }
+    const opening = this.openRoute(route, pin, options.reveal !== false, treeIntent), intent = this.intent;
+    await opening;
+    if (this.disposed || this.intent !== intent) return;
+    const tab = this.active, buffer = tab?.buffer;
+    if (!tab || tab.attachment || !buffer) return;
+    if (routeKey(tab.route) !== routeKey(route)) return;
+    buffer.clearDisplayIntent();
+    if (display.target || titleArtifact) {
+      buffer.mode = 'document'; tab.route.mode = 'document';
+      buffer.artifactView = true;
+      if (display.target) buffer.requestArtifactNavigation(display.target);
+    } else if (buffer.navigationView === 'review' && titled) buffer.previewTitle = display.title;
+    if (display.unsupported) buffer.navigationError = '当前格式没有可用的预览定位入口，已保留普通文件视图';
+    if (hasViewer) {
+      if (buffer.dirty || buffer.saving) throw new Error('请先保存当前修改，再切换文件查看器');
+      if (viewerConfiguration && !selectFileViewer(viewerConfiguration, buffer.file.name, tab.route.source, options.fileViewer!)) throw new Error('指定扩展查看器不支持当前文件来源');
+      chooseFileViewer(buffer, options.fileViewer === 'default' ? null : options.fileViewer ?? undefined);
+    }
+    this.changed();
+    if (display.target || !buffer.editor || !location) return;
+    const line = buffer.editor.doc.line(Math.min(options.line ?? 1, buffer.editor.doc.lines));
+    const position = Math.min(line.to, line.from + (options.column ?? 1) - 1);
+    const end = options.endLine == null ? null : buffer.editor.doc.line(Math.min(options.endLine, buffer.editor.doc.lines));
+    const to = end ? options.endColumn == null ? end.to : Math.min(end.to, end.from + options.endColumn - 1) : position;
+    const map = textOffsetMap(buffer.raw);
+    buffer.revealSourceRange(map.cmToRaw(position), map.cmToRaw(Math.max(position, to)), { keepViewerChoice: true });
+  }
+  private async openRoute(route: FileRoute, pin: boolean, reveal = true, treeIntent = this.treeIntent): Promise<void> {
+    this.cancelOfficePage();
+    const intent = ++this.intent;
     const existing = this.tabs.find((tab) => !tab.attachment && routeKey(tab.route) === routeKey(route));
-    if (existing) { existing.pinned ||= pin; this.activeId = existing.id; this.changed(); if (reveal) this.locateActive(intent, treeIntent); await this.retryTab(existing.id); if (reveal) this.locateActive(intent, treeIntent); return; }
+    if (existing) {
+      if (route.navigationView === 'review' && (existing.buffer?.dirty || existing.buffer?.saving)) throw new Error('请先保存当前修改，再查看行范围');
+      existing.route.navigationView = route.navigationView;
+      if (existing.buffer) existing.buffer.navigationView = route.navigationView ?? null;
+      existing.pinned ||= pin; this.activeId = existing.id; this.changed(); if (reveal) this.locateActive(intent, treeIntent); await this.retryTab(existing.id); if (reveal) this.locateActive(intent, treeIntent); return;
+    }
     const preview = this.tabs.find((tab) => !tab.pinned && !tab.buffer?.dirty);
     if (preview) this.remove(preview, false);
     const tab: FileTab = { id: crypto.randomUUID(), route, buffer: null, pinned: pin, loading: true, error: '' };
@@ -432,24 +580,42 @@ export class FileWorkspaceStore {
     await this.loadTab(tab);
     if (reveal) this.locateActive(intent, treeIntent);
   }
-  async openAttachment(root: FileRoot, relativePath: string, callbacks: LocalAttachment): Promise<void> {
+  async openAttachment(root: FileRoot, relativePath: string, callbacks: LocalAttachment, options: FileDisplayOptions = {}): Promise<void> {
     if (this.disposed) throw new Error('文件工作区已经关闭');
+    const display = fileDisplayIntent(relativePath, options);
     if (!this.roots.roots.some(item => item.lease === root.lease && item.generation === root.generation && sourceKey(item) === sourceKey(root))) throw new Error('附件必须映射到当前可信本机目录');
     if (!callbacks.key || callbacks.key.length > 256 || [callbacks.onDownload, callbacks.onClose].some(value => value !== undefined && typeof value !== 'function')) throw new Error('附件来源或回调无效');
     const route = fileWorkspaceSchema.shape.routes.element.parse({ source: root.source, sourceId: root.sourceId, sourcePath: root.path, relativePath, mode: 'document' });
     const hint = fileAttachmentHintSchema.parse(callbacks.mimeType === undefined ? {} : { mimeType: callbacks.mimeType });
     const attachment = Object.freeze({ key: callbacks.key, onDownload: callbacks.onDownload, onClose: callbacks.onClose, ...hint });
-    this.intent++;
+    this.cancelOfficePage();
+    const intent = ++this.intent;
+    const applyDisplay = (tab: FileTab) => {
+      if (this.disposed || this.intent !== intent || this.active !== tab || !tab.buffer || !this.tabs.includes(tab)) return;
+      if (options.artifactNavigationTarget == null && options.filePreviewTitle == null) return;
+      const buffer = tab.buffer;
+      buffer.clearDisplayIntent();
+      if (display.target) {
+        buffer.mode = 'document'; buffer.navigationView = null;
+        buffer.requestArtifactNavigation(display.target);
+      } else if (display.title !== null && !/\.(?:csv|tsv|pdf)$/i.test(relativePath)) {
+        buffer.navigationView = 'review'; buffer.previewTitle = display.title;
+      }
+      if (display.unsupported) buffer.navigationError = '当前格式没有可用的预览定位入口，已保留只读文件视图';
+      this.changed();
+    };
     const existing = this.tabs.find(tab => tab.attachment?.key === attachment.key && routeKey(tab.route) === routeKey(route));
     if (existing) {
       const changedHint = existing.attachment?.mimeType !== attachment.mimeType;
       existing.attachment = attachment; this.activeId = existing.id;
       if (changedHint) { existing.buffer?.dispose(); existing.buffer = null; existing.loading = true; existing.error = ''; this.changed(); await this.loadTab(existing); }
-      else { this.changed(); void existing.buffer?.refresh(); }
+      else { this.changed(); await existing.buffer?.refresh(); }
+      applyDisplay(existing);
       return;
     }
     const tab: FileTab = { id: crypto.randomUUID(), route, buffer: null, pinned: true, loading: true, error: '', attachment };
     this.tabs.push(tab); this.activeId = tab.id; this.changed(); await this.loadTab(tab);
+    applyDisplay(tab);
   }
   async downloadAttachment(id: string): Promise<void> {
     const tab = this.tabs.find(item => item.id === id);
@@ -457,6 +623,7 @@ export class FileWorkspaceStore {
     await tab.attachment.onDownload();
   }
   activate(id: string): void {
+    this.cancelOfficePage();
     const intent = ++this.intent, treeIntent = this.treeIntent, tab = this.tabs.find((item) => item.id === id); if (!tab) return;
     this.activeId = id; this.changed(); this.locateActive(intent, treeIntent);
     void this.retryTab(id).then(() => this.locateActive(intent, treeIntent));
@@ -485,23 +652,29 @@ export class FileWorkspaceStore {
     const tab = this.tabs.find((entry) => entry.buffer === buffer);
     if (!tab) return;
     const root = this.rootFor(tab.route); if (!root) throw new Error('文档来源已失效');
-    const document = await this.api.related(buffer.file.ref, href);
-    try { if (this.tabs.includes(tab) && tab.buffer === buffer) {
+    const location = options.readOnlyImage ? { path: href } : fileLinkLocation(href), intent = ++this.intent;
+    const document = await this.api.related(buffer.file.ref, location.path);
+    try { if (!this.disposed && this.intent === intent && this.tabs.includes(tab) && tab.buffer === buffer && this.rootFor(tab.route) === root) {
+      if (!document) throw new Error('无法打开图片：图片来源为空，请重新读取后重试');
       if (options.readOnlyImage) {
         if (document.content?.kind !== 'image') throw new Error('此引用不是图像，不能作为图片只读标签打开');
         await this.openAttachment(root, document.relativePath, { key: `markdown-image:${buffer.instance}:${document.relativePath}`.slice(0, 256), mimeType: document.content.mime });
       }
       else if (tab.attachment) await this.openAttachment(root, document.relativePath, { key: `${tab.attachment.key}:related` });
-      else await this.open(root, document.relativePath);
+      else await this.open(root, document.relativePath, false, location);
     } }
-    finally { await this.api.closeDocument(document.ref).catch(() => undefined); }
+    finally { if (document?.ref) await this.api.closeDocument(document.ref).catch(() => undefined); }
   }
   async setMode(buffer: FileBuffer, mode: 'document' | 'source'): Promise<void> {
     // Even an explicit request to keep the current mode supersedes an older
     // switch that is still waiting for its save to finish.
     const request = ++this.modeIntent;
     const tab = this.tabs.find((entry) => entry.buffer === buffer);
-    if (!tab || this.disposed || buffer.mode === mode) return;
+    if (!tab || this.disposed) return;
+    if (buffer.mode === mode) {
+      if (!buffer.dirty && !buffer.saving) { const largeReview = buffer.largeTextReview; buffer.clearDisplayIntent(); buffer.navigationView = null; delete tab.route.navigationView; chooseFileViewer(buffer, null); this.changed(); if (largeReview) await buffer.load(); }
+      return;
+    }
     const intent = this.intent, activeId = this.activeId, previousMode = buffer.mode, version = buffer.version;
     const current = () => !this.disposed && this.modeIntent === request && this.intent === intent
       && this.activeId === activeId && this.tabs.includes(tab) && tab.buffer === buffer
@@ -516,8 +689,9 @@ export class FileWorkspaceStore {
       if (!saved) throw new Error(buffer.saveError || '文件尚未保存，保留当前模式');
     }
     if (!current() || buffer.dirty || buffer.saving) return;
-    buffer.mode = mode; tab.route.mode = mode; this.changed();
-    if (mode === 'source' && !buffer.editor && buffer.content.mime === 'image/svg+xml') await buffer.load();
+    const largeReview = buffer.largeTextReview;
+    buffer.clearDisplayIntent(); buffer.mode = mode; tab.route.mode = mode; buffer.navigationView = null; delete tab.route.navigationView; chooseFileViewer(buffer, null); this.changed();
+    if (largeReview || mode === 'source' && !buffer.editor && buffer.content.mime === 'image/svg+xml') await buffer.load();
   }
   async openSearchRow(root: FileRoot, row: FileSearchRow): Promise<void> {
     const work = this.open(root, row.relativePath); const intent = this.intent;
@@ -526,7 +700,14 @@ export class FileWorkspaceStore {
     const buffer = this.active?.buffer;
     if (!buffer?.editor) throw new Error('此搜索结果当前无法作为文本定位');
     if (buffer.dirty || buffer.file.revision.hash !== row.revision.hash || buffer.file.revision.device !== row.revision.device || buffer.file.revision.inode !== row.revision.inode) throw new Error('文件在搜索后已改变，已打开当前内容；请重新搜索后定位');
-    const range = row.ranges[0]; if (range) buffer.revealSourceRange(row.rawOffset + range.from, row.rawOffset + range.to);
+    const range = row.ranges[0];
+    if (range) {
+      // Rendered HTML/CSV/TeX views cannot consume a source selection. Use the
+      // guarded, explicit mode path before handing the validated range to CM.
+      await this.setMode(buffer, 'source');
+      if (this.disposed || this.intent !== intent || this.active?.buffer !== buffer) return;
+      buffer.revealSourceRange(row.rawOffset + range.from, row.rawOffset + range.to);
+    }
   }
   pin(id: string): void { const tab = this.tabs.find((item) => item.id === id); if (tab) { tab.pinned = true; this.changed(); } }
   reorder(from: string, target: string): void {
@@ -614,7 +795,7 @@ export class FileWorkspaceStore {
       // belonging to this recovered source may acquire a fresh document.
       await Promise.all([this.list(root, ''), ...this.tabs.filter(tab => !tab.buffer && this.rootFor(tab.route) === root).map(tab => this.retryTab(tab.id)), ...retired.map(async ({ tab, old, buffer }) => {
         if (!this.tabs.includes(tab) || tab.buffer !== buffer) return;
-        const file = await this.api.open({ lease: root.lease, generation: root.generation, relativePath: tab.route.relativePath });
+        const file = await this.api.open({ lease: root.lease, generation: root.generation, relativePath: tab.route.relativePath,...(buffer.file.sourceReadOnly===true || buffer.file.attachment ? {readOnly:true,...(buffer.file.attachment?{attachment:{mimeType:buffer.file.attachment.mimeType}}:{})}:{}) });
         if (this.disposed || !this.tabs.includes(tab) || tab.buffer !== buffer) { await this.api.closeDocument(file.ref).catch(() => undefined); return; }
         await buffer.reconnectSource(file, old.canonicalPath !== root.canonicalPath || old.path !== root.path);
         if (this.tabs.includes(tab) && tab.buffer === buffer) { tab.route = { ...tab.route, sourcePath: root.path }; tab.error = ''; }
@@ -659,7 +840,10 @@ export class FileWorkspaceStore {
       if (accepts()) this.directories.set(key, { state: 'error', message: errorMessage(error) });
     }).finally(() => { if (this.pendingDirectories.get(key) === request) { this.pendingDirectories.delete(key); if (!this.disposed && own === this.epoch) this.changed(); } });
     request = { id: crypto.randomUUID(), root, path, previous, promise: work };
-    this.pendingDirectories.set(key, request); this.directories.set(key, { state: 'loading' }); this.changed(); return work;
+    // A confirmed listing belongs to this exact lease. Keep its rows mounted
+    // while reading the next snapshot so native Tab navigation retains its
+    // starting node. Loading stays explicit; errors never reuse stale rows.
+    this.pendingDirectories.set(key, request); this.directories.set(key, { state: 'loading', ...(previous ? { entries: previous.entries } : {}) }); this.changed(); return work;
   }
   async refresh(): Promise<void> {
     const root = this.treeRoot;
@@ -674,9 +858,10 @@ export class FileWorkspaceStore {
       ...this.tabs.flatMap((tab) => tab.buffer?.file.ref.lease === root.lease || !tab.buffer && this.rootFor(tab.route) === root ? [this.retryTab(tab.id)] : []),
     ]);
   }
-  dispose(): void {
+  dispose(closeScope = true): void {
     if (this.disposed) return;
     this.disposed = true; this.epoch++;
+    this.cancelOfficePage();
     this.treeReveal = null;
     for (const key of this.pendingDirectories.keys()) this.cancelDirectory(key);
     this.unlistenWorkspace?.(); this.unlistenWorkspace = null;
@@ -686,7 +871,7 @@ export class FileWorkspaceStore {
     this.retiredRoots.clear();
     this.treeViews.clear(); this.nameSearchViews.clear(); this.scroll.clear();
     for (const tab of this.tabs) tab.buffer?.dispose();
-    this.listeners.clear(); void this.api.closeScope(this.scope).catch(() => undefined);
+    this.listeners.clear(); if (closeScope) void this.api.closeScope(this.scope).catch(() => undefined);
   }
 }
 
@@ -698,3 +883,23 @@ export function fileWorkspaceFor(scope: FileScope): FileWorkspaceStore {
   return store;
 }
 export function openFileBuffers(): FileBuffer[] { return [...new Set([...workspaces.values()].flatMap((store) => store.tabs.flatMap((tab) => tab.buffer ? [tab.buffer] : [])))]; }
+
+/** Closing a session evicts only its store. Reopening receives fresh leases. */
+export async function prepareFileWorkspaceClose(scope: FileScope, action: 'save' | 'discard'): Promise<FileWorkspaceClosePreparation> {
+  const key = fileScopeKey(scope), store = workspaces.get(key);
+  const preparation = store ? await store.prepareSessionClose(action) : {
+    assertCurrent: () => { if (workspaces.has(key)) throw new FileWorkspaceCloseError('关闭期间文件工作区已打开，请重试', false); },
+    commit: async () => { await defaultFileApi.closeScope(scope); },
+    cancel: () => undefined,
+  };
+  return {
+    assertCurrent: preparation.assertCurrent,
+    commit: async () => {
+      preparation.assertCurrent();
+      if (store && workspaces.get(key) !== store) throw new FileWorkspaceCloseError('文件工作区已更换，请重试', false);
+      await preparation.commit();
+      if (store && workspaces.get(key) === store) workspaces.delete(key);
+    },
+    cancel: preparation.cancel,
+  };
+}

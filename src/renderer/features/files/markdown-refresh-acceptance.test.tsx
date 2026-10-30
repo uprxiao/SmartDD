@@ -9,7 +9,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { Worker as NodeWorker } from 'node:worker_threads';
 import { useSyncExternalStore } from 'react';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import { undo } from '@codemirror/commands';
+import { cursorCharRight, undo } from '@codemirror/commands';
 import { EditorView, type WidgetType } from '@codemirror/view';
 import type { AsyncSubscription, SubscribeCallback } from '@parcel/watcher';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -113,12 +113,55 @@ afterAll(() => { if (process.env.SMARTDD_MARKDOWN_REFRESH_EVIDENCE) writeFileSyn
 const writers = ['ordinary writer', 'CLI process'] as const, triggers = ['native watch', 'reactivation', 'explicit refresh'] as const;
 const matrix = writers.flatMap(writer => triggers.map(trigger => ({ writer, trigger })));
 describe('DEV117 inline source decorations over the native file buffer', () => {
+  it.each([
+    ['titled', 'Titled [Label &amp; ![image](tiny.png)](other.txt "title") tail'],
+    ['empty title', 'Empty [Label &amp; ![image](tiny.png)](other.txt "") tail'],
+    ['reference', 'Reference [Label &amp; ![image](tiny.png)][ref] tail'],
+  ])('X03 source-only link survives an outside caret and real blur: %s', async (kind, literal) => {
+    const initial = '# Prefix\r\n\r\n' + literal + '\r\n\r\nOutside **control** &amp;\r\n\r\n[ref]: other.txt\r\n';
+    const f = await fixture(false, initial), before = disk(f.path), parent = document.createElement('div'), button = document.createElement('button'); document.body.append(parent, button);
+    const statuses: string[] = [], editor = new EditorView({ parent, state: f.buffer.editor! });
+    try {
+      const source = () => editor.state.field(f.buffer.source!.field);
+      editor.dispatch({ effects: f.buffer.viewConfiguration.reconfigure([markdownEditor(f.buffer, { status: value => statuses.push(value), link() {}, image: async () => {} })]), selection: { anchor: source().map.rawToCm(initial.indexOf('control') + 1) } });
+      await until(() => statuses.length > 0); editor.focus();
+      await until(() => parent.querySelector('.cm-content')?.textContent?.includes('**control**') === true);
+      const focusedText = parent.querySelector('.cm-content')!.textContent!, selection = editor.state.selection.main;
+      button.focus(); await until(() => !editor.hasFocus && !parent.querySelector('.cm-content')?.textContent?.includes('**control**'));
+      const blurredText = parent.querySelector('.cm-content')!.textContent!;
+      rows.push({ caseId: 'M9-T-X03', scope: 'I-real-file-source-only-off-block', kind, literal, focusedText, blurredText, selectionRetained: editor.state.selection.main.eq(selection), sourceUnchanged: source().raw === initial, diskUnchanged: JSON.stringify(disk(f.path)) === JSON.stringify(before) });
+      expect(focusedText).toContain(literal); expect(blurredText).toContain(literal);
+      expect(editor.state.selection.main).toEqual(selection); expect(source().raw).toBe(initial); expect(disk(f.path)).toEqual(before);
+      expect(f.api.save).not.toHaveBeenCalled(); expect(f.api.checkpoint).not.toHaveBeenCalled();
+    } finally { editor.destroy(); parent.remove(); button.remove(); }
+  }, 20_000);
+  it('X03 inline-code source caret reaches its body through the ordinary right-arrow command', async () => {
+    const initial = '# Prefix\n\nIntro `X03Code` tail\n\nTail\n', f = await fixture(false, initial), parent = document.createElement('div'); document.body.append(parent);
+    const statuses: string[] = [], editor = new EditorView({ parent, state: f.buffer.editor! });
+    try {
+      editor.dispatch({ effects: f.buffer.viewConfiguration.reconfigure([markdownEditor(f.buffer, { status: value => statuses.push(value), link() {}, image: async () => {} })]), selection: { anchor: initial.indexOf('Intro') } });
+      await until(() => statuses.length > 0 && !!parent.querySelector('.fw-md-code'));
+      editor.focus(); const from = initial.indexOf('`X03Code`'); editor.dispatch({ selection: { anchor: from } });
+      expect(cursorCharRight(editor)).toBe(true);
+      expect(editor.state.selection.main.empty).toBe(true);
+      expect(editor.state.selection.main.head).toBe(from + 1);
+      await until(() => parent.querySelector('.cm-content')?.textContent?.includes('`X03Code`') === true);
+      expect(parent.querySelector('.cm-content')?.textContent).toContain('`X03Code`');
+      expect(editor.state.field(f.buffer.source!.field).raw).toBe(initial);
+      expect(readFileSync(f.path, 'utf8')).toBe(initial); expect(f.api.save).not.toHaveBeenCalled();
+      rows.push({ caseId: 'M9-T-X03', scope: 'I-real-file-source-arrow', inlineCodeBodyReachable: true, sourceUnchanged: true });
+    } finally { editor.destroy(); parent.remove(); }
+  }, 20_000);
   it('DEV117 hides a Setext underline on blur without changing either source line', async () => {
     const initial = '# Prefix\n\nSetext **bold**\r\n===\r\n\nTail\n', f = await fixture(false, initial), parent = document.createElement('div'); document.body.append(parent); const errors: unknown[] = [], statuses: string[] = [];
     const editor = new EditorView({ parent, state: f.buffer.editor! });
     try {
       editor.dispatch({ effects: f.buffer.viewConfiguration.reconfigure([markdownEditor(f.buffer, { status: value => statuses.push(value), link() {}, image: async () => {} }), EditorView.exceptionSink.of(error => errors.push(error))]), selection: { anchor: editor.state.doc.length } }); await until(() => statuses.length > 0); editor.focus(); editor.dispatch({ selection: { anchor: initial.indexOf('Setext') + 1 } }); await until(() => !!parent.querySelector('.fw-md-heading-1'));
-      expect(parent.querySelector('.cm-content')?.textContent).toContain('==='); const before = editor.state.selection.main, button = document.createElement('button'); document.body.append(button); button.focus(); await until(() => !parent.querySelector('.cm-content')?.textContent?.includes('===')); button.remove();
+      // Archived ar reveals only HeaderMark, not a caret elsewhere in its body.
+      expect(parent.querySelector('.cm-content')?.textContent).not.toContain('===');
+      editor.dispatch({ selection: { anchor: editor.state.field(f.buffer.source!.field).map.rawToCm(initial.indexOf('===') + 1) } });
+      await until(() => !!parent.querySelector('.cm-content')?.textContent?.includes('==='));
+      const before = editor.state.selection.main, button = document.createElement('button'); document.body.append(button); button.focus(); await until(() => !parent.querySelector('.cm-content')?.textContent?.includes('===')); button.remove();
       expect(editor.state.selection.main).toEqual(before); expect(editor.state.doc.toString()).toBe(initial.replace(/\r\n/g,'\n')); expect(f.buffer.raw).toBe(initial); expect(readFileSync(f.path,'utf8')).toBe(initial); expect(errors).toEqual([]); rows.push({caseId:'M9-T-X03',scope:'partial-I',setextMultilineReplacement:true,sourceLinesRetained:true,selectionRetainedOnBlur:true});
     } finally { editor.destroy(); parent.remove(); }
   }, 20_000);
@@ -142,7 +185,11 @@ describe('DEV117 inline source decorations over the native file buffer', () => {
       await until(() => statuses.length > 0); editor.focus(); point(initial.indexOf('Intro') + 1);
       await until(() => !!parent.querySelector('.fw-md-strong'));
       expect(parent.querySelector('.fw-md-strong')?.textContent).toBe('粗😀'); expect(parent.querySelector('.fw-md-em')?.textContent).toBe('斜体'); expect(parent.querySelector('a[data-md-href="other.txt"]')).toBeTruthy(); expect(parent.querySelector('.fw-md-entity')?.textContent).toBe('&'); expect(parent.querySelector('.fw-md-image img')).toBeTruthy();
-      if (kind === 'heading') { expect(parent.querySelector('.fw-md-heading-2')).toBeTruthy(); expect(parent.querySelector('.fw-md-delimiter')?.textContent).toBe('## '); }
+      if (kind === 'heading') {
+        expect(parent.querySelector('.fw-md-heading-2')).toBeTruthy(); expect(parent.querySelector('.fw-md-delimiter')).toBeNull();
+        point(initial.indexOf('##') + 1); expect(parent.querySelector('.fw-md-delimiter')?.textContent).toBe('## ');
+        point(initial.indexOf('Intro') + 1); expect(parent.querySelector('.fw-md-delimiter')).toBeNull();
+      }
       const bold = initial.indexOf('**粗'), entity = initial.indexOf('&amp;'), image = initial.indexOf('![图]');
       point(bold + 2); expect(parent.querySelectorAll('.fw-md-delimiter').length).toBeGreaterThanOrEqual(2); expect(parent.querySelector('.fw-md-em')?.textContent).toBe('斜体'); expect(parent.querySelector('a[data-md-href="other.txt"]')).toBeTruthy();
       point(entity + 2); expect(parent.querySelector('.fw-md-entity')).toBeNull(); expect(parent.querySelector('.fw-md-image img')).toBeTruthy(); expect(parent.querySelector('.fw-md-strong')).toBeTruthy();

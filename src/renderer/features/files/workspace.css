@@ -14,10 +14,12 @@
 .fw-production .fw-breadcrumb span { user-select:text; }
 .fw-production .fw-content { overflow:hidden; }
 .fw-production .fw-tree { min-width:0; padding:0 4px; }
+.fw-production .fw-path-tooltip { --shadow:0 12px 44px #00000012,0 2px 8px #00000008; }
+.ydark .fw-production .fw-path-tooltip { --shadow:0 12px 44px #00000044,0 2px 8px #00000022; }
 .fw-production .fw-file-icon { color:var(--file-light); flex-shrink:0; }
 .fw-tree-scroll .fw-tree-virtual-row { min-width:max-content; }
 .fw-tree-scroll .fw-tree-virtual-row>.fw-tree-name { min-width:max-content; flex-shrink:0; overflow:visible; text-overflow:clip; }
-.ydark .fw-production .fw-file-icon { color:var(--file-dark); }
+.ydark .fw-production .fw-file-icon { color:var(--file-dark) !important; }
 .fw-production .fw-save-strip { flex-shrink:0; align-items:flex-start; overflow-wrap:anywhere; }
 .fw-editor-host { display:flex; flex-direction:column; flex:1; min-width:0; min-height:0; overflow:hidden; }
 .fw-codemirror { flex:1; min-width:0; min-height:0; overflow:hidden; }
@@ -88,12 +90,12 @@
 .fw-breadcrumb>span{gap:2px;flex-shrink:0}
 .fw-crumb-chevron{font-size:16px;line-height:16px;color:var(--muted);padding:0 3px}
 
-.fw-breadcrumb-popup{width:320px;max-width:calc(100vw - 24px);padding:4px;gap:0;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow)}
+.fw-breadcrumb-popup{width:320px;height:320px;max-width:calc(100vw - 24px);max-height:min(320px,calc(100vh - 16px),var(--available-height,320px));padding:4px;gap:0;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow)}
 .fw-breadcrumb-popup>p{display:flex;gap:6px;padding:10px;font-size:12px;overflow-wrap:anywhere;white-space:normal}
-.fw-breadcrumb-location{display:flex;align-items:center;gap:4px;padding:4px 6px;font-size:11px;color:var(--muted);min-height:28px}
+.fw-breadcrumb-location{display:flex;flex-shrink:0;align-items:center;gap:4px;padding:4px 6px;font-size:11px;color:var(--muted);min-height:28px}
 .fw-breadcrumb-location>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fw-breadcrumb-location>button{padding:3px;border-radius:4px}
-.fw-breadcrumb-list{height:320px;overflow:auto;overscroll-behavior:contain}
+.fw-breadcrumb-list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
 .fw-breadcrumb-list .fw-tree-row{position:absolute;left:0;right:0;padding:0 6px;border-radius:4px;gap:6px}
 .fw-breadcrumb-list .fw-tree-row>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .fw-breadcrumb-list .fw-tree-row[aria-current]{background:var(--selected)}

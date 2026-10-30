@@ -7,11 +7,12 @@ import type { FileBuffer } from '../file-buffer';
 import { readPreviewResource } from '../preview-resource';
 import { createPdfSession, type PdfSession } from './engine';
 import { PdfCanvasPage } from './page';
-import { PdfCanvasBudget, clampPdfPage, clampPdfZoom, classifyPdfError, fitWidthZoom, pdfOffsets, pdfPageWindow, resolveDestinationPage, type PdfPageSize } from './model';
+import { CSS_UNITS, PdfCanvasBudget, clampPdfPage, clampPdfZoom, classifyPdfError, fitWidthZoom, pdfOffsets, pdfPageWindow, resolveDestinationPage, type PdfPageSize } from './model';
 import './style.css';
 import { bindPdfWheel } from './wheel.mjs';
+import { usePdfComments } from './comments';
 
-interface ReadyPdf { session: PdfSession; doc: PDFDocumentProxy; sizes: PdfPageSize[]; titles: Record<number, string> }
+interface ReadyPdf { session: PdfSession; doc: PDFDocumentProxy; sizes: PdfPageSize[]; titles: Record<number, string>; identity: string }
 export function FilePdfPreview({ buffer, review = false, onDownload, loadData }: { buffer: FileBuffer; review?: boolean; onDownload?: () => Promise<void>; loadData?: (signal: AbortSignal) => Promise<Uint8Array<ArrayBuffer>> }) {
   const [pdf, setPdf] = useState<ReadyPdf | null>(null), [error, setError] = useState(''), [notice, setNotice] = useState(''), [attempt, setAttempt] = useState(0);
   const [passwordPrompt, setPasswordPrompt] = useState<{ submit: (value: string) => void; wrong: boolean } | null>(null), [password, setPassword] = useState('');
@@ -20,6 +21,9 @@ export function FilePdfPreview({ buffer, review = false, onDownload, loadData }:
   const [page, setPage] = useState(buffer.pdfPosition.page), [zoom, setZoom] = useState(buffer.pdfPosition.zoom), [docked, setDocked] = useState(false);
   const [viewport, setViewport] = useState({ top: 0, height: 800 }), [thumbTop, setThumbTop] = useState(0), [downscaled, setDownscaled] = useState<Set<number>>(new Set());
   const scroll = useRef<HTMLDivElement>(null), thumbScroll = useRef<HTMLDivElement>(null), current = useRef<PdfSession | null>(null), cancel = useRef<AbortController | null>(null), zoomRef = useRef(zoom);
+  const host = useRef<HTMLElement>(null);
+  const [reviewWidth, setReviewWidth] = useState(0);
+  const comments = usePdfComments(buffer, review, Boolean(pdf && !error), host);
   const pendingTop = useRef<number | null>(null), restorePage = useRef(buffer.pdfPosition.page);
   const budget = useMemo(() => new PdfCanvasBudget(), [buffer, buffer.file.revision.hash, attempt]);
   const offsets = useMemo(() => pdfOffsets(pdf?.sizes ?? [], review ? 100 : zoom), [pdf?.sizes, zoom, review]);
@@ -65,6 +69,7 @@ export function FilePdfPreview({ buffer, review = false, onDownload, loadData }:
   }), []);
   useEffect(() => {
     const controller = new AbortController(); cancel.current = controller;
+    const identity = `${buffer.instance}:${buffer.file.ref.id}:${buffer.baseHash}`;
     let session: PdfSession | null = null;
     zoomRef.current = buffer.pdfPosition.zoom; setZoom(buffer.pdfPosition.zoom);
     pendingTop.current = null; restorePage.current = buffer.pdfPosition.page;
@@ -85,7 +90,7 @@ export function FilePdfPreview({ buffer, review = false, onDownload, loadData }:
         const first = await session.run(doc.getPage(1));
         controller.signal.throwIfAborted(); setPasswordPrompt(null); setPassword('');
         const view = first.getViewport({ scale: 1 }), sizes = Array.from({ length: doc.numPages }, () => ({ width: view.width, height: view.height }));
-        const ready = { doc, session, sizes: [...sizes], titles: {} };
+        const ready = { doc, session, sizes: [...sizes], titles: {}, identity };
         const restoredPage = clampPdfPage(restorePage.current, doc.numPages);
         restorePage.current = restoredPage; buffer.updatePdfPosition({ page: restoredPage });
         setPdf(ready); setPage(restoredPage);
@@ -120,12 +125,26 @@ export function FilePdfPreview({ buffer, review = false, onDownload, loadData }:
   useEffect(() => {
     const node = scroll.current;
     if (!pdf || !node) return;
-    const observer = new ResizeObserver(() => { restorePosition(); setViewport({ top: node.scrollTop, height: node.clientHeight }); syncVisiblePage(node); });
+    const measure = () => { if (review && node.clientWidth > 0) setReviewWidth(Math.max(1, node.clientWidth - 44)); restorePosition(); setViewport({ top: node.scrollTop, height: node.clientHeight }); syncVisiblePage(node); };
+    const observer = new ResizeObserver(measure);
     observer.observe(node);
-    if (!buffer.pdfPosition.initialized) zoomTo(fitWidthZoom(pdf.sizes[0].width, node.clientWidth - 48));
+    measure();
+    if (!review && !buffer.pdfPosition.initialized) zoomTo(fitWidthZoom(pdf.sizes[0].width, node.clientWidth - 48));
     return () => observer.disconnect();
-  }, [pdf?.session, buffer, zoomTo, syncVisiblePage, restorePosition]);
+  }, [pdf?.session, buffer, review, zoomTo, syncVisiblePage, restorePosition]);
   useEffect(() => { restorePosition(); }, [restorePosition]);
+  const navigation = buffer.artifactNavigation;
+  useEffect(() => {
+    if (!navigation || !pdf || pdf.session !== current.current || buffer.artifactNavigation?.id !== navigation.id) return;
+    if (navigation.documentId !== buffer.file.ref.id || navigation.sourceHash !== buffer.baseHash || pdf.identity !== `${buffer.instance}:${buffer.file.ref.id}:${buffer.baseHash}`) {
+      buffer.finishArtifactNavigation(navigation.id, '文件内容已改变，请重新定位'); return;
+    }
+    if (navigation.target.artifactKind !== 'document') { buffer.finishArtifactNavigation(navigation.id, '当前预览不支持此定位目标'); return; }
+    const next = clampPdfPage(navigation.target.pageNumber, total);
+    setPage(next); buffer.updatePdfPosition({ page: next, initialized: true });
+    restorePage.current = next; pendingTop.current = offsets[next - 1]; restorePosition();
+    buffer.finishArtifactNavigation(navigation.id);
+  }, [buffer, navigation?.id, pdf?.session, total, offsets, restorePosition]);
   useEffect(() => {
     if (pdf && scroll.current) syncVisiblePage(scroll.current);
   }, [pdf?.session, windowed.numbers, syncVisiblePage]);
@@ -146,11 +165,11 @@ export function FilePdfPreview({ buffer, review = false, onDownload, loadData }:
     if (top < node.scrollTop || top + 92 > node.scrollTop + node.clientHeight) node.scrollTop = Math.max(0, top - (node.clientHeight - 92) / 2);
   }, [page, pdf?.session]);
   const submitPassword = () => { if (!password || !passwordPrompt) return; passwordPrompt.submit(password); setPassword(''); setPasswordPrompt(null); };
-  return <section className={`fw-pdf ${review ? 'fw-pdf-review' : ''}`} aria-label="PDF 文档" data-zooming={zooming}>
+  return <section ref={host} className={`fw-pdf ${review ? 'fw-pdf-review' : ''}`} aria-label="PDF 文档" data-zooming={zooming} onKeyDown={comments.keyDown}>
     {!review && <div className="fw-pdf-tools"><span className="fw-push" /><DropdownMenu><DropdownMenuTrigger className="fw-pdf-zoom" aria-label="PDF 缩放">{Math.round(zoom)}% <ChevronDown size={12} /></DropdownMenuTrigger><DropdownMenuContent align="end">
       {[25, 50, 100, 150, 200].map((value) => <DropdownMenuItem key={value} onClick={() => zoomTo(value)}>{zoom === value ? <Check size={12} /> : <span style={{ width: 12 }} />}{value}%</DropdownMenuItem>)}
       <DropdownMenuItem disabled={!pdf} onClick={() => pdf && zoomTo(fitWidthZoom(pdf.sizes[page - 1].width, (scroll.current?.clientWidth ?? 648) - 48))}>适合宽度</DropdownMenuItem>
-    </DropdownMenuContent></DropdownMenu>{onDownload && <button className="fw-icon" aria-label="下载文档" onClick={() => { void onDownload().catch((failure) => setNotice(String(failure))); }}><Download size={16} /></button>}</div>}
+    </DropdownMenuContent></DropdownMenu>{onDownload && <button className="fw-icon" aria-label="下载文档" onClick={() => { void onDownload().catch((failure) => setNotice(String(failure))); }}><Download size={16} /></button>}{comments.toolbar}</div>}
     {error ? <div className="fw-empty" role="alert"><p>{error}</p><button onClick={() => setAttempt((value) => value + 1)}>重试</button></div> : !pdf ? <div className="fw-empty" role="status"><Loader2 size={20} className="animate-spin" />{passwordPrompt ? '等待 PDF 密码' : '正在载入 PDF'}</div> : <div className="fw-pdf-main">
       {!review && total > 1 && <nav className={`fw-pdf-thumbnails ${docked ? 'docked' : ''}`} data-expanded={railExpanded} aria-label="PDF 页面缩略图" onMouseEnter={() => setRailHover(true)} onMouseLeave={() => setRailHover(false)} onFocusCapture={() => setRailFocus(true)} onBlurCapture={event => { if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setRailFocus(false); }}>
         <button className="fw-pdf-dock" aria-label={docked ? '取消停靠缩略图' : '停靠缩略图'} aria-pressed={docked} aria-expanded={railExpanded} aria-controls={railId} onClick={() => setDocked((value) => !value)}><List size={12} /><span>{docked ? '取消停靠' : '停靠缩略图'}</span></button>
@@ -161,10 +180,11 @@ export function FilePdfPreview({ buffer, review = false, onDownload, loadData }:
       <div ref={scroll} className="fw-pdf-scroll" onScroll={(event) => {
         const node = event.currentTarget; setViewport({ top: node.scrollTop, height: node.clientHeight });
         syncVisiblePage(node);
-      }}><div aria-hidden style={{ height: review ? 0 : windowed.before }} />{numbers.map((number) => <PdfCanvasPage key={number} session={pdf.session} doc={pdf.doc} number={number} size={pdf.sizes[number - 1]} zoom={review ? 100 : zoom} budget={budget} quota={Math.min(16 * 1024 * 1024, Math.floor(31 * 1024 * 1024 / Math.max(1, numbers.length)))} review={review} onPlan={onPlan} onLink={(target) => target.page ? goto(target.page) : setNotice(`外部链接：${target.url ?? ''}`)} />)}<div aria-hidden style={{ height: review ? 0 : windowed.after }} /></div>
+      }}><div aria-hidden style={{ height: review ? 0 : windowed.before }} />{numbers.map((number) => <PdfCanvasPage key={number} session={pdf.session} doc={pdf.doc} number={number} size={pdf.sizes[number - 1]} zoom={review && reviewWidth > 0 ? reviewWidth / (pdf.sizes[number - 1].width * CSS_UNITS) * 100 : review ? 100 : zoom} budget={budget} quota={Math.min(16 * 1024 * 1024, Math.floor(31 * 1024 * 1024 / Math.max(1, numbers.length)))} review={review} onPlan={onPlan} onLink={(target) => target.page ? goto(target.page) : setNotice(`外部链接：${target.url ?? ''}`)} articleProps={review ? undefined : comments.pageProps(number)}>{review ? null : comments.overlay(number)}</PdfCanvasPage>)}<div aria-hidden style={{ height: review ? 0 : windowed.after }} /></div>
     </div>}
     {pdf && (review && total > 1 ? <div className="fw-pdf-pager"><button aria-label="上一页" disabled={page === 1} onClick={() => goto(page - 1)}><ArrowLeft size={16} /></button><span>{page} / {total}</span><button aria-label="下一页" disabled={page === total} onClick={() => goto(page + 1)}><ArrowRight size={16} /></button></div> : <p className="fw-pdf-status" role="status">第 {page} / {total} 页{numbers.some((number) => downscaled.has(number)) ? ' · 页面已降低渲染分辨率' : ''}</p>)}
     {notice && <p className="fw-pdf-status" role="status">{notice}</p>}
+    {comments.panels}
     {passwordPrompt && <form className="fw-pdf-password" role="dialog" aria-label="PDF 密码" onSubmit={(event) => { event.preventDefault(); submitPassword(); }}>
       <strong>{passwordPrompt.wrong ? '密码错误，请重试' : '此 PDF 需要密码'}</strong><input type="password" autoFocus autoComplete="off" aria-label="PDF 密码" value={password} onChange={(event) => setPassword(event.target.value)} />
       <div><button type="button" onClick={() => { cancel.current?.abort(); void current.current?.destroy(); setPasswordPrompt(null); setPassword(''); setError('已取消输入密码。需要密码才能打开此 PDF。'); }}>取消</button><button type="submit" disabled={!password}>打开</button></div>

@@ -32,7 +32,21 @@ export function installInlineSourceTracking(md) {
         for (const token of state.tokens.slice(first)) {
           if (token.type === 'link_open' && !token.meta?.linkSource) {
             const end = name === 'link' ? md.helpers.parseLinkLabel(state, from, true) : name === 'autolink' ? state.pos - 1 : -1;
-            if (end >= from) token.meta = { ...token.meta, linkSource: { from: from + 1, to: end } };
+            if (end >= from) {
+              const inlineDestination = name === 'autolink' || state.src[end + 1] === '(';
+              let hasTitle = false;
+              if (name === 'link' && inlineDestination) {
+                let at = end + 2; while (at < state.pos && /[\t\n\r ]/.test(state.src[at])) at++;
+                const destination = md.helpers.parseLinkDestination(state.src, at, state.pos);
+                if (destination.ok) {
+                  at = destination.pos; const separated = /[\t\n\r ]/.test(state.src[at] ?? '');
+                  while (at < state.pos && /[\t\n\r ]/.test(state.src[at])) at++;
+                  const title = separated ? md.helpers.parseLinkTitle(state.src, at, state.pos) : null;
+                  hasTitle = Boolean(title?.ok && state.src.slice(title.pos, state.pos - 1).trim() === '');
+                }
+              }
+              token.meta = { ...token.meta, linkSource: { from: from + 1, to: end }, linkSyntax: { inlineDestination, hasTitle } };
+            }
           }
           if (token.meta?.inlineSource) continue;
           const marker = token.type === 'text' && /^[*_~]$/.test(token.content);

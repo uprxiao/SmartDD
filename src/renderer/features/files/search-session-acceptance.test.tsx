@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { createRequire } from 'node:module';
 import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
@@ -17,6 +17,7 @@ import { registerRPCRouter } from '@shared/ipc/rpc';
 import { fileSearchEvent } from '@shared/events';
 import type { FileRoot, FileSearchRequest, FileSearchResult } from '@shared/files';
 import { useFileSearch } from './file-search';
+import { canSearchFileContents } from './search-protocol';
 
 const transport = vi.hoisted(() => ({ invoke: null as null | ((method: string, ...args: unknown[]) => Promise<unknown>), on: null as null | ((name: string, listener: (value: unknown) => void) => () => void) }));
 vi.mock('electron', () => ({ BrowserWindow: {}, dialog: {}, shell: {} }));
@@ -26,7 +27,7 @@ vi.mock('@renderer/lib/ipc', () => ({
 }));
 
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
-const output: Record<string, unknown> = { cases: ['M9-T-C10', 'M9-T-C11', 'M9-T-R11'], startedAt: new Date().toISOString(), observations: [] };
+const output: Record<string, unknown> = { cases: ['M9-T-C10', 'M9-T-C11', 'M9-T-R11', 'M9-T-R01'], startedAt: new Date().toISOString(), observations: [] };
 const observations = output.observations as Record<string, unknown>[];
 const until = async (condition: () => boolean) => {
   const end = Date.now() + 5000;
@@ -89,6 +90,21 @@ describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_SEARCH_APP
     chmodSync(project, 0o755); chmodSync(executable, 0o755);
     expect(sha(readFileSync(join(project, 'nested/needle.txt')))).toBe(originalSha);
     await service.watcher.dispose(); broker.dispose(); vi.unstubAllGlobals(); rmSync(base, { recursive: true, force: true });
+  });
+
+  it('R01: main grants explicit local search metadata but invalid host/scope/lease never reaches native search', async () => {
+    expect(root.hostId).toBe('local'); expect(root.capabilities?.searchContent).toBe(true);
+    const native = vi.spyOn(broker, 'request'), selectFile = () => undefined;
+    const api = { startSearchSession: (request: FileSearchRequest) => invoke('startSearchSession', request) as Promise<FileSearchResult> };
+    expect(canSearchFileContents(root, selectFile, api)).toBe(true);
+    expect(canSearchFileContents(root, undefined, api)).toBe(false); expect(canSearchFileContents(root, selectFile, {})).toBe(false);
+    native.mockClear();
+    for (const input of [{ kind: 'project' }, { kind: 'project', projectId: 'search-acceptance', hostId: 'durable' }, { kind: 'project', projectId: 'search-acceptance', hostId: 'foreign' }]) await expect(invoke('roots', input)).rejects.toThrow();
+    const request: FileSearchRequest = { id: randomUUID(), root: { lease: randomUUID(), generation: root.generation }, kind: 'content', query: 'needle', mask: '' };
+    await expect(api.startSearchSession(request)).rejects.toThrow(/UNTRUSTED/); expect(native).not.toHaveBeenCalled();
+    request.id = randomUUID(); request.root = { lease: root.lease, generation: root.generation }; const result = await api.startSearchSession(request);
+    expect(result.rows).toHaveLength(2); expect(service.searcher.activeRequests).toBe(0);
+    observations.push({ case: 'M9-T-R01', mainRoot: root, missingCallbackRejected: true, missingServiceRejected: true, rejectedHostScopeAndLease: 4, rejectedNativeCalls: 0, realSearchRows: result.rows, boundary: 'I actual controller/owner+frame checks, FileRootsService/FileService and packaged native broker. IPC event is the explicit trusted sender fixture, not packaged UI A.' });
   });
 
   it.each([false, true])('C10: real search with legacy host=%s selects its supported endpoint and caches only capability', async legacy => {

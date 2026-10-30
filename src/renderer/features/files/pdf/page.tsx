@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type HTMLAttributes } from 'react';
 import type { PDFDocumentProxy, RenderTask, TextLayer } from 'pdfjs-dist';
 import type { PdfSession } from './engine';
 import { CSS_UNITS, PdfCanvasBudget, pdfRenderPlan, resolveDestinationPage, type PdfPageSize } from './model';
+import { attachPdfTextSelection } from './text-selection';
 
 interface PdfLink { left: number; top: number; width: number; height: number; url?: string; page?: number }
-export function PdfCanvasPage({ session, doc, number, size, zoom, budget, quota, thumbnail = false, thumbnailSize, review = false, onLink, onPlan, children }: {
+export function PdfCanvasPage({ session, doc, number, size, zoom, budget, quota, thumbnail = false, thumbnailSize, review = false, onLink, onPlan, children, articleProps }: {
   session: PdfSession; doc: PDFDocumentProxy; number: number; size: PdfPageSize; zoom: number;
   budget: PdfCanvasBudget; quota: number; thumbnail?: boolean; thumbnailSize?:{width:number;height:number}; review?: boolean;
   onLink?: (target: { page?: number; url?: string }) => void; onPlan?: (page: number, downscaled: boolean) => void; children?: ReactNode;
+  articleProps?: HTMLAttributes<HTMLElement>;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null), text = useRef<HTMLDivElement>(null), prior = useRef<Promise<unknown>>(Promise.resolve());
   const [links, setLinks] = useState<PdfLink[]>([]), [error, setError] = useState(''), [retry, setRetry] = useState(0);
@@ -16,8 +18,9 @@ export function PdfCanvasPage({ session, doc, number, size, zoom, budget, quota,
   useEffect(() => {
     const node = canvas.current!, layer = text.current, owner = {};
     let cancelled = false, render: RenderTask | null = null, textLayer: TextLayer | null = null;
+    let releaseSelection: (() => void) | null = null;
     let loaded: Awaited<ReturnType<PDFDocumentProxy['getPage']>> | null = null;
-    const clear = () => { node.width = 0; node.height = 0; layer?.replaceChildren(); budget.release(owner); };
+    const clear = () => { releaseSelection?.(); releaseSelection = null; node.width = 0; node.height = 0; layer?.replaceChildren(); budget.release(owner); };
     setLinks([]); setError('');
     const work = (async () => {
       await prior.current;
@@ -42,6 +45,7 @@ export function PdfCanvasPage({ session, doc, number, size, zoom, budget, quota,
         textLayer = new session.engine.TextLayer({ textContentSource: page.streamTextContent(), container: layer, viewport });
         await session.run(textLayer.render());
         if (cancelled) return;
+        releaseSelection = attachPdfTextSelection(layer);
         const found: PdfLink[] = [];
         for (const annotation of await session.run(page.getAnnotations({ intent: 'display' }))) {
           if (cancelled) return;
@@ -66,7 +70,7 @@ export function PdfCanvasPage({ session, doc, number, size, zoom, budget, quota,
     prior.current = work.catch(() => undefined);
     return () => { cancelled = true; render?.cancel(); textLayer?.cancel(); clear(); node.dataset.rendered = 'false'; loaded?.cleanup(); };
   }, [session, doc, number, size.width, size.height, effectiveZoom, budget, quota, thumbnail, review, retry, onPlan]);
-  return <article className={`fw-pdf-page ${thumbnail ? 'fw-pdf-thumb' : ''}`} data-page={number} style={{ width: display.cssWidth, height: display.cssHeight }}>
+  return <article {...articleProps} className={`fw-pdf-page ${thumbnail ? 'fw-pdf-thumb' : ''}`} data-page={number} style={{ width: display.cssWidth, height: display.cssHeight }}>
     <canvas ref={canvas} className="fw-pdf-canvas" width={0} height={0} style={{ width: display.cssWidth, height: display.cssHeight }} aria-label={`第 ${number} 页`} />
     {!review && !thumbnail && <div ref={text} className="fw-pdf-text textLayer" />}
     {links.map((link, index) => <a key={index} href="#" className="fw-pdf-link" style={{ left: link.left, top: link.top, width: link.width, height: link.height }} aria-label={link.url ? `外部链接 ${link.url}` : `跳转到第 ${link.page} 页`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); onLink?.(link); }} />)}

@@ -62,6 +62,8 @@ function editedSharedString(source: OfficeXml, item: OfficeXmlNode, value: strin
   return doc.edit(changed.map(index => doc.setAttribute(next[index], 'xml:space', 'preserve'))).toString('utf8');
 }
 
+export { sameValue, editedSharedString };
+
 /** One cell edit is a declaration of a small XML change plus cache invalidation.
  * It never delegates save serialization to an Office engine. */
 export function editOfficeCell(original: OfficePackage, input: OfficeCellEdit): { packageData: OfficePackage; changedParts: string[]; removedParts: string[]; invalidatedCells: number } {

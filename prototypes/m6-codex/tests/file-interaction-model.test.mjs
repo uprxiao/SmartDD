@@ -20,6 +20,12 @@ test('loaded rows preserve distinct loading, rejected and empty child states',()
   assert.deepEqual(rows.filter(r=>r.status).map(r=>r.status),['loading','error','empty']);
   assert.equal(loadedTreeRows({'':{state:'ready',entries}},[]).length,3);
 });
+test('confirmed refreshing rows remain navigable with explicit loading; errors never expose cached entries',()=>{
+  const entries=[{path:'a',name:'a',folder:true},{path:'B.txt',name:'B.txt',folder:false}],child=[{path:'a/c.txt',name:'c.txt',folder:false}];
+  const rows=loadedTreeRows({'':{state:'loading',entries},a:{state:'loading',entries:child}},['a']);
+  assert.deepEqual(rows.filter(r=>!r.status).map(r=>r.path),['a','a/c.txt','B.txt']);assert.equal(rows.filter(r=>r.status==='loading').length,2);
+  assert.deepEqual(loadedTreeRows({'':{state:'error',entries}},[]),[]);assert.equal(loadedTreeRows({'':{state:'loading'}},[]).length,0);
+});
 test('a directory error can be retried without substituting an empty result',async()=>{
   const provider=createFixtureFileProvider([],{delay:0,emptyDirs:['denied'],failDirectories:['denied']});
   await assert.rejects(provider.list('denied'),/读取被拒绝/);

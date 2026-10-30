@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { useSyncExternalStore } from 'react';
 import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
-import { isolateHistory } from '@codemirror/commands';
+import { isolateHistory, undoDepth } from '@codemirror/commands';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FileDocument, FileSaveInput, FileSaveReceipt } from '@shared/files';
@@ -40,6 +40,31 @@ const button = (name: string) => screen.getByRole('button', { name }) as HTMLBut
 const editor = () => EditorView.findFromDOM(document.querySelector('.cm-editor') as HTMLElement)!;
 const editOneCharacter = () => act(() => { editor().dispatch({ changes: { from: 2, to: 3, insert: 'X' }, selection: { anchor: 3 }, userEvent: 'input.type' }); });
 
+it('describes the actual UTF16 caret position without changing the file or editor identity', async () => {
+  const value = fixture('游标🙂.ts', 'alpha\r\n中文🙂\r\n');
+  await value.buffer.load(); render(<Editor value={value} />);
+  const current = editor();
+  expect(current.contentDOM.getAttribute('aria-description')).toBe('第 1 行，第 1 列');
+  act(() => current.dispatch({ selection: { anchor: 10 } }));
+  expect(current.contentDOM.getAttribute('aria-description')).toBe('第 2 行，第 5 列');
+  act(() => current.dispatch({ selection: { anchor: 10, head: 6 } }));
+  expect(current.contentDOM.getAttribute('aria-description')).toBe('第 2 行，第 1 列');
+  expect(current.contentDOM.getAttribute('aria-label')).toBe('游标🙂.ts 内容');
+  expect(editor()).toBe(current); expect(value.buffer.raw).toBe('alpha\r\n中文🙂\r\n');
+  expect(value.buffer.dirty).toBe(false); expect(value.api.save).not.toHaveBeenCalled();
+});
+
+it('updates the accessible filename on the existing editor when its document metadata changes', async () => {
+  const value = fixture('before.ts', 'unchanged\n'); await value.buffer.load(); render(<Editor value={value} />);
+  const current = editor(); act(() => current.dispatch({ selection: { anchor: 3 } }));
+  act(() => { value.buffer.file = { ...value.buffer.file, name: 'after.ts' }; value.buffer.notify(); });
+  expect(current.contentDOM.getAttribute('aria-label')).toBe('after.ts 内容');
+  expect(current.contentDOM.getAttribute('aria-description')).toBe('第 1 行，第 4 列');
+  expect(editor()).toBe(current); expect(current.state.selection.main.head).toBe(3);
+  expect(value.buffer.raw).toBe('unchanged\n'); expect(value.buffer.dirty).toBe(false);
+  expect(value.api.save).not.toHaveBeenCalled();
+});
+
 beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
@@ -51,6 +76,45 @@ beforeEach(() => {
 afterEach(() => { cleanup(); buffers.splice(0).forEach((buffer) => buffer.dispose()); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe('production text history controls (real CodeMirror; file API isolated)', () => {
+  it('N09 hides idle history status without removing navigation, and follows the current document history', async () => {
+    const first = fixture('status.txt'), second = fixture('other.txt');
+    await first.buffer.load(); await second.buffer.load();
+    const mounted = render(<Editor value={first} />);
+    expect(screen.queryByRole('toolbar', { name: '保存与编辑历史' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '撤销' })).toBeNull();
+    expect(button('跳转到行').disabled).toBe(false);
+    editOneCharacter();
+    expect(screen.getByRole('toolbar', { name: '保存与编辑历史' })).toBeTruthy();
+    expect(button('撤销').disabled).toBe(false);
+    fireEvent.click(button('撤销'));
+    expect(first.buffer.dirty).toBe(false); expect(button('重做').disabled).toBe(false);
+    mounted.rerender(<Editor value={second} />);
+    expect(screen.queryByRole('toolbar', { name: '保存与编辑历史' })).toBeNull();
+    expect(button('跳转到行').disabled).toBe(false);
+    mounted.rerender(<Editor value={first} />);
+    expect(button('重做').disabled).toBe(false);
+    expect(first.api.save).not.toHaveBeenCalled(); expect(second.api.save).not.toHaveBeenCalled();
+  });
+
+  it('N09 shows the actual pending save and failure, keeps the edit, and clears the error on successful retry', async () => {
+    const value = fixture('save-status.txt'); await value.buffer.load(); render(<Editor value={value} />);
+    editOneCharacter();
+    let rejectSave!: (error: Error) => void;
+    value.api.save.mockImplementationOnce(() => new Promise<FileSaveReceipt>((_resolve, reject) => { rejectSave = reject; }));
+    let pending!: Promise<boolean>;
+    await act(async () => { pending = value.buffer.save(); });
+    expect(screen.getByRole('toolbar', { name: '保存与编辑历史' }).querySelector('[role=status]')?.textContent).toBe('正在保存…');
+    await act(async () => { rejectSave(new Error('存储暂不可用，修改仍保留')); expect(await pending).toBe(false); });
+    expect(screen.getByRole('alert').textContent).toBe('保存失败');
+    expect(screen.getByRole('alert').title).toBe('存储暂不可用，修改仍保留');
+    expect(value.buffer.raw).toBe('BAXE\r\n'); expect(value.buffer.dirty).toBe(true);
+    await act(async () => { expect(await value.buffer.save()).toBe(true); });
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByText('正在保存…')).toBeNull();
+    expect(value.buffer.raw).toBe('BAXE\r\n'); expect(value.buffer.dirty).toBe(false);
+    expect(button('撤销').disabled).toBe(false);
+  });
+
   it('large input replaces the selected range in one lossless editor transaction before native DOM insertion', async () => {
     const value = fixture('atomic.txt', 'BASE\n'); await value.buffer.load(); render(<Editor value={value} />);
     const input = '中文🙂\n'.repeat(20_000), current = editor();
@@ -66,7 +130,8 @@ describe('production text history controls (real CodeMirror; file API isolated)'
   it('M9-T-H02: reflects real undo/redo availability, restores focus and avoids a save after returning to base', async () => {
     const value = fixture(); await value.buffer.load(); render(<Editor value={value} />);
     expect(screen.getByRole('toolbar', { name: '文本编辑' })).toBeTruthy();
-    expect(button('撤销').disabled).toBe(true); expect(button('重做').disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: '撤销' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '重做' })).toBeNull();
     editOneCharacter();
     expect(value.buffer.raw).toBe('BAXE\r\n'); expect(value.buffer.dirty).toBe(true);
     expect(button('撤销').disabled).toBe(false); expect(button('重做').disabled).toBe(true);
@@ -102,8 +167,9 @@ describe('production text history controls (real CodeMirror; file API isolated)'
     const first = fixture('first.txt'), second = fixture('second.txt'); await first.buffer.load(); await second.buffer.load();
     const mounted = render(<Editor value={first} />); editOneCharacter();
     mounted.rerender(<Editor value={second} />);
-    expect(button('撤销').disabled).toBe(true); expect(button('重做').disabled).toBe(true);
-    fireEvent.click(button('撤销')); expect(first.buffer.raw).toBe('BAXE\r\n'); expect(second.buffer.raw).toBe('BASE\r\n');
+    expect(screen.queryByRole('button', { name: '撤销' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '重做' })).toBeNull();
+    expect(first.buffer.raw).toBe('BAXE\r\n'); expect(second.buffer.raw).toBe('BASE\r\n');
     editOneCharacter(); fireEvent.click(button('撤销'));
     expect(second.buffer.raw).toBe('BASE\r\n'); expect(first.buffer.raw).toBe('BAXE\r\n');
     mounted.rerender(<Editor value={first} />);
@@ -111,6 +177,56 @@ describe('production text history controls (real CodeMirror; file API isolated)'
     fireEvent.click(button('撤销'));
     expect(first.buffer.raw).toBe('BASE\r\n'); expect(second.buffer.raw).toBe('BASE\r\n');
     expect(first.api.save).not.toHaveBeenCalled(); expect(second.api.save).not.toHaveBeenCalled();
+  });
+});
+
+describe('composing editor shortcut defaults', () => {
+  const signals = [
+    { isComposing: true, keyCode: 0 },
+    { isComposing: false, keyCode: 229 },
+  ];
+  for (const signal of signals) for (const modifier of ['metaKey', 'ctrlKey'] as const) {
+    it.each(['f', 's'])(`cancels owned %s defaults with ${modifier} and composing signal ${JSON.stringify(signal)}`, async key => {
+      const value = fixture('shortcuts.txt', 'BASE\n'); await value.buffer.load(); render(<Editor value={value} />);
+      editOneCharacter(); const before = value.buffer.raw, current = editor();
+      const command = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key, code: key === 'f' ? 'KeyF' : 'KeyS', [modifier]: true, ...signal });
+      fireEvent(current.contentDOM, command);
+      expect(command.defaultPrevented).toBe(true);
+      expect(screen.queryByRole('textbox', { name: '在文件中查找' })).toBeNull();
+      expect(value.api.save).not.toHaveBeenCalled(); expect(value.api.checkpoint).not.toHaveBeenCalled();
+      expect(value.buffer.raw).toBe(before); expect(current.state.doc.toString()).toBe(before);
+      const primary = /Mac|iP(?:hone|ad|od)/.test(navigator.platform) ? 'metaKey' : 'ctrlKey';
+      await act(async () => { fireEvent.keyDown(current.contentDOM, { key, code: key === 'f' ? 'KeyF' : 'KeyS', [primary]: true }); });
+      if (key === 'f') expect(screen.getAllByRole('textbox', { name: '在文件中查找' })).toHaveLength(1);
+      else expect(value.api.save).toHaveBeenCalledTimes(1);
+    });
+  }
+  it.each(['f', 's', ' ', 'Enter', 'Escape', 'ArrowDown'])('preserves the native composing default for plain %s', async key => {
+    const value = fixture('candidate.txt'); await value.buffer.load(); render(<Editor value={value} />);
+    const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key, isComposing: true });
+    fireEvent(editor().contentDOM, event); expect(event.defaultPrevented).toBe(false);
+    expect(value.api.save).not.toHaveBeenCalled(); expect(value.buffer.dirty).toBe(false);
+  });
+  it('retains Ctrl+Alt character input while composing', async () => {
+    const value = fixture('altgraph.txt'); await value.buffer.load(); render(<Editor value={value} />);
+    const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'f', ctrlKey: true, altKey: true, isComposing: true });
+    fireEvent(editor().contentDOM, event); expect(event.defaultPrevented).toBe(false);
+    expect(screen.queryByRole('textbox', { name: '在文件中查找' })).toBeNull();
+    expect(value.api.save).not.toHaveBeenCalled();
+  });
+  it('leaves composing Find input defaults to that input scope', async () => {
+    const value = fixture('find-input-scope.txt'); await value.buffer.load(); render(<Editor value={value} />);
+    fireEvent.keyDown(editor().contentDOM, { key: 'f', metaKey: true });
+    const input = screen.getByRole('textbox', { name: '在文件中查找' });
+    const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'f', metaKey: true, isComposing: true });
+    fireEvent(input, event); expect(event.defaultPrevented).toBe(false);
+    expect(value.api.save).not.toHaveBeenCalled();
+  });
+  it.each([{ metaKey: true, shiftKey: true }, { metaKey: true, ctrlKey: true }])('does not claim modified command chords %j', async modifiers => {
+    const value = fixture('other-shortcut.txt'); await value.buffer.load(); render(<Editor value={value} />);
+    const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'f', isComposing: true, ...modifiers });
+    fireEvent(editor().contentDOM, event); expect(event.defaultPrevented).toBe(false);
+    expect(screen.queryByRole('textbox', { name: '在文件中查找' })).toBeNull();
   });
 });
 
@@ -157,7 +273,7 @@ describe('line navigation with real CodeMirror and buffer (file API isolated)', 
     for (const [target, expected] of [['1', 1], ['20', 20], ['21', 20], ['-1', 20], ['-20', 1], ['-21', 1]] as const) {
       openLine(); preview(target); expect(line()).toBe(expected); fireEvent.keyDown(input(), { key: 'Enter' }); expect(editor().hasFocus).toBe(true); expect(screen.queryByRole('textbox', { name: '行号' })).toBeNull();
     }
-    expect(value.buffer.raw).toBe(text); expect(value.buffer.dirty).toBe(false); expect(button('撤销').disabled).toBe(true); expect(value.api.save).not.toHaveBeenCalled(); expect(value.api.checkpoint).not.toHaveBeenCalled();
+    expect(value.buffer.raw).toBe(text); expect(value.buffer.dirty).toBe(false); expect(undoDepth(editor().state)).toBe(0); expect(value.api.save).not.toHaveBeenCalled(); expect(value.api.checkpoint).not.toHaveBeenCalled();
     const empty = fixture('empty.txt', ''); await empty.buffer.load(); mounted.rerender(<Editor value={empty} />); openLine(); preview('1'); fireEvent.keyDown(input(), { key: 'Enter' }); expect(line()).toBe(1); expect(empty.buffer.raw).toBe('');
   });
   it('R16 rejects invalid integers without moving or closing, exposes the error, trims valid input and ignores composing Enter', async () => {

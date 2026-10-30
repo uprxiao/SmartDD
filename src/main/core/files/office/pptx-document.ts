@@ -3,6 +3,7 @@ import { FileError } from '@shared/files';
 import { OFFICE_LIMITS } from '@shared/file-office';
 import type { PptxAction,PptxEditState } from '@shared/file-pptx';
 import { OfficePackage } from './package';
+import { verifyOfficeCandidate } from './fidelity';
 import { OfficePagesModel } from './pages-model';
 import { editPptx } from './pptx-edit';
 import { OfficeXml,children } from './xml';
@@ -63,6 +64,7 @@ export class PptxDocument {
     }
     return {bytes:this.snapshot.bytes,hash:this.snapshot.hash,version};
   }
+  async verify(version:number,bytes:Uint8Array,hash:string){this.assert(version);const expected=this.model.packageData;const report=await verifyOfficeCandidate(expected,bytes,hash);this.assert(version);return report;}
   acknowledge(version:number,hash:string):PptxEditState{
     if(!this.snapshot||this.snapshot.version!==version||this.snapshot.hash!==hash)throw new FileError('CHANGED','演示文稿保存回执与候选不一致');
     this.savedIdentity=this.snapshot.identity;return this.state();

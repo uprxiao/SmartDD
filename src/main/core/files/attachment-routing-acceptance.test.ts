@@ -17,8 +17,8 @@ describe.skipIf(!process.env.SMARTDD_FILES_NATIVE_PATH)('Local attachment presen
  it('derives readonly text presentation from suffix before MIME and retains it over read/refresh',async()=>{
   const root=(await files.openScope('attachments',{kind:'project',projectId:'attachments'})).roots[0];
   const fixtures=[
-   ['plain','text/html','html'],['md','text/markdown','markdown'],['alias','text/x-markdown','markdown'],['text','text/plain','text'],
-   ['unknown.ext','text/html',null],['source.mdx','text/markdown',null],['known.md','text/html','markdown'],['known.html','text/plain','html'],
+   ['plain','text/html','html'],['md','text/markdown','markdown'],['alias','text/x-markdown','markdown'],['application-md','application/markdown','markdown'],['application-alias',' Application/X-Markdown; charset=UTF-8 ','markdown'],['text','text/plain','text'],
+   ['unknown.ext','text/html',null],['unknown-application.ext','application/markdown',null],['source.mdx','text/markdown',null],['known.md','text/html','markdown'],['known.html','text/plain','html'],
   ] as const;
   for(const[name,mimeType,textKind]of fixtures){const path=join(base,'root',name),bytes=Buffer.from('# SYNTHETIC_中文🙂\r\n'),before=sha(bytes);writeFileSync(path,bytes);
    const document=await files.open('attachments',{lease:root.lease,generation:root.generation,relativePath:name,readOnly:true,attachment:{mimeType}} as FileOpenRequest);expect(document.writable).toBe(false);expect((document as FileDocument&{attachment:unknown}).attachment).toEqual({mimeType,textKind});

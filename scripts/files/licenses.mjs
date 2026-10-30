@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFi
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
-const seeds = ['@codemirror/state', '@codemirror/view', '@codemirror/commands', '@codemirror/merge', 'markdown-it', 'markdown-it-texmath', 'katex', 'mermaid', 'js-yaml', 'highlight.js', 'pdfjs-dist', 'pdf-lib', '@parcel/watcher', 'picomatch', 'parse5', 'saxes', 'papaparse', 'parse5-sax-parser', 'postcss', 'postcss-value-parser', 'es-module-lexer', 'yauzl', 'yazl', 'ssf'];
+const seeds = ['lucide-react', '@codemirror/state', '@codemirror/view', '@codemirror/commands', '@codemirror/merge', 'markdown-it', 'markdown-it-texmath', 'katex', 'mermaid', 'js-yaml', 'highlight.js', 'pdfjs-dist', 'pdf-lib', '@parcel/watcher', 'picomatch', 'parse5', 'saxes', 'papaparse', 'parse5-sax-parser', 'postcss', 'postcss-value-parser', 'es-module-lexer', 'yauzl', 'yazl', 'ssf'];
 const output = resolve('licenses/M9');
 mkdirSync(output, { recursive: true });
 const manifests = [], seen = new Set(), missing = [];

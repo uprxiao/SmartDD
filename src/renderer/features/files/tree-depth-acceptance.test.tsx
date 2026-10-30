@@ -49,7 +49,7 @@ describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BR
     const f = await fixture(), user = userEvent.setup(), before = fingerprint(join(f.project, relative));
     for (let i = 0; i < levels.length; i++) {
       const node = await screen.findByRole('treeitem', { name: levels[i] });
-      expect(node.getAttribute('title')).toBe(join(f.project, ...levels.slice(0, i + 1)));
+      expect(node.getAttribute('data-file-path')).toBe(join(f.project, ...levels.slice(0, i + 1)));
       expect(node.getAttribute('aria-level')).toBe(String(i + 1));
       await user.click(node);
     }

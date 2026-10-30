@@ -3,7 +3,7 @@ from pathlib import Path
 from zipfile import ZipFile
 from hashlib import sha256
 import sys,json,xml.etree.ElementTree as E,copy,re
-p=Path(sys.argv[1]);ns={'x':'http://schemas.openxmlformats.org/spreadsheetml/2006/main','p':'http://schemas.openxmlformats.org/presentationml/2006/main','a':'http://schemas.openxmlformats.org/drawingml/2006/main'}
+p=Path(sys.argv[1]);allow_absent_cache='--allow-absent-cache' in sys.argv[2:];ns={'x':'http://schemas.openxmlformats.org/spreadsheetml/2006/main','p':'http://schemas.openxmlformats.org/presentationml/2006/main','a':'http://schemas.openxmlformats.org/drawingml/2006/main'}
 with ZipFile(p)as z:
  names=z.namelist();parts={name:sha256(z.read(name)).hexdigest()for name in names};out={'path':str(p),'sha256':sha256(p.read_bytes()).hexdigest(),'names':names,'parts':parts}
  if p.suffix=='.xlsx':
@@ -27,7 +27,9 @@ with ZipFile(p)as z:
     address=coordinate(item.attrib['r']);computed=item.find('x:f',ns)is not None or any(a[0]<=address[0]<=b[0]and a[1]<=address[1]<=b[1]for a,b in ranges)
     if computed:
      value=item.find('x:v',ns)
-     if value is not None:value.text='__CALCULATED_CACHE__'
+     if value is not None:
+      if allow_absent_cache:item.remove(value)
+      else:value.text='__CALCULATED_CACHE__'
      if item.attrib.get('t')=='n':del item.attrib['t']
     if name=='xl/worksheets/sheet1.xml'and item.attrib['r']=='A1':
      for node in item.findall('.//x:t',ns):node.text='__EDITED_TARGET__';node.attrib.pop('{http://www.w3.org/XML/1998/namespace}space',None)

@@ -4,9 +4,9 @@ const finalStates = new Set(['inserted', 'failed', 'unknown']);
 export function createOfficeContexts(scope) {
   return { scope, operation: 0, nextId: 1, phase: 'idle', pendingIds: [], requests: [], error: '' };
 }
-export function addOfficeContext(state, { body, page, selectedText = '', elementId = null }) {
+export function addOfficeContext(state, { body, page, selectedText = '', elementId = null, purpose }) {
   if (typeof body !== 'string' || !body.trim() || !Number.isInteger(page) || page < 1) return state;
-  const item = { id: `office-comment-${state.nextId}`, body, page, selectedText, elementId, delivery: 'queued' };
+  const item = { id: `office-comment-${state.nextId}`, body, page, selectedText, elementId, delivery: 'queued', ...(purpose === 'generation' ? { purpose } : {}) };
   return { ...state, nextId: state.nextId + 1, requests: [...state.requests, item] };
 }
 export function beginOfficeContexts(state) {

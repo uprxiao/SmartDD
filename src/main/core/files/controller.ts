@@ -6,17 +6,19 @@ import type { ViewerOpenInput, ViewerResourceInput, ViewerWriteInput } from '@sh
 import type { IpcMainInvokeEvent } from 'electron';
 import { BrowserWindow, dialog, shell } from 'electron';
 import { dirname, extname, join } from 'node:path';
+import { officeLossyCopySchema,type OfficeLossyCopyInput } from '@shared/file-office-fidelity';
 import { FileError, fileScopeSchema, type FileCheckpointInput, type FileDraftResolution, type FileRef, type FileSaveInput, type FileScope, type FileOpenRequest, type RootRequest, type FileSearchRequest, type FileCloseReply, type FileDiagramRequest } from '@shared/files';
 import { fileHtmlEvent, fileViewerUiEvent, fileSearchEvent, fileWatchEvent, fileWorkspaceEvent } from '@shared/events';
 import { createScopedRPCController } from '@shared/ipc/rpc';
 import type { FileService } from './file-service';
 import type { FileRasterRequest } from '@shared/files';
 import type { FileActionTarget, FileCopyInput, FileCopyReceipt, FileExternalOpen } from '@shared/files';
+import type { FileContentCopyInput } from '@shared/files';
 import type { GitBlameInput, GitStatusInput } from '@shared/file-git';
 import type { MediaOpenInput } from '@shared/file-media';
 import type { HtmlOpenInput, HtmlViewBounds } from '@shared/file-html';
 import type { TexOpenInput } from '@shared/file-tex';
-import type { OfficeOpenInput, OfficeWindowInput, OfficeCellInput, OfficeEditInput, OfficeHistoryInput, OfficeCheckpointInput, OfficeSaveInput, OfficeRestoreInput, OfficeRecalculateInput } from '@shared/file-office';
+import type { OfficeOpenInput, OfficeWindowInput, OfficeCellInput, OfficeEditInput, OfficeHistoryInput, OfficeCheckpointInput, OfficeSaveInput, OfficeRestoreInput, OfficeRecalculateInput, OfficeReconnectInput,OfficeDrawingImageInput } from '@shared/file-office';
 import type { FileWorkspacePersistence } from './workspace-persistence';
 import { fileScopeKey, type SavedFileWorkspace } from '@shared/file-workspace';
 import type { OfficeSheetInput,OfficeRangeInput,OfficeRangeReadInput } from '@shared/file-office';
@@ -57,6 +59,7 @@ export function createFileController(service: FileService, trusted: (event: IpcM
     terminalPrepare: (event: IpcMainInvokeEvent, input: TerminalPrepareInput) => { const id = owner(event); if (!terminal) throw new FileError('UNSUPPORTED', '终端上下文尚未就绪'); return terminal.prepare(event, id, input); },
     terminalReferenceStatus: (event: IpcMainInvokeEvent, bindingId: string, ids: string[]) => { const id = owner(event); if (!terminal) throw new FileError('UNSUPPORTED', '终端上下文尚未就绪'); return terminal.status(event, id, bindingId, ids); },
     terminalInsert: (event: IpcMainInvokeEvent, input: TerminalInsertionInput) => { const id = owner(event); if (!terminal) throw new FileError('UNSUPPORTED', '终端上下文尚未就绪'); return terminal.insert(event, id, input); },
+    terminalImageCapability: (event: IpcMainInvokeEvent, bindingId: string) => { const id = owner(event); if (!terminal) throw new FileError('UNSUPPORTED', '终端上下文尚未就绪'); return terminal.imageCapability(event, id, bindingId); },
     workspace: (event: IpcMainInvokeEvent, scope: FileScope) => { owner(event); if (!workspace) throw new FileError('UNSUPPORTED', '文件标签存储尚未就绪'); return workspace.load(scope); },
     workspaceSnapshot: (event: IpcMainInvokeEvent, input: FileScope) => {
       const id = owner(event), scope = fileScopeSchema.parse(input);
@@ -109,6 +112,7 @@ export function createFileController(service: FileService, trusted: (event: IpcM
     cancelSearch: (event: IpcMainInvokeEvent, id: string) => service.searcher.cancel(owner(event), id),
     answerClose: (event: IpcMainInvokeEvent, reply: FileCloseReply) => service.closer.answer(owner(event), reply),
     open: (event: IpcMainInvokeEvent, request: FileOpenRequest) => service.open(owner(event), request),
+    openDocxSource: (event:IpcMainInvokeEvent,request:OfficeOpenInput)=>service.officePages.openDocx(owner(event),request),
     openOfficePages: (event:IpcMainInvokeEvent,request:OfficeOpenInput)=>service.officePages.open(owner(event),request),
     officePagesChunk: (event:IpcMainInvokeEvent,id:string,offset:number,length:number)=>service.officePages.chunk(owner(event),id,offset,length),
     releaseOfficePages: (event:IpcMainInvokeEvent,id:string)=>service.officePages.release(owner(event),id),
@@ -126,6 +130,7 @@ export function createFileController(service: FileService, trusted: (event: IpcM
     openOffice: (event: IpcMainInvokeEvent, request: OfficeOpenInput) => service.office.open(owner(event), request),
     officeWindow: (event: IpcMainInvokeEvent, request: OfficeWindowInput) => service.office.window(owner(event), request),
     officeCell: (event: IpcMainInvokeEvent, request: OfficeCellInput) => service.office.cell(owner(event), request),
+    officeDrawingImage:(event:IpcMainInvokeEvent,request:OfficeDrawingImageInput)=>service.office.drawingImage(owner(event),request),
     editOffice: (event:IpcMainInvokeEvent, request:OfficeEditInput)=>service.office.edit(owner(event),request),
     officeSheet: (event:IpcMainInvokeEvent,request:OfficeSheetInput)=>service.office.sheetAction(owner(event),request),
     officeRange: (event:IpcMainInvokeEvent,request:OfficeRangeReadInput)=>service.office.range(owner(event),request),
@@ -136,6 +141,7 @@ export function createFileController(service: FileService, trusted: (event: IpcM
     restoreOffice: (event:IpcMainInvokeEvent, request:OfficeRestoreInput)=>service.office.restore(owner(event),request),
     recalculateOffice: (event:IpcMainInvokeEvent, request:OfficeRecalculateInput)=>service.office.recalculate(owner(event),request),
     rebaseOffice: (event:IpcMainInvokeEvent, request:OfficeRecalculateInput)=>service.office.rebase(owner(event),request),
+    reconnectOffice: (event:IpcMainInvokeEvent, request:OfficeReconnectInput)=>service.reconnectOffice(owner(event),request),
     closeOffice: (event: IpcMainInvokeEvent, id: string) => service.office.close(owner(event), id),
     compileTex: (event: IpcMainInvokeEvent, request: TexOpenInput) => service.tex.open(owner(event), request),
     texChunk: (event: IpcMainInvokeEvent, id: string, offset: number, length: number) => service.tex.chunk(owner(event), id, offset, length),
@@ -158,6 +164,23 @@ export function createFileController(service: FileService, trusted: (event: IpcM
     applications: (event: IpcMainInvokeEvent, target: FileActionTarget) => service.actions.applications(owner(event), target),
     openExternal: (event: IpcMainInvokeEvent, request: FileExternalOpen) => service.actions.open(owner(event), request),
     reveal: (event: IpcMainInvokeEvent, target: FileActionTarget) => service.actions.reveal(owner(event), target),
+    saveOfficeLossyCopy:async(event:IpcMainInvokeEvent,raw:OfficeLossyCopyInput):Promise<FileCopyReceipt>=>{
+      const id=owner(event),input=officeLossyCopySchema.parse(raw);
+      if(copying.has(id))throw new FileError('CONFLICT','请先完成当前另存对话框');
+      copying.add(id);
+      try{
+        const document=input.kind==='xlsx'?service.office:service.pptx;
+        const candidate=await document.lossyCandidate(id,input.id,input.token);
+        const selection=await service.actions.prepareOfficeCopy(id,candidate),win=BrowserWindow.fromWebContents(event.sender);
+        if(!win||win.isDestroyed())throw new FileError('UNTRUSTED','另存窗口已关闭');
+        const extension=extname(selection.name),stem=selection.name.slice(0,selection.name.length-extension.length);
+        const chosen=await dialog.showSaveDialog(win,{title:'另存有损副本',buttonLabel:'保存有损副本',defaultPath:join(selection.context.lease.canonicalPath,dirname(selection.context.relativePath),`${stem} 有损副本${extension}`),showsTagField:false,filters:[{name:'Office 文件',extensions:[input.kind]}],properties:['createDirectory','showOverwriteConfirmation']});
+        if(chosen.canceled||!chosen.filePath)return {state:'cancelled'};
+        if(owner(event)!==id)throw new FileError('UNTRUSTED','另存窗口已改变');
+        await document.lossyCandidate(id,input.id,input.token);
+        return await service.actions.copyTo(id,selection,chosen.filePath);
+      }finally{copying.delete(id);}
+    },
     saveCopy: async (event: IpcMainInvokeEvent, request: FileCopyInput): Promise<FileCopyReceipt> => {
       const id = owner(event); if (copying.has(id)) throw new FileError('CONFLICT', '请先完成当前另存对话框');
       copying.add(id);
@@ -166,7 +189,21 @@ export function createFileController(service: FileService, trusted: (event: IpcM
         const win = BrowserWindow.fromWebContents(event.sender);
         if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '另存窗口已关闭');
         const extension = extname(selection.name), stem = selection.name.slice(0, selection.name.length - extension.length);
-        const defaultPath = join(selection.context.lease.canonicalPath, dirname(selection.context.relativePath), `${stem} 副本${extension}`);
+        const suggestedName = `${stem} 副本${extension}`.replace(/[<>:"/\\|?*]/g, '_');
+        const defaultPath = join(selection.context.lease.canonicalPath, dirname(selection.context.relativePath), suggestedName);
+        const chosen = await dialog.showSaveDialog(win, { title: '另存副本', buttonLabel: '保存副本', defaultPath, showsTagField: false, filters: [{ name: '所有文件', extensions: ['*'] }], properties: ['createDirectory', 'showOverwriteConfirmation'] });
+        if (chosen.canceled || !chosen.filePath) return { state: 'cancelled' };
+        if (owner(event) !== id) throw new FileError('UNTRUSTED', '另存窗口已改变');
+        return await service.actions.copyTo(id, selection, chosen.filePath);
+      } finally { copying.delete(id); }
+    },
+    saveContent: async (event: IpcMainInvokeEvent, request: FileContentCopyInput): Promise<FileCopyReceipt> => {
+      const id = owner(event); if (copying.has(id)) throw new FileError('CONFLICT', '请先完成当前另存对话框');
+      copying.add(id);
+      try {
+        const selection = await service.actions.prepareContentCopy(id, request), win = BrowserWindow.fromWebContents(event.sender);
+        if (!win || win.isDestroyed()) throw new FileError('UNTRUSTED', '另存窗口已关闭');
+        const defaultPath = join(selection.context.lease.canonicalPath, dirname(selection.context.relativePath), selection.name);
         const chosen = await dialog.showSaveDialog(win, { title: '另存副本', buttonLabel: '保存副本', defaultPath, showsTagField: false, filters: [{ name: '所有文件', extensions: ['*'] }], properties: ['createDirectory', 'showOverwriteConfirmation'] });
         if (chosen.canceled || !chosen.filePath) return { state: 'cancelled' };
         if (owner(event) !== id) throw new FileError('UNTRUSTED', '另存窗口已改变');

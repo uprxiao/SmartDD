@@ -26,6 +26,26 @@ const putRaw = (key: string, value: string) =>
   client.sqlite.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)').run(key, value);
 
 describe('SettingsStore', () => {
+  it('keeps DOCX rollout policy independent, persistent, and separate from file write permissions', async () => {
+    expect(store.get('fileOffice')).toEqual({docx:{documentHostFlag:false,renderFlag:false,redlinesEnabled:true}});
+    await store.update('fileOffice', {docx:{documentHostFlag:false,renderFlag:false,redlinesEnabled:false}});
+    // SettingsStore stores a changed top-level field as one value; nested
+    // DOCX capabilities remain explicit rather than becoming a second store.
+    expect(rows()).toEqual({fileOffice:{docx:{documentHostFlag:false,renderFlag:false,redlinesEnabled:false}}});
+    const restored=new SettingsStore(client.db);
+    expect(restored.get('fileOffice')).toEqual({docx:{documentHostFlag:false,renderFlag:false,redlinesEnabled:false}});
+    await restored.update('fileOffice', {docx:{documentHostFlag:true,renderFlag:true,redlinesEnabled:false}});
+    expect(new SettingsStore(client.db).get('fileOffice').docx).toEqual({documentHostFlag:true,renderFlag:true,redlinesEnabled:false});
+    await restored.reset('fileOffice');expect(rows()).toEqual({});
+  });
+
+  it('rejects malformed DOCX capability writes and recovers corrupt stored policy without enabling the document route', async () => {
+    await expect(store.update('fileOffice',{docx:{redlinesEnabled:'on'} as never})).rejects.toThrow(/redlinesEnabled/);
+    expect(rows()).toEqual({});
+    putRaw('fileOffice', JSON.stringify({docx:{documentHostFlag:true,renderFlag:'yes',redlinesEnabled:false}}));
+    expect(new SettingsStore(client.db).get('fileOffice')).toEqual({docx:{documentHostFlag:false,renderFlag:false,redlinesEnabled:true}});
+  });
+
   it('returns defaults for an empty table', () => {
     expect(store.getAll()).toEqual(APP_SETTINGS_DEFAULTS);
     expect(store.getWithMeta('terminal').overrides).toEqual({});

@@ -11,13 +11,15 @@ import { PptxParser } from './pptx-parser';
 import { encodePptxDraft,decodePptxDraft } from './pptx-draft';
 import { pptxImageBytes,pptxImageReceiptSchema,type PptxImageReceipt,type PptxImageDecoder } from './pptx-image';
 import { OfficeSaveReplay } from './save-replay';
+import { OfficeBlockedCandidate } from './blocked-candidate';
+import { pptxPlaceholderImage } from './pptx-placeholder';
 
 interface Preview {id:string;version:number;abort:AbortController;bytes?:Uint8Array}
 interface Document {
   owner:string;id:string;ref:FileRef;source:OfficeSource;baseHash:string;
   abort:AbortController;ready:boolean;parser?:PptxParser;queue:Promise<unknown>;
   releaseSource():void;preview?:Preview;
-  saves:OfficeSaveReplay;
+  saves:OfficeSaveReplay;blocked:OfficeBlockedCandidate;
 }
 
 /** FileBuffer lifetime, source identity and save snapshots are independent of
@@ -52,7 +54,7 @@ export class FilePptxService {
     if(!/\.pptx$/i.test(source.name))throw new FileError('UNSUPPORTED','此入口只接受 PPTX');
     if(!Number.isSafeInteger(source.size)||source.size<1||source.size>OFFICE_LIMITS.inputBytes)throw new FileError('TOO_LARGE','演示文稿为空或超过 40 MiB');
     const abort=new AbortController(),closed=()=>this.drop(record),invalidated=()=>{if(!record.ready)this.drop(record);};
-    const record:Document={owner,id:input.id,ref:input.ref,source,baseHash:source.hash,abort,ready:false,queue:Promise.resolve(),saves:new OfficeSaveReplay(),releaseSource(){source.signal.removeEventListener('abort',invalidated);source.lifetime?.removeEventListener('abort',closed);}};
+    const record:Document={owner,id:input.id,ref:input.ref,source,baseHash:source.hash,abort,ready:false,queue:Promise.resolve(),saves:new OfficeSaveReplay(),blocked:new OfficeBlockedCandidate(),releaseSource(){source.signal.removeEventListener('abort',invalidated);source.lifetime?.removeEventListener('abort',closed);}};
     this.documents.set(key,record);source.signal.addEventListener('abort',invalidated,{once:true});source.lifetime?.addEventListener('abort',closed,{once:true});
     try{
       const state=await this.jobs.run(abort.signal,async()=>{
@@ -85,7 +87,8 @@ export class FilePptxService {
     });record.queue=result;return result;
   }
   private async writable(record:Document){
-    if(record.source.writable===false)throw new FileError('PERMISSION','此文件为只读');
+    // Re-read the current issued capability after native metadata refresh.
+    if(this.resolve(record.owner,record.ref).writable===false)throw new FileError('PERMISSION','此文件为只读');
     const state=await record.parser!.state(record.abort.signal);
     if(state.info.signed)throw new FileError('UNSUPPORTED','此文档包含数字签名，编辑前需确认签名处理');
     if(state.protected)throw new FileError('PERMISSION','演示文稿有修改保护');
@@ -97,12 +100,13 @@ export class FilePptxService {
       const current=await this.writable(record);
       if(current.version!==input.version)throw new FileError('CHANGED','演示文稿编辑版本已改变');
       let image:PptxImageReceipt|undefined;
-      if(input.action.type==='image-insert'||input.action.type==='image-replace'){
+      if(input.action.type==='image-insert'||input.action.type==='image-replace'||input.action.type==='image-placeholder'){
         if(!this.decodeImage)throw new FileError('UNSUPPORTED','本机图片解码器不可用，未改变演示文稿');
-        const bytes=pptxImageBytes(input.action.image),source=input.action.image;
+        const source=input.action.type==='image-placeholder'?pptxPlaceholderImage():input.action.image,bytes=pptxImageBytes(source);
         const dimensions=await this.jobs.run(record.abort.signal,()=>this.decodeImage!(source,record.abort.signal));
         this.require(owner,input.id);
         image=pptxImageReceiptSchema.parse({...dimensions,hash:createHash('sha256').update(bytes).digest('hex')});
+        await this.writable(record);
       }
       const state=await this.jobs.run(record.abort.signal,()=>record.parser!.edit(input.version,input.action,record.abort.signal,image));
       this.require(owner,input.id);if(state.version!==input.version)this.dropPreview(record);return state;
@@ -117,7 +121,10 @@ export class FilePptxService {
     });
   }
   private async checkpointRecord(record:Document,input:PptxCheckpointInput,bytes?:Uint8Array):Promise<FileCheckpointReceipt>{
-    const snapshot=bytes??(await this.jobs.run(record.abort.signal,()=>record.parser!.materialize(input.version,record.abort.signal))).bytes;
+    const materialized=await this.jobs.run(record.abort.signal,()=>record.parser!.materialize(input.version,record.abort.signal));
+    const snapshot=bytes??materialized.bytes;
+    const report=await this.jobs.run(record.abort.signal,()=>record.parser!.verify(input.version,snapshot,materialized.hash,record.abort.signal));
+    if(report.total)throw new FileError('IO','草稿保真校验失败，当前修改仍保留在内存；原件未改变');
     this.require(record.owner,record.id);
     return this.persistence.checkpoint(record.owner,{ref:record.ref,draftId:input.draftId,bufferVersion:input.bufferVersion,baseHash:record.baseHash,base64:encodePptxDraft(snapshot,input.pending).toString('base64'),encoding:'ooxml-draft',bom:false});
   }
@@ -132,6 +139,19 @@ export class FilePptxService {
       if(replay)return {state:await record.parser!.state(record.abort.signal),...replay};
       await this.writable(record);
       const snapshot=await this.jobs.run(record.abort.signal,()=>record.parser!.materialize(input.version,record.abort.signal));
+      const fidelity=await this.jobs.run(record.abort.signal,()=>record.parser!.verify(input.version,snapshot.bytes,snapshot.hash,record.abort.signal));
+      this.require(owner,input.id);
+      if(fidelity.total){
+        const failure=record.blocked.block(input.version,snapshot.bytes,fidelity);
+        let checkpoint:FileCheckpointReceipt|undefined,draftError:string|undefined;
+        try{checkpoint=await this.checkpointRecord(record,input);}
+        catch(error){draftError=`当前修改仍保留在内存，草稿未确认写入磁盘：${error instanceof Error?error.message:String(error)}`;}
+        this.require(owner,input.id);
+        const receipt={opId:input.opId,bufferVersion:input.bufferVersion,state:'failed' as const,message:'保真校验失败，已阻止覆盖原文件；请核对差异。'};
+        const outcome={receipt,checkpoint,draftError,fidelity:failure};record.saves.remember(input,outcome);
+        return {state:await record.parser!.state(record.abort.signal),...outcome};
+      }
+      record.blocked.clear();
       const checkpoint=await this.checkpointRecord(record,input,snapshot.bytes);
       this.require(owner,input.id);record.source.assert();
       const receipt=await this.persistence.save(owner,{ref:record.ref,opId:input.opId,bufferVersion:input.bufferVersion,baseHash:record.baseHash,base64:Buffer.from(snapshot.bytes).toString('base64')});
@@ -147,6 +167,13 @@ export class FilePptxService {
       const outcome={receipt,checkpoint,...(draftError?{draftError}:{})};
       record.saves.remember(input,outcome);
       return {state:await record.parser!.state(record.abort.signal),...outcome};
+    });
+  }
+  async lossyCandidate(owner:string,id:string,token:string){
+    const record=this.require(owner,id);
+    return this.serialize(record,async()=>{
+      const state=await record.parser!.state(record.abort.signal);this.require(owner,id);record.source.assert();
+      return {ref:record.ref,baseHash:record.baseHash,bytes:record.blocked.select(token,state.version)};
     });
   }
   restore(owner:string,raw:PptxRestoreInput){
@@ -165,7 +192,7 @@ export class FilePptxService {
     return this.serialize(record,async()=>{
       if((await record.parser!.state(record.abort.signal)).version!==input.version)throw new FileError('CHANGED','演示文稿编辑版本已改变');
       const file=await this.persistence.refresh(owner,record.ref);this.require(owner,input.id);
-      record.baseHash=file.revision.hash;record.source.writable=file.writable;return file;
+      record.baseHash=file.revision.hash;record.source.writable=file.writable;record.blocked.clear();return file;
     });
   }
   async render(owner:string,raw:PptxRenderInput):Promise<PptxRenderResult>{

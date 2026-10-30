@@ -4,6 +4,7 @@ import { notebookFixture, notebookFrameDocument, parseNotebook } from './file-ar
 import { renderMarkdownReadOnly } from './file-markdown-model.mjs';
 import { highlightCode } from './file-highlight.mjs';
 import './file-artifact.css';
+import '../../../src/shared/markdown-readonly.css';
 import 'katex/dist/katex.min.css';
 import { createMarkdownMathBudget, createMarkdownMathSession, hydrateMarkdownMath } from '../../../src/shared/markdown-math-session.mjs';
 

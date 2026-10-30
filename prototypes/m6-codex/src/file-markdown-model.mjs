@@ -160,10 +160,13 @@ export function replaceMarkdownBlock(text, block, value) {
   if (!block || text.slice(block.from, block.to) !== block.raw) return null;
   return text.slice(0, block.from) + value + text.slice(block.to);
 }
-export function resolveMarkdownPath(currentPath, href) {
+export function resolveMarkdownPath(currentPath, href, { decode = false } = {}) {
   if (/^(?:[a-z][\w+.-]*:|\/\/|\\)/i.test(href)) return null;
-  const parts = href.startsWith('/') ? [] : currentPath.split('/').slice(0, -1);
-  for (const part of href.split(/[?#]/)[0].split('/')) {
+  let path = href.split(/[?#]/)[0];
+  try { if (decode) path = decodeURIComponent(path); } catch { return null; }
+  if (/[\u0000-\u001f\\]/.test(path)) return null;
+  const parts = path.startsWith('/') ? [] : currentPath.split('/').slice(0, -1);
+  for (const part of path.split('/')) {
     if (part === '..') { if (!parts.length) return null; parts.pop(); }
     else if (part && part !== '.') parts.push(part);
   }

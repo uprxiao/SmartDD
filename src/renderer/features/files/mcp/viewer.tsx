@@ -7,21 +7,23 @@ import { DropdownMenuItem, DropdownMenuSeparator } from '@renderer/lib/ui/menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@renderer/lib/ui/dialog';
 import { Button } from '@renderer/lib/ui/button';
 import { bytesFromBase64, fileErrorMessage, type FileBuffer } from '../file-buffer';
+import { chooseFileViewer as choose, fileViewerChoice, subscribeFileViewerChoice } from '../viewer-choice';
 import { McpAppFrame } from './apps';
 const queryKey = ['files', 'viewer-configuration'];
-const choices = new WeakMap<FileBuffer, string | null>();
 let settingsOpen = false;
 const setSettings = (open: boolean) => { settingsOpen = open; for (const listener of listeners) listener(); };
 const listeners = new Set<() => void>();
-const choose = (buffer: FileBuffer, id: string | null | undefined) => { if (id === undefined) choices.delete(buffer); else choices.set(buffer, id); for (const listener of listeners) listener(); };
 const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
-function useChoice(buffer: FileBuffer | undefined) { return useSyncExternalStore(subscribe, () => buffer ? choices.get(buffer) : undefined); }
+function useChoice(buffer: FileBuffer | undefined) { return useSyncExternalStore(subscribeFileViewerChoice, () => fileViewerChoice(buffer)); }
 function useConfiguration() { return useQuery({ queryKey, queryFn: () => rpc.files.viewerConfiguration() }); }
-export function McpViewerMenu({ buffer, source }: { buffer?: FileBuffer; source?: 'project-directory' | 'task-cwd' }) {
+export function McpViewerMenu({ buffer, source, onChoose }: { buffer?: FileBuffer; source?: 'project-directory' | 'task-cwd'; onChoose?: (id: string | null | undefined) => void }) {
   const { data } = useConfiguration(), choice = useChoice(buffer);
+  // The navigation protocol reserves "default" for builtin. Preserve manual
+  // selection of an existing adapter with that legal registration ID.
+  const select = (id: string | null | undefined) => onChoose && id !== 'default' ? onChoose(id) : buffer && choose(buffer, id);
   return <><DropdownMenuSeparator />
-    {buffer && <><DropdownMenuItem disabled={buffer.dirty || buffer.saving} onClick={() => choose(buffer, undefined)}><SlidersHorizontal />自动选择查看器{choice === undefined && <Check />}</DropdownMenuItem><DropdownMenuItem disabled={buffer.dirty || buffer.saving} onClick={() => choose(buffer, null)}>内置文件查看器{choice === null && <Check />}</DropdownMenuItem>
-      {data?.adapters.filter(a => a.enabled && source && a.sources.includes(source)).map(adapter => <DropdownMenuItem key={adapter.id} disabled={buffer.dirty || buffer.saving} onClick={() => choose(buffer, adapter.id)}>{adapter.name}{choice === adapter.id && <Check />}</DropdownMenuItem>)}</>}
+    {buffer && <><DropdownMenuItem disabled={buffer.dirty || buffer.saving} onClick={() => select(undefined)}><SlidersHorizontal />自动选择查看器{choice === undefined && <Check />}</DropdownMenuItem><DropdownMenuItem disabled={buffer.dirty || buffer.saving} onClick={() => select(null)}>内置文件查看器{choice === null && <Check />}</DropdownMenuItem>
+      {data?.adapters.filter(a => a.enabled && source && a.sources.includes(source)).map(adapter => <DropdownMenuItem key={adapter.id} disabled={buffer.dirty || buffer.saving} onClick={() => select(adapter.id)}>{adapter.name}{choice === adapter.id && <Check />}</DropdownMenuItem>)}</>}
     <DropdownMenuItem onClick={() => setSettings(true)}>管理扩展文件查看器…</DropdownMenuItem>
   </>;
 }
@@ -38,7 +40,7 @@ export function McpViewerSettings() {
 
 export function McpViewerSlot({ buffer, source, children }: { buffer: FileBuffer; source: 'project-directory' | 'task-cwd'; children: ReactNode }) {
   const { data, error: configError } = useConfiguration(), explicit = useChoice(buffer);
-  const adapter = data ? selectFileViewer(data, buffer.file.name, source, explicit) : null;
+  const adapter = data && !buffer.navigationView && !buffer.artifactView ? selectFileViewer(data, buffer.file.name, source, explicit) : null;
   const configuration = adapter ? JSON.stringify(adapter) : '', documentVersion = adapter?.provider.kind === 'stdio' ? buffer.baseHash : '';
   const [session, setSession] = useState<ViewerSession>(), [error, setError] = useState(''), [status, setStatus] = useState<ViewerStatus>(), [attempt, setAttempt] = useState(0);
   useEffect(() => {

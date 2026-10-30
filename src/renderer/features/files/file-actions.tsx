@@ -58,10 +58,20 @@ export interface FileMenuProps { target: FileActionTarget; absolutePath: string;
 export function FileContextActions({ target, absolutePath, relativePath, sourceRelativePath = relativePath, referencePath, origin, buffer, run, children, repository }: FileMenuProps) {
   const terminal = useFileTerminalContext();
   const [enabled, setEnabled] = useState(false), state = useApplications(target, enabled), data = state.data;
+  const [open, setOpen] = useState(false), [keyboardAnchor, setKeyboardAnchor] = useState<HTMLElement | null>(null);
   const directory = target.kind === 'path' && target.directory, preferred = data?.apps.find((app) => app.id === data.preferredId);
   const web = repository ? gitFileLink(repository, sourceRelativePath, directory) : null;
-  return <ContextMenu onOpenChange={(open) => { if (open) { setEnabled(true); if (enabled) state.reload(); } }}><ContextMenuTrigger render={children} onMouseEnter={() => setEnabled(true)} />
-    <ContextMenuContent className="fw-file-menu">
+  const changeOpen = (next: boolean) => {
+    setOpen(next);
+    if (next) { setEnabled(true); if (enabled) state.reload(); }
+    else setKeyboardAnchor(null);
+  };
+  return <ContextMenu open={open} onOpenChange={changeOpen}><ContextMenuTrigger render={children} onMouseEnter={() => setEnabled(true)} onContextMenu={() => setKeyboardAnchor(null)} onKeyDown={(event) => {
+    if (event.nativeEvent.isComposing || event.keyCode === 229 || event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+    event.preventDefault(); event.stopPropagation();
+    setKeyboardAnchor(event.currentTarget); changeOpen(true);
+  }} />
+    <ContextMenuContent className="fw-file-menu" anchor={keyboardAnchor ?? undefined}>
       <DropdownMenuItem disabled={!preferred} title={state.error || (!data ? '正在读取可用应用…' : '')} onClick={() => data && preferred && run(() => rpc.files.openExternal({ listId: data.id, appId: preferred.id, remember: false }))}><AppIcon app={preferred} />{preferred ? `使用 ${preferred.name} 打开` : state.error ? '读取应用失败' : data ? '首选应用不可用' : '正在读取可用应用…'}</DropdownMenuItem>
       <Menu.SubmenuRoot><Menu.SubmenuTrigger className="fw-menu-submenu"><ExternalLink size={14} /><span>打开方式</span><ChevronRight size={14} /></Menu.SubmenuTrigger><DropdownMenuContent side="right" align="start" className="fw-file-menu"><ApplicationChoices state={state} run={run} /></DropdownMenuContent></Menu.SubmenuRoot>
       <DropdownMenuSeparator />

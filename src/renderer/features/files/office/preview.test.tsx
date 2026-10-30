@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useEffect,useReducer } from 'react';
 import { FileBuffer } from '../file-buffer';
@@ -10,6 +10,7 @@ import { OfficeDocument } from '@main/core/files/office/document';
 import { readOfficeRange } from '@main/core/files/office/range';
 import { prepareOfficeFit } from '@main/core/files/office/fit-edit';
 import { FileOfficePreview } from './preview';
+import {XLSX_DRAWING_PREVIEW_NOTICE} from '@shared/office-preview-notices.mjs';
 
 const api = vi.hoisted(() => ({ create: vi.fn(),drafts:vi.fn(),refresh:vi.fn(),editOffice:vi.fn(),officeSheet:vi.fn(),editOfficeRange:vi.fn(),officeHistory:vi.fn(),checkpointOffice:vi.fn(),saveOffice:vi.fn(),recalculateOffice:vi.fn(),resolveDraft:vi.fn() }));
 vi.mock('./client', () => ({ OfficeClient: class { constructor() { return api.create(); } } }));
@@ -18,7 +19,7 @@ const clients: ReturnType<typeof client>[] = [];
 const buffers:FileBuffer[]=[],listeners=new Map<FileBuffer,()=>void>();
 function client(document: OfficeDocument) {
   const model=document.workbook, id:string=`test-office-${clients.length}`;
-  return { id,document,ready: Promise.resolve({ id, hash: 'hash', workbook: model.info,state:document.state(),calculation:{state:'ready' as const} }), window: vi.fn(async (id, rows: number[], columns: number[]) => document.workbook.window(id, rows[0], columns[0], rows.length, columns.length, rows, columns)), cell: vi.fn(async (id, row, column) => document.workbook.cellText(id, row, column, 0, 16384)), text:vi.fn(async(id,row,column)=>{const cell=document.workbook.cell(id,row,column);return cell.formula ? `=${cell.formula.text}` : cell.value;}),range:vi.fn(async(id,range)=>readOfficeRange(document.workbook,id,range,false)),copyRange:vi.fn(async()=>undefined),copy: vi.fn(async () => undefined), close: vi.fn() };
+  return { id,document,ready: Promise.resolve({ id, hash: 'hash', workbook: model.info,state:document.state(),calculation:{state:'ready' as const} }), window: vi.fn(async (id, rows: number[], columns: number[]) => document.workbook.window(id, rows[0], columns[0], rows.length, columns.length, rows, columns)), cell: vi.fn(async (id, row, column) => document.workbook.cellText(id, row, column, 0, 16384)), text:vi.fn(async(id,row,column)=>{const cell=document.workbook.cell(id,row,column);return cell.formula ? `=${cell.formula.text}` : cell.value;}),range:vi.fn(async(id,range)=>readOfficeRange(document.workbook,id,range,false)),drawingImage:vi.fn(async(sheetId,objectId,mediaHash)=>document.workbook.drawingImage(sheetId,objectId,mediaHash)),copyRange:vi.fn(async()=>undefined),copy: vi.fn(async () => undefined), close: vi.fn(), async retire() { this.close(); } };
 }
 const buffer = (instance = 'one',writable=false) => {
   const value=new FileBuffer({name:'real-fixture.xlsx',writable,revision:{hash:instance},ref:{id:instance}} as FileBuffer['file'],{closeDocument:async()=>undefined} as never,()=>listeners.get(value)?.());
@@ -45,6 +46,117 @@ beforeEach(async () => {
 });
 afterEach(() => { cleanup(); for(const buffer of buffers)buffer.dispose(); buffers.length=0; listeners.clear(); vi.unstubAllGlobals(); });
 describe('real workbook projection in the React view (IPC boundary isolated)', () => {
+  it('displays original picture bytes and selects the floating image without applying cell tools',async()=>{
+    const file=await OfficePackage.read(readFileSync('src/main/core/files/office/__fixtures__/ordinary-drawing.xlsx')),before=file.hashes(),documentModel=new OfficeDocument(file);
+    api.create.mockImplementation(()=>{const value=client(documentModel);clients.push(value);return value;});
+    const createObjectURL=vi.fn((_blob:Blob|MediaSource)=> 'blob:owned-picture'),revokeObjectURL=vi.fn(),OriginalURL=URL;
+    vi.stubGlobal('URL',class extends OriginalURL {static createObjectURL=createObjectURL;static revokeObjectURL=revokeObjectURL;});
+    const host=buffer('W24-picture-selection',true),view=render(<Preview buffer={host}/>);
+    const picture=await screen.findByRole('img',{name:'Public teal square'}),button=screen.getByRole('button',{name:'选择图片 Public teal square'});
+    expect(picture.getAttribute('src')).toBe('blob:owned-picture');expect((createObjectURL.mock.calls[0][0] as Blob).size).toBe(73);expect((createObjectURL.mock.calls[0][0] as Blob).type).toBe('image/png');
+    // The fixture's D2:F6 anchor must line up with the independently painted
+    // grid. Absolute widths vary with the declared compatible font metric.
+    const from=window.document.querySelector('[data-office-row="1"][data-office-column="3"]') as HTMLElement,to=window.document.querySelector('[data-office-row="5"][data-office-column="5"]') as HTMLElement;
+    expect(button.style.left).toBe(from.style.left);expect(button.style.top).toBe((from.closest('[role="row"]') as HTMLElement).style.top);
+    expect(parseFloat(button.style.width)).toBe(parseFloat(to.style.left)-parseFloat(from.style.left));
+    expect(parseFloat(button.style.height)).toBe(parseFloat((to.closest('[role="row"]') as HTMLElement).style.top)-parseFloat((from.closest('[role="row"]') as HTMLElement).style.top));
+    expect(screen.queryByText(XLSX_DRAWING_PREVIEW_NOTICE)).toBeNull();
+    fireEvent.click(button);await waitFor(()=>expect(button.getAttribute('aria-pressed')).toBe('true'));
+    expect((screen.getByLabelText('公式栏') as HTMLTextAreaElement).readOnly).toBe(true);expect((screen.getByLabelText('公式栏') as HTMLTextAreaElement).value).toBe('');
+    expect((screen.getByRole('button',{name:'格式'}) as HTMLButtonElement).disabled).toBe(true);expect((screen.getByRole('button',{name:'Insert function'}) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.keyDown(button,{key:'Delete'});fireEvent.keyDown(button,{key:'c',metaKey:true});fireEvent.keyDown(button,{key:'ContextMenu'});
+    expect(api.editOfficeRange).not.toHaveBeenCalled();expect(api.editOffice).not.toHaveBeenCalled();expect(clients[0].copyRange).not.toHaveBeenCalled();expect(screen.queryByRole('menu',{name:'单元格操作'})).toBeNull();
+    expect(documentModel.workbook.packageData.hashes()).toEqual(before);expect(documentModel.state()).toMatchObject({version:0,dirty:false});
+    fireEvent.keyDown(button,{key:'Escape'});await waitFor(()=>expect(button.getAttribute('aria-pressed')).toBe('false'));
+    fireEvent.click(window.document.querySelector('[data-office-row="1"][data-office-column="1"]')!);
+    await waitFor(()=>expect((screen.getByLabelText('公式栏') as HTMLTextAreaElement).value).toBe('42'));
+    expect((screen.getByLabelText('公式栏') as HTMLTextAreaElement).readOnly).toBe(false);expect(clients[0].drawingImage).toHaveBeenCalledTimes(1);
+    view.unmount();expect(revokeObjectURL).toHaveBeenCalledWith('blob:owned-picture');
+  });
+
+  it('does not create a picture URL from a media response arriving after the view unmounts',async()=>{
+    const file=await OfficePackage.read(readFileSync('src/main/core/files/office/__fixtures__/ordinary-drawing.xlsx')),model=new OfficeDocument(file),image=model.workbook.window('1',0,0,6,6).objects![0];
+    expect(image.kind).toBe('image');if(image.kind!=='image')throw new Error('expected original picture');
+    let finish!:(value:unknown)=>void;
+    api.create.mockImplementation(()=>{const value=client(model);value.drawingImage.mockImplementation(()=>new Promise(done=>{finish=done;}) as never);clients.push(value);return value;});
+    const createObjectURL=vi.fn((_blob:Blob|MediaSource)=> 'blob:late-picture'),revokeObjectURL=vi.fn(),OriginalURL=URL;
+    vi.stubGlobal('URL',class extends OriginalURL {static createObjectURL=createObjectURL;static revokeObjectURL=revokeObjectURL;});
+    const view=render(<Preview buffer={buffer('W24-picture-late',true)}/>);
+    await waitFor(()=>expect(clients[0]?.drawingImage).toHaveBeenCalledTimes(1));view.unmount();
+    await act(async()=>{finish(model.workbook.drawingImage('1',image.id,image.media.sha256));});
+    expect(createObjectURL).not.toHaveBeenCalled();expect(revokeObjectURL).not.toHaveBeenCalled();expect(model.state()).toMatchObject({version:0,dirty:false});
+  });
+  it('W24 shows the real current-sheet drawing limitation without hiding cells or leaking it onto another sheet',async()=>{
+    const host=buffer('W24-drawing-warning');render(<Preview buffer={host}/>);
+    await screen.findByRole('gridcell',{name:'Label'});
+    expect(await screen.findByText(XLSX_DRAWING_PREVIEW_NOTICE)).not.toBeNull();
+    const before=clients[0].document.workbook.packageData.hashes();
+    fireEvent.click(screen.getByRole('button',{name:'Calc'}));
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Calc'}).getAttribute('aria-current')).toBe('page'));
+    await waitFor(()=>expect(screen.queryByText(XLSX_DRAWING_PREVIEW_NOTICE)).toBeNull());
+    expect(clients[0].document.workbook.packageData.hashes()).toEqual(before);
+    expect(host.dirty).toBe(false);
+    expect(api.editOffice).not.toHaveBeenCalled();expect(api.editOfficeRange).not.toHaveBeenCalled();expect(api.saveOffice).not.toHaveBeenCalled();
+  });
+  it.each(['metaKey','ctrlKey','altKey'].flatMap(modifier=>[{key:'/',code:'Slash'},{key:'ContextMenu',code:'ContextMenu'},{key:'F10',code:'F10',shiftKey:true}].map(input=>({...input,modifier}))))('W25 yields $modifier+$key without opening tools or changing source',async input=>{
+    const host=buffer('W25-modifier-'+input.modifier+input.key,true);render(<Preview buffer={host}/>);await screen.findByRole('gridcell',{name:'Label'});const grid=screen.getByRole('grid'),before=clients[0].document.workbook.packageData.hashes();grid.focus();fireEvent.keyDown(grid,{...input,[input.modifier]:true});await act(async()=>{});
+    expect(screen.queryByRole('menu',{name:'单元格操作'})).toBeNull();expect(screen.queryByRole('textbox',{name:'编辑 A1'})).toBeNull();expect(clients[0].document.workbook.packageData.hashes()).toEqual(before);expect(host.dirty).toBe(false);expect(api.editOffice).not.toHaveBeenCalled();expect(api.editOfficeRange).not.toHaveBeenCalled();
+  });
+  it.each([false,true])('W25 Escape collapses the range to its active anchor without edits (writable=%s)',async writable=>{
+    const host=buffer('W25-range-escape-'+writable,writable);render(<Preview buffer={host}/>);await screen.findByRole('gridcell',{name:'Label'});const grid=screen.getByRole('grid'),at=(r:number,c:number)=>document.querySelector(`[data-office-row="${r}"][data-office-column="${c}"]`)!;
+    await waitFor(()=>expect(at(1,1)).not.toBeNull());fireEvent.click(at(1,1));fireEvent.keyDown(grid,{key:'ArrowUp',shiftKey:true});fireEvent.keyDown(grid,{key:'ArrowLeft',shiftKey:true});await waitFor(()=>expect(screen.getByLabelText('当前选区').textContent).toBe('A1:B2'));const before=clients[0].document.workbook.packageData.hashes();
+    fireEvent.keyDown(grid,{key:'Escape'});await waitFor(()=>expect(screen.getByLabelText('当前选区').textContent).toBe('B2'));expect(document.querySelectorAll('[role=gridcell][aria-selected=true]')).toHaveLength(1);expect(host.office!.view).toMatchObject({row:1,column:1,endRow:1,endColumn:1});expect(clients[0].document.workbook.packageData.hashes()).toEqual(before);expect(host.dirty).toBe(false);expect(api.editOfficeRange).not.toHaveBeenCalled();
+  });
+  it('W25 dismisses an open menu before a second Escape collapses the same range',async()=>{
+    const host=buffer('W25-menu-escape-order',true);render(<Preview buffer={host}/>);await screen.findByRole('gridcell',{name:'Label'});const grid=screen.getByRole('grid');fireEvent.keyDown(grid,{key:'ArrowRight',shiftKey:true});await waitFor(()=>expect(screen.getByLabelText('当前选区').textContent).toBe('A1:B1'));
+    fireEvent.keyDown(grid,{key:'ContextMenu'});const menu=await screen.findByRole('menu',{name:'单元格操作'});fireEvent.keyDown(within(menu).getAllByRole('menuitem')[0],{key:'Escape'});await waitFor(()=>expect(screen.queryByRole('menu',{name:'单元格操作'})).toBeNull());expect(screen.getByLabelText('当前选区').textContent).toBe('A1:B1');
+    fireEvent.keyDown(grid,{key:'Escape'});await waitFor(()=>expect(screen.getByLabelText('当前选区').textContent).toBe('A1'));expect(host.dirty).toBe(false);expect(api.editOffice).not.toHaveBeenCalled();
+  });
+
+  it.each([{key:'/',code:'Slash'},{key:'ContextMenu',code:'ContextMenu'},{key:'F10',code:'F10',shiftKey:true}])('W25 opens real range tools for $key without typing into the active cell',async input=>{
+    const host=buffer('W25-menu-'+input.key,true);render(<Preview buffer={host}/>);await screen.findByRole('gridcell',{name:'Label'});
+    const grid=screen.getByRole('grid');grid.focus();fireEvent.keyDown(grid,input);
+    const menu=await screen.findByRole('menu',{name:'单元格操作'}),items=within(menu).getAllByRole('menuitem');expect(items.map(e=>e.textContent)).toEqual(['向下填充','向右填充','合并单元格','取消合并','适应列宽','适应行高','清除内容','清除格式','全部清除']);
+    expect(screen.queryByRole('textbox',{name:'编辑 A1'})).toBeNull();expect(clients[0].document.workbook.cell('1',0,0).value).toBe('Label');expect(host.office!.pending).toBeNull();
+    fireEvent.keyDown(items[0],{key:'Escape'});await waitFor(()=>expect(screen.queryByRole('menu',{name:'单元格操作'})).toBeNull());
+  });
+  it('W25 readonly tools and ordinary typing/deletion never mutate the workbook',async()=>{
+    const host=buffer('W25-readonly');render(<Preview buffer={host}/>);await screen.findByRole('gridcell',{name:'Label'});const grid=screen.getByRole('grid'),before=clients[0].document.workbook.packageData.hashes();
+    for(const input of [{key:'/',code:'Slash'},{key:'ContextMenu'},{key:'F10',shiftKey:true},{key:'x'},{key:'Delete'}])fireEvent.keyDown(grid,input);
+    await act(async()=>{});expect(screen.queryByRole('menu',{name:'单元格操作'})).toBeNull();expect(screen.queryByRole('textbox',{name:'编辑 A1'})).toBeNull();expect(host.dirty).toBe(false);expect(clients[0].document.workbook.packageData.hashes()).toEqual(before);expect(api.editOffice).not.toHaveBeenCalled();expect(api.editOfficeRange).not.toHaveBeenCalled();
+  });
+  it('W25 leaves slash in an active formula draft and keeps Escape cancellation local to that input',async()=>{
+    const host=buffer('W25-formula',true);render(<Preview buffer={host}/>);await screen.findByRole('gridcell',{name:'Label'});const formula=screen.getByLabelText('公式栏');
+    fireEvent.focus(formula);fireEvent.keyDown(formula,{key:'/',code:'Slash'});fireEvent.change(formula,{target:{value:'/'}});expect(screen.queryByRole('menu',{name:'单元格操作'})).toBeNull();expect((formula as HTMLTextAreaElement).value).toBe('/');expect(clients[0].document.workbook.cell('1',0,0).value).toBe('Label');
+    fireEvent.keyDown(formula,{key:'Escape'});await waitFor(()=>expect((formula as HTMLTextAreaElement).value).toBe('Label'));expect(host.dirty).toBe(false);expect(screen.queryByRole('menu',{name:'单元格操作'})).toBeNull();
+  });
+
+  it('W19 keeps the readonly address label, formula and function action inert while selecting a range and another sheet', async () => {
+    render(<Preview buffer={buffer('W19-readonly')} />); await screen.findByRole('gridcell', { name: 'Label' });
+    const address = screen.getByLabelText('当前选区'); expect(address.tagName).toBe('SPAN'); expect(address.querySelector('input,textarea')).toBeNull();
+    fireEvent.click(document.querySelector('[data-office-row="1"][data-office-column="1"]')!, { shiftKey: true });
+    await waitFor(() => expect(address.textContent).toBe('A1:B2'));
+    const formula = screen.getByLabelText('公式栏') as HTMLTextAreaElement;
+    expect(formula.readOnly).toBe(true); expect((screen.getByRole('button', { name: 'Insert function' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.keyDown(screen.getByRole('grid'), { key: 'F2' }); expect(screen.queryByRole('textbox', { name: /^编辑 / })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Calc' })); await waitFor(() => expect(screen.getByRole('button', { name: 'Calc' }).getAttribute('aria-current')).toBe('page'));
+    expect(api.editOffice).not.toHaveBeenCalled(); expect(api.officeSheet).not.toHaveBeenCalled(); expect(api.saveOffice).not.toHaveBeenCalled();
+  });
+  it('W23 blocks pointer and keyboard structure menus while a real queued sheet mutation is pending', async () => {
+    const host = buffer('W23-busy', true); render(<Preview buffer={host} />); await screen.findByRole('gridcell', { name: 'Label' });
+    const mutate = api.officeSheet.getMockImplementation()!; let release!: () => void;
+    api.officeSheet.mockImplementationOnce(async input => { await new Promise<void>(done => { release = done; }); return mutate(input); });
+    fireEvent.click(screen.getByRole('button', { name: '新增工作表' })); await waitFor(() => expect(release).toBeTypeOf('function'));
+    expect(host.office!.busy).toBe(true);
+    await waitFor(() => expect((screen.getByRole('button', { name: '新增工作表' }) as HTMLButtonElement).disabled).toBe(true));
+    expect((screen.getByRole('button', { name: 'Data' }) as HTMLButtonElement).draggable).toBe(false);
+    fireEvent.doubleClick(screen.getByRole('button', { name: 'Data' })); fireEvent.click(screen.getByRole('button', { name: '新增工作表' }));
+    expect(screen.queryByRole('dialog', { name: '重命名工作表' })).toBeNull();
+    fireEvent.contextMenu(screen.getByRole('button', { name: 'Data' })); fireEvent.keyDown(screen.getByRole('button', { name: 'Data' }), { key: 'F10', shiftKey: true });
+    expect(screen.queryByRole('menu', { name: '工作表操作' })).toBeNull(); expect(api.officeSheet).toHaveBeenCalledTimes(1);
+    await act(async () => release()); await screen.findByRole('button', { name: 'Sheet1' });
+    expect(host.office!.busy).toBe(false); expect(clients[0].document.workbook.info.sheets).toHaveLength(4);
+  });
   it('DEV156 reloads the selected formula text and editing capability after a clean external refresh finishes opening',async()=>{
     const host=buffer('external-clean',true);render(<Preview buffer={host}/>);await screen.findByRole('gridcell',{name:'Label'});
     await waitFor(()=>expect((screen.getByLabelText('公式栏') as HTMLTextAreaElement).readOnly).toBe(false));
@@ -263,6 +375,9 @@ describe('real workbook projection in the React view (IPC boundary isolated)', (
   it('keeps sheet selection available while a readonly source suppresses structure actions and menus',async()=>{
     render(<Preview buffer={buffer('sheet-readonly')}/>);await screen.findByRole('gridcell',{name:'Label'});
     expect((screen.getByRole('button',{name:'新增工作表'}) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button',{name:'Data'}) as HTMLButtonElement).draggable).toBe(false);
+    fireEvent.doubleClick(screen.getByRole('button',{name:'Data'})); fireEvent.click(screen.getByRole('button',{name:'新增工作表'}));
+    expect(screen.queryByRole('dialog',{name:'重命名工作表'})).toBeNull(); expect(api.officeSheet).not.toHaveBeenCalled();
     const target=screen.getByRole('button',{name:'Calc'});fireEvent.contextMenu(target);fireEvent.keyDown(target,{key:'ContextMenu'});fireEvent.doubleClick(target);
     expect(screen.queryByRole('menu',{name:'工作表操作'})).toBeNull();expect(screen.queryByRole('dialog')).toBeNull();expect(api.officeSheet).not.toHaveBeenCalled();
     fireEvent.click(target);await waitFor(()=>expect(target.getAttribute('aria-current')).toBe('page'));
@@ -356,6 +471,7 @@ describe('real workbook projection in the React view (IPC boundary isolated)', (
   });
   it('reports parse failure and can load a fresh session after retry', async () => {
     api.create.mockImplementationOnce(() => ({ ready: Promise.reject(new Error('测试损坏工作簿')), close: vi.fn() }));
-    render(<Preview buffer={buffer()} />); await screen.findByRole('alert'); fireEvent.click(screen.getByRole('button', { name: '重新加载' })); await screen.findByRole('gridcell',{name:'Label'});
+    const host=buffer();api.refresh.mockResolvedValue(host.file);
+    render(<Preview buffer={host} />); await screen.findByRole('alert'); fireEvent.click(screen.getByRole('button', { name: '重新加载' })); await screen.findByRole('gridcell',{name:'Label'});
   });
 });

@@ -20,10 +20,18 @@ test('workbook live editing and manual format gates are independent',()=>{
 test('PPT source and annotation gates and DOCX route controls',()=>{
   assert.equal(officeCapabilities('pptx',{}).editable,false);
   assert.equal(ppt.editable,true);
-  for(const patch of [{canWrite:false},{sourceBytes:false},{libraryFile:true}]) assert.equal(officeCapabilities('pptx',{manualEditing:true,...patch}).editable,false);
+  for(const patch of [{canWrite:false},{sourceBytes:false},{libraryFile:true},{template:true}]) assert.equal(officeCapabilities('pptx',{manualEditing:true,...patch}).editable,false);
   assert.equal(officeCapabilities('pptx',{template:true,annotationsEnabled:true}).annotate,false);
   const legacy=officeCapabilities('docx',{docxRoute:'legacy',annotationsEnabled:true});assert.equal(legacy.annotate,true);assert.equal(legacy.pageRail,true);assert.equal(legacy.redlines,true);
   const pop=officeCapabilities('docx',{docxRoute:'popcorn',annotationsEnabled:true});assert.equal(pop.annotate,false);assert.equal(pop.pageRail,false);assert.equal(pop.search,false);assert.equal(pop.headerPager,false);
+});
+test('readonly legacy DOCX may hand off selected context without gaining edit or Popcorn controls',()=>{
+  const input={readOnly:true,docxRoute:'legacy',annotationsEnabled:true,redlinesEnabled:false};
+  const caps=officeCapabilities('docx',input);assert.equal(caps.editable,false);assert.equal(caps.annotate,true);assert.equal(caps.redlines,false);
+  assert.equal(officeCapabilities('docx',{...input,annotationsEnabled:false}).annotate,false);
+  assert.equal(officeCapabilities('docx',{...input,interactionsDisabled:true}).annotate,false);
+  assert.equal(officeCapabilities('docx',{...input,docxRoute:'popcorn'}).annotate,false);
+  assert.equal(officeCapabilities('pptx',{...input,manualEditing:true}).annotate,false);
 });
 test('legacy fixtures migrate preserving titles, sheets, wide rows and string zero',()=>{
   const doc=createOfficeDocument('pptx',JSON.stringify({slides:[{title:'旧标题'}],sheets:[{name:'旧表',cells:[['a'],['0','b','c','d','e','f','g','h']]}]}));

@@ -78,22 +78,24 @@ describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BR
     fireEvent.keyDown(beta, { key: 'ArrowRight' }); expect(f.store.currentExpanded).toContain('sticky/alpha/beta'); act(() => f.store.activate(f.store.activeId!)); await waitFor(() => expect(document.querySelector('.fw-sticky-folders')?.textContent).toBe('alphabetagamma'));
     expect(f.store.active!.buffer!.raw).toBe('Sticky 49\n'); expect(f.api.open).toHaveBeenCalledTimes(1); evidence.push({ case: 'B16', sticky: ['alpha', 'beta', 'gamma'], exactFocusedPath: 'sticky/alpha/beta', collapseAndReopen: true, currentDocumentUnchanged: true });
   });
-  it.each([false, true])('B16 restores a focused folder removed by native refresh; later user focus wins (%s)', async external => {
+  it.each([false, true])('B16 retains the original focused folder during native refresh; later user focus wins (%s)', async external => {
     const f = await fixture(); fireEvent.scroll(screen.getByRole('tree'), { target: { scrollTop: 0 } }); const folder = screen.getByRole('treeitem', { name: 'many' }); act(() => folder.focus()); f.rootGate.held = true;
-    let loading!: Promise<void>; act(() => { loading = f.store.list(f.root, '', true); }); await f.rootGate.entered.promise; expect(screen.queryByRole('treeitem', { name: 'many' })).toBeNull();
+    let loading!: Promise<void>; act(() => { loading = f.store.list(f.root, '', true); }); await f.rootGate.entered.promise; expect(screen.getByRole('treeitem', { name: 'many' })).toBe(folder); expect(screen.getByRole('tree').getAttribute('aria-busy')).toBe('true'); expect(document.activeElement).toBe(folder);
     const outside = screen.getByRole('button', { name: 'Unrelated render 0' }); if (external) { fireEvent.pointerDown(outside); act(() => outside.focus()); }
-    await act(async () => { f.rootGate.release.resolve(); await loading; }); const restored = screen.getByRole('treeitem', { name: 'many' }); expect(document.activeElement).toBe(external ? outside : restored);
-    evidence.push({ case: 'B16 native refresh focus', externalUserIntent: external, exactFolderRestored: !external, externalFocusPreserved: external });
+    await act(async () => { f.rootGate.release.resolve(); await loading; }); const restored = screen.getByRole('treeitem', { name: 'many' }); expect(restored).toBe(folder); expect(document.activeElement).toBe(external ? outside : restored); expect(screen.getByRole('tree').getAttribute('aria-busy')).toBe('false');
+    evidence.push({ case: 'B16 native refresh focus', externalUserIntent: external, originalFolderRetained: true, externalFocusPreserved: external });
   });
-  it.each([false, true])('B10 retains the viewport across native refresh and its browser clamp; later wheel intent wins (%s)', async userScroll => {
+  it.each([false, true])('B10 retains confirmed scroll extent during native refresh; later wheel intent wins (%s)', async userScroll => {
     const f = await fixture(), tree = screen.getByRole('tree'); fireEvent.scroll(tree, { target: { scrollTop: 2800 } });
+    const extent = parseFloat(tree.querySelector<HTMLElement>('.fw-tree-virtual')!.style.height);
     f.rootGate.held = true; let loading!: Promise<void>; act(() => { loading = f.store.list(f.root, '', true); }); await f.rootGate.entered.promise;
-    // jsdom does not perform the browser's layout clamp when the virtual
-    // list becomes one loading row. Reproduce that observed native event.
-    fireEvent.scroll(tree, { target: { scrollTop: 0 } });
+    // Confirmed rows no longer shrink to a placeholder, so the old injected
+    // clamp-to-zero event would model a layout that cannot occur here.
+    expect(parseFloat(tree.querySelector<HTMLElement>('.fw-tree-virtual')!.style.height)).toBeGreaterThanOrEqual(extent); expect(tree.scrollTop).toBe(2800); expect(tree.getAttribute('aria-busy')).toBe('true');
     if (userScroll) { fireEvent.wheel(tree, { deltaY: -2800 }); fireEvent.scroll(tree, { target: { scrollTop: 0 } }); }
     await act(async () => { f.rootGate.release.resolve(); await loading; });
     expect(tree.scrollTop).toBe(userScroll ? 0 : 2800); expect(f.store.scroll.get(f.root.lease)).toBe(userScroll ? 0 : 2800);
-    evidence.push({ case: 'B10 native refresh viewport', userScroll, browserClampDuringLoading: 0, restored: tree.scrollTop, boundary: 'Genuine native list held after IO; browser layout clamp is the existing jsdom geometry substitute, actual App wheel evidence is separate.' });
+    expect(tree.getAttribute('aria-busy')).toBe('false');
+    evidence.push({ case: 'B10 native refresh viewport', userScroll, confirmedExtentRetained:true, restored: tree.scrollTop, boundary: 'Genuine native list held after IO; jsdom viewport/clamping geometry remains a substitute, actual App wheel evidence is separate.' });
   });
 });

@@ -17,6 +17,8 @@ import { FileRecoveryStore } from './recovery-store';
 import { FileService } from './file-service';
 import { FileTerminalService } from './terminal-context';
 import { createFileController } from './controller';
+import { OfficePackage } from './office/package';
+import { OfficePagesModel } from './office/pages-model';
 vi.mock('electron', () => ({ BrowserWindow: {}, dialog: {}, shell: {} }));
 const observations: Record<string, unknown>[] = [], cleanups: (() => Promise<void>)[] = [];
 const sha = (value: string | Uint8Array) => createHash('sha256').update(value).digest('hex');
@@ -51,6 +53,65 @@ async function fixture(native = false) {
 afterEach(async () => { for (const cleanup of cleanups.splice(0)) await cleanup(); });
 afterAll(() => { if (process.env.SMARTDD_TERMINAL_EVIDENCE) writeFileSync(process.env.SMARTDD_TERMINAL_EVIDENCE, JSON.stringify({ finishedAt: new Date().toISOString(), level: 'production scoped RPC handlers / FileService / packaged native broker; real PTY in designated rows; synthetic Electron sender metadata, no App GUI or model calls', observations }, null, 2)); });
 describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_TERMINAL_APP)('DEV045 controlled file-to-terminal service integration', () => {
+  it('PPTX-context-v1 delivers real slide/object comments through an owned document grant without changing the presentation', async () => {
+    const f = await fixture(), relativePath = '演示 空格.pptx', path = join(f.project, relativePath);
+    const bytes = readFileSync('docs/里程碑/M9_文件浏览工作区/验收/证据/predev-office/final/rich-source.pptx'); writeFileSync(path, bytes);
+    const model = new OfficePagesModel(await OfficePackage.read(bytes)), slide = model.info.slides[0];
+    // The fixture title is a shape placeholder with real text, not a txBox.
+    const element = slide.elements!.find(value => value.text?.trim()); expect(element).toBeDefined();
+    const before = JSON.stringify(model.info), binding = await f.invoke('terminalBind', { taskId: f.taskId, ptyId: 'fixture-pty', root: { lease: f.root.lease, generation: f.root.generation } });
+    const document = await f.invoke('open', { lease: f.root.lease, generation: f.root.generation, relativePath });
+    expect(document.content).toMatchObject({ kind: 'office', format: 'pptx' });
+    const source = await f.invoke('terminalPrepare', { bindingId: binding.id, target: { kind: 'document', ref: document.ref }, identity: { device: document.revision.device, inode: document.revision.inode } });
+    const input = { kind: 'context', bindingId: binding.id, operationId: randomUUID(), includeText: true, style: 'plain', references: [
+      { sourceId: source.id, kind: 'pptx-comment', pptx: { slideId: slide.id, page: 1 }, comment: '请检查整张幻灯片' },
+      { sourceId: source.id, kind: 'pptx-comment', pptx: { slideId: slide.id, page: 1, elementId: element!.id }, text: element!.text, comment: '请调整选中标题' },
+    ] };
+    const first = await f.invoke('terminalInsert', input); expect(first.state).toBe('inserted');
+    expect(await f.invoke('terminalInsert', input)).toEqual(first); expect(f.writes).toHaveLength(1);
+    for (const text of [relativePath + ':第 1 张幻灯片', '对象 ' + element!.id, '请检查整张幻灯片', '请调整选中标题', element!.text]) expect(f.writes[0].data).toContain(text);
+    expect(f.writes[0].data).not.toMatch(/[\r\n]/); expect(sha(readFileSync(path))).toBe(sha(bytes)); expect(JSON.stringify(model.info)).toBe(before);
+    observations.push({ scenario: 'PPTX-context-v1 actual native document grant and schema/formatter/writer', first, sourceHash: sha(bytes), slideId: slide.id, elementId: element!.id, writes: f.writes, sourceAndModelUnchanged: true, boundary: 'Real FileService/scoped IPC/native broker; synthetic Electron sender and controlled writer. Slide metadata is user context, not a main-process model attestation; actual GUI and PTY remain separate.' });
+  });
+  it('PPTX-context-v1 rejects mixed locators and a revoked document grant before writing', async () => {
+    const f = await fixture(), document = await f.invoke('open', f.target.path), { binding } = await f.setup();
+    const source = await f.invoke('terminalPrepare', { bindingId: binding.id, target: { kind: 'document', ref: document.ref }, identity: { device: document.revision.device, inode: document.revision.inode } });
+    const reference = { sourceId: source.id, kind: 'pptx-comment', pptx: { slideId: '256', page: 1 }, comment: '公开的修改请求' };
+    const input = { kind: 'context', bindingId: binding.id, operationId: randomUUID(), includeText: false, style: 'plain', references: [{ ...reference, range: { startLine: 1, endLine: 1 } }] };
+    await expect(Promise.resolve().then(() => f.invoke('terminalInsert', input))).rejects.toThrow(); expect(f.writes).toEqual([]);
+    await f.invoke('closeDocument', document.ref);
+    const rejected = await f.invoke('terminalInsert', { ...input, operationId: randomUUID(), references: [reference] });
+    expect(rejected.state).toBe('failed'); expect(f.writes).toEqual([]);
+    observations.push({ scenario: 'PPTX-context-v1 original schema and revoked owned grant reject before writer', rejected, writes: 0 });
+  });
+  it('PDF-context-v1 preserves real prepared PDF page/region/point context and idempotent writes', async () => {
+    const f = await fixture(), path = join(f.project, 'context.pdf');
+    const bytes = readFileSync(join(process.cwd(), 'prototypes/m6-codex/public/assets/m9-pdf/normal.pdf')); writeFileSync(path, bytes);
+    const binding = await f.invoke('terminalBind', { taskId: f.taskId, ptyId: 'fixture-pty', root: { lease: f.root.lease, generation: f.root.generation } });
+    const document = await f.invoke('open', { lease: f.root.lease, generation: f.root.generation, relativePath: 'context.pdf' });
+    const source = await f.invoke('terminalPrepare', { bindingId: binding.id, target: { kind: 'document', ref: document.ref }, identity: { device: document.revision.device, inode: document.revision.inode } });
+    const input = { kind: 'context', bindingId: binding.id, operationId: randomUUID(), includeText: true, style: 'plain', references: [
+      { sourceId: source.id, kind: 'pdf-comment', pdf: { page: 2, anchor: { x: .125, y: .25, width: .375, height: .5 } }, comment: '请核对区域🙂', text: '原文 context' },
+      { sourceId: source.id, kind: 'pdf-comment', pdf: { page: 3, anchor: { x: 0, y: 1, width: 0, height: 0 } }, comment: '请核对位置' },
+    ] };
+    const first = await f.invoke('terminalInsert', input), duplicate = await f.invoke('terminalInsert', input);
+    expect(first.state).toBe('inserted'); expect(duplicate).toEqual(first); expect(f.writes).toHaveLength(1);
+    expect(f.writes[0].data).toContain('context.pdf:第 2 页 · 区域 12.5%, 25%, 37.5%, 50%');
+    expect(f.writes[0].data).toContain('context.pdf:第 3 页 · 位置 0%, 100%, 0%, 0%');
+    for (const value of ['请核对区域🙂', '原文 context', '请核对位置']) expect(f.writes[0].data).toContain(value);
+    expect(f.writes[0].data).not.toMatch(/[\r\n]|\bL\d/); expect(sha(readFileSync(path))).toBe(sha(bytes));
+    observations.push({ scenario: 'PDF-context-v1 real source/prepared authorization and guarded writer', first, duplicate, actualSourceHash: sha(bytes), unchanged: true, writes: f.writes, boundary: 'Real scoped IPC/FileService/packaged native source; synthetic Electron sender and controlled writer, no GUI or physical PTY claim.' });
+  });
+  it('PDF-context-v1 rejects malformed metadata and unprepared source without any write', async () => {
+    const f = await fixture(), { binding, source } = await f.setup();
+    const reference = { sourceId: source.id, kind: 'pdf-comment', pdf: { page: 1, anchor: { x: 0, y: 0, width: .2, height: .2 } }, comment: 'known comment' };
+    for (const changed of [{ ...reference, pdf: { ...reference.pdf, page: 0 } }, { ...reference, pdf: { page: 1, anchor: { x: .9, y: 0, width: .2, height: .2 } } }, { ...reference, range: { startLine: 1, endLine: 1 } }]) {
+      await expect(Promise.resolve().then(() => f.invoke('terminalInsert', { kind: 'context', bindingId: binding.id, operationId: randomUUID(), references: [changed], includeText: false, style: 'plain' }))).rejects.toThrow();
+    }
+    const rejected = await f.invoke('terminalInsert', { kind: 'context', bindingId: binding.id, operationId: randomUUID(), references: [{ ...reference, sourceId: randomUUID() }], includeText: false, style: 'plain' });
+    expect(rejected.state).toBe('failed'); expect(f.writes).toEqual([]);
+    observations.push({ scenario: 'PDF-context-v1 original schema/source grant rejection', malformed: 3, unprepared: rejected, writes: 0 });
+  });
   it('returns an original explicit failure when the source inode is replaced during pending validation', async () => {
     const f = await fixture(), { binding, source } = await f.setup(), input = { kind: 'path', bindingId: binding.id, operationId: randomUUID(), sourceId: source.id }, gate = f.pauseNextInspect();
     const pending = f.invoke('terminalInsert', input); await gate.reached; writeFileSync(f.path + '.replacement', 'new physical source'); renameSync(f.path + '.replacement', f.path); gate.release();

@@ -19,6 +19,21 @@ function fixture(relativePath = '中 文.txt', directory = false) {
   return { service, request, preferences, target, abort, application };
 }
 describe('native file action authority and preference', () => {
+  it('keeps inline bytes separate from the text-draft API and retains the genuine context source for native copying', async () => {
+    const f = fixture('source.md'), context = { id: randomUUID(), lease: randomUUID(), generation: 1 };
+    const bytes = Buffer.from([82, 73, 70, 70, 0, 255, 43]), base64 = bytes.toString('base64');
+    const revision = { device:'1', inode:'3', size:20, hash:'a'.repeat(64), modifiedNs:'1', changedNs:'1' };
+    f.request.mockResolvedValueOnce({ relativePath:'source.md', revision } as never);
+    const selected = await f.service.prepareContentCopy('owner', { context, name:'音频:中文|?.wav', base64 });
+    expect(selected).toMatchObject({ owner:'owner', name:'音频_中文__.wav', draftBase64:base64, revision, used:false, context:{ relativePath:'source.md' } });
+    expect(f.request).toHaveBeenCalledOnce(); expect(f.request.mock.calls[0][0].operation).toBe('stat');
+    for (const invalid of ['', '!!!!', 'AQ', 'AR==']) await expect(f.service.prepareContentCopy('owner', { context, name:'clip.wav', base64:invalid })).rejects.toThrow();
+    await expect(f.service.prepareContentCopy('owner', { context, name:'clip.wav', base64, destination:'/renderer/path' } as never)).rejects.toThrow();
+    await expect(f.service.prepareContentCopy('owner', { context, name:'bad\u0000.wav', base64 })).rejects.toThrow();
+    expect(f.request).toHaveBeenCalledOnce();
+    f.abort.abort(); await expect(f.service.prepareContentCopy('owner', { context, name:'clip.wav', base64 })).rejects.toThrow('CANCELLED');
+    expect(f.request).toHaveBeenCalledOnce();
+  });
   it('uses opaque owner-bound app choices and remembers only after explicit successful opening', async () => {
     const f = fixture(), list = await f.service.applications('owner', f.target), appId = list.apps[0].id;
     expect(list.apps[0]).not.toHaveProperty('path'); expect(list.preferredId).toBe(appId); expect(f.preferences.set).not.toHaveBeenCalled();

@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom';
 import { rpc } from '@renderer/lib/ipc';
 import type { FileBuffer } from '../file-buffer';
 import { useFileTerminalContext } from '../terminal-context/context';
-import { ImageGallery } from '../../../../../prototypes/m6-codex/src/ImageGallery.jsx';
-import { imageMenuActions } from '@shared/image-menu-policy.mjs';
+import { RoutedImageGallery as ImageGallery } from '../../../../../prototypes/m6-codex/src/ImageGalleryRoute.jsx';
+import { imageMenuActions, isImageWebAddress } from '@shared/image-menu-policy.mjs';
 import { loadMarkdownImage, withMarkdownImage, type MarkdownImageSource } from './images';
 import './image-host.css';
 
@@ -12,10 +12,14 @@ interface Picture extends MarkdownImageSource {
   id: number; element: HTMLImageElement; owner: AbortSignal; resource: AbortController;
   ready: boolean; reload(): Promise<void>;
 }
-interface Gallery { picture: Picture; pictures: Picture[] }
+interface PreviewPicture { id: number; src: string; alt: string; downloadSrc: string; name: string; source: Picture }
+interface Gallery { picture: PreviewPicture; pictures: PreviewPicture[] }
 interface MenuState { picture: Picture; x: number; y: number }
 const idleSubscribe = () => () => {}, idleSnapshot = () => 0;
 const message = (e: unknown) => e instanceof Error ? e.message : String(e);
+// The decoder-selected URL is display state, never a file capability. Keep the
+// actual owner separate so reload/disposal and original-byte actions stay bound.
+const snapshot = (source: Picture): PreviewPicture => ({ id: source.id, alt: source.alt, src: source.element.currentSrc || source.element.src || source.src, downloadSrc: source.src, name: source.name, source });
 
 /** Owns only embedded Markdown images, never the ordinary tree image route.
  * Source capabilities close after reads/actions; URLs belong to widget lifetime. */
@@ -37,7 +41,8 @@ export function useMarkdownImages(buffer: FileBuffer, enabled: boolean, hasConte
       if (!current()) return;
       const root = element.closest('.fw-codemirror');
       const pictures = [...(root?.querySelectorAll<HTMLImageElement>('img[data-md-src]') ?? [element])].map(e => records.current.get(e)).filter((x): x is Picture => Boolean(x && x.element.isConnected && !x.owner.aborted));
-      origin.current = element; setMenu(null); setNotice(''); setGallery({ picture: p, pictures: pictures.includes(p) ? pictures : [p] });
+      const previews = (pictures.includes(p) ? pictures : [p]).map(snapshot);
+      origin.current = element; setMenu(null); setNotice(''); setGallery({ picture: previews.find(item => item.source === p)!, pictures: previews });
     };
     const click = (e: MouseEvent) => { if (e.button === 0) { e.preventDefault(); e.stopPropagation(); open(); } };
     const down = (e: MouseEvent) => { if (e.button === 0) { e.preventDefault(); e.stopPropagation(); } };
@@ -48,7 +53,7 @@ export function useMarkdownImages(buffer: FileBuffer, enabled: boolean, hasConte
     signal.addEventListener('abort', () => {
       p.resource.abort(); if (records.current.get(element) === p) records.current.delete(element);
       element.removeEventListener('click', click); element.removeEventListener('mousedown', down); element.removeEventListener('keydown', key); element.removeEventListener('contextmenu', context);
-      setGallery(old => old?.pictures.includes(p) ? null : old); setMenu(old => old?.picture === p ? null : old);
+      setGallery(old => old?.pictures.some(item => item.source === p) ? null : old); setMenu(old => old?.picture === p ? null : old);
     }, { once: true });
     p.reload = async () => {
       if (!current()) throw new Error('图片来源已关闭');
@@ -57,19 +62,30 @@ export function useMarkdownImages(buffer: FileBuffer, enabled: boolean, hasConte
         const source = await loadMarkdownImage(buffer, element, href, p.resource.signal);
         if (!current()) { p.resource.abort(); return; }
         Object.assign(p, source); p.ready = true; delete element.dataset.imageUnavailable; element.classList.remove('fw-md-image-error'); element.title = '打开嵌入图片';
-        setGallery(old => old?.pictures.includes(p) ? { ...old } : old);
+        setGallery(old => {
+          if (!old?.pictures.some(item => item.source === p)) return old;
+          // The inline decoder may still report its now-revoked previous URL.
+          // A successful explicit reload owns this newly verified source.
+          const pictures = old.pictures.map(item => item.source === p ? { ...snapshot(p), src: p.src } : item);
+          return { picture: pictures.find(item => item.id === old.picture.id)!, pictures };
+        });
         setMenu(old => old?.picture === p ? { ...old } : old);
       } catch (error) { if (current()) { const text = message(error); element.title = text; element.dataset.imageUnavailable = text; setNotice(text); } throw error; }
     };
     await p.reload();
   }, [buffer]);
-  const act = async (id: string, p: Picture, value?: string) => {
-    setMenu(null); restore();
+  const act = async (id: string, p: Picture, value?: string, reportInGallery = false) => {
+    setMenu(null); if (!reportInGallery) restore();
     try {
       if (p.owner.aborted || !enabled) throw new Error('图片来源已关闭');
       if (!p.ready) throw new Error(p.element.dataset.imageUnavailable || '图片尚未加载，请重试');
-      if (id === 'reference') throw new Error('当前任务尚未接入图片输入 provider；图片未加入输入，也未发送消息');
-      if (id === 'address') { if (!value || !/^https?:\/\//i.test(value)) throw new Error('此图片没有可复制的 HTTP(S) 地址'); await navigator.clipboard.writeText(value); return; }
+      if (id === 'reference') {
+        if (!terminal) throw new Error('当前没有可用的任务终端，未附加图片');
+        const insert = terminal.imageInput(p.owner);
+        await withMarkdownImage(buffer, p, p.owner, file => insert(file, p.hash, text => { if (!p.owner.aborted) setNotice(text); }));
+        return;
+      }
+      if (id === 'address') { if (!value || !isImageWebAddress(value)) throw new Error('此图片没有可复制的 HTTP(S) 地址'); await navigator.clipboard.writeText(value); return; }
       await withMarkdownImage(buffer, p, p.owner, async file => {
         if (id === 'open') { if (!settings.current.onOpen) throw new Error('图片新标签入口不可用'); await settings.current.onOpen(p.href); }
         else if (id === 'download') { const receipt = await rpc.files.saveCopy({ target: { kind: 'document', ref: file.ref }, baseHash: p.hash }); setNotice(receipt.state === 'cancelled' ? '已取消保存图片副本' : '图片副本已保存'); }
@@ -85,12 +101,15 @@ export function useMarkdownImages(buffer: FileBuffer, enabled: boolean, hasConte
           } finally { canvas.width = canvas.height = 0; }
         }
       });
-    } catch (error) { if (!p.owner.aborted) setNotice(message(error)); }
+    } catch (error) {
+      if (!p.owner.aborted) setNotice(message(error));
+      if (reportInGallery) throw error;
+    }
   };
   const actions = menu ? imageMenuActions({ src: menu.picture.href, displaySrc: menu.picture.src, localPath: menu.picture.path, animated: menu.picture.animated, canSelect: true, canCopy: true, clipboard: typeof ClipboardItem !== 'undefined' && Boolean(navigator.clipboard?.write) }) : [];
   const ui = <>
     {enabled && notice && <div role="status" className="fw-save-strip fw-image-notice">{notice}</div>}
-    {enabled && gallery && createPortal(<ImageGallery initial={gallery} overlay={false} download onClose={() => { setGallery(null); restore(); }} onDownload={p => void act('download', p)} onRetry={p => p.reload()} />, document.body)}
+    {enabled && gallery && createPortal(<ImageGallery initial={gallery} overlay={false} download onClose={() => { setGallery(null); restore(); }} onDownload={p => act('download', p.source, undefined, true)} onSaveContent={(content, p) => withMarkdownImage(buffer, p.source, p.source.owner, file => rpc.files.saveContent({ context: file.ref, ...content }))} onRetry={p => p.source.reload()} />, document.body)}
     {enabled && menu && settings.current.hasContext && createPortal(<MarkdownImageMenu state={menu} actions={actions} onClose={() => { setMenu(null); restore(); }} onAction={(id, value) => void act(id, menu.picture, value)} />, document.body)}
   </>;
   return { load, ui };

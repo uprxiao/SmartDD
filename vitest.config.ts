@@ -6,6 +6,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   esbuild: { jsx: 'automatic' },
   resolve: {
+    // Tests also mount shared prototype components. Use the renderer's React
+    // instance even when the isolated prototype has its own node_modules.
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@root': resolve('.'),
       '@shared': resolve('src/shared'),

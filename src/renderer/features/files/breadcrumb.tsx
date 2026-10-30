@@ -7,6 +7,7 @@ import type { FileWorkspaceStore } from './workspace-store';
 import { FileContextActions } from './file-actions';
 import type { GitRepositoryInfo } from '@shared/file-git';
 import { fileAbsolutePath, rootRelativePath } from '@shared/file-root-location.mjs';
+import { breadcrumbSelectionText } from '@shared/file-breadcrumb-copy.mjs';
 
 export function FileBreadcrumb({ store, run, repository }: { store: FileWorkspaceStore; run: (action: () => Promise<unknown>) => void; repository?: GitRepositoryInfo }) {
   // Issuing root/ref own every native action, even when the display root is a
@@ -24,10 +25,10 @@ export function FileBreadcrumb({ store, run, repository }: { store: FileWorkspac
   const referencePath = referenceRelativePath !== null && store.treeRoot ? { lease: store.treeRoot.lease, generation: store.treeRoot.generation, relativePath: referenceRelativePath } : undefined;
   useEffect(() => { setOpen(null); if (node.current) node.current.scrollLeft = node.current.scrollWidth; }, [route?.relativePath, root?.lease, displayRoot?.lease]);
   return <div ref={node} className="fw-breadcrumb" aria-label="文件路径" title={file?.absolutePath ?? root?.path ?? route?.sourcePath} onCopy={(event) => {
-    const selection = window.getSelection();
-    if (!selection?.rangeCount || !node.current?.contains(selection.anchorNode) || !node.current.contains(selection.focusNode)) return;
-    const selected = selection.toString(); if (!selected) return;
-    event.preventDefault(); event.clipboardData.setData('text/plain', selected === parts.join('›') ? file?.absolutePath ?? root?.path ?? selected : selected.replaceAll('›', '/'));
+    if (!node.current) return;
+    const text = breadcrumbSelectionText(node.current, window.getSelection(), file?.absolutePath ?? root?.path);
+    if (text === null) return;
+    event.preventDefault(); event.clipboardData.setData('text/plain', text);
   }}>
     {parts.map((part, index) => <span key={`${root?.lease}:${index}`}>
       {index > 0 && <span className="fw-crumb-chevron" aria-hidden>›</span>}

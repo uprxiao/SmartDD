@@ -22,8 +22,10 @@ if mode == 'zsh':
     # Read the genuine ZLE buffer through an explicit test-only key binding.
     # The widget prints quoted data to our own file; it never accepts/evals it.
     environment['WILLYOU_ZLE_SNAPSHOT'] = os.path.join(directory, 'zle-buffer.txt')
+    environment['WILLYOU_ZLE_CURSOR_SNAPSHOT'] = os.path.join(directory, 'zle-cursor.txt')
+    environment['WILLYOU_ZLE_SEQUENCE_SNAPSHOT'] = os.path.join(directory, 'zle-sequence.txt')
     with open(os.path.join(directory, '.zshrc'), 'w') as config:
-        config.write('function willyou_capture_buffer() { print -rn -- "$BUFFER" > "$WILLYOU_ZLE_SNAPSHOT"; zle -R }\nzle -N willyou_capture_buffer\nbindkey "^X^T" willyou_capture_buffer\n')
+        config.write('function willyou_capture_buffer() { print -rn -- "$BUFFER" > "$WILLYOU_ZLE_SNAPSHOT"; print -rn -- "$CURSOR" > "$WILLYOU_ZLE_CURSOR_SNAPSHOT"; (( WILLYOU_CAPTURE_SEQUENCE += 1 )); print -rn -- "$WILLYOU_CAPTURE_SEQUENCE" > "$WILLYOU_ZLE_SEQUENCE_SNAPSHOT"; zle -R }\nzle -N willyou_capture_buffer\nbindkey "^X^T" willyou_capture_buffer\n')
     # -d skips global rc files; HOME/ZDOTDIR point only to this own fixture.
     os.execve('/bin/zsh', ['/bin/zsh', '-d'], environment)
 if mode == 'sh':

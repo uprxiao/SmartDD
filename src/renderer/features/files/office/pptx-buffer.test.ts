@@ -2,7 +2,7 @@
 import { afterEach,beforeEach,describe,expect,it,vi } from 'vitest';
 import { FileBuffer } from '../file-buffer';
 import type { PptxEditState,PptxSaveResult } from '@shared/file-pptx';
-const api=vi.hoisted(()=>Object.fromEntries(['openPptx','closePptx','editPptx','pptxHistory','checkpointPptx','savePptx','restorePptx','rebasePptx','drafts','refresh','resolveDraft','closeDocument'].map(name=>[name,vi.fn()])));
+const api=vi.hoisted(()=>Object.fromEntries(['saveOfficeLossyCopy','openPptx','closePptx','editPptx','pptxHistory','checkpointPptx','savePptx','restorePptx','rebasePptx','drafts','refresh','resolveDraft','closeDocument'].map(name=>[name,vi.fn()])));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{files:api}}));
 const file={ref:{id:'document',lease:'root',generation:1},name:'slides.pptx',relativePath:'slides.pptx',absolutePath:'/synthetic/slides.pptx',documentKey:'local:1:2',revision:{hash:'base',device:'1',inode:'2',size:100,modifiedNs:'1',changedNs:'1'},writable:true};
 const state=(version=0,dirty=false,notes='original'):PptxEditState=>({version,dirty,canUndo:version>0,canRedo:false,protected:false,info:{kind:'pptx',signed:false,externalLinks:0,hasRevisions:false,slides:[{id:'256',title:'Title',hidden:false,notes,elements:[{id:'2',name:'Title',kind:'text',hidden:false,text:'original text'}]}]}});
@@ -197,5 +197,22 @@ describe('PPTX buffer actual ownership and 500ms save policy (RPC mocked)',()=>{
     expect(await pptx.action({type:'delete',slideId:'256'})).toBe(false);expect(pptx.pending?.text).toBe('中文候选');expect(buffer.saveError).toContain('备注格式');
     expect(await pptx.action({type:'duplicate',slideId:'256'})).toBe(true);
     expect(api.editPptx.mock.calls.map(([input])=>input.action.type)).toEqual(['notes','notes','duplicate']);expect(pptx.pending).toBeNull();
+  });
+});
+
+describe('Y13 renderer original-save and lossy-copy separation (RPC adapters)',()=>{
+  for(const outcome of ['cancelled','saved']as const)it(`retains dirty and original failed receipt after explicit ${outcome} copy`,async()=>{
+    const model=buffer.pptx!;model.pauseAutosave();model.setNotes('256','Y13 unsaved','original');
+    const failure={token:crypto.randomUUID(),version:1,total:1,issues:[{kind:'missing'as const,part:'customXml/vbaProject.bin',message:'非预期缺失'}]};
+    api.savePptx.mockImplementation(async input=>({...saved(input),state:{...current,dirty:true},receipt:{opId:input.opId,bufferVersion:input.bufferVersion,state:'failed',message:'保真校验失败'},fidelity:failure}));
+    expect(await buffer.save()).toBe(false);expect(buffer.dirty).toBe(true);expect(model.fidelity).toEqual(failure);expect(model.canCopyLossy).toBe(true);
+    const originalReceipt=buffer.saveReceipt,originalFile=structuredClone(buffer.file);api.saveOfficeLossyCopy.mockResolvedValue(outcome==='saved'?{state:'saved',path:'/synthetic/lossy.pptx',hash:'copy-only'}:{state:'cancelled'});
+    await model.saveLossyCopy();expect(api.saveOfficeLossyCopy).toHaveBeenCalledWith({kind:'pptx',id:model.id,token:failure.token});expect(buffer.dirty).toBe(true);expect(buffer.saveReceipt).toBe(originalReceipt);expect(buffer.file).toEqual(originalFile);expect(buffer.baseHash).toBe('base');expect(api.resolveDraft).not.toHaveBeenCalled();expect(model.copyNotice).toContain(outcome==='saved'?'原件未保存':'已取消');
+    model.setNotes('256','Y13 unsaved','original');expect(model.fidelity).toBeUndefined();await model.saveLossyCopy();expect(api.saveOfficeLossyCopy).toHaveBeenCalledTimes(1);
+  });
+  it('shows an undurable draft failure while retaining its model and blocking automatic original retry',async()=>{
+    vi.useFakeTimers();const model=buffer.pptx!;model.setNotes('256','Y13 unsaved','original');
+    api.savePptx.mockImplementation(async input=>({...saved(input),state:{...current,dirty:true},checkpoint:undefined,draftError:'草稿未确认写入磁盘',receipt:{opId:input.opId,bufferVersion:input.bufferVersion,state:'failed',message:'保真校验失败'},fidelity:{token:crypto.randomUUID(),version:1,total:1,issues:[{kind:'changed',part:'layout.xml',message:'无关内容改写'}]}}));
+    expect(await buffer.save()).toBe(false);expect(buffer.dirty).toBe(true);expect(buffer.draftError).toContain('未确认');await vi.advanceTimersByTimeAsync(30000);expect(api.savePptx).toHaveBeenCalledTimes(1);expect(buffer.dirty).toBe(true);
   });
 });

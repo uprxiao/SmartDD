@@ -1,10 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { IpcMainInvokeEvent } from 'electron';
-import { FileError, type FileActionTarget, type FileIdentity, type FileRevision, type RootRequest } from '@shared/files';
+import { FileError, type FileActionTarget, type FileIdentity, type FileRef, type FileRevision, type RootRequest } from '@shared/files';
 import { formatTerminalReferences, terminalBindingSchema, terminalInsertionSchema, terminalPathData, terminalBodyData, terminalPrepareSchema,
   type TerminalBinding, type TerminalBindingInput, type TerminalInsertionInput, type TerminalInsertionReceipt, type TerminalPrepareInput, type TerminalFileReference } from '@shared/file-terminal';
 import type { PtyAccess } from '../../pty-access';
 import type { FileRootsService, RootLease } from './roots';
+import type { TerminalImageCapability } from '@shared/terminal-image';
+import type { TerminalImageCache } from './terminal-image-cache';
 
 export interface TerminalFileSource {
   relativePath: string; absolutePath: string; revision: FileRevision; signal: AbortSignal;
@@ -21,6 +23,11 @@ export class FileTerminalService {
     access: PtyAccess; roots: FileRootsService; taskProject: (taskId: string) => string | null;
     source: (owner: string, target: FileActionTarget, identity?: FileIdentity) => Promise<TerminalFileSource>;
     bracketedPaste: (ptyId: string) => Promise<boolean>; write: (ptyId: string, data: string) => void;
+    images?: {
+      capability(taskId: string, ptyId: string): { capability: TerminalImageCapability; launchId: string | null };
+      source(owner: string, ref: FileRef, baseHash: string): Promise<TerminalFileSource & { name: string; mime: 'image/png'; read(): Promise<Buffer> }>;
+      cache: TerminalImageCache;
+    };
   }) {}
 
   bind(event: IpcMainInvokeEvent, owner: string, raw: TerminalBindingInput): TerminalBinding {
@@ -68,6 +75,10 @@ export class FileTerminalService {
     }
     return states;
   }
+  imageCapability(event: IpcMainInvokeEvent, owner: string, bindingId: string): TerminalImageCapability {
+    const binding = this.require(event, owner, bindingId);
+    return this.deps.images?.capability(binding.value.taskId, binding.value.ptyId).capability ?? { state: 'unknown', reason: '当前图片输入适配器尚未就绪，未附加图片。', acceptedMimeTypes: [] };
+  }
   insert(event: IpcMainInvokeEvent, owner: string, raw: TerminalInsertionInput): Promise<TerminalInsertionReceipt> {
     const input = terminalInsertionSchema.parse(raw), binding = this.require(event, owner, input.bindingId);
     const fingerprint = createHash('sha256').update(JSON.stringify(input)).digest('hex'), previous = binding.requests.get(input.operationId);
@@ -82,6 +93,7 @@ export class FileTerminalService {
     binding.requests.set(input.operationId, { fingerprint, result }); return result;
   }
   private async deliver(event: IpcMainInvokeEvent, owner: string, binding: Binding, input: TerminalInsertionInput): Promise<TerminalInsertionReceipt> {
+    if (input.kind === 'image') return this.deliverImage(event, owner, binding, input);
     let writeStarted = false;
     try {
     const ids = input.kind === 'path' ? [input.sourceId] : input.references.map(reference => reference.sourceId), sources = new Map<string, TerminalFileSource>(), stale: string[] = [];
@@ -108,5 +120,33 @@ export class FileTerminalService {
       return { operationId: input.operationId, state: writeStarted ? 'unknown' : 'failed',
         message: writeStarted ? '插入结果未知；终端未能确认完整写入，不会自动重发' : error instanceof Error ? error.message : String(error) };
     }
+  }
+  private async deliverImage(event: IpcMainInvokeEvent, owner: string, binding: Binding, input: Extract<TerminalInsertionInput, { kind: 'image' }>): Promise<TerminalInsertionReceipt> {
+    let writeStarted = false, payload: Awaited<ReturnType<TerminalImageCache['prepare']>> | undefined;
+    const images = this.deps.images;
+    try {
+      if (!images) throw new FileError('UNSUPPORTED', '图片输入适配器尚未就绪');
+      const capability = images.capability(binding.value.taskId, binding.value.ptyId);
+      if (capability.capability.state !== 'supported' || !capability.launchId) throw new FileError('UNSUPPORTED', capability.capability.reason);
+      if (input.ref.lease !== binding.root.lease || input.ref.generation !== binding.root.generation) throw new FileError('UNTRUSTED', '图片不属于当前任务文件根');
+      const current = () => {
+        this.require(event, owner, input.bindingId);
+        const now = images.capability(binding.value.taskId, binding.value.ptyId);
+        if (now.capability.state !== 'supported' || now.launchId !== capability.launchId) throw new FileError('CANCELLED', '图片目标 CLI 已改变，未投递');
+      };
+      const source = await images.source(owner, input.ref, input.baseHash); current(); source.assert();
+      const bytes = await source.read(); current(); source.assert();
+      payload = await images.cache.prepare(binding.value.ptyId, bytes); current(); source.assert();
+      const bracketed = await this.deps.bracketedPaste(binding.value.ptyId); current(); source.assert();
+      if (!bracketed) throw new FileError('UNSUPPORTED', '当前终端尚未启用图片粘贴输入，未附加图片');
+      const revision = await source.inspect(); current(); source.assert();
+      if (revision.hash !== input.baseHash) throw new FileError('CHANGED', '图片在准备时已改变，未投递');
+      const frame = images.cache.retain(payload); writeStarted = true;
+      this.deps.write(binding.value.ptyId, frame);
+      current();
+      return { operationId: input.operationId, state: 'inserted', characters: frame.length, removed: 0, replaced: 0, truncated: 0, stale: [], bracketed: true, confirmation: 'pty-write', image: { name: source.name, mime: source.mime, bytes: payload.bytes, sha256: payload.sha256 } };
+    } catch (error) {
+      return { operationId: input.operationId, state: writeStarted ? 'unknown' : 'failed', message: writeStarted ? '图片插入结果未知，请检查原终端草稿；不会自动重发或删除已有输入。' : error instanceof Error ? error.message : String(error) };
+    } finally { if (images && payload) images.cache.releasePending(payload); }
   }
 }

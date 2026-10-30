@@ -1,4 +1,4 @@
-import type { FileSearchRequest, FileSearchResult } from '@shared/files';
+import type { FileRoot, FileSearchRequest, FileSearchResult } from '@shared/files';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 
 export interface SearchProtocolClient {
@@ -6,6 +6,15 @@ export interface SearchProtocolClient {
   search(input: FileSearchRequest): Promise<FileSearchResult>;
 }
 export interface SearchProtocolState { session: 'unknown' | 'supported' | 'unsupported' }
+
+/** Offer search only for an explicit supported local host. The callback and
+ * actual transport must both exist; metadata alone is not an IO authority. */
+export function canSearchFileContents(root: FileRoot | null, onSelectFile: unknown, api: Partial<SearchProtocolClient>): boolean {
+  return root?.hostId === 'local' && root.capabilities?.searchContent === true
+    && typeof root.lease === 'string' && root.lease.length > 0
+    && typeof onSelectFile === 'function'
+    && (typeof api.startSearchSession === 'function' || typeof api.search === 'function');
+}
 
 /** Only absence of this specific IPC procedure means an older search host.
  * Permission, timeout, native IO and query errors must remain visible errors. */

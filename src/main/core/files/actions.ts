@@ -1,8 +1,11 @@
 import { randomUUID, createHash } from 'node:crypto';
+import { OFFICE_LIMITS } from '@shared/file-office';
+import type { FileRef } from '@shared/files';
 import { basename, join } from 'node:path';
 import { FILE_LIMITS, FileError, fileActionTargetSchema, fileCopySchema, fileExternalOpenSchema, type FileActionTarget, type FileApplications, type FileCopyInput, type FileCopyReceipt, type FileExternalOpen, type FileIdentity, type FileRevision, type FileSaveReceipt } from '@shared/files';
 import { NativeFileBroker, type NativeFileResult, type RootDescriptor } from './native-broker';
 import { type RootLease, FileRootsService } from './roots';
+import { fileContentCopySchema, type FileContentCopyInput } from '@shared/files';
 import { FileRecoveryStore, recoveryProjectKey } from './recovery-store';
 
 export interface FileActionContext { lease: RootLease; relativePath: string; directory: boolean; identity?: FileIdentity; signal: AbortSignal }
@@ -69,6 +72,25 @@ export class FileActions {
     if (context.identity && (result.revision.device !== context.identity.device || result.revision.inode !== context.identity.inode)) throw new FileError('CHANGED', '源文件已被替换，请刷新后重试');
     context.relativePath = result.relativePath; context.identity = { device: result.revision.device, inode: result.revision.inode };
     return { owner, context, name: basename(result.relativePath), revision: result.revision, draftBase64: input.draftBase64, used: false };
+  }
+  /** Only the main-owned Office service supplies these candidate bytes. The
+   * ordinary renderer copy contract retains its smaller text byte budget. */
+  async prepareOfficeCopy(owner:string,input:{ref:FileRef;baseHash:string;bytes:Uint8Array}):Promise<CopySelection>{
+    if(!input.bytes.length||input.bytes.length>OFFICE_LIMITS.outputBytes)throw new FileError('TOO_LARGE','Office 副本超过 40 MiB');
+    const selection=await this.prepareCopy(owner,{target:{kind:'document',ref:input.ref},baseHash:input.baseHash});
+    selection.draftBase64=Buffer.from(input.bytes).toString('base64');return selection;
+  }
+  /** The context is the genuine containing document; only this dedicated byte
+   * contract can create a binary candidate. Reuse the native transaction and
+   * protect the context/source inode just as for an Office candidate. */
+  async prepareContentCopy(owner: string, raw: FileContentCopyInput): Promise<CopySelection> {
+    const input = fileContentCopySchema.parse(raw), bytes = Buffer.from(input.base64, 'base64');
+    if (!bytes.length || bytes.length > FILE_LIMITS.asset || bytes.toString('base64') !== input.base64) throw new FileError('INVALID_INPUT', '副本内容无效或超过 256 MiB 上限');
+    const selection = await this.prepareCopy(owner, { target: { kind: 'document', ref: input.context } });
+    selection.name = input.name.replace(/[<>:"/\\|?*]/g, '_');
+    if (!selection.name.trim() || /^\.+$/.test(selection.name)) selection.name = '未命名副本';
+    selection.draftBase64 = input.base64;
+    return selection;
   }
   /** destinationPath is supplied only by a main-owned native save dialog. */
   async copyTo(owner: string, selection: CopySelection, destinationPath: string): Promise<FileCopyReceipt> {

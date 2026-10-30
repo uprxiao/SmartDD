@@ -1,4 +1,9 @@
+import { breadcrumbSelectionText } from '../../../src/shared/file-breadcrumb-copy.mjs';
+import { FileEditorStatus } from '../../../src/shared/file-editor-status';
+import { ReviewTextModel } from '../../../src/renderer/features/files/review-text/model.mjs';
+import { ReviewTextPane } from '../../../src/renderer/features/files/review-text/pane';
 import { Volume2 as MediaVolume2, VolumeX as MediaVolumeX, Check as MediaCheck } from 'lucide-react';
+import { mediaCopyLink } from '../../../src/shared/media-source-policy.mjs';
 import {readPrototypeReading,rememberPrototypeReading} from './file-reading-model.mjs';
 import { searchPriorityFolders } from '../../../src/shared/file-search-priority.mjs';
 import { FILE_SEARCH_INPUT_LIMIT, clampFileSearchInput } from '../../../src/shared/file-search-input.mjs';
@@ -10,6 +15,7 @@ import FileMcpViewer from './FileMcpViewer';
 import FileLanguageTools, { LANGUAGE_ACTIONS } from './FileLanguageTools';
 import { FILE_DRAG_TYPE, beginFileDrag, endFileDrag } from './file-drag-model.mjs';
 import { composing as imeComposing } from './file-ime.mjs';
+import { guardEditorComposition } from '../../../src/shared/file-composition-shortcut.mjs';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { File, FileCode2, FileText, FileSearch, FolderOpen, Folder, ChevronDown, ChevronRight, X, Plus, Search, PanelRight, Maximize2, Minimize2, Code2, Copy, ExternalLink, Check, AlertCircle, RotateCcw, Save, Download, Sun, Moon, Settings2, MoreHorizontal, Undo2, Redo2, WrapText, TextSelect, Image, FileSpreadsheet, FileSliders, Play, Pause, ZoomIn, ZoomOut, ArrowLeft, ArrowRight, Pin, Loader2 } from 'lucide-react';
 import { fileAbsolutePath, fileDisplayLocation, fileNavigationLocation, rootRelativePath } from '../../../src/shared/file-root-location.mjs';
@@ -23,7 +29,7 @@ import { GoToLineButton, GoToLinePanel } from '../../../src/renderer/features/fi
 import { prototypeLineNavigator } from './file-line-navigation.mjs';
 import { normalizeReference, formatReference, formatReferenceTray, pasteData, referenceStaleness, selectionLineRange, textFingerprint, REF_LIMITS } from './file-reference-model.mjs';
 import { FileConflictSource } from './FileConflictSource.jsx';
-import { workspaceScope, searchFiles, serializeWorkspaceStore, documentKey, fileScenario, setFileScenario, editDraft, commitDraft, acceptDisk, continueConflict, captureSelection, selectionIsCurrent, applyExternalFileChange, queueSyntheticFile, prototypeDirectoryFiles, queueSyntheticDirectoryChanges, refreshSyntheticDirectoryStore, retrySyntheticFile, openVerifiedDocument, completeSyntheticFileRestores, completeSyntheticWorkspaceRestores, prototypeCloseContext, prototypeCloseIsCurrent, prototypeModeSwitchContext, completePrototypeModeSwitch, artifactModel, updateArtifactCell, updateArtifactSlide } from './file-workspace-model.mjs';
+import { workspaceScope, searchFiles, serializeWorkspaceStore, documentKey, fileScenario, setFileScenario, editDraft, commitDraft, acceptDisk, continueConflict, captureSelection, selectionIsCurrent, applyExternalFileChange, queueSyntheticFile, prototypeDirectoryFiles, queueSyntheticDirectoryChanges, refreshSyntheticDirectoryStore, retrySyntheticFile, openVerifiedDocument, completeSyntheticFileRestores, completeSyntheticWorkspaceRestores, prototypeCloseContext, prototypeCloseIsCurrent, prototypeModeSwitchContext, completePrototypeModeSwitch, artifactModel, updateArtifactCell, updateArtifactSlide, preparePrototypeTaskClose } from './file-workspace-model.mjs';
 import { FileWorkspaceTree } from './FileWorkspaceTree';
 import { FileCodeTextarea, FilePrototypeBlame } from './FileCodeTextarea';
 import { createFixtureFileProvider, largeDirectoryFixture, latestRequestGate } from './file-interaction-model.mjs';
@@ -69,10 +75,10 @@ function PrototypeBreadcrumbDirectory({ files, prefix, rootPath, scenario, onDir
   }, [key]);
   // A new synthetic directory never paints the previous directory's rows.
   const phase = state?.key === key ? state.phase : 'loading';
-  return phase === 'loading' ? <p role="status"><Loader2 size={14} className="animate-spin" />正在读取目录…</p>
+  return <div className="fw-breadcrumb-directory">{phase === 'loading' ? <p role="status"><Loader2 size={14} className="animate-spin" />正在读取目录…</p>
     : phase === 'error' ? <p role="alert">PERMISSION：无法读取目录（合成，重试后恢复）<button onClick={() => setAttempt(value => value + 1)}>重试</button></p>
     : entries.length ? entries.map(file => <button key={file.path} title={fileAbsolutePath({ path: rootPath }, file.path) || ''} onClick={() => file.folder ? onDirectory(file.path) : onChoose(file.path)}>{file.folder ? <Folder size={15} /> : <Icon file={file} />} {file.name}</button>)
-    : <p role="status">此目录为空</p>;
+    : <p role="status">此目录为空</p>}</div>;
 }
 const Button = ({
   icon: C,
@@ -195,12 +201,17 @@ function ContentSearch({
     <small>↑↓ 选择 · Enter 打开 · Esc 关闭。原型以可取消的异步批次搜索合成文件；不是实际 rg 后端。</small>
   </section></div>;
 }
-function Media({
+export function Media({
   kind,
   name,
+  sourceUrl,
+  sourcePath,
+  src = name,
   onCopy,
   onDownload
 }) {
+  const copyLink = kind === 'video' ? mediaCopyLink(sourceUrl) : null;
+  const copyPath = sourcePath === undefined ? name : sourcePath;
   const [playing, setPlaying] = useState(false),
     [position, setPosition] = useState(0),
     [speed, setSpeed] = useState(1),
@@ -247,14 +258,20 @@ function Media({
             setMuted(false);
           }} /></span>}<button onClick={() => setPip(!pip)}>{pip ? '退出画中画' : '画中画（模拟）'}</button><Button icon={expanded ? Minimize2 : Maximize2} label={expanded ? '退出全屏示例' : '全屏示例'} onClick={() => setExpanded(!expanded)} /></>}
   <Button icon={MoreHorizontal} label="媒体菜单" onClick={() => setMenu(!menu)} /></div>
-  {menu && <div className="fw-media-options">{kind === 'audio' && <button onClick={() => {
-        onCopy();
+  {menu && <div className="fw-media-options">{kind === 'audio' && typeof copyPath === 'string' && copyPath && !/^data:/i.test(copyPath) && typeof onCopy === 'function' && <button onClick={() => {
+        if (sourcePath === undefined) onCopy(); else onCopy(sourcePath);
         setMenu(false);
-      }}>复制路径</button>}<button onClick={() => {
+      }}>复制路径</button>}{src && typeof onDownload === 'function' && <button onClick={() => {
         onDownload();
         setMenu(false);
-      }}>{kind === 'video' ? '视频另存为' : '另存副本'}</button>{kind === 'video' && <div role="group" aria-label="播放速度"><span className="fw-media-speed-label">播放速度</span>{[.25,.5,.75,1,1.25,1.5,1.75,2].map(v=><button key={v} role="menuitemradio" aria-checked={speed===v} className="fw-media-speed" onClick={()=>setSpeed(v)}><span className="fw-media-check">{speed===v&&<MediaCheck size={13}/>}</span>{v}×</button>)}</div>}</div>}
+      }}>{kind === 'video' ? '视频另存为' : '另存副本'}</button>}{copyLink && <button onClick={()=>{onCopy(copyLink);setMenu(false);}}>复制链接</button>}{kind === 'video' && <div role="group" aria-label="播放速度"><span className="fw-media-speed-label">播放速度</span>{[.25,.5,.75,1,1.25,1.5,1.75,2].map(v=><button key={v} role="menuitemradio" aria-checked={speed===v} className="fw-media-speed" onClick={()=>setSpeed(v)}><span className="fw-media-check">{speed===v&&<MediaCheck size={13}/>}</span>{v}×</button>)}</div>}</div>}
   <small>模拟时间轴和控件；不播放真实文件。系统全屏、画中画可用性与 codec 尚未验证。</small></div>;
+}
+function FileReviewTextExample({ text }) {
+  // Synthetic design state only. Real256MiB reads/hash/cancellation are App I/A.
+  const model = useMemo(() => new ReviewTextModel(new TextEncoder().encode(text)), [text]);
+  const [index, setIndex] = useState(0);
+  return <section className="fw-review-text"><ReviewTextPane value={model.window(Math.min(index, model.info.pages - 1))} onPage={setIndex} /></section>;
 }
 export function FileWorkspace(props) {
   // Historical/foreign task identities never select the synthetic local tree.
@@ -263,13 +280,15 @@ export function FileWorkspace(props) {
   return <LocalFileWorkspace key={JSON.stringify([props.task.id, props.task.hostId || 'local', props.task.cwd || props.project.path])} {...props}/>;
 }
 function LocalFileWorkspace({
-  imageMenuScope, imageContext,
+  imageMenuScope, imageContext, imageGalleryRouting, resolveImageOpen, repositoryWebUrl, repositoryCommitId, onRepositoryLink,
   task,
   project,
   dark,
   onTheme,
   onClose
 }) {
+  const officeResources=useRef(new Map());
+  const registerOfficeResource=(root,path,resource)=>{const key=fileKey(root,path);if(!resource){officeResources.current.delete(key);return;}officeResources.current.set(key,resource);return()=>{if(officeResources.current.get(key)===resource)officeResources.current.delete(key);};};
   const [store, setStore] = useState(load),
     [query, setQueryLocal] = useState(''),
     [menu, setMenuState] = useState(null),
@@ -277,6 +296,7 @@ function LocalFileWorkspace({
     [recoveryOpen, setRecoveryOpen] = useState(false),
     [demo, setDemo] = useState(false),
     [attachmentExample, setAttachmentExample] = useState('plain'),
+    [attachmentCopy, setAttachmentCopy] = useState(null),
     [full, setFull] = useState(false),
     [searchMode, setSearchMode] = useState(false),
     [status, setStatus] = useState(''),
@@ -328,6 +348,17 @@ function LocalFileWorkspace({
     path: rootScenario==='nested' ? (task.cwd || project.path || '/workspace/SmartDD')+'/docs' : '/workspace/shared-docs'
   }])];
   const scope = workspaceScope(task.id, roots);
+  useEffect(() => {
+    const prepare = event => {
+      if (event.detail.taskId !== task.id) return;
+      const outcome = preparePrototypeTaskClose(store, task.id, event.detail.action);
+      setStore(outcome.store);
+      localStorage.setItem(STORAGE, JSON.stringify(serializeWorkspaceStore(outcome.store)));
+      event.detail.reply(outcome);
+    };
+    window.addEventListener('m9:prepare-session-close', prepare);
+    return () => window.removeEventListener('m9:prepare-session-close', prepare);
+  }, [store, task.id]);
   const [treeReveal, setTreeReveal] = useState(null);
   useEffect(() => setTreeReveal(null), [scope]);
   const createState=()=>roots.length?initialWorkspace():{...initialWorkspace(),tabs:[],active:null};
@@ -360,7 +391,7 @@ function LocalFileWorkspace({
   }
   function filesForRoot(id=state.root) { return treeDataset==='empty'?[]:prototypeDirectoryFiles(state,id,defaultFilesForRoot(id)); }
   const activeFiles = useMemo(()=>filesForRoot(),[rootScenario,state.root,state.syntheticFiles,state.removedPaths,treeDataset]);
-  const treeSourceKey = scope + ':' + state.root + ':' + treeDataset + ':' + (state.syntheticFiles?.[state.root]?.length || 0) + ':' + (state.directoryRevisions?.[state.root] || 0);
+  const treeSourceKey = scope + ':' + state.root + ':' + treeDataset;
   function getFile(id,path) {return filesForRoot(id).find(f=>f.path===path);}
   function setQuery(value) {const next=typeof value==='function'?value(query):value;if(next.trim())setTreeReveal(null);setQueryLocal(next);set(s=>updateRootView(s,{query:next,...(next.trim()&&next!==query?{searchScrollTop:0}:{})}));}
   function setSelectedRows(value) {const next=typeof value==='function'?value(selectedRows):value;setSelectedRowsLocal(next);set(s=>updateRootView(s,{selected:next}));}
@@ -372,12 +403,13 @@ function LocalFileWorkspace({
     revision = state.revisions?.[state.active] || 0,
     text = draft?.text ?? state.retiredFiles?.[state.active]?.text ?? store.saved?.[identity] ?? file?.text ?? '',
     scenario = fileScenario(state),
-    mode = state.mode[state.active] || (!current?.attachment && /\.(?:csv|tsv|html?|tex)$/i.test(current?.path || '') ? 'source' : 'render');
+    mode = current?.navigationView ? 'source' : state.mode[state.active] || (!current?.attachment && /\.(?:csv|tsv|html?|tex)$/i.test(current?.path || '') ? 'source' : 'render');
   const savePdfReading = useCallback(position => setStore(old => {
     const previous = old[scope]; if (!previous) return old;
     const next = updatePdfReading(previous, state.active, position);
     return next === previous ? old : { ...old, [scope]: next };
   }), [scope, state.active]);
+  const pendingLocation = useRef(null);
   const editor = useRef(null),
     filter = useRef(null),
     host = useRef(null), content = useRef(null), modePositions = useRef(new Map()), modeIntent = useRef(0),
@@ -386,6 +418,18 @@ function LocalFileWorkspace({
     timer = useRef(null),
     historyRef = useRef({}),
     anchor = useRef(null), menuRef = useRef(null), triggerRef = useRef(null), pointerRef = useRef(null), treeRef = useRef(null), treeApiRef = useRef(null);
+  const [hostWidth, setHostWidth] = useState(0);
+  useLayoutEffect(() => {
+    const node = host.current;
+    if (!node) return;
+    const measure = () => setHostWidth(node.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const treeMaximum = (hostWidth || 1000) * .6, treeMinimum = Math.min(200, treeMaximum);
+  const treeWidth = Math.max(treeMinimum, Math.min(state.width, treeMaximum));
   const root = roots.find(r => r.id === state.root) || roots[0] || {id:'none',path:'',label:'无工作目录',hostId:'local'},
     activeRoot = roots.find(r => r.id === current?.root) || root,
     activeAbsolutePath = current ? fileAbsolutePath(activeRoot, current.path) : null,
@@ -403,6 +447,18 @@ function LocalFileWorkspace({
     if (editor.current && reading?.selection) { const {anchor,head}=reading.selection;editor.current.setSelectionRange(Math.min(anchor,head),Math.max(anchor,head),anchor>head?'backward':'forward'); }
     if (node) { node.scrollTop = position?.top || 0; node.scrollLeft = position?.left || 0; }
   }, [modePositionKey]);
+  useLayoutEffect(() => {
+    const location = pendingLocation.current, node = editor.current;
+    if (!location || !node || current?.root !== location.root || current?.path !== location.path) return;
+    pendingLocation.current = null;
+    const lines = node.value.split('\n'), offset = (line, column, last = false) => {
+      const index = Math.min((line ?? 1) - 1, lines.length - 1), start = lines.slice(0, index).reduce((n, value) => n + value.length + 1, 0);
+      return start + Math.min(lines[index].length, column == null ? last ? lines[index].length : 0 : column - 1);
+    };
+    const from = offset(location.line, location.column), to = location.endLine == null ? from : Math.max(from, offset(location.endLine, location.endColumn, true));
+    node.setSelectionRange(from, to); node.focus();
+    node.scrollTop = Math.max(0, (location.line - 2) * (parseFloat(getComputedStyle(node).lineHeight) || 22));
+  }, [state.active, current?.navigationView, mode, text]);
   function rememberReadingSelection(anchor,head) { set(s=>rememberPrototypeReading(s,state.active,text,{selection:{anchor,head}})); }
   function captureReading() {
     const node=scrollNode();if(!node?.isConnected||!current)return;
@@ -413,17 +469,39 @@ function LocalFileWorkspace({
   function setMenu(next) {
     if (!next) { setMenuState(null); if(triggerRef.current?.isConnected)triggerRef.current.focus({preventScroll:true}); return; }
     if (next.type === 'external' && menu?.type !== 'external') setRememberApp(false);
-    if (!menu) triggerRef.current = document.activeElement;
-    const target = document.activeElement?.getBoundingClientRect();
+    if (!menu) triggerRef.current = next.anchor || document.activeElement;
+    const target = (next.anchor || document.activeElement)?.getBoundingClientRect();
     const location = next.point || (pointerRef.current && performance.now()-pointerRef.current.time<400 ? pointerRef.current : { x:target?.left||0, y:target?.bottom||0 });
     setMenuState({...next, root:next.root || (next.type==='file'?state.root:current?.root||state.root), point:location});
   }
   useLayoutEffect(() => {
     if(!menu || !menuRef.current) return;
-    const el=menuRef.current, r=el.getBoundingClientRect();
-    el.style.left=Math.max(8,Math.min(menu.point.x,innerWidth-r.width-8))+'px';
-    el.style.top=Math.max(8,Math.min(menu.point.y,innerHeight-r.height-8))+'px';
+    const el=menuRef.current;
+    const position=()=>{
+      el.style.maxHeight='';
+      let r=el.getBoundingClientRect();
+      if(menu.type==='crumb' && menu.anchor?.isConnected){
+        const target=menu.anchor.getBoundingClientRect();
+        const below=innerHeight-8-target.bottom-1, above=target.top-8-1;
+        const side=below>=r.height || below>=above?'bottom':'top';
+        el.style.maxHeight=Math.max(0,side==='bottom'?below:above)+'px';
+        r=el.getBoundingClientRect();
+        el.style.left=Math.max(8,Math.min(target.left,innerWidth-r.width-8))+'px';
+        el.style.top=(side==='bottom'?target.bottom+1:target.top-1-r.height)+'px';
+        el.dataset.side=side;el.dataset.align='start';
+      }else{
+        el.style.left=Math.max(8,Math.min(menu.point.x,innerWidth-r.width-8))+'px';
+        el.style.top=Math.max(8,Math.min(menu.point.y,innerHeight-r.height-8))+'px';
+        delete el.dataset.side;delete el.dataset.align;
+      }
+    };
+    position();
     if(!el.contains(document.activeElement)||document.activeElement?.disabled)el.querySelector('button:not(:disabled)')?.focus();
+    if(menu.type==='crumb'){
+      window.addEventListener('resize',position);
+      window.addEventListener('scroll',position,true);
+      return()=>{window.removeEventListener('resize',position);window.removeEventListener('scroll',position,true);};
+    }
   },[menu,appsState]);
   useEffect(()=>{
     if(!['file','external'].includes(menu?.type))return;
@@ -527,14 +605,20 @@ function LocalFileWorkspace({
     if (location) setTreeReveal({ id: crypto.randomUUID(), root: location.root.id, path: location.relativePath });
     return location;
   }
-  function open(path, pin = false, rootId = state.root, { reveal = true } = {}) {
+  function open(path, pin = false, rootId = state.root, { reveal = true, line, column, endLine, endColumn } = {}) {
+    const located = line != null || column != null || endLine != null;
+    const navigationView = located ? endLine != null || /\.pdf$/i.test(path) ? 'review' : 'source' : undefined;
+    if (navigationView === 'review' && state.drafts[fileKey(rootId, path)]) { note('请先保存当前修改，再查看行范围。'); return false; }
+    pendingLocation.current = located ? { root: rootId, path, line: line ?? 1, column, endLine, endColumn } : null;
+    if (located) setExtension(false);
     const location = reveal ? locateFile(rootId, path) : null, treePath = location?.relativePath ?? path;
     if (!reveal) setTreeReveal(null);
-    set(s => { const next=openVerifiedDocument(s, roots, rootId, path, pin, defaultFilesForRoot(rootId));if(!reveal)return next;const ancestors=treePath.split('/').slice(0,-1).map((_,i)=>treePath.split('/').slice(0,i+1).join('/'));return {...next,expanded:[...new Set([...next.expanded,...ancestors])]}; });
+    set(s => { const opened=openVerifiedDocument(s, roots, rootId, path, pin, defaultFilesForRoot(rootId)), next={...opened,tabs:opened.tabs.map(tab=>tab.root===rootId&&tab.path===path?{...tab,navigationView}:tab)};if(!reveal)return next;const ancestors=treePath.split('/').slice(0,-1).map((_,i)=>treePath.split('/').slice(0,i+1).join('/'));return {...next,expanded:[...new Set([...next.expanded,...ancestors])]}; });
     setRich(null);
     setMenu(null);
   }
   function save(key = state.active, override = false) {
+    if (state.tabs.find(t => fileKey(t.root, t.path) === key)?.navigationView === 'review') { note('行范围只读预览'); return false; }
     if (state.tabs.find(t => fileKey(t.root, t.path) === key)?.attachment) { note('本机附件为只读，可通过来源下载或另存副本。'); return false; }
     if (fileScenario(state,key) === 'input-interrupted') { note('输入已中断，请返回编辑器继续输入或撤销后再保存'); return false; }
     if (!state.drafts[key]) return true;
@@ -575,7 +659,7 @@ function LocalFileWorkspace({
     return () => clearTimeout(id);
   }, [text, auto, scenario, state.active, scope, composing]);
   function edit(value, record = true) {
-    if (current?.attachment) return;
+    if (current?.attachment || current?.navigationView === 'review') return;
     if (value === text) return;
     if (record) {
       const h = historyRef.current[identity] || {
@@ -590,6 +674,7 @@ function LocalFileWorkspace({
     set(s => editDraft(s, key, value, store.saved?.[identity] ?? file?.text ?? ''));
   }
   function undo(redo = false) {
+    if (current?.attachment || current?.navigationView === 'review') return;
     const h = historyRef.current[identity];
     if (!h) return;
     const from = redo ? h.redo : h.undo,
@@ -610,8 +695,10 @@ function LocalFileWorkspace({
       return;
     }
     if (draft && !save()) return;
+    setExtension(false);
     set(s => ({
       ...s,
+      tabs: s.tabs.map(tab => fileKey(tab.root, tab.path) === s.active ? { ...tab, navigationView: undefined } : tab),
       mode: {
         ...s.mode,
         [s.active]: mode === 'source' ? 'render' : 'source'
@@ -621,6 +708,9 @@ function LocalFileWorkspace({
   }
   function finishModeSave() {
     const outcome = completePrototypeModeSwitch(store, scope, roots, modePending, modeIntent.current);
+    if (modePending && outcome.result === 'saved' && modePending.intent === modeIntent.current
+      && outcome.store[scope]?.active === modePending.key
+      && outcome.store[scope]?.mode[modePending.key] === modePending.target) setExtension(false);
     setStore(outcome.store); setModePending(null);
     note(outcome.result === 'saved' ? '合成保存已完成；仅当前有效的模式切换生效。' : '合成保存未通过或实例已变化，当前模式与草稿保留。');
   }
@@ -680,11 +770,11 @@ function LocalFileWorkspace({
   function resize(e) {
     e.preventDefault();
     const start = e.clientX,
-      w = state.width;
+      w = treeWidth;
     const move = ev => set(s => ({
       ...s,
       tree: w + start - ev.clientX >= 100,
-      width: Math.max(200, Math.min(host.current.clientWidth * .6, w + start - ev.clientX))
+      width: Math.max(Math.min(200, host.current.clientWidth * .6), Math.min(host.current.clientWidth * .6, w + start - ev.clientX))
     }));
     const stop = () => {
       window.removeEventListener('pointermove', move);
@@ -702,6 +792,23 @@ function LocalFileWorkspace({
     if (!n.ok) return note('无法添加引用：' + n.error);
     setRefs(list => list.some(x => x.ref.kind === n.ref.kind && x.ref.relativePath === n.ref.relativePath && JSON.stringify(x.ref.range) === JSON.stringify(n.ref.range)) ? list : [...list, { id: 'ref-' + Date.now() + '-' + list.length, ref: n.ref, selectedText }]);
     note('已加入终端引用（尚未放入终端）。');
+  }
+  function addPdfRefs(comments) {
+    if (!current || !Array.isArray(comments) || !comments.length || comments.length > 64) return { ok: false, error: 'invalid-pdf-context' };
+    const prepared = [];
+    for (const item of comments) {
+      const size = item.pageSize, rect = item.anchor?.kind === 'region' ? item.anchor.rect : item.anchor?.point && { ...item.anchor.point, width: 0, height: 0 };
+      if (!(size?.width > 0 && size?.height > 0) || !rect) return { ok: false, error: 'invalid-pdf-context' };
+      const pdf = { page: item.page, anchor: { x: rect.x / size.width, y: rect.y / size.height, width: rect.width / size.width, height: rect.height / size.height } };
+      const selectedText = item.anchor.selectedText || '';
+      const parsed = normalizeReference({ kind: 'pdf-comment', relativePath: current.path, pdf, revision, selectedTextHash: textFingerprint(selectedText), note: item.body });
+      if (!parsed.ok) return parsed;
+      prepared.push({ id: 'ref-' + crypto.randomUUID(), ref: parsed.ref, selectedText });
+    }
+    const next = [...refs];
+    for (const item of prepared) if (!next.some(existing => existing.ref.relativePath === item.ref.relativePath && JSON.stringify(existing.ref.pdf) === JSON.stringify(item.ref.pdf) && existing.ref.note === item.ref.note && existing.ref.selectedTextHash === item.ref.selectedTextHash)) next.push(item);
+    if (next.length > 64) return { ok: false, error: 'too-many-references' };
+    setRefs(next); note('评论已加入终端引用；预览后可插入，不会自动回车。'); return { ok: true };
   }
   const refCurrent = item => {
     const f = getFile(state.root, item.ref.relativePath); if (!f) return { missing: true };
@@ -722,6 +829,18 @@ function LocalFileWorkspace({
     if (!result.ok) { note(insertError(result.error)); return { ...result, requestId }; }
     note('已放入终端输入，未发送。' + (result.collapsed ? '此终端未启用括号粘贴，换行已折叠为空格。' : '') + (result.sanitized ? ' 已移除不安全的控制字符。' : '') + '请在终端检查后按 Enter。');
     return { ...result, requestId };
+  }
+  function prepareImageInput(image, options) {
+    const sourcePath = current && (getFile(current.root, image.path) ? image.path : image.path === 'assets/app-icon.png' ? 'resources/app-icon.png' : null);
+    const source = sourcePath && getFile(current.root, sourcePath);
+    if (!source || source.kind !== 'image' || source.text !== image.src) return options.onState({ state: 'failed', message: '图片来源已变化或不可用，图片未加入。' });
+    const request = { taskId: task.id, ptyId: task.ptyId ?? task.id, requestId: options.requestId, signal: options.signal,
+      capability: options.scenario === 'no-input' ? 'unsupported' : options.scenario === 'unknown-input' ? 'unknown' : 'supported',
+      behavior: options.scenario === 'reject-input' ? 'reject' : options.scenario === 'pending-input' ? 'pending' : 'normal',
+      image: { kind: 'synthetic-image', sourceId: JSON.stringify([scope, current.root, sourcePath, source.text]), name: image.alt || image.path, mime: 'image/png', src: source.text },
+      handled: false, onState: options.onState };
+    window.dispatchEvent(new CustomEvent('m9:terminal-image-insert', { detail: request }));
+    if (!request.handled) options.onState({ state: 'failed', message: '当前任务没有可用终端，图片未加入。' });
   }
   async function insertRefs() {
     if (!refs.length || refBusy) return;
@@ -754,6 +873,7 @@ function LocalFileWorkspace({
     note('已模拟外部新增 ' + file.path + '；刷新示例目录后可见。未访问真实磁盘。');
   }
   function refreshDirectory() {
+    treeApiRef.current?.refresh();
     setStore(old => refreshSyntheticDirectoryStore({...old,[scope]:old[scope]||state},scope,roots,state.root,defaultFilesForRoot()));
     note('示例目录已刷新。正式应用将读取磁盘并监听变化；此页仅演示合成数据。');
   }
@@ -783,12 +903,14 @@ function LocalFileWorkspace({
     }
     setMenu(null);
   }
-  function download(path, rootId = current?.root || state.root) {
+  function download(path, rootId = current?.root || state.root, previewResource) {
     const callback = state.tabs.find(t => t.root === rootId && t.path === path)?.attachment?.onDownload;
     if (callback) { callback(); setMenu(null); return; }
     const item = getFile(rootId,path);
     if(!item)return note('示例目录中没有该文件。');
     const key = fileKey(rootId, path);
+    const resource=previewResource||officeResources.current.get(key);
+    if(resource?.bytes instanceof Uint8Array){const blob=new Blob([resource.bytes],{type:resource.mime}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=resource.name||path.split('/').pop();a.click();URL.revokeObjectURL(a.href);setMenu(null);note('已下载合成 DOCX 原件，源内容未修改。');return;}
     const blob = new Blob([state.drafts[key]?.text ?? store.saved?.[documentKey(roots, key)] ?? item.text], {
       type: 'text/plain'
     });
@@ -801,7 +923,9 @@ function LocalFileWorkspace({
     note(isText(item) ? '已下载原型示例内容' : '已下载交互示例文本，不是实际文档文件');
   }
   function keys(e) {
-    if (compose.current || imeComposing(e) || e.defaultPrevented) return;
+    if (e.defaultPrevented) return;
+    if (e.target.closest('textarea[aria-label="文件编辑器"]') && guardEditorComposition(e)) return;
+    if (compose.current || imeComposing(e)) return;
     if (e.target.closest('[role=dialog], [role=menu]')) { if(e.key==='Escape'){e.stopPropagation();setMenu(null);setConfirm(null);setAiState(null);setContentSearch(false);} return; }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
@@ -875,15 +999,20 @@ function LocalFileWorkspace({
         }));
         requestAnimationFrame(()=>filter.current?.focus());
       }} /><span className="fw-push" /><Button icon={full ? Minimize2 : Maximize2} label={full ? '退出文件聚焦' : '聚焦文件工作区'} onClick={() => setFull(!full)} /><Button icon={PanelRight} label="隐藏文件工作区" onClick={onClose} /></div>
-  <div className="fw-toolbar"><div className="fw-breadcrumb">{(rich?['会话产物查看器演示',rich.toUpperCase()]:[displayRoot.label, ...(displayPath?.split('/') || [])]).map((part, i, arr) => <span key={i}><button title={fileAbsolutePath({path:displayRoot.path},arr.slice(1,i+1).join('/')) || displayRoot.path} className={i === arr.length - 1 ? 'current' : ''} disabled={!!rich} onContextMenu={event => {
+  <div className="fw-toolbar"><div className="fw-breadcrumb" onCopy={event => {
+    const text = breadcrumbSelectionText(event.currentTarget, window.getSelection(), rich ? undefined : fileAbsolutePath(activeRoot, current?.path || '') || displayRoot.path);
+    if (text === null) return;
+    event.preventDefault(); event.clipboardData.setData('text/plain', text);
+  }}>{(rich?['会话产物查看器演示',rich.toUpperCase()]:[displayRoot.label, ...(displayPath?.split('/') || [])]).map((part, i, arr) => <span key={i}><button title={fileAbsolutePath({path:displayRoot.path},arr.slice(1,i+1).join('/')) || displayRoot.path} className={i === arr.length - 1 ? 'current' : ''} disabled={!!rich} onContextMenu={event => {
             if (rich) return;
             event.preventDefault();
             setMenu({ type: 'file', origin: 'breadcrumb', folder: !current || i < arr.length - 1, path: arr.slice(1, i + 1).join('/'), root: displayRoot.id, point: { x: event.clientX, y: event.clientY } });
-          }} onClick={() => setMenu(menu?.type === 'crumb' ? null : {
+          }} onClick={event => setMenu(menu?.type === 'crumb' ? null : {
             type: 'crumb',
+            anchor: event.currentTarget,
             prefix: i===arr.length-1 && current ? displayPath.split('/').slice(0,-1).join('/') : arr.slice(1, i + 1).join('/'),
             root: displayRoot.id
-          })}>{part}</button>{i < arr.length - 1 && <ChevronRight size={13} />}</span>)}</div><div className="fw-tools"><Button preserveEditorFocus icon={FileSearch} label="在文件中搜索" active={searchMode} onClick={() => setContentSearch(true)} />{!rich && file && ['markdown', 'svg', 'html', 'tex'].includes(file.kind) && <Button preserveEditorFocus icon={Code2} label={mode === 'source' ? file.kind === 'svg' ? '查看图像' : file.kind === 'tex' ? '编译并查看 PDF' : '查看文档' : '查看源码'} active={mode === 'source'} onClick={switchMode} />}{!rich && /\.(?:csv|tsv)$/i.test(current?.path || '') && <Button preserveEditorFocus icon={Code2} label={mode === 'source' ? '查看表格' : '查看源码'} active={mode === 'source'} onClick={switchMode} />}<Button icon={MoreHorizontal} label="文件查看选项" onClick={() => setMenu({
+          })}>{part}</button>{i < arr.length - 1 && <ChevronRight data-breadcrumb-separator="true" size={13} />}</span>)}</div><div className="fw-tools">{roots.length>0 && root.hostId==='local' && root.path && <Button preserveEditorFocus icon={FileSearch} label="在文件中搜索" active={searchMode} onClick={() => setContentSearch(true)} />}{!rich && file && ['markdown', 'svg', 'html', 'tex'].includes(file.kind) && <Button preserveEditorFocus icon={Code2} label={mode === 'source' ? file.kind === 'svg' ? '查看图像' : file.kind === 'tex' ? '编译并查看 PDF' : '查看文档' : '查看源码'} active={mode === 'source'} onClick={switchMode} />}{!rich && /\.(?:csv|tsv)$/i.test(current?.path || '') && <Button preserveEditorFocus icon={Code2} label={mode === 'source' ? '查看表格' : '查看源码'} active={mode === 'source'} onClick={switchMode} />}<Button icon={MoreHorizontal} label="文件查看选项" onClick={() => setMenu({
           type: 'viewer'
         })} /><Button icon={FolderOpen} label="切换文件目录" active={state.tree} onClick={() => set(s => ({
           ...s,
@@ -906,7 +1035,8 @@ function LocalFileWorkspace({
             type: 'conflict',
             key: state.active
           })}>查看差异</button>}</div>}
-   {file && !rich && isText(file) && <div className="fw-editor-tools"><Button icon={Undo2} label="撤销" disabled={!historyRef.current[identity]?.undo.length} onClick={() => undo()} /><Button icon={Redo2} label="重做" disabled={!historyRef.current[identity]?.redo.length} onClick={() => undo(true)} /><GoToLineButton disabled={Boolean(((['markdown','svg','html','tex'].includes(file.kind)||/\.(?:csv|tsv)$/i.test(current.path))&&mode!=='source')||['loading','missing','unreadable','too-large','unsupported','parse-error','root-missing'].includes(effective))} onOpen={openLineNavigation}/><Button icon={WrapText} label="自动换行" active={wrap} onClick={() => setWrap(!wrap)} /><Button icon={Copy} label="复制文件内容" onClick={() => copy(text)} /><span className="fw-push" /><button onClick={() => {
+   {file && !rich && isText(file) && !(file.kind === 'large' && current?.navigationView === 'review') && <FileEditorStatus canUndo={Boolean(historyRef.current[identity]?.undo.length)} canRedo={Boolean(historyRef.current[identity]?.redo.length)} saving={scenario === 'saving'} error={scenario === 'save-error' ? '保存失败，修改已保留' : ''} onUndo={() => undo()} onRedo={() => undo(true)} />}
+   {file && !rich && isText(file) && !(file.kind === 'large' && current?.navigationView === 'review') && <div className="fw-editor-tools"><GoToLineButton disabled={Boolean(((['markdown','svg','html','tex'].includes(file.kind)||/\.(?:csv|tsv)$/i.test(current.path))&&mode!=='source')||['loading','missing','unreadable','too-large','unsupported','parse-error','root-missing'].includes(effective))} onOpen={openLineNavigation}/><Button icon={WrapText} label="自动换行" active={wrap} onClick={() => setWrap(!wrap)} /><Button icon={Copy} label="复制文件内容" onClick={() => copy(text)} /><span className="fw-push" /><button onClick={() => {
             setAiState({
               phase: 'request',
               selection,
@@ -931,7 +1061,19 @@ function LocalFileWorkspace({
               'root-missing': '重新连接或更新项目目录后重试。'
             }[effective]}</p><button className="fw-pill" onClick={effective==='missing'?retryCurrentFile:()=>setScenario('ready')}><RotateCcw size={15} />重试</button><button onClick={() => setMenu({
             type: 'external'
-          })}>使用外部应用打开</button></div> : rich ? <FileArtifactPreview path={current.path} onInsertContext={sendToTerminal} key={rich + state.active} kind={rich} readOnly onDownload={() => download(current.path)} /> : /\.(?:csv|tsv)$/i.test(current.path) && mode !== 'source' ? <FileArtifactPreview path={current.path} kind={current.path.split('.').at(-1).toLowerCase()} initialValue={text} readOnly /> : file.kind === 'svg' && mode !== 'source' ? <div className="fw-image fw-ordinary-image fw-svg-image"><img draggable onDragStart={e => dragFile(e, current.root, current.path)} onDragEnd={finishFileDrag} src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text)} alt="SVG 文件预览" /></div> : file.kind === 'html' && mode !== 'source' ? <FileHtmlPreview text={text} /> : scenario === 'conflict' && isText(file) ? <FileConflictSource key={identity} ref={editor} filename={current.path} text={text} diskText={state.fileStates?.[state.active]?.diskText} onEdit={edit} onSelect={(start,end)=>setSelection(captureSelection({scope,identity,revision,text,start,end}))} onComposition={value=>{compose.current=value;setComposing(value);}} /> : file.kind === 'markdown' && mode !== 'source' ? <FileMarkdown resolveImageSource={path=>{const f=path&&getFile(current.root,path);return f?.kind==='image'?f.text:f?.kind==='svg'?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(f.text):undefined;}} imageMenuScope={imageMenuScope} imageContext={imageContext} key={identity + ':' + (state.reloads?.[state.active] || 0)} text={text} readingSelection={reading?.selection} retainView onReadingSelection={rememberReadingSelection} findQuery={finding?find:''} path={current.path} overlay={imageOverlay} readOnly={!!current?.attachment || scenario === 'conflict'} onEdit={edit} onSelect={(start,end) => setSelection(captureSelection({scope, identity, revision, text, start, end}))} onOpenFile={path => { const resolved = getFile(current.root,path) ? path : path.startsWith('assets/') ? 'resources/app-icon.png' : null; resolved ? open(resolved,true,current.root) : note('示例目录中没有该目标：'+path); }} onImageReference={image => setContext('图片引用（待发送）：' + image.alt + ' · ' + image.path)} onImageAction={note} onComposition={value => { compose.current=value; setComposing(value); }} /> : (['code', 'html', 'svg', 'large', 'markdown'].includes(file.kind) || file.kind === 'tex' && mode === 'source') ? <div className="fw-editor"><div className="fw-line-numbers" aria-hidden="true">{text.split('\n').map((_, i) => <div key={i}>{i + 1}</div>)}</div>{blame && <FilePrototypeBlame text={text} identity={identity} />}<FileCodeTextarea key={identity} findMatches={finding?findResults.matches:[]} findCurrent={currentFind} filename={current.path} ref={editor} aria-label="文件编辑器" spellCheck={false} value={text} readOnly={!!current?.attachment || file.kind === 'large'} onChange={e => edit(e.target.value)} style={{
+          })}>使用外部应用打开</button></div> : rich ? <FileArtifactPreview path={current.path} onInsertContext={sendToTerminal} onAddComments={addPdfRefs} key={rich + state.active} kind={rich} readOnly onDownload={resource => download(current.path,current.root,resource)} onResourceRead={resource=>registerOfficeResource(current.root,current.path,resource)} /> : /\.(?:csv|tsv)$/i.test(current.path) && mode !== 'source' ? <FileArtifactPreview path={current.path} kind={current.path.split('.').at(-1).toLowerCase()} initialValue={text} readOnly /> : file.kind === 'svg' && mode !== 'source' ? <div className="fw-image fw-ordinary-image fw-svg-image"><img draggable onDragStart={e => dragFile(e, current.root, current.path)} onDragEnd={finishFileDrag} src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text)} alt="SVG 文件预览" /></div> : file.kind === 'html' && mode !== 'source' ? <FileHtmlPreview text={text} /> : file.kind === 'large' && current?.navigationView === 'review' ? <FileReviewTextExample text={text} /> : scenario === 'conflict' && isText(file) ? <FileConflictSource key={identity} ref={editor} filename={current.path} text={text} diskText={state.fileStates?.[state.active]?.diskText} onEdit={edit} onSelect={(start,end)=>setSelection(captureSelection({scope,identity,revision,text,start,end}))} onComposition={value=>{compose.current=value;setComposing(value);}} /> : file.kind === 'markdown' && mode !== 'source' ? <FileMarkdown resolveImageSource={path=>{const f=path&&getFile(current.root,path);return f?.kind==='image'?f.text:f?.kind==='svg'?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(f.text):undefined;}} imageMenuScope={imageMenuScope} imageContext={imageContext} imageGalleryRouting={imageGalleryRouting} key={identity + ':' + (state.reloads?.[state.active] || 0)} text={text} readingSelection={reading?.selection} retainView onReadingSelection={rememberReadingSelection} findQuery={finding?find:''} path={current.path} overlay={imageOverlay} readOnly={!!current?.attachment || scenario === 'conflict'} onEdit={edit} onSelect={(start,end) => setSelection(captureSelection({scope, identity, revision, text, start, end}))} onOpenFile={async(path,{readOnlyImage=false,...location}={}) => {
+            const target=readOnlyImage&&resolveImageOpen?await resolveImageOpen(path):path;
+            if(!target)return null;
+            const resolved=getFile(current.root,target)?target:target.startsWith('assets/')?'resources/app-icon.png':null;
+            if(!resolved){note('示例目录中没有该目标：'+target);return null;}
+            if(readOnlyImage){
+              const image=getFile(current.root,resolved);
+              if(!['image','svg'].includes(image?.kind))throw new Error('此引用不是图像，不能作为图片只读标签打开');
+              const rootId=current.root,attachment={key:'prototype-markdown-image:'+rootId+':'+resolved,mimeType:image.kind==='svg'?'image/svg+xml':undefined};
+              set(s=>{const opened=openFile(s,rootId,resolved,true);return{...opened,tabs:opened.tabs.map(t=>t.root===rootId&&t.path===resolved?{...t,attachment}:t),mode:{...opened.mode,[fileKey(rootId,resolved)]:'render'}};});
+            }else open(resolved,true,current.root,location);
+            return true;
+          }} onImageReference={prepareImageInput} onImageAction={note} onComposition={value => { compose.current=value; setComposing(value); }} /> : (['code', 'html', 'svg', 'large', 'markdown'].includes(file.kind) || file.kind === 'tex' && mode === 'source') ? <div className="fw-editor"><div className="fw-line-numbers" aria-hidden="true">{text.split('\n').map((_, i) => <div key={i}>{i + 1}</div>)}</div>{blame && <FilePrototypeBlame text={text} identity={identity} repositoryWebUrl={repositoryWebUrl} commitId={repositoryCommitId} onOpenLink={onRepositoryLink ?? (href=>note("外部链接（原型演示）："+href))} />}<FileCodeTextarea key={identity} findMatches={finding?findResults.matches:[]} findCurrent={currentFind} filename={current.path} ref={editor} aria-label="文件编辑器" spellCheck={false} value={text} readOnly={!!current?.attachment || current?.navigationView === 'review' || file.kind === 'large'} onChange={e => edit(e.target.value)} style={{
             whiteSpace: wrap ? 'pre-wrap' : 'pre'
         }} onContextMenu={e => {
             e.preventDefault();
@@ -951,17 +1093,17 @@ function LocalFileWorkspace({
           }} onCompositionEnd={() => {
             compose.current = false;
             setComposing(false);
-          }} />{file.kind === 'large' && <div className="fw-readonly">10–20 MiB 文本：只读预览示例</div>}</div> : file.kind === 'image' ? <div className="fw-image fw-ordinary-image"><img draggable onDragStart={e => dragFile(e, current.root, current.path)} onDragEnd={finishFileDrag} src={file.text} alt={file.path} /></div> : ['audio', 'video'].includes(file.kind) ? <Media key={identity} kind={file.kind} name={file.path.split('/').pop()} onCopy={() => copy(activeRoot.path + '/' + current.path)} onDownload={() => download(current.path)} /> : <FileArtifactPreview path={current.path} onInsertContext={sendToTerminal} key={scope + ':' + identity + ':' + (state.reloads?.[state.active] || 0)} kind={file.kind} hostOptions={file.kind === 'pdf' ? { pdfSource: file.pdfSource } : undefined} initialPage={current?.pdf?.page || 1} initialZoom={current?.pdf?.zoom} onReadingChange={file.kind === 'pdf' ? savePdfReading : undefined} readOnly={!!current?.attachment || scenario==='conflict'} initialValue={text} onDraft={edit} onDownload={() => download(current.path)} />}
-  </section>{state.tree && <><div className="fw-tree-resizer" role="separator" tabIndex={0} aria-label="调整目录宽度" aria-orientation="vertical" aria-valuenow={Math.round(state.width)} aria-valuemin={200} aria-valuemax={Math.max(200,Math.round((host.current?.clientWidth||1000)*.6))} onPointerDown={resize} onKeyDown={e => {
+          }} />{file.kind === 'large' && <div className="fw-readonly">10–20 MiB 文本：只读预览示例</div>}</div> : file.kind === 'image' ? <div className="fw-image fw-ordinary-image"><img draggable onDragStart={e => dragFile(e, current.root, current.path)} onDragEnd={finishFileDrag} src={file.text} alt={file.path} /></div> : ['audio', 'video'].includes(file.kind) ? <Media key={identity} kind={file.kind} name={file.path.split('/').pop()} sourceUrl={file.sourceUrl} onCopy={url => copy(url ?? activeRoot.path + '/' + current.path)} onDownload={resource => download(current.path,current.root,resource)} onResourceRead={resource=>registerOfficeResource(current.root,current.path,resource)} /> : <FileArtifactPreview path={current.path} onInsertContext={sendToTerminal} onAddComments={addPdfRefs} key={scope + ':' + identity + ':' + (state.reloads?.[state.active] || 0)} kind={file.kind === 'pdf' && current?.navigationView ? 'pdf-review' : file.kind} hostOptions={file.kind === 'pdf' ? { pdfSource: file.pdfSource } : ['xlsx','xlsm'].includes(file.kind) ? {sourceKind:'local',isEditing:true,manualEditUiEnabled:true,artifactSearchEnabled:false} : undefined} initialPage={current?.pdf?.page || 1} initialZoom={current?.pdf?.zoom} onReadingChange={file.kind === 'pdf' ? savePdfReading : undefined} readOnly={!!current?.attachment || scenario==='conflict'} initialValue={text} onDraft={edit} onDownload={resource => download(current.path,current.root,resource)} onResourceRead={resource=>registerOfficeResource(current.root,current.path,resource)} />}
+  </section>{state.tree && <><div className="fw-tree-resizer" role="separator" tabIndex={0} aria-label="调整目录宽度" aria-orientation="vertical" aria-valuenow={Math.round(treeWidth)} aria-valuemin={Math.round(treeMinimum)} aria-valuemax={Math.round(treeMaximum)} onPointerDown={resize} onKeyDown={e => {
           if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
             e.preventDefault();
             set(s => ({
               ...s,
-              width: Math.max(200, Math.min(Math.max(200,(host.current?.clientWidth||1000)*.6), s.width + (e.key === 'ArrowLeft' ? 10 : -10)))
+              width: Math.max(treeMinimum, Math.min(treeMaximum, treeWidth + (e.key === 'ArrowLeft' ? 10 : -10)))
             }));
           }
         }} /><aside className="fw-tree" style={{
-          width: state.width
+          width: treeWidth, minWidth: treeMinimum
         }} aria-label="目录树"><label className="fw-filter"><Search size={14} /><input ref={filter} placeholder={searchMode ? '搜索文件内容…' : '筛选文件…'} aria-label="筛选文件" value={query} onChange={e => {setQuery(e.target.value);anchor.current=null;setSearchCollapsed([]);}} onKeyDown={e => {
               if(imeComposing(e))return;
               if (e.key === 'Escape') {
@@ -986,12 +1128,19 @@ function LocalFileWorkspace({
     <label><input type="checkbox" aria-label="合成目录监听" checked={directoryWatch} onChange={e=>{setDirectoryWatch(e.target.checked);if(e.target.checked)refreshDirectory();}}/>示例监听（合成）</label>
     <button disabled={!roots.length} onClick={()=>simulateDirectoryChanges(['a.txt','b.txt','dirty.txt'].map((name,i)=>({type:'create',file:{path:'external-sync/'+name,kind:'code',text:['Original A','Original B','Original dirty'][i]}})))}>载入目录同步样例</button>
     <button disabled={!filesForRoot().some(f=>f.path==='external-sync/b.txt')} onClick={()=>simulateDirectoryChanges([{type:'create',file:{path:'external-sync/new.txt',kind:'code',text:'Independent external file'}},{type:'delete',path:'external-sync/a.txt'},{type:'rename',from:'external-sync/b.txt',to:'external-sync/c.txt'}])}>模拟外部增删改名</button>
+    <button data-testid="icon-samples-load" disabled={!roots.length} onClick={()=>simulateDirectoryChanges([{type:'delete',path:'icon-samples-中文/rename.json'},...[
+      {path:'icon-samples-中文/Dockerfile',kind:'code',text:'# G205 Latin 中文 synthetic only\nFROM scratch\n'},
+      {path:'icon-samples-中文/config.env.local',kind:'code',text:'G205 Latin 中文 compound suffix sample\n'},
+      {path:'icon-samples-中文/unknown.g205unknown',kind:'code',text:'G205 Latin 中文 default sample\n'},
+      {path:'icon-samples-中文/rename.txt',kind:'code',text:'{"G205":"Latin 中文 synthetic bytes"}\n'},
+    ].map(file=>({type:'create',file}))])}>载入／重置图标规则样例（合成）</button>
+    <button data-testid="icon-samples-rename" disabled={!filesForRoot().some(f=>f.path==='icon-samples-中文/rename.txt')} onClick={()=>simulateDirectoryChanges([{type:'rename',from:'icon-samples-中文/rename.txt',to:'icon-samples-中文/rename.json'}])}>模拟换后缀 txt→json（合成）</button>
     <button disabled={!current||!!current.attachment} onClick={()=>simulateDirectoryChanges([{type:'delete',path:current.path}],current.root)}>模拟删除当前文件</button>
     <button disabled={!current||!state.retiredFiles?.[state.active]} onClick={()=>simulateDirectoryChanges([{type:'create',file:{...state.retiredFiles[state.active],kind:state.retiredFiles[state.active].kind==='loading'?'code':state.retiredFiles[state.active].kind}}],current.root)}>模拟同名新文件</button>
     <button disabled={!current||!state.retiredFiles?.[state.active]} onClick={()=>simulateDirectoryChanges([{type:'restore',file:{...state.retiredFiles[state.active],kind:state.retiredFiles[state.active].kind==='loading'?'code':state.retiredFiles[state.active].kind}}],current.root)}>模拟恢复原文件</button>
     <button onClick={() => {
     if (!roots.length) return;
-    const example = attachmentExamples.find(item => item.id === attachmentExample) || attachmentExamples[0], {path,kind,text,mimeType} = example, rootId = state.root, attachment = { key: 'prototype-local-attachment:' + example.id, mimeType, onDownload: () => note('已调用附件来源下载回调（原型模拟），未读取或下载真实文件。'), onClose: () => note('已通知附件来源关闭（原型模拟）；此标签不会恢复。') };
+    const example = attachmentExamples.find(item => item.id === attachmentExample) || attachmentExamples[0], {path,kind,text,mimeType} = example, rootId = state.root, attachment = { key: 'prototype-local-attachment:' + example.id, mimeType, onDownload: () => setAttachmentCopy({path,text,mimeType,name:path.split('/').pop()}), onClose: () => note('已通知附件来源关闭（原型模拟）；此标签不会恢复。') };
     set(s => { const withFile = { ...s, syntheticFiles: { ...s.syntheticFiles, [rootId]: [...(s.syntheticFiles?.[rootId] || []).filter(f => f.path !== path), { path, kind, text }] } }; const opened = openFile(withFile, rootId, path, true); return { ...opened, tabs: opened.tabs.map(t => t.root === rootId && t.path === path ? { ...t, attachment } : t), mode: {...opened.mode, [fileKey(rootId,path)]: 'render'} }; });
   }}>模拟只读附件回调</button><label>附件样例<select aria-label="本机附件来源场景" value={attachmentExample} onChange={e=>setAttachmentExample(e.target.value)}>{attachmentExamples.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label><button onClick={() => setWorkspaceConflict({ scope, tabs: state.tabs.filter(t => !t.preview).reverse() })}>模拟标签持久化冲突</button><label>目录样例<select aria-label="工作目录场景" value={rootScenario} onChange={e=>setRootScenario(e.target.value)}><option value="multiple">多根</option><option value="single">单根</option><option value="nested">嵌套根</option><option value="none">无根</option></select></label><label>场景<select aria-label="文件状态场景" value={scenario} onChange={e => demoScenario(e.target.value)}>{[['ready', '正常'], ['saving', '保存中（合成）'], ['loading', '读取中'], ['conflict', '外部修改冲突'], ['save-error', '保存失败'], ['input-interrupted', '输入中断（模拟）'], ['missing', '已删除'], ['unreadable', '无读取权限'], ['too-large', '过大'], ['unsupported', '未知二进制'], ['parse-error', '解析失败（合成）'], ['root-missing', '根不可用']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label><label><input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} />自动保存（3秒）</label><span role="group" aria-label="模式切换合成场景">{[['ready','正常'],['saving','保存中'],['save-error','保存失败']].map(([value,label])=><button key={value} data-testid={"mode-scenario-"+value} onClick={()=>demoScenario(value)}>{label}（合成）</button>)}</span><button onClick={() => set(s => restoreFile(s))} disabled={!state.closed.length}><RotateCcw size={14} />恢复关闭标签</button><button disabled={!Object.values(store).some(s=>Array.isArray(s?.tabs)&&s.tabs.some(tab=>fileScenario(s,fileKey(tab.root,tab.path))==='loading'))} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>setStore(previous=>completeSyntheticWorkspaceRestores(previous))}>完成后台恢复（合成）</button><button onClick={() => setMenu({
         type: 'formats'
@@ -1002,6 +1151,7 @@ function LocalFileWorkspace({
   {context && <div className="fw-context"><File size={14} /><span>{context}</span><Button icon={X} label="移除文件引用" onClick={() => setContext('')} /></div>}
   {contentSearch && <ContentSearch key={treeSourceKey} files={activeFiles} priorityFolders={searchPriorityFolders(rootRelativePath(root,activeAbsolutePath))} searchScenario={searchScenario} scope={JSON.stringify([root.hostId, [root.path]])} onClose={() => setContentSearch(false)} onOpen={(path, line, number, column) => {
       open(path, true);
+      setExtension(false);
       set(s => ({
         ...s,
         mode: {
@@ -1018,7 +1168,7 @@ function LocalFileWorkspace({
       });
       setContentSearch(false);
     }} />}
-  {menu && <><div className="fw-dismiss" onClick={() => setMenu(null)} /><div ref={menuRef} className={'fw-menu fw-positioned-menu ' + (menu.type === 'formats' ? 'fw-format-menu' : '')} role="menu" aria-label="文件操作菜单" onKeyDown={e=>{e.stopPropagation();const items=[...e.currentTarget.querySelectorAll('button:not(:disabled)')],i=items.indexOf(document.activeElement);if(e.key==='Escape'||e.key==='Tab'){setMenu(null);if(e.key==='Escape')e.preventDefault();}if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();items[e.key==='Home'?0:e.key==='End'?items.length-1:(i+(e.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();}}}>
+  {menu && <><div className="fw-dismiss" onClick={() => setMenu(null)} /><div ref={menuRef} className={'fw-menu fw-positioned-menu ' + (menu.type === 'formats' ? 'fw-format-menu' : menu.type === 'crumb' ? 'fw-breadcrumb-menu' : '')} role="menu" aria-label="文件操作菜单" onPointerDownCapture={e=>{if(e.button===0&&e.target instanceof Element&&e.target.closest('button:disabled'))e.preventDefault();}} onKeyDown={e=>{e.stopPropagation();const items=[...e.currentTarget.querySelectorAll('button:not(:disabled)')],i=items.indexOf(document.activeElement);if(e.key==='Escape'||e.key==='Tab'){setMenu(null);if(e.key==='Escape')e.preventDefault();}if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();items[e.key==='Home'?0:e.key==='End'?items.length-1:(i+(e.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();}}}>
    {menu.type==='roots'&&<><strong>选择工作目录</strong>{roots.map(r=><button key={r.id} role="menuitemradio" aria-checked={state.root===r.id} title={r.path} onClick={()=>{changeRoot(r.id);setMenu(null);}}><Folder size={15}/><span>{r.label}</span><small>{r.path}</small>{state.root===r.id&&<Check size={14}/>}</button>)}</>}
    {menu.type === 'viewer' && <><strong>文件查看选项</strong><button onClick={() => { setRecoveryOpen(true); setMenu(null); }}>保存恢复材料…</button>{textMenu && <><button onClick={() => {
             setWrap(!wrap);
@@ -1073,6 +1223,7 @@ function LocalFileWorkspace({
   </div></>}
   {recoveryOpen && <FileRecoveryPrototype onClose={() => setRecoveryOpen(false)}/>}
   {aiState && <div className="fw-modal-scrim"><section className="fw-dialog" role="dialog" aria-modal="true" aria-label="请 CLI 修改所选文本"><h2>请 CLI 修改所选文本</h2><p>把“位置＋所选文字＋你的指令”放入终端输入，由你检查后按 Enter。CLI 按自身权限与指令操作文件，WillYou 不再审批。投递后即结束交接；取消这里只关闭指令草稿，不停止 CLI。此原型使用合成数据，不读写真实磁盘。</p><pre className="fw-ai-selection">{aiState.selection?.text}</pre><textarea aria-label="修改指令" className="fw-ai-prompt" placeholder="描述你希望 CLI 怎样修改…" value={aiState.instruction} onChange={e => setAiState(a => ({ ...a, instruction: e.target.value }))} />{!taskRunning && <p role="alert" className="fw-readonly">任务未运行，无法放入终端输入。</p>}<div className="fw-dialog-actions"><button onClick={() => setAiState(null)}>取消</button><button disabled={!aiState.instruction.trim() || !taskRunning || refBusy} onClick={requestCliEdit}>放入终端输入（不发送）</button></div></section></div>}
+  {attachmentCopy && <div className="fw-modal-scrim"><section className="fw-dialog" role="dialog" aria-modal="true" aria-label="另存附件副本（原型模拟）" onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setAttachmentCopy(null);note('已取消附件副本下载，原内容未改变。');}}}><h2>另存附件副本（原型模拟）</h2><p>仅下载当前合成附件的原始 UTF-8 内容；正式应用使用系统保存框。取消不会创建下载，附件保持只读。</p><label>副本文件名<input autoFocus aria-label="附件副本文件名" value={attachmentCopy.name} onChange={e=>setAttachmentCopy(x=>({...x,name:e.target.value}))}/></label><div className="fw-dialog-actions"><button onClick={()=>{setAttachmentCopy(null);note('已取消附件副本下载，原内容未改变。');}}>取消</button><button disabled={!attachmentCopy.name.trim()||['.','..'].includes(attachmentCopy.name)||/[\/\x00-\x1f]/.test(attachmentCopy.name)} onClick={()=>{const url=URL.createObjectURL(new Blob([new TextEncoder().encode(attachmentCopy.text)],{type:attachmentCopy.mimeType||'text/plain'})),a=document.createElement('a');a.href=url;a.download=attachmentCopy.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setAttachmentCopy(null);note('已下载只读附件的合成原始内容，原附件未改变。');}}>保存副本</button></div></section></div>}
   {confirm && <div className="fw-modal-scrim"><section className="fw-dialog" role="dialog" aria-modal="true" aria-label={confirm.type === 'close' ? '保留未保存修改' : '文件修改冲突'}>{confirm.type === 'close' ? <><h2>仍有未保存的修改</h2><p>可以继续查看并保存，或者放弃此文件的修改。</p><div className="fw-dialog-actions"><button onClick={() => setConfirm(null)}>继续查看</button><button className="fw-danger" onClick={() => discard(confirm.key, confirm)}>放弃修改并关闭</button></div></> : <><h2>文件已在外部更改</h2><p>请核对本地草稿与磁盘版本。选择前不会覆盖任何一方。</p><div className="fw-conflict-columns"><div><strong>磁盘版本（模拟）</strong><pre>{state.fileStates?.[confirm.key]?.diskText ?? ''}</pre></div><div><strong>本地草稿</strong><pre>{state.drafts[confirm.key]?.text ?? ''}</pre></div></div><div className="fw-dialog-actions"><button onClick={() => { set(s => continueConflict(s, confirm.key)); setConfirm(null); requestAnimationFrame(() => editor.current?.focus()); }}>继续编辑</button><button onClick={() => {
               const diskText = state.fileStates?.[confirm.key]?.diskText;
               if (diskText === undefined) {

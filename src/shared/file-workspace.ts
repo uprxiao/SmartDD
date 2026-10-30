@@ -20,6 +20,8 @@ export const fileRouteSchema = z.object({
   source: z.enum(['project-directory', 'task-cwd']), sourceId: z.string().min(1).max(128),
   sourcePath: z.string().max(32768), relativePath: filePathSchema,
   mode: z.enum(['document', 'source']).default('document'),
+  // View intent only; never changes the underlying document capability.
+  navigationView: z.enum(['source', 'review']).optional(),
   text: textReadingSchema.optional(),
   // Reading hints only. The document is reopened on a fresh capability and
   // the parser clamps page to its actual count; no bytes, passwords or URLs.

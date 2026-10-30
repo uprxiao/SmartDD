@@ -2,7 +2,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { useSyncExternalStore } from 'react';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FileDocument, FileEntry, FileRoot } from '@shared/files';
@@ -46,8 +46,13 @@ function Tree({ store }: { store: FileWorkspaceStore }) {
   useSyncExternalStore(store.subscribe, store.snapshot);
   return <WorkspaceTree store={store} run={(work) => { void work(); }} />;
 }
-beforeEach(() => { vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} }); });
-afterEach(() => { cleanup(); stores.splice(0).forEach((store) => store.dispose()); vi.unstubAllGlobals(); });
+beforeEach(() => {
+  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  // jsdom has no layout. The production tree deliberately refuses keyboard
+  // focus changes while its scroll viewport has zero height.
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
+});
+afterEach(() => { cleanup(); stores.splice(0).forEach((store) => store.dispose()); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 afterAll(() => {
   if (process.env.SMARTDD_M9_TREE_CLICK_EVIDENCE) writeFileSync(process.env.SMARTDD_M9_TREE_CLICK_EVIDENCE, JSON.stringify({
     observedAt: new Date().toISOString(), level: 'Production WorkspaceTree + FileWorkspaceStore + Base UI ContextMenuTrigger in jsdom; native file API isolated; real user-event click/dblclick sequence, no AX input or native App.', observations,
@@ -107,5 +112,39 @@ describe('B18 production tree first-double-click diagnostic', () => {
     await user.click(screen.getByRole('treeitem', { name: 'folder' }));
     expect(f.store.currentExpanded).not.toContain('folder'); expect(f.store.active?.pinned).toBe(true);
     observations.push({ delayed, events, sameTreeNodeAfterFirstClickAndDoubleClick: true, tabs: f.store.tabs.map((tab) => ({ path: tab.route.relativePath, pinned: tab.pinned })), opensOfB: f.api.open.mock.calls.filter(([request]) => request.relativePath === 'B.txt').length, directoryOnlyToggled: true });
+  });
+});
+
+// The root folder has its own handler outside role=tree. Exercise the real
+// focus/expanded model, rather than re-testing an extracted IME predicate.
+describe('Y21 root directory composition regression', () => {
+  it.each([
+    { name: 'native isComposing', extra: { isComposing: true } },
+    { name: 'native keyCode229', extra: { isComposing: false, keyCode: 229 } },
+  ])('Y21 regression root $name preserves focus/expansion, ordinary keys resume', async ({ extra }) => {
+    const viewport = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
+    try {
+      const f = fixture('none'); await f.store.initialize(); render(<Tree store={f.store} />);
+      await screen.findByRole('treeitem', { name: 'A.txt' });
+      const root = screen.getByRole('button', { name: 'fixture' });
+      act(() => root.focus()); fireEvent.compositionStart(root);
+      fireEvent.keyDown(root, { key: 'ArrowDown', ...extra });
+      await act(async () => { await new Promise<void>(done => requestAnimationFrame(() => done())); });
+      expect(document.activeElement).toBe(root);
+      fireEvent.keyDown(root, { key: 'ArrowLeft', ...extra });
+      expect(root.getAttribute('aria-expanded')).toBe('true');
+      expect(f.api.open).not.toHaveBeenCalled();
+      fireEvent.compositionEnd(root); fireEvent.keyDown(root, { key: 'ArrowLeft' });
+      expect(root.getAttribute('aria-expanded')).toBe('false');
+      fireEvent.compositionStart(root); fireEvent.keyDown(root, { key: 'ArrowRight', ...extra });
+      expect(root.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(root);
+      fireEvent.compositionEnd(root); fireEvent.keyDown(root, { key: 'ArrowRight' });
+      expect(root.getAttribute('aria-expanded')).toBe('true');
+      const first = screen.getAllByRole('treeitem')[0];
+      fireEvent.keyDown(root, { key: 'ArrowDown' });
+      await waitFor(() => expect(document.activeElement).toBe(first));
+      expect(f.api.open).not.toHaveBeenCalled();
+    } finally { viewport.mockRestore(); }
   });
 });

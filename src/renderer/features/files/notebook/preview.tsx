@@ -9,6 +9,7 @@ import { notebookAssetUrl, notebookRelatedImage } from './assets';
 import { frameDocument } from './sanitize';
 import type { NotebookCellView, NotebookChoices, NotebookInfo, NotebookOutputView, NotebookWindow, TextPart } from './model';
 import './style.css';
+import '../../../../shared/markdown-readonly.css';
 
 interface Context { buffer: FileBuffer; client: NotebookClient; scroll: RefObject<HTMLDivElement | null>; choices: NotebookChoices; choose: (patch: NotebookChoices) => void; details: ReadonlySet<string>; setDetail: (key: string, open: boolean) => void }
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);

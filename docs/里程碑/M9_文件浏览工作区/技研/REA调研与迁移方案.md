@@ -1,5 +1,24 @@
 # M9 / F22-A 文件工作区：技术方案 R3.4
 
+<!-- M9-G291-CHECKPOINT-STORE-ACTUAL -->
+2026-10-26 G291016–018：candidate6实际Linux严格编译通过；同ELF无重编译，private checkpoint/resolve原7组全过（29后端请求，正常容器0，3.783349秒），覆盖真实0700/0600材料及回执、幂等/旧版本/元数据冲突、保留前一版/仅删除已验证更旧版、篡改保留、匹配恢复确认与不匹配false、来源消失仍可保存私有草稿、20MiB文本与41MiB opaque草稿及各+1拒绝。现有真实FileRecoveryStore/Roots消费实际生产材料4组全过（121后端请求，正常容器0，6.524809秒），包括ready/refresh/readDraft/inspect、真实撤权后草稿保留、resolved历史材料保留和篡改拒绝。非root65534、kernel Groups为空、current caps0/NNP1，bounding C3保留；Node getgroups含有效GID仅作观察。017空runs误冻0555造成首发mkdtemp拒绝，0Docker/SUT，仅修输出目录权限后按原冻结字节执行；旧Node groups前置及018错误configSHA预检均保留。两实际运行各17PID/17实组、各容器卷及镜像均经root复核。不是源文件save/copy、完整FileService、断电/任意竞争、OOXML语义或平台安装通过；公开非darwin门禁未改，原四写负对照仍欠。0整条新增，完整387/419、余32、今日新增完整2条保持。 [实际证据](../验收/证据/G291_真实私有草稿与恢复服务联通部分归账_20261026.json)。
+G291019：candidate6同ELF无重编译，原native10/protocol12/budget4受影响26/26通过，外层及容器均正常0，4.434788秒；17PID/17实组及容器卷/镜像双核清。旧014硬编码22导致外层失败的原值保留，本轮所有guard按统一26执行；原26业务脚本和预期未改。候选6冻结清单沿用“read only”描述的元数据勘误及准备计数19→最终20时点已独立存档，不改原冻结材料。0整条新增。
+<!-- /M9-G291-CHECKPOINT-STORE-ACTUAL -->
+
+<!-- M9-G291-BOOTSTRAP-STORE-ACTUAL -->
+2026-10-26 G291012/015：同candidate5/真实011编译ELF无重构建，bootstrap10/10通过（22真实backend请求、正常容器0、1.902803秒）：fresh0700/实际身份与重复初始化、原正确目录保留、parent/v1坏mode/symlink/非目录/异主拒绝、真实保护身份过滤与普通同前缀可读、请求前来源替换旧身份撤权。独立root只准备/完整审计异主夹具，未以nonroot不可读hash冒完整保护；其余都真实65534/currentcaps0/NNP1、bounding C3保留。实际原FileRecoveryStore TS及当前8源叶静态bundle（102实际输入闭包）在非root Linux经真实CJS/ELF逐请求传输，4组ready/scan/inspect全部通过：fresh同Promise一次初始化/真实protected2；有效日志/草稿与真实来源扫描及只读检查；损坏日志原件保留+QUOTA；同inode损坏draft hash保留+IO。33总请求中4为fixture真实source前置、29在Store阶段（2/15/4/8），不把fixture当生产checkpoint。该静态编译不是SUT，独立2PID/2实组已清；015正常容器0、2.181700秒，两运行各17PID/17实组及自有容器卷双核清。公开nonDarwin门禁不变，源码两叶与frozen5一致；source save/copy/checkpoint尚未实现，真实FileService/完整恢复写全链、App/安装X与原四写负对照仍欠。完整387/419、余32、今日P09/W08新增完整2条不变，0整条新增；用户休息、仅Codex、人工项最后。 [实际证据](../验收/证据/G291_恢复目录与真实恢复服务部分归账_20261026.json)。
+<!-- /M9-G291-BOOTSTRAP-STORE-ACTUAL -->
+
+<!-- M9-G291-PRIVATE-BOOTSTRAP-PARTIAL -->
+2026-10-26 G291004–009/011：4条原预算契约首次实测均错报INVALID_INPUT，保留0/4红；按原Mac契约修正为TOO_LARGE后原4条及读取3条全绿。candidate4增加privateObjects实际同用户0700/0600、逐路径无symlink、真实保护身份及父目录身份门控，严格编译/原读取3及native10/protocol12回归22通过。私有8组首次夹具在chown后chmod因缺FOWNER而EPERM、0backend，未判产品失败；仅调整三处夹具构造顺序、权限和8组原断言不变，复测8/8及68次真实65534 backend请求通过，空附加组/当前caps0/NNP1，bounding C3未冒清零。root只准备/审计夹具，31对象内容/身份/权限全保持；真实容器0/3.981843秒，17PID/17组及容器卷独立核清。root串行candidate5新增仅userData固定file-recovery/v1的FD初始化、0700/属主/无链接/不接管/fsync/身份复核；真实严格编译和版本化读取3组（含初始化真实身份、权限、重复调用）通过，19次请求，ELF74072字节/SHA243b384c13c0921ab6692d0bf6cf63b5925c54067549790bd913d19e7b3e49f7。旧consumer中初始化UNSUPPORTED只属读取阶段前置，原版本不改，新版本精确差异归档；010准备说明误称consumer逐字相同，未执行，011先修正说明再冻结执行。当前只新增固定私有目录写入，不支持source save/copy/checkpoint，公开非darwin门禁不变。尚欠bootstrap异常矩阵、真实FileRecoveryStore.ready/scan、writer/恢复全链及App/X安装；原G267四负对照保留。0原用例整条新增，完整387/419、余32、今日P09/W08共2条保持。 [实际结果与缺项](../验收/证据/G291_读取预算与私有对象及恢复初始化部分归账_20261026.json)。
+<!-- /M9-G291-PRIVATE-BOOTSTRAP-PARTIAL -->
+
+<!-- M9-R200-PPTX-COMMENT -->
+**2026-10-26 r200范围内PPTX注释接线：** 仍按既有R06.10／R07.11与评论上下文设计执行。`office/pptx-context.tsx`捕获真实FileBuffer、controller／revision、当前slide/page及可选实际element；评论进入现有`terminal-context/store.ts`引用盘，再经原main颁发来源、prepare／insert显式写入当前任务终端，不自动回车，不写OOXML评论或演讲者备注。OS文件不可写与强sourceReadOnly分开：前者不阻止只读内容交接，后者、来源不可用／protected／root或target不匹配拒绝；main保持原FileRef授权及writer边界。`file-terminal.ts`只增strict PPTX locator和上下文格式，locator是用户上下文，不冒主进程对模型位置的认证。
+
+评论草稿按FileBuffer生命周期保留；同文件controller重载使旧capture无效，但不会清空未提交文字，加入前再次核当前身份／页码／目标，失配提示并等待显式重新选择。原重载红与相同8断言绿已存；84相关U／renderer-I及Node／Web类型、实际native36通过。统一r200-v4包六native／341runtime验证后复用；后续仅4个P／测试叶修template门控，App生产／ASAR不变。实际App浅深0644／0444页面评论4场景＋0644对象2子检查已过：每主题3次真实PTY写、0Enter／edit／save／checkpoint，源11字段／全ZIP及模型不变、正常退出0/null；最后G334005真实切页旧capture拒绝、草稿保留／显式重新选择后仅一次插入通过；W08完整闭环，见[原判据证据](../验收/证据/W08_PPTX宿主条件矩阵验收闭环_20261026.json)。library/template实际来源入口仍按已批准前置判断，尚未触发的A分支不记通过。 [当前分层证据](../验收/证据/W08_模板门控修复与原生注释集成补验_20261026.json) · [实际浅色](../验收/证据/并行测试/M9-20261021T005835Z-9de5-12b28f/M9-G334/attempt-003/result.json) · [实际深色](../验收/证据/并行测试/M9-20261021T005835Z-9de5-12b28f/M9-G334/attempt-004/result.json)。
+<!-- /M9-R200-PPTX-COMMENT -->
+
 **P1当前接续（2026-10-17）：** 七条开发前路线的接口、样本、资源和实验已归档，先读[执行账](../开发前目标与执行记录.md)及[验收参数](../验收/开发前P1_验收补充.md)。本文件以下R3.4各批结果保留当时边界；04原失败已由替代计算路线复验，03/07/09等首次可行性缺口按P1更新，未成为完整生产实现。实际系统IME与01/02参考限制继续单列。
 
 **R3.4当前增量（2026-10-17）：** 用户授权修复九项缺口，已完成的原型/实际PTY代码和限定范围实验见[总账](../九项问题处理结果_R3.4.md)。下文R3/R3.3描述保留其当时证据，现行保存保护以需求R07.17及本文件R3.4增量为准；不再沿用“冲突时无条件换回”。本轮授权可继续工程修复，完整业务/打包验收未完成。
@@ -448,3 +467,13 @@ R3另做：PDF解析6项（实验§10，含Node/fake-worker解析耗时、内存
 PDF统一256MiB是工程候选、总canvas/进程/GPU是提前固定的验证目标，均不冒充已测全复杂度；MCP20MiB资源路径不悄悄接管所有PDF。草稿userData与同卷暂存的生产布局按08，实验目录不直接搬入项目。所有新API/表字段在专项中标明目标设计，不能当现有代码。
 
 本轮只落实前期目标；进入完整M9生产接入时沿用已有同范围授权及用户最新推进顺序，不重新索取D01/D07，也不自行发布。物理输入法仍需可隔离环境/用户操作；Codex工具限制不得绕过，不能由开发完成自动解除。
+
+
+### 2026-10-26 W16 真实图片占位数据链路
+
+严格DTO只传slideId与frame；main构造有界固定320×200灰叉PNG，经既有本机decoder接口及Worker容器/哈希回执验证，再由原image writer写真实图片/media/rels。持久描述marker仅表示自有占位，不是权限或生成证明；真实图片替换清marker并保持目标/几何。解码后重核当前可写能力，撤权不改模型。原对象/不相关部件保持、重开与Undo/Redo已分层验证，原型model同步。当前服务I的decoder/persistence为显式mock，未验证真实ImageIO/FileService源写回；请求UI和新包仍欠。新占位落盘后才能交给main-owned磁盘引用，未保存保草稿，不自动保存/提交/等待CLI。完整实际范围与旧红见[部分证据](../验收/证据/W16_真实图片占位数据链路部分归账_20261026.json)。
+
+
+### 2026-10-26 W16 请求受理与目标保存闭环
+
+`usePptxGeneration`复用真实FileTerminalContext/addPptx，不新增模型调用；请求捕获controller/instance/root lease+generation/slide/page/modelVersion/唯一选区epoch。新占位/图表在真实saved回执、干净模型及同磁盘hash后才入盘，受理后的current不依赖关闭面板/继续编辑，仍保来源/版本/目标守卫。选择A→B→A不能复活旧请求，旧取消/回执不能清新草稿。正常500ms自动保存未被测试暂停；以现有25s原生预算等待状态，同版本实际保存后显式Save可幂等无新RPC。真实ImageIO/main/OOXML/独立PNG/源frame、当前磁盘保存、App浅深两target显式PTY插入/0Enter及重开已验证，P层另为合成JSON/终端回执。原始cc未知保留，不把自有PNG冒参考同字节；最后原生上传/替换和颜色10仍待。见[证据](../验收/证据/W16_生成目标请求_UI保存与交接部分归账_20261026.json)。

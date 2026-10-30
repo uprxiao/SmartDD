@@ -4,6 +4,7 @@ import { pptxPendingInputs,pptxPendingKey } from '@shared/file-pptx';
 import { OFFICE_LIMITS } from '@shared/file-office';
 import { parsePptxChartValues } from '@shared/file-pptx-chart';
 import { rpc } from '@renderer/lib/ipc';
+import type { OfficeFidelityFailure } from '@shared/file-office-fidelity';
 import type { FileBuffer } from '../file-buffer';
 
 const message=(error:unknown)=>(error instanceof Error?error.message:String(error)).replace(/^Error invoking remote method '[^']*': (?:\w*Error: )?/,'').replace(/^\[[A-Z_]+\]\s*/,'');
@@ -14,6 +15,9 @@ interface ViewHistory {before:View;after:View}
 /** A document owner, independent of PDF view mounts. Input under composition
  * stay in recovery; failed saves freeze automatic retries until explicit save. */
 export class PptxBuffer {
+  fidelity:OfficeFidelityFailure|undefined;
+  copyingLossy=false;
+  copyNotice='';
   id:string|null=null;
   result:PptxOpenResult|null=null;
   private inputs=new Map<string,PptxPending>();
@@ -28,6 +32,7 @@ export class PptxBuffer {
   // queue while the previous input is flushing, instead of disabling its target.
   get controlsBusy(){return this.busy&&!this.flushingInput;}
   viewRevision=0;
+  selectionRevision=0;
   private undoViews:ViewHistory[]=[];
   private redoViews:ViewHistory[]=[];
   private closed=false;
@@ -46,7 +51,7 @@ export class PptxBuffer {
   private autoSaveStopped=false;
   constructor(private readonly host:FileBuffer){}
   get dirty(){return Boolean(this.pending||this.result?.state.dirty||this.writeRequired);}
-  get editable(){return Boolean(this.host.file.writable&&this.result&&!this.result.state.info.signed&&!this.result.state.protected);}
+  get editable(){return Boolean(!this.closed&&!this.host.sourceUnavailable&&this.host.file.writable&&this.result&&!this.result.state.info.signed&&!this.result.state.protected);}
   private notify(){if(!this.closed)this.host.notify();}
   private assert(){if(this.closed||!this.id||!this.result)throw new Error('演示文稿尚未就绪或已关闭');}
   async load():Promise<void>{
@@ -72,9 +77,10 @@ export class PptxBuffer {
     const element=view.elementId?this.result!.state.info.slides[page-1].elements?.find(element=>element.id===view.elementId):undefined;
     const cell=view.cell&&element?.table?.cells[view.cell.row]?.[view.cell.column]?view.cell:undefined;
     const next=element?{slideId:this.result!.state.info.slides[page-1].id,elementId:element.id,...(cell?{cell}:{})}:null;
+    if(page!==this.host.pdfPosition.page||JSON.stringify(next)!==JSON.stringify(this.selection))this.selectionRevision++;
     if(page!==this.host.pdfPosition.page||view.zoom!==this.host.pdfPosition.zoom||JSON.stringify(next)!==JSON.stringify(this.selection)){this.host.pdfPosition.page=page;this.host.pdfPosition.zoom=view.zoom;this.selection=next;this.viewRevision++;}
   }
-  private accept(state:PptxEditState){this.assert();const view=this.view();this.result={...this.result!,state};this.selectView(view);this.notify();}
+  private accept(state:PptxEditState){this.assert();if(this.fidelity&&this.fidelity.version!==state.version){this.fidelity=undefined;this.copyNotice='';}const view=this.view();this.result={...this.result!,state};this.selectView(view);this.notify();}
   private rememberView(version:number,before:View){
     if(this.result!.state.version===version)return;
     this.undoViews.push({before,after:this.view()});this.redoViews=[];
@@ -102,6 +108,7 @@ export class PptxBuffer {
     if(!this.editable||this.closed)return;
     // A reverting keystroke during a pending RPC is still a new edit. The old
     // response must not erase it just because it matched the old baseline.
+    this.fidelity=undefined;this.copyNotice='';
     const key=pptxPendingKey(input);
     if(!this.busy&&input.text===original&&originalVersion===this.result?.state.version)this.inputs.delete(key);
     else this.inputs.set(key,input);
@@ -138,16 +145,16 @@ export class PptxBuffer {
   private schedule(){
     clearTimeout(this.checkpointTimer);clearTimeout(this.saveTimer);if(this.closed||this.autosavePaused)return;
     this.checkpointTimer=setTimeout(()=>{void this.checkpoint().catch(()=>undefined);},500);
-    if(this.dirty&&!this.host.conflict&&!this.autoSaveStopped&&!this.composing&&!this.elementEditing)this.saveTimer=setTimeout(()=>{void this.save(true);},500);
+    if(this.dirty&&!this.host.sourceUnavailable&&!this.host.conflict&&!this.autoSaveStopped&&!this.composing&&!this.elementEditing)this.saveTimer=setTimeout(()=>{void this.save(true);},500);
   }
   private async flushInternal(target?:PptxTextTarget):Promise<boolean>{
-    if(this.composing)return false;
+    if(this.composing||!this.editable)return false;
     const entries=[...this.inputs.values()].filter(input=>!target||pptxPendingKey(target)===pptxPendingKey(input));
     this.flushingInput=entries.length>0;this.notify();
     try{
       if(entries.length)await this.checkpointInternal();
       for(const input of entries){
-        if(this.composing)return false;
+        if(this.composing||!this.editable)return false;
         const key=pptxPendingKey(input);if(this.inputs.get(key)!==input)continue;
         const version=this.result!.state.version,before=this.view();
         const action:PptxAction=input.chartValues&&input.elementId?{type:'chart-values',slideId:input.slideId,elementId:input.elementId,values:parsePptxChartValues(input.text)}:input.cell&&input.elementId?{type:'table-cell',slideId:input.slideId,elementId:input.elementId,...input.cell,text:input.text}:input.elementId?{type:'element-text',slideId:input.slideId,elementId:input.elementId,text:input.text}:{type:'notes',slideId:input.slideId,text:input.text};
@@ -164,12 +171,13 @@ export class PptxBuffer {
   async action(action:PptxAction,expected?:{id:string;version:number}):Promise<boolean>{
     if(!this.editable||this.closed)return false;
     try{return await this.serialize(async()=>{
+      if(!this.editable)return false;
       if(expected&&(this.id!==expected.id||this.result!.state.version!==expected.version))throw new Error('选图期间文档已改变，请重新选择图片');
-      if(!await this.flushInternal())return false;
+      if(!await this.flushInternal()||!this.editable)return false;
       const version=this.result!.state.version,before=this.view(),ids=new Set(this.result!.state.info.slides.map(slide=>slide.id));if(!this.autoSaveStopped)this.host.saveError='';
       this.accept(await rpc.files.editPptx({id:this.id!,version,action}));
       if(action.type==='add'){const added=this.result!.state.info.slides.find(slide=>!ids.has(slide.id));if(added)this.selectView({...before,slideId:added.id,elementId:undefined});}
-      if(action.type==='insert-element'||action.type==='image-insert'||action.type==='chart-insert'){
+      if(action.type==='insert-element'||action.type==='image-insert'||action.type==='image-placeholder'||action.type==='chart-insert'){
         const added=this.result!.state.info.slides.find(slide=>slide.id===action.slideId)?.elements?.at(-1);
         if(added)this.selectView({...before,slideId:action.slideId,elementId:added.id,cell:undefined});
       }
@@ -180,7 +188,7 @@ export class PptxBuffer {
   async history(direction:'undo'|'redo'):Promise<void>{
     if(!this.editable||this.closed)return;
     try{await this.serialize(async()=>{
-      if(!await this.flushInternal())return;
+      if(!await this.flushInternal()||!this.editable)return;
       const version=this.result!.state.version;this.elementEditing=null;this.accept(await rpc.files.pptxHistory({id:this.id!,version,direction}));
       if(this.result!.state.version!==version){
         const from=direction==='undo'?this.undoViews:this.redoViews,to=direction==='undo'?this.redoViews:this.undoViews,entry=from.pop();
@@ -200,19 +208,29 @@ export class PptxBuffer {
     try{return await this.serialize(()=>this.checkpointInternal());}
     catch(error){if(!this.closed){this.host.draftError=message(error);this.notify();}throw error;}
   }
+  get canCopyLossy():boolean{return Boolean(!this.closed&&this.fidelity&&this.fidelity.version===this.result?.state.version&&!this.pending&&!this.busy&&!this.saving&&!this.copyingLossy&&!this.host.conflict);}
+  async saveLossyCopy():Promise<void>{
+    const id=this.id,failure=this.fidelity;if(!id||!failure||!this.canCopyLossy)return;
+    this.copyingLossy=true;this.copyNotice='';this.notify();
+    try{const receipt=await rpc.files.saveOfficeLossyCopy({kind:'pptx',id,token:failure.token});this.assert();
+      this.copyNotice=receipt.state==='saved'?'已另存有损副本；原件未保存，草稿仍保留。':'已取消另存；原件与草稿仍保留。';
+    }catch(error){if(!this.closed)this.host.saveError=`有损副本未保存：${message(error)}`;}
+    finally{this.copyingLossy=false;this.notify();}
+  }
   async save(automatic=false):Promise<boolean>{
     if(this.closed)return false;if(!this.dirty)return true;if(!this.editable||this.host.conflict)return false;
     if(automatic&&(this.autoSaveStopped||this.elementEditing))return false;
     clearTimeout(this.saveTimer);clearTimeout(this.checkpointTimer);if(!automatic)this.autoSaveStopped=false;
     try{return await this.serialize(async()=>{
+      if(!this.editable)return false;
       if(automatic&&(this.autoSaveStopped||this.elementEditing))return false;
       if(this.pending)await this.checkpointInternal();
       if(!await this.flushInternal())return false;
       if(!this.dirty){await this.discardInternal();return true;}
       this.saving=true;this.host.saveError='';this.notify();await this.checkpointInternal();
-      if(this.pending||this.host.conflict)return false;
+      if(this.pending||this.host.conflict||!this.editable)return false;
       const version=this.bufferVersion,result=await rpc.files.savePptx({id:this.id!,version:this.result!.state.version,draftId:this.host.draftId,bufferVersion:version,opId:crypto.randomUUID()});
-      this.accept(result.state);this.durable=result.checkpoint;this.durableVersion=version;this.host.saveReceipt=result.receipt;this.host.draftError=result.draftError??'';
+      this.accept(result.state);if(result.checkpoint){this.durable=result.checkpoint;this.durableVersion=version;}this.fidelity=result.fidelity;this.copyNotice='';this.host.saveReceipt=result.receipt;this.host.draftError=result.draftError??'';
       if(result.receipt.state!=='saved'||!result.receipt.revision){
         this.autoSaveStopped=true;this.host.saveError=result.receipt.message??'演示文稿保存失败，修改仍保留';
         if(result.receipt.state==='conflict')await this.refreshDisk();return false;
@@ -256,9 +274,12 @@ export class PptxBuffer {
     }catch(error){this.host.saveError=message(error);this.notify();return false;}
   }
   async useDisk():Promise<boolean>{
-    if(this.closed||this.busy)return false;
+    if(this.closed||this.busy||this.host.sourceUnavailable)return false;
+    const version=this.bufferVersion,id=this.id;
+    const current=()=>!this.closed&&!this.host.sourceUnavailable&&version===this.bufferVersion&&id===this.id;
     try{
-      const file=await rpc.files.refresh(this.host.file.ref);await this.discardDraft();if(this.closed)return false;
+      const file=await rpc.files.refresh(this.host.file.ref);if(!current())return false;
+      await this.discardDraft();if(!current())return false;
       this.host.file=file;this.host.baseHash=file.revision.hash;this.host.saveReceipt=null;this.host.saveError='';this.inputs.clear();this.elementEditing=null;this.selection=null;this.writeRequired=false;this.disk=null;this.result=null;await this.reload();return this.host.loadState==='ready';
     }catch(error){this.host.loadError=message(error);this.notify();return false;}
   }
@@ -288,6 +309,7 @@ export class PptxBuffer {
     if(this.dirty)return;const id=this.id;this.id=null;if(id)void rpc.files.closePptx(id).catch(()=>undefined);
     this.result=null;this.loading=null;this.autoSaveStopped=false;this.undoViews=[];this.redoViews=[];this.selection=null;this.elementEditing=null;await this.load();
   }
+  invalidateSource(){clearTimeout(this.saveTimer);}
   pauseAutosave(){this.autosavePaused=true;clearTimeout(this.checkpointTimer);clearTimeout(this.saveTimer);}
   resumeAutosave(){if(!this.closed){this.autosavePaused=false;this.schedule();}}
   close(){this.closed=true;clearTimeout(this.checkpointTimer);clearTimeout(this.saveTimer);if(this.id)void rpc.files.closePptx(this.id).catch(()=>undefined);}

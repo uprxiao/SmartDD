@@ -1,5 +1,6 @@
 import { FileError } from '@shared/files';
 import type { PptxElementInfo,PptxElementBox } from '@shared/file-pptx-elements';
+import { PPTX_PLACEHOLDER_DESCRIPTION } from '@shared/file-pptx-placeholder';
 import { pptxPageBoxes } from '@shared/file-pptx-geometry';
 import { pptxTable } from './pptx-table';
 import { pptxAppearance } from './pptx-appearance';
@@ -59,7 +60,7 @@ export function pptxElements(doc:OfficeXml,resolve?:(node:OfficeXmlNode,parent:O
     const raw=childOffset&&childExtent?[attribute(childOffset,'x'),attribute(childOffset,'y'),attribute(childExtent,'cx'),attribute(childExtent,'cy')]:undefined;
     const childValues=raw?.every(value=>value!==undefined&&/^[-+]?\d+$/.test(value))?raw.map(Number):undefined;
     const childFrame=childValues?.every(Number.isSafeInteger)&&childValues[2]>=0&&childValues[3]>=0?{x:childValues[0]/EMU_PER_POINT,y:childValues[1]/EMU_PER_POINT,width:childValues[2]/EMU_PER_POINT,height:childValues[3]/EMU_PER_POINT}:undefined;
-    return {id,name:properties?attribute(properties,'name')??'':'',kind,appearance:pptxAppearance(node,drawing),table:pptxTable(node,drawing),...(kind==='chart'&&chart?{chart:chart(node)}:{}),hidden:properties?boolean(attribute(properties,'hidden')):false,...(parent===tree?{}:{parentId:pptxShapeId(parent)}),...(box?{box,boxSource:geometry?.source??'local'}:{}),...(childFrame?{childFrame}:{}),...(body?{text:pptxTextContent(body,drawing),textStyle:pptxTextStyle(body,drawing)}:{}),...(preset?{preset:attribute(preset,'prst')}: {})};
+    return {id,name:properties?attribute(properties,'name')??'':'',kind,...(kind==='image'&&properties&&attribute(properties,'descr')===PPTX_PLACEHOLDER_DESCRIPTION?{isPlaceholder:true}:{}),appearance:pptxAppearance(node,drawing),table:pptxTable(node,drawing),...(kind==='chart'&&chart?{chart:chart(node)}:{}),hidden:properties?boolean(attribute(properties,'hidden')):false,...(parent===tree?{}:{parentId:pptxShapeId(parent)}),...(box?{box,boxSource:geometry?.source??'local'}:{}),...(childFrame?{childFrame}:{}),...(body?{text:pptxTextContent(body,drawing),textStyle:pptxTextStyle(body,drawing)}:{}),...(preset?{preset:attribute(preset,'prst')}: {})};
   });
   const boxes=pptxPageBoxes(elements);return elements.map(element=>({...element,...(boxes.has(element.id)?{pageBox:boxes.get(element.id)}:{})}));
 }

@@ -4,6 +4,14 @@ import { markdownBlocks, replaceMarkdownBlock, resolveMarkdownPath, imageMenuAct
 test('Markdown editing retains untouched bytes and line endings',()=>{const text='# 标题\r\n\r\n- [ ] 任务\r\n';const b=markdownBlocks(text);assert.equal(b.map(x=>x.raw).join(''),text);assert.equal(replaceMarkdownBlock(text,b[2],'- [x] 任务\r\n'),'# 标题\r\n\r\n- [x] 任务\r\n');assert.equal(replaceMarkdownBlock('changed',b[2],'x'),null);});
 test('fenced code, table, frontmatter, and math preserve complete source ranges',()=>{const text='---\ntitle: X\n---\n| A | B |\n| --- | --- |\n| 1 | 2 |\n```mermaid\nflowchart LR\nA-->B\n```\n$$\nx+y\n$$';const b=markdownBlocks(text);assert.deepEqual(b.map(x=>x.type),['frontmatter','table','mermaid','math']);assert.equal(b.map(x=>x.raw).join(''),text);});
 test('relative document navigation rejects root escape and executable URLs',()=>{assert.equal(resolveMarkdownPath('docs/nested/a.md','../b.md#L3'),'docs/b.md');assert.equal(resolveMarkdownPath('a.md','../../private'),null);assert.equal(resolveMarkdownPath('docs/a.md','javascript:alert(1)'),null);assert.equal(resolveMarkdownPath('docs/a.md','https://example.invalid'),null);});
+test('location navigation decodes literal separators after removing actual URL fragments, and normalizes decoded root escape',()=>{
+  assert.equal(resolveMarkdownPath('docs/source.md','route%23L3.md',{decode:true}),'docs/route#L3.md');
+  assert.equal(resolveMarkdownPath('docs/source.md','route.md%3A3',{decode:true}),'docs/route.md:3');
+  assert.equal(resolveMarkdownPath('docs/source.md','route%3Fname.md#heading',{decode:true}),'docs/route?name.md');
+  assert.equal(resolveMarkdownPath('source.md','%2e%2e/private.md',{decode:true}),null);
+  assert.equal(resolveMarkdownPath('source.md','bad%00name.md',{decode:true}),null);
+  assert.equal(resolveMarkdownPath('source.md','bad%zzname.md',{decode:true}),null);
+});
 test('local image menu has exact gated order',()=>{assert.deepEqual(imageMenuActions({localPath:'/root/a.png'}).map(a=>a.id),['open','reference','copy','reveal','download']);});
 test('animation cannot select or copy, remote cannot reveal',()=>{assert.deepEqual(imageMenuActions({src:'https://example.invalid/a.gif',localPath:'/a.gif',host:'remote',animated:true}).map(a=>a.id),['open','address','download']);});
 test('clipboard capability and host mismatch gate independent image controls',()=>{assert.deepEqual(imageMenuActions({localPath:'/a.png',originHost:'other',canSelect:false,clipboard:false}).map(a=>a.id),['open','download']);});
