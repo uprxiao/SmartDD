@@ -12,6 +12,16 @@ import { releaseNotes, verifyTagCommit } from './metadata.mjs';
 import { nextTag, nextVersion, parseVersion } from './version.mjs';
 import { releasePolicy } from './policy.mjs';
 import cleanGeneratedMacBundle from './mac-bundle-metadata.cjs';
+import { windowsCheckoutIssue } from './check-checkout-paths.mjs';
+
+test('Windows checkout guard rejects historical POSIX names and excessive depth while retaining Unicode', () => {
+  assert.match(windowsCheckoutIssue('evidence/B08-dark-replacement:delete.png'), /reserved character/);
+  assert.match(windowsCheckoutIssue('evidence/中文 空格🙂\".txt'), /reserved character/);
+  assert.match(windowsCheckoutIssue('evidence/' + '层级中文目录/'.repeat(40) + 'file.txt'), /MAX_PATH/);
+  for (const name of ['NUL.txt', 'COM¹.log', 'LPT9', 'name.', 'name ']) assert(windowsCheckoutIssue(`fixtures/${name}`));
+  assert.equal(windowsCheckoutIssue('docs/里程碑/M9/中文 空格🙂.md'), null);
+  assert.equal(windowsCheckoutIssue('docs/evidence/windows-checkout-evidence.tar.gz'), null);
+});
 
 test('Mac bundle cleanup removes signing-blocking metadata and preserves quarantine', { skip: process.platform !== 'darwin' }, async (t) => {
   const output = mkdtempSync(join(tmpdir(), 'smartdd-bundle-metadata-'));
