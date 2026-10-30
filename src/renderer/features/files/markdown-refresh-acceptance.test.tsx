@@ -56,6 +56,7 @@ class ObservedBroker extends NativeFileBroker {
 }
 const rows: unknown[] = [], fixtures: { cleanup(): Promise<void> }[] = [];
 const output: Record<string, unknown> = { startedAt: new Date().toISOString(), rows };
+const packagedAppAvailable = process.platform === 'darwin' && Boolean(process.env.SMARTDD_MARKDOWN_REFRESH_APP);
 async function fixture(watched: boolean, initial = '\n# Initial heading\n\n**initial emphasis**\n') {
   const directory = realpathSync(mkdtempSync(join(tmpdir(), 'willyou-markdown-refresh-'))), project = join(directory, 'project'), userdata = join(directory, 'userdata'); mkdirSync(project); mkdirSync(userdata);
   const path = join(project, 'source.md'); writeFileSync(path, initial); writeFileSync(join(project, 'other.txt'), 'Other tab\n');
@@ -112,7 +113,7 @@ afterEach(async () => { cleanup(); bridge.mathReplies.filter(x => x.waiting).for
 afterAll(() => { if (process.env.SMARTDD_MARKDOWN_REFRESH_EVIDENCE) writeFileSync(process.env.SMARTDD_MARKDOWN_REFRESH_EVIDENCE, JSON.stringify({ ...output, caseIds: [...new Set(rows.flatMap(row => { const record = row as { caseId?: string; caseIds?: string[] }; return record.caseId ? [record.caseId] : record.caseIds ?? []; }))].sort(), workerMessages, finishedAt: new Date().toISOString() }, null, 2) + '\n'); });
 const writers = ['ordinary writer', 'CLI process'] as const, triggers = ['native watch', 'reactivation', 'explicit refresh'] as const;
 const matrix = writers.flatMap(writer => triggers.map(trigger => ({ writer, trigger })));
-describe('DEV117 inline source decorations over the native file buffer', () => {
+describe.skipIf(!packagedAppAvailable)('DEV117 inline source decorations over the native file buffer', () => {
   it.each([
     ['titled', 'Titled [Label &amp; ![image](tiny.png)](other.txt "title") tail'],
     ['empty title', 'Empty [Label &amp; ![image](tiny.png)](other.txt "") tail'],
@@ -213,7 +214,7 @@ describe('DEV117 inline source decorations over the native file buffer', () => {
     } finally { editor.destroy(); parent.remove(); }
   }, 20_000);
 });
-describe('DEV116 precise mathematical source editing', () => {
+describe.skipIf(!packagedAppAvailable)('DEV116 precise mathematical source editing', () => {
   it.each(['$$\r\na+b\r\n$$', '> $$\r\n> a+b\r\n> $$', '- $$\r\n  a+b\r\n  $$', '$$a+b$$ (eq-1)'])('edits a display range %j at its closing delimiter and preserves other formulas', async formula => {
     const initial = '# Prefix\r\n\r\n' + formula + '\r\n\r\nOther $z$\r\n\r\nTail\r\n', f = await fixture(false, initial), parent = document.createElement('div'); document.body.append(parent);
     const editor = new EditorView({ parent, state: f.buffer.editor!, dispatchTransactions(transactions, view) { view.update(transactions); f.buffer.acceptTransactions(view.state, transactions); } });
@@ -263,7 +264,7 @@ describe('DEV116 precise mathematical source editing', () => {
     } finally { editor.destroy(); parent.remove(); }
   }, 20_000);
 });
-describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_MARKDOWN_REFRESH_APP)('M9 H14/H17 actual Markdown disk refresh', () => {
+describe.skipIf(!packagedAppAvailable)('M9 H14/H17 actual Markdown disk refresh', () => {
   it('DEV114 loads no math worker for plain content, then renders actual inline/block KaTeX and preserves native saved source', async () => {
     const plain = await fixture(false, '\n# Plain\n\nText 中文🙂\n'), start = workerMessages.length, first = render(<ActiveEditor store={plain.store} />); await act(async () => { await until(() => !!first.container.querySelector('h1')); }); expect(workerMessages.slice(start).some(x => x.direction === 'request' && x.data?.type === 'render-math')).toBe(false); first.unmount();
     const initial = '\r\n# Math\r\n\r\nInline $a^2$ and $$b+1$$.\r\n\r\n$$\r\n\\frac{a}{b}\r\n$$\r\n\r\nTail 中文🙂\r\n', f = await fixture(false, initial), mounted = render(<ActiveEditor store={f.store} />);
@@ -464,7 +465,7 @@ async function eventEditor(f: Awaited<ReturnType<typeof fixture>>, link: Markdow
   await until(() => !!parent.querySelector('a[data-md-href="other.txt"]'));
   return { editor, parent, dispose() { editor.destroy(); input.dispose(); parent.remove(); } };
 }
-describe('DEV115 Markdown original event guards and gesture ownership', () => {
+describe.skipIf(!packagedAppAvailable)('DEV115 Markdown original event guards and gesture ownership', () => {
   it.each([{ name: 'left', event: { button: 0, detail: 1 }, allowed: true }, { name: 'shift', event: { button: 0, detail: 1, shiftKey: true }, allowed: false }, { name: 'double', event: { button: 0, detail: 2 }, allowed: false }, { name: 'right', event: { button: 2, detail: 1 }, allowed: false }, { name: 'middle', event: { button: 1, detail: 1 }, allowed: false }])('DEV115 $name click preserves the original link guard', async ({ name, event, allowed }) => {
     const f = await fixture(false, linkFixture), link = vi.fn(), mounted = await eventEditor(f, link);
     try { const anchor = mounted.parent.querySelector('a[data-md-href="other.txt"]')!; const click = new MouseEvent('click', { bubbles: true, cancelable: true, ...event }); anchor.dispatchEvent(click); expect(click.defaultPrevented).toBe(true); expect(link.mock.calls).toEqual(allowed ? [['other.txt']] : []); expect(f.buffer.raw).toBe(linkFixture); expect(f.api.save).not.toHaveBeenCalled(); rows.push({ caseId: 'M9-T-X12', scenario: name, originalCompiledWorker: true, linkInvocations: link.mock.calls.length, nativeBrowserNavigationPrevented: true, fileUnchanged: true }); } finally { mounted.dispose(); }

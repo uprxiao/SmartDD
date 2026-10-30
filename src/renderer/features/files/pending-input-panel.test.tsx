@@ -69,7 +69,7 @@ describe('M9-DEV-041 interrupted input recovery UI', () => {
     await user.click(screen.getByRole('tab', { name: 'C.txt' }));
     expect(f.b.buffer!.inputInterrupted).toBe(true);
     await user.click(screen.getByRole('tab', { name: 'B.txt未保存' }));
-    expect(screen.getByRole('alert').textContent).toContain('输入已中断');
+    expect(screen.getByText('输入已中断，请返回编辑器继续输入或撤销后再保存').closest('[role="alert"]')).toBeTruthy();
     act(() => screen.getByRole('button', { name: '文件菜单' }).focus()); await user.keyboard('{Enter}');
     expect((await screen.findByRole('menuitem', { name: '保存文件' })).getAttribute('aria-disabled')).toBe('true');
     await user.keyboard('{Escape}');

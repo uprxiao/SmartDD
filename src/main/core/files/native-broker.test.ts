@@ -52,13 +52,21 @@ describe.skipIf(process.platform !== 'darwin')('native file boundary (real macOS
     const service=makeService(),root=await rootOf(service),file=await service.open('frame-1',{lease:root.lease,generation:root.generation,relativePath:'large.xlsx'});
     const bytes=Buffer.alloc(21*1024*1024,23),draftId=randomUUID(),request={ref:file.ref,draftId,bufferVersion:1,baseHash:file.revision.hash,base64:bytes.toString('base64'),encoding:'ooxml-draft' as const,bom:false};
     try {
-      const receipt=await service.checkpoint('frame-1',request);
-      expect(await service.checkpoint('frame-1',request)).toEqual(receipt);
-      await expect(service.checkpoint('frame-1',{...request,draftId:randomUUID(),encoding:'utf-8'})).rejects.toThrow('上限');
+      // Office source writes must use the fidelity-checked document service.
+      // Check the native recovery budget separately, without opening that route.
+      await expect(service.checkpoint('frame-1',request)).rejects.toThrow('保真校验');
+      await service.recovery.ready();
+      const {scope,descriptor:nativeRoot}=service.roots.require('frame-1',root),projectKey=recoveryProjectKey('project-1');
+      const checkpoint={operation:'checkpoint',root:nativeRoot,relativePath:'large.xlsx',recoveryRoot:service.recovery.descriptor(),source:{kind:'project-directory',id:'dir-1',scope},projectKey,fingerprint:hash(JSON.stringify({root:nativeRoot,path:'large.xlsx',scope})),draftId,bufferVersion:request.bufferVersion,baseHash:request.baseHash,base64:request.base64,encoding:request.encoding,bom:request.bom};
+      const receipt=await broker.request<{draftId:string;bufferVersion:number;hash:string}>(checkpoint);
+      expect(await broker.request(checkpoint)).toEqual(receipt);
+      await service.recovery.refreshRecord(projectKey,draftId);
+      const text=await service.open('frame-1',{lease:root.lease,generation:root.generation,relativePath:'a.txt'});
+      await expect(service.checkpoint('frame-1',{...request,ref:text.ref,draftId:randomUUID(),encoding:'utf-8'})).rejects.toThrow('上限');
       const recovered=await service.readDraft('frame-1',file.ref,draftId); expect(Buffer.from(recovered.base64,'base64').equals(bytes)).toBe(true); expect(recovered.encoding).toBe('ooxml-draft');
-      const saved=await service.save('frame-1',{ref:file.ref,opId:randomUUID(),bufferVersion:1,baseHash:file.revision.hash,base64:Buffer.from('saved candidate differs from recovery envelope').toString('base64')});
-      expect(saved.state).toBe('saved');
-      expect(await service.resolveDraft('frame-1',{ref:file.ref,draftId,bufferVersion:1,hash:receipt.hash,savedHash:saved.revision!.hash,saveOpId:saved.opId,action:'saved'})).toEqual({resolved:true});
+      await expect(service.save('frame-1',{ref:file.ref,opId:randomUUID(),bufferVersion:1,baseHash:file.revision.hash,base64:Buffer.from('unaudited candidate').toString('base64')})).rejects.toThrow('保真校验');
+      expect(readFileSync(join(project,'large.xlsx'),'utf8')).toBe('synthetic office source');
+      expect(await service.resolveDraft('frame-1',{ref:file.ref,draftId,bufferVersion:1,hash:receipt.hash,action:'discard'})).toEqual({resolved:true});
       expect(service.drafts('frame-1',file.ref)).toEqual([]);
     } finally {service.closeOwner('frame-1');}
   },20_000);
