@@ -13,6 +13,12 @@ vi.mock('./markdown/editor', () => ({ markdownEditor: () => [] }));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 it('readonly review preserves the real editor and history, blocks document changes, and still accepts source selection', async () => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  // jsdom has no layout; supply geometry for CodeMirror's scheduled measures.
+  // The assertions below use its actual document, selection and history.
+  Object.defineProperties(Range.prototype, {
+    getClientRects: { configurable: true, value: () => [] },
+    getBoundingClientRect: { configurable: true, value: () => new DOMRect() },
+  });
   const file = { name: 'range.txt', ref: { id: 'id' }, writable: true, revision: { hash: 'a'.repeat(64), size: 20 }, content: { kind: 'text', basis: 'extension' } } as FileDocument;
   const api = { read: async () => ({ document: file, base64: btoa('First\r\nSecond\r\nThird') }), drafts: async () => [], closeDocument: async () => {} };
   const buffer = new FileBuffer(file, api as never, () => {}); buffer.pauseAutosave(); await buffer.load();
