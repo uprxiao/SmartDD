@@ -3,6 +3,8 @@ import type { ConnectionConfig, VerifiedConnectionIdentity } from '@shared/appli
 import { ApplicationError } from '@shared/applications';
 import { canonicalJson, digest } from '../manifest';
 import { requestBytes, requestJson, type HttpBytes } from './json-http';
+import {parseZentaoPresentation} from '@shared/zentao-presentation';
+import type {ZentaoPresentation} from '@shared/application-zentao';
 
 type ZentaoConfig = Extract<ConnectionConfig, { kind: 'zentao' }>;
 export type ZentaoKind = 'bug' | 'story';
@@ -79,6 +81,14 @@ export class ZentaoClient {
     const identity: VerifiedConnectionIdentity = { providerId: 'zentao', serviceId: this.base.toString(), accountId: id ? 'uid:' + id : 'account:' + this.config.username, contractMajor: 1 };
     if (this.expectedIdentity && canonicalJson(identity) !== canonicalJson(this.expectedIdentity)) throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION', '禅道当前身份已变化，需重新明确来源');
     this.account = this.config.username; return identity;
+  }
+  async presentation(kind:ZentaoKind,signal:AbortSignal):Promise<ZentaoPresentation>{
+    if(!this.account)await this.verify(signal);
+    const url=new URL('api.php/v1/langs',this.base);url.searchParams.set('modules',kind);
+    // This instance returns a ~650KiB language bundle even for one module.
+    // Keep auth's8/10s limits; only this bounded metadata read gets15s/2MiB.
+    const value=await requestJson(url,{signal,token:this.token??undefined,timeoutMs:15000,maxBytes:2*1024*1024});
+    const parsed=parseZentaoPresentation(value,kind);if(!parsed)throw new ApplicationError('INVALID_RESPONSE','禅道未返回可用的字段说明');return parsed;
   }
   async page(kind: ZentaoKind, page: number, pageSize: number, signal: AbortSignal): Promise<ZentaoPage> {
     if (!['bug', 'story'].includes(kind) || !Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 1000) throw new ApplicationError('INVALID_INPUT', '禅道类型或分页参数无效');

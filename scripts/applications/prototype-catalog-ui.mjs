@@ -8,6 +8,7 @@ import {mkdtemp,mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve,join,extname,sep} from 'node:path';
 import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
+import {focusNewInstalledWindow} from './fixtures/dmg-install-ui.mjs';
 import {installAppFocusGuard,waitForInitialAppFocus} from '../lib/app-focus-guard.mjs';
 import {installCatalogVisualProbe} from './fixtures/catalog-visual-probe.mjs';
 const visualCompare=process.env.WILLYOU_CATALOG_VISUAL_COMPARE==='1';let visualProbe;
@@ -56,7 +57,7 @@ async function chooseScene(value){
 }
 async function search(value){const p=await app.evaluate(`(()=>{const e=document.querySelector('.m10-search input');const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()`);for(const type of ['mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,button:'left',clickCount:1});await key('a','KeyA',65,{modifiers:4,commands:['selectAll']});await app.cdp('Input.insertText',{text:value});}
 try{
- app=await openElectron({executable,userData:join(root,'userdata'),inspectMain:visualCompare,env:{HOME:home,ZDOTDIR:home,CODEX_HOME:join(home,'.codex'),CLAUDE_CONFIG_DIR:join(home,'.claude'),HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost'}});installAppFocusGuard(app,result);if(initialWait){await app.evaluate("document.title='P · M10 · 目录交互验收 · 本次隔离实例';true");await waitForInitialAppFocus(app,result,{userData:join(root,'userdata')});}if(visualCompare)visualProbe=await installCatalogVisualProbe({app,result,root,userData:join(root,'userdata'),layer:'P'});
+ app=await openElectron({executable,userData:join(root,'userdata'),inspectMain:visualCompare,env:{HOME:home,ZDOTDIR:home,CODEX_HOME:join(home,'.codex'),CLAUDE_CONFIG_DIR:join(home,'.claude'),HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost'}});await focusNewInstalledWindow(app,join(root,'userdata'),result);installAppFocusGuard(app,result);if(initialWait){await app.evaluate("document.title='P · M10 · 目录交互验收 · 本次隔离实例';true");await waitForInitialAppFocus(app,result,{userData:join(root,'userdata')});}if(visualCompare)visualProbe=await installCatalogVisualProbe({app,result,root,userData:join(root,'userdata'),layer:'P'});
  await app.cdp('Network.enable');app.onCDP('Network.requestWillBeSent',e=>result.requests.push({url:e.request.url,method:e.request.method}));
  await app.cdp('Page.navigate',{url:origin+'/?preview=m10#apps'});await has('M10 交互原型 · 合成数据');await app.evaluate("document.title='P · M10 · catalog states';true");
  for(const theme of themes){

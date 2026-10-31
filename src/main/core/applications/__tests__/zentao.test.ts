@@ -16,6 +16,11 @@ afterEach(async () => { for (const s of sockets) s.destroy(); await new Promise<
 const client = (authMode: 'token' | 'password' = 'token') => new ZentaoClient({ kind: 'zentao', baseUrl: base, username: 'tester', authMode }, 'fixture-private-secret');
 
 describe('promoted ZenTao contract over a real local HTTP server', () => {
+  it('reads current instance labels with modules and the same verified identity',async()=>{
+    handle=(req,res)=>{expect(req.headers.token).toBe('fixture-private-secret');if(req.url==='/biz/api.php/v1/langs?modules=bug')json(res,{bug:{pri:'优先级',priList:['','P0','P1','P2'],severityList:{3:'较大'}}});else json(res,{},404);};
+    const value=await client().presentation('bug',new AbortController().signal);
+    expect(value.choices.pri['3']).toBe('P2');expect(value.choices.severity['3']).toBe('较大');expect(paths).toEqual(['/biz/api.php/v1/user','/biz/api.php/v1/langs?modules=bug']);
+  });
   it('preserves the deployment base path, sends password only in login body and verifies current account', async () => {
     let loginBody = '';
     handle = (req, res) => { expect(req.url).toBe('/biz/api.php/v1/tokens'); expect(req.headers.token).toBeUndefined(); req.setEncoding('utf8'); req.on('data', part => { loginBody += part; }); req.on('end', () => json(res, { token: 'fixture-token' })); };

@@ -45,6 +45,7 @@ function handle(req:IncomingMessage,res:ServerResponse){
  if(!acceptedTokens.has(String(req.headers.token??''))){if(holdAuthResponse){holdAuthResponse=false;heldAuthResponse=()=>{heldAuthResponse=null;if(!res.destroyed&&!res.writableEnded)json(res,{message:'do not echo zt-secret-canary'},401);};authEntered?.();return;}json(res,{message:'do not echo zt-secret-canary'},401);return;}
  const route=url.pathname.replace(/^\/(?:biz|other)\/api.php\//,'');
  if(route==='v1/user'){json(res,{profile:{id:String(profileIds.get(url.pathname.startsWith('/other/')?'/other/':'/biz/')??7),account:'tester'}});return;}
+ if(route==='v1/langs'){json(res,{bug:{status:'Bug状态',statusList:{active:'激活'},pri:'优先级',priList:['','P0','P1','P2'],severityList:{3:'较大'}}});return;}
  if(route==='v2/my/work'){
   workCalls++;workTimes.push(Date.now());if(workFailures>0){workFailures--;if(workRetryAfter!==undefined)res.setHeader('retry-after',workRetryAfter);json(res,{},workFailureStatus);return;}
   const kind=url.searchParams.get('mode')!,page=Number(url.searchParams.get('pageID')),size=Number(url.searchParams.get('recPerPage'));
@@ -93,6 +94,12 @@ beforeEach(async()=>{
 afterEach(async()=>{held?.();heldAuthResponse?.();vi.restoreAllMocks();await app.dispose();await owned.cli.exited();for(const socket of sockets)socket.destroy();await new Promise<void>(r=>server.close(()=>r()));f.cleanup();});
 
 describe('original ZenTao tools to actual provider and host-scoped business resources',()=>{
+ it('keeps frozen Agent outputs unchanged while UI alone receives cached instance display metadata',async()=>{
+  const agentList=await list();expect(agentList).not.toHaveProperty('presentation');const agentDetail=await detail(agentList.items[0].reference);expect(agentDetail).not.toHaveProperty('presentation');expect(paths.filter(path=>path.includes('/langs'))).toHaveLength(0);
+  const uiList=await app.zentaoWork(sender,'p1',{kind:'bug'});expect(uiList.presentation?.choices.status.active).toBe('激活');
+  const uiDetail=await app.zentaoObject(sender,'p1',{kind:'bug',reference:uiList.items[0].reference});expect(uiDetail.presentation?.choices.pri['3']).toBe('P2');expect(uiDetail.fields.status).toBe('active');expect(paths.filter(path=>path.includes('/langs'))).toHaveLength(1);
+  expect(uiDetail.reference.contentRevision).toBe(agentDetail.reference.contentRevision);expect(uiDetail.body?.revision).toBe(agentDetail.body?.revision);
+ });
  it('OZ cancels an actual held UI detail HTTP producer and keeps a new read usable',async()=>{
   const first=await app.zentaoWork(sender,'p1',{kind:'bug'}),token=randomUUID();holdDetail=true;const ready=new Promise<void>(r=>entered=r),pending=app.zentaoObject(sender,'p1',{kind:'bug',reference:first.items[0].reference},token).then(()=>null,error=>error);await ready;expect(app.cancelUiRead(sender,token)).toEqual({canceled:true});expect(await pending).toMatchObject({code:'CANCELED'});held?.();expect(app.cancelUiRead(sender,token)).toEqual({canceled:false});expect((await app.zentaoWork(sender,'p1',{kind:'bug'},randomUUID())).complete).toBe(true);expect(f.sqlite.prepare("SELECT state,error_code,attempt_count FROM application_data_operations WHERE action='ui.zentao.object'").all()).toEqual([{state:'cancelled',error_code:'CANCELED',attempt_count:1}]);
  });

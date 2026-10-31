@@ -7,6 +7,13 @@ import {join,dirname,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const ownRoot='/private/tmp/willyou-m10-pm-20261028';
+function installationRoot(dmg,appRoot){
+ const root=dirname(dirname(resolve(dmg)));
+ assert(root===ownRoot||/^\/private\/tmp\/willyou-m10-vf-install-[A-Za-z0-9]+$/.test(root));
+ assert.equal(resolve(dmg),join(root,'dmg/WillYou-0.0.5-mac-arm64.dmg'));
+ assert.equal(resolve(appRoot),join(root,'isolated Applications/WillYou.app'));
+ return root;
+}
 export async function installationTree(root,identities=false){
  const tree={};async function visit(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
   const p=join(dir,entry.name),s=await lstat(p),v={mode:s.mode&0o777};
@@ -18,8 +25,7 @@ export async function installationTree(root,identities=false){
  }}await visit(root);return Object.fromEntries(Object.entries(tree).sort(([a],[b])=>a.localeCompare(b)));
 }
 export async function installOwnDmg({dmg,appRoot,label}){
- assert.equal(resolve(dmg),join(ownRoot,'dmg/WillYou-0.0.5-mac-arm64.dmg'));
- assert.equal(resolve(appRoot),join(ownRoot,'isolated Applications/WillYou.app'));
+ const ownRoot=installationRoot(dmg,appRoot);
  assert(label==='initial'||/^reinstall-[1-9][0-9]*$/.test(label));
  await assert.rejects(lstat(appRoot),error=>error.code==='ENOENT');
  const mount=join(ownRoot,'mount-'+label);await mkdir(mount,{recursive:true});await mkdir(dirname(appRoot),{recursive:true});
@@ -30,7 +36,8 @@ export async function installOwnDmg({dmg,appRoot,label}){
   record.applicationsLink=await readlink(join(mount,'Applications'));assert.equal(record.applicationsLink,'/Applications');
   execFileSync('/usr/bin/ditto',[join(mount,'WillYou.app'),appRoot],{timeout:120000});
   record.bundle=await installationTree(appRoot);
-  const expected=JSON.parse(await readFile(join(ownRoot,'original-bundle-inventory.json'),'utf8'));assert.deepEqual(record.bundle,expected,'Installed bundle exactly matches original verified PK2 package');
+  const inventory=ownRoot==='/private/tmp/willyou-m10-pm-20261028'?'original-bundle-inventory.json':'source-bundle-tree.json';
+  const expected=JSON.parse(await readFile(join(ownRoot,inventory),'utf8'));assert.deepEqual(record.bundle,expected,'Installed bundle exactly matches this root\'s pinned verified package');
   execFileSync('/usr/bin/codesign',['--verify','--deep','--strict',appRoot],{timeout:30000});record.signatureVerified=true;
  }finally{
   if(attached){execFileSync('/usr/bin/hdiutil',['detach',mount],{timeout:30000});record.detached=true;}
@@ -38,7 +45,7 @@ export async function installOwnDmg({dmg,appRoot,label}){
  await writeFile(join(ownRoot,label+'-installation.json'),JSON.stringify(record,null,2)+'\n');return record;
 }
 export async function cycleOwnInstallation({dmg,appRoot,userData,home,state,cwd,previousPid,result}){
- assert.equal(resolve(appRoot),join(ownRoot,'isolated Applications/WillYou.app'));
+ const ownRoot=installationRoot(dmg,appRoot);
  assert(userData.startsWith('/private/tmp/willyou-m10-native-terminal-')&&Buffer.byteLength(userData)===315);
  for(const p of [home,state,cwd])assert(p.startsWith('/private/tmp/willyou-m10-native-terminal-'));
  assert(Number.isSafeInteger(previousPid)&&previousPid>1);

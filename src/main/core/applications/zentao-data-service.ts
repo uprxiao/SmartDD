@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import { boundedJson } from '@shared/application-bridge';
 import { connectionConfigSchema,type ApplicationConnection } from '@shared/application-connections';
-import { zentaoSourceRefSchema, type ZentaoSourceRef, type ZentaoWorkData, type ZentaoDetailData } from '@shared/application-zentao';
+import { zentaoSourceRefSchema, type ZentaoSourceRef, type ZentaoWorkData, type ZentaoDetailData,type ZentaoPresentation } from '@shared/application-zentao';
 import type { ApplicationResourceRef,ApplicationResourceChunk } from '@shared/application-data';
 import type { ApplicationDataHost,ApplicationDataBinding } from './application-adapter-registry';
 import type { HostToolOperation } from './tool-service';
@@ -65,10 +65,21 @@ export function zentaoFiles(detail:ZentaoDetail,base:string):{files:FileCandidat
 }
 /** Current assigned-self reads share the same services for UI and actual fixed Agent tools. */
 export class ZentaoDataService implements ApplicationDataHost {
+  private readonly presentations=new Map<string,{until:number;value:ZentaoPresentation}>();
   constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly selections:ApplicationSelectionService){
     resources.registerProvider({kind:'zentao-object-v1',appId:'zentao',contractMajor:1,permission:'zentao.read',read:(context,backing)=>this.resource(context,backing)});
   }
   private get store(){return this.contexts.store;}
+  private async presentation(context:ApplicationExecutionContext,client:ZentaoClient,connection:ApplicationConnection,kind:ZentaoKind):Promise<ZentaoPresentation>{
+    const key=this.target(context,connection)+':'+kind,cached=this.presentations.get(key);
+    if(cached&&cached.until>Date.now())return cached.value;
+    try{
+      const value=await client.presentation(kind,context.signal);this.contexts.require(context,'zentao.read');
+      this.presentations.set(key,{value,until:Date.now()+5*60000});
+      while(this.presentations.size>32)this.presentations.delete(this.presentations.keys().next().value!);
+      return value;
+    }catch(error){if(context.signal.aborted)throw error;this.contexts.require(context,'zentao.read');return{available:false,labels:{},choices:{}};}
+  }
   resolve(version:1,method:string,binding:Readonly<ApplicationDataBinding>):HostToolOperation{
     if(version!==1||binding.appId!=='zentao'||!['zentao.work.list','zentao.object.get','zentao.resource.read'].includes(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','该禅道Data API尚未接入');
     const authorize=(run:RunContext,connectionId:string|null)=>{
@@ -126,7 +137,7 @@ export class ZentaoDataService implements ApplicationDataHost {
         }
         const complete=pageNo>=Math.max(1,page.pageTotal);let nextCursor:string|null=null;
         if(!complete){nextCursor=randomUUID();await withResourceLock(this.store.root,()=>{this.contexts.require(context,'zentao.read');this.store.sqlite.prepare('DELETE FROM application_zentao_cursors WHERE expires_at<=?').run(new Date().toISOString());this.store.sqlite.prepare('INSERT INTO application_zentao_cursors VALUES(?,?,?,?,?,?,?,?,?)').run(nextCursor,context.projectId,target,args.kind,args.limit,pageNo+1,page.total,canonicalJson([...seen,...ids]),new Date(Date.now()+10*60000).toISOString());});}
-        return{kind:args.kind,items,total:page.total,nextCursor,complete,checkedAt:new Date().toISOString(),problems:[]};
+        return{kind:args.kind,items,total:page.total,nextCursor,complete,checkedAt:new Date().toISOString(),problems:[],...(items.length&&context.callerKind==='ui'?{presentation:await this.presentation(context,client,connection,args.kind)}:{})};
       });
     }
     if(method==='zentao.object.get'){
@@ -159,7 +170,9 @@ export class ZentaoDataService implements ApplicationDataHost {
       }catch(error){if(context.signal.aborted)throw error;missing.push('attachment:'+file.id+':'+(error instanceof ApplicationError?error.code:'CONNECTION_UNAVAILABLE'));}
     }
     const problems=[...new Set(missing)];if(problems.length>200)throw new ApplicationError('INCOMPLETE_RESULT','来源缺失项超过原工具响应预算，未返回不完整的缺项清单');
-    return{kind:detail.kind,id:detail.id,reference:this.ref(row),fields,body,history,attachments,complete:problems.length===0,missing:problems};
+    // Presentation is separate from immutable source fields/revisions/resources.
+    // Frozen Agent packages retain their exact v1 output schemas.
+    return{kind:detail.kind,id:detail.id,reference:this.ref(row),fields,body,history,attachments,complete:problems.length===0,missing:problems,...(context.callerKind==='ui'?{presentation:await this.presentation(context,client,connection,detail.kind)}:{})};
   }
   private async resource(context:ApplicationExecutionContext,backing:Readonly<ApplicationResourceBacking>):Promise<Uint8Array>{
     const row=this.store.sqlite.prepare('SELECT * FROM application_zentao_revisions WHERE object_key=? AND project_id=? AND representation=\'detail\'').get(backing.objectId,context.projectId) as ObjectRow|undefined;
