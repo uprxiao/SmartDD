@@ -129,6 +129,12 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
   expect(await app.executeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash})).toMatchObject({intent:{state:'server-accepted'}});expect(messages).toHaveLength(1);
   expect(await app.executeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash})).toMatchObject({intent:{state:'server-accepted'}});expect(messages).toHaveLength(1);
  });
+ it('M10-VC-01 lets the Agent read an intent that was prepared,authorized and executed from the trusted UI',async()=>{
+  const d=await draft();const prepared=await app.prepareSend(sender,'p1',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});
+  const display=await app.reviewSend(sender,'p1',prepared.intent.id);await app.authorizeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash,displayReceiptId:display.displayReceiptId,reviewedUnknownExecutionIds:[]});
+  await app.executeSend(sender,'p1',{intentId:prepared.intent.id,expectedReviewHash:prepared.intent.reviewHash});
+  expect(await call('send_get',{intentId:prepared.intent.id})).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});
+ });
  it.each(['claude-code','codex'] as const)('confirms an existing %s intent in UI and executes only through its original run once',async runner=>{
   const run=runner==='codex'?codex:cc,intent=await prepare({},run),shown=await app.reviewSend(sender,'p1',intent.id),origin=runs.assertActive(run.runId);
   expect(shown.review).toMatchObject({sourceTaskId:origin.run.taskId,sourceRunId:run.runId,draftId:intent.draftId,draftRevision:intent.draftRevision});

@@ -30,6 +30,8 @@ import {checkInflightDefault} from './fixtures/inflight-default-native.mjs';
 import {checkConcurrentDefault} from './fixtures/concurrent-default-native.mjs';
 import {checkMissingMailDate} from './fixtures/missing-mail-date-native.mjs';
 import {checkMailMime} from './fixtures/mail-mime-native.mjs';
+import {checkRealFoxmail,checkRealFoxmailMini} from './fixtures/real-foxmail-native.mjs';
+import {checkRealSend} from './fixtures/real-send-native.mjs';
 import {checkIncompleteMime} from './fixtures/mail-incomplete-native.mjs';
 import {checkOrphanDiscovery} from './fixtures/discovery-orphan-native.mjs';
 import {checkPublicationCrash} from './fixtures/discovery-publication-native.mjs';
@@ -40,6 +42,7 @@ import {concurrentVersionsProbe,checkConcurrentVersions} from './fixtures/concur
 import {captureBudgetService} from './fixtures/budget-main-capture.mjs';
 import {checkRetryAfterNative} from './fixtures/retry-after-native.mjs';
 import {openElectron as openHarnessElectron} from '../lib/electron-harness.mjs';
+import {userInfo} from 'node:os';
 import {installBrokerObserver,collectAndRestoreBrokerObserver,replayOldCredential} from './fixtures/broker-replay-observer.mjs';
 import {bootstrapReplayFixture} from './fixtures/bootstrap-replay.mjs';
 import {checkUnavailableNodeMode} from './fixtures/node-mode-unavailable.mjs';
@@ -120,6 +123,9 @@ const inflightDefaultCheck=process.env.WILLYOU_INFLIGHT_DEFAULT_CHECK==='1';
 const concurrentDefaultCheck=process.env.WILLYOU_CONCURRENT_DEFAULT_CHECK==='1';
 const missingMailDateCheck=process.env.WILLYOU_MISSING_MAIL_DATE_CHECK==='1';
 const mailMimeCheck=process.env.WILLYOU_MAIL_MIME_CHECK==='1';
+const realFoxmailCheck=process.env.WILLYOU_REAL_FOXMAIL_CHECK==='1';
+const realFoxmailMini=process.env.WILLYOU_REAL_FOXMAIL_MINI==='1';
+const realSendCheck=process.env.WILLYOU_REAL_SEND==='1';
 const mailIncompleteCheck=process.env.WILLYOU_MAIL_INCOMPLETE_CHECK==='1';
 const connectionLifecycleCheck=process.env.WILLYOU_CONNECTION_LIFECYCLE_CHECK==='1';
 const discoveryOrphanCheck=process.env.WILLYOU_DISCOVERY_ORPHAN_CHECK==='1';
@@ -129,7 +135,7 @@ const retryAfterCheck=process.env.WILLYOU_RETRY_AFTER_CHECK==='1';
 const historyReferenceCheck=process.env.WILLYOU_HISTORY_REFERENCE_CHECK==='1';
 const fourHistoryCheck=process.env.WILLYOU_FOUR_HISTORY_CHECK==='1'||historyReferenceCheck;
 const concurrentTrace=process.env.WILLYOU_CONCURRENT_TRACE==='1';
-const concurrentProjectCheck=process.env.WILLYOU_CONCURRENT_PROJECT_B_CHECK==='1',concurrentVersionsCheck=process.env.WILLYOU_CONCURRENT_VERSIONS_CHECK==='1'||concurrentProjectCheck,historyCaptureCheck=earlyResumeStopCheck||fourHistoryCheck||concurrentVersionsCheck||zenSwitchGatesCheck||nativeUserOriginCheck;
+const concurrentProjectCheck=process.env.WILLYOU_CONCURRENT_PROJECT_B_CHECK==='1',concurrentVersionsCheck=process.env.WILLYOU_CONCURRENT_VERSIONS_CHECK==='1'||concurrentProjectCheck,historyCaptureCheck=realSendCheck||earlyResumeStopCheck||fourHistoryCheck||concurrentVersionsCheck||zenSwitchGatesCheck||nativeUserOriginCheck;
 assert(!earlyResumeStopCheck||![fourHistoryCheck,concurrentVersionsCheck,zenSwitchGatesCheck,nativeUserOriginCheck,restartCheck,revokeCheck,freezeCheck,retryAfterCheck].some(Boolean),'SK uses ordinary own baseline and its first-await gate only');
 const publisherGuardCheck=process.env.WILLYOU_DISCOVERY_PUBLISHER_GUARD==='1';assert(!publisherGuardCheck||discoveryCrashPhase==='registered','Publisher guard uses only the exact registered publication checkpoint');
 const projectResourceCheck=process.env.WILLYOU_PROJECT_RESOURCE_CHECK==='1';
@@ -171,8 +177,10 @@ let scopeConnections=[];
 assert(!retryDiagnosticsUiCheck||retryAfterCheck,'PD diagnostics UI requires original retry-after batch');
 const root=await mkdtemp(maintenanceCancelUi?'/private/tmp/willyou-m10-maintenance-ui-':graphGcCheck?'/private/tmp/willyou-m10-graph-app-native-':'/private/tmp/willyou-m10-native-service-');
 async function openElectron(options){
+ if(realSendCheck)options={...options,env:{...options.env,HOME:userInfo().homedir}};// App process only: macOS keychain lives under the real HOME; the task terminal keeps the isolated HOME from the AI profile env
  const inspected=retryAfterCheck||historyCaptureCheck?{...options,startupMainHook:info=>captureBudgetService({...info,mainFile:resolve(dirname(options.executable),'../Resources/app.asar/out/main/index.js'),target:historyCaptureCheck?'history':'budget',checkpoint:join(root,historyCaptureCheck?'history-startup-capture-'+info.processId+'.json':'budget-startup-capture.json')})}:options;
  const instance=await openHarnessElectron(inspected);
+ if(realSendCheck)await instance.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron'),s=globalThis.__ncHistoryProbe.service;if(E.app.getPath('userData')!==${JSON.stringify(options.userData)})throw Error('Own TG profile guard');const map=E.ipcMain._invokeHandlers,g={originals:[],forbidden:[],profileChecks:0};const check=entries=>{const v=Object.fromEntries(entries.map(x=>[x.name,x.value]));if(v.HOME!==${JSON.stringify(options.env.ZDOTDIR)}||v.ZDOTDIR!==${JSON.stringify(options.env.ZDOTDIR)}||v.CODEX_HOME!==${JSON.stringify(options.env.CODEX_HOME)})throw Error('Own private Agent roots required');g.profileChecks++;};for(const name of ['aiProfiles.create','tasks.create','tasks.open']){const f=map.get(name);g.originals.push([name,f]);map.set(name,async function(event,...args){if(name==='aiProfiles.create'){if(args[0].runner!=='codex'||args[0].executable!==${JSON.stringify(cli)})throw Error('Own fixed CLI only');check(args[0].env);}else{const id=name==='tasks.create'?args[0].aiProfileId:s.store.sqlite.prepare('SELECT ai_profile_id FROM tasks WHERE id=?').get(args[0].taskId)?.ai_profile_id,row=s.store.sqlite.prepare('SELECT env FROM ai_profiles WHERE id=?').get(id);if(!row)throw Error('Own private profile required');check(JSON.parse(row.env));}return f.call(this,event,...args);});}for(const name of ['aiProfiles.importZshrc','applications.replyDraft','applications.importAttachment','applications.captureAttachment','applications.prepareSend','applications.reviewSend','applications.authorizeSend','applications.executeSend','app.openExternal']){const f=map.get(name);if(f){g.originals.push([name,f]);map.set(name,()=>{g.forbidden.push(name);throw Error('TG retained reply/import/send boundary');});}}g.restore=()=>{for(const[n,f]of g.originals)map.set(n,f);return{forbidden:g.forbidden,profileChecks:g.profileChecks}};globalThis.__tgProfileGuard=g;return true})()`);// retained send boundary: every reply/import/send handler is blocked until the scoped guard re-enables exactly one authorized draft
  await instance.evaluate('document.title='+JSON.stringify('A · M10 · isolated service '+root.split('-').at(-1)+' · '+options.userData.split('/').at(-1))+';true');
  return instance;
 }
@@ -227,6 +235,7 @@ const inflightDefaultProbe=inflightDefaultCheck?concurrentVersionsProbe(marker):
 const concurrentDefaultProbe=concurrentDefaultCheck?cacheAgentsProbe(marker):null;
 const missingMailDateProbe=missingMailDateCheck?cacheAgentsProbe(marker):null;
 const mailMimeProbe=mailMimeCheck?cacheAgentsProbe(marker):null;
+const realFoxmailProbe=realFoxmailCheck||realFoxmailMini||realSendCheck?cacheAgentsProbe(marker):null;
 const mailIncompleteProbe=mailIncompleteCheck?cacheAgentsProbe(marker):null;
 const concurrentProbe=(concurrentVersionsCheck||earlyResumeStopCheck)?concurrentVersionsProbe(marker):null;
 result.fourHistoryCheck=fourHistoryCheck;result.historyReferenceCheck=historyReferenceCheck;result.concurrentVersionsCheck=concurrentVersionsCheck;result.concurrentProjectCheck=concurrentProjectCheck;result.projectLifecycleCheck=projectLifecycleCheck;result.savedQueryDaysCheck=savedQueryDaysCheck;result.accountIsolationCheck=accountIsolationCheck;result.inflightDefaultCheck=inflightDefaultCheck;result.concurrentDefaultCheck=concurrentDefaultCheck;result.missingMailDateCheck=missingMailDateCheck;result.mailMimeCheck=mailMimeCheck;result.mailIncompleteCheck=mailIncompleteCheck;
@@ -273,6 +282,7 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
  if(concurrentDefaultProbe?.respond(body,res))return;
  if(missingMailDateProbe?.respond(body,res))return;
  if(mailMimeProbe?.respond(body,res))return;
+ if(realFoxmailProbe?.respond(body,res))return;
  if(mailIncompleteProbe?.respond(body,res))return;
  if(concurrentProbe?.respond(body,res))return;
  if(availability?.respond(body,res))return;
@@ -432,7 +442,7 @@ async function launchScopeTask(name,text){
 }
 try{
  if(cacheDiskFullCheck)await prepareCacheSpaceVolume({root,userData,result});
- await progress();app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:zenSwitchCheck||cancelFreezeUi||diagnosticClipboardUiCheck||transferUiCheck||draftLifecycleCheck||concurrentDefaultCheck||inflightDefaultCheck||accountIsolationCheck||savedQueryDaysCheck||projectLifecycleCheck||cacheAgentsCheck||shutdownHistory||hostReplayCheck||scopeRestartCheck||graphGcCheck||nodeModeUnavailableCheck||!!discoveryCrashPhase||retryAfterCheck||historyCaptureCheck||nativeExitUiCheck});if(!homeNativeCheck)installAppFocusGuard(app,result);result.pid=app.processId;if(cancelFreezeUi)await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Own cancel UI App only');const map=E.ipcMain._invokeHandlers,g={calls:[],records:[],originals:[],cipher:[]};for(const name of ['encryptString','decryptString']){g.cipher.push([name,E.safeStorage[name]]);E.safeStorage[name]=()=>{g.calls.push('safeStorage.'+name);throw Error('Cancel UI does not use credentials');};}for(const name of ['applications.replyDraft','applications.importAttachment','applications.captureAttachment','applications.prepareSend','applications.reviewSend','applications.authorizeSend','applications.executeSend','app.openExternal']){const fn=map.get(name);if(!fn)continue;g.originals.push([name,fn]);map.set(name,()=>{g.calls.push(name);throw Error('Cancel UI forbidden side effect');});}for(const name of ['tasks.create','tasks.cancelCreate']){const fn=map.get(name);g.originals.push([name,fn]);map.set(name,async function(event,...args){const row={name,args,at:Date.now(),sender:event.sender.id};g.records.push(row);try{const value=await fn.call(this,event,...args);row.value=value;return value;}catch(e){row.errorCode=e.code??null;row.error=String(e);throw e;}finally{row.finishedAt=Date.now();}});}g.restore=()=>{for(const[n,f]of g.originals)map.set(n,f);for(const[n,f]of g.cipher)E.safeStorage[n]=f;};globalThis.__ouCancel=g;return true})()`);
+ await progress();app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:realSendCheck||zenSwitchCheck||cancelFreezeUi||diagnosticClipboardUiCheck||transferUiCheck||draftLifecycleCheck||concurrentDefaultCheck||inflightDefaultCheck||accountIsolationCheck||savedQueryDaysCheck||projectLifecycleCheck||cacheAgentsCheck||shutdownHistory||hostReplayCheck||scopeRestartCheck||graphGcCheck||nodeModeUnavailableCheck||!!discoveryCrashPhase||retryAfterCheck||historyCaptureCheck||nativeExitUiCheck});if(!homeNativeCheck)if(!realSendCheck)installAppFocusGuard(app,result);// real send: a human operates this window, so the automation focus-yield guard is offresult.pid=app.processId;if(cancelFreezeUi)await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Own cancel UI App only');const map=E.ipcMain._invokeHandlers,g={calls:[],records:[],originals:[],cipher:[]};for(const name of ['encryptString','decryptString']){g.cipher.push([name,E.safeStorage[name]]);E.safeStorage[name]=()=>{g.calls.push('safeStorage.'+name);throw Error('Cancel UI does not use credentials');};}for(const name of ['applications.replyDraft','applications.importAttachment','applications.captureAttachment','applications.prepareSend','applications.reviewSend','applications.authorizeSend','applications.executeSend','app.openExternal']){const fn=map.get(name);if(!fn)continue;g.originals.push([name,fn]);map.set(name,()=>{g.calls.push(name);throw Error('Cancel UI forbidden side effect');});}for(const name of ['tasks.create','tasks.cancelCreate']){const fn=map.get(name);g.originals.push([name,fn]);map.set(name,async function(event,...args){const row={name,args,at:Date.now(),sender:event.sender.id};g.records.push(row);try{const value=await fn.call(this,event,...args);row.value=value;return value;}catch(e){row.errorCode=e.code??null;row.error=String(e);throw e;}finally{row.finishedAt=Date.now();}});}g.restore=()=>{for(const[n,f]of g.originals)map.set(n,f);for(const[n,f]of g.cipher)E.safeStorage[n]=f;};globalThis.__ouCancel=g;return true})()`);
  await app.evaluate(`document.title='A · M10 · isolated Codex native CLI';true`);
  stage='prerequisites';await progress();
  project=scopeUiCheck?await createScopeProject('M10 原生 CLI 隔离项目',cwd):await app.invoke('projects.create',{name:'M10 原生 CLI 隔离项目',aliases:[],description:'Private native Task prerequisite',rulesPath:null},[{label:'fixture',path:cwd}]);result.projectId=project.id;
@@ -911,6 +921,9 @@ try{
  if(concurrentDefaultCheck){stage='concurrent-saved-default';await progress();await checkConcurrentDefault({app,result,root,userData,home,state,project,profile,task,marker,probe:concurrentDefaultProbe,poll,checked,reopen:async()=>{app=undefined;app=await openElectron({executable,userData,cwd,env:privateEnv,inspectMain:true});installAppFocusGuard(app,result);return app;}});}
  if(missingMailDateCheck){stage='missing-mail-date';await progress();await checkMissingMailDate({app,result,root,userData,home,project,task,marker,probe:missingMailDateProbe,poll,checked});}
  if(mailMimeCheck){stage='mail-mime';await progress();await checkMailMime({app,result,root,userData,home,project,task,marker,probe:mailMimeProbe,poll,checked});}
+ if(realFoxmailCheck){stage='real-foxmail';await progress();await checkRealFoxmail({app,result,root,userData,home,project,task,marker,probe:realFoxmailProbe,poll,checked});}
+ if(realFoxmailMini){stage='real-foxmail-mini';await progress();await checkRealFoxmailMini({app,result,root,userData,home,project,task,marker,probe:realFoxmailProbe,poll,checked});}
+ if(realSendCheck){stage='real-send';await progress();await checkRealSend({app,result,root,userData,home,project,task,marker,probe:realFoxmailProbe,poll,checked});}
  if(mailIncompleteCheck){stage='mail-incomplete';await progress();await checkIncompleteMime({app,result,root,userData,home,project,task,marker,probe:mailIncompleteProbe,poll,checked});}
  if(earlyResumeStopCheck){stage='early-resume-stop';await progress();await checkEarlyResumeStop({app,result,root,userData,task,project,marker,probe:concurrentProbe,poll,checked});}
  if(concurrentVersionsCheck){stage='production-concurrent-versions';await progress();await checkConcurrentVersions({app,result,root,userData,home,state,resources:join(appRoot,'Contents/Resources'),task,project,profile,marker,probe:concurrentProbe,poll,checked,projectBCheck:concurrentProjectCheck,trace:concurrentTrace});}

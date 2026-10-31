@@ -77,6 +77,16 @@ describe('current connection revisions, tested candidates and encrypted secret c
     expect(service.get(connection.id)).toEqual(connection);
     expect(service.authentication(connection.id,authVersion(connection)).secret).toBe('fixture-secret-first');
   });
+  it('M10-VA-01 reports unreadable, busy and unsupported local sources with distinct controlled text', async () => {
+    const texts: string[] = [];
+    for (const code of ['SOURCE_UNAVAILABLE', 'RESOURCE_BUSY', 'UNSUPPORTED_FORMAT'] as const) {
+      verify.mockRejectedValueOnce(new ApplicationError(code, '/Users/fixture/private/path echoed'));
+      const failed = service.save(input({ secret: 'fixture-secret-source' }));
+      await expect(failed).rejects.toMatchObject({ code }); texts.push(await failed.then(() => '', (error: Error) => error.message));
+    }
+    expect(new Set(texts).size).toBe(3); expect(texts.join('')).not.toContain('fixture');
+    expect(secretCount()).toBe(0);
+  });
   it('keeps the old credential and configuration when a rotation fails, and sanitizes provider error text', async () => {
     const old = await service.save(input()); verify.mockRejectedValueOnce(new ApplicationError('AUTH_FAILED', 'server echoed fixture-secret-invalid'));
     const failed = service.save(input({ id: old.id, expectedRevision: old.revision, secret: 'fixture-secret-invalid' }));
