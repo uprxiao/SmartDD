@@ -35,7 +35,9 @@ export async function prepareSmtpMessage(config: SmtpConfig, input: FrozenMailIn
   return { raw, rawHash, contentHash: digest(canonicalJson({ rawHash, envelope, messageId: fields.messageId })), envelope, messageId: fields.messageId };
 }
 
-async function withSmtp<T>(config: SmtpConfig, secret: string, signal: AbortSignal, action: (transport: ReturnType<typeof nodemailer.createTransport>) => Promise<T>): Promise<T> {
+/** Set when the TCP/TLS connect itself failed, i.e. no SMTP byte was ever written to the server. */
+interface SmtpTrace { connectFailed: boolean }
+async function withSmtp<T>(config: SmtpConfig, secret: string, signal: AbortSignal, action: (transport: ReturnType<typeof nodemailer.createTransport>) => Promise<T>, trace?: SmtpTrace): Promise<T> {
   if (signal.aborted) throw new ApplicationError('CANCELED', '发件操作已取消');
   const sockets = new Map<Socket,Promise<void>>(); let abortReject: ((error: ApplicationError) => void) | undefined;
   const abort = () => {
@@ -51,7 +53,7 @@ async function withSmtp<T>(config: SmtpConfig, secret: string, signal: AbortSign
     const socket = secure ? tlsConnect({ host: config.host, port: config.port, servername: isIP(config.host) ? undefined : config.host, rejectUnauthorized: true }) : createConnection({ host: config.host, port: config.port });
     sockets.set(socket,new Promise<void>(resolve=>socket.once('close',resolve)));
     socket.once(secure ? 'secureConnect' : 'connect', () => { if (!handed) { handed = true; callback(null, { connection: socket, secured: secure }); } });
-    socket.once('error', error => { if (!handed) { handed = true; callback(error); } });
+    socket.once('error', error => { if (!handed) { handed = true; if (trace) trace.connectFailed = true; callback(error); } });
     socket.once('close', () => sockets.delete(socket));
   };
   const options: SMTPTransportOptions = { host: config.host, port: config.port, secure: config.mode === 'implicit-tls',
@@ -82,13 +84,18 @@ export async function verifySmtp(config: SmtpConfig, secret: string | null, sign
     throw new ApplicationError(code === 'EAUTH' || code === 'ENOAUTH' ? 'AUTH_FAILED' : code === 'ETIMEDOUT' ? 'TIMEOUT' : 'CONNECTION_UNAVAILABLE', code === 'EAUTH' ? '发件账号认证失败' : '无法验证发件连接或TLS证书');
   }
 }
-/** One attempt. The durable execution service must never retry this submission automatically. */
+/** Pauses between connect-only retries; nothing has been written to the server during these attempts. */
+const CONNECT_RETRY_DELAYS_MS = [400, 1000];
+const pause = (ms: number, signal: AbortSignal) => new Promise<void>(resolve => { const done = () => { clearTimeout(timer); signal.removeEventListener('abort', done); resolve(); }; const timer = setTimeout(done, ms); signal.addEventListener('abort', done, { once: true }); });
+/** One submission. Only a failed connect (no SMTP byte written) is retried, boundedly; the durable execution service never retries a submission automatically. */
 export async function submitSmtp(config: SmtpConfig, secret: string, prepared: PreparedSmtpMessage, signal: AbortSignal): Promise<SmtpSubmissionResult> {
   const base = { complete: false, accepted: [] as string[], rejected: [] as string[], errorCode: null as string | null, smtpCode: null as number | null, messageId: prepared.messageId };
   if (signal.aborted) return { ...base, state: 'failed', errorCode: 'CANCELED' };
   if (digest(prepared.raw) !== prepared.rawHash || digest(canonicalJson({ rawHash: prepared.rawHash, envelope: prepared.envelope, messageId: prepared.messageId })) !== prepared.contentHash || prepared.envelope.from !== config.fromAddress) return { ...base, state: 'failed', errorCode: 'CONTENT_CHANGED' };
+  for (let attempt = 0; ; attempt++) {
+  const trace: SmtpTrace = { connectFailed: false };
   try {
-    const info = await withSmtp(config, secret, signal, transport => transport.sendMail({ raw: prepared.raw, envelope: prepared.envelope, disableFileAccess: true, disableUrlAccess: true }));
+    const info = await withSmtp(config, secret, signal, transport => transport.sendMail({ raw: prepared.raw, envelope: prepared.envelope, disableFileAccess: true, disableUrlAccess: true }), trace);
     const accepted: string[] = Array.isArray(info.accepted) ? info.accepted.map(String) : [], rejected: string[] = Array.isArray(info.rejected) ? info.rejected.map(String) : [];
     const expected = new Set(prepared.envelope.to);
     if ([...accepted, ...rejected].some(address => !expected.has(address))) return { ...base, state: 'unknown', errorCode: 'RECEIPT_MISMATCH' };
@@ -96,8 +103,15 @@ export async function submitSmtp(config: SmtpConfig, secret: string, prepared: P
       smtpCode: /^\d{3}/.test(info.response ?? '') ? Number(String(info.response).slice(0, 3)) : null };
   } catch (error) {
     if (error instanceof ApplicationError) return { ...base, state: 'unknown', errorCode: error.code };
+    if (trace.connectFailed) {
+      // The connection never opened, so no SMTP byte was written: retrying cannot add a second business submission.
+      const delay = CONNECT_RETRY_DELAYS_MS[attempt];
+      if (delay !== undefined && !signal.aborted) { await pause(delay, signal); if (!signal.aborted) continue; }
+      return { ...base, state: 'failed', errorCode: signal.aborted ? 'CANCELED' : (error as NodemailerError).code ?? 'CONNECTION_FAILED' };
+    }
     const detail = error as NodemailerError, responseCode = detail.responseCode ?? null;
     const definite = ['EAUTH', 'ENOAUTH', 'EENVELOPE', 'ECONFIG', 'EMAXRECIPIENTS', 'EFILEACCESS', 'EURLACCESS'].includes(detail.code ?? '') || (responseCode !== null && responseCode >= 400 && responseCode <= 599);
     return { ...base, state: definite ? 'failed' : 'unknown', errorCode: detail.code ?? 'SUBMISSION_UNCONFIRMED', smtpCode: responseCode };
+  }
   }
 }

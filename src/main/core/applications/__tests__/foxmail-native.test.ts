@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, truncateSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import Database from 'better-sqlite3';
@@ -29,6 +29,21 @@ describe.skipIf(process.platform !== 'darwin')('native Foxmail metadata reader s
     const copy = mkdtempSync(join(tmpdir(), 'willyou-m10-wal-image-'));
     try { copyFileSync(path, join(copy, 'messages.db')); copyFileSync(path + '-wal', join(copy, 'messages.db-wal')); const before = snapshot(copy); expect(run(join(copy, 'messages.db')).rows[0].id).toBe('3'); expect(snapshot(copy)).toEqual(before); }
     finally { rmSync(copy, { recursive: true, force: true }); }
+  });
+  it('reads a source whose PERSIST-mode rollback journal is left behind with an all-zero header, like a live Foxmail', () => {
+    const path = join(root, 'messages.db'), db = new Database(path); db.pragma('journal_mode=PERSIST'); db.exec(schema); insert(db, 1); insert(db, 2); db.close();
+    const journal = path + '-journal'; expect(statSync(journal).size).toBeGreaterThan(0); expect(readFileSync(journal).subarray(0, 28).every(byte => byte === 0)).toBe(true);
+    const before = snapshot(root); const result = run(path); expect(result.rows).toHaveLength(2); expect(snapshot(root)).toEqual(before);
+  });
+  it('still reports an in-progress rollback journal as busy and never rolls it back', () => {
+    const path = join(root, 'messages.db'), db = new Database(path); db.exec(schema); insert(db, 1); db.close();
+    writeFileSync(path + '-journal', Buffer.concat([Buffer.from('d9d505f920a163d7', 'hex'), Buffer.alloc(4096)])); const before = snapshot(root);
+    expect(run(path)).toMatchObject({ error: { code: 'RESOURCE_BUSY' } }); expect(snapshot(root)).toEqual(before);
+  });
+  it('accepts a real-sized mail database above the former 256 MiB cap and still rejects an absurdly large one', () => {
+    const path = join(root, 'messages.db'), db = new Database(path); db.exec(schema); insert(db, 1); db.close();
+    truncateSync(path, 447_496_192); expect(run(path).rows).toHaveLength(1);
+    truncateSync(path, 5 * 1024 * 1024 * 1024); expect(run(path)).toMatchObject({ error: { code: 'SOURCE_UNAVAILABLE' } });
   });
   it('rejects missing, unsupported and symbolic-link databases with a controlled diagnostic', () => {
     expect(run(join(root, 'messages.db'))).toMatchObject({ error: { code: 'SOURCE_UNAVAILABLE' } });

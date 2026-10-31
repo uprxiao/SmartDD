@@ -55,6 +55,18 @@ static Stamp stamp(const std::string &path) {
   need(r == 0 && S_ISREG(s.st_mode), "SOURCE_UNAVAILABLE", "Mail database component is unavailable or not a regular file");
   return {true, s};
 }
+// Foxmail keeps a PERSIST-mode rollback journal: the file stays after every commit with an all-zero header, which SQLite
+// itself treats as "not hot". Only a journal whose header carries data means a transaction is still in progress.
+static bool journalHeaderClean(const std::string &path, off_t size) {
+  if (size == 0) return true;
+  int fd = open(path.c_str(), O_RDONLY | O_CLOEXEC);
+  if (fd < 0) return false;
+  unsigned char header[28] = {0}; ssize_t want = size < (off_t)sizeof(header) ? (ssize_t)size : (ssize_t)sizeof(header);
+  ssize_t got = pread(fd, header, (size_t)want, 0); close(fd);
+  if (got != want || size < (off_t)sizeof(header)) return false;
+  for (size_t i = 0; i < sizeof(header); i++) if (header[i] != 0) return false;
+  return true;
+}
 static bool same(Stamp a, Stamp b) {
   return a.exists == b.exists && (!a.exists || (a.s.st_dev == b.s.st_dev && a.s.st_ino == b.s.st_ino && a.s.st_size == b.s.st_size &&
     a.s.st_mtimespec.tv_sec == b.s.st_mtimespec.tv_sec && a.s.st_mtimespec.tv_nsec == b.s.st_mtimespec.tv_nsec &&
@@ -90,9 +102,9 @@ int main(int argc, const char **argv) { @autoreleasepool {
     need(path != nil && path.isAbsolutePath && [path.lastPathComponent isEqualToString:@"messages.db"], "INVALID_INPUT", "Invalid selected account database");
     std::string file(argv[1]); std::vector<std::string> parts = {file, file + "-wal", file + "-shm", file + "-journal"}; std::vector<Stamp> before;
     for (const auto &part: parts) before.push_back(stamp(part));
-    need(before[0].exists && before[0].s.st_size > 0 && before[0].s.st_size <= 256LL * 1024 * 1024, "SOURCE_UNAVAILABLE", "Mail database is absent or exceeds the read budget");
+    need(before[0].exists && before[0].s.st_size > 0 && before[0].s.st_size <= 4096LL * 1024 * 1024, "SOURCE_UNAVAILABLE", "Mail database is absent or exceeds the read budget");
     need(!before[1].exists || before[1].s.st_size <= 64LL * 1024 * 1024, "INCOMPLETE_RESULT", "Mail WAL exceeds the read budget");
-    need(!before[3].exists || before[3].s.st_size == 0, "RESOURCE_BUSY", "Foxmail has an unfinished rollback journal");
+    need(!before[3].exists || journalHeaderClean(parts[3], before[3].s.st_size), "RESOURCE_BUSY", "Foxmail has an unfinished rollback journal");
     // The private WAL index includes committed WAL frames without source writes.
     // Every source component is checked again before returning the observed snapshot.
     installReadVfs();

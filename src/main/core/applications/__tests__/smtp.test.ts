@@ -68,6 +68,19 @@ describe('SMTP adapter over an isolated local protocol server', () => {
     const result = await submitSmtp(config(), 'fixture-private-password', await prepareSmtpMessage(config(), input()), signal());
     expect(result.state).toBe('unknown'); expect(result.complete).toBe(false); expect(messages).toHaveLength(1); expect(commands.filter(c => c === 'DATA')).toHaveLength(1);
   });
+  it('retries a refused connection boundedly and reports a definite failure when nothing was ever written', async () => {
+    for (const socket of sockets) socket.destroy(); await new Promise<void>(resolve => server.close(() => resolve()));
+    const result = await submitSmtp(config(), 'fixture-private-password', await prepareSmtpMessage(config(), input()), signal());
+    expect(result).toMatchObject({ state: 'failed', complete: false, errorCode: 'ECONNREFUSED', accepted: [], rejected: [] });
+    expect(commands).toEqual([]); expect(messages).toEqual([]);
+  });
+  it('completes exactly one business submission when the server becomes reachable during connect retries', async () => {
+    for (const socket of sockets) socket.destroy(); await new Promise<void>(resolve => server.close(() => resolve()));
+    const pending = submitSmtp(config(), 'fixture-private-password', await prepareSmtpMessage(config(), input()), signal());
+    await new Promise(resolve => setTimeout(resolve, 150)); await new Promise<void>(resolve => server.listen(port, '127.0.0.1', resolve));
+    expect(await pending).toMatchObject({ state: 'server-accepted', complete: true });
+    expect(messages).toHaveLength(1); expect(commands.filter(c => c === 'DATA')).toHaveLength(1);
+  });
   it('drains the actual SMTP callback and owned socket when canceled while DATA receipt is withheld',async()=>{
     options.holdReceipt=true;const controller=new AbortController(),prepared=await prepareSmtpMessage(config(),input()),pending=submitSmtp(config(),'fixture-private-password',prepared,controller.signal);await vi.waitFor(()=>expect(messages).toHaveLength(1));
     const closed=Promise.all([...sockets].map(socket=>new Promise<void>(done=>socket.once('close',()=>done()))));controller.abort();expect(await pending).toMatchObject({state:'unknown',complete:false,errorCode:'CANCELED'});await closed;expect(sockets.size).toBe(0);expect(commands.filter(command=>command==='DATA')).toHaveLength(1);expect(messages[0]).toEqual(prepared.raw);
