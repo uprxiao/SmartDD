@@ -1,0 +1,18 @@
+{
+  "schema": "v009-g003-task-scope-correction-v1",
+  "initialRequestedChecksumCoverage": 11,
+  "actualInitialChecksumRows": 7,
+  "initialAbsentManifestRows": [
+    "manifest-linux-x64.json",
+    "manifest-mac-arm64.json",
+    "manifest-mac-x64.json",
+    "manifest-win-x64.json"
+  ],
+  "classification": "Coordinator task description error; corrected before final conclusion, not a product or download failure",
+  "correctedChecksumCoverage": 7,
+  "coordinatorRationale": "Original scripts/release/artifacts.mjs accumulates sums only inside installer loop; four producer manifests join files, not sums (coordinator cites lines 56-58). verifyArtifacts.files count 11 and SHA256SUMS installer row count 7 are distinct.",
+  "sourceRationaleBoundary": "Provided by coordinator in current task steering; this independent audit does not read or execute production verifier source",
+  "originalInputUnmodified": true,
+  "noStreamingHashRerun": true,
+  "otherCriteriaUnchanged": true
+}
