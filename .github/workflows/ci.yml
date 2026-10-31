@@ -29,6 +29,17 @@ jobs:
           cache: false
       - name: Validate workflow syntax and expressions
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= -pyflakes=
+  application-bundles:
+    needs: workflow-check
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+      - name: Verify application CLI build and immutable bundles on Windows
+        run: pnpm test:release
   checks:
     needs: workflow-check
     runs-on: macos-latest

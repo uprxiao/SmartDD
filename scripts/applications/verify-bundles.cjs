@@ -2,14 +2,14 @@
 const assert = require('node:assert/strict');
 const {createHash} = require('node:crypto');
 const {lstatSync,readFileSync,readdirSync} = require('node:fs');
-const {join} = require('node:path');
+const {join,relative,sep} = require('node:path');
 const hash = value => createHash('sha256').update(value).digest('hex');
 function compare(a,b) { const aa=Array.from(a,c=>c.codePointAt(0)),bb=Array.from(b,c=>c.codePointAt(0));for(let i=0;i<Math.min(aa.length,bb.length);i++)if(aa[i]!==bb[i])return aa[i]-bb[i];return aa.length-bb.length; }
 function canonical(value) { if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';if(value&&typeof value==='object')return '{'+Object.keys(value).sort(compare).map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';return JSON.stringify(value); }
 const safe = path => typeof path==='string' && path.length>0 && path.length<=1024 && path===path.normalize('NFC') && !/[\\:\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/u.test(path) && path.split('/').every(p=>p&&p!=='.'&&p!=='..'&&!/[. ]$/.test(p)&&!/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(p));
 function readJson(path) { const stat=lstatSync(path);assert(stat.isFile()&&!stat.isSymbolicLink()&&stat.size<=4*1024*1024,'Bounded regular bundle metadata');return JSON.parse(readFileSync(path,'utf8')); }
 function tree(root,relative) { let dir=root;for(const part of relative.split('/')){dir=join(dir,part);const stat=lstatSync(dir);assert(stat.isDirectory()&&!stat.isSymbolicLink(),'No linked bundle directories');}return dir; }
-function names(root,dir=root) { return readdirSync(dir).flatMap(name=>{const path=join(dir,name),stat=lstatSync(path);assert(!stat.isSymbolicLink()&&(stat.isFile()||stat.isDirectory()),'No links or special bundle files');return stat.isDirectory()?names(root,path):[path.slice(root.length+1)];}).sort(compare); }
+function names(root,dir=root) { return readdirSync(dir).flatMap(name=>{const path=join(dir,name),stat=lstatSync(path);assert(!stat.isSymbolicLink()&&(stat.isFile()||stat.isDirectory()),'No links or special bundle files');return stat.isDirectory()?names(root,path):[relative(root,path).split(sep).join('/')];}).sort(compare); }
 function fullTree(root,path,manifestName,expectedHash) {
   assert(safe(path),'Safe indexed bundle path');const dir=tree(root,path),manifest=readJson(join(dir,manifestName));assert.equal(hash(canonical(manifest)),expectedHash,'Original complete manifest hash');assert(Array.isArray(manifest.files)&&manifest.files.length>0&&manifest.files.length<=4096,'Bounded complete inventory');
   const entries=manifest.files.map(f=>f.path);assert(entries.every(p=>safe(p)&&p!==manifestName),'Safe manifest file paths');assert.equal(new Set(entries.map(p=>p.toLowerCase())).size,entries.length,'Unique case-folded inventory');assert.deepEqual(names(dir),[...entries,manifestName].sort(compare),'Exact complete file inventory');let total=0;
