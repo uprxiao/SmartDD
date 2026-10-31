@@ -237,6 +237,8 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
   const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash},codex),intent=(output as {value:{intent:MailSendData}}).value.intent;expect(intent.authorized).toBe(true);expect(await execute(intent,codex)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted',result:{accepted:['receiver@example.test','private@example.test']}}}});
   expect(messages).toHaveLength(1);expect(messages[0].toString()).toContain(bytes.toString('base64'));expect(messages[0].toString()).toContain('native-proof.bin');expect(messages[0].toString()).not.toMatch(/^Bcc:/mi);const row=f.sqlite.prepare('SELECT raw_hash FROM mail_send_intents WHERE id=?').get(intent.id) as {raw_hash:string};expect(digest(messages[0])).toBe(row.raw_hash);
  });
+ // Multi-step native receipts,binding updates and actual loopback SMTP need
+ // a bounded integration budget;this is not a production response deadline.
  it.each(['binding-roundtrip','policy-roundtrip'] as const)('does not authorize an old native instruction after %s before prepare',async kind=>{
   const d=await draft();await nativeTurn(cc,sendReference(d)+'\n请原样发送此草稿。');
   if(kind==='binding-roundtrip'){
@@ -246,7 +248,7 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
   }
   const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});expect(output).toMatchObject({status:'ok',value:{intent:{authorized:false,state:'awaiting-authorization'}}});const intent=(output as {value:{intent:MailSendData}}).value.intent;expect(await execute(intent)).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});expect(messages).toHaveLength(0);expect(decrypts).toBe(0);
   await nativeTurn(cc,sendReference(d)+'\n请原样发送此草稿。');expect(await execute(intent)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});expect(messages).toHaveLength(1);
- });
+ },20000);
  it('reports a superseded native grant as awaiting authorization in the shared UI and agent data view',async()=>{
   const d=await draft(),source=await nativeTurn(cc,sendReference(d)+'\n请原样发送此草稿。'),output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash}),intent=(output as {value:{intent:MailSendData}}).value.intent;app.observeInput(sender,source.target,'\x03');
   expect(await call('send_get',{intentId:intent.id})).toMatchObject({status:'ok',value:{intent:{authorized:false,state:'awaiting-authorization'}}});expect(await app.viewSend(sender,'p1',intent.id)).toMatchObject({intent:{authorized:false,state:'awaiting-authorization'}});expect(messages).toHaveLength(0);
@@ -444,7 +446,7 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
   await app.dispose();app=setup();await app.recover();connectTools();expect(await execute(original)).toMatchObject({status:'ok',value:{intent:{state:'unknown'}}});expect(messages).toHaveLength(2);
   expect(f.sqlite.prepare('SELECT count(*) n FROM mail_send_executions WHERE intent_id=?').get(original.id)).toEqual({n:1});expect(app.connections.get(smtpId)).toMatchObject({id:smtpId,secretRevision:rotated.secretRevision,identityRevision:old.identityRevision});
   const publicAudit=JSON.stringify(f.sqlite.prepare('SELECT * FROM application_data_operations').all())+JSON.stringify(f.sqlite.prepare('SELECT * FROM mail_send_executions').all());expect(publicAudit).not.toContain('private-fixture-secret');expect(publicAudit).not.toContain('rotated-private-secret');
- });
+ },20000);
  it('does not turn send-only internal access into permission to mutate another draft',async()=>{
   const source=await draft(),sendOnly=await start('codex',90104,'p1',['mail.send']);const result=await call('send_prepare',{draftId:source.id,expectedRevision:source.revision,expectedContentHash:source.contentHash},sendOnly);expect(result.status,JSON.stringify(result)).toBe('ok');expect(await call('draft_create',{content:content()},sendOnly)).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(messages).toHaveLength(0);
  });
