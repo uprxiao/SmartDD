@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { definitions } from '../../resources/applications/definitions.mjs';
 import bundleVerifier from './verify-bundles.cjs';
 const digest = value => createHash('sha256').update(value).digest('hex');
@@ -9,7 +9,7 @@ function compare(a,b) { const aa=Array.from(a,c=>c.codePointAt(0)),bb=Array.from
 function canonical(value) { if(Array.isArray(value))return '['+value.map(canonical).join(',')+']'; if(value && typeof value==='object')return '{'+Object.keys(value).sort(compare).map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';return JSON.stringify(value); }
 const runtimeEntry = resolve(process.argv[3] || 'out/applications/mcp-bridge.cjs');
 const output = resolve(process.argv[2] || 'out/capability-bundles'), stage = output + '.tmp-' + randomUUID(); mkdirSync(stage,{recursive:true,mode:0o700});
-const readTree = (root,dir=root) => Object.fromEntries(readdirSync(dir).sort().flatMap(name => { const p=join(dir,name),s=lstatSync(p);if(s.isSymbolicLink()||(!s.isDirectory()&&!s.isFile()))throw new Error('Bundle source links/special files are not allowed');return s.isDirectory()?Object.entries(readTree(root,p)):[[p.slice(root.length+1),readFileSync(p)]]; }));
+const readTree = (root,dir=root) => Object.fromEntries(readdirSync(dir).sort().flatMap(name => { const p=join(dir,name),s=lstatSync(p);if(s.isSymbolicLink()||(!s.isDirectory()&&!s.isFile()))throw new Error('Bundle source links/special files are not allowed');return s.isDirectory()?Object.entries(readTree(root,p)):[[relative(root,p).split(sep).join('/'),readFileSync(p)]]; }));
 const writeTree = (root,files) => { for(const [path,bytes] of Object.entries(files)){const target=join(root,path);mkdirSync(dirname(target),{recursive:true,mode:0o700});writeFileSync(target,bytes,{mode:0o600,flag:'wx'});} };
 try {
   const adapters=[],runtimes=[],apps=[];

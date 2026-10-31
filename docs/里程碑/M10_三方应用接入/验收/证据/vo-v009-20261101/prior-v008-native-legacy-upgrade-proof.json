@@ -1,0 +1,158 @@
+{
+  "schema": "v008-real-v007-Codex-legacy-upgrade-v1",
+  "at": "2026-10-31T19:22:00.004392+00:00",
+  "status": "passed-and-released",
+  "result": "/private/tmp/willyou-m10-v008-legacy-upgrade-KW0Bof/result.json",
+  "resultSha256": "b7a9b6e6eecb10918a7ad276a4a2b74d43cbfdd6877807aeef9e4ba687578a2d",
+  "oldAppAsar": "c25ba97abb4f9a520fc409e1a3a256ec7c7bc71fb8d1f907d8673665f1ede2e0",
+  "newAppAsar": "409a8714b25de63acfa3fad1df9c28ed453c6b9a15f55ffcf68dc8c402c0da77",
+  "taskId": "583a3422-5c70-495e-9831-4dcaa5b8f762",
+  "sameNativeSession": "01a19366-b84a-71c3-9546-29447dd0c0ea",
+  "history": [
+    {
+      "path": "/private/tmp/willyou-m10-v008-legacy-upgrade-KW0Bof/home/.codex/sessions/2026/11/01/rollout-2026-11-01T03-19-05-01a19366-b84a-71c3-9546-29447dd0c0ea.jsonl",
+      "sha256": "d38ef733062bf6863f1c3b2a246c463dd9642c12fb28384b81d6412ba141129d",
+      "originalUserPrompts": 1,
+      "resumedUserPrompts": 1
+    }
+  ],
+  "oldExit": {
+    "pid": 74756,
+    "code": null,
+    "signal": "SIGKILL"
+  },
+  "newExit": {
+    "pid": 74881,
+    "code": 0,
+    "signal": null
+  },
+  "diagnostic": {
+    "selection": "unknown-history",
+    "snapshotHash": "4ad41d3596ec29742508f3102803bc732f744bba0930c442df1bec6d922ff777",
+    "applications": []
+  },
+  "requests": [
+    {
+      "at": "2026-10-31T19:19:04.634Z",
+      "kind": "health",
+      "model": "legacy-ui-model",
+      "tools": [
+        "exec_command",
+        "write_stdin",
+        "request_user_input",
+        "view_image",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "original": false,
+      "resumed": false
+    },
+    {
+      "at": "2026-10-31T19:19:05.060Z",
+      "kind": "task",
+      "model": "legacy-ui-model",
+      "tools": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "mcp__codex_worktrees",
+        "mcp__smartdd_project_3a9ddb6e5f33",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "original": true,
+      "resumed": false
+    },
+    {
+      "at": "2026-10-31T19:19:14.850Z",
+      "kind": "task",
+      "model": "legacy-ui-model",
+      "tools": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "mcp__codex_worktrees",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "original": true,
+      "resumed": true
+    },
+    {
+      "at": "2026-10-31T19:19:14.889Z",
+      "kind": "task",
+      "model": "legacy-ui-model",
+      "tools": [],
+      "original": false,
+      "resumed": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "Published v0.0.7 creates the private project and source directory through the real project form",
+      "at": "2026-10-31T19:19:04.539Z"
+    },
+    {
+      "name": "Original published v007 creates a real native Codex session through UI and stops it before the upgrade;native identity persists",
+      "at": "2026-10-31T19:19:06.628Z"
+    },
+    {
+      "name": "Published v0.0.7 real editor saves its document to the original file",
+      "at": "2026-10-31T19:19:07.053Z"
+    },
+    {
+      "name": "Typed unsaved bytes reach the original durable checkpoint while the authoritative file remains unchanged",
+      "at": "2026-10-31T19:19:07.824Z"
+    },
+    {
+      "name": "New v0.0.8 opens the same private userData and preserves the original project identity,config and saved source",
+      "at": "2026-10-31T19:19:10.296Z"
+    },
+    {
+      "name": "New package restores original v0.0.7 durable bytes through UI without overwriting the authoritative file",
+      "at": "2026-10-31T19:19:10.659Z"
+    },
+    {
+      "name": "New v008 actual UI resumes the original native Codex identity,answers a new explicit input and does not grant M10 application tools to the legacy task",
+      "at": "2026-10-31T19:19:15.076Z"
+    },
+    {
+      "name": "Recovered document saves normally and the new M10 application entry is reachable after M9 data migration",
+      "at": "2026-10-31T19:19:15.169Z"
+    },
+    {
+      "name": "New package quits normally after saving all restored edits",
+      "at": "2026-10-31T19:19:15.389Z"
+    }
+  ],
+  "databaseQuickCheck": "ok",
+  "appProbes": [
+    {
+      "pid": 74756,
+      "probe": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    },
+    {
+      "pid": 74881,
+      "probe": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    }
+  ],
+  "ownedCliMcpRemaining": [],
+  "boundary": "Actual oldv007/newv008 UI andCodex;synthetic localResponses;known old native history remains conservatively unverified for application injection;noM10grant;does not claim legacy managedM4MCP was reinjected"
+}
